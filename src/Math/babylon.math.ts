@@ -3574,17 +3574,23 @@
                 0.0, 0.0, 1.0, 0.0,
                 x, y, z, 1.0, result);
         }
-
+        /**
+         * Returns a new Matrix whose values are the interpolated values for "gradien" (float) between the ones of the matrices "startValue" and "endValue".
+         */
         public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var result = Matrix.Zero();
-
             for (var index = 0; index < 16; index++) {
                 result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
             }
-
             return result;
         }
 
+        /**
+         * Returns a new Matrix whose values are computed by : 
+         * - decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices,
+         * - interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end,
+         * - recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices.  
+         */
         public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
@@ -3603,14 +3609,20 @@
             return Matrix.Compose(resultScale, resultRotation, resultTranslation);
         }
 
+        /**
+         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
+         * This methods works for a Left-Handed system.  
+         */
         public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
-
             Matrix.LookAtLHToRef(eye, target, up, result);
-
             return result;
         }
 
+        /**
+         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
+         * This methods works for a Left-Handed system.  
+         */
         public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
             // Z axis
             target.subtractToRef(eye, this._zAxis);
@@ -3640,14 +3652,20 @@
                 ex, ey, ez, 1, result);
         }
 
+        /**
+         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
+         * This methods works for a Right-Handed system.  
+         */
         public static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
-
             Matrix.LookAtRHToRef(eye, target, up, result);
-
             return result;
         }
 
+        /**
+         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
+         * This methods works for a Left-Handed system.  
+         */
         public static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
             // Z axis
             eye.subtractToRef(target, this._zAxis);
@@ -3679,9 +3697,7 @@
 
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
-
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -3733,9 +3749,7 @@
 
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
-
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -3768,9 +3782,7 @@
 
         public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
-
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -3795,9 +3807,7 @@
 
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
-
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -3847,27 +3857,35 @@
             // result.m[14] = (znear * zfar) / (znear - zfar);
         }
 
+        /**
+         * Returns the final transformation matrix : world * view * projection * viewport
+         */
         public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0,
-                0, -ch / 2.0, 0, 0,
-                0, 0, zmax - zmin, 0,
+            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0,
+                0.0, -ch / 2.0, 0.0, 0.0,
+                0.0, 0.0, zmax - zmin, 0.0,
                 cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
 
             return world.multiply(view).multiply(projection).multiply(viewportMatrix);
         }
 
+        /**
+         * Returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed Matrix.  
+         */
         public static GetAsMatrix2x2(matrix: Matrix): Float32Array {
             return new Float32Array([
                 matrix.m[0], matrix.m[1],
                 matrix.m[4], matrix.m[5]
             ]);
         }
-
+        /**
+         * Returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed Matrix.  
+         */
         public static GetAsMatrix3x3(matrix: Matrix): Float32Array {
             return new Float32Array([
                 matrix.m[0], matrix.m[1], matrix.m[2],
@@ -3876,6 +3894,10 @@
             ]);
         }
 
+        /**
+         * Compute the transpose of the passed Matrix.  
+         * Returns a new Matrix.  
+         */
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
@@ -3902,14 +3924,18 @@
             return result;
         }
 
+        /**
+         * Returns a new Matrix as the reflection  matrix across the passed plane.  
+         */
         public static Reflection(plane: Plane): Matrix {
             var matrix = new Matrix();
-
             Matrix.ReflectionToRef(plane, matrix);
-
             return matrix;
         }
 
+        /**
+         * Sets the passed matrix "result" as the reflection matrix across the passed plane. 
+         */
         public static ReflectionToRef(plane: Plane, result: Matrix): void {
             plane.normalize();
             var x = plane.normal.x;
@@ -3964,6 +3990,9 @@
 
         }
 
+        /**
+         * Sets the passed matrix "result" as a rotation matrix according to the passed quaternion.  
+         */
         public static FromQuaternionToRef(quat:Quaternion, result:Matrix){
 
             var xx = quat.x * quat.x;
@@ -3994,39 +4023,52 @@
             result.m[14] = 0.0;
 
             result.m[15] = 1.0;
-
         }
-
     }
 
     export class Plane {
         public normal: Vector3;
         public d: number;
-
+        /**
+         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         */
         constructor(a: number, b: number, c: number, d: number) {
             this.normal = new Vector3(a, b, c);
             this.d = d;
         }
 
+        /**
+         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].  
+         */
         public asArray(): number[] {
             return [this.normal.x, this.normal.y, this.normal.z, this.d];
         }
 
         // Methods
+        /**
+         * Returns a new plane copied from the current Plane.  
+         */
         public clone(): Plane {
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
         }
-
+        /**
+         * Returns the string "Plane".  
+         */
         public getClassName(): string {
             return "Plane";
         }
-
+        /**
+         * Returns the Plane hash code.  
+         */
         public getHashCode(): number {
             let hash = this.normal.getHashCode();
             hash = (hash * 397) ^ (this.d || 0);
             return hash;
         }
-
+        /**
+         * Normalize the current Plane in place.  
+         * Returns the updated Plane.  
+         */
         public normalize(): Plane {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0.0;
@@ -4034,16 +4076,15 @@
             if (norm !== 0) {
                 magnitude = 1.0 / norm;
             }
-
             this.normal.x *= magnitude;
             this.normal.y *= magnitude;
             this.normal.z *= magnitude;
-
             this.d *= magnitude;
-
             return this;
         }
-
+        /**
+         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.  
+         */
         public transform(transformation: Matrix): Plane {
             var transposedMatrix = Matrix.Transpose(transformation);
             var x = this.normal.x;
@@ -4059,11 +4100,17 @@
             return new Plane(normalX, normalY, normalZ, finalD);
         }
 
-
+        /**
+         * Returns the dot product (float) of the point coordinates and the plane normal.  
+         */
         public dotCoordinate(point): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
+        /**
+         * Updates the current Plane from the plane defined by the three passed points.  
+         * Returns the updated Plane.  
+         */
         public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var x1 = point2.x - point1.x;
             var y1 = point2.y - point1.y;
@@ -4092,72 +4139,91 @@
             return this;
         }
 
+        /**
+         * Boolean : True is the vector "direction"  is the same side than the plane normal.  
+         */
         public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
             var dot = Vector3.Dot(this.normal, direction);
-
             return (dot <= epsilon);
         }
 
+        /** 
+         * Returns the signed distance (float) from the passed point to the Plane.  
+         */
         public signedDistanceTo(point: Vector3): number {
             return Vector3.Dot(point, this.normal) + this.d;
         }
 
         // Statics
+        /**
+         * Returns a new Plane from the passed array.  
+         */
         static FromArray(array: number[]): Plane {
             return new Plane(array[0], array[1], array[2], array[3]);
         }
-
+        /**
+         * Returns a new Plane defined by the three passed points.  
+         */
         static FromPoints(point1, point2, point3): Plane {
-            var result = new Plane(0, 0, 0, 0);
-
+            var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
-
             return result;
         }
-
+        /**
+         * Returns a new Plane the normal vector to this plane at the passed origin point.  
+         * Note : the vector "normal" is updated because normalized.  
+         */
         static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane {
-            var result = new Plane(0, 0, 0, 0);
+            var result = new Plane(0.0, 0.0, 0.0, 0.0);
             normal.normalize();
-
             result.normal = normal;
             result.d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
-
             return result;
         }
 
+        /**
+         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.  
+         */
         static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number {
             var d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
-
             return Vector3.Dot(point, normal) + d;
         }
     }
 
     export class Viewport {
+        /**
+         * Creates a Viewport object located at (x, y) and sized (width, height).  
+         */
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
         public toGlobal(renderWidth: number, renderHeight: number): Viewport {
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
-
+        /**
+         * Returns a new Viewport copied from the current one.  
+         */
         public clone(): Viewport {
             return new Viewport(this.x, this.y, this.width, this.height);
         }
     }
 
     export class Frustum {
+        /**
+         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.  
+         */
         public static GetPlanes(transform: Matrix): Plane[] {
             var frustumPlanes = [];
-
             for (var index = 0; index < 6; index++) {
-                frustumPlanes.push(new Plane(0, 0, 0, 0));
+                frustumPlanes.push(new Plane(0.0, 0.0, 0.0, 0.0));
             }
-
             Frustum.GetPlanesToRef(transform, frustumPlanes);
-
             return frustumPlanes;
         }
 
+        /**
+         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.  
+         */
         public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
             // Near
             frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
@@ -4209,12 +4275,15 @@
     }
 
     export class Axis {
-        public static X: Vector3 = new Vector3(1, 0, 0);
-        public static Y: Vector3 = new Vector3(0, 1, 0);
-        public static Z: Vector3 = new Vector3(0, 0, 1);
+        public static X: Vector3 = new Vector3(1.0, 0.0, 0.0);
+        public static Y: Vector3 = new Vector3(0.0, 1.0, 0.0);
+        public static Z: Vector3 = new Vector3(0.0, 0.0, 1.0);
     };
 
     export class BezierCurve {
+        /**
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.  
+         */
         public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
 
             // Extract X (which is equal to time here)
@@ -4238,7 +4307,6 @@
             return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
                 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
                 Math.pow(refinedT, 3);
-
         }
     }
 
@@ -4250,24 +4318,41 @@
     export class Angle {
         private _radians: number;
 
+        /**
+         * Creates an Angle object of "radians" radians (float).  
+         */
         constructor(radians: number) {
             this._radians = radians;
             if (this._radians < 0.0) this._radians += (2.0 * Math.PI);
         }
 
+        /**
+         * Returns the Angle value in degrees (float).  
+         */
         public degrees = () => this._radians * 180.0 / Math.PI;
+        /**
+         * Returns the Angle value in radians (float).  
+         */
         public radians = () => this._radians;
 
+        /**
+         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.  
+         */
         public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
             var delta = b.subtract(a);
             var theta = Math.atan2(delta.y, delta.x);
             return new Angle(theta);
         }
 
+        /**
+         * Returns a new Angle object from the passed float in radians.  
+         */
         public static FromRadians(radians: number): Angle {
             return new Angle(radians);
         }
-
+        /**
+         * Returns a new Angle object from the passed float in degrees.  
+         */
         public static FromDegrees(degrees: number): Angle {
             return new Angle(degrees * Math.PI / 180.0);
         }
@@ -4280,6 +4365,9 @@
         startAngle: Angle;
         orientation: Orientation;
 
+        /**
+         * Creates an Arc object from the three passed points : start, middle and end.  
+         */
         constructor(public startPoint: Vector2, public midPoint: Vector2, public endPoint: Vector2) {
 
             var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
@@ -4317,10 +4405,17 @@
 
         public closed = false;
 
+        /**
+         * Creates a Path2 object from the starting 2D coordinates x and y.  
+         */
         constructor(x: number, y: number) {
             this._points.push(new Vector2(x, y));
         }
 
+        /**
+         * Adds a new segment until the passed coordinates (x, y) to the current Path2.  
+         * Returns the updated Path2.   
+         */
         public addLineTo(x: number, y: number): Path2 {
             if (closed) {
                 //Tools.Error("cannot add lines to closed paths");
@@ -4333,6 +4428,10 @@
             return this;
         }
 
+        /**
+         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.  
+         * Returns the updated Path2.  
+         */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (closed) {
                 //Tools.Error("cannot add arcs to closed paths");
@@ -4356,12 +4455,17 @@
             }
             return this;
         }
-
+        /**
+         * Closes the Path2.     
+         * Returns the Path2.  
+         */
         public close(): Path2 {
             this.closed = true;
             return this;
         }
-
+        /**
+         * Returns the Path2 total length (float).  
+         */
         public length(): number {
             var result = this._length;
 
@@ -4370,14 +4474,19 @@
                 var firstPoint = this._points[0];
                 result += (firstPoint.subtract(lastPoint).length());
             }
-
             return result;
         }
 
+        /**
+         * Returns the Path2 internal array of points.  
+         */
         public getPoints(): Vector2[] {
             return this._points;
         }
 
+        /**
+         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.  
+         */
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
                 //Tools.Error("normalized length position should be between 0 and 1.");
@@ -4411,6 +4520,9 @@
             return Vector2.Zero();
         }
 
+        /**
+         * Returns a new Path2 starting at the coordinates (x, y).  
+         */
         public static StartingAt(x: number, y: number): Path2 {
             return new Path2(x, y);
         }
