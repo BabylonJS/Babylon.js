@@ -898,8 +898,8 @@
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    this._pickedDownMesh = pickResult.pickedMesh;
                     if (pickResult.pickedMesh.actionManager) {
-                        this._pickedDownMesh = pickResult.pickedMesh;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
