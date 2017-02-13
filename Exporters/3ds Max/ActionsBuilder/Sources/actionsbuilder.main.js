@@ -5,6 +5,12 @@ Global functions called by the plugins (3ds Max, etc.)
 var list = null;
 var viewer = null;
 var actionsBuilderJsonInput = document.getElementById("ActionsBuilderJSON");
+this.getList = function () {
+    return list;
+};
+this.getViewer = function () {
+    return viewer;
+};
 this.createJSON = function () {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
@@ -37,7 +43,7 @@ this.resetList = function () {
 this.setMeshesNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.MESHES.push(args[i]);
@@ -46,7 +52,7 @@ this.setMeshesNames = function () {
 this.setLightsNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.LIGHTS.push(args[i]);
@@ -55,7 +61,7 @@ this.setLightsNames = function () {
 this.setCamerasNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.CAMERAS.push(args[i]);
@@ -64,7 +70,7 @@ this.setCamerasNames = function () {
 this.setSoundsNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         var sound = args[i];

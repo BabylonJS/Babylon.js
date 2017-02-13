@@ -17,7 +17,7 @@ var ActionsBuilder;
             return this.rect.isPointInside(x, y) || this.text.isPointInside(x, y);
         };
         return Node;
-    })();
+    }());
     ActionsBuilder.Node = Node;
     var Action = (function () {
         /**
@@ -81,7 +81,7 @@ var ActionsBuilder;
             this.children = new Array();
         };
         return Action;
-    })();
+    }());
     ActionsBuilder.Action = Action;
 })(ActionsBuilder || (ActionsBuilder = {}));
 var ActionsBuilder;
@@ -199,7 +199,7 @@ var ActionsBuilder;
             element.addEventListener("contextmenu", onRightClick);
         };
         return ContextMenu;
-    })();
+    }());
     ActionsBuilder.ContextMenu = ContextMenu;
 })(ActionsBuilder || (ActionsBuilder = {}));
 var ActionsBuilder;
@@ -213,7 +213,7 @@ var ActionsBuilder;
             this.element = null;
         }
         return ListElement;
-    })();
+    }());
     ActionsBuilder.ListElement = ListElement;
     var List = (function () {
         /**
@@ -454,7 +454,7 @@ var ActionsBuilder;
             element.text.drag(onMove, onStart, onEnd);
         };
         return List;
-    })();
+    }());
     ActionsBuilder.List = List;
 })(ActionsBuilder || (ActionsBuilder = {}));
 /*
@@ -464,6 +464,12 @@ Global functions called by the plugins (3ds Max, etc.)
 var list = null;
 var viewer = null;
 var actionsBuilderJsonInput = document.getElementById("ActionsBuilderJSON");
+this.getList = function () {
+    return list;
+};
+this.getViewer = function () {
+    return viewer;
+};
 this.createJSON = function () {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
@@ -496,7 +502,7 @@ this.resetList = function () {
 this.setMeshesNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.MESHES.push(args[i]);
@@ -505,7 +511,7 @@ this.setMeshesNames = function () {
 this.setLightsNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.LIGHTS.push(args[i]);
@@ -514,7 +520,7 @@ this.setLightsNames = function () {
 this.setCamerasNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         ActionsBuilder.SceneElements.CAMERAS.push(args[i]);
@@ -523,7 +529,7 @@ this.setCamerasNames = function () {
 this.setSoundsNames = function () {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
+        args[_i] = arguments[_i];
     }
     for (var i = 0; i < args.length; i++) {
         var sound = args[i];
@@ -627,20 +633,30 @@ var ActionsBuilder;
                 parameterName.className = "ParametersElementTitleClass";
                 this.parametersContainer.appendChild(parameterName);
                 if (properties[i].text === "parameter" || properties[i].text === "target" || properties[i].text === "parent") {
-                    // Create target select element
-                    targetParameterSelect = document.createElement("select");
-                    targetParameterSelect.className = "ParametersElementSelectClass";
-                    this.parametersContainer.appendChild(targetParameterSelect);
-                    // Create target name select element
-                    targetParameterNameSelect = document.createElement("select");
-                    targetParameterNameSelect.className = "ParametersElementSelectClass";
-                    this.parametersContainer.appendChild(targetParameterNameSelect);
-                    // Events and configure
-                    (this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
-                    targetParameterSelect.value = propertiesResults[i].targetType;
-                    targetParameterNameSelect.value = propertiesResults[i].value;
-                    targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i);
-                    targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
+                    if (properties[i].targetType === null) {
+                        var parameterInput = document.createElement("input");
+                        parameterInput.value = propertiesResults[i].value;
+                        parameterInput.className = "ParametersElementInputClass";
+                        this.parametersContainer.appendChild(parameterInput);
+                        // Configure event
+                        parameterInput.onkeyup = this._propertyInputChanged(parameterInput, i);
+                    }
+                    else {
+                        // Create target select element
+                        targetParameterSelect = document.createElement("select");
+                        targetParameterSelect.className = "ParametersElementSelectClass";
+                        this.parametersContainer.appendChild(targetParameterSelect);
+                        // Create target name select element
+                        targetParameterNameSelect = document.createElement("select");
+                        targetParameterNameSelect.className = "ParametersElementSelectClass";
+                        this.parametersContainer.appendChild(targetParameterNameSelect);
+                        // Events and configure
+                        (this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
+                        targetParameterSelect.value = propertiesResults[i].targetType;
+                        targetParameterNameSelect.value = propertiesResults[i].value;
+                        targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i);
+                        targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
+                    }
                 }
                 else if (properties[i].text === "propertyPath") {
                     propertyPathIndice = i;
@@ -670,7 +686,7 @@ var ActionsBuilder;
                         }
                         this._fillAdditionalPropertyPath(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect);
                         propertyPathOptionalSelect.value = property[property.length - 1];
-                        if (propertyPathOptionalSelect.options.length === 0 || propertyPathOptionalSelect.options[0].text === "") {
+                        if (propertyPathOptionalSelect.options.length === 0 || propertyPathOptionalSelect.options[0].textContent === "") {
                             this._viewer.utils.setElementVisible(propertyPathOptionalSelect, false);
                         }
                     }
@@ -757,7 +773,7 @@ var ActionsBuilder;
                     for (var i = 0; i < values.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = values[i];
-                        booleanSelect.options.add(option);
+                        booleanSelect.add(option);
                     }
                 }
                 else {
@@ -777,7 +793,7 @@ var ActionsBuilder;
                     for (var i = 0; i < ActionsBuilder.SceneElements.SOUNDS.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = ActionsBuilder.SceneElements.SOUNDS[i];
-                        soundSelect.options.add(option);
+                        soundSelect.add(option);
                     }
                     _this._sortList(soundSelect);
                 }
@@ -798,7 +814,8 @@ var ActionsBuilder;
                     for (var i = 0; i < ActionsBuilder.SceneElements.OPERATORS.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = ActionsBuilder.SceneElements.OPERATORS[i];
-                        conditionOperatorSelect.options.add(option);
+                        //conditionOperatorSelect.options.add(option);
+                        conditionOperatorSelect.add(option);
                     }
                 }
                 else {
@@ -834,7 +851,7 @@ var ActionsBuilder;
                         for (var i = 0; i < properties.length; i++) {
                             var option = document.createElement("option");
                             option.value = option.text = properties[i];
-                            propertyPathSelect.options.add(option);
+                            propertyPathSelect.add(option);
                         }
                     }
                 }
@@ -892,11 +909,11 @@ var ActionsBuilder;
                 if (index !== -1) {
                     var option = document.createElement("option");
                     option.value = option.text = thing;
-                    additionalPropertyPathSelect.options.add(option);
+                    additionalPropertyPathSelect.add(option);
                     emptyOption.text += thing + ", ";
                 }
             }
-            if (additionalPropertyPathSelect.options.length === 0 || additionalPropertyPathSelect.options[0].text === "") {
+            if (additionalPropertyPathSelect.options.length === 0 || additionalPropertyPathSelect.options[0].textContent === "") {
                 this._viewer.utils.setElementVisible(additionalPropertyPathSelect, false);
             }
             else {
@@ -945,7 +962,7 @@ var ActionsBuilder;
                         var option = document.createElement("option");
                         option.text = options[i].text;
                         option.value = options[i].targetType;
-                        targetParameterSelect.options.add(option);
+                        targetParameterSelect.add(option);
                     }
                     targetParameterSelect.value = _this._action.propertiesResults[indice].targetType;
                 }
@@ -969,7 +986,7 @@ var ActionsBuilder;
                     for (var i = 0; i < targetParameterProperties.length; i++) {
                         var option = document.createElement("option");
                         option.text = option.value = targetParameterProperties[i];
-                        targetParameterNameSelect.options.add(option);
+                        targetParameterNameSelect.add(option);
                     }
                 }
                 targetParameterNameSelect.value = _this._action.propertiesResults[indice].value;
@@ -1101,11 +1118,11 @@ var ActionsBuilder;
                 return a.innerHTML.localeCompare(b.innerHTML);
             });
             for (var i = 0; i < options.length; i++) {
-                element.options.add(options[i]);
+                element.add(options[i]);
             }
         };
         return Parameters;
-    })();
+    }());
     ActionsBuilder.Parameters = Parameters;
 })(ActionsBuilder || (ActionsBuilder = {}));
 var ActionsBuilder;
@@ -1190,7 +1207,7 @@ var ActionsBuilder;
             this.saveActionGraphElement.style.display = draw ? "block" : "none";
         };
         return Toolbar;
-    })();
+    }());
     ActionsBuilder.Toolbar = Toolbar;
 })(ActionsBuilder || (ActionsBuilder = {}));
 var ActionsBuilder;
@@ -1236,13 +1253,13 @@ var ActionsBuilder;
             enumerable: true,
             configurable: true
         });
-        Type._TRIGGER = 0;
-        Type._ACTION = 1;
-        Type._FLOW_CONTROL = 2;
-        Type._OBJECT = 3;
-        Type._SCENE = 4;
         return Type;
-    })();
+    }());
+    Type._TRIGGER = 0;
+    Type._ACTION = 1;
+    Type._FLOW_CONTROL = 2;
+    Type._OBJECT = 3;
+    Type._SCENE = 4;
     ActionsBuilder.Type = Type;
     /*
     * Defines the BABYLON.JS elements
@@ -1378,38 +1395,38 @@ var ActionsBuilder;
             }
             return false;
         };
-        /*
-        * BabylonJS objects
-        */
-        SceneElements._ENGINE = new BABYLON.Engine(document.getElementById("RenderCanvasID"));
-        SceneElements._SCENE = new BABYLON.Scene(SceneElements.ENGINE);
-        SceneElements._MESH = new BABYLON.Mesh("mesh", SceneElements._SCENE);
-        SceneElements._LIGHT = new BABYLON.Light("light", SceneElements._SCENE);
-        SceneElements._CAMERA = new BABYLON.Camera("camera", BABYLON.Vector3.Zero(), SceneElements._SCENE);
-        /*
-        * Objects names
-        */
-        SceneElements._MESHES = new Array();
-        SceneElements._LIGHTS = new Array();
-        SceneElements._CAMERAS = new Array();
-        SceneElements._SOUNDS = new Array();
-        /*
-        * Properties
-        */
-        SceneElements._MESH_PROPERTIES = new Array();
-        SceneElements._LIGHT_PROPERTIES = new Array();
-        SceneElements._CAMERA_PROPERTIES = new Array();
-        SceneElements._SCENE_PROPERTIES = new Array();
-        /*
-        * Types
-        */
-        SceneElements._TYPES = new Array();
-        /*
-        * Operators
-        */
-        SceneElements._OPERATORS = new Array();
         return SceneElements;
-    })();
+    }());
+    /*
+    * BabylonJS objects
+    */
+    SceneElements._ENGINE = new BABYLON.Engine(document.getElementById("RenderCanvasID"));
+    SceneElements._SCENE = new BABYLON.Scene(SceneElements.ENGINE);
+    SceneElements._MESH = new BABYLON.Mesh("mesh", SceneElements._SCENE);
+    SceneElements._LIGHT = new BABYLON.Light("light", SceneElements._SCENE);
+    SceneElements._CAMERA = new BABYLON.Camera("camera", BABYLON.Vector3.Zero(), SceneElements._SCENE);
+    /*
+    * Objects names
+    */
+    SceneElements._MESHES = new Array();
+    SceneElements._LIGHTS = new Array();
+    SceneElements._CAMERAS = new Array();
+    SceneElements._SOUNDS = new Array();
+    /*
+    * Properties
+    */
+    SceneElements._MESH_PROPERTIES = new Array();
+    SceneElements._LIGHT_PROPERTIES = new Array();
+    SceneElements._CAMERA_PROPERTIES = new Array();
+    SceneElements._SCENE_PROPERTIES = new Array();
+    /*
+    * Types
+    */
+    SceneElements._TYPES = new Array();
+    /*
+    * Operators
+    */
+    SceneElements._OPERATORS = new Array();
     ActionsBuilder.SceneElements = SceneElements;
     // Functions
     var specialTypes = [
@@ -1508,11 +1525,11 @@ var ActionsBuilder;
             }
             return null;
         };
-        Elements._TRIGGERS = new Array();
-        Elements._ACTIONS = new Array();
-        Elements._FLOW_CONTROLS = new Array();
         return Elements;
-    })();
+    }());
+    Elements._TRIGGERS = new Array();
+    Elements._ACTIONS = new Array();
+    Elements._FLOW_CONTROLS = new Array();
     ActionsBuilder.Elements = Elements;
     // Configure triggers
     Elements.TRIGGERS.push({ name: "OnPickTrigger", text: "pick", properties: [], description: "When the user picks the edited mesh" });
@@ -1524,8 +1541,8 @@ var ActionsBuilder;
     Elements.TRIGGERS.push({ name: "OnEveryFrameTrigger", text: "every frame", properties: [], description: "This trigger is called each frame (only on scene)" });
     Elements.TRIGGERS.push({ name: "OnIntersectionEnterTrigger", text: "intersection enter", properties: [{ targetType: "MeshProperties", text: "parameter", value: "Object name?" }], description: "When the edited mesh intersects the another mesh predefined in the options" });
     Elements.TRIGGERS.push({ name: "OnIntersectionExitTrigger", text: "intersection exit", properties: [{ targetType: "MeshProperties", text: "parameter", value: "Object name?" }], description: "When the edited mesh exits intersection with the another mesh predefined in the options" });
-    Elements.TRIGGERS.push({ name: "OnKeyDownTrigger", text: "key down", properties: [{ targetType: null, text: "parameter:", value: "a" }], description: "When the user pressed a key (enter the key character, example: \"r\")" });
-    Elements.TRIGGERS.push({ name: "OnKeyUpTrigger", text: "key up", properties: [{ targetType: null, text: "parameter:", value: "a" }], description: "When the user unpressed a key (enter the key character, example: \"p\")" });
+    Elements.TRIGGERS.push({ name: "OnKeyDownTrigger", text: "key down", properties: [{ targetType: null, text: "parameter", value: "a" }], description: "When the user pressed a key (enter the key character, example: \"r\")" });
+    Elements.TRIGGERS.push({ name: "OnKeyUpTrigger", text: "key up", properties: [{ targetType: null, text: "parameter", value: "a" }], description: "When the user unpressed a key (enter the key character, example: \"p\")" });
     // Configure actions
     Elements.ACTIONS.push({ name: "SwitchBooleanAction", text: "switch boolean", properties: [{ targetType: "MeshProperties", text: "target", value: "" }, { text: "propertyPath", value: "" }], description: "Switches the boolean value of a given parameter of the target object: true to false, or false to true" });
     Elements.ACTIONS.push({ name: "SetStateAction", text: "set state", properties: [{ targetType: "MeshProperties", text: "target", value: "" }, { text: "value", value: "" }], description: "Sets a new state value for the target object (example: \"off\" or \"on\")" });
@@ -1974,7 +1991,7 @@ var ActionsBuilder;
             element.style.display = visible ? "block" : "none";
         };
         return Utils;
-    })();
+    }());
     ActionsBuilder.Utils = Utils;
 })(ActionsBuilder || (ActionsBuilder = {}));
 var ActionsBuilder;
@@ -2114,19 +2131,11 @@ var ActionsBuilder;
                 return Raphael.rgb(96, 122, 14);
             }
             switch (type) {
-                case ActionsBuilder.Type.TRIGGER:
-                    return Raphael.rgb(133, 154, 185);
-                    break;
-                case ActionsBuilder.Type.ACTION:
-                    return Raphael.rgb(182, 185, 132);
-                    break;
-                case ActionsBuilder.Type.FLOW_CONTROL:
-                    return Raphael.rgb(185, 132, 140);
-                    break;
+                case ActionsBuilder.Type.TRIGGER: return Raphael.rgb(133, 154, 185);
+                case ActionsBuilder.Type.ACTION: return Raphael.rgb(182, 185, 132);
+                case ActionsBuilder.Type.FLOW_CONTROL: return Raphael.rgb(185, 132, 140);
                 case ActionsBuilder.Type.OBJECT:
-                case ActionsBuilder.Type.SCENE:
-                    return Raphael.rgb(255, 255, 255);
-                    break;
+                case ActionsBuilder.Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
             return null;
@@ -2141,19 +2150,11 @@ var ActionsBuilder;
                 return Raphael.rgb(96, 122, 14);
             }
             switch (type) {
-                case ActionsBuilder.Type.TRIGGER:
-                    return Raphael.rgb(41, 129, 255);
-                    break;
-                case ActionsBuilder.Type.ACTION:
-                    return Raphael.rgb(255, 220, 42);
-                    break;
-                case ActionsBuilder.Type.FLOW_CONTROL:
-                    return Raphael.rgb(255, 41, 53);
-                    break;
+                case ActionsBuilder.Type.TRIGGER: return Raphael.rgb(41, 129, 255);
+                case ActionsBuilder.Type.ACTION: return Raphael.rgb(255, 220, 42);
+                case ActionsBuilder.Type.FLOW_CONTROL: return Raphael.rgb(255, 41, 53);
                 case ActionsBuilder.Type.OBJECT:
-                case ActionsBuilder.Type.SCENE:
-                    return Raphael.rgb(255, 255, 255);
-                    break;
+                case ActionsBuilder.Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
             return null;
@@ -2614,13 +2615,13 @@ var ActionsBuilder;
             node.rect.drag(onMove, onStart, onEnd);
             node.text.drag(onMove, onStart, onEnd);
         };
-        // Statics
-        Viewer._NODE_WIDTH = 150;
-        Viewer._NODE_HEIGHT = 25;
-        Viewer._NODE_MINIMIZE_WIDTH = 50;
-        Viewer._VERTICAL_OFFSET = 70;
-        Viewer._DEFAULT_INFO_MESSAGE = "Select or add a node to customize actions";
         return Viewer;
-    })();
+    }());
+    // Statics
+    Viewer._NODE_WIDTH = 150;
+    Viewer._NODE_HEIGHT = 25;
+    Viewer._NODE_MINIMIZE_WIDTH = 50;
+    Viewer._VERTICAL_OFFSET = 70;
+    Viewer._DEFAULT_INFO_MESSAGE = "Select or add a node to customize actions";
     ActionsBuilder.Viewer = Viewer;
 })(ActionsBuilder || (ActionsBuilder = {}));

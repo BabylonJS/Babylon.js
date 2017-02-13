@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{293A754C-3D80-42FB-99D8-7C9386CD297E}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>2.1</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <UseGlobalApplicationHostFile />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="gulpfile.js" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300Light.svg" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300LightItalic.svg" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-500Medium.svg" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-600SemiBold.svg" />
+    <Content Include="Sources\index-debug.html" />
+    <Content Include="Sources\index.css" />
+    <Content Include="Sources\fonts.css" />
+    <Content Include="Sources\index.html" />
+    <Content Include="Sources\raphael.js" />
+    <Content Include="web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="..\..\..\dist\preview release\babylon.d.ts">
+      <Link>babylon.d.ts</Link>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="actionsbuilder.actionNode.ts" />
+    <TypeScriptCompile Include="actionsbuilder.contextMenu.ts" />
+    <TypeScriptCompile Include="actionsbuilder.list.ts" />
+    <TypeScriptCompile Include="actionsbuilder.main.ts" />
+    <TypeScriptCompile Include="actionsbuilder.parameters.ts" />
+    <TypeScriptCompile Include="actionsbuilder.toolbar.ts" />
+    <TypeScriptCompile Include="actionsbuilder.ts" />
+    <TypeScriptCompile Include="actionsbuilder.utils.ts" />
+    <TypeScriptCompile Include="actionsbuilder.viewer.ts" />
+    <TypeScriptCompile Include="raphaeljs.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300Light.eot" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300Light.otf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300Light.ttf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300Light.woff" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300LightItalic.eot" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300LightItalic.otf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300LightItalic.ttf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-300LightItalic.woff" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-500Medium.eot" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-500Medium.otf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-500Medium.ttf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-500Medium.woff" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-600SemiBold.eot" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-600SemiBold.otf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-600SemiBold.ttf" />
+    <Content Include="Sources\fonts\SinkinSans\SinkinSans-600SemiBold.woff" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>ActionsBuilder</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>51472</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:51472/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <OutputPath>..\..\..\..\..\..\..\Program Files\Autodesk\3ds Max 2013\bin\assemblies\BabylonActionsBuilder\</OutputPath>
+    <TypeScriptOutDir>Sources\</TypeScriptOutDir>
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptSourceRoot>$(SolutionDir)ActionsBuilder\</TypeScriptSourceRoot>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(SolutionDir)..\..\dist\preview release\babylon.max.js" "$(SolutionDir)ActionsBuilder\Sources\babylon.max.js"
+if $(ConfigurationName) == Release gulp</PostBuildEvent>
+  </PropertyGroup>
+</Project>

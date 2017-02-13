@@ -41,13 +41,13 @@ var ActionsBuilder;
             enumerable: true,
             configurable: true
         });
-        Type._TRIGGER = 0;
-        Type._ACTION = 1;
-        Type._FLOW_CONTROL = 2;
-        Type._OBJECT = 3;
-        Type._SCENE = 4;
         return Type;
-    })();
+    }());
+    Type._TRIGGER = 0;
+    Type._ACTION = 1;
+    Type._FLOW_CONTROL = 2;
+    Type._OBJECT = 3;
+    Type._SCENE = 4;
     ActionsBuilder.Type = Type;
     /*
     * Defines the BABYLON.JS elements
@@ -183,38 +183,38 @@ var ActionsBuilder;
             }
             return false;
         };
-        /*
-        * BabylonJS objects
-        */
-        SceneElements._ENGINE = new BABYLON.Engine(document.getElementById("RenderCanvasID"));
-        SceneElements._SCENE = new BABYLON.Scene(SceneElements.ENGINE);
-        SceneElements._MESH = new BABYLON.Mesh("mesh", SceneElements._SCENE);
-        SceneElements._LIGHT = new BABYLON.Light("light", SceneElements._SCENE);
-        SceneElements._CAMERA = new BABYLON.Camera("camera", BABYLON.Vector3.Zero(), SceneElements._SCENE);
-        /*
-        * Objects names
-        */
-        SceneElements._MESHES = new Array();
-        SceneElements._LIGHTS = new Array();
-        SceneElements._CAMERAS = new Array();
-        SceneElements._SOUNDS = new Array();
-        /*
-        * Properties
-        */
-        SceneElements._MESH_PROPERTIES = new Array();
-        SceneElements._LIGHT_PROPERTIES = new Array();
-        SceneElements._CAMERA_PROPERTIES = new Array();
-        SceneElements._SCENE_PROPERTIES = new Array();
-        /*
-        * Types
-        */
-        SceneElements._TYPES = new Array();
-        /*
-        * Operators
-        */
-        SceneElements._OPERATORS = new Array();
         return SceneElements;
-    })();
+    }());
+    /*
+    * BabylonJS objects
+    */
+    SceneElements._ENGINE = new BABYLON.Engine(document.getElementById("RenderCanvasID"));
+    SceneElements._SCENE = new BABYLON.Scene(SceneElements.ENGINE);
+    SceneElements._MESH = new BABYLON.Mesh("mesh", SceneElements._SCENE);
+    SceneElements._LIGHT = new BABYLON.Light("light", SceneElements._SCENE);
+    SceneElements._CAMERA = new BABYLON.Camera("camera", BABYLON.Vector3.Zero(), SceneElements._SCENE);
+    /*
+    * Objects names
+    */
+    SceneElements._MESHES = new Array();
+    SceneElements._LIGHTS = new Array();
+    SceneElements._CAMERAS = new Array();
+    SceneElements._SOUNDS = new Array();
+    /*
+    * Properties
+    */
+    SceneElements._MESH_PROPERTIES = new Array();
+    SceneElements._LIGHT_PROPERTIES = new Array();
+    SceneElements._CAMERA_PROPERTIES = new Array();
+    SceneElements._SCENE_PROPERTIES = new Array();
+    /*
+    * Types
+    */
+    SceneElements._TYPES = new Array();
+    /*
+    * Operators
+    */
+    SceneElements._OPERATORS = new Array();
     ActionsBuilder.SceneElements = SceneElements;
     // Functions
     var specialTypes = [
@@ -313,11 +313,11 @@ var ActionsBuilder;
             }
             return null;
         };
-        Elements._TRIGGERS = new Array();
-        Elements._ACTIONS = new Array();
-        Elements._FLOW_CONTROLS = new Array();
         return Elements;
-    })();
+    }());
+    Elements._TRIGGERS = new Array();
+    Elements._ACTIONS = new Array();
+    Elements._FLOW_CONTROLS = new Array();
     ActionsBuilder.Elements = Elements;
     // Configure triggers
     Elements.TRIGGERS.push({ name: "OnPickTrigger", text: "pick", properties: [], description: "When the user picks the edited mesh" });
@@ -329,8 +329,8 @@ var ActionsBuilder;
     Elements.TRIGGERS.push({ name: "OnEveryFrameTrigger", text: "every frame", properties: [], description: "This trigger is called each frame (only on scene)" });
     Elements.TRIGGERS.push({ name: "OnIntersectionEnterTrigger", text: "intersection enter", properties: [{ targetType: "MeshProperties", text: "parameter", value: "Object name?" }], description: "When the edited mesh intersects the another mesh predefined in the options" });
     Elements.TRIGGERS.push({ name: "OnIntersectionExitTrigger", text: "intersection exit", properties: [{ targetType: "MeshProperties", text: "parameter", value: "Object name?" }], description: "When the edited mesh exits intersection with the another mesh predefined in the options" });
-    Elements.TRIGGERS.push({ name: "OnKeyDownTrigger", text: "key down", properties: [{ targetType: null, text: "parameter:", value: "a" }], description: "When the user pressed a key (enter the key character, example: \"r\")" });
-    Elements.TRIGGERS.push({ name: "OnKeyUpTrigger", text: "key up", properties: [{ targetType: null, text: "parameter:", value: "a" }], description: "When the user unpressed a key (enter the key character, example: \"p\")" });
+    Elements.TRIGGERS.push({ name: "OnKeyDownTrigger", text: "key down", properties: [{ targetType: null, text: "parameter", value: "a" }], description: "When the user pressed a key (enter the key character, example: \"r\")" });
+    Elements.TRIGGERS.push({ name: "OnKeyUpTrigger", text: "key up", properties: [{ targetType: null, text: "parameter", value: "a" }], description: "When the user unpressed a key (enter the key character, example: \"p\")" });
     // Configure actions
     Elements.ACTIONS.push({ name: "SwitchBooleanAction", text: "switch boolean", properties: [{ targetType: "MeshProperties", text: "target", value: "" }, { text: "propertyPath", value: "" }], description: "Switches the boolean value of a given parameter of the target object: true to false, or false to true" });
     Elements.ACTIONS.push({ name: "SetStateAction", text: "set state", properties: [{ targetType: "MeshProperties", text: "target", value: "" }, { text: "value", value: "" }], description: "Sets a new state value for the target object (example: \"off\" or \"on\")" });
