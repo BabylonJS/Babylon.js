@@ -1386,13 +1386,13 @@
         /**
          * Creates the VertexData of the Ground designed from a heightmap.  
          */
-        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
-
+            
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
                 for (col = 0; col <= options.subdivisions; col++) {
@@ -1407,7 +1407,7 @@
                     var g = options.buffer[pos + 1] / 255.0;
                     var b = options.buffer[pos + 2] / 255.0;
 
-                    var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+                    var gradient = r * options.colorFilter.r + g * options.colorFilter.g + b * options.colorFilter.b;
 
                     position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
 
