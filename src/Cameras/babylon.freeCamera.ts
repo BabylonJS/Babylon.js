@@ -104,14 +104,14 @@
         }
 
         // Collisions
-        private _collisionMask = -1;
+        private _collisionMask = 0;
         
         public get collisionMask(): number {
             return this._collisionMask;
         }
         
         public set collisionMask(mask: number) {
-            this._collisionMask = !isNaN(mask) ? mask : -1;
+            this._collisionMask = !isNaN(mask) ? mask : 0;
         }
 	 
         public _collideWithWorld(velocity: Vector3): void {
@@ -125,7 +125,7 @@
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-	        this._collider.collisionMask = this._collisionMask;
+	    this._collider.collisionMask = this._collisionMask;
 		
             //no need for clone, as long as gravity is not on.
             var actualVelocity = velocity;
