@@ -38,6 +38,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool autoAnimateLoop { get; set; }
 
+        [DataMember]
+        public string parentId { get; set; }
+
         public BabylonAbstractMesh()
         {
             position = new[] { 0f, 0f, 0f };

@@ -329,6 +329,7 @@ module BABYLON {
     * Runtime
     */
     export interface IGLTFRuntime {
+        extensions: Object;
         accessors: Object;
         buffers: Object;
         bufferViews: Object;

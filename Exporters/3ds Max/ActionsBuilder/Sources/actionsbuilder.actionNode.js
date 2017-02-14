@@ -17,7 +17,7 @@ var ActionsBuilder;
             return this.rect.isPointInside(x, y) || this.text.isPointInside(x, y);
         };
         return Node;
-    })();
+    }());
     ActionsBuilder.Node = Node;
     var Action = (function () {
         /**
@@ -81,7 +81,7 @@ var ActionsBuilder;
             this.children = new Array();
         };
         return Action;
-    })();
+    }());
     ActionsBuilder.Action = Action;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.actionNode.js.map

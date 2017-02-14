@@ -88,12 +88,16 @@
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
+        /**
+         * Creates a Light object in the scene.  
+         */
         constructor(name: string, scene: Scene) {
             super(name, scene);
-
             scene.addLight(this);
         }
-
+        /**
+         * Returns the string "Light".  
+         */
         public getClassName(): string {
             return "Light";
         }        
@@ -113,11 +117,16 @@
             }
             return ret;
         } 
-        
+        /**
+         * Returns the Light associated shadow generator.  
+         */
         public getShadowGenerator(): IShadowGenerator {
             return this._shadowGenerator;
         }
 
+        /**
+         * Returns a Vector3, the absolute light position in the World.  
+         */
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
@@ -129,6 +138,9 @@
             return Matrix.Identity();
         }
 
+        /**
+         * Boolean : True if the light will affect the passed mesh.  
+         */
         public canAffectMesh(mesh: AbstractMesh): boolean {
             if (!mesh) {
                 return true;
@@ -153,6 +165,9 @@
             return true;
         }
 
+        /**
+         * Returns the light World matrix.  
+         */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
 
@@ -173,6 +188,9 @@
             return worldMatrix;
         }
 
+        /**
+         * Disposes the light.  
+         */
         public dispose(): void {
             if (this._shadowGenerator) {
                 this._shadowGenerator.dispose();
@@ -181,21 +199,28 @@
 
             // Animations
             this.getScene().stopAnimation(this);
-
             // Remove from scene
             this.getScene().removeLight(this);
-
             super.dispose();
         }
 
+        /**
+         * Returns the light type ID (integer).  
+         */
         public getTypeID(): number {
             return 0;
         }
 
+        /**
+         * Returns a new Light object, named "name", from the current one.  
+         */
         public clone(name: string): Light {
             return SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
         }
-
+        /**
+         * Serializes the current light into a Serialization object.  
+         * Returns the serialized object.  
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
 
@@ -229,6 +254,10 @@
             return serializationObject;
         }
 
+        /**
+         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.  
+         * This new light is named "name" and added to the passed scene.  
+         */
         static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light {
             switch (type) {
                 case 0:
@@ -242,6 +271,9 @@
             }
         }
 
+        /**
+         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.  
+         */
         public static Parse(parsedLight: any, scene: Scene): Light {            
             var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
 

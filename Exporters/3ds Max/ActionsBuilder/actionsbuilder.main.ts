@@ -9,6 +9,15 @@ var viewer: ActionsBuilder.Viewer = null;
 
 var actionsBuilderJsonInput: HTMLInputElement = <HTMLInputElement>document.getElementById("ActionsBuilderJSON");
 
+this.getList = () => {
+    return list;
+};
+
+this.getViewer = () => {
+    return viewer;
+};
+
+
 this.createJSON = () => {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
