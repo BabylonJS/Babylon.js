@@ -43,7 +43,7 @@ global proc babylonReskinTool() {
     string $window = `window -title "Reskin Geometry Tool"`;
     columnLayout -adjustableColumn true;
     textFieldGrp -label "New Skin Name" -text "" myReskinName;
-    intSliderGrp -label "Max Influencers" -field true -minValue 1 -maxValue 20 -fieldMinValue 1 -fieldMaxValue 20 -value 5 myReskinInfluencers;
+    intSliderGrp -label "Max Influencers" -field true -minValue 1 -maxValue 8 -fieldMinValue 1 -fieldMaxValue 8 -value 4 myReskinInfluencers;
     button -label "Reskin Selected Meshes" -command "reskinSelectedMeshes()" myReskinButton; 
     showWindow $window;
 }
