@@ -679,6 +679,7 @@
          * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.  
          * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.     
          * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.   
+         * The parameter `colorFilter` (optional Color3, default (0.3, 0.59, 0.11) ) is the filter to apply to the image pixel colors to compute the height.  
          * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
          * This function is passed the newly built mesh : 
          * ```javascript
@@ -687,12 +688,13 @@
          * ```
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
             var width = options.width || 10.0;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1|0;
             var minHeight = options.minHeight || 0.0;
             var maxHeight = options.maxHeight || 10.0;
+            var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
 
@@ -723,10 +725,10 @@
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap({
-                    width, height,
-                    subdivisions,
-                    minHeight, maxHeight,
-                    buffer, bufferWidth, bufferHeight
+                    width: width, height: height,
+                    subdivisions: subdivisions,
+                    minHeight: minHeight, maxHeight: maxHeight, colorFilter: filter,
+                    buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight
                 });
 
                 vertexData.applyToMesh(ground, updatable);
