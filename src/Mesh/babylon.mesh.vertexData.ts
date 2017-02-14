@@ -1392,6 +1392,7 @@
             var normals = [];
             var uvs = [];
             var row, col;
+            var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
             
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
@@ -1407,7 +1408,7 @@
                     var g = options.buffer[pos + 1] / 255.0;
                     var b = options.buffer[pos + 2] / 255.0;
 
-                    var gradient = r * options.colorFilter.r + g * options.colorFilter.g + b * options.colorFilter.b;
+                    var gradient = r * filter.r + g * filter.g + b * filter.b;
 
                     position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
 
