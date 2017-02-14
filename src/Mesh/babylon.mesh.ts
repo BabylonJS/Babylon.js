@@ -1226,8 +1226,15 @@
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
+                this.instances.forEach(instance =>
+                {
+                    instance._syncSubMeshes();
+                });
+
+
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
+
             }, () => { }, scene.database, getBinaryData);
             return this;
         }
