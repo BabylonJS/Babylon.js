@@ -181,7 +181,7 @@
         }
         
         public set collisionMask(mask: number) {
-            this._collisionMask = !isNaN(mask) ? mask : -1;
+            this._collisionMask = !isNaN(mask) ? mask : 0;
         }
         
         public get collisionGroup(): number {
@@ -189,7 +189,7 @@
         }
         
         public set collisionGroup(mask: number) {
-            this._collisionGroup = !isNaN(mask) ? mask : -1;
+            this._collisionGroup = !isNaN(mask) ? mask : 0;
         }
         
         // Attach to bone
