@@ -393,7 +393,7 @@ module BABYLON {
             // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh &&  ((collisionMask & mesh.collisionGroup) === 0)) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh &&  ((collisionMask & mesh.collisionGroup) !== 0)) {
                     mesh._checkCollision(collider);
                 }
             }
