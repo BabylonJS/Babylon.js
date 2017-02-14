@@ -491,10 +491,6 @@ module BABYLON {
         getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
         newSkeleton.bones = [];
 
-        if (nodesToRoot.length === 0) {
-            newSkeleton.needInitialSkinMatrix = true;
-        }
-
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
             var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
@@ -777,11 +773,12 @@ module BABYLON {
             mat.decompose(scaling, rotation, position);
 
             configureNode(newNode, position, rotation, scaling);
-            newNode.computeWorldMatrix(true);
         }
         else {
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
         }
+
+        newNode.computeWorldMatrix(true);
     };
 
     /**
