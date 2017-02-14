@@ -400,8 +400,7 @@
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
 
-            ray.direction.normalize();
-            
+            result.direction.normalize();            
         }
     }
 }
