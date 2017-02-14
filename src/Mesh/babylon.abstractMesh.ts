@@ -166,8 +166,8 @@
 
         // Collisions
         private _checkCollisions = false;
-        private _collisionMask = -1;
-        private _collisionGroup = -1;
+        private _collisionMask = 0;
+        private _collisionGroup = 0;
         public ellipsoid = new Vector3(0.5, 1, 0.5);
         public ellipsoidOffset = new Vector3(0, 0, 0);
         private _collider = new Collider();
