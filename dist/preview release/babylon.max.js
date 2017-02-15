@@ -3394,11 +3394,17 @@ var BABYLON;
             var ez = -Vector3.Dot(this._zAxis, eye);
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
         };
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
         Matrix.OrthoLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
             return matrix;
         };
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
         Matrix.OrthoLHToRef = function (width, height, znear, zfar, result) {
             var n = znear;
             var f = zfar;
@@ -3408,11 +3414,17 @@ var BABYLON;
             var d = -(f + n) / (f - n);
             BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, 0.0, 0.0, d, 1.0, result);
         };
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
         Matrix.OrthoOffCenterLH = function (left, right, bottom, top, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         };
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
         Matrix.OrthoOffCenterLHToRef = function (left, right, bottom, top, znear, zfar, result) {
             var n = znear;
             var f = zfar;
@@ -3424,15 +3436,24 @@ var BABYLON;
             var i1 = (top + bottom) / (bottom - top);
             BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, i0, i1, d, 1.0, result);
         };
+        /**
+         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
         Matrix.OrthoOffCenterRH = function (left, right, bottom, top, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         };
+        /**
+         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
         Matrix.OrthoOffCenterRHToRef = function (left, right, bottom, top, znear, zfar, result) {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         };
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
         Matrix.PerspectiveLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
             var n = znear;
@@ -3444,11 +3465,17 @@ var BABYLON;
             BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, matrix);
             return matrix;
         };
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
         Matrix.PerspectiveFovLH = function (fov, aspect, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
         Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
             if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
             var n = znear;
@@ -3460,11 +3487,17 @@ var BABYLON;
             var d = -2.0 * f * n / (f - n);
             BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, result);
         };
+        /**
+         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
         Matrix.PerspectiveFovRH = function (fov, aspect, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
+        /**
+         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
         Matrix.PerspectiveFovRHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
             //alternatively this could be expressed as:
             //    m = PerspectiveFovLHToRef
@@ -3480,6 +3513,9 @@ var BABYLON;
             var d = -2 * f * n / (f - n);
             BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, -1.0, 0.0, 0.0, d, 0.0, result);
         };
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
         Matrix.PerspectiveFovWebVRToRef = function (fov, znear, zfar, result, isVerticalFovFixed) {
             if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
             //left handed
@@ -3592,6 +3628,9 @@ var BABYLON;
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
         };
+        /**
+         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.
+         */
         Matrix.FromXYZAxesToRef = function (xaxis, yaxis, zaxis, mat) {
             mat.m[0] = xaxis.x;
             mat.m[1] = xaxis.y;
@@ -13598,6 +13637,7 @@ var BABYLON;
         __extends(Light, _super);
         /**
          * Creates a Light object in the scene.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         function Light(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -13875,17 +13915,36 @@ var BABYLON;
 (function (BABYLON) {
     var PointLight = (function (_super) {
         __extends(PointLight, _super);
+        /**
+         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.
+         * A PointLight emits the light in every direction.
+         * It can cast shadows.
+         * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
+         * ```javascript
+         * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
+         * ```
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         */
         function PointLight(name, position, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.position = position;
             return _this;
         }
+        /**
+         * Returns the string "PointLight"
+         */
         PointLight.prototype.getClassName = function () {
             return "PointLight";
         };
+        /**
+         * Returns a Vector3, the PointLight absolute position in the World.
+         */
         PointLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
+        /**
+         * Computes the PointLight transformed position if parented.  Returns true if ok, false if not parented.
+         */
         PointLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {
@@ -13896,43 +13955,68 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
+         * Returns the PointLight.
+         */
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
-                return;
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0);
+                return this;
             }
             effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
+            return this;
         };
+        /**
+         * Boolean : returns true by default.
+         */
         PointLight.prototype.needCube = function () {
             return true;
         };
+        /**
+         * Boolean : returns false by default.
+         */
         PointLight.prototype.supportsVSM = function () {
             return false;
         };
+        /**
+         * Boolean : returns false by default.
+         */
         PointLight.prototype.needRefreshPerFrame = function () {
             return false;
         };
+        /**
+         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).
+         */
         PointLight.prototype.getShadowDirection = function (faceIndex) {
             switch (faceIndex) {
                 case 0:
-                    return new BABYLON.Vector3(1, 0, 0);
+                    return new BABYLON.Vector3(1.0, 0.0, 0.0);
                 case 1:
-                    return new BABYLON.Vector3(-1, 0, 0);
+                    return new BABYLON.Vector3(-1.0, 0.0, 0.0);
                 case 2:
-                    return new BABYLON.Vector3(0, -1, 0);
+                    return new BABYLON.Vector3(0.0, -1.0, 0.0);
                 case 3:
-                    return new BABYLON.Vector3(0, 1, 0);
+                    return new BABYLON.Vector3(0.0, 1.0, 0.0);
                 case 4:
-                    return new BABYLON.Vector3(0, 0, 1);
+                    return new BABYLON.Vector3(0.0, 0.0, 1.0);
                 case 5:
-                    return new BABYLON.Vector3(0, 0, -1);
+                    return new BABYLON.Vector3(0.0, 0.0, -1.0);
             }
             return BABYLON.Vector3.Zero();
         };
+        /**
+         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
+         * - fov = PI / 2
+         * - aspect ratio : 1.0
+         * - z-near and far equal to the active camera minZ and maxZ.
+         * Returns the PointLight.
+         */
         PointLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            return this;
         };
         PointLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -13941,6 +14025,9 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        /**
+         * Returns the integer 0.
+         */
         PointLight.prototype.getTypeID = function () {
             return 0;
         };
@@ -13964,6 +14051,16 @@ var BABYLON;
 (function (BABYLON) {
     var SpotLight = (function (_super) {
         __extends(SpotLight, _super);
+        /**
+         * Creates a SpotLight object in the scene with the passed parameters :
+         * - `position` (Vector3) is the initial SpotLight position,
+         * - `direction` (Vector3) is the initial SpotLight direction,
+         * - `angle` (float, in radians) is the spot light cone angle,
+         * - `exponent` (float) is the light decay speed with the distance from the emission spot.
+         * A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         */
         function SpotLight(name, position, direction, angle, exponent, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.position = position;
@@ -13972,32 +14069,62 @@ var BABYLON;
             _this.exponent = exponent;
             return _this;
         }
+        /**
+         * Returns the string "SpotLight".
+         */
         SpotLight.prototype.getClassName = function () {
             return "SpotLight";
         };
+        /**
+         * Returns the SpotLight absolute position in the World (Vector3).
+         */
         SpotLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
+        /**
+         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
+         * Returns the SpotLight.
+         */
         SpotLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            return this;
         };
+        /**
+         * Boolean : false by default.
+         */
         SpotLight.prototype.needCube = function () {
             return false;
         };
+        /**
+         * Boolean : true by default.
+         */
         SpotLight.prototype.supportsVSM = function () {
             return true;
         };
+        /**
+         * Boolean : false by default.
+         */
         SpotLight.prototype.needRefreshPerFrame = function () {
             return false;
         };
+        /**
+         * Returns the SpotLight direction (Vector3) for any passed face index.
+         */
         SpotLight.prototype.getShadowDirection = function (faceIndex) {
             return this.direction;
         };
+        /**
+         * Updates the SpotLight direction towards the passed target (Vector3).
+         * Returns the updated direction.
+         */
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         };
+        /**
+         * Computes the SpotLight transformed position if parented.  Returns true if parented, else false.
+         */
         SpotLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {
@@ -14008,6 +14135,10 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
+         * Return the SpotLight.
+         */
         SpotLight.prototype.transferToEffect = function (effect, positionUniformName, directionUniformName) {
             var normalizeDirection;
             if (this.parent && this.parent.getWorldMatrix) {
@@ -14024,6 +14155,7 @@ var BABYLON;
                 normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
             }
             effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
+            return this;
         };
         SpotLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -14032,9 +14164,15 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        /**
+         * Returns the integer 2.
+         */
         SpotLight.prototype.getTypeID = function () {
             return 2;
         };
+        /**
+         * Returns the SpotLight rotation (Vector3).
+         */
         SpotLight.prototype.getRotation = function () {
             this.direction.normalize();
             var xaxis = BABYLON.Vector3.Cross(this.direction, BABYLON.Axis.Y);
@@ -14070,15 +14208,28 @@ var BABYLON;
 (function (BABYLON) {
     var HemisphericLight = (function (_super) {
         __extends(HemisphericLight, _super);
+        /**
+         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+         * The HemisphericLight can't cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         */
         function HemisphericLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
             _this.direction = direction;
             return _this;
         }
+        /**
+         * Returns the string "HemisphericLight".
+         */
         HemisphericLight.prototype.getClassName = function () {
             return "HemisphericLight";
         };
+        /**
+         * Sets the HemisphericLight direction towards the passed target (Vector3).
+         * Returns the updated direction.
+         */
         HemisphericLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(BABYLON.Vector3.Zero()));
             return this.direction;
@@ -14086,10 +14237,15 @@ var BABYLON;
         HemisphericLight.prototype.getShadowGenerator = function () {
             return null;
         };
+        /**
+         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
+         * Returns the HemisphericLight.
+         */
         HemisphericLight.prototype.transferToEffect = function (effect, directionUniformName, groundColorUniformName) {
             var normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
-            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
+            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0);
             effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
+            return this;
         };
         HemisphericLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -14097,6 +14253,9 @@ var BABYLON;
             }
             return this._worldMatrix;
         };
+        /**
+         * Returns the integer 3.
+         */
         HemisphericLight.prototype.getTypeID = function () {
             return 3;
         };
@@ -14123,6 +14282,12 @@ var BABYLON;
 (function (BABYLON) {
     var DirectionalLight = (function (_super) {
         __extends(DirectionalLight, _super);
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shawdows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         */
         function DirectionalLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.shadowOrthoScale = 0.5;
@@ -14132,20 +14297,34 @@ var BABYLON;
             _this._orthoRight = Number.MIN_VALUE;
             _this._orthoTop = Number.MIN_VALUE;
             _this._orthoBottom = Number.MAX_VALUE;
-            _this.position = direction.scale(-1);
+            _this.position = direction.scale(-1.0);
             _this.direction = direction;
             return _this;
         }
+        /**
+         * Returns the string "DirectionalLight".
+         */
         DirectionalLight.prototype.getClassName = function () {
             return "DirectionalLight";
         };
+        /**
+         * Returns the DirectionalLight absolute position in the World.
+         */
         DirectionalLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
+        /**
+         * Sets the DirectionalLight direction toward the passed target (Vector3).
+         * Returns the updated DirectionalLight direction (Vector3).
+         */
         DirectionalLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         };
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight.
+         */
         DirectionalLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
             // Check extends
@@ -14177,23 +14356,39 @@ var BABYLON;
                             this._orthoTop = tempVector3.y;
                     }
                 }
+                return this;
             }
             var xOffset = this._orthoRight - this._orthoLeft;
             var yOffset = this._orthoTop - this._orthoBottom;
             BABYLON.Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale, this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale, -activeCamera.maxZ, activeCamera.maxZ, matrix);
         };
+        /**
+         * Boolean : true by default.
+         */
         DirectionalLight.prototype.supportsVSM = function () {
             return true;
         };
+        /**
+         * Boolean : true by default.
+         */
         DirectionalLight.prototype.needRefreshPerFrame = function () {
             return true;
         };
+        /**
+         * Boolean : false by default.
+         */
         DirectionalLight.prototype.needCube = function () {
             return false;
         };
+        /**
+         * Returns the light direction (Vector3) for any passed face index.
+         */
         DirectionalLight.prototype.getShadowDirection = function (faceIndex) {
             return this.direction;
         };
+        /**
+         * Computes the light transformed position in case the light is parented. Returns true if parented, else false.
+         */
         DirectionalLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {
@@ -14204,6 +14399,10 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * Returns the DirectionalLight.
+         */
         DirectionalLight.prototype.transferToEffect = function (effect, directionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
@@ -14211,9 +14410,10 @@ var BABYLON;
                 }
                 BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
                 effect.setFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
-                return;
+                return this;
             }
             effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            return this;
         };
         DirectionalLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -14222,6 +14422,9 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        /**
+         * Returns the integer 1.
+         */
         DirectionalLight.prototype.getTypeID = function () {
             return 1;
         };
@@ -14247,6 +14450,15 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var ShadowGenerator = (function () {
+        /**
+         * Creates a ShadowGenerator object.
+         * A ShadowGenerator is the required tool to use the shadows.
+         * Each light casting shadows needs to use its own ShadowGenerator.
+         * Required parameters :
+         * -  `mapSize` (integer), the size of the texture what stores the shadows. Example : 1024.
+         * - `light` : the light object generating the shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/shadows
+         */
         function ShadowGenerator(mapSize, light) {
             var _this = this;
             // Members
@@ -14489,6 +14701,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Boolean : true when the ShadowGenerator is finally computed.
+         */
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
             if (this._useFullFloat) {
@@ -14548,19 +14763,31 @@ var BABYLON;
             }
             return this._effect.isReady();
         };
+        /**
+         * Returns a RenderTargetTexture object : the shadow map texture.
+         */
         ShadowGenerator.prototype.getShadowMap = function () {
             return this._shadowMap;
         };
+        /**
+         * Returns the most ready computed shadow map as a RenderTargetTexture object.
+         */
         ShadowGenerator.prototype.getShadowMapForRendering = function () {
             if (this._shadowMap2) {
                 return this._shadowMap2;
             }
             return this._shadowMap;
         };
+        /**
+         * Returns the associated light object.
+         */
         ShadowGenerator.prototype.getLight = function () {
             return this._light;
         };
         // Methods
+        /**
+         * Returns a Matrix object : the updated transformation matrix.
+         */
         ShadowGenerator.prototype.getTransformMatrix = function () {
             var scene = this._scene;
             if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
@@ -14585,9 +14812,16 @@ var BABYLON;
             }
             return this._transformMatrix;
         };
+        /**
+         * Returns the darkness value (float).
+         */
         ShadowGenerator.prototype.getDarkness = function () {
             return this._darkness;
         };
+        /**
+         * Sets the ShadowGenerator darkness value (float <= 1.0).
+         * Returns the ShadowGenerator.
+         */
         ShadowGenerator.prototype.setDarkness = function (darkness) {
             if (darkness >= 1.0)
                 this._darkness = 1.0;
@@ -14595,15 +14829,25 @@ var BABYLON;
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
+            return this;
         };
+        /**
+         * Sets the ability to have transparent shadow (boolean).
+         * Returns the ShadowGenerator.
+         */
         ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
             this._transparencyShadow = hasShadow;
+            return this;
         };
         ShadowGenerator.prototype._packHalf = function (depth) {
             var scale = depth * 255.0;
             var fract = scale - Math.floor(scale);
             return new BABYLON.Vector2(depth - fract / 255.0, fract);
         };
+        /**
+         * Disposes the ShadowGenerator.
+         * Returns nothing.
+         */
         ShadowGenerator.prototype.dispose = function () {
             this._shadowMap.dispose();
             if (this._shadowMap2) {
@@ -14617,6 +14861,9 @@ var BABYLON;
             }
             this._light._shadowGenerator = null;
         };
+        /**
+         * Serializes the ShadowGenerator and returns a serializationObject.
+         */
         ShadowGenerator.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.lightId = this._light.id;
@@ -14631,6 +14878,9 @@ var BABYLON;
             }
             return serializationObject;
         };
+        /**
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
+         */
         ShadowGenerator.Parse = function (parsedShadowGenerator, scene) {
             //casting to point light, as light is missing the position attr and typescript complains.
             var light = scene.getLightByID(parsedShadowGenerator.lightId);
@@ -33110,7 +33360,7 @@ var BABYLON;
             _this._scalingDeterminant = 1;
             _this._skeleton = skeleton;
             _this._localMatrix = matrix;
-            _this._baseMatrix = matrix;
+            _this._baseMatrix = matrix.clone();
             _this._restPose = restPose ? restPose : matrix.clone();
             skeleton.bones.push(_this);
             if (parentBone) {
@@ -34336,17 +34586,17 @@ var BABYLON;
             if (this.needInitialSkinMatrix) {
                 for (var index = 0; index < this._meshesWithPoseMatrix.length; index++) {
                     var mesh = this._meshesWithPoseMatrix[index];
+                    var poseMatrix = mesh.getPoseMatrix();
                     if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
                         mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
-                    }
-                    var poseMatrix = mesh.getPoseMatrix();
-                    // Prepare bones
-                    for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
-                        var bone = this.bones[boneIndex];
-                        if (!bone.getParent()) {
-                            var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, BABYLON.Tmp.Matrix[0]);
-                            bone._updateDifferenceMatrix(BABYLON.Tmp.Matrix[0]);
+                        // Prepare bones
+                        for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
+                            var bone = this.bones[boneIndex];
+                            if (!bone.getParent()) {
+                                var matrix = bone.getBaseMatrix();
+                                matrix.multiplyToRef(poseMatrix, BABYLON.Tmp.Matrix[1]);
+                                bone._updateDifferenceMatrix(BABYLON.Tmp.Matrix[1]);
+                            }
                         }
                     }
                     this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);
@@ -52727,6 +52977,7 @@ var BABYLON;
             this._sinYaw = 0.0;
             this._cosYaw = 0.0;
             this._w = 0.0;
+            this._mustUnrotateFixedNormals = false;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
             this._scale = BABYLON.Tmp.Vector3[2];
@@ -52771,6 +53022,9 @@ var BABYLON;
             }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
+            if (this._mustUnrotateFixedNormals) {
+                this._unrotateFixedNormals();
+            }
             var vertexData = new BABYLON.VertexData();
             vertexData.set(this._positions32, BABYLON.VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
@@ -52876,8 +53130,9 @@ var BABYLON;
                 }
                 var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, null, null);
                 // add the particle in the SPS
+                var currentPos = this._positions.length;
                 this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
-                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0, bInfo);
+                this._addParticle(idx, currentPos, modelShape, this._shapeCounter, 0, bInfo);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
                 this._index += shape.length;
@@ -52887,6 +53142,34 @@ var BABYLON;
                 f += size;
             }
             return this;
+        };
+        // unrotate the fixed normals in case the mesh was built with pre-rotated particles, ex : use of positionFunction in addShape()
+        SolidParticleSystem.prototype._unrotateFixedNormals = function () {
+            var index = 0;
+            var idx = 0;
+            for (var p = 0; p < this.particles.length; p++) {
+                this._particle = this.particles[p];
+                this._shape = this._particle._model._shape;
+                if (this._particle.rotationQuaternion) {
+                    this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                }
+                else {
+                    this._yaw = this._particle.rotation.y;
+                    this._pitch = this._particle.rotation.x;
+                    this._roll = this._particle.rotation.z;
+                    this._quaternionRotationYPR();
+                }
+                this._quaternionToRotationMatrix();
+                this._rotMatrix.invertToRef(this._invertMatrix);
+                for (var pt = 0; pt < this._shape.length; pt++) {
+                    idx = index + pt * 3;
+                    BABYLON.Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, this._normal);
+                    this._fixedNormal32[idx] = this._normal.x;
+                    this._fixedNormal32[idx + 1] = this._normal.y;
+                    this._fixedNormal32[idx + 2] = this._normal.z;
+                }
+                index = idx + 3;
+            }
         };
         //reset copy
         SolidParticleSystem.prototype._resetCopy = function () {
@@ -52915,6 +53198,7 @@ var BABYLON;
             this._resetCopy();
             if (options && options.positionFunction) {
                 options.positionFunction(this._copy, idx, idxInShape);
+                this._mustUnrotateFixedNormals = true;
             }
             if (this._copy.rotationQuaternion) {
                 this._quaternion.copyFrom(this._copy.rotationQuaternion);
@@ -52963,7 +53247,7 @@ var BABYLON;
                     this._normal.x = meshNor[n];
                     this._normal.y = meshNor[n + 1];
                     this._normal.z = meshNor[n + 2];
-                    BABYLON.Vector3.TransformCoordinatesToRef(this._normal, this._rotMatrix, this._normal);
+                    BABYLON.Vector3.TransformNormalToRef(this._normal, this._rotMatrix, this._normal);
                     normals.push(this._normal.x, this._normal.y, this._normal.z);
                     n += 3;
                 }
@@ -52977,6 +53261,7 @@ var BABYLON;
                     this.pickedParticles.push({ idx: idx, faceId: i });
                 }
             }
+            return this._copy;
         };
         // returns a shape array from positions array
         SolidParticleSystem.prototype._posToShape = function (positions) {
@@ -52997,7 +53282,9 @@ var BABYLON;
         };
         // adds a new particle object in the particles array
         SolidParticleSystem.prototype._addParticle = function (idx, idxpos, model, shapeId, idxInShape, bInfo) {
-            this.particles.push(new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo));
+            var sp = new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo);
+            this.particles.push(sp);
+            return sp;
         };
         /**
         * Adds some particles to the SPS from the model shape. Returns the shape id.
@@ -53023,11 +53310,24 @@ var BABYLON;
             var vtxfunc = options ? options.vertexFunction : null;
             var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
             // particles
+            var sp;
+            var currentCopy;
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
+                var currentPos = this._positions.length;
+                currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
-                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i, bbInfo);
+                    sp = this._addParticle(idx, currentPos, modelShape, this._shapeCounter, i, bbInfo);
+                    sp.position.copyFrom(currentCopy.position);
+                    sp.rotation.copyFrom(currentCopy.rotation);
+                    if (currentCopy.rotationQuaternion) {
+                        sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
+                    }
+                    if (currentCopy.color) {
+                        sp.color.copyFrom(currentCopy.color);
+                    }
+                    sp.scaling.copyFrom(currentCopy.scaling);
+                    sp.uvs.copyFrom(currentCopy.uvs);
                 }
                 this._index += shape.length;
                 idx++;
@@ -53081,12 +53381,14 @@ var BABYLON;
         };
         /**
         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+        * Returns the SPS.
         */
         SolidParticleSystem.prototype.rebuildMesh = function () {
             for (var p = 0; p < this.particles.length; p++) {
                 this._rebuildParticle(this.particles[p]);
             }
             this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions32, false, false);
+            return this;
         };
         /**
         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
@@ -53095,6 +53397,7 @@ var BABYLON;
         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+        * Returns the SPS.
         */
         SolidParticleSystem.prototype.setParticles = function (start, end, update) {
             if (start === void 0) { start = 0; }
@@ -53146,7 +53449,8 @@ var BABYLON;
                 BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
             }
             // particle loop
-            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
+            end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
+            index = this.particles[start]._pos;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -53327,6 +53631,7 @@ var BABYLON;
                 this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
+            return this;
         };
         SolidParticleSystem.prototype._quaternionRotationYPR = function () {
             this._halfroll = this._roll * 0.5;
@@ -53362,7 +53667,8 @@ var BABYLON;
             this._rotMatrix.m[15] = 1.0;
         };
         /**
-        * Disposes the SPS
+        * Disposes the SPS.
+        * Returns nothing.
         */
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
@@ -53383,11 +53689,13 @@ var BABYLON;
         /**
         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * Returns the SPS.
         */
         SolidParticleSystem.prototype.refreshVisibleSize = function () {
             if (!this._isVisibilityBoxLocked) {
                 this.mesh.refreshBoundingInfo();
             }
+            return this;
         };
         /**
         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.

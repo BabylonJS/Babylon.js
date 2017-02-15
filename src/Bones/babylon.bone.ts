@@ -34,7 +34,7 @@
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
             this._localMatrix = matrix;
-            this._baseMatrix = matrix;
+            this._baseMatrix = matrix.clone();
             this._restPose = restPose ? restPose : matrix.clone();
 
             skeleton.bones.push(this);
