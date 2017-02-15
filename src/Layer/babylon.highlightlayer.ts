@@ -1,4 +1,5 @@
 ﻿/// <reference path="..\PostProcess\babylon.postProcess.ts" />
+/// <reference path="..\Math\babylon.math.ts" />
 
 module BABYLON {
     /**
