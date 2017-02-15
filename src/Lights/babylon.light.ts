@@ -90,6 +90,7 @@
 
         /**
          * Creates a Light object in the scene.  
+         * Documentation : http://doc.babylonjs.com/tutorials/lights  
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
