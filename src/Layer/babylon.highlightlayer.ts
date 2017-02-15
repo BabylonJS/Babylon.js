@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="..\PostProcess\babylon.postProcess.ts" />
+
+module BABYLON {
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
