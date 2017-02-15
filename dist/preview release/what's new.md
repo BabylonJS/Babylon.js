@@ -23,6 +23,15 @@
 - GroundMesh : `getHeightAtCoordinates()`, `getNormalAtCoordinates()` and `getNormalAtCoordinatesToRef()` can now work with rotated grounds ([jerome](https://github.com/jbousquie))  
 - `GroundMesh`, `facetData` and `SolidParticleSystem` improvement in normal computations ([jerome](https://github.com/jbousquie))   
 - Added `AbstractMesh.addRotation()` ([jerome](https://github.com/jbousquie))  
+
+### Bug fixes
+ - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
+ - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
+ - Fixed SPS particle initial status when used with a `positionFunction` in `addShape()` and set as `updatable` ([jerome](https://github.com/jbousquie))  
+ - Fixed SPS particle access indexes when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+
+### Breaking changes
+
  
 ### Canvas2D
 
@@ -46,8 +55,3 @@
     
 ### API doc
 
-### Bug fixes
- - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
- - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
-
-### Breaking changes
