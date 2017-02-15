@@ -44,7 +44,12 @@
 - File `subMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `vertexBuffer.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `math.ts` documented ([jerome](https://github.com/jbousquie))
-- File `light.ts` documented ([jerome](https://github.com/jbousquie))
+- File `light.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `directionalLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `hemisphericLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `pointLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `spotLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `shadowGenerator.ts` documented ([jerome](https://github.com/jbousquie))  
 
 
 ## Canvas2D
