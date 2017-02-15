@@ -141,6 +141,7 @@
          * Required parameters : 
          * -  `mapSize` (integer), the size of the texture what stores the shadows. Example : 1024.    
          * - `light` : the light object generating the shadows.  
+         * Documentation : http://doc.babylonjs.com/tutorials/shadows  
          */
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
