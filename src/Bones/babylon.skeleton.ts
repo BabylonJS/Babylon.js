@@ -236,20 +236,20 @@
                 for (var index = 0; index < this._meshesWithPoseMatrix.length; index++) {
                     var mesh = this._meshesWithPoseMatrix[index];
 
-                    if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
-                        mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
-                    }
-
                     var poseMatrix = mesh.getPoseMatrix();
 
-                    // Prepare bones
-                    for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
-                        var bone = this.bones[boneIndex];
+                    if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
+                        mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
+                    
+                        // Prepare bones
+                        for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
+                            var bone = this.bones[boneIndex];
 
-                        if (!bone.getParent()) {
-                            var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, Tmp.Matrix[0]);
-                            bone._updateDifferenceMatrix(Tmp.Matrix[0]);
+                            if (!bone.getParent()) {
+                                var matrix = bone.getBaseMatrix();
+                                matrix.multiplyToRef(poseMatrix, Tmp.Matrix[1]);
+                                bone._updateDifferenceMatrix(Tmp.Matrix[1]);
+                            }
                         }
                     }
 
