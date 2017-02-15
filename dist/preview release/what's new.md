@@ -44,6 +44,7 @@
 - File `subMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `vertexBuffer.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `math.ts` documented ([jerome](https://github.com/jbousquie))
+- File `light.ts` documented ([jerome](https://github.com/jbousquie))
 
 
 ## Canvas2D
