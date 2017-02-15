@@ -31,6 +31,26 @@
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 
 - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
 - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
+- Fixed SPS particle initial status when used as updatable with a `positionFunction` in `addShape()` ([jerome](https://github.com/jbousquie))  
+- Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+
+### API Documentation
+- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
+- File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `lineMesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `vertexData.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `subMesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `vertexBuffer.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `math.ts` documented ([jerome](https://github.com/jbousquie))
+- File `light.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `directionalLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `hemisphericLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `pointLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `spotLight.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `shadowGenerator.ts` documented ([jerome](https://github.com/jbousquie))  
+
 
 ## Canvas2D
 
