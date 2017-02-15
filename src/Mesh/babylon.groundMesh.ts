@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 

@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.proceduralTexture.ts" />
+
+module BABYLON {
     export class CustomProceduralTexture extends ProceduralTexture {
         private _animate: boolean = true;
         private _time: number = 0;

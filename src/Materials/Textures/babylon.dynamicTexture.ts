@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.texture.ts" />
+
+module BABYLON {
     export class DynamicTexture extends Texture {
         private _generateMipMaps: boolean;
         private _canvas: HTMLCanvasElement;

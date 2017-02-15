@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;

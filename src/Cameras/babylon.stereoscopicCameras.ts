@@ -1,4 +1,9 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.freeCamera.ts" />
+/// <reference path="babylon.arcRotateCamera.ts" />
+/// <reference path="babylon.gamepadCamera.ts" />
+/// <reference path="babylon.universalCamera.ts" />
+
+module BABYLON {
     export class AnaglyphFreeCamera extends FreeCamera {
         constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene) {
             super(name, position, scene);

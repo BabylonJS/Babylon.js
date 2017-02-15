@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="Tools\babylon.decorators.ts" />
+
+module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
