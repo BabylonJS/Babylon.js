@@ -3695,12 +3695,17 @@
                 ex, ey, ez, 1, result);
         }
 
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
             let f = zfar;
@@ -3718,7 +3723,9 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
@@ -3726,8 +3733,10 @@
 
             return matrix;
         }
-
-        public static OrthoOffCenterLHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
+        public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
             let f = zfar;
 
@@ -3746,18 +3755,24 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
-
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
@@ -3779,13 +3794,17 @@
 
             return matrix;
         }
-
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             let n = znear;
             let f = zfar;
@@ -3804,13 +3823,17 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             //alternatively this could be expressed as:
             //    m = PerspectiveFovLHToRef
@@ -3834,7 +3857,9 @@
                 result
             );
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             //left handed
             var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
@@ -3962,6 +3987,9 @@
             result.m[15] = 1.0;
         }
 
+        /**
+         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.  
+         */
         public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
             
             mat.m[0] = xaxis.x;
