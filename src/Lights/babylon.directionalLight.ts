@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.light.ts" />
+
+module BABYLON {
     export class DirectionalLight extends Light implements IShadowLight {
         @serializeAsVector3()
         public position: Vector3;
