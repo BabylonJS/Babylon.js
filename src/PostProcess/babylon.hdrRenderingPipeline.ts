@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
+
+module BABYLON {
     export class HDRRenderingPipeline extends PostProcessRenderPipeline implements IDisposable {
 
         /**

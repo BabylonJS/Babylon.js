@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.camera.ts" />
+
+module BABYLON {
     export class TargetCamera extends Camera {
 
         public cameraDirection = new Vector3(0, 0, 0);

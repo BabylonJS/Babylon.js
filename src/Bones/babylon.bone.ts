@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="..\babylon.node.ts" />
+
+module BABYLON {
     export class Bone extends Node {
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
