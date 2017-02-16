@@ -10,6 +10,7 @@
         private _meshesWithPoseMatrix = new Array<AbstractMesh>();
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
+        private _synchronizedWithMesh: AbstractMesh;
 
         private _ranges: { [name: string]: AnimationRange; } = {};
 
@@ -240,7 +241,11 @@
 
                     if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
                         mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
-                    
+                    }
+
+                    if (this._synchronizedWithMesh !== mesh) {
+                        this._synchronizedWithMesh = mesh;
+
                         // Prepare bones
                         for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
                             var bone = this.bones[boneIndex];
