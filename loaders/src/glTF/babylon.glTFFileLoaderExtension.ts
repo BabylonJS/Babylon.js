@@ -24,19 +24,15 @@ module BABYLON {
         public static PostCreateRuntime(runtime: IGLTFRuntime): void {
             for (var extensionName in GLTFFileLoader.Extensions) {
                 var extension = GLTFFileLoader.Extensions[extensionName];
-                if (extension.postCreateRuntime) {
-                    extension.postCreateRuntime(runtime);
-                }
+                extension.postCreateRuntime(runtime);
             }
         }
 
         public static LoadMaterial(runtime: IGLTFRuntime, index: number): void {
             for (var extensionName in GLTFFileLoader.Extensions) {
                 var extension = GLTFFileLoader.Extensions[extensionName];
-                if (extension.loadMaterial) {
-                    if (extension.loadMaterial(runtime, index)) {
-                        return;
-                    }
+                if (extension.loadMaterial(runtime, index)) {
+                    return;
                 }
             }
 
