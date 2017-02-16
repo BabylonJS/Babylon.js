@@ -4,6 +4,15 @@ module BABYLON {
     /**
     * Enums
     */
+    export enum EBinaryContentFormat {
+        JSON = 0
+    }
+
+    export enum EBufferViewTarget {
+        ARRAY_BUFFER = 34962,
+        ELEMENT_ARRAY_BUFFER = 34963
+    }
+
     export enum EComponentType {
         BYTE = 5120,
         UNSIGNED_BYTE = 5121,
@@ -12,9 +21,14 @@ module BABYLON {
         FLOAT = 5126
     }
 
-    export enum EShaderType {
-        FRAGMENT = 35632,
-        VERTEX = 35633
+    export enum EMeshPrimitiveMode {
+        POINTS = 0,
+        LINES = 1,
+        LINE_LOOP = 2,
+        LINE_STRIP = 3,
+        TRIANGLES = 4,
+        TRIANGLE_STRIP = 5,
+        TRIANGLE_FAN = 6
     }
 
     export enum EParameterType {
@@ -41,13 +55,12 @@ module BABYLON {
         SAMPLER_2D = 35678
     }
 
-    export enum ETextureWrapMode {
-        CLAMP_TO_EDGE = 33071,
-        MIRRORED_REPEAT = 33648,
-        REPEAT = 10497
+    export enum ETextureMagFilter {
+        NEAREST = 9728,
+        LINEAR = 9728,
     }
 
-    export enum ETextureFilterType {
+    export enum ETextureMinFilter {
         NEAREST = 9728,
         LINEAR = 9728,
         NEAREST_MIPMAP_NEAREST = 9984,
@@ -64,28 +77,21 @@ module BABYLON {
         LUMINANCE_ALPHA = 6410
     }
 
-    export enum ECullingType {
-        FRONT = 1028,
-        BACK = 1029,
-        FRONT_AND_BACK = 1032
+    export enum ETextureTarget {
+        TEXTURE_2D = 3553
     }
 
-    export enum EBlendingFunction {
-        ZERO = 0,
-        ONE = 1,
-        SRC_COLOR = 768,
-        ONE_MINUS_SRC_COLOR = 769,
-        DST_COLOR = 774,
-        ONE_MINUS_DST_COLOR = 775,
-        SRC_ALPHA = 770,
-        ONE_MINUS_SRC_ALPHA = 771,
-        DST_ALPHA = 772,
-        ONE_MINUS_DST_ALPHA = 773,
-        CONSTANT_COLOR = 32769,
-        ONE_MINUS_CONSTANT_COLOR = 32770,
-        CONSTANT_ALPHA = 32771,
-        ONE_MINUS_CONSTANT_ALPHA = 32772,
-        SRC_ALPHA_SATURATE = 776
+    export enum ETextureType {
+        UNSIGNED_BYTE = 5121,
+        UNSIGNED_SHORT_5_6_5 = 33635,
+        UNSIGNED_SHORT_4_4_4_4 = 32819,
+        UNSIGNED_SHORT_5_5_5_1 = 32820
+    }
+
+    export enum ETextureWrapMode {
+        CLAMP_TO_EDGE = 33071,
+        MIRRORED_REPEAT = 33648,
+        REPEAT = 10497
     }
 
     /**
@@ -93,7 +99,7 @@ module BABYLON {
     */
     export interface IGLTFProperty {
         extensions?: Object;
-        extras?: Object;
+        extras?: any;
     }
 
     export interface IGLTFChildRootProperty extends IGLTFProperty {
@@ -101,152 +107,63 @@ module BABYLON {
     }
 
     export interface IGLTFAccessor extends IGLTFChildRootProperty {
-        bufferView: string;
+        bufferView: number;
         byteOffset: number;
-        byteStride: number;
+        byteStride?: number;
+        componentType: EComponentType;
+        normalized?: boolean;
         count: number;
         type: string;
-        componentType: EComponentType;
-
-        max?: number[],
-        min?: number[],
-        name?: string;
+        max: number[];
+        min: number[];
     }
 
-    export interface IGLTFBufferView extends IGLTFChildRootProperty {
-        buffer: string;
-        byteOffset: number;
-        byteLength: number;
+    export interface IGLTFAnimationChannel {
+        sampler: number;
+        target: IGLTFAnimationChannelTarget;
+    }
 
-        target?: number;
+    export interface IGLTFAnimationChannelTarget {
+        id: number;
+        path: string;
+    }
+
+    export interface IGLTFAnimationSampler {
+        input: number;
+        interpolation?: string;
+        output: number;
+    }
+
+    export interface IGLTFAnimation extends IGLTFChildRootProperty {
+        channels?: IGLTFAnimationChannel[];
+        samplers?: IGLTFAnimationSampler[];
+    }
+
+    export interface IGLTFAssetProfile extends IGLTFProperty {
+        api?: string;
+        version?: string;
+    }
+
+    export interface IGLTFAsset extends IGLTFChildRootProperty {
+        copyright?: string;
+        generator?: string;
+        profile?: IGLTFAssetProfile;
+        version: string;
     }
 
     export interface IGLTFBuffer extends IGLTFChildRootProperty {
-        uri: string;
+        uri?: string;
+        byteLength: number;
 
-        byteLength?: number;
-        type?: string;
+        // Loaded buffer (optimize)
+        loadedBufferView: ArrayBufferView
     }
 
-    export interface IGLTFShader extends IGLTFChildRootProperty {
-        uri: string;
-        type: EShaderType;
-    }
-
-    export interface IGLTFProgram extends IGLTFChildRootProperty {
-        attributes: string[];
-        fragmentShader: string;
-        vertexShader: string;
-    }
-
-    export interface IGLTFTechniqueParameter {
-        type: number;
-
-        count?: number;
-        semantic?: string;
-        node?: string;
-        value?: number|boolean|string|Array<any>;
-        source?: string;
-
-        babylonValue?: any;
-    }
-
-    export interface IGLTFTechniqueCommonProfile {
-        lightingModel: string;
-        texcoordBindings: Object;
-
-        parameters?: Array<any>;
-    }
-
-    export interface IGLTFTechniqueStatesFunctions {
-        blendColor?: number[];
-        blendEquationSeparate?: number[];
-        blendFuncSeparate?: number[];
-        colorMask: boolean[];
-        cullFace: number[];
-    }
-
-    export interface IGLTFTechniqueStates {
-        enable: number[];
-        functions: IGLTFTechniqueStatesFunctions;
-    }
-
-    export interface IGLTFTechnique extends IGLTFChildRootProperty {
-        parameters: Object;
-        program: string;
-
-        attributes: Object;
-        uniforms: Object;
-        states: IGLTFTechniqueStates;
-    }
-
-    export interface IGLTFMaterial extends IGLTFChildRootProperty {
-        technique?: string;
-        values: string[];
-    }
-
-    export interface IGLTFMeshPrimitive extends IGLTFProperty {
-        attributes: Object;
-        indices: string;
-        material: string;
-
-        mode?: number;
-    }
-
-    export interface IGLTFMesh extends IGLTFChildRootProperty {
-        primitives: IGLTFMeshPrimitive[];
-    }
-
-    export interface IGLTFImage extends IGLTFChildRootProperty {
-        uri: string;
-    }
-
-    export interface IGLTFSampler extends IGLTFChildRootProperty {
-        magFilter?: number;
-        minFilter?: number;
-        wrapS?: number;
-        wrapT?: number;
-    }
-
-    export interface IGLTFTexture extends IGLTFChildRootProperty {
-        sampler: string;
-        source: string;
-
-        format?: ETextureFormat;
-        internalFormat?: ETextureFormat;
-        target?: number;
-        type?: number;
-        
-        // Babylon.js values (optimize)
-        babylonTexture?: Texture;
-    }
-
-    export interface IGLTFAmbienLight {
-        color?: number[];
-    }
-
-    export interface IGLTFDirectionalLight {
-        color?: number[];
-    }
-
-    export interface IGLTFPointLight {
-        color?: number[];
-        constantAttenuation?: number;
-        linearAttenuation?: number;
-        quadraticAttenuation?: number;
-    }
-
-    export interface IGLTFSpotLight {
-        color?: number[];
-        constantAttenuation?: number;
-        fallOfAngle?: number;
-        fallOffExponent?: number;
-        linearAttenuation?: number;
-        quadraticAttenuation?: number;
-    }
-
-    export interface IGLTFLight extends IGLTFChildRootProperty {
-        type: string;
+    export interface IGLTFBufferView extends IGLTFChildRootProperty {
+        buffer: number;
+        byteOffset: number;
+        byteLength: number;
+        target?: EBufferViewTarget;
     }
 
     export interface IGLTFCameraOrthographic {
@@ -264,55 +181,63 @@ module BABYLON {
     }
 
     export interface IGLTFCamera extends IGLTFChildRootProperty {
+        orthographic?: IGLTFCameraOrthographic;
+        perspective?: IGLTFCameraPerspective;
         type: string;
     }
 
-    export interface IGLTFAnimationChannelTarget {
-        id: string;
-        path: string;
+    export interface IGLTFImage extends IGLTFChildRootProperty {
+        uri?: string;
+        mimeType?: string;
+        bufferView?: number;
     }
 
-    export interface IGLTFAnimationChannel {
-        sampler: string;
-        target: IGLTFAnimationChannelTarget;
+    export interface IGLTFMaterialNormalTextureInfo extends IGLTFTextureInfo {
+        scale: number;
     }
 
-    export interface IGLTFAnimationSampler {
-        input: string;
-        output: string;
-
-        interpolation?: string;
+    export interface IGLTFMaterialOcclusionTextureInfo extends IGLTFTextureInfo {
+        strength: number;
     }
 
-    export interface IGLTFAnimation extends IGLTFChildRootProperty {
-        channels?: IGLTFAnimationChannel[];
-        parameters?: Object;
-        samplers?: Object;
+    export interface IGLTFMaterialPbrMetallicRoughness {
+        baseColorFactor: number[];
+        baseColorTexture: IGLTFTextureInfo;
+        metallicFactor: number;
+        roughnessFactor: number;
+        metallicRoughnessTexture: IGLTFTextureInfo;
     }
 
-    export interface IGLTFNodeInstanceSkin {
-        skeletons: string[];
-        skin: string;
-        meshes: string[];
+    export interface IGLTFMaterial extends IGLTFChildRootProperty {
+        pbrMetallicRoughness?: IGLTFMaterialPbrMetallicRoughness;
+        normalTexture?: IGLTFMaterialNormalTextureInfo;
+        occlusionTexture?: IGLTFMaterialOcclusionTextureInfo;
+        emissiveTexture?: IGLTFTextureInfo;
+        emissiveFactor?: number[];
+
+        // Babylon.js values (optimize)
+        babylonMaterial?: PBRMaterial;
     }
 
-    export interface IGLTFSkins extends IGLTFChildRootProperty {
-        bindShapeMatrix: number[];
-        inverseBindMatrices: string;
-        jointNames: string[];
+    export interface IGLTFMeshPrimitive extends IGLTFProperty {
+        attributes: { [name: string]: number };
+        indices?: number;
+        material?: number;
+        mode?: EMeshPrimitiveMode;
+    }
 
-        babylonSkeleton?: Skeleton;
+    export interface IGLTFMesh extends IGLTFChildRootProperty {
+        primitives: IGLTFMeshPrimitive[];
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
-        camera?: string;
-        children: string[];
-        skin?: string;
-        jointName?: string;
-        light?: string;
+        camera?: number;
+        children?: number[];
+        skeletons?: number[];
+        skin?: number;
+        jointName?: number;
         matrix: number[];
-        mesh?: string;
-        meshes?: string[];
+        mesh?: number;
         rotation?: number[];
         scale?: number[];
         translation?: number[];
@@ -321,48 +246,68 @@ module BABYLON {
         babylonNode?: Node;
     }
 
-    export interface IGLTFScene extends IGLTFChildRootProperty {
-        nodes: string[];
+    export interface IGLTFSampler extends IGLTFChildRootProperty {
+        magFilter?: ETextureMagFilter;
+        minFilter?: ETextureMinFilter;
+        wrapS?: ETextureWrapMode;
+        wrapT?: ETextureWrapMode;
     }
 
-    /**
-    * Runtime
-    */
+    export interface IGLTFScene extends IGLTFChildRootProperty {
+        nodes: number[];
+    }
+
+    export interface IGLTFSkin extends IGLTFChildRootProperty {
+        bindShapeMatrix?: number[];
+        inverseBindMatrices?: number;
+        jointNames: number[];
+
+        babylonSkeleton?: Skeleton;
+    }
+
+    export interface IGLTFTexture extends IGLTFChildRootProperty {
+        format?: ETextureFormat;
+        internalFormat?: ETextureFormat;
+        sampler: number;
+        source: number;
+        target?: ETextureTarget;
+        type?: ETextureType;
+
+        // Babylon.js values (optimize)
+        babylonTexture?: Texture;
+    }
+
+    export interface IGLTFTextureInfo {
+        index: number;
+        texCoord?: number;
+    }
+
+    export interface IGLTF extends IGLTFProperty {
+        accessors?: IGLTFAccessor[];
+        animations?: IGLTFAnimation[];
+        asset: IGLTFAsset;
+        buffers?: IGLTFBuffer[];
+        bufferViews?: IGLTFBufferView[];
+        cameras?: IGLTFCamera[];
+        extensionsUsed?: string[];
+        extensionsRequired?: string[];
+        glExtensionsUsed?: string[];
+        images?: IGLTFImage[];
+        materials?: IGLTFMaterial[];
+        meshes?: IGLTFMesh[];
+        nodes?: IGLTFNode[];
+        samplers?: IGLTFSampler[];
+        scene?: number;
+        scenes?: IGLTFScene[];
+        skins?: IGLTFSkin[];
+        textures?: IGLTFTexture[];
+    }
+
     export interface IGLTFRuntime {
-        extensions: Object;
-        accessors: Object;
-        buffers: Object;
-        bufferViews: Object;
-        meshes: Object;
-        lights: Object;
-        cameras: Object;
-        nodes: Object;
-        images: Object;
-        textures: Object;
-        shaders: Object;
-        programs: Object;
-        samplers: Object;
-        techniques: Object;
-        materials: Object;
-        animations: Object;
-        skins: Object;
+        gltf: IGLTF;
 
-        currentScene?: Object;
-        scenes: Object; // v1.1
-
-        extensionsUsed: string[];
-        extensionsRequired?: string[]; // v1.1
-
-        buffersCount: number;
-        shaderscount: number;
-
-        scene: Scene;
+        babylonScene: Scene;
         rootUrl: string;
-
-        loadedBufferCount: number;
-        loadedBufferViews: { [name: string]: ArrayBufferView };
-
-        loadedShaderCount: number;
 
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];

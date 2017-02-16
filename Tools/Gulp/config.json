@@ -438,8 +438,8 @@
         "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderUtils.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderExtension.ts",
-        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts",
-        "../../loaders/src/glTF/babylon.glTFMaterialCommonExtension.ts"
+        "../../loaders/src/glTF/babylon.glTFMaterialsCommonExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFMaterialsPbrSpecularGlossinessExtension.ts"
       ],
       "output": "babylon.glTFFileLoader.js"
     }],
