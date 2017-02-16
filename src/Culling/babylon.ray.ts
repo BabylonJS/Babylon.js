@@ -389,9 +389,7 @@
         public static Transform(ray: Ray, matrix: Matrix): Ray {
             var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = Vector3.TransformNormal(ray.direction, matrix);
-
-            newDirection.normalize();
-
+            
             return new Ray(newOrigin, newDirection, ray.length);
         }
 
@@ -399,8 +397,7 @@
             
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
-
-            result.direction.normalize();            
+            
         }
     }
 }
