@@ -6,82 +6,6 @@ module BABYLON {
     */
     export class GLTFUtils {
         /**
-         * Sets the given "parameter" matrix
-         * @param scene: the {BABYLON.Scene} object
-         * @param source: the source node where to pick the matrix
-         * @param parameter: the GLTF technique parameter
-         * @param uniformName: the name of the shader's uniform
-         * @param shaderMaterial: the shader material
-         */
-        public static SetMatrix(scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial | Effect): void {
-            var mat: Matrix = null;
-
-            if (parameter.semantic === "MODEL") {
-                mat = source.getWorldMatrix();
-            }
-            else if (parameter.semantic === "PROJECTION") {
-                mat = scene.getProjectionMatrix();
-            }
-            else if (parameter.semantic === "VIEW") {
-                mat = scene.getViewMatrix();
-            }
-            else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
-                mat = Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
-            }
-            else if (parameter.semantic === "MODELVIEW") {
-                mat = source.getWorldMatrix().multiply(scene.getViewMatrix());
-            }
-            else if (parameter.semantic === "MODELVIEWPROJECTION") {
-                mat = source.getWorldMatrix().multiply(scene.getTransformMatrix());
-            }
-            else if (parameter.semantic === "MODELINVERSE") {
-                mat = source.getWorldMatrix().invert();
-            }
-            else if (parameter.semantic === "VIEWINVERSE") {
-                mat = scene.getViewMatrix().invert();
-            }
-            else if (parameter.semantic === "PROJECTIONINVERSE") {
-                mat = scene.getProjectionMatrix().invert();
-            }
-            else if (parameter.semantic === "MODELVIEWINVERSE") {
-                mat = source.getWorldMatrix().multiply(scene.getViewMatrix()).invert();
-            }
-            else if (parameter.semantic === "MODELVIEWPROJECTIONINVERSE") {
-                mat = source.getWorldMatrix().multiply(scene.getTransformMatrix()).invert();
-            }
-            else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
-                mat = Matrix.Transpose(source.getWorldMatrix().invert());
-            }
-            else {
-                debugger;
-            }
-
-            switch (parameter.type) {
-                case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
-                case EParameterType.FLOAT_MAT3: shaderMaterial.setMatrix3x3(uniformName, Matrix.GetAsMatrix3x3(mat)); break;
-                case EParameterType.FLOAT_MAT4: shaderMaterial.setMatrix(uniformName, mat); break;
-                default: break;
-            }
-        }
-
-        /**
-         * Sets the given "parameter" matrix
-         * @param shaderMaterial: the shader material
-         * @param uniform: the name of the shader's uniform
-         * @param value: the value of the uniform
-         * @param type: the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
-         */
-        public static SetUniform(shaderMaterial: ShaderMaterial | Effect, uniform: string, value: any, type: number): boolean {
-            switch (type) {
-                case EParameterType.FLOAT: shaderMaterial.setFloat(uniform, value); return true;
-                case EParameterType.FLOAT_VEC2: shaderMaterial.setVector2(uniform, Vector2.FromArray(value)); return true;
-                case EParameterType.FLOAT_VEC3: shaderMaterial.setVector3(uniform, Vector3.FromArray(value)); return true;
-                case EParameterType.FLOAT_VEC4: shaderMaterial.setVector4(uniform, Vector4.FromArray(value)); return true;
-                default: return false;
-            }
-        }
-
-        /**
         * If the uri is a base64 string
         * @param uri: the uri to test
         */
@@ -141,21 +65,21 @@ module BABYLON {
          * Returns the texture filter mode giving a mode value
          * @param mode: the filter mode value
          */
-        public static GetTextureFilterMode(mode: number): ETextureFilterType {
+        public static GetTextureFilterMode(mode: number): ETextureMinFilter {
             switch (mode) {
-                case ETextureFilterType.LINEAR:
-                case ETextureFilterType.LINEAR_MIPMAP_NEAREST:
-                case ETextureFilterType.LINEAR_MIPMAP_LINEAR: return Texture.TRILINEAR_SAMPLINGMODE;
-                case ETextureFilterType.NEAREST:
-                case ETextureFilterType.NEAREST_MIPMAP_NEAREST: return Texture.NEAREST_SAMPLINGMODE;
+                case ETextureMinFilter.LINEAR:
+                case ETextureMinFilter.LINEAR_MIPMAP_NEAREST:
+                case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.TRILINEAR_SAMPLINGMODE;
+                case ETextureMinFilter.NEAREST:
+                case ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return Texture.NEAREST_SAMPLINGMODE;
                 default: return Texture.BILINEAR_SAMPLINGMODE;
             }
         }
 
-        public static GetBufferFromBufferView(gltfRuntime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
+        public static GetBufferFromBufferView(runtime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
             var byteOffset = bufferView.byteOffset + byteOffset;
 
-            var loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
+            var loadedBufferView = runtime.gltf.buffers[bufferView.buffer].loadedBufferView;
             if (byteOffset + byteLength > loadedBufferView.byteLength) {
                 throw new Error("Buffer access is out of range");
             }
@@ -174,13 +98,13 @@ module BABYLON {
 
         /**
          * Returns a buffer from its accessor
-         * @param gltfRuntime: the GLTF runtime
+         * @param runtime: the GLTF runtime
          * @param accessor: the GLTF accessor
          */
-        public static GetBufferFromAccessor(gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any {
-            var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
+        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): any {
+            var bufferView = runtime.gltf.bufferViews[accessor.bufferView];
             var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
-            return GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
+            return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
         }
 
         /**
@@ -199,57 +123,24 @@ module BABYLON {
         }
 
         /**
-         * Returns the default material of gltf. Related to
-         * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
+         * Returns the default material of gltf.
          * @param scene: the Babylon.js scene
          */
-        public static GetDefaultMaterial(scene: Scene): ShaderMaterial {
+        public static GetDefaultMaterial(scene: Scene): PBRMaterial {
             if (!GLTFUtils._DefaultMaterial) {
-                Effect.ShadersStore["GLTFDefaultMaterialVertexShader"] = [
-                    "precision highp float;",
-                    "",
-                    "uniform mat4 worldView;",
-                    "uniform mat4 projection;",
-                    "",
-                    "attribute vec3 position;",
-                    "",
-                    "void main(void)",
-                    "{",
-                    "    gl_Position = projection * worldView * vec4(position, 1.0);",
-                    "}"
-                ].join("\n");
+                var material = new PBRMaterial("gltf_default", scene);
+                material.sideOrientation = Material.CounterClockWiseSideOrientation;
+                material.albedoColor = new Color3(0.5, 0.5, 0.5);
+                material.metallic = 0;
+                material.roughness = 0.5;
 
-                Effect.ShadersStore["GLTFDefaultMaterialPixelShader"] = [
-                    "precision highp float;",
-                    "",
-                    "uniform vec4 u_emission;",
-                    "",
-                    "void main(void)",
-                    "{",
-                    "    gl_FragColor = u_emission;",
-                    "}"
-                ].join("\n");
-
-                var shaderPath = {
-                    vertex: "GLTFDefaultMaterial",
-                    fragment: "GLTFDefaultMaterial"
-                };
-
-                var options = {
-                    attributes: ["position"],
-                    uniforms: ["worldView", "projection", "u_emission"],
-                    samplers: [],
-                    needAlphaBlending: false
-                };
-
-                GLTFUtils._DefaultMaterial = new ShaderMaterial("GLTFDefaultMaterial", scene, shaderPath, options);
-                GLTFUtils._DefaultMaterial.setColor4("u_emission", new Color4(0.5, 0.5, 0.5, 1.0));
+                GLTFUtils._DefaultMaterial = material;
             }
 
             return GLTFUtils._DefaultMaterial;
         }
 
         // The GLTF default material
-        private static _DefaultMaterial: ShaderMaterial = null;
+        private static _DefaultMaterial: PBRMaterial = null;
     }
 }
