@@ -2067,7 +2067,7 @@
             return this._textureFormatInUse = null;
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture): WebGLTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
             var texture = fallBack ? fallBack : this._gl.createTexture();
 
             var extension: string;
@@ -2186,7 +2186,8 @@
                             }
                         }
 
-                        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
+                        let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+                        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
                     }, samplingMode);
                 };
 
