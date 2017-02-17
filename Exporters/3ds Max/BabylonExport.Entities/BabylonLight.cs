@@ -3,13 +3,16 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonLight
+    public class BabylonLight : BabylonIAnimatable
     {
         [DataMember]
         public string name { get; set; }
 
         [DataMember]
         public string id { get; set; }
+
+        [DataMember]
+        public string parentId { get; set; }
 
         [DataMember]
         public float[] position { get; set; }
@@ -61,6 +64,12 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
+
+        [DataMember]
+        public object metadata { get; set; }
+
+        [DataMember]
+        public string tags { get; set; }
 
         public BabylonLight()
         {

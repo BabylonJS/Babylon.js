@@ -1,0 +1,8 @@
+global proc babylonNameTool() {
+    string $nameText;
+    string $resultPrompt = `promptDialog -title "Namespace Tool" -message "Remove Namespace:" -button "OK" -button "Cancel" -defaultButton "OK" -cancelButton "Cancel" -dismissString "Cancel"`;
+    if ($resultPrompt == "OK") {
+        $nameText = `promptDialog -query -text`;
+        namespace -mv $nameText ":" -force;
+    }
+}

@@ -49,6 +49,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cbCameraType = new System.Windows.Forms.ComboBox();
             this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -68,7 +70,7 @@
             this.groupBox1.Controls.Add(this.chkGravity);
             this.groupBox1.Controls.Add(this.chkCollisions);
             this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox1.Location = new System.Drawing.Point(12, 77);
+            this.groupBox1.Location = new System.Drawing.Point(12, 119);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(319, 138);
             this.groupBox1.TabIndex = 0;
@@ -121,7 +123,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 538);
+            this.butOK.Location = new System.Drawing.Point(93, 578);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 1;
@@ -134,7 +136,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 538);
+            this.butCancel.Location = new System.Drawing.Point(174, 578);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 2;
@@ -148,7 +150,7 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.nupSpeed);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox2.Location = new System.Drawing.Point(12, 221);
+            this.groupBox2.Location = new System.Drawing.Point(12, 263);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(319, 140);
             this.groupBox2.TabIndex = 3;
@@ -204,7 +206,7 @@
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox3.Location = new System.Drawing.Point(12, 367);
+            this.groupBox3.Location = new System.Drawing.Point(12, 409);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(319, 156);
             this.groupBox3.TabIndex = 5;
@@ -242,7 +244,7 @@
             // 
             this.nupTo.Location = new System.Drawing.Point(47, 40);
             this.nupTo.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});
@@ -263,7 +265,7 @@
             // 
             this.nupFrom.Location = new System.Drawing.Point(47, 14);
             this.nupFrom.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});
@@ -294,14 +296,47 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label6);
+            this.groupBox4.Controls.Add(this.cbCameraType);
             this.groupBox4.Controls.Add(this.chkNoExport);
             this.groupBox4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox4.Location = new System.Drawing.Point(12, 12);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(319, 59);
+            this.groupBox4.Size = new System.Drawing.Size(319, 101);
             this.groupBox4.TabIndex = 6;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Misc.";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 58);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(34, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Type:";
+            // 
+            // cbCameraType
+            // 
+            this.cbCameraType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbCameraType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cbCameraType.FormattingEnabled = true;
+            this.cbCameraType.Items.AddRange(new object[] {
+            "AnaglyphArcRotateCamera",
+            "AnaglyphFreeCamera",
+            "ArcRotateCamera",
+            "DeviceOrientationCamera",
+            "FollowCamera",
+            "FreeCamera",
+            "GamepadCamera",
+            "TouchCamera",
+            "VirtualJoysticksCamera",
+            "WebVRFreeCamera",
+            "VRDeviceOrientationFreeCamera"});
+            this.cbCameraType.Location = new System.Drawing.Point(23, 74);
+            this.cbCameraType.Name = "cbCameraType";
+            this.cbCameraType.Size = new System.Drawing.Size(290, 21);
+            this.cbCameraType.TabIndex = 5;
             // 
             // chkNoExport
             // 
@@ -321,7 +356,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 573);
+            this.ClientSize = new System.Drawing.Size(343, 613);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -375,5 +410,7 @@
         private System.Windows.Forms.CheckBox chkAutoAnimate;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.CheckBox chkNoExport;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox cbCameraType;
     }
 }

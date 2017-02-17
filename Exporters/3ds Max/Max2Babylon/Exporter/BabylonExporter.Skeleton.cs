@@ -1,123 +1,92 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using SharpDX;
 
 namespace Max2Babylon
 {
+    internal class BonePoseInfo
+    {
+        public IGMatrix AbsoluteTransform { get; set; }
+        public IGMatrix LocalTransform { get; set; }
+    }
     partial class BabylonExporter
     {
-        readonly List<IISkin> skins = new List<IISkin>();
+        readonly List<IIGameSkin> skins = new List<IIGameSkin>();
+        readonly List<IIGameNode> skinnedNodes = new List<IIGameNode>();
 
-        IISkin GetSkinModifier(IINode node)
+        IGMatrix WithNoScale(IGMatrix mat)
         {
-            var obj = node.ObjectRef;
-
-            if (obj.SuperClassID != SClass_ID.GenDerivob)
-            {
-                return null;
-            }
-
-            var derivedObject = obj as IIDerivedObject;
-
-            if (derivedObject == null)
-            {
-                return null;
-            }
-
-            for (var index = 0; index < derivedObject.NumModifiers; index++)
-            {
-                var modifier = derivedObject.GetModifier(index);
-
-                if (modifier.ClassID.PartA == 9815843 && modifier.ClassID.PartB == 87654) // Skin
-                {
-                    var skin = modifier.GetInterface((InterfaceID)0x00010000) as IISkin;
-
-                    if (!skins.Contains(skin))
-                    {
-                        skins.Add(skin);                        
-                    }
-
-                    return skin;
-                }
-            }
-
-
-            return null;
+            var mat3 = mat.ExtractMatrix3();
+            mat3.NoScale();
+            return Loader.Global.GMatrix.Create(mat3);
         }
-
-        float[] GetBoneMatrix(IISkin skin, IINode bone, int t, bool hasParent)
+        private void ExportSkin(IIGameSkin skin, BabylonScene babylonScene)
         {
-            var maxMatrix = bone.GetWorldMatrix(t, hasParent);
-
-            //var initialMatrix = Loader.Global.Matrix3.Create();
-            //skin.GetBoneInitTM(bone, initialMatrix, false);
-
-            //initialMatrix.Invert();
-
-            //maxMatrix = maxMatrix.MultiplyBy(initialMatrix);
-
-            //if (!hasParent)
-            //{
-            //    initialMatrix = Loader.Global.Matrix3.Create();
-            //    skin.GetSkinInitTM(bone, initialMatrix, false);
-
-            //    initialMatrix.Invert();
-
-            //    maxMatrix = maxMatrix.MultiplyBy(initialMatrix);
-            //}
-
-            maxMatrix.NoScale();
-
-            var trans = maxMatrix.Trans;
-
-            var parts = Loader.Global.AffineParts.Create();
-            Loader.Global.DecompAffine(maxMatrix, parts);
-
-            var rotationQuaternion = new Quaternion(parts.Q.X, parts.Q.Z, parts.Q.Y, parts.Q.W);
-
-            var matrix = Matrix.RotationQuaternion(rotationQuaternion) * Matrix.Translation(trans.X, trans.Z, trans.Y);
-
-            return matrix.ToArray();
-        }
-
-        private void ExportSkin(IISkin skin, BabylonScene babylonScene)
-        {
-            var babylonSkeleton = new BabylonSkeleton {id = skins.IndexOf(skin)};
+            var babylonSkeleton = new BabylonSkeleton { id = skins.IndexOf(skin) };
             babylonSkeleton.name = "skeleton #" + babylonSkeleton.id;
 
             RaiseMessage(babylonSkeleton.name, 1);
 
+            var skinIndex = skins.IndexOf(skin);
+
             var bones = new List<BabylonBone>();
-
-            for (var index = 0; index < skin.NumBones; index++)
+            var gameBones = new List<IIGameNode>();
+            var boneIds = new List<int>();
+            var bindPoseInfos = new List<BonePoseInfo>();
+            for(int i = 0; i < skin.TotalSkinBoneCount; ++i)
             {
-                var bone = new BabylonBone {name = skin.GetBoneName(index), index = index};
+                bones.Add(null);
+                gameBones.Add(null);
+                boneIds.Add(-1);
+                bindPoseInfos.Add(null);
+            }
+            for (var index = 0; index < skin.TotalSkinBoneCount; index++)
+            {
+                var gameBone = skin.GetIGameBone(index, false);
 
-                var maxBone = skin.GetBone(index);
-                var parentNode = maxBone.ParentNode;
+                var sortedIndex = skinSortedBones[skin].IndexOf(gameBone.NodeID);
 
-                if (parentNode != null)
+                gameBones[sortedIndex] = (gameBone);
+                boneIds[sortedIndex] =(gameBone.NodeID);
+                bones[sortedIndex]=(new BabylonBone { index = sortedIndex, name = gameBone.Name });
+
+                var boneInitMatrix = gameBone.GetObjectTM(0);
+                bindPoseInfos[sortedIndex] = (new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
+            }
+
+            // fix hierarchy an generate animation keys
+            var exportNonOptimizedAnimations = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportnonoptimizedanimations");
+
+            for (var index = 0; index < skin.TotalSkinBoneCount; index++)
+            {
+                var gameBone = gameBones[index];
+                var parent = gameBone.NodeParent;
+                var babBone = bones[index];
+                if (parent != null)
                 {
-                    for (var recurseIndex = 0; recurseIndex < index; recurseIndex++)
-                    {
-                        if (skin.GetBone(recurseIndex).GetGuid() == parentNode.GetGuid())
-                        {
-                            bone.parentBoneIndex = recurseIndex;
-                            break;
-                        }
-                    }
+                    babBone.parentBoneIndex = boneIds.IndexOf(parent.NodeID);
                 }
-                var hasParent = bone.parentBoneIndex != -1;
-                bone.matrix = GetBoneMatrix(skin, maxBone, 0, hasParent);
 
-                // Animation
+                if (babBone.parentBoneIndex == -1)
+                {
+                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform;
+                }
+                else
+                {
+                    var parentBindPoseInfos = bindPoseInfos[babBone.parentBoneIndex];
+                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(parentBindPoseInfos.AbsoluteTransform.Inverse);
+                }
+
+                babBone.matrix = bindPoseInfos[index].LocalTransform.ToArray();
+
                 var babylonAnimation = new BabylonAnimation
                 {
-                    name = bone.name + "Animation", 
-                    property = "_matrix", 
-                    dataType = BabylonAnimation.DataType.Matrix, 
-                    loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
+                    name = gameBone.Name + "Animation",
+                    property = "_matrix",
+                    dataType = (int)BabylonAnimation.DataType.Matrix,
+                    loopBehavior = (int)BabylonAnimation.LoopBehavior.Cycle,
                     framePerSecond = Loader.Global.FrameRate
                 };
 
@@ -128,9 +97,20 @@ namespace Max2Babylon
                 var keys = new List<BabylonAnimationKey>();
                 for (var key = start; key <= end; key += Ticks)
                 {
-                    var current = GetBoneMatrix(skin, maxBone, key, hasParent);
+                    var objectTM = gameBone.GetObjectTM(key);
+                    var parentNode = gameBone.NodeParent;
+                    IGMatrix mat;
+                    if (parentNode == null || babBone.parentBoneIndex == -1)
+                    {
+                        mat = objectTM;
+                    }
+                    else
+                    {
+                        mat = objectTM.Multiply(parentNode.GetObjectTM(key).Inverse);
+                    }
 
-                    if (key == start || key == end || !(previous.IsEqualTo(current)))
+                    var current = mat.ToArray();
+                    if (key == start || key == end || exportNonOptimizedAnimations || !(previous.IsEqualTo(current)))
                     {
                         keys.Add(new BabylonAnimationKey
                         {
@@ -143,11 +123,10 @@ namespace Max2Babylon
                 }
 
                 babylonAnimation.keys = keys.ToArray();
-                bone.animation = babylonAnimation;
-
-                bones.Add(bone);
+                babBone.animation = babylonAnimation;
             }
 
+            babylonSkeleton.needInitialSkinMatrix = true;
             babylonSkeleton.bones = bones.ToArray();
 
             babylonScene.SkeletonsList.Add(babylonSkeleton);

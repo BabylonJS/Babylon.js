@@ -1,0 +1,19 @@
+@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+
+$font               : 'Inconsolata', sans-serif;
+
+
+$color              : #ccc;
+$background         : #242424;
+$background-active  : #2c2c2c;
+$color-top         : #f29766;
+$color-bot         : #5db0d7;
+
+$background-lighter : lighten($color: $background, $amount         : 3%);
+$background-lighter2: lighten($color: $background-lighter, $amount : 5%);
+$background-lighter3: lighten($color: $background-lighter2, $amount: 5%);
+
+$resizebar-width    : 10px;
+$tabbar-height      : 32px;
+$searchbar-height   : 30px;

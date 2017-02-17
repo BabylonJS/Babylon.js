@@ -7,11 +7,62 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using SharpDX;
+using System.Reflection;
 
 namespace Max2Babylon
 {
     public static class Tools
     {
+        public static IntPtr GetNativeHandle(this INativeObject obj)
+        {
+#if MAX2015 || MAX2016 || MAX2017
+            return obj.NativePointer;
+#else
+            return obj.Handle;
+#endif
+
+        }
+        static Assembly GetWrappersAssembly()
+        {
+            return Assembly.Load("Autodesk.Max.Wrappers, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+        }
+
+        public static IIGameCamera AsGameCamera(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameCamera");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameCamera)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
+        public static IIGameMesh AsGameMesh(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameMesh");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameMesh)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
+        public static IIGameLight AsGameLight(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameLight");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameLight)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
         public const float Epsilon = 0.001f;
 
         public static IPoint3 XAxis { get { return Loader.Global.Point3.Create(1, 0, 0); } }
@@ -26,7 +77,58 @@ namespace Max2Babylon
 
         public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
 
+#if !MAX2015 && !MAX2016 && !MAX2017
+        unsafe public static int GetParamBlockIndex(IIParamBlock paramBlock, string name)
+        {
+            for (short index = 0; index < paramBlock.NumParams; index++)
+            {
+                IGetParamName gpn = Loader.Global.GetParamName.Create("", index);
 
+                paramBlock.NotifyDependents(Tools.Forever, (UIntPtr)gpn.Handle.ToPointer(), RefMessage.GetParamName, (SClass_ID)0xfffffff0, false, null);
+
+                if (gpn.Name == name)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+
+        public static int GetParamBlockValueInt(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return 0;
+            }
+            return paramBlock.GetInt(index, 0);
+        }
+
+        public static float GetParamBlockValueFloat(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return 0;
+            }
+            return paramBlock.GetFloat(index, 0);
+        }
+
+        public static float[] GetParamBlockValueColor(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return null;
+            }
+            return paramBlock.GetColor(index, 0).ToArray();
+        }
+#endif
         public static Vector3 ToEulerAngles(this IQuat q)
         {
             // Store the Euler angles in radians
@@ -63,7 +165,23 @@ namespace Max2Babylon
 
             return pitchYawRoll;
         }
-
+        public static float[] ToArray(this IGMatrix gmat)
+        {
+            //float eulX =0,  eulY=0,  eulZ=0;
+            //unsafe
+            //{
+            //    gmat.Rotation.GetEuler( new IntPtr(&eulX), new IntPtr(&eulY), new IntPtr(&eulZ));
+            //}
+            //return (Matrix.Scaling(gmat.Scaling.X, gmat.Scaling.Y, gmat.Scaling.Z) * Matrix.RotationYawPitchRoll(eulY, eulX, eulZ) * Matrix.Translation(gmat.Translation.X, gmat.Translation.Y, gmat.Translation.Z)).ToArray();
+            var r0 = gmat.GetRow(0);
+            var r1 = gmat.GetRow(1);
+            var r2 = gmat.GetRow(2);
+            var r3 = gmat.GetRow(3);
+            return new float[] {r0.X, r0.Y, r0.Z, r0.W,
+            r1.X, r1.Y,r1.Z, r1.W,
+            r2.X, r2.Y,r2.Z, r2.W,
+            r3.X, r3.Y,r3.Z, r3.W,};
+        }
         public static void PreparePipeline(IINode node, bool deactivate)
         {
             var obj = node.ObjectRef;
@@ -145,6 +263,7 @@ namespace Max2Babylon
 
         public static float[] ToArray(this IMatrix3 value)
         {
+
             var row0 = value.GetRow(0).ToArraySwitched();
             var row1 = value.GetRow(1).ToArraySwitched();
             var row2 = value.GetRow(2).ToArraySwitched();
@@ -356,7 +475,29 @@ namespace Max2Babylon
 
             return obj.ConvertToType(0, triObjectClassId) as ITriObject;
         }
-
+        public static bool IsAlmostEqualTo(this float[] current, float[] other, float epsilon)
+        {
+            if (current == null && other == null)
+            {
+                return true;
+            }
+            if (current == null || other == null)
+            {
+                return false;
+            }
+            if (current.Length != other.Length)
+            {
+                return false;
+            }
+            for (var i = 0; i < current.Length; ++i)
+            {
+                if (Math.Abs(current[i] - other[i]) > epsilon)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)
         {
             if (Math.Abs(current.X - other.X) > epsilon)
@@ -417,10 +558,20 @@ namespace Max2Babylon
             return true;
         }
 
+        public static void SetStringProperty(this IINode node, string propertyName, string defaultState)
+        {
+            string state = defaultState;
+#if MAX2015 || MAX2016 || MAX2017
+            node.SetUserPropString(propertyName, state);
+#else
+            node.SetUserPropString(ref propertyName, ref state);
+#endif
+        }
+
         public static bool GetBoolProperty(this IINode node, string propertyName, int defaultState = 0)
         {
             int state = defaultState;
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropBool(propertyName, ref state);
 #else
             node.GetUserPropBool(ref propertyName, ref state);
@@ -429,10 +580,22 @@ namespace Max2Babylon
             return state == 1;
         }
 
+        public static string GetStringProperty(this IINode node, string propertyName, string defaultState)
+        {
+            string state = defaultState;
+#if MAX2015 || MAX2016 || MAX2017
+            node.GetUserPropString(propertyName, ref state);
+#else
+            node.GetUserPropString(ref propertyName, ref state);
+#endif
+
+            return state;
+        }
+
         public static float GetFloatProperty(this IINode node, string propertyName, float defaultState = 0)
         {
             float state = defaultState;
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(propertyName, ref state);
 #else
             node.GetUserPropFloat(ref propertyName, ref state);
@@ -445,7 +608,7 @@ namespace Max2Babylon
         {
             float state0 = 0;
             string name = propertyName + "_x";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state0);
 #else
             node.GetUserPropFloat(ref name, ref state0);
@@ -454,7 +617,7 @@ namespace Max2Babylon
 
             float state1 = 0;
             name = propertyName + "_y";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state1);
 #else
             node.GetUserPropFloat(ref name, ref state1);
@@ -462,7 +625,7 @@ namespace Max2Babylon
 
             float state2 = 0;
             name = propertyName + "_z";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state2);
 #else
             node.GetUserPropFloat(ref name, ref state2);
@@ -512,11 +675,22 @@ namespace Max2Babylon
             }
         }
 
+        public static void PrepareTextBox(TextBox textBox, IINode node, string propertyName, string defaultValue = "")
+        {
+            var state = node.GetStringProperty(propertyName, defaultValue);
+            textBox.Text = state;
+        }
+
+        public static void PrepareComboBox(ComboBox comboBox, IINode node, string propertyName, string defaultValue)
+        {
+            comboBox.SelectedItem = node.GetStringProperty(propertyName, defaultValue);
+        }
+
         public static void UpdateCheckBox(CheckBox checkBox, IINode node, string propertyName)
         {
             if (checkBox.CheckState != CheckState.Indeterminate)
             {
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
                 node.SetUserPropBool(propertyName, checkBox.CheckState == CheckState.Checked);
 #else
                 node.SetUserPropBool(ref propertyName, checkBox.CheckState == CheckState.Checked);
@@ -532,6 +706,19 @@ namespace Max2Babylon
             }
         }
 
+        public static void UpdateTextBox(TextBox textBox, List<IINode> nodes, string propertyName)
+        {
+            foreach (var node in nodes)
+            {
+                var value = textBox.Text;
+#if MAX2015 || MAX2016 || MAX2017
+                node.SetUserPropString(propertyName, value);
+#else
+                node.SetUserPropString(ref propertyName, ref value);
+#endif
+            }
+        }
+
         public static void PrepareNumericUpDown(NumericUpDown nup, List<IINode> nodes, string propertyName, float defaultState = 0)
         {
             nup.Value = (decimal)nodes[0].GetFloatProperty(propertyName, defaultState);
@@ -541,7 +728,7 @@ namespace Max2Babylon
         {
             foreach (var node in nodes)
             {
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
                 node.SetUserPropFloat(propertyName, (float)nup.Value);
 #else
                 node.SetUserPropFloat(ref propertyName, (float)nup.Value);
@@ -559,21 +746,21 @@ namespace Max2Babylon
         public static void UpdateVector3Control(Vector3Control vector3Control, IINode node, string propertyName)
         {
             string name = propertyName + "_x";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.X);
 #else
             node.SetUserPropFloat(ref name, vector3Control.X);
 #endif
 
             name = propertyName + "_y";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.Y);
 #else
             node.SetUserPropFloat(ref name, vector3Control.Y);
 #endif
 
             name = propertyName + "_z";
-#if MAX2015
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.Z);
 #else
             node.SetUserPropFloat(ref name, vector3Control.Z);
@@ -585,6 +772,24 @@ namespace Max2Babylon
             foreach (var node in nodes)
             {
                 UpdateVector3Control(vector3Control, node, propertyName);
+            }
+        }
+
+        public static void UpdateComboBox(ComboBox comboBox, IINode node, string propertyName)
+        {
+            var value = comboBox.SelectedItem.ToString();
+#if MAX2015 || MAX2016 || MAX2017
+            node.SetUserPropString(propertyName, value);
+#else
+            node.SetUserPropString(ref propertyName, ref value);
+#endif
+        }
+
+        public static void UpdateComboBox(ComboBox comboBox, List<IINode> nodes, string propertyName)
+        {
+            foreach (var node in nodes)
+            {
+                UpdateComboBox(comboBox, node, propertyName);
             }
         }
 

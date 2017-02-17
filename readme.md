@@ -3,95 +3,46 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
-Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
-Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
+**Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
-Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
+## CDN
+- http://cdn.babylonjs.com/2-5/babylon.js 
+- http://cdn.babylonjs.com/2-5/babylon.max.js 
+- http://cdn.babylonjs.com/2-5/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-5/babylon.core.js 
 
-Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
-
-3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
-
-Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
-
-Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
+## Preview release
+You can help by testing or contributing to the next version.
+- **2.6-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+- We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
+- Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
+- Need help contributing, here are some links:
+  - [Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp) to build from command line.
+  - [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
+  - [Visual Studio](http://doc.babylonjs.com/generals/setup_visualStudio), Microsoft's IDE.
+  - [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
 
 ## Documentation
-- [Wiki](https://github.com/babylonjs/babylon.js/wiki)
-- [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
-- [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
-- [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
+- [Documentation](http://doc.babylonjs.com)
+- [Roadmap](http://doc.babylonjs.com/generals/Roadmap)
 - [Samples](https://github.com/BabylonJS/Samples)
 - [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
+- [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
+
+## Useful links
+
+ - Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
+ - Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
+ - Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
+ - 3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
+ - Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
+ - Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) can be used to export your geometries from Unity 5 scene editor
+ - FBX command line [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/FBX) can be used to generate a .babylon file from .FBX file (animations are supported)
 
 ## Features
-- Complete scene graph with lights, cameras, materials and meshes
-- Collisions engine
-- Physics engine (thanks to [cannon.js](http://github.com/schteppe/cannon.js))
-- Scene picking
-- Antialiasing
-- Animations engine
-- Particles Systems
-- Sprites and 2D layers
--  Optimizations engines: 
- - Frustum clipping
- - Sub-meshes clipping
- - Hardware scaling
- - Selection octrees
- - Offline mode (Assets are saved locally to prevent reloading them)
- - Incremental loading
- - Hardware accelerated instances
-- Standard material is a per pixel material that supports:
- - Diffuse lightning and texture
- - Ambient lightning and texture
- - Specular lightning
- - Opacity texture
- - Reflection texture (Spheric, planar, cubic and projection)
- - Mirror texture
- - Emissive texture
- - Specular texture
- - Bump texture
- - Up to 4 lights (points, directionals, spots, hemispherics)
- - Custom materials
- - Custom shaders
- - Skybox
- - Vertex color
- - Bones (Animations and shadows are supported)
- - Fresnel term for diffuse, opacity, emissive and reflection
--  Special FX
- - Fog
- - Alpha blending
- - Alpha testing
- - Billboarding
- - Fullscreen mode
- - Shadow Maps and Variance Shadow Maps
- - Rendering layers
- - Post-processes (blur, refraction, black'n'white, fxaa, customs...)
- - Lens flares
- - Multi-views
--  Textures:
- - Render target textures
- - Dynamic textures (canvas)
- - Video textures
- - Compressed (DDS) textures
--  Cameras (Perspective and orthographic):
- - Arc rotate camera
- - Free camera
- - Touch camera
- - Virtual Joysticks camera
- - Oculus Rift camera
- - Gamepad camera
--  Meshes: 
- - Mesh cloning
- - Dynamic meshes
- - Height maps
- - Constructive solid geometries
--  Import: 
- - Babylon scene file can be converted from .OBJ, .FBX
- - Exporter for Blender
- - Exporter for Cheetah3d
- - Exporter for 3ds Max
+To get a complete list of supported features, please visit our [website](http://www.babylonjs.com/#specifications).
 
 ## Apache License 2.0 (Apache)
 
@@ -166,7 +117,7 @@ In no event and under no legal theory, whether in tort (including negligence), c
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
 ## External dependencies
-- hand.js: http://handjs.codeplex.com
+- hand.js: https://github.com/deltakosh/handjs
 
 
 

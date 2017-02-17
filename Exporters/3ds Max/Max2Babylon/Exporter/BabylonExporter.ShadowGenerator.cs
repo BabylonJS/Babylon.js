@@ -16,8 +16,30 @@ namespace Max2Babylon
             babylonShadowGenerator.lightId = lightNode.GetGuid().ToString();
 
             babylonShadowGenerator.mapSize = maxLight.GetMapSize(0, Tools.Forever);
-            babylonShadowGenerator.usePoissonSampling = maxLight.AbsMapBias >= 1;
 
+            babylonShadowGenerator.bias = lightNode.GetFloatProperty("babylonjs_shadows_bias", 0.00005f);
+            babylonShadowGenerator.forceBackFacesOnly = lightNode.GetBoolProperty("babylonjs_forcebackfaces");
+
+            var shadowsType = lightNode.GetStringProperty("babylonjs_shadows_type", "Blurred Variance");
+
+            switch (shadowsType)
+            {
+                case "Hard shadows":
+                    break;
+                case "Poisson Sampling":
+                    babylonShadowGenerator.usePoissonSampling = true;
+                    break;
+                case "Variance":
+                    babylonShadowGenerator.useVarianceShadowMap = true;
+                    break;
+                case"Blurred Variance":
+                    babylonShadowGenerator.useBlurVarianceShadowMap = true;
+                    babylonShadowGenerator.blurScale = lightNode.GetFloatProperty("babylonjs_shadows_blurScale", 2);
+                    babylonShadowGenerator.blurBoxOffset = lightNode.GetFloatProperty("babylonjs_shadows_blurBoxOffset", 1);
+                    break;
+            }
+
+            
             var list = new List<string>();
 
             var inclusion = maxLight.ExclList.TestFlag(1); //NT_INCLUDE 
@@ -25,7 +47,11 @@ namespace Max2Babylon
 
             foreach (var meshNode in Loader.Core.RootNode.NodesListBySuperClass(SClass_ID.Geomobject))
             {
+#if MAX2017
+                if (meshNode.CastShadows)
+#else
                 if (meshNode.CastShadows == 1)
+#endif
                 {
                     var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 

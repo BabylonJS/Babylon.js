@@ -18,8 +18,10 @@ namespace Max2Babylon
 
 <head>
     <title>Babylon.js</title>
+    <script type='text/javascript' src='http://www.babylonjs.com/oimo.js'></script>
     <script type='text/javascript' src='http://www.babylonjs.com/cannon.js'></script>
     <script type='text/javascript' src='http://www.babylonjs.com/babylon.js'></script>
+    <script type='text/javascript' src='http://www.babylonjs.com/babylon.inspector.bundle.js'></script>
     <style type='text/css'>
         html, body, div, canvas {
             width: 100%;
@@ -28,15 +30,27 @@ namespace Max2Babylon
             margin: 0;
             overflow: hidden;
         }
+
+        #debugLayerButton {
+            position: absolute;
+            border: white solid 1px;
+            background: rgba(128, 128, 128, 0.3);
+            color: white;
+            left: 50%;
+            width: 100px;
+            margin-left:-50px;
+            bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
     <canvas id='canvas'></canvas>
+    <button id='debugLayerButton'>Debug layer</button>
     <script type='text/javascript'>
         var canvas = document.getElementById('canvas');
         var engine = new BABYLON.Engine(canvas, true);
-
+       
         BABYLON.SceneLoader.Load('', '###SCENE###', engine, function (newScene) {
             newScene.activeCamera.attachControl(canvas);
 
@@ -46,6 +60,14 @@ namespace Max2Babylon
 
             window.addEventListener('resize', function () {
                 engine.resize();
+            });
+
+            document.getElementById('debugLayerButton').addEventListener('click', function () {
+                if (newScene.debugLayer.isVisible()) {
+                    newScene.debugLayer.hide();
+                } else {
+                    newScene.debugLayer.show();
+                }
             });
         });
     </script>
@@ -84,7 +106,7 @@ namespace Max2Babylon
 
         public static string SceneFilename { get; set; }
         public static string SceneFolder { get; set; }
-
+        static Random r = new Random();
         static void Listen()
         {
             try
@@ -98,14 +120,26 @@ namespace Max2Babylon
                     context.Response.AddHeader("Cache-Control", "no-cache");
                     if (string.IsNullOrEmpty(url.LocalPath) || url.LocalPath == "/")
                     {
-                        var responseText = HtmlResponseText.Replace("###SCENE###", SceneFilename);
+
+                        var responseText = HtmlResponseText.Replace("###SCENE###", SceneFilename+"?once="+r.Next());
                         WriteResponse(context, responseText);
                     }
                     else
                     {
                         try
                         {
-                            var buffer = File.ReadAllBytes(Path.Combine(SceneFolder, HttpUtility.UrlDecode(url.PathAndQuery.Substring(1))));
+                            var path = Path.Combine(SceneFolder, HttpUtility.UrlDecode(url.PathAndQuery.Substring(1)));
+                            var questionMarkIndex = path.IndexOf("?");
+                            if (questionMarkIndex != -1)
+                            {
+                                path = path.Substring(0, questionMarkIndex);
+                            }
+                            var hashIndex = path.IndexOf("#");
+                            if (hashIndex != -1)
+                            {
+                                path = path.Substring(0, hashIndex);
+                            }
+                            var buffer = File.ReadAllBytes(path);
                             WriteResponse(context, buffer);
                         }
                         catch
