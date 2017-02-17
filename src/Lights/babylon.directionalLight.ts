@@ -100,7 +100,6 @@ module BABYLON {
                             this._orthoTop = tempVector3.y;
                     }
                 }
-                return this;
             }
 
             var xOffset = this._orthoRight - this._orthoLeft;
@@ -109,6 +108,8 @@ module BABYLON {
             Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
                 this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
                 -activeCamera.maxZ, activeCamera.maxZ, matrix);
+
+            return this;
         }
 
         /**
