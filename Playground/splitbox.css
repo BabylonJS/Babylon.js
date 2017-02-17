@@ -1,0 +1,146 @@
+﻿x-splitbox {
+  position: relative;
+  display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+  display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+  display: -ms-flexbox;      /* TWEENER - IE 10 */
+  display: -webkit-flex;     /* NEW - Chrome */
+  display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
+  height: 100%;
+  overflow: hidden;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-orient: horizontal;
+  -moz-box-orient: horizontal;
+  -ms-box-orient: horizontal;
+  box-orient: horizontal;
+  -webkit-flex-direction: row;
+  -moz-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+x-splitbox[direction="column"] {
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -ms-box-orient: vertical;
+  box-orient: vertical;
+  -webkit-flex-direction: column;
+  -moz-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
+x-splitbox > *:not([splitter]) {
+  min-width: 0;
+  min-height: 0;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  -ms-flex: auto;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+x-splitbox[dragging], x-splitbox > [splitter] {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+x-splitbox > [splitter] {
+  display: block;
+  position: relative;
+  min-width: 0px !important;
+  max-width: 0px !important;
+  cursor: ew-resize;
+  background: #fff;
+  opacity: 0.6;
+}
+
+  x-splitbox > [splitter]:before {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 0.8em;
+    height: 100%;
+    opacity: 0;
+    background: inherit;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transform: translate(-50%, 0);
+    -ms-transform: translate(-50%, 0);
+    transform: translate(-50%, 0);
+  }
+
+  x-splitbox > [splitter]:after {
+    content: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMWVtIiB3aWR0aD0iMWVtIiB2aWV3Qm94PSIwIDAgMTAyNCAxMDI0Ij48cGF0aCBmaWxsPSJyZ2JhKDAsMCwwLDAuNzUpIiBkPSJNNzU4IDIzNGwyMzIgMjc4LTIzMiAyNzgtNjYtNTQgMTg2LTIyNC0xODYtMjI0ek00NzAgNTU0di04NGg4NHY4NGgtODR6TTcyNiA0NzB2ODRoLTg2di04NGg4NnpNMjk4IDU1NHYtODRoODZ2ODRoLTg2ek0zMzIgMjg4bC0xODYgMjI0IDE4NiAyMjQtNjYgNTQtMjMyLTI3OCAyMzItMjc4eiI+PC9wYXRoPjwvc3ZnPg==');
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 1em;
+    padding: 0.05em;
+    background: inherit;
+    border-radius: 100%;
+    -webkit-box-shadow: 0 1px 1px 0px rgba(0,0,0,0.4);
+    -ms-box-shadow: 0 1px 1px 0px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 1px 0px rgba(0,0,0,0.4);
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
+
+  x-splitbox[direction="column"] > [splitter] {
+    cursor: ns-resize;
+    min-width: auto !important;
+    max-width: none !important;
+    min-height: 0px !important;
+    max-height: 0px !important;
+  }
+
+  x-splitbox[direction="column"] > [splitter]:before {
+    width: 100%;
+    height: 0.8em;
+    -webkit-transform: translate(0%, -50%);
+    -ms-transform: translate(0%, -50%);
+    transform: translate(0%, -50%);
+  }
+
+  x-splitbox[direction="column"] > [splitter]:after {
+    -webkit-box-shadow: 1px 0 1px 0px rgba(0,0,0,0.4);
+    -ms-box-shadow: 1px 0 1px 0px rgba(0,0,0,0.4);
+    box-shadow: 1px 0 1px 0px rgba(0,0,0,0.4);
+    -webkit-transform: translate(-50%, -50%) rotate(90deg);
+    -ms-transform: translate(-50%, -50%) rotate(90deg);
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  x-splitbox > [splitter]:hover, x-splitbox > [splitter][dragging] {
+    opacity: 1;
+    z-index: 2;
+  }
+
+  x-splitbox > [splitter][dragging]:before {
+    opacity: 0.3;
+  }
+
+
+@media screen and (max-device-width: 415px) {
+  x-splitbox > [splitter]:before {
+    display: block;
+  }
+
+    x-splitbox[direction="column"] > [splitter] {
+      display: block;
+    }
+}
+

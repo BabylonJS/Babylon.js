@@ -42,6 +42,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkCopyTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkBinary = new System.Windows.Forms.CheckBox();
             this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
@@ -179,6 +180,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkBinary);
             this.groupBox1.Controls.Add(this.chkOnlySelected);
             this.groupBox1.Controls.Add(this.chkAutoSave);
             this.groupBox1.Controls.Add(this.chkHidden);
@@ -194,11 +196,22 @@
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             // 
+            // chkBinary
+            // 
+            this.chkBinary.AutoSize = true;
+            this.chkBinary.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkBinary.Location = new System.Drawing.Point(320, 104);
+            this.chkBinary.Name = "chkBinary";
+            this.chkBinary.Size = new System.Drawing.Size(135, 17);
+            this.chkBinary.TabIndex = 16;
+            this.chkBinary.Text = "Generate binary version";
+            this.chkBinary.UseVisualStyleBackColor = true;
+            // 
             // chkOnlySelected
             // 
             this.chkOnlySelected.AutoSize = true;
             this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkOnlySelected.Location = new System.Drawing.Point(362, 81);
+            this.chkOnlySelected.Location = new System.Drawing.Point(320, 81);
             this.chkOnlySelected.Name = "chkOnlySelected";
             this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
             this.chkOnlySelected.TabIndex = 15;
@@ -209,7 +222,7 @@
             // 
             this.chkAutoSave.AutoSize = true;
             this.chkAutoSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAutoSave.Location = new System.Drawing.Point(196, 104);
+            this.chkAutoSave.Location = new System.Drawing.Point(166, 104);
             this.chkAutoSave.Name = "chkAutoSave";
             this.chkAutoSave.Size = new System.Drawing.Size(130, 17);
             this.chkAutoSave.TabIndex = 14;
@@ -220,7 +233,7 @@
             // 
             this.chkHidden.AutoSize = true;
             this.chkHidden.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkHidden.Location = new System.Drawing.Point(196, 81);
+            this.chkHidden.Location = new System.Drawing.Point(166, 81);
             this.chkHidden.Name = "chkHidden";
             this.chkHidden.Size = new System.Drawing.Size(125, 17);
             this.chkHidden.TabIndex = 13;
@@ -302,5 +315,6 @@
         private System.Windows.Forms.Button butExportAndRun;
         private System.Windows.Forms.CheckBox chkOnlySelected;
         private System.Windows.Forms.Button butClose;
+        private System.Windows.Forms.CheckBox chkBinary;
     }
 }

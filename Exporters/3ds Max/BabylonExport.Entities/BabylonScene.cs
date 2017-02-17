@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using SharpDX;
 
 namespace BabylonExport.Entities
 {
     [DataContract]
     public class BabylonScene
     {
+        [DataMember]
+        public BabylonProducer producer { get; set; }
+
         [DataMember]
         public bool autoClear { get; set; }
 
@@ -37,6 +39,15 @@ namespace BabylonExport.Entities
         public float[] gravity { get; set; }
 
         [DataMember]
+        public string physicsEngine { get; set; }
+
+        [DataMember]
+        public bool physicsEnabled { get; set; }
+
+        [DataMember]
+        public float[] physicsGravity { get; set; }
+
+        [DataMember]
         public BabylonCamera[] cameras { get; set; }
 
         [DataMember]
@@ -47,6 +58,9 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonMesh[] meshes { get; set; }
+
+        [DataMember]
+        public BabylonSound[] sounds { get; set; }
 
         [DataMember]
         public BabylonMaterial[] materials { get; set; }
@@ -65,13 +79,23 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonSkeleton[] skeletons { get; set; }
-        
-        public Vector3 MaxVector { get; set; }
-        public Vector3 MinVector { get; set; }
+
+        [DataMember]
+        public BabylonActions actions { get; set; }
+
+        [DataMember]
+        public object metadata { get; set; }
+
+        [DataMember]
+        public bool workerCollisions { get; set; }
+
+        public BabylonVector3 MaxVector { get; set; }
+        public BabylonVector3 MinVector { get; set; }
 
         public string OutputPath { get; private set; }
 
         public List<BabylonMesh> MeshesList { get; private set; }
+        public List<BabylonSound> SoundsList { get; private set; }
         public List<BabylonCamera> CamerasList { get; private set; }
         public List<BabylonLight> LightsList { get; private set; }
         public List<BabylonMaterial> MaterialsList { get; private set; }
@@ -92,34 +116,39 @@ namespace BabylonExport.Entities
             MultiMaterialsList = new List<BabylonMultiMaterial>();
             ShadowGeneratorsList = new List<BabylonShadowGenerator>();
             SkeletonsList = new List<BabylonSkeleton>();
+            SoundsList = new List<BabylonSound>();
 
             // Default values
             autoClear = true;
             clearColor = new[] { 0.2f, 0.2f, 0.3f };
-            ambientColor = new[] {0f, 0f, 0f };
-            gravity = new[] {0f, 0f, -0.9f};
+            ambientColor = new[] { 0f, 0f, 0f };
+            gravity = new[] { 0f, 0f, -0.9f };
+
+            MaxVector = new BabylonVector3 { X = float.MinValue, Y = float.MinValue, Z = float.MinValue };
+            MinVector = new BabylonVector3 { X = float.MaxValue, Y = float.MaxValue, Z = float.MaxValue };
         }
 
-        public void Prepare(bool generateDefaultLight = true)
+        public void Prepare(bool generateDefaultLight = true, bool generateDefaultCamera = true)
         {
             meshes = MeshesList.ToArray();
+            sounds = SoundsList.ToArray();
 
             materials = MaterialsList.ToArray();
             multiMaterials = MultiMaterialsList.ToArray();
             shadowGenerators = ShadowGeneratorsList.ToArray();
             skeletons = SkeletonsList.ToArray();
 
-            if (CamerasList.Count == 0)
+            if (CamerasList.Count == 0 && generateDefaultCamera)
             {
-                var camera = new BabylonCamera {name = "Default camera", id = Guid.NewGuid().ToString()};
+                var camera = new BabylonCamera { name = "Default camera", id = Guid.NewGuid().ToString() };
 
                 var distanceVector = MaxVector - MinVector;
-                var midPoint = MinVector +distanceVector / 2;
+                var midPoint = MinVector + distanceVector / 2;
                 camera.target = midPoint.ToArray();
                 camera.position = (midPoint + distanceVector).ToArray();
 
                 var distance = distanceVector.Length();
-                camera.speed =  distance/ 50.0f;
+                camera.speed = distance / 50.0f;
                 camera.maxZ = distance * 4f;
 
                 camera.minZ = distance < 100.0f ? 0.1f : 1.0f;
@@ -129,18 +158,19 @@ namespace BabylonExport.Entities
 
             if (LightsList.Count == 0 && generateDefaultLight)
             {
-                var light = new BabylonLight {name = "Default light", id = Guid.NewGuid().ToString()};
-
-                var midPoint = MinVector + (MaxVector - MinVector) / 2;
-                light.type = 0;
-                light.position = (midPoint + (MaxVector - MinVector)).ToArray();
-
-                light.diffuse = new Vector3(1, 1, 1).ToArray();
-                light.specular = new Vector3(1, 1, 1).ToArray();
+                var light = new BabylonLight
+                {
+                    name = "Default light",
+                    id = Guid.NewGuid().ToString(),
+                    type = 3,
+                    groundColor = new float[] {0, 0, 0},
+                    direction = new[] {0, 1.0f, 0},
+                    intensity = 1
+                };
 
                 LightsList.Add(light);
             }
-            
+
             cameras = CamerasList.ToArray();
             lights = LightsList.ToArray();
 
@@ -150,14 +180,24 @@ namespace BabylonExport.Entities
             }
         }
 
-        public void AddTexture(string diffuseTexture)
+        public void AddTexture(string texture)
         {
-            if (exportedTextures.Contains(diffuseTexture))
+            if (exportedTextures.Contains(texture))
                 return;
 
-            exportedTextures.Add(diffuseTexture);
+            exportedTextures.Add(texture);
 
-            File.Copy(diffuseTexture, Path.Combine(OutputPath, Path.GetFileName(diffuseTexture)), true);
+            File.Copy(texture, Path.Combine(OutputPath, Path.GetFileName(texture)), true);
+        }
+
+        public bool AddTextureCube(string textureName)
+        {
+            if (exportedTextures.Contains(textureName))
+                return false;
+
+            exportedTextures.Add(textureName);
+
+            return true;
         }
     }
 }

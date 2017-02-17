@@ -1,323 +1,91 @@
-Changes list
-============
-- 1.13.0:
- - **Major updates**
- - TypeScript port finished ([davrous](http://www.github.com/davrous) & [deltakosh](http://www.github.com/deltakosh)) 
- - Physics engine: new OIMO plugin ([temechon](http://www.github.com/temechon))
- - new demo: [V8 engine](http://www.babylonjs.com/index.html?V8)
- - **Updates**
- - Fixed ray creation when the devicePixelRatio is not equals to 1 ([demonixis](http://www.github.com/demonixis))
- - New ```mesh.registerAfterRender``` and ```mesh.unregisterAfterRender``` functions ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```fragmentElement``` parameter to define custom shader for ```BABYLON.ParticleSystem``` constructor ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```OnKeyDown``` and ```OnKeyUp``` triggers. See [actions wiki](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) for more info ([deltakosh](http://www.github.com/deltakosh)) 
- - ArcRotateCamera can now check collisions [wiki](https://github.com/BabylonJS/Babylon.js/wiki/09-Cameras-collisions) ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```Engine.Version``` property which returns a string with the current version ([deltakosh](http://www.github.com/deltakosh)) 
- - New "Export and Run" feature for Max2Babylon ([deltakosh](http://www.github.com/deltakosh)) 
- - Animations delta time is now capped between Scene.MinDeltaTime and Scene.MaxDeltaTime ([deltakosh](http://www.github.com/deltakosh)) 
- - Non-squared DDS are now supported ([deltakosh](http://www.github.com/deltakosh)) 
- - New triggers: ```BABYLON.ActionManager.OnIntersectionEnterTrigger```, ```BABYLON.ActionManager.OnIntersectionExitTrigger```. [Documentation](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) updated ([deltakosh](http://www.github.com/deltakosh)) 
- - New mesh type: ```BABYLON.LinesMesh```. You can find a [demo here](http://www.babylonjs.com/?LINES) ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```mesh.moveWithCollisions``` function. Used with ```mesh.ellipsoid``` and '''mesh.ellipsoidOffset```, this function can be used to move a mesh and use an ellipsoid around it to [check collisions](https://github.com/BabylonJS/Babylon.js/wiki/09-Collisions-by-gravity) ([deltakosh](http://www.github.com/deltakosh)) 
- - New feature demo: [How to do drag'n'drop](http://www.babylonjs.com/playground/?18) ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```BABYLON.PickingInfo.getTextureCoordinates()``` function ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```BABYLON.Scene.cameraToUseForPointers``` property that defines this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position ([deltakosh](http://www.github.com/deltakosh)) 
- - ```BABYLON.OculusOrientedCamera``` was replaced by ```BABYLON.OculusCamera``` for better integration into camera system ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```Mesh.CreateTiledGround()``` function ([kostar111](https://github.com/kostar111)) 
- - Shadow Poisson Sampling ([clementlevasseur](https://github.com/clementlevasseur)) 
- - **Bugfixes**
- - Fixing a bug when instances are used with a mesh with submeshes.length > 1 ([deltakosh](http://www.github.com/deltakosh)) 
- - CreateCylinder() : add subdivisions parameter and fix normals bug ([kostar111](https://github.com/kostar111)) 
-- 1.12.0:
- - **Major updates**
- - Babylon.js is now entirely developed using TypeScript ([deltakosh](http://www.github.com/deltakosh), [davrous](http://www.github.com/davrous))
- - Physics plugins: You can add your own physics engine to Babylon.js. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/Adding-your-own-physics-engine-plugin-to-Babylon.js). Cannon.js is the first supported plugin ([deltakosh](http://www.github.com/deltakosh))
- - ```BABYLON.Action```: You can now create a complex system of interactions. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) ([deltakosh](http://www.github.com/deltakosh))
- - Babylon.js Playground: Experiment and learn Babylon.js using the [playground](http://www.babylonjs.com/playground) ([deltakosh](http://www.github.com/deltakosh))
- - Geometry system ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
- - Support for TGA textures based on [Vincent Thibault](http://blog.robrowser.com/javascript-tga-loader.html) work ([deltakosh](http://www.github.com/deltakosh))
- - ```BABYLON.Gamepads``` & ```BABYLON.Gamepad```: Support for Gamepad API (Xbox 360 Pad & Generic Pads) ([davrous](http://www.github.com/davrous))
- - ```BABYLON.GamepadCamera```: use a FPS-like camera controlled by your gamepad using 1 line of code ([davrous](http://www.github.com/davrous))
- - Hardware accelerated instances used to render identical meshes. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-instances) ([deltakosh](http://www.github.com/deltakosh))
- - New ```BABYLON.GroundMesh``` created by ```BABYLON.Mesh.Createground``` and ```BABYLON.Mesh.CreateGroundFromHeightMap```. This object is optimized for collisions and rendering of grounds (!!!). A first feature is also included ```GroundMesh.getHeightAtCoordinates``` ([deltakosh](http://www.github.com/deltakosh))
- - Beta: New [exporter for 3ds Max 2013+](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) ([deltakosh](http://www.github.com/deltakosh))
- - **Updates**
- - DDS: Support for RGB, Luminance and cube file format ([deltakosh](http://www.github.com/deltakosh))
- - New LensFlareSystem.isEnabled property ([deltakosh](http://www.github.com/deltakosh))
- - New ```samplingMode``` parameter when creating textures ([deltakosh](http://www.github.com/deltakosh))
- - Blender: changed object.isVisible to reflect the corresponding param in Blender ([vousk](http://www.github.com/vousk))
- - New properties: ```scene.meshUnderPointer```, ```scene.pointerX```, ```scene.pointerY``` ([deltakosh](http://www.github.com/deltakosh))
- - Added "layerMask" property to meshes and cameras ([marcolebdech](https://github.com/marcolebdech))
- - New ```Mesh.showSubMeshesBoundingBox``` to display sbumeshes bounding boxes ([deltakosh](http://www.github.com/deltakosh))
- - Octree are now more generics and used to optimize rendering, collisions and picking. [More info](https://github.com/BabylonJS/Babylon.js/wiki/Optimizing-performances-with-octrees) ([deltakosh](http://www.github.com/deltakosh))
- - Shadows now support alpha testing ([deltakosh](http://www.github.com/deltakosh))
- - New feature demo: [particles](http://www.babylon.com/?PARTICLES) ([deltakosh](http://www.github.com/deltakosh))
- - New ```renderTargetTexture.refreshRate``` property to define the refresh rate of RenderTargetTexture: Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on... ([deltakosh](http://www.github.com/deltakosh))
- - New ```scene.beforeCameraRender``` and ```scene.afterCameraRender``` callbacks ([deltakosh](http://www.github.com/deltakosh))
- - New custom functions for ParticleSystem: ```startDirectionFunction``` and ```startPositionFunction``` ([deltakosh](http://www.github.com/deltakosh))
- - ```useAlphaFromDiffuseTexture``` option for standard material to use 8-it alpha channel from the diffuse texture instead of using it as an alpha test value ([Platane](https://github.com/Platane))
- - New ```Tools.Log, Tools.Warn, Tools.Error``` functions. Filter can be applied using ```Tools.CurrentLoglevel``` ([MaxenceBrasselet](https://github.com/MaxenceBrasselet), [deltakosh](http://www.github.com/deltakosh))
- - Using grunt-contrib-uglify to reduce babylon.js size (from 500KB to 384KB) ([deltakosh](http://www.github.com/deltakosh))
- - ```setDirectionToTarget``` function added to SpotLight, HemisphericLight and DirectionalLight ([Wingnutt](https://github.com/Wingnutt))
- - Picking now takes viewport in account ([deltakosh](http://www.github.com/deltakosh))
- - Point lights and spot lights now have a range ([deltakosh](http://www.github.com/deltakosh))
- - Color3 interpolator for animations ([deltakosh](http://www.github.com/deltakosh))
- - New function: ```VertexData.CreateGroundFromHeightMap```([deltakosh](http://www.github.com/deltakosh))
- - New function: ```Tools.CreateScreenshot```([nicolas-obre](https://github.com/nicolas-obre))
- - **Bugfixes**
- - Fixing ```ArcRotateCamera.setPosition()``` ([Celian](https://github.com/kostar111))
- - RenderTarget crashed when used with incremental engine ([deltakosh](http://www.github.com/deltakosh))
- - Depth clear is now more controlled (Mainly for Ejecta) ([deltakosh](http://www.github.com/deltakosh))
- - Fixed a bug with ratio when using RenderTargetTexture [deltakosh](http://www.github.com/deltakosh))
- - Fixed a bug in the sandbox tool ([davrous](http://www.github.com/davrous))
- - Fixed a bug with skybox seams [holcombj](https://github.com/holcombj))
- - Moved mousewheel event from window to canvas [deltakosh](http://www.github.com/deltakosh))
- - Fixed matricesIndices serialization ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
- - Bug fix and GC optimisation on CSG ([clementlevasseur](https://github.com/clementlevasseur))
- - **Breaking changes**
- - ```Mesh.setVerticesData``` signature is now: (kind, values, updatable) instead of (values, kind, updatable) in order to be consistent with ```Mesh.updateVerticesData``` [deltakosh](http://www.github.com/deltakosh))
-- 1.11.0:
- - **Major updates**
- - New option for mesh: ```mesh.showBoundingBox``` to display mesh's bounding box. You can configure back and front color using ```scene.getBoundingBoxRenderer()```. This function returns a ```BABYLON.BoundingBoxRenderer``` where you can define ```backColor```, ```frontColor``` and ```showBackLines``` ([deltakosh](http://www.github.com/deltakosh))
- - New basic mesh: ```BABYLON.Mesh.CreateTorusKnot``` ([deltakosh](http://www.github.com/deltakosh))
- - New ```BABYLON.AnaglyphArcRotateCamera``` and ```BABYLON.AnaglyphFreeCamera``` ([michael-korbas](https://github.com/michael-korbas)), ([deltakosh](http://www.github.com/deltakosh))
- - Tags system ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
- - New render pipeline system for post-processes. See documentation [here](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-PostProcessRenderPipeline) ([michael-korbas](https://github.com/michael-korbas))
- - **Updates**
- - Added parameters to enable or disable a type of texture on all ```BABYLON.StandardMaterial``` ([demonixis](http://www.github.com/demonixis))
- - New ```BABYLON.VertexData.ExtractFromMesh``` function ([deltakosh](http://www.github.com/deltakosh))
- - Cameras can now have sub-cameras (see ```BABYLON.AnaglyphArcRotateCamera``` for example) ([deltakosh](http://www.github.com/deltakosh))
- - New ```BABYLON.Engine.runEvenInBackground``` property. True by default. It allows you to stop rendering when the browser is not the foreground application. ([deltakosh](http://www.github.com/deltakosh))
- - Darkness of a shadow + shadow on transparent meshes ([clementlevasseur](https://github.com/clementlevasseur))
- - New event for materials: ```onCompiled``` and ```onError``` ([deltakosh](http://www.github.com/deltakosh))
- - **Bugfixes**
- - Fixed a bug with collisions cache
- - Fixed a bug with mesh.dispose when called twice ([deltakosh](http://www.github.com/deltakosh))
- - Fixed an issue with Internet Explorer while rendering a RenderTargetTexture outside the engine renderLoop ([nicolas-obre](https://github.com/nicolas-obre))
- - **New demos*
- - [CYOS](http://www.babylonjs.com/cyos)
-- 1.10.0:
- - **Major updates**
- - Virtual joysticks canera ([davrous](http://www.github.com/davrous))
- - Oculus Rift support ([davrous](http://www.github.com/davrous)), ([simonferquel](http://www.github.com/simonferquel)), ([deltakosh](http://www.github.com/deltakosh))
- - Support for DDS textures ([deltakosh](http://www.github.com/deltakosh))
- - Constructive solid geometries ([CraigFeldspar](https://github.com/CraigFeldspar))
- - Importer plugin system ([deltakosh](http://www.github.com/deltakosh))
- - Filter postprocess ([deltakosh](http://www.github.com/deltakosh))
- - Convolution postprocess ([deltakosh](http://www.github.com/deltakosh))
- - Added Cheetah3d exporter ([Calebsem](http://www.github.com/Calebsem))
- - New ```BABYLON.ShaderMaterial``` object to simply create custom shaders ([deltakosh](http://www.github.com/deltakosh)) - See [Custom shader - cell shading](http://www.babylonjs.com/index.html?CUSTOMSHADER)
- - New ```BABYLON.VertexData``` object to easily manipulates vertex attributes ([deltakosh](http://www.github.com/deltakosh)) - See [VertexData](http://www.babylonjs.com/index.html?CLOUDS)
- - **Updates**
- - Shaders can be loaded from DOM element alongside .fx files ([deltakosh](http://www.github.com/deltakosh))
- - Adding arcRotateCamera.wheelPrecision ([deltakosh](http://www.github.com/deltakosh))
- - Support for DOMMouseScroll ([nicolas-obre](https://github.com/nicolas-obre))
- - Adding BABYLON.PickingInfo.prototype.getNormal ([deltakosh](http://www.github.com/deltakosh))
- - Adding a new noMipmap parameter to ```BABYLON.CubeTexture``` constructor ([deltakosh](http://www.github.com/deltakosh))
- - Adding ```BABYLON.Color3.FromInts()``` and ```BABYLON.Color4.FromInts()``` ([deltakosh](http://www.github.com/deltakosh))
- - Adding invertY parameter to ```BABYLON.VideoTexture``` constructor ([deltakosh](http://www.github.com/deltakosh))
- - Adding new ```BABYLON.Scene.getCameraByID``` function ([deltakosh](http://www.github.com/deltakosh))
- - Adding new ```BABYLON.Scene.setActiveCameraByName()``` function ([deltakosh](http://www.github.com/deltakosh))
- - Renaming ```BABYLON.Scene.activeCameraByID()``` to ```BABYLON.Scene.setActiveCameraByID()``` ([deltakosh](http://www.github.com/deltakosh))
- - Adding texture wrapping support to Blender exporter ([vousk](http://www.github.com/vousk))
- - Add Gulp for buiding babylon cross platform ([SideraX](http://www.github.com/SideraX))
- - Shadow map improvement on pack method ([clementlevasseur](http://www.github.com/clementlevasseur))
- - **Bugfixes**
- - Fixing multimat naming convention in Blender ([deltakosh](http://www.github.com/deltakosh))
- - Fixing mesh.clone ([temechon](http://www.github.com/temechon))
- - Fixing camera rotation export in blender ([khmm12](http://www.github.com/khmm12))
- - Fixing opacity map bug ([deltakosh](http://www.github.com/deltakosh))
- - Fixing physics objects disposal ([deltakosh](http://www.github.com/deltakosh))
- - Using the hardware scaling when creating a ray ([demonixis](http://www.github.com/demonixis))
- - **New demos*
- - [Hill Valley](http://www.babylonjs.com/index.html?HILLVALLEY)
- - [Custom shader - cell shading](http://www.babylonjs.com/index.html?CUSTOMSHADER)
- - [Constructive solid geometries](http://www.babylonjs.com/index.html?CSG)
- - [Postprocess - Convolution](http://www.babylonjs.com/index.html?PPCONVOLUTION)
- - [VertexData](http://www.babylonjs.com/index.html?CLOUDS)
-- 1.9.0:
- - **Major updates**
- - Beta support for scene serialization with ```BABYLON.SceneSerializer.Serialize``` function ([deltakosh](http://www.github.com/deltakosh))
- - Blender exporter now supports 32 bits indices ([deltakosh](http://www.github.com/deltakosh))
- - Flat shading support (From Blender and with ```mesh.convertToFlatShadedMesh()``) ([deltakosh](http://www.github.com/deltakosh))
- - **Updates**
- - New ```mesh.rotate``` and ```mesh.translate``` functions to rotate and translate mesh both locally and globally ([deltakosh](http://www.github.com/deltakosh))
- - New feature for particles: ```ParticleSystem.forceDepthWrite``` ([deltakosh](http://www.github.com/deltakosh))
- - Adding a new parameter to pick in order to be able to pick even on multi views ([deltakosh](http://www.github.com/deltakosh))
- - New ```mesh.lookAt``` function ([professorF](https://github.com/professorF))
- - New postprocess system (independent from cameras) ([michael-korbas](https://github.com/michael-korbas))
- - New ```mesh.setAbsolutePosition``` function ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
- - **Bugfixes**
- - Fixing issue with ```mesh.infiniteDistance``` ([deltakosh](http://www.github.com/deltakosh))
- - Fixing issue with camera caches ([deltakosh](http://www.github.com/deltakosh))
- - Fixing issue with aspect ratio ([deltakosh](http://www.github.com/deltakosh))
- - Fixing arcRotateCamera angle limitations ([deltakosh](http://www.github.com/deltakosh))
- - Fixing a bug with multi-views: depth buffer was not clear between different passes ([deltakosh](http://www.github.com/deltakosh))
-- 1.8.5:
- - **Major updates**
- - Visual Studio 2013 templates for Windows 8.1 and nuget packages ([pierlag](http://www.github.com/pierlag))
- - **Updates**
- - New ```matrix.multiply``` function (up to 50% faster) ([deltakosh](http://www.github.com/deltakosh))
- - New matrices cache system for camera (view and projection matrices) ([juliengobin](http://www.github.com/juliengobin))
- - New physics impostor: compound and mesh (still really slow) ([deltakosh](http://www.github.com/deltakosh))
- - Set crossOrigin flag for support CORS ([vbouzon](http://www.github.com/vbouzon))
- - XNA importer: Changes for Right-Left Coordinate Systems & Prefixed Mesh Parts with Mesh Name ([professorF](http://www.github.com/professorF))
- - Fixing getPivotMatrix ([gwenael-hagenmuller](http://www.github.com/gwenael-hagenmuller))
- - New geometry functions: getLocalTranslation, setPositionWithLocalVector, getPositionExpressedInLocalSpace,locallyTranslate ([gwenael-hagenmuller](http://www.github.com/gwenael-hagenmuller))
- - Adding multi mesh import from same file([nicolas-obre](http://www.github.com/nicolas-obre)) 
- - **Bugfixes**
- - Fixing issue when disposing a parent and not its children ([deltakosh](http://www.github.com/deltakosh))
- - Fixing .obj importer ([deltakosh](http://www.github.com/deltakosh))
- - Added guardband checks for impostors' size ([deltakosh](http://www.github.com/deltakosh))
-- 1.8.0:
- - **Major updates**
- - Support for [physics engine](http://www.babylonjs.com/index.html?PHYSICS) thanks to cannon.js ([deltakosh](http://www.github.com/deltakosh))
- - New [sandbox tool](http://www.babylonjs.com/sandbox/) ([davrous](http://www.github.com/davrous))
- - **Updates**
- - New ```animation.currentFrame``` property to get current animation frame ([deltakosh](http://www.github.com/deltakosh))
- - New ```animation.floatInterpolateFunction``` property to define custom float interpolation function ([deltakosh](http://www.github.com/deltakosh))
- - New ```animation.vector3InterpolateFunction``` property to define custom vector3 interpolation function ([deltakosh](http://www.github.com/deltakosh))
- - New ```animation.quaternionInterpolateFunction``` property to define custom quaternion interpolation function ([deltakosh](http://www.github.com/deltakosh))
-- 1.7.3:
- - **Updates**
- - Support for "file://" moniker ([davrous](https://github.com/davrous))
- - Support for DAE (COLLADA) file format ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
- - Support for "empty" object type in Blender exporter ([deltakosh](http://www.github.com/deltakosh))
- - **Bugfixes**
- - "use strict" is no more included in minified version ([deltakosh](http://www.github.com/deltakosh))
- - Fixing a bug with MSGesture with IE11 on Windows 7 ([deltakosh](http://www.github.com/deltakosh))
-- 1.7.0:
- - **Major updates**
- - Support for [lens flares](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) ([deltakosh](http://www.github.com/deltakosh))
- - Support for [multi-views](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-multi-views) ([deltakosh](http://www.github.com/deltakosh))
- - **Updates**
- - New ```light.excludedMeshes``` property to exclude specific meshes from light computation ([deltakosh](http://www.github.com/deltakosh))
- - New ```texture.anisotropicFilteringLevel``` property to define the anisotropic level of a texture ([deltakosh](http://www.github.com/deltakosh))
- - New ```mesh.infiniteDistance``` property to make a mesh static from the point of view of the camera ([deltakosh](http://www.github.com/deltakosh))
- - New ```scene.customRenderTargets``` property to add our own renderTargetTexture ([deltakosh](http://www.github.com/deltakosh))
- - Transparent meshes are sorted back to front ([deltakosh](http://www.github.com/deltakosh))
- - **Bugfixes**
- - Fixing a bug when cloning mirrorTexture ([deltakosh](http://www.github.com/deltakosh))
-- 1.6.0:
- - **Major updates**
- - Support for [postprocesses](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-postprocesses) ([deltakosh](http://www.github.com/deltakosh))
- - New builtin postprocesses: Pass, Refraction, Blur, Black and White, Convolution ([deltakosh](http://www.github.com/deltakosh))
- - New builtin postprocess: FXAA ([simonferquel](http://www.github.com/simonferquel))
- - Online [assets converter](http://www.babylonjs.com/converter.html)  ([pierlag](https://github.com/pierlag))
- - **Updates**
- - New features demos: [POSTPROCESS - REFRACTION](http://www.babylonjs.com/index.html?PPPREF) and [POSTPROCESS - BLOOM](http://www.babylonjs.com/index.html?PPBLOOM)
- - Removing the unused depth buffer for postprocesses chains ([simonferquel](http://www.github.com/simonferquel))
- - **Bugfixes**
- - Fixing a memory leak when releasing textures ([simonferquel](http://www.github.com/simonferquel))
-- 1.5.3:
- - **Updates**
- - New ```lockedTarget``` for freeCamera in order to allow cameras to track moving targets ([deltakosh](http://www.github.com/deltakosh))
- - Cameras now supports animations (see http://www.babylonjs.com/index.html?TRAIN) ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```angularSensibility``` property for cameras ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```upVector``` property for cameras. Cameras are now not limited to a (0, 1, 0) up vector ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```parent``` property for cameras and lights: Lights, cameras and meshes can be related. For instance a camera can now be attached to a mesh as child and vice versa ([deltakosh](http://www.github.com/deltakosh))
- - **Bugfixes**
- - Fixing a bug when exporting materials from Blender ([deltakosh](http://www.github.com/deltakosh)) 
- - Fixing an issue with IE11 for RT ([deltakosh](http://www.github.com/deltakosh))
- - Fixing an issue with looping animations ([deltakosh](http://www.github.com/deltakosh))
-- 1.5.2:
- - **Updates**
- - New ```renderingGroupId``` for SpriteManager ([deltakosh](http://www.github.com/deltakosh))
- - ```BoundingBox``` and ```BoundingSphere``` are prepared with an identity matrix during construction ([deltakosh](http://www.github.com/deltakosh)) 
- - **Bugfixes**
- - Fixing a bug preventing wireframe to be displayed ([deltakosh](http://www.github.com/deltakosh)) 
- - Fixing an issue with last IE update ([deltakosh](http://www.github.com/deltakosh))
-- 1.5.1:
- - **Updates**
- - Massive update of typescript files ([jroblak](http://www.github.com/jroblak))
- - **Bugfixes**
- - Fixing an issue with ```SceneLoader.ImportMesh``` ([nicolas-obre](http://www.github.com/nicolas-obre))
- - Fixing an issue with sprites rendering when no mesh is present ([deltakosh](http://www.github.com/deltakosh))
-- 1.5.0:
- - **Major updates**
- - New ```DeviceOrientationCamera``` that supports W3C DeviceOrientations events ([deltakosh](http://www.github.com/deltakosh))
- - Incremental loading support for meshes and textures ([deltakosh](http://www.github.com/deltakosh))
- - New API online page to convert .babylon files to .incremental.babylon files ([pierlag](https://github.com/pierlag))
- - New ```mesh.renderingGroupId``` and ```particleSystem.renderingGroupId``` properties to support rendering layers ([deltakosh](http://www.github.com/deltakosh))
- - **Updates**
- - New ```predicate``` parameter for ```scene.pick``` function in order to be able to select pickable meshes ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```mesh.refreshBoundingInfo()``` method ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```onAnimationEnd``` parameter for animations ([deltakosh](http://www.github.com/deltakosh)) 
-- 1.4.3:
- - **Updates**
- - New ```mesh.setLocalTranslation``` and ```mesh.getLocalTranslation``` functions ([deltakosh](http://www.github.com/deltakosh))
- - New ```matrix.setTranslation``` function ([deltakosh](http://www.github.com/deltakosh))
- - ```mesh.rotation``` and ```mesh.rotationQuaternion``` are now two separated functions ([deltakosh](http://www.github.com/deltakosh)) 
-- 1.4.2:
- - **Bugfixes**
- - Fixing an issue with scene.executeWhenReady ([deltakosh](http://www.github.com/deltakosh))
-- 1.4.1:
- - **Bugfixes**
- - Support for Safari ([deltakosh](http://www.github.com/deltakosh))
- - Adding local transformations to Blender exporter ([deltakosh](http://www.github.com/deltakosh))
- - IndexedDB code refactoring to support simultaneous calls ([davrous](https://github.com/davrous))
- - Hardware scaling fix ([Gwena�l Hagenmuller](https://github.com/gwenael-hagenmuller))
- - Fixing a bug with sprites dynamic buffers ([deltakosh](http://www.github.com/deltakosh))
-- 1.4.0:
- - **Major features** 
- - Bones support ([deltakosh](http://www.github.com/deltakosh)). Bones and animated bones are now supported. They can cast shadows. Bones can be exported from Blender or from FBX
- - Offline support ([davrous](https://github.com/davrous). You can specify to offline assets (scene and textures) to a local IndexedDB. Assets are then loaded once until you change the version on a server-side manifest
- - N-Level octrees ([deltakosh](http://www.github.com/deltakosh)):
- - **Updates**
- - Adding ```dispose()``` function and a ```disposeWhenFinishedAnimating``` property to sprites ([Cyle](http://github.com/CYle/))
- - Adding a ```applyTransform()``` function to meshes in order to bake a specific transformation into vertices ([deltakosh](http://www.github.com/deltakosh))
- - Adding ```setPivotMatrix()``` and ```getPivotMatrix()``` to meshes to define pivot matrix ([deltakosh](http://www.github.com/deltakosh))
- - ```Mesh.CreateCylinder``` now takes two diameters as parameters to be able to create cone ([deltakosh](http://www.github.com/deltakosh)) 
- - New ```material.Clone``` function ([deltakosh](http://www.github.com/deltakosh)) 
- - **Bugfixes**
- - ```scene.IsReady()``` is more robust now and can be used to detect when the scene is EFFECTIVELY ready :) ([deltakosh](http://www.github.com/deltakosh))
- - Fixing animations timing. Animations should be in sync now ([deltakosh](http://www.github.com/deltakosh))
- - Fixing a bug with orthographic camera ([deltakosh](http://www.github.com/deltakosh))
- - Fixing a bug with ```attachControl()``` function ([deltakosh](http://www.github.com/deltakosh))
- - Fixing a bug with ```scene.pick()``` function ([deltakosh](http://www.github.com/deltakosh))
-- 1.3.2:
- - Fixing a bug with camera.detachControl
-- 1.3.0:
- - Selection octrees
- - Breaking changes: Meshes now use multi vertex buffers (one for each attribute) instead of a big one. This is for more flexibility. The .babylon file format has changed accordingly (no more .vertices property on meshes but .positions, .normals, .colors, .uvs, .uvs2)
-- 1.2.1:
- - Support for PointerLock ()
- - StandardMaterial now supports per-vertex color
- - Blender exporter supports per-vertex color
-- 1.2.0:
- - Major rework of the API to remove GC pressure.
- - FreeCamera: Support for QWERTY keyboards
- - New 3D charting demo
-- 1.1.0:
- - Shadow Maps and Variance Shadow Maps
- - Shadows Maps and animations are now exported from Blender
- - Hand.js is no longer required for ArcRotateCamera
- - ArcRotateCamera support pinch/zoom gesture on IE
-- 1.0.10:
- - Using typed arrays for Matrix
- - Improving IE11 support
- - Support for new mesh primitives : Torus and cylinder
-- 1.0.9:
- - Orthographic camera
-- 1.0.8:
- - Adding keyboard support to ArcRotateCamera
- - Starting to use git tag
-- 1.0.7:
- - New demo: Worldmonger
- - Improved IE shaders
-- 1.0.6:
- - Dynamic meshes
- - Skybox
- - Support for high-DPI displays
- - Height maps
-- 1.0.5:
- - Adding color tint for sprites and layers
-- 1.0.4:
- - Various optimizations
- - Fog
- - TypeScript support
-- 1.0.3:
- - Video textures
- - Normal map (bump) 
-- 1.0.2:
- - Spot lights
- - Hemispheric lights
+# 2.5.0:
+
+### Major updates
+- New `StandardRenderingPipeline` effect to support screen space lens flare and depth of field. [Demo](http://www.babylonjs.com/Demos/StandardRenderingPipeline/) - ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+- New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
+- Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
+- Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
+- New BoneIKController [Demo](http://www.babylonjs-playground.com/#1EVNNB#15) ([abow](https://github.com/abow))
+- New BoneLookController [Demo](http://www.babylonjs-playground.com/#1B1PUZ#15) ([abow](https://github.com/abow))
+- You can now build your own version of babylon.js with `gulp build-custom` [Doc](http://doc.babylonjs.com/generals/how_to_start) ([deltakosh](https://github.com/deltakosh))
+
+### Updates
+- Added `node.doNotSerialize` to prevent specific nodes to be serialized by `SceneSerializer` ([deltakosh](https://github.com/deltakosh))
+- Added `scene.multiPick` and `scene.multiPickWithRay` to return an array of pickedMesh objects ([deltakosh](https://github.com/deltakosh))
+- Added `Effect.GetVertexShaderSource()` and `Effect.GetFragmentShaderSource()` ([deltakosh](https://github.com/deltakosh))
+- New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
+- Added Engine detection of the compresed texture formats supported by Hw / browser.  You can specify those formats you have files for using `Engine.setTextureFormatToUse()`, and an appropriate one will be chosen. ([Palmer-JC](https://github.com/Palmer-JC/))
+- Added Ray.intersectsMesh, Ray.show, Ray.hide ([abow](https://github.com/abow))
+- Added AbstractMesh.setPivotPoint, AbstractMesh.getPivotPoint, AbstractMesh.getAbsolutePivotPoint ([abow](https://github.com/abow))
+- Added Debug.AxesViewer and Debug.BoneAxesViewer ([abow](https://github.com/abow))
+- Added Bone.getAbsolutePositionFromLocal and getLocalPositionFromAbsolute ([abow](https://github.com/abow))
+- Added Bone.setRotation, Bone.getRotation, Bone.setRotationQuaternion, Bone.getRotationQuaternion ([abow](https://github.com/abow))
+- Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
+- Added Bone.translate, Bone.setPosition, Bone.setAbsolutePosition ([abow](https://github.com/abow))
+- Added Bone.setYawPitchRoll, Bone.setRotationMatrix, Bone.setScale, Bone.setAxisAngle ([abow](https://github.com/abow))
+- Added Bone.rotate ([abow](https://github.com/abow))
+- Added Bone.scale ([abow](https://github.com/abow))
+- Added Camera.getDirection, AbstractMesh.getDirection, Bone.getDirection ([abow](https://github.com/abow))
+- Added subdivisionsX, subdivisionsY option to GroundMesh ([abow](https://github.com/abow))
+- New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
+- Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
+- Added onAnimationEnd callback for `sprite.playAnimation` ([deltakosh](https://github.com/deltakosh)) 
+- Added support for non square textures for sprites ([deltakosh](https://github.com/deltakosh)) 
+- Added support for texture arrays ([deltakosh](https://github.com/deltakosh)) 
+- Added `camera.isInFrustum` and `camera.isCompletelyInFrustum`. Can be used with meshes, submeshes and boundingInfo ([deltakosh](https://github.com/deltakosh)) 
+- Several memory allocation reduction ([benaadams](https://github.com/benaadams))
+- Several GPU state change reduction ([benaadams](https://github.com/benaadams)) 
+- MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
+- New SPS feature : solid particle intersection with other solid particle or with any mesh `particle.intersectsMesh()` ([jerome](https://github.com/jbousquie))
+- New `invertUV` parameter an all ribbon based shapes : ribbon, tube, lathe, basic and custom extrusion ([jerome](https://github.com/jbousquie))
+- Text2D: new `fontSuperSample` setting to use high quality font ([nockawa](https://github.com/nockawa))
+- PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object ([nockawa](https://github.com/nockawa))
+- Better keyboard event handling which is now done at canvas level and not at window level ([deltakosh](https://github.com/deltakosh)) 
+- New `scene.hoverCursor` property to define a custom cursor when moving mouse over meshes ([deltakosh](https://github.com/deltakosh)) 
+- Canvas2D: ([nockawa](https://github.com/nockawa)) 
+ - Performance metrics added
+ - Text2D super sampling to enhance quality in World Space Canvas
+ - World Space Canvas is now rendering in an adaptive way for its resolution to fit the on screen projected one to achieve a good rendering quality
+ - Transparent Primitives are now drawn with Instanced Array when supported
+ - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
+- WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
+- New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
+- Scene.stopAnimation has now an optional second parameter, the name of the animation to kill. Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
+
+### Bug fixes
+- Fixed issue with SkeletonViewer not displaying correctly with meshes that have a PoseMatrix ([abow](https://github.com/abow))
+- Fixed issue with Quaternion.toEulerAnglesToRef ([abow](https://github.com/abow))
+- Fixed issue with Animatable.goToFrame ([abow](https://github.com/abow))
+- Fixed issue with instancse and viewports ([deltakosh](https://github.com/deltakosh))
+- Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
+- MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
+- Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
+- Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))
+- Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
+- Added BBox update on each ribbon based shape (ribbon, tube, extrusion, etc) on dynamic updates ([jerome](https://github.com/jbousquie))
+- Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed billboard when the SPS mesh is parented in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
+- Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
+- Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
+- Canvas2D: ([nockawa](https://github.com/nockawa))
+ - `WorldSpaceCanvas2D`:
+	- Intersection/interaction now works on non squared canvas
+ - Primitive:
+	- `ZOrder` fixed in Primitives created inline
+	- Z-Order is now correctly distributed along the whole canvas object graph
+ - `Sprite2D`: 
+	- texture size is now set by default as expected
+	- can have no `id` set
+ - `Text2D`: 
+	- Fix bad rendering quality on Chrome
+	- Rendering above transparent surface is now blending correctly
+
+### Breaking changes
+ - FollowCamera.target was renamed to FollowCamera.lockedTarget to avoid conflicts ([deltakosh](https://github.com/deltakosh)) 
+ - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
+ - Canvas2D: ([nockawa](https://github.com/nockawa))
+  - `WorldSpaceCanvas2D`:
+	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
+

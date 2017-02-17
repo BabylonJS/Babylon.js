@@ -20,6 +20,10 @@ namespace Max2Babylon
 
         public void Close()
         {
+            if (form == null)
+            {
+                return;
+            }
             form.Dispose();
             form = null;
         }

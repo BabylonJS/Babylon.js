@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "system",
+        "allowJs" : false,
+        "declaration": true,
+        "outFile": "###OUTFILE###",
+        "sourceMap": false
+    },
+    "include": [
+        "assets/**/*"
+    ]    
+}

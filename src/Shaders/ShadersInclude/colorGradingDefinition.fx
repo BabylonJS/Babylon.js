@@ -1,0 +1,3 @@
+uniform sampler2D cameraColorGrading2DSampler;
+uniform vec4 vCameraColorGradingInfos;
+uniform vec4 vCameraColorGradingScaleOffset;

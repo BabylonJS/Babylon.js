@@ -3,14 +3,10 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonMesh: BabylonAbstractMesh
+    public class BabylonMesh : BabylonAbstractMesh
     {
-
         [DataMember]
         public string id { get; set; }
-
-        [DataMember]
-        public string parentId { get; set; }
 
         [DataMember]
         public string materialId { get; set; }
@@ -43,10 +39,19 @@ namespace BabylonExport.Entities
         public float[] colors { get; set; }
 
         [DataMember]
+        public bool hasVertexAlpha { get; set; }
+
+        [DataMember]
         public int[] matricesIndices { get; set; }
 
         [DataMember]
         public float[] matricesWeights { get; set; }
+
+        [DataMember]
+        public int[] matricesIndicesExtra { get; set; }
+
+        [DataMember]
+        public float[] matricesWeightsExtra { get; set; }
 
         [DataMember]
         public int[] indices { get; set; }
@@ -76,22 +81,37 @@ namespace BabylonExport.Entities
         public int skeletonId { get; set; }
 
         [DataMember]
-        public bool autoAnimate { get; set; }
-
-        [DataMember]
-        public int autoAnimateFrom { get; set; }
-
-        [DataMember]
-        public int autoAnimateTo { get; set; }
-
-        [DataMember]
-        public bool autoAnimateLoop { get; set; }
+        public int numBoneInfluencers { get; set; }
 
         [DataMember]
         public bool showBoundingBox { get; set; }
 
         [DataMember]
         public bool showSubMeshesBoundingBox { get; set; }
+
+        [DataMember]
+        public bool applyFog { get; set; }
+
+        [DataMember]
+        public int alphaIndex { get; set; }
+
+        [DataMember]
+        public int physicsImpostor { get; set; }
+
+        [DataMember]
+        public float physicsMass { get; set; }
+
+        [DataMember]
+        public float physicsFriction { get; set; }
+
+        [DataMember]
+        public float physicsRestitution { get; set; }
+
+        [DataMember]
+        public object metadata { get; set; }
+
+        [DataMember]
+        public string tags { get; set; }
 
         public BabylonMesh()
         {
@@ -109,6 +129,8 @@ namespace BabylonExport.Entities
             skeletonId = -1;
 
             pickable = true;
+
+            numBoneInfluencers = 4;
         }
     }
 }

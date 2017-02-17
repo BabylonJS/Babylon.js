@@ -27,14 +27,7 @@ namespace Max2Babylon
                 }
             }
 
-            if (firstNode.ObjectRef != null && firstNode.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
-            {
-                using (var frm = new ObjectPropertiesForm())
-                {
-                    frm.ShowDialog();
-                    return true;
-                }
-            }
+           
 
             if (firstNode.ObjectRef != null && firstNode.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Light)
             {
@@ -44,10 +37,15 @@ namespace Max2Babylon
                     return true;
                 }
             }
+           
+            // consider non-recognized objects as meshes so they can be animated intermediate nodes
+            using (var frm = new ObjectPropertiesForm())
+            {
+                frm.ShowDialog();
+                return true;
+            }
+            
 
-            Loader.Core.PushPrompt("Selected entity does not have Babylon.js specific properties");
-
-            return true;
         }
 
         public override int Id_

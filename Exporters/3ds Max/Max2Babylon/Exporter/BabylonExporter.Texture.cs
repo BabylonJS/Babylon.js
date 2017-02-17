@@ -27,7 +27,7 @@ namespace Max2Babylon
                 int height = intArray[3];
                 int mipmapsCount = intArray[7];
 
-                if ((width >> (mipmapsCount -1)) > 1)
+                if ((width >> (mipmapsCount - 1)) > 1)
                 {
                     var expected = 1;
                     var currentSize = Math.Max(width, height);
@@ -64,6 +64,12 @@ namespace Max2Babylon
             var babylonTexture = new BabylonTexture();
 
             var texMap = stdMat.GetSubTexmap(index);
+
+            if (texMap == null)
+            {
+                RaiseWarning("Texture channel " + index + " activated but no texture found.");
+                return null;
+            }
 
             // Fallout
             if (texMap.ClassName == "Falloff") // This is the only way I found to detect it. This is crappy but it works
@@ -114,6 +120,11 @@ namespace Max2Babylon
             }
 
             // Bitmap
+            if (texMap.GetParamBlock(0) == null || texMap.GetParamBlock(0).Owner == null)
+            {
+                return null;
+            }
+
             var texture = texMap.GetParamBlock(0).Owner as IBitmapTex;
 
             if (texture == null)
@@ -124,7 +135,7 @@ namespace Max2Babylon
             if (forceAlpha)
             {
                 babylonTexture.hasAlpha = true;
-                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);                
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);
             }
             else
             {
@@ -204,34 +215,23 @@ namespace Max2Babylon
             ExportFloatAnimation("wAng", animations, key => new[] { uvGen.GetWAng(key) });
 
             babylonTexture.animations = animations.ToArray();
-
+            var absolutePath = texture.Map.FullFilePath;
             // Copy texture to output
             try
             {
-                if (File.Exists(texture.MapName))
+                if (File.Exists(absolutePath))
                 {
-                    babylonTexture.isCube = IsTextureCube(texture.MapName);
+                    babylonTexture.isCube = IsTextureCube(absolutePath);
                     if (CopyTexturesToOutput)
                     {
-                        File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
+                        File.Copy(absolutePath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                     }
                 }
                 else
                 {
-                    var texturepath = Path.Combine(Path.GetDirectoryName(Loader.Core.CurFilePath), babylonTexture.name);
-                    if (File.Exists(texturepath))
-                    {
-                        babylonTexture.isCube = IsTextureCube(texturepath);
-                        if (CopyTexturesToOutput)
-                        {
-                            File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                        }
-                    }
-                    else
-                    {
-                        RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
-                    }
+                    RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
                 }
+
             }
             catch
             {

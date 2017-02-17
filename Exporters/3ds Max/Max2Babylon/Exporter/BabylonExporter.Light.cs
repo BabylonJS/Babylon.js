@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
+using System.Linq;
 
 namespace Max2Babylon
 {
@@ -19,29 +20,35 @@ namespace Max2Babylon
             babylonLight.intensity = 1;
 
             babylonLight.diffuse = new[] { 1.0f, 1.0f, 1.0f };
-            babylonLight.specular = new[] { 1.0f, 1.0f, 1.0f }; 
+            babylonLight.specular = new[] { 1.0f, 1.0f, 1.0f };
 
             babylonScene.LightsList.Add(babylonLight);
         }
 
-        private void ExportLight(IINode lightNode, BabylonScene babylonScene)
+        private void ExportLight(IIGameScene scene, IIGameNode lightNode, BabylonScene babylonScene)
         {
-            if (lightNode.GetBoolProperty("babylonjs_noexport"))
+            if (lightNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
                 return;
             }
 
-            var maxLight = (lightNode.ObjectRef as ILightObject);
+            var gameLight = lightNode.IGameObject.AsGameLight();
+            var initialized = gameLight.InitializeData;
             var babylonLight = new BabylonLight();
 
             RaiseMessage(lightNode.Name, 1);
             babylonLight.name = lightNode.Name;
-            babylonLight.id = lightNode.GetGuid().ToString();
+            babylonLight.id = lightNode.MaxNode.GetGuid().ToString();
+            if (lightNode.NodeParent != null)
+            {
+                babylonLight.parentId = GetParentID(lightNode.NodeParent, babylonScene, scene);
+            }
 
             // Type
+
+            var maxLight = (lightNode.MaxNode.ObjectRef as ILightObject);
             var lightState = Loader.Global.LightState.Create();
             maxLight.EvalLightState(0, Tools.Forever, lightState);
-            var directionScale = -1;
 
             switch (lightState.Type)
             {
@@ -59,46 +66,53 @@ namespace Max2Babylon
                 case LightType.AmbientLgt:
                     babylonLight.type = 3;
                     babylonLight.groundColor = new float[] { 0, 0, 0 };
-                    directionScale = 1;
                     break;
             }
 
-            // Shadows
+
+            // Shadows 
             if (maxLight.ShadowMethod == 1)
             {
-                if (lightState.Type == LightType.DirectLgt)
+                if (lightState.Type == LightType.DirectLgt || lightState.Type == LightType.SpotLgt || lightState.Type == LightType.OmniLgt)
                 {
-                    ExportShadowGenerator(lightNode, babylonScene);
+                    ExportShadowGenerator(lightNode.MaxNode, babylonScene);
                 }
                 else
                 {
-                    RaiseWarning("Shadows maps are only supported for directional lights", 2);
+                    RaiseWarning("Shadows maps are only supported for point, directional and spot lights", 2);
                 }
             }
 
             // Position
-            var wm = lightNode.GetWorldMatrix(0, false);
-            var position = wm.Trans;
-            babylonLight.position = position.ToArraySwitched();
+            var wm = lightNode.GetObjectTM(0);
+            if (lightNode.NodeParent != null)
+            {
+                var parentWorld = lightNode.NodeParent.GetObjectTM(0);
+                wm.MultiplyBy(parentWorld.Inverse);
+            }
+            var position = wm.Translation;
+            babylonLight.position = new[] { position.X, position.Y, position.Z };
 
             // Direction
-            var target = lightNode.Target;
+            var target = gameLight.LightTarget;
             if (target != null)
             {
-                var targetWm = target.GetObjTMBeforeWSM(0, Tools.Forever);
-                var targetPosition = targetWm.Trans;
+                var targetWm = target.GetObjectTM(0);
+                var targetPosition = targetWm.Translation;
 
-                var direction = targetPosition.Subtract(position);
-                babylonLight.direction = direction.ToArraySwitched();
+                var direction = targetPosition.Subtract(position).Normalize;
+                babylonLight.direction = new[] { direction.X, direction.Y, direction.Z };
             }
             else
             {
-                var dir = wm.GetRow(2).MultiplyBy(directionScale);
-                babylonLight.direction = dir.ToArraySwitched();
+                var vDir = Loader.Global.Point3.Create(0, -1, 0);
+                vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
+                babylonLight.direction = new[] { vDir.X, vDir.Y, vDir.Z };
             }
 
-            // Exclusion
             var maxScene = Loader.Core.RootNode;
+
+            // Exclusion
             var inclusion = maxLight.ExclList.TestFlag(1); //NT_INCLUDE 
             var checkExclusionList = maxLight.ExclList.TestFlag(2); //NT_AFFECT_ILLUM
 
@@ -109,7 +123,11 @@ namespace Max2Babylon
 
                 foreach (var meshNode in maxScene.NodesListBySuperClass(SClass_ID.Geomobject))
                 {
+#if MAX2017
+                    if (meshNode.CastShadows)
+#else
                     if (meshNode.CastShadows == 1)
+#endif
                     {
                         var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 
@@ -131,55 +149,76 @@ namespace Max2Babylon
                 babylonLight.excludedMeshesIds = excllist.ToArray();
             }
 
-            // Other fields
+            // Other fields 
             babylonLight.intensity = maxLight.GetIntensity(0, Tools.Forever);
+
 
             babylonLight.diffuse = lightState.AffectDiffuse ? maxLight.GetRGBColor(0, Tools.Forever).ToArray() : new float[] { 0, 0, 0 };
             babylonLight.specular = lightState.AffectDiffuse ? maxLight.GetRGBColor(0, Tools.Forever).ToArray() : new float[] { 0, 0, 0 };
 
+
             if (maxLight.UseAtten)
             {
-                babylonLight.range = maxLight.GetAtten(0, 1, Tools.Forever);
+                babylonLight.range = maxLight.GetAtten(0, 3, Tools.Forever);
             }
+
 
             // Animations
             var animations = new List<BabylonAnimation>();
 
-            if (!ExportVector3Controller(lightNode.TMController.PositionController, "position", animations))
+            ExportVector3Animation("position", animations, key =>
             {
-                ExportVector3Animation("position", animations, key =>
+                var mat = lightNode.GetObjectTM(key);
+                if (lightNode.NodeParent != null)
                 {
-                    var worldMatrix = lightNode.GetWorldMatrix(key, lightNode.HasParent());
-                    return worldMatrix.Trans.ToArraySwitched();
-                });
-            }
+                    var parentWorld = lightNode.NodeParent.GetObjectTM(key);
+                    mat.MultiplyBy(parentWorld.Inverse);
+                }
+                var pos = mat.Translation;
+                return new[] { pos.X, pos.Y, pos.Z };
+            });
 
             ExportVector3Animation("direction", animations, key =>
             {
-                var targetNode = lightNode.Target;
-                if (targetNode != null)
+                var wmLight = lightNode.GetObjectTM(key);
+                if (lightNode.NodeParent != null)
                 {
-                    var targetWm = target.GetObjTMBeforeWSM(0, Tools.Forever);
-                    var targetPosition = targetWm.Trans;
-
-                    var direction = targetPosition.Subtract(position);
-                    return direction.ToArraySwitched();
+                    var parentWorld = lightNode.NodeParent.GetObjectTM(key);
+                    wmLight.MultiplyBy(parentWorld.Inverse);
                 }
-                
-                var dir = wm.GetRow(2).MultiplyBy(directionScale);
-                return dir.ToArraySwitched();
+                var positionLight = wmLight.Translation;
+                var lightTarget = gameLight.LightTarget;
+                if (lightTarget != null)
+                {
+                    var targetWm = lightTarget.GetObjectTM(key);
+                    var targetPosition = targetWm.Translation;
+
+                    var direction = targetPosition.Subtract(positionLight).Normalize;
+                    return new[] { direction.X, direction.Y, direction.Z };
+                }
+                else
+                {
+                    var vDir = Loader.Global.Point3.Create(0, -1, 0);
+                    vDir = wmLight.ExtractMatrix3().VectorTransform(vDir).Normalize;
+                    return new[] { vDir.X, vDir.Y, vDir.Z };
+                }
             });
 
             ExportFloatAnimation("intensity", animations, key => new[] { maxLight.GetIntensity(key, Tools.Forever) });
 
+            ExportColor3Animation("diffuse", animations, key =>
+            {
+                return lightState.AffectDiffuse? maxLight.GetRGBColor(key, Tools.Forever).ToArray() : new float[] { 0, 0, 0 };
+            });
+
             babylonLight.animations = animations.ToArray();
 
-            if (lightNode.GetBoolProperty("babylonjs_autoanimate"))
+            if (lightNode.MaxNode.GetBoolProperty("babylonjs_autoanimate"))
             {
                 babylonLight.autoAnimate = true;
-                babylonLight.autoAnimateFrom = (int)lightNode.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonLight.autoAnimateTo = (int)lightNode.GetFloatProperty("babylonjs_autoanimate_to");
-                babylonLight.autoAnimateLoop = lightNode.GetBoolProperty("babylonjs_autoanimateloop");
+                babylonLight.autoAnimateFrom = (int)lightNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonLight.autoAnimateTo = (int)lightNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonLight.autoAnimateLoop = lightNode.MaxNode.GetBoolProperty("babylonjs_autoanimateloop");
             }
 
             babylonScene.LightsList.Add(babylonLight);
