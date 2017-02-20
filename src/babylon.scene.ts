@@ -151,9 +151,7 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
-        public 
-	
-	yUpdateMeshUnderPointer = false;
+        public constantlyUpdateMeshUnderPointer = false;
         public useRightHandedSystem = false;
 
         public hoverCursor = "pointer";
