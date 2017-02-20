@@ -151,7 +151,9 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
-        public constantlyUpdateMeshUnderPointer = false;
+        public 
+	
+	yUpdateMeshUnderPointer = false;
         public useRightHandedSystem = false;
 
         public hoverCursor = "pointer";
@@ -816,7 +818,7 @@
                 var canvas = this._engine.getRenderingCanvas();
 
                 if (!this.pointerMovePredicate) {
-                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
                 }
 
                 // Meshes
