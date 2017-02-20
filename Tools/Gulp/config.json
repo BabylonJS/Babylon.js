@@ -208,7 +208,6 @@
       "../../src/PostProcess/babylon.lensRenderingPipeline.js",
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
-      "../../src/Cameras/Holographic/babylon.holographicCamera.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
