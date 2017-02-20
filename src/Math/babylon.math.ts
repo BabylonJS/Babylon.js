@@ -4812,8 +4812,8 @@
 
         /**
          * Returns a Curve3 object along a CatmullRom Spline curve : 
-         * @param points (array of Vector3) the points the spline must pass through
-         * @param nbPoints (integer) the wanted number of points in the curve 
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.  
+         * @param nbPoints (integer) the wanted number of points between each curve control points.
          */
         public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3 {
             var totalPoints = new Array<Vector3>();
@@ -4824,7 +4824,7 @@
             var step = 1.0 / nbPoints;
             for (var i = 0; i < totalPoints.length - 3; i++) {
                 var amount = 0.0;
-                for (var c = 0; c < nbPoints; c++) {
+                for (var c = 0; c <= nbPoints; c++) {
                     catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
                     amount += step
                 }
