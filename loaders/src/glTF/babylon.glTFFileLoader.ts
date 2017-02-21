@@ -640,9 +640,9 @@ module BABYLON {
     };
 
     /**
-    * Configures node from transformation matrix
+    * Configures node transformation
     */
-    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Node): void => {
+    var configureNodeFromGLTFNode = (newNode: Mesh, node: IGLTFNode, parent: Node): void => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
@@ -654,7 +654,10 @@ module BABYLON {
             newNode.computeWorldMatrix(true);
         }
         else {
-            configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
+            configureNode(newNode,
+                Vector3.FromArray(node.translation || [0, 0, 0]),
+                Quaternion.FromArray(node.rotation || [0, 0, 0, 1]),
+                Vector3.FromArray(node.scale || [1, 1, 1]));
         }
     };
 
@@ -744,8 +747,8 @@ module BABYLON {
         }
 
         if (babylonNode !== null) {
-            if (node.matrix && babylonNode instanceof Mesh) {
-                configureNodeFromMatrix(babylonNode, node, parent);
+            if (babylonNode instanceof Mesh) {
+                configureNodeFromGLTFNode(babylonNode, node, parent);
             }
             else {
                 var translation = node.translation || [0, 0, 0];
