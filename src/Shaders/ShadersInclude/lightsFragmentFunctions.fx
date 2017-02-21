@@ -30,7 +30,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 
 #ifdef SPECULARTERM
 	// Specular
-	vec3 angleW = normalize(lightVectorW - viewDirectionW);
+	vec3 angleW = normalize(viewDirectionW + lightVectorW);
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, max(1., glossiness));
 
@@ -60,7 +60,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 #ifdef SPECULARTERM
 		// Specular
-		vec3 angleW = normalize(lightVectorW - viewDirectionW);
+		vec3 angleW = normalize(viewDirectionW + lightVectorW);
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, max(1., glossiness));
 
