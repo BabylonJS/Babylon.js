@@ -4725,6 +4725,30 @@
         }
 
         /**
+         * Returns a Curve3 object along a CatmullRom Spline curve : 
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.  
+         * @param nbPoints (integer) the wanted number of points between each curve control points.
+         */
+        public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3 {
+            var totalPoints = new Array<Vector3>();
+            totalPoints.push(points[0].clone());
+            Array.prototype.push.apply(totalPoints, points);
+            totalPoints.push(points[points.length - 1].clone());
+            var catmullRom = new Array<Vector3>();
+            var step = 1.0 / nbPoints;
+            for (var i = 0; i < totalPoints.length - 3; i++) {
+                var amount = 0.0;
+                for (var c = 0; c < nbPoints; c++) {
+                    catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+                    amount += step
+                }
+            }
+            i--;
+            catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+            return new Curve3(catmullRom);
+        }
+
+        /**
          * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
          * A Curve3 is designed from a series of successive Vector3.  
          * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
