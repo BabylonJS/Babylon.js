@@ -14287,6 +14287,14 @@ var BABYLON;
                 _this._fontName = null;
                 _this._fontSuperSample = false;
                 _this._fontSDF = false;
+                var ft = _this._fontTexture;
+                if (ft != null && !ft.isReady()) {
+                    ft.onLoadObservable.add(function () {
+                        _this._positioningDirty();
+                        _this._setLayoutDirty();
+                        _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId; // To make sure the Text2D is issued again for render
+                    });
+                }
             }
             else {
                 _this._fontName = (settings.fontName == null) ? "12pt Arial" : settings.fontName;

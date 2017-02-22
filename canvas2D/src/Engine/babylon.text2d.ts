@@ -462,6 +462,15 @@
                 this._fontName        = null;
                 this._fontSuperSample = false;
                 this._fontSDF         = false;
+
+                let ft = this._fontTexture;
+                if (ft != null && !ft.isReady()) {
+                    ft.onLoadObservable.add(() => {
+                        this._positioningDirty();
+                        this._setLayoutDirty();
+                        this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId;  // To make sure the Text2D is issued again for render
+                    });                    
+                }
             } else {
                 this._fontName       = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
                 this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
