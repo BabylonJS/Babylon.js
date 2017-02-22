@@ -271,14 +271,12 @@
             return false;
         }
 
-        /**
-         * Get the actual size of the Text2D primitive
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
+        public get isVerticalSizeAuto(): boolean {
+            return false;
+        }
+
+        public get isHorizontalSizeAuto(): boolean {
+            return false;
         }
 
         /**
@@ -299,6 +297,15 @@
             }
             
             return this._textSize;
+        }
+
+        protected onSetOwner() {
+            if (!this._textSize) {
+                this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                this._setLayoutDirty();
+                this._positioningDirty();
+                this._actualSize = null;
+            }
         }
 
         protected get fontTexture(): BaseFontTexture {
@@ -437,7 +444,7 @@
             paddingLeft             ?: number | string,
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
-            padding                 ?: string,
+            padding                 ?: number | string,
             textAlignmentH          ?: number,
             textAlignmentV          ?: number,
             textAlignment           ?: string,
