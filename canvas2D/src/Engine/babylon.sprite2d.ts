@@ -538,8 +538,8 @@
             if (s == null || sS == null) {
                 return;
             }
-            this.scaleX = s.width / sS.width;
-            this.scaleY = s.height / sS.height;
+            this._postScale.x = s.width / sS.width;
+            this._postScale.y = s.height / sS.height;
         }
 
         private _texture: Texture;

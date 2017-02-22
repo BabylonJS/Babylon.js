@@ -1511,6 +1511,7 @@
             this._layoutEngine               = CanvasLayoutEngine.Singleton;
             this._size                       = null; //Size.Zero();
             this._scale                      = new Vector2(1, 1);
+            this._postScale                  = new Vector2(1, 1);
             this._actualSize                 = null;
             this._internalSize               = Size.Zero();
             this._layoutArea                 = null;
@@ -3662,6 +3663,7 @@
         private static _t2: Matrix = new Matrix();
         private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
         private static _v30: Vector3 = Vector3.Zero();   // Must stay with the value 0,0,0
+        private static _ts0 = Size.Zero();
 
         private _updateLocalTransform(): boolean {
             let tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.scaleXProperty.flagId | Prim2DBase.scaleYProperty.flagId | Prim2DBase.originProperty.flagId;
@@ -3680,19 +3682,24 @@
                 var local: Matrix;
                 let pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase._v0);
                 let scale = new Vector3(this._scale.x, this._scale.y, 1);
+                let postScale = this._postScale;
+                let globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
                     {
-                        local = Matrix.Compose(scale, rot, new Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
+                        local = Matrix.Compose(globalScale, rot, new Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
                         this._localTransform = local;
-                        this._localLayoutTransform = Matrix.Compose(scale, rot, new Vector3(pos.x, pos.y, 0));
+                        this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
                     }
                 } else {
                     // ###MATRIX PART###
                     {
                         // -Origin offset
-                        let as = this.actualSize;
+                        let as = Prim2DBase._ts0;
+                        as.copyFrom(this.actualSize);
+                        as.width /= postScale.x;
+                        as.height /= postScale.y;
                         Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase._t0);
 
                         // -Origin * rotation
@@ -3703,11 +3710,19 @@
                         Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
                         Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
 
-                        // -Origin * rotation * scale * (Origin + Position)
-                        Matrix.TranslationToRef((as.width * this._origin.x) + pos.x + this._marginOffset.x, (as.height * this._origin.y) + pos.y + this._marginOffset.y, 0, Prim2DBase._t2);
-                        Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
+                        // -Origin * rotation * scale * Origin
+                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase._t2);
+                        Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, Prim2DBase._t0);
 
-                        this._localLayoutTransform = Matrix.Compose(scale, rot, new Vector3(pos.x, pos.y, 0));
+                        // -Origin * rotation * scale * Origin * postScale
+                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase._t1);
+                        Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+
+                        // -Origin * rotation * scale * Origin * postScale * Position
+                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase._t0);
+                        Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, this._localTransform);
+
+                        this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
                     }
                 }
 
@@ -4344,6 +4359,7 @@
         private _marginSize: Size;
         private _rotation: number;
         private _scale: Vector2;
+        protected _postScale: Vector2;
         private _origin: Vector2;
         protected _opacity: number;
         private _actualOpacity: number;
