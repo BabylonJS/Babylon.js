@@ -3631,8 +3631,10 @@
                 return false;
             }
             if (this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
-                console.log(`You can't set the position/x/y of ${this.id} properties while positioning engine is used (margin, margin alignment and/or padding are set`);
-                return false;
+                if (<any>this instanceof Group2D && (<Group2D><any>this).trackedNode == null) {
+                    console.log(`You can't set the position/x/y of ${this.id} properties while positioning engine is used (margin, margin alignment and/or padding are set`);
+                    return false;
+                }
             }
             return true;
         }
