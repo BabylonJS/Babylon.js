@@ -13987,47 +13987,39 @@ var BABYLON;
          */
         AtlasPictureInfoFactory.loadFromUrl = function (texture, url, onLoad, onError) {
             if (onError === void 0) { onError = null; }
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        var ext = url.split('.').pop().split(/\#|\?/)[0];
-                        var plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
-                        if (!plugins) {
-                            if (onError) {
-                                onError("couldn't find a plugin for this file extension", -1);
-                            }
-                            return;
-                        }
-                        for (var _i = 0, plugins_1 = plugins; _i < plugins_1.length; _i++) {
-                            var p = plugins_1[_i];
-                            var ret = p.loadFile(xhr.response);
-                            if (ret) {
-                                if (ret.api) {
-                                    ret.api.texture = texture;
-                                    if (onLoad) {
-                                        onLoad(ret.api);
-                                    }
-                                }
-                                else if (onError) {
-                                    onError(ret.errorMsg, ret.errorCode);
-                                }
-                                return;
-                            }
-                        }
-                        if (onError) {
-                            onError("No plugin to load this Atlas Data file format", -1);
-                        }
+            BABYLON.Tools.LoadFile(url, function (data) {
+                var ext = url.split('.').pop().split(/\#|\?/)[0];
+                var plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
+                if (!plugins) {
+                    if (onError) {
+                        onError("couldn't find a plugin for this file extension", -1);
                     }
-                    else {
-                        if (onError) {
-                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
+                    return;
+                }
+                for (var _i = 0, plugins_1 = plugins; _i < plugins_1.length; _i++) {
+                    var p = plugins_1[_i];
+                    var ret = p.loadFile(data);
+                    if (ret) {
+                        if (ret.api) {
+                            ret.api.texture = texture;
+                            if (onLoad) {
+                                onLoad(ret.api);
+                            }
                         }
+                        else if (onError) {
+                            onError(ret.errorMsg, ret.errorCode);
+                        }
+                        return;
                     }
                 }
-            };
-            xhr.open("GET", url, true);
-            xhr.send();
+                if (onError) {
+                    onError("No plugin to load this Atlas Data file format", -1);
+                }
+            }, null, null, null, function () {
+                if (onError) {
+                    onError("Couldn't load file", -1);
+                }
+            });
             return null;
         };
         return AtlasPictureInfoFactory;
