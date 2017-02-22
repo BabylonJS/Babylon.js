@@ -145,24 +145,6 @@
             this._updateSpriteScaleFactor();
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the actual size of the sprite to display
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize = value.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         /**
@@ -363,7 +345,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             if (!settings) {

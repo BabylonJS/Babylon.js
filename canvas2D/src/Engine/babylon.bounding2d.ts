@@ -153,6 +153,13 @@
             this._worldAABBDirty = true;
         }
 
+        public equals(other: BoundingInfo2D): boolean {
+            if (!other) {
+                return false;
+            }
+            return other.center.equals(this.center) && other.extent.equals(this.extent);
+        }
+
         /**
          * return the max extend of the bounding info
          */

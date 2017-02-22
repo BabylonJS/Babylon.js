@@ -65,10 +65,10 @@
 
             // If this prim is layoutDiry we update  its layoutArea and also the one of its direct children
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
+                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
                 for (let child of prim.children) {
                     this._doUpdate(child);
                 }
-                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
             }
 
         }
@@ -86,7 +86,12 @@
 
             // Indirect child of Canvas
             else {
-                prim.layoutArea = prim.parent.contentArea;
+                let contentArea = prim.parent.contentArea;
+
+                // Can be null if the parent's content area depend of its children, the computation will be done in many passes
+                if (contentArea) {
+                    prim.layoutArea = contentArea;
+                }
             }
         }
 
@@ -143,47 +148,89 @@
 
         private _isHorizontal: boolean = true;
 
+        private static stackPanelLayoutArea = Size.Zero();
         private static dstOffset = Vector4.Zero();
         private static dstArea = Size.Zero();
+
+        private static computeCounter = 0;
 
         public updateLayout(prim: Prim2DBase) {
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
 
+                let primLayoutArea = prim.layoutArea;
+                let isSizeAuto = prim.isSizeAuto;
+
+                // If we're not in autoSize the layoutArea of the prim having the stack panel must be computed in order for us to compute the children' position.
+                // If there's at least one auto size (Horizontal or Vertical) we will have to figure the layoutArea ourselves
+                if (!primLayoutArea && !isSizeAuto) {
+                    return;
+                }
+
+//                console.log("Compute Stack Panel Layout " + ++StackPanelLayoutEngine.computeCounter);
+
                 let x = 0;
                 let y = 0;
-                let h = this.isHorizontal;
+                let horizonStackPanel = this.isHorizontal;
+
+                // If the stack panel is horizontal we check if the primitive height is auto or not, if it's auto then we have to compute the required height, otherwise we just take the actualHeight. If the stack panel is vertical we do the same but with width
                 let max = 0;
 
-                for (let child of prim.children) {
-                    if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
-                        continue;
-                    }
-                    let layoutArea: Size;
-                    if (child._hasMargin) {
-                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
-                        layoutArea = StackPanelLayoutEngine.dstArea.clone();
-                        child.layoutArea = layoutArea;
+                let stackPanelLayoutArea = StackPanelLayoutEngine.stackPanelLayoutArea;
+                if (horizonStackPanel) {
+                    if (prim.isVerticalSizeAuto) {
+                        max = 0;
+                        stackPanelLayoutArea.height = 0;
                     } else {
-                        layoutArea = child.layoutArea;
-                        child.margin.computeArea(child.actualSize, layoutArea);
+                        max = prim.layoutArea.height;
+                        stackPanelLayoutArea.height = prim.layoutArea.height;
+                        stackPanelLayoutArea.width = 0;
                     }
-
-                    max = Math.max(max, h ? layoutArea.height : layoutArea.width);
-
+                } else {
+                    if (prim.isHorizontalSizeAuto) {
+                        max = 0;
+                        stackPanelLayoutArea.width = 0;
+                    } else {
+                        max = prim.layoutArea.width;
+                        stackPanelLayoutArea.width = prim.layoutArea.width;
+                        stackPanelLayoutArea.height = 0;
+                    }
                 }
 
                 for (let child of prim.children) {
                     if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
                         continue;
                     }
-                    child.layoutAreaPos = new Vector2(x, y);
+
+                    if (child._hasMargin) {
+
+                        // Calling computeWithAlignment will return us the area taken by "child" which is its layoutArea
+                        // We also have the dstOffset which will give us the y position in horizontal mode or x position in vertical mode.
+                        //  The alignment offset on the other axis is simply ignored as it doesn't make any sense (e.g. horizontal alignment is ignored in horizontal mode)
+                        child.margin.computeWithAlignment(stackPanelLayoutArea, child.actualSize, child.marginAlignment, child.actualScale, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
+
+                        child.layoutArea = StackPanelLayoutEngine.dstArea;
+
+                    } else {
+                        child.margin.computeArea(child.actualSize, child.actualScale, StackPanelLayoutEngine.dstArea);
+                        child.layoutArea = StackPanelLayoutEngine.dstArea;
+                    }
+
+                    max = Math.max(max, horizonStackPanel ? StackPanelLayoutEngine.dstArea.height : StackPanelLayoutEngine.dstArea.width);
+                }
+
+                for (let child of prim.children) {
+                    if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
 
                     let layoutArea = child.layoutArea;
 
-                    if (h) {
+                    if (horizonStackPanel) {
+                        child.layoutAreaPos = new Vector2(x, 0);
                         x += layoutArea.width;
                         child.layoutArea = new Size(layoutArea.width, max);
                     } else {
+                        child.layoutAreaPos = new Vector2(0, y);
                         y += layoutArea.height;
                         child.layoutArea = new Size(max, layoutArea.height);
                     }
@@ -333,7 +380,7 @@
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
                         child.layoutArea = GridPanelLayoutEngine.dstArea.clone();
                     } else {
-                        child.margin.computeArea(child.actualSize, child.layoutArea);
+                        child.margin.computeArea(child.actualSize, child.actualScale, child.layoutArea);
                     }
                 }
 
