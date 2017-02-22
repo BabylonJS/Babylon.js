@@ -3820,6 +3820,9 @@ var BABYLON;
         }
         GridPanelLayoutEngine.prototype.updateLayout = function (prim) {
             if (prim._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
+                if (!prim.layoutArea) {
+                    return;
+                }
                 for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
@@ -3827,11 +3830,11 @@ var BABYLON;
                     }
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine_1.dstOffset, GridPanelLayoutEngine_1.dstArea, true);
-                        child.layoutArea = GridPanelLayoutEngine_1.dstArea.clone();
                     }
                     else {
-                        child.margin.computeArea(child.actualSize, child.actualScale, child.layoutArea);
+                        child.margin.computeArea(child.actualSize, child.actualScale, GridPanelLayoutEngine_1.dstArea);
                     }
+                    child.layoutArea = GridPanelLayoutEngine_1.dstArea;
                 }
                 this._updateGrid(prim);
                 var _children = this._children;
@@ -3839,7 +3842,8 @@ var BABYLON;
                 var cl = this._columns.length;
                 var columnWidth = 0;
                 var rowHeight = 0;
-                var layoutArea = new BABYLON.Size(0, 0);
+                var dstArea = GridPanelLayoutEngine_1.dstArea;
+                var dstAreaPos = GridPanelLayoutEngine_1.dstAreaPos;
                 for (var i = 0; i < _children.length; i++) {
                     var children = _children[i];
                     if (children) {
@@ -3864,10 +3868,12 @@ var BABYLON;
                                         bottom = this._rowBottoms[k];
                                     }
                                 }
-                                layoutArea.width = columnWidth_1;
-                                layoutArea.height = rowHeight_1;
-                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine_1.dstOffset, GridPanelLayoutEngine_1.dstArea);
-                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine_1.dstOffset.x, bottom + GridPanelLayoutEngine_1.dstOffset.y);
+                                dstArea.width = columnWidth_1;
+                                dstArea.height = rowHeight_1;
+                                child.layoutArea = dstArea;
+                                dstAreaPos.x = left;
+                                dstAreaPos.y = bottom;
+                                child.layoutAreaPos = dstAreaPos;
                                 bottom = oBottom;
                                 rowHeight_1 = oRowHeight;
                             }
@@ -3891,7 +3897,7 @@ var BABYLON;
             var children = this._children;
             var row = rows[rowNum];
             var maxHeight = 0;
-            if (children) {
+            if (children && children[rowNum]) {
                 for (var i = 0; i < cl; i++) {
                     var child = children[rowNum][i];
                     if (child) {
@@ -3913,11 +3919,13 @@ var BABYLON;
             var maxWidth = 0;
             if (children) {
                 for (var i = 0; i < rl; i++) {
-                    var child = children[i][colNum];
-                    if (child) {
-                        var span = child.layoutData.columnSpan;
-                        if (maxWidth < child.layoutArea.width / span) {
-                            maxWidth = child.layoutArea.width / span;
+                    if (children[i]) {
+                        var child = children[i][colNum];
+                        if (child) {
+                            var span = child.layoutData.columnSpan;
+                            if (maxWidth < child.layoutArea.width / span) {
+                                maxWidth = child.layoutArea.width / span;
+                            }
                         }
                     }
                 }
@@ -3977,7 +3985,8 @@ var BABYLON;
                     rowHeights += this._rowHeights[i_3];
                 }
                 else if (row.heightType == GridDimensionDefinition.Pixels) {
-                    this._rowHeights[i_3] = row.heightPixels;
+                    var maxChildHeight = this._getMaxChildHeightInRow(i_3);
+                    this._rowHeights[i_3] = Math.max(row.heightPixels, maxChildHeight);
                     rowHeights += this._rowHeights[i_3];
                 }
                 else if (row.heightType == GridDimensionDefinition.Stars) {
@@ -3990,7 +3999,9 @@ var BABYLON;
                 var remainingHeight = prim.contentArea.height - rowHeights;
                 for (var i_4 = 0; i_4 < starIndexes.length; i_4++) {
                     var rowIndex = starIndexes[i_4];
-                    this._rowHeights[rowIndex] = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    var starHeight = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    var maxChildHeight = this._getMaxChildHeightInRow(i_4);
+                    this._rowHeights[rowIndex] = Math.max(starHeight, maxChildHeight);
                 }
             }
             //get fixed and auto column widths
@@ -4003,7 +4014,8 @@ var BABYLON;
                     columnWidths += this._columnWidths[i_5];
                 }
                 else if (column.widthType == GridDimensionDefinition.Pixels) {
-                    this._columnWidths[i_5] = column.widthPixels;
+                    var maxChildWidth = this._getMaxChildWidthInColumn(i_5);
+                    this._columnWidths[i_5] = Math.max(column.widthPixels, maxChildWidth);
                     columnWidths += this._columnWidths[i_5];
                 }
                 else if (column.widthType == GridDimensionDefinition.Stars) {
@@ -4016,7 +4028,9 @@ var BABYLON;
                 var remainingWidth = prim.contentArea.width - columnWidths;
                 for (var i_6 = 0; i_6 < starIndexes.length; i_6++) {
                     var columnIndex = starIndexes[i_6];
-                    this._columnWidths[columnIndex] = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    var starWidth = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    var maxChildWidth = this._getMaxChildWidthInColumn(i_6);
+                    this._columnWidths[columnIndex] = Math.max(starWidth, maxChildWidth);
                 }
             }
             var y = 0;
@@ -4053,6 +4067,7 @@ var BABYLON;
     }(LayoutEngineBase));
     GridPanelLayoutEngine.dstOffset = BABYLON.Vector4.Zero();
     GridPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
+    GridPanelLayoutEngine.dstAreaPos = BABYLON.Vector2.Zero();
     GridPanelLayoutEngine = GridPanelLayoutEngine_1 = __decorate([
         BABYLON.className("GridPanelLayoutEngine", "BABYLON")
     ], GridPanelLayoutEngine);
@@ -6830,6 +6845,7 @@ var BABYLON;
             _this._layoutEngine = BABYLON.CanvasLayoutEngine.Singleton;
             _this._size = null; //Size.Zero();
             _this._scale = new BABYLON.Vector2(1, 1);
+            _this._postScale = new BABYLON.Vector2(1, 1);
             _this._actualSize = null;
             _this._internalSize = BABYLON.Size.Zero();
             _this._layoutArea = null;
@@ -8802,19 +8818,24 @@ var BABYLON;
                 var local;
                 var pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase_1._v0);
                 var scale = new BABYLON.Vector3(this._scale.x, this._scale.y, 1);
+                var postScale = this._postScale;
+                var globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
                     {
-                        local = BABYLON.Matrix.Compose(scale, rot, new BABYLON.Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
+                        local = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
                         this._localTransform = local;
-                        this._localLayoutTransform = BABYLON.Matrix.Compose(scale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
+                        this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     }
                 }
                 else {
                     // ###MATRIX PART###
                     {
                         // -Origin offset
-                        var as = this.actualSize;
+                        var as = Prim2DBase_1._ts0;
+                        as.copyFrom(this.actualSize);
+                        as.width /= postScale.x;
+                        as.height /= postScale.y;
                         BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase_1._t0);
                         // -Origin * rotation
                         rot.toRotationMatrix(Prim2DBase_1._t1);
@@ -8822,10 +8843,16 @@ var BABYLON;
                         // -Origin * rotation * scale
                         BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase_1._t0);
                         Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, Prim2DBase_1._t1);
-                        // -Origin * rotation * scale * (Origin + Position)
-                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + pos.x + this._marginOffset.x, (as.height * this._origin.y) + pos.y + this._marginOffset.y, 0, Prim2DBase_1._t2);
-                        Prim2DBase_1._t1.multiplyToRef(Prim2DBase_1._t2, this._localTransform);
-                        this._localLayoutTransform = BABYLON.Matrix.Compose(scale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
+                        // -Origin * rotation * scale * Origin
+                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase_1._t2);
+                        Prim2DBase_1._t1.multiplyToRef(Prim2DBase_1._t2, Prim2DBase_1._t0);
+                        // -Origin * rotation * scale * Origin * postScale
+                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase_1._t1);
+                        Prim2DBase_1._t0.multiplyToRef(Prim2DBase_1._t1, Prim2DBase_1._t2);
+                        // -Origin * rotation * scale * Origin * postScale * Position
+                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase_1._t0);
+                        Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, this._localTransform);
+                        this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     }
                 }
                 this.clearPropertiesDirty(tflags);
@@ -9364,6 +9391,7 @@ var BABYLON;
     Prim2DBase._t2 = new BABYLON.Matrix();
     Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
     Prim2DBase._v30 = BABYLON.Vector3.Zero(); // Must stay with the value 0,0,0
+    Prim2DBase._ts0 = BABYLON.Size.Zero();
     Prim2DBase._transMtx = BABYLON.Matrix.Zero();
     Prim2DBase._transTT = BABYLON.Transform2D.Zero();
     Prim2DBase._icPos = BABYLON.Vector2.Zero();
@@ -13743,8 +13771,8 @@ var BABYLON;
             if (s == null || sS == null) {
                 return;
             }
-            this.scaleX = s.width / sS.width;
-            this.scaleY = s.height / sS.height;
+            this._postScale.x = s.width / sS.width;
+            this._postScale.y = s.height / sS.height;
         };
         return Sprite2D;
     }(BABYLON.RenderablePrim2D));

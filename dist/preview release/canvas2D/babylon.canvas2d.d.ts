@@ -1185,6 +1185,7 @@ declare module BABYLON {
         private _columnWidths;
         private static dstOffset;
         private static dstArea;
+        private static dstAreaPos;
         updateLayout(prim: Prim2DBase): void;
         readonly isChildPositionAllowed: boolean;
         private _getMaxChildHeightInRow(rowNum);
@@ -2605,6 +2606,7 @@ declare module BABYLON {
         private static _t2;
         private static _v0;
         private static _v30;
+        private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
         private static _transTT;
@@ -2690,6 +2692,7 @@ declare module BABYLON {
         private _marginSize;
         private _rotation;
         private _scale;
+        protected _postScale: Vector2;
         private _origin;
         protected _opacity: number;
         private _actualOpacity;
