@@ -368,9 +368,14 @@
 
         private static dstOffset = Vector4.Zero();
         private static dstArea = Size.Zero();
+        private static dstAreaPos = Vector2.Zero();
 
         public updateLayout(prim: Prim2DBase) {
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
+
+                if (!prim.layoutArea) {
+                    return;
+                }
 
                 for (let child of prim.children) {
                     if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
@@ -378,10 +383,10 @@
                     }
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
-                        child.layoutArea = GridPanelLayoutEngine.dstArea.clone();
                     } else {
-                        child.margin.computeArea(child.actualSize, child.actualScale, child.layoutArea);
+                        child.margin.computeArea(child.actualSize, child.actualScale, GridPanelLayoutEngine.dstArea);
                     }
+                    child.layoutArea = GridPanelLayoutEngine.dstArea;
                 }
 
                 this._updateGrid(prim);
@@ -391,7 +396,8 @@
                 let cl = this._columns.length;
                 let columnWidth = 0;
                 let rowHeight = 0;
-                let layoutArea = new BABYLON.Size(0, 0);
+                let dstArea = GridPanelLayoutEngine.dstArea;
+                let dstAreaPos = GridPanelLayoutEngine.dstAreaPos;
 
                 for(let i = 0; i < _children.length; i++){
                     let children = _children[i];
@@ -429,13 +435,17 @@
                                     }
                                     
                                 }
-
-                                layoutArea.width = columnWidth;
-                                layoutArea.height = rowHeight;                                
-
-                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea);
-                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine.dstOffset.x, bottom + GridPanelLayoutEngine.dstOffset.y);
                                 
+                                dstArea.width = columnWidth;
+                                dstArea.height = rowHeight;
+
+                                child.layoutArea = dstArea;
+                                
+                                dstAreaPos.x = left;
+                                dstAreaPos.y = bottom;
+
+                                child.layoutAreaPos = dstAreaPos;
+
                                 bottom = oBottom;
                                 rowHeight = oRowHeight;
                                 
@@ -464,7 +474,7 @@
             let row = rows[rowNum];
             let maxHeight = 0;
 
-            if(children){
+            if(children && children[rowNum]){
 
                 for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
@@ -495,11 +505,13 @@
             if(children){
 
                 for(let i = 0; i < rl; i++){
-                    let child = children[i][colNum];
-                    if(child){
-                        let span = (<GridData>child.layoutData).columnSpan;
-                        if(maxWidth < child.layoutArea.width/span){
-                            maxWidth = child.layoutArea.width/span;
+                    if(children[i]){
+                        let child = children[i][colNum];
+                        if(child){
+                            let span = (<GridData>child.layoutData).columnSpan;
+                            if(maxWidth < child.layoutArea.width/span){
+                                maxWidth = child.layoutArea.width/span;
+                            }
                         }
                     }
                 }
@@ -580,7 +592,8 @@
 
                 }else if(row.heightType == GridDimensionDefinition.Pixels){
 
-                    this._rowHeights[i] = row.heightPixels;
+                    let maxChildHeight = this._getMaxChildHeightInRow(i);
+                    this._rowHeights[i] = Math.max(row.heightPixels, maxChildHeight);
                     rowHeights += this._rowHeights[i];
 
                 }else if(row.heightType == GridDimensionDefinition.Stars){
@@ -603,7 +616,10 @@
 
                     let rowIndex = starIndexes[i];
 
-                    this._rowHeights[rowIndex] = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    let starHeight = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    let maxChildHeight = this._getMaxChildHeightInRow(i);
+
+                    this._rowHeights[rowIndex] = Math.max(starHeight, maxChildHeight);
 
                 }
             }
@@ -625,7 +641,8 @@
 
                 }else if(column.widthType == GridDimensionDefinition.Pixels){
 
-                    this._columnWidths[i] = column.widthPixels;
+                    let maxChildWidth = this._getMaxChildWidthInColumn(i);
+                    this._columnWidths[i] = Math.max(column.widthPixels, maxChildWidth);
                     columnWidths += this._columnWidths[i];
 
                 }else if(column.widthType == GridDimensionDefinition.Stars){
@@ -648,7 +665,10 @@
 
                     let columnIndex = starIndexes[i];
 
-                    this._columnWidths[columnIndex] = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    let starWidth = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    let maxChildWidth = this._getMaxChildWidthInColumn(i);
+
+                    this._columnWidths[columnIndex] = Math.max(starWidth, maxChildWidth);
 
                 }
             }
