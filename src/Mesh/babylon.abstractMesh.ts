@@ -873,7 +873,7 @@
                 Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
 
                 Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                Tmp.Matrix[1].invertToRef(Tmp.Matrix[5]);
+                Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
 
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL)
                 {
@@ -881,7 +881,7 @@
                     var scale = Tmp.Vector3[2];
                     var rotation = Tmp.Quaternion[0];
                     var translation = Tmp.Vector3[3];
-                    Tmp.Matrix[5].decompose(scale, rotation, translation);
+                    Tmp.Matrix[0].decompose(scale, rotation, translation);
 
                     var finalQuaternion = Tmp.Quaternion[1];
                     finalQuaternion.w = rotation.w;
@@ -900,8 +900,11 @@
                         finalQuaternion.z = rotation.z;
                     }
  
-                    Matrix.ComposeToRef(scale, finalQuaternion, translation, Tmp.Matrix[5]);
+                    Matrix.ComposeToRef(scale, finalQuaternion, translation, Tmp.Matrix[0]);
                 }
+
+                Tmp.Matrix[1].copyFrom(Tmp.Matrix[5]);
+                Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
             }
 
             // Local world

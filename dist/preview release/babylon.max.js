@@ -12681,13 +12681,13 @@ var BABYLON;
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 BABYLON.Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
                 BABYLON.Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                BABYLON.Tmp.Matrix[1].invertToRef(BABYLON.Tmp.Matrix[5]);
+                BABYLON.Tmp.Matrix[1].invertToRef(BABYLON.Tmp.Matrix[0]);
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     // Need to extract rotation vectors
                     var scale = BABYLON.Tmp.Vector3[2];
                     var rotation = BABYLON.Tmp.Quaternion[0];
                     var translation = BABYLON.Tmp.Vector3[3];
-                    BABYLON.Tmp.Matrix[5].decompose(scale, rotation, translation);
+                    BABYLON.Tmp.Matrix[0].decompose(scale, rotation, translation);
                     var finalQuaternion = BABYLON.Tmp.Quaternion[1];
                     finalQuaternion.w = rotation.w;
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X) {
@@ -12699,8 +12699,10 @@ var BABYLON;
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z) {
                         finalQuaternion.z = rotation.z;
                     }
-                    BABYLON.Matrix.ComposeToRef(scale, finalQuaternion, translation, BABYLON.Tmp.Matrix[5]);
+                    BABYLON.Matrix.ComposeToRef(scale, finalQuaternion, translation, BABYLON.Tmp.Matrix[0]);
                 }
+                BABYLON.Tmp.Matrix[1].copyFrom(BABYLON.Tmp.Matrix[5]);
+                BABYLON.Tmp.Matrix[1].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
             }
             // Local world
             BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[2], this._localWorld);
