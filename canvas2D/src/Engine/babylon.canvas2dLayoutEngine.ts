@@ -368,9 +368,14 @@
 
         private static dstOffset = Vector4.Zero();
         private static dstArea = Size.Zero();
+        private static dstAreaPos = Vector2.Zero();
 
         public updateLayout(prim: Prim2DBase) {
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
+
+                if (!prim.layoutArea) {
+                    return;
+                }
 
                 for (let child of prim.children) {
                     if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
@@ -378,10 +383,10 @@
                     }
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
-                        child.layoutArea = GridPanelLayoutEngine.dstArea.clone();
                     } else {
-                        child.margin.computeArea(child.actualSize, child.actualScale, child.layoutArea);
+                        child.margin.computeArea(child.actualSize, child.actualScale, GridPanelLayoutEngine.dstArea);
                     }
+                    child.layoutArea = GridPanelLayoutEngine.dstArea;
                 }
 
                 this._updateGrid(prim);
@@ -391,7 +396,8 @@
                 let cl = this._columns.length;
                 let columnWidth = 0;
                 let rowHeight = 0;
-                let layoutArea = new BABYLON.Size(0, 0);
+                let dstArea = GridPanelLayoutEngine.dstArea;
+                let dstAreaPos = GridPanelLayoutEngine.dstAreaPos;
 
                 for(let i = 0; i < _children.length; i++){
                     let children = _children[i];
@@ -429,13 +435,17 @@
                                     }
                                     
                                 }
-
-                                layoutArea.width = columnWidth;
-                                layoutArea.height = rowHeight;                                
-
-                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea);
-                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine.dstOffset.x, bottom + GridPanelLayoutEngine.dstOffset.y);
                                 
+                                dstArea.width = columnWidth;
+                                dstArea.height = rowHeight;
+
+                                child.layoutArea = dstArea;
+                                
+                                dstAreaPos.x = left;
+                                dstAreaPos.y = bottom;
+
+                                child.layoutAreaPos = dstAreaPos;
+
                                 bottom = oBottom;
                                 rowHeight = oRowHeight;
                                 
