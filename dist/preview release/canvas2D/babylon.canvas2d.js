@@ -13473,8 +13473,9 @@ var BABYLON;
             }
             _this = _super.call(this, settings) || this;
             _this.texture = texture;
-            _this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            // This is removed to let the user the possibility to setup the addressing mode he wants
+            //this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            //this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             _this._useSize = false;
             _this._spriteSize = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
             _this._spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
