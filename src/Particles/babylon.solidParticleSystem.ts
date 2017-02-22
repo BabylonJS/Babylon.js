@@ -630,14 +630,24 @@
                 this._computeBoundingBox = true;
             }
 
+            end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
             if (this._computeBoundingBox) {
-                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
-                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                if (start == 0 && end == this.nbParticles - 1) {        // all the particles are updated, then recompute the BBox from scratch
+                    Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
+                    Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                }
+                else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
+                    this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
+                    this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                }
             }
 
             // particle loop
-            end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
+            
             index = this.particles[start]._pos;
+            var vpos = (index / 3)|0;
+            colorIndex = vpos * 4;
+            uvIndex = vpos * 2;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
