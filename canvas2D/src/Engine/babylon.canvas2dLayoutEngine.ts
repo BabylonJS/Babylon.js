@@ -464,7 +464,7 @@
             let row = rows[rowNum];
             let maxHeight = 0;
 
-            if(children){
+            if(children && children[rowNum]){
 
                 for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
@@ -495,11 +495,13 @@
             if(children){
 
                 for(let i = 0; i < rl; i++){
-                    let child = children[i][colNum];
-                    if(child){
-                        let span = (<GridData>child.layoutData).columnSpan;
-                        if(maxWidth < child.layoutArea.width/span){
-                            maxWidth = child.layoutArea.width/span;
+                    if(children[i]){
+                        let child = children[i][colNum];
+                        if(child){
+                            let span = (<GridData>child.layoutData).columnSpan;
+                            if(maxWidth < child.layoutArea.width/span){
+                                maxWidth = child.layoutArea.width/span;
+                            }
                         }
                     }
                 }
@@ -580,7 +582,8 @@
 
                 }else if(row.heightType == GridDimensionDefinition.Pixels){
 
-                    this._rowHeights[i] = row.heightPixels;
+                    let maxChildHeight = this._getMaxChildHeightInRow(i);
+                    this._rowHeights[i] = Math.max(row.heightPixels, maxChildHeight);
                     rowHeights += this._rowHeights[i];
 
                 }else if(row.heightType == GridDimensionDefinition.Stars){
@@ -603,7 +606,10 @@
 
                     let rowIndex = starIndexes[i];
 
-                    this._rowHeights[rowIndex] = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    let starHeight = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                    let maxChildHeight = this._getMaxChildHeightInRow(i);
+
+                    this._rowHeights[rowIndex] = Math.max(starHeight, maxChildHeight);
 
                 }
             }
@@ -625,7 +631,8 @@
 
                 }else if(column.widthType == GridDimensionDefinition.Pixels){
 
-                    this._columnWidths[i] = column.widthPixels;
+                    let maxChildWidth = this._getMaxChildWidthInColumn(i);
+                    this._columnWidths[i] = Math.max(column.widthPixels, maxChildWidth);
                     columnWidths += this._columnWidths[i];
 
                 }else if(column.widthType == GridDimensionDefinition.Stars){
@@ -648,7 +655,10 @@
 
                     let columnIndex = starIndexes[i];
 
-                    this._columnWidths[columnIndex] = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    let starWidth = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                    let maxChildWidth = this._getMaxChildWidthInColumn(i);
+
+                    this._columnWidths[columnIndex] = Math.max(starWidth, maxChildWidth);
 
                 }
             }
