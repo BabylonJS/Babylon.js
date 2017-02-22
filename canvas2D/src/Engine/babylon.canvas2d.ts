@@ -1317,6 +1317,8 @@
         private static tS = Vector3.Zero();
         private static tT = Vector3.Zero();
         private static tR = Quaternion.Identity();
+        private static _tmpMtx = Matrix.Identity();
+        private static _tmpVec3 = Vector3.Zero();
 
         private _updateTrackedNodes() {
             // Get the used camera
@@ -1326,8 +1328,8 @@
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             let rh = this.engine.getRenderHeight();
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
-            let tmpVec3:Vector3;
-            let tmpMtx:Matrix;
+            let tmpVec3 = Canvas2D._tmpVec3;
+            let tmpMtx = Canvas2D._tmpMtx;
 
             // Compute the screen position of each group that track a given scene node
             for (let group of this._trackedGroups) {
@@ -1339,12 +1341,6 @@
                 let worldMtx = node.getWorldMatrix();
 
                 if(group.trackedNodeOffset){
-                    if(!tmpVec3){
-                        tmpVec3 = Vector3.Zero();
-                    }
-                    if(!tmpMtx){
-                        tmpMtx = Matrix.Identity();
-                    }
                     Vector3.TransformCoordinatesToRef(group.trackedNodeOffset, worldMtx, tmpVec3);
                     tmpMtx.copyFrom(worldMtx);
                     worldMtx = tmpMtx;

@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.targetCamera.ts" />
+
+module BABYLON {
     export class FollowCamera extends TargetCamera {
         @serialize()
         public radius: number = 12;
@@ -41,11 +43,12 @@
                 yRotation = cameraTarget.rotation.y;
             }
             var radians = this.getRadians(this.rotationOffset) + yRotation;
-            var targetX: number = cameraTarget.position.x + Math.sin(radians) * this.radius;
+            var targetPosition = cameraTarget.getAbsolutePosition();
+            var targetX: number = targetPosition.x + Math.sin(radians) * this.radius;
 
-            var targetZ: number = cameraTarget.position.z + Math.cos(radians) * this.radius;
+            var targetZ: number = targetPosition.z + Math.cos(radians) * this.radius;
             var dx: number = targetX - this.position.x;
-            var dy: number = (cameraTarget.position.y + this.heightOffset) - this.position.y;
+            var dy: number = (targetPosition.y + this.heightOffset) - this.position.y;
             var dz: number = (targetZ) - this.position.z;
             var vx: number = dx * this.cameraAcceleration * 2;//this is set to .05
             var vy: number = dy * this.cameraAcceleration;
@@ -64,7 +67,7 @@
             }
 
             this.position = new Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
-            this.setTarget(cameraTarget.position);
+            this.setTarget(targetPosition);
         }
 
         public _checkInputs(): void {
@@ -91,8 +94,9 @@
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-            this.position = this.target.position.add(this._cartesianCoordinates);
-            this.setTarget(this.target.position);
+            var targetPosition = this.target.getAbsolutePosition();            
+            this.position = targetPosition.add(this._cartesianCoordinates);
+            this.setTarget(targetPosition);
         }
 
         public _checkInputs(): void {

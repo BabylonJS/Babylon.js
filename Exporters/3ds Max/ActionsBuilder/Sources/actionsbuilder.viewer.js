@@ -135,19 +135,11 @@ var ActionsBuilder;
                 return Raphael.rgb(96, 122, 14);
             }
             switch (type) {
-                case ActionsBuilder.Type.TRIGGER:
-                    return Raphael.rgb(133, 154, 185);
-                    break;
-                case ActionsBuilder.Type.ACTION:
-                    return Raphael.rgb(182, 185, 132);
-                    break;
-                case ActionsBuilder.Type.FLOW_CONTROL:
-                    return Raphael.rgb(185, 132, 140);
-                    break;
+                case ActionsBuilder.Type.TRIGGER: return Raphael.rgb(133, 154, 185);
+                case ActionsBuilder.Type.ACTION: return Raphael.rgb(182, 185, 132);
+                case ActionsBuilder.Type.FLOW_CONTROL: return Raphael.rgb(185, 132, 140);
                 case ActionsBuilder.Type.OBJECT:
-                case ActionsBuilder.Type.SCENE:
-                    return Raphael.rgb(255, 255, 255);
-                    break;
+                case ActionsBuilder.Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
             return null;
@@ -162,19 +154,11 @@ var ActionsBuilder;
                 return Raphael.rgb(96, 122, 14);
             }
             switch (type) {
-                case ActionsBuilder.Type.TRIGGER:
-                    return Raphael.rgb(41, 129, 255);
-                    break;
-                case ActionsBuilder.Type.ACTION:
-                    return Raphael.rgb(255, 220, 42);
-                    break;
-                case ActionsBuilder.Type.FLOW_CONTROL:
-                    return Raphael.rgb(255, 41, 53);
-                    break;
+                case ActionsBuilder.Type.TRIGGER: return Raphael.rgb(41, 129, 255);
+                case ActionsBuilder.Type.ACTION: return Raphael.rgb(255, 220, 42);
+                case ActionsBuilder.Type.FLOW_CONTROL: return Raphael.rgb(255, 41, 53);
                 case ActionsBuilder.Type.OBJECT:
-                case ActionsBuilder.Type.SCENE:
-                    return Raphael.rgb(255, 255, 255);
-                    break;
+                case ActionsBuilder.Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
             return null;
@@ -635,14 +619,14 @@ var ActionsBuilder;
             node.rect.drag(onMove, onStart, onEnd);
             node.text.drag(onMove, onStart, onEnd);
         };
-        // Statics
-        Viewer._NODE_WIDTH = 150;
-        Viewer._NODE_HEIGHT = 25;
-        Viewer._NODE_MINIMIZE_WIDTH = 50;
-        Viewer._VERTICAL_OFFSET = 70;
-        Viewer._DEFAULT_INFO_MESSAGE = "Select or add a node to customize actions";
         return Viewer;
-    })();
+    }());
+    // Statics
+    Viewer._NODE_WIDTH = 150;
+    Viewer._NODE_HEIGHT = 25;
+    Viewer._NODE_MINIMIZE_WIDTH = 50;
+    Viewer._VERTICAL_OFFSET = 70;
+    Viewer._DEFAULT_INFO_MESSAGE = "Select or add a node to customize actions";
     ActionsBuilder.Viewer = Viewer;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.viewer.js.map

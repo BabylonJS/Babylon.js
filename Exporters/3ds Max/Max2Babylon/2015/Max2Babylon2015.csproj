@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files\Autodesk\3ds Max 2015\bin\assemblies\</OutputPath>
+    <OutputPath>C:\Program Files\Autodesk\3ds Max 2016\bin\assemblies\</OutputPath>
     <DefineConstants>TRACE;DEBUG;MAX2015</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -43,18 +43,19 @@
     <Reference Include="Autodesk.Max, Version=17.0.630.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Repos\Babylon.js\Exporters\3ds Max\Max2Babylon\2015\Refs\Autodesk.Max.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="BabylonFileConverter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Refs\BabylonFileConverter.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="SharpDX, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpDX.3.1.1\lib\net45\SharpDX.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\BabylonExport.Core\Refs\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX.Mathematics, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpDX.Mathematics.3.1.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -198,42 +199,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\action.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\action.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\actionkinds.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\actionkinds.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\contextmenu.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\contextmenu.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\fonts.css">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\fonts.css</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\index.css">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\index.css</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\index.html">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\index.html</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\list.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\list.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\parametersManager.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\parametersManager.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\raphael.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\raphael.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\utils.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\utils.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\viewer.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\viewer.js</Link>
-    </Content>
-    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\viewsertoolbar.js">
-      <Link>Exporter\ActionBuilder\ActionsBuilder\viewsertoolbar.js</Link>
-    </Content>
     <Content Include="Refs\Autodesk.Max.dll" />
   </ItemGroup>
   <ItemGroup>
@@ -275,14 +240,29 @@
       <Project>{6150965a-658c-4263-89ad-4f980eb0675d}</Project>
       <Name>BabylonExport.Entities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\BabylonFileConverter\BabylonFileConverter.csproj">
+      <Project>{a6b76356-1d1c-4c82-8199-a6406da85a95}</Project>
+      <Name>BabylonFileConverter</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "$(OutDir)BabylonActionsBuilder"
+mkdir "$(OutDir)BabylonActionsBuilder\fonts"
 mkdir "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans"
-copy "$(SolutionDir)Max2Babylon\Exporter\ActionBuilder\ActionsBuilder\" "$(OutDir)BabylonActionsBuilder\"
-copy "$(SolutionDir)Max2Babylon\Exporter\ActionBuilder\ActionsBuilder\fonts\SinkinSans" "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans"
-copy "$(SolutionDir)babylon.max.js" "$(OutDir)BabylonActionsBuilder\babylon.max.js"</PostBuildEvent>
+copy "$(SolutionDir)ActionsBuilder\Sources\fonts.css" "$(OutDir)BabylonActionsBuilder\fonts.css"
+copy "$(SolutionDir)ActionsBuilder\Sources\index.css" "$(OutDir)BabylonActionsBuilder\index.css"
+copy "$(SolutionDir)ActionsBuilder\Sources\index.html" "$(OutDir)BabylonActionsBuilder\index.html"
+copy "$(SolutionDir)ActionsBuilder\Sources\actionsbuilder.max.js" "$(OutDir)BabylonActionsBuilder\actionsbuilder.max.js"
+copy "$(SolutionDir)ActionsBuilder\Sources\raphael.js" "$(OutDir)BabylonActionsBuilder\raphael.js"
+copy "$(SolutionDir)babylon.max.js" "$(OutDir)BabylonActionsBuilder\babylon.max.js"
+copy "$(SolutionDir)ActionsBuilder\Sources\fonts\SinkinSans\" "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

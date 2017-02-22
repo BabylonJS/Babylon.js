@@ -268,7 +268,7 @@
                         || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
 
-                        if (parameter) {
+                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
                             var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
                             var actualkey = String.fromCharCode(unicode).toLowerCase();
                             if (actualkey !== parameter.toLowerCase()) {

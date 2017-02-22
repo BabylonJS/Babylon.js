@@ -36,6 +36,8 @@ module BABYLON {
         private _bendAxis = Vector3.Right();
         private _slerping = false;
 
+        private _adjustRoll = 0;
+        
         get maxAngle(): number {
 
             return this._maxAngle;
@@ -55,11 +57,18 @@ module BABYLON {
             
             this.mesh = mesh;
 
+            var bonePos = bone.getPosition();
+
              if(bone.getAbsoluteTransform().determinant() > 0){
                 this._rightHandedSystem = true;
                 this._bendAxis.x = 0;
                 this._bendAxis.y = 0;
-                this._bendAxis.z = 1;
+                this._bendAxis.z = -1;
+
+                if(bonePos.x > bonePos.y && bonePos.x > bonePos.z){
+                    this._adjustRoll = Math.PI*.5;
+                    this._bendAxis.z = 1;
+                }
             }
 
             if (this._bone1.length) {
@@ -232,7 +241,7 @@ module BABYLON {
 
             if (this._rightHandedSystem) {
 
-                Matrix.RotationYawPitchRollToRef(0, 0, Math.PI * .5, mat2);
+                Matrix.RotationYawPitchRollToRef(0, 0, this._adjustRoll, mat2);
                 mat2.multiplyToRef(mat1, mat1);
 
                 Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);

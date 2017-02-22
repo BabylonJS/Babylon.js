@@ -21,6 +21,14 @@ module BABYLON {
         }
 
         /**
+         * Defines an onverride for creating gltf runtime
+         * Return true to stop further extensions from creating the runtime
+         */
+        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): boolean {
+            return false;
+        }
+
+        /**
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
@@ -70,6 +78,16 @@ module BABYLON {
             }, () => {
                 setTimeout(() => {
                     onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(<string>data), scene, rootUrl));
+                });
+            });
+        }
+
+        public static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
+                return loaderExtension.loadRuntimeExtensionsAsync(gltfRuntime, onSuccess, onError);
+            }, () => {
+                setTimeout(() => {
+                    onSuccess();
                 });
             });
         }

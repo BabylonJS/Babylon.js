@@ -288,6 +288,18 @@
                 }
             }
 
+            for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
+                    var particleSystem = scene.particleSystems[particleIndex];
+
+                    if (!particleSystem.isStarted() || !particleSystem.emitter || !particleSystem.emitter.position || !particleSystem.emitter.isEnabled()) {
+                        continue;
+                    }
+
+                    if (this.renderList.indexOf(particleSystem.emitter) >= 0) {
+                        this._renderingManager.dispatchParticles(particleSystem);
+                    }
+                }
+
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);

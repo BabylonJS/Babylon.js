@@ -86,23 +86,34 @@
                 this.parametersContainer.appendChild(parameterName);
 
                 if (properties[i].text === "parameter" || properties[i].text === "target" || properties[i].text === "parent") {
-                    // Create target select element
-                    targetParameterSelect = document.createElement("select");
-                    targetParameterSelect.className = "ParametersElementSelectClass";
-                    this.parametersContainer.appendChild(targetParameterSelect);
+                    if (properties[i].targetType === null) {
+                        var parameterInput = document.createElement("input");
+                        parameterInput.value = propertiesResults[i].value;
+                        parameterInput.className = "ParametersElementInputClass";
+                        this.parametersContainer.appendChild(parameterInput);
 
-                    // Create target name select element
-                    targetParameterNameSelect = document.createElement("select");
-                    targetParameterNameSelect.className = "ParametersElementSelectClass";
-                    this.parametersContainer.appendChild(targetParameterNameSelect);
+                        // Configure event
+                        parameterInput.onkeyup = this._propertyInputChanged(parameterInput, i);
+                    }
+                    else {
+                        // Create target select element
+                        targetParameterSelect = document.createElement("select");
+                        targetParameterSelect.className = "ParametersElementSelectClass";
+                        this.parametersContainer.appendChild(targetParameterSelect);
 
-                    // Events and configure
-                    (this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
-                    targetParameterSelect.value = propertiesResults[i].targetType;
-                    targetParameterNameSelect.value = propertiesResults[i].value;
+                        // Create target name select element
+                        targetParameterNameSelect = document.createElement("select");
+                        targetParameterNameSelect.className = "ParametersElementSelectClass";
+                        this.parametersContainer.appendChild(targetParameterNameSelect);
 
-                    targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i);
-                    targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
+                        // Events and configure
+                        (this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
+                        targetParameterSelect.value = propertiesResults[i].targetType;
+                        targetParameterNameSelect.value = propertiesResults[i].value;
+
+                        targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i);
+                        targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
+                    }
                 }
                 else if (properties[i].text === "propertyPath") {
                     propertyPathIndice = i;
@@ -138,7 +149,7 @@
                         this._fillAdditionalPropertyPath(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect);
                         propertyPathOptionalSelect.value = property[property.length - 1];
 
-                        if (propertyPathOptionalSelect.options.length === 0 || propertyPathOptionalSelect.options[0].text === "") {
+                        if (propertyPathOptionalSelect.options.length === 0 || propertyPathOptionalSelect.options[0].textContent === "") {
                             this._viewer.utils.setElementVisible(propertyPathOptionalSelect, false);
                         }
                     }
@@ -238,7 +249,7 @@
                     for (var i = 0; i < values.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = values[i];
-                        booleanSelect.options.add(option);
+                        booleanSelect.add(option);
                     }
                 }
                 else {
@@ -258,7 +269,7 @@
                     for (var i = 0; i < SceneElements.SOUNDS.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = SceneElements.SOUNDS[i];
-                        soundSelect.options.add(option);
+                        soundSelect.add(option);
                     }
 
                     this._sortList(soundSelect);
@@ -280,7 +291,8 @@
                     for (var i = 0; i < SceneElements.OPERATORS.length; i++) {
                         var option = document.createElement("option");
                         option.value = option.text = SceneElements.OPERATORS[i];
-                        conditionOperatorSelect.options.add(option);
+                        //conditionOperatorSelect.options.add(option);
+                        conditionOperatorSelect.add(option);
                     }
                 }
                 else {
@@ -320,7 +332,7 @@
                         for (var i = 0; i < properties.length; i++) {
                             var option = document.createElement("option");
                             option.value = option.text = properties[i];
-                            propertyPathSelect.options.add(option);
+                            propertyPathSelect.add(option);
                         }
                     }
 
@@ -391,12 +403,12 @@
                 if (index !== -1) {
                     var option = document.createElement("option");
                     option.value = option.text = thing;
-                    additionalPropertyPathSelect.options.add(option);
+                    additionalPropertyPathSelect.add(option);
                     emptyOption.text += thing + ", ";
                 }
             }
 
-            if (additionalPropertyPathSelect.options.length === 0 || additionalPropertyPathSelect.options[0].text === "") {
+            if (additionalPropertyPathSelect.options.length === 0 || additionalPropertyPathSelect.options[0].textContent === "") {
                 this._viewer.utils.setElementVisible(additionalPropertyPathSelect, false);
             }
             else {
@@ -451,7 +463,7 @@
                         var option = document.createElement("option");
                         option.text = options[i].text;
                         option.value = options[i].targetType;
-                        targetParameterSelect.options.add(option);
+                        targetParameterSelect.add(option);
                     }
 
                     targetParameterSelect.value = this._action.propertiesResults[indice].targetType;
@@ -480,7 +492,7 @@
                     for (var i = 0; i < targetParameterProperties.length; i++) {
                         var option = document.createElement("option");
                         option.text = option.value = targetParameterProperties[i];
-                        targetParameterNameSelect.options.add(option);
+                        targetParameterNameSelect.add(option);
                     }
                 }
                 targetParameterNameSelect.value = this._action.propertiesResults[indice].value;
@@ -631,7 +643,7 @@
             });
 
             for (var i = 0; i < options.length; i++) {
-                element.options.add(options[i]);
+                element.add(options[i]);
             }
         }
     }

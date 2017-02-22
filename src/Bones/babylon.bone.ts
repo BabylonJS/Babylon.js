@@ -1,11 +1,13 @@
-﻿module BABYLON {
+﻿/// <reference path="..\babylon.node.ts" />
+
+module BABYLON {
     export class Bone extends Node {
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
         public length: number;
 
         private _skeleton: Skeleton;
-        public _matrix: Matrix;
+        private _localMatrix: Matrix;
         private _restPose: Matrix;
         private _baseMatrix: Matrix;
         private _worldTransform = new Matrix();
@@ -17,12 +19,24 @@
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
         private _scalingDeterminant = 1;
+
+        get _matrix():Matrix{
+            return this._localMatrix;
+        }
+
+        set _matrix(val:Matrix){
+            if(this._localMatrix){
+                this._localMatrix.copyFrom(val);
+            }else{
+                this._localMatrix = val;
+            }
+        }
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._matrix = matrix;
-            this._baseMatrix = matrix;
+            this._localMatrix = matrix;
+            this._baseMatrix = matrix.clone();
             this._restPose = restPose ? restPose : matrix.clone();
 
             skeleton.bones.push(this);
@@ -47,7 +61,7 @@
         }
 
         public getLocalMatrix(): Matrix {
-            return this._matrix;
+            return this._localMatrix;
         }
 
         public getBaseMatrix(): Matrix {
@@ -77,7 +91,7 @@
         // Methods
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
             this._baseMatrix = matrix.clone();
-            this._matrix = matrix.clone();
+            this._localMatrix = matrix.clone();
 
             this._skeleton._markAsDirty();
 
@@ -171,6 +185,12 @@
             return true;
         }
 
+        /**
+         * Translate the bone in local or world space.
+         * @param vec The amount to translate the bone.
+         * @param space The space that the translation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public translate (vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lm = this.getLocalMatrix();
@@ -211,6 +231,12 @@
 	        
         }
 
+        /**
+         * Set the postion of the bone in local or world space.
+         * @param position The position to set the bone.
+         * @param space The space that the position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setPosition (position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lm = this.getLocalMatrix();
@@ -248,12 +274,24 @@
 	        
         }
 
+        /**
+         * Set the absolute postion of the bone (world space).
+         * @param position The position to set the bone.
+         * @param mesh The mesh that this bone is attached to.
+         */
         public setAbsolutePosition(position:Vector3, mesh?: AbstractMesh){
 
             this.setPosition(position, Space.WORLD, mesh);
 
         }
 
+        /**
+         * Set the scale of the bone on the x, y and z axes.
+         * @param x The scale of the bone on the x axis.
+         * @param x The scale of the bone on the y axis.
+         * @param z The scale of the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
         public setScale (x: number, y: number, z: number, scaleChildren = false): void {
 
             if (this.animations[0] && !this.animations[0].isStopped()) {
@@ -269,6 +307,13 @@
 
         }
 
+        /**
+         * Scale the bone on the x, y and z axes. 
+         * @param x The amount to scale the bone on the x axis.
+         * @param x The amount to scale the bone on the y axis.
+         * @param z The amount to scale the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
         public scale (x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
@@ -324,6 +369,14 @@
 
         }
 
+        /**
+         * Set the yaw, pitch, and roll of the bone in local or world space.
+         * @param yaw The rotation of the bone on the y axis.
+         * @param pitch The rotation of the bone on the x axis.
+         * @param roll The rotation of the bone on the z axis.
+         * @param space The space that the axes of rotation are in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 	
             var rotMat = Tmp.Matrix[0];
@@ -339,6 +392,13 @@
             
         }
 
+        /**
+         * Rotate the bone on an axis in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param amount The amount to rotate the bone.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public rotate (axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             
             var rmat = Tmp.Matrix[0];
@@ -352,6 +412,13 @@
             
         }
 
+        /**
+         * Set the rotation of the bone to a particular axis angle in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param angle The angle that the bone should be rotated to.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setAxisAngle (axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMat = Tmp.Matrix[0];
@@ -365,12 +432,24 @@
 
         }
 
+        /**
+         * Set the euler rotation of the bone in local of world space.
+         * @param rotation The euler rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setRotation (rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
             
             this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
 
         }
 
+        /**
+         * Set the quaternion rotation of the bone in local of world space.
+         * @param quat The quaternion rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Tmp.Matrix[0];
@@ -386,6 +465,12 @@
 
         }
 
+        /**
+         * Set the rotation matrix of the bone in local of world space.
+         * @param rotMat The rotation matrix that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Tmp.Matrix[0];
@@ -487,18 +572,32 @@
 
         }
 
+        /**
+         * Get the scale of the bone
+         * @returns the scale of the bone
+         */
         public getScale(): Vector3 {
             
             return this._scaleVector.clone();
             
         }
 
+        /**
+         * Copy the scale of the bone to a vector3.
+         * @param result The vector3 to copy the scale to
+         */
         public getScaleToRef(result: Vector3): void {
 	
             result.copyFrom(this._scaleVector);
             
         }
 
+        /**
+         * Get the position of the bone in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The position of the bone
+         */
         public getPosition (space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
 
             var pos = Vector3.Zero();
@@ -509,6 +608,12 @@
 
         }
 
+        /**
+         * Copy the position of the bone to a vector3 in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 to copy the position to.
+         */
         public getPositionToRef (space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
 
             if(space == Space.LOCAL){
@@ -540,6 +645,11 @@
 
         }
 
+        /**
+         * Get the absolute position of the bone (world space).
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The absolute position of the bone
+         */
         public getAbsolutePosition (mesh?: AbstractMesh): Vector3 {
 
             var pos = Vector3.Zero();
@@ -550,18 +660,26 @@
 
         }
 
+        /**
+         * Copy the absolute position of the bone (world space) to the result param.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 to copy the absolute position to.
+         */
         public getAbsolutePositionToRef (mesh: AbstractMesh, result: Vector3) {
 
             this.getPositionToRef(Space.WORLD, mesh, result);
 
         }
 
+        /**
+         * Compute the absolute transforms of this bone and its children.
+         */
         public computeAbsoluteTransforms (): void {
 
             if (this._parent) {
-                this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+                this._localMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             } else {
-                this._absoluteTransform.copyFrom(this._matrix);
+                this._absoluteTransform.copyFrom(this._localMatrix);
 
                 var poseMatrix = this._skeleton.getPoseMatrix();
 
@@ -579,7 +697,7 @@
 
         }
 
-        private _syncScaleVector = function(): void{
+        private _syncScaleVector(): void{
             
             var lm = this.getLocalMatrix();
             
@@ -605,6 +723,12 @@
 
         }
 
+        /**
+         * Get the world direction from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world direction
+         */
         public getDirection (localAxis: Vector3, mesh?: AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
@@ -615,6 +739,12 @@
 
         }
 
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world direction will be copied to.
+         */
         public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
 
             this._skeleton.computeAbsoluteTransforms();
@@ -633,6 +763,12 @@
 
         }
 
+        /**
+         * Get the euler rotation of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The euler rotation
+         */
         public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
 
             var result = Vector3.Zero();
@@ -643,6 +779,12 @@
 
         }
 
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 that the rotation should be copied to.
+         */
         public getRotationToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
 
             var quat = Tmp.Quaternion[0];
@@ -653,6 +795,12 @@
 
         }
 
+        /**
+         * Get the quaternion rotation of the bone in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The quaternion rotation
+         */
         public getRotationQuaternion(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
 
             var result = Quaternion.Identity();
@@ -663,6 +811,12 @@
 
         }
 
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
         public getRotationQuaternionToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
 
             if(space == Space.LOCAL){
@@ -689,6 +843,12 @@
             }
         }
 
+        /**
+         * Get the rotation matrix of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The rotation matrix
+         */
         public getRotationMatrix(space = Space.LOCAL, mesh: AbstractMesh): Matrix {
 
             var result = Matrix.Identity();
@@ -699,6 +859,12 @@
 
         }
 
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
         public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void{
 
             if(space == Space.LOCAL){
@@ -726,6 +892,12 @@
 
         }
 
+        /**
+         * Get the world position of a point that is in the local space of the bone.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world position
+         */
         public getAbsolutePositionFromLocal(position:Vector3, mesh?:AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
@@ -736,6 +908,12 @@
 
         }
 
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world position should be copied to.
+         */
         public getAbsolutePositionFromLocalToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
 
             this._skeleton.computeAbsoluteTransforms();
@@ -753,6 +931,12 @@
 
         }
 
+        /**
+         * Get the local position of a point that is in world space.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The local position
+         */
         public getLocalPositionFromAbsolute(position:Vector3, mesh?:AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
@@ -763,6 +947,12 @@
 
         }
 
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the local position should be copied to.
+         */
         public getLocalPositionFromAbsoluteToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
 
             this._skeleton.computeAbsoluteTransforms();
