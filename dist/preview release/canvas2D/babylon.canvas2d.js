@@ -8780,8 +8780,10 @@ var BABYLON;
                 return false;
             }
             if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning)) {
-                console.log("You can't set the position/x/y of " + this.id + " properties while positioning engine is used (margin, margin alignment and/or padding are set");
-                return false;
+                if (this instanceof BABYLON.Group2D && this.trackedNode == null) {
+                    console.log("You can't set the position/x/y of " + this.id + " properties while positioning engine is used (margin, margin alignment and/or padding are set");
+                    return false;
+                }
             }
             return true;
         };
