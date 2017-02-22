@@ -111,7 +111,7 @@
             paddingLeft             ?: number | string,
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
-            padding                 ?: string,
+            padding                 ?: number | string,
 
         }) {
             if (settings == null) {
@@ -247,7 +247,7 @@
 
         @instanceLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => Group2D.sizeProperty = pi, false, true)
         public get size(): Size {
-            return this._size;
+            return this.internalGetSize();
         }
 
         /**
@@ -261,49 +261,6 @@
         public get viewportSize(): ISize {
             return this._viewportSize;
         }
-
-        @instanceLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, pi => Group2D.actualSizeProperty = pi)
-        /**
-         * Get the actual size of the group, if the size property is not null, this value will be the same, but if size is null, actualSize will return the size computed from the group's bounding content.
-         */
-        public get actualSize(): Size {
-            // The computed size will be floor on both width and height
-            let actualSize: Size;
-
-            // Return the actualSize if set
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-
-            // Return the size if set by the user
-            if (this._size) {
-                actualSize = new Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
-            }
-
-            // Otherwise the size is computed based on the boundingInfo of the layout (or bounding info) content
-            else {
-                let m = this.layoutBoundingInfo.max();
-                actualSize = new Size(Math.ceil(m.x), Math.ceil(m.y));
-            }
-
-            // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
-            if (!actualSize.equals(this._actualSize)) {
-                this.onPrimitivePropertyDirty(Group2D.actualSizeProperty.flagId);
-                this._actualSize = actualSize;
-                this.handleGroupChanged(Group2D.actualSizeProperty);
-            }
-
-            return actualSize;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize = value.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
-
 
         /**
          * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.

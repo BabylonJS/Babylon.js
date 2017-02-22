@@ -647,15 +647,15 @@
             let radius = Math.sqrt(rs);
 
             let offset = index * 9;
-            this._array[0] = a.x;
-            this._array[1] = a.y;
-            this._array[2] = b.x;
-            this._array[3] = b.y;
-            this._array[4] = c.x;
-            this._array[5] = c.y;
-            this._array[6] = center.x;
-            this._array[7] = center.y;
-            this._array[8] = radius;
+            this._array[offset + 0] = a.x;
+            this._array[offset + 1] = a.y;
+            this._array[offset + 2] = b.x;
+            this._array[offset + 3] = b.y;
+            this._array[offset + 4] = c.x;
+            this._array[offset + 5] = c.y;
+            this._array[offset + 6] = center.x;
+            this._array[offset + 7] = center.y;
+            this._array[offset + 8] = radius;
         }
 
         /**
@@ -669,15 +669,15 @@
             }
 
             let offset = index * 9;
-            tri2dInfo.a.x      = this._array[0];
-            tri2dInfo.a.y      = this._array[1];
-            tri2dInfo.b.x      = this._array[2];
-            tri2dInfo.b.y      = this._array[3];
-            tri2dInfo.c.x      = this._array[4];
-            tri2dInfo.c.y      = this._array[5];
-            tri2dInfo.center.x = this._array[6];
-            tri2dInfo.center.y = this._array[7];
-            tri2dInfo.radius   = this._array[8];
+            tri2dInfo.a.x      = this._array[offset + 0];
+            tri2dInfo.a.y      = this._array[offset + 1];
+            tri2dInfo.b.x      = this._array[offset + 2];
+            tri2dInfo.b.y      = this._array[offset + 3];
+            tri2dInfo.c.x      = this._array[offset + 4];
+            tri2dInfo.c.y      = this._array[offset + 5];
+            tri2dInfo.center.x = this._array[offset + 6];
+            tri2dInfo.center.y = this._array[offset + 7];
+            tri2dInfo.radius   = this._array[offset + 8];
         }
 
         /**
@@ -692,12 +692,12 @@
             }
 
             let offset = index * 9;
-            tri2dInfo.a.x = this._array[0];
-            tri2dInfo.a.y = this._array[1];
-            tri2dInfo.b.x = this._array[2];
-            tri2dInfo.b.y = this._array[3];
-            tri2dInfo.c.x = this._array[4];
-            tri2dInfo.c.y = this._array[5];
+            tri2dInfo.a.x = this._array[offset + 0];
+            tri2dInfo.a.y = this._array[offset + 1];
+            tri2dInfo.b.x = this._array[offset + 2];
+            tri2dInfo.b.y = this._array[offset + 3];
+            tri2dInfo.c.x = this._array[offset + 4];
+            tri2dInfo.c.y = this._array[offset + 5];
 
             tri2dInfo.transformInPlace(transform);
         }
