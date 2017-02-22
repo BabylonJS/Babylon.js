@@ -490,6 +490,11 @@ namespace Max2Babylon
                     }
 
                     instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
+
+                    if (instanceGameNode.NodeParent != null)
+                    {
+                        instance.parentId = GetParentID(instanceGameNode.NodeParent, babylonScene, scene);
+                    }
                 }
                 var instanceAnimations = new List<BabylonAnimation>();
                 GenerateCoordinatesAnimations(meshNode, instanceAnimations);

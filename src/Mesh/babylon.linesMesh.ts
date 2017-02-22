@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
@@ -53,6 +55,9 @@
             this._positionBuffer[VertexBuffer.PositionKind] = null;
         }
 
+        /**
+         * Returns the string "LineMesh"  
+         */
         public getClassName(): string {
             return "LinesMesh";
         }      
@@ -70,7 +75,7 @@
             return null;
         }
 
-        public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void {
+        public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
             var engine = this.getScene().getEngine();
 
             this._positionBuffer[VertexBuffer.PositionKind] = this._geometry.getVertexBuffer(VertexBuffer.PositionKind);
@@ -80,17 +85,19 @@
 
             // Color
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
+            return this;
         }
 
-        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void {
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                return this;
             }
 
             var engine = this.getScene().getEngine();
 
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            return this;
         }
 
         public dispose(doNotRecurse?: boolean): void {
@@ -99,6 +106,9 @@
             super.dispose(doNotRecurse);
         }
 
+        /**
+         * Returns a new LineMesh object cloned from the current one.  
+         */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }

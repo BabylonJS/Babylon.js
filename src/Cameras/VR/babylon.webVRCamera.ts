@@ -148,5 +148,18 @@ module BABYLON {
             }
         }
     }
+    
+    export class WebVRGamepadCamera extends WebVRFreeCamera {
+
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion:boolean = false, webVROptions: WebVROptions = {}) {
+            super(name, position, scene, compensateDistortion, webVROptions);
+            
+            this.inputs.addGamepad();
+        }
+
+        public getClassName(): string {
+            return "WebVRGamepadCamera";
+        }
+    }    
 }
 

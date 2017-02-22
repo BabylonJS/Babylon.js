@@ -739,10 +739,10 @@
                     return () => new TouchCamera(name, Vector3.Zero(), scene);
                 case "VirtualJoysticksCamera":
                     return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
-                case "HolographicCamera":
-                    return () => new HolographicCamera(name, scene);
                 case "WebVRFreeCamera":
                     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+                case "WebVRGamepadCamera":
+                    return () => new WebVRGamepadCamera(name, Vector3.Zero(), scene);
                 case "VRDeviceOrientationFreeCamera":
                     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
                 case "VRDeviceOrientationGamepadCamera":

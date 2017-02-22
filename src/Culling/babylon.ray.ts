@@ -387,21 +387,27 @@
         }
 
         public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
-
-            newDirection.normalize();
-
-            return new Ray(newOrigin, newDirection, ray.length);
+            var result = new Ray(new Vector3(0,0,0), new Vector3(0,0,0));
+            Ray.TransformToRef(ray, matrix, result);
+            
+            return result;
         }
 
         public static TransformToRef(ray: Ray, matrix: Matrix, result:Ray): void {
-            
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
-
-            ray.direction.normalize();
+            result.length = ray.length;
             
+            var dir = result.direction;
+            var len = dir.length();
+
+            if(!(len === 0 || len === 1)){
+                var num = 1.0 / len;
+                dir.x *= num;
+                dir.y *= num;
+                dir.z *= num;
+                result.length *= len;
+            }
         }
     }
 }

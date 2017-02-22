@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
@@ -108,13 +110,15 @@
         /**
         * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
         * if the ground has been updated.
-        * This can be used in the render loop
+        * This can be used in the render loop.  
+        * Returns the GroundMesh.  
         */
-        public updateCoordinateHeights(): void {
+        public updateCoordinateHeights(): GroundMesh {
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._initHeightQuads();
             }
             this._computeHeightQuads();
+            return this;
         }
 
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
@@ -138,8 +142,9 @@
         // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
-        private _initHeightQuads(): void {
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
+        private _initHeightQuads(): GroundMesh {
             var subdivisionsX = this._subdivisionsX;
             var subdivisionsY = this._subdivisionsY;
             this._heightQuads = new Array();
@@ -149,13 +154,15 @@
                     this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }
+            return this;
         }
 
         // Compute each quad element values and update the the heightMap array :
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
-        private _computeHeightQuads(): void {
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
+        private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var v1 = Tmp.Vector3[3];
             var v2 = Tmp.Vector3[2];
@@ -220,6 +227,7 @@
                     quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
                 }
             }
+            return this;
         }
     }
 }

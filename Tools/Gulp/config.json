@@ -5,6 +5,7 @@
     "minNoWorkerFilename": "babylon.noworker.js",
     "minCoreFilename": "babylon.core.js",
     "declarationFilename": "babylon.d.ts",
+    "declarationModuleFilename": "babylon.module.d.ts",
     "outputDirectory": "../../dist/preview release",
     "srcOutputDirectory": "../../src/"
   },
@@ -207,7 +208,6 @@
       "../../src/PostProcess/babylon.lensRenderingPipeline.js",
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
-      "../../src/Cameras/Holographic/babylon.holographicCamera.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
@@ -437,7 +437,8 @@
         "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderUtils.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderExtension.ts",
-        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts"
+        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFMaterialCommonExtension.ts"
       ],
       "output": "babylon.glTFFileLoader.js"
     }],

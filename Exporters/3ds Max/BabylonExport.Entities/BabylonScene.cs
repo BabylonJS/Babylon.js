@@ -123,13 +123,12 @@ namespace BabylonExport.Entities
             clearColor = new[] { 0.2f, 0.2f, 0.3f };
             ambientColor = new[] { 0f, 0f, 0f };
             gravity = new[] { 0f, 0f, -0.9f };
-            physicsEngine = "cannon";
 
             MaxVector = new BabylonVector3 { X = float.MinValue, Y = float.MinValue, Z = float.MinValue };
             MinVector = new BabylonVector3 { X = float.MaxValue, Y = float.MaxValue, Z = float.MaxValue };
         }
 
-        public void Prepare(bool generateDefaultLight = true)
+        public void Prepare(bool generateDefaultLight = true, bool generateDefaultCamera = true)
         {
             meshes = MeshesList.ToArray();
             sounds = SoundsList.ToArray();
@@ -139,7 +138,7 @@ namespace BabylonExport.Entities
             shadowGenerators = ShadowGeneratorsList.ToArray();
             skeletons = SkeletonsList.ToArray();
 
-            if (CamerasList.Count == 0)
+            if (CamerasList.Count == 0 && generateDefaultCamera)
             {
                 var camera = new BabylonCamera { name = "Default camera", id = Guid.NewGuid().ToString() };
 

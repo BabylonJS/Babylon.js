@@ -9,9 +9,6 @@ namespace BabylonExport.Entities
         public string id { get; set; }
 
         [DataMember]
-        public string parentId { get; set; }
-
-        [DataMember]
         public string materialId { get; set; }
 
         [DataMember]
@@ -132,6 +129,8 @@ namespace BabylonExport.Entities
             skeletonId = -1;
 
             pickable = true;
+
+            numBoneInfluencers = 4;
         }
     }
 }

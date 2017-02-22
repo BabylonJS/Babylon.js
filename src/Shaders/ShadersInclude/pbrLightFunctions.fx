@@ -113,8 +113,8 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     roughness = adjustRoughnessFromLightProperties(roughness, rangeRadius, lightDistance);
     
     // Diffuse
-    vec3 H = normalize(viewDirectionW - lightDirection.xyz);
-    NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
+    vec3 H = normalize(viewDirectionW + directionToLightCenterW);
+    NdotL = max(0.00000000001, dot(vNormal, directionToLightCenterW));
     float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);

@@ -7,18 +7,20 @@
         private _files: string[];
         private _extensions: string[];
         private _textureMatrix: Matrix;
+        private _format: number;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
             return new CubeTexture("", scene, null, noMipmap, files);
         }
 
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null) {
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA) {
             super(scene);
 
             this.name = rootUrl;
             this.url = rootUrl;
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
+            this._format = format;
 
             if (!rootUrl && !files) {
                 return;
@@ -45,7 +47,7 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError);
+                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format);
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -72,7 +74,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap);
+                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap, undefined, undefined, this._format);
             }
         }
 
