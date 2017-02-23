@@ -884,20 +884,20 @@
                     Tmp.Matrix[0].decompose(scale, rotation, translation);
 
                     var finalQuaternion = Tmp.Quaternion[1];
-                    finalQuaternion.w = rotation.w;
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X)
+                    finalQuaternion.copyFrom(rotation);
+                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) !== AbstractMesh.BILLBOARDMODE_X)
                     {
-                        finalQuaternion.x = rotation.x;
+                        finalQuaternion.x = 0;
                     }
                     
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y)
+                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) !== AbstractMesh.BILLBOARDMODE_Y)
                     {
-                        finalQuaternion.y = rotation.y;
+                        finalQuaternion.y = 0;
                     }
                     
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z)
+                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) !== AbstractMesh.BILLBOARDMODE_Z)
                     {
-                        finalQuaternion.z = rotation.z;
+                        finalQuaternion.z = 0;
                     }
  
                     Matrix.ComposeToRef(scale, finalQuaternion, translation, Tmp.Matrix[0]);
