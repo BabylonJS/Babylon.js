@@ -34457,6 +34457,12 @@ var BABYLON;
             this._identity = BABYLON.Matrix.Identity();
             this._ranges = {};
             this._lastAbsoluteTransformsUpdateId = -1;
+            // Events
+            /**
+             * An event triggered before computing the skeleton's matrices
+             * @type {BABYLON.Observable}
+             */
+            this.onBeforeComputeObservable = new BABYLON.Observable();
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
@@ -34622,6 +34628,7 @@ var BABYLON;
             }
         };
         Skeleton.prototype._computeTransformMatrices = function (targetMatrix, initialSkinMatrix) {
+            this.onBeforeComputeObservable.notifyObservers(this);
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
                 var parentBone = bone.getParent();

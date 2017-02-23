@@ -16,6 +16,13 @@
 
         private _lastAbsoluteTransformsUpdateId = -1;
 
+        // Events
+        /**
+         * An event triggered before computing the skeleton's matrices
+         * @type {BABYLON.Observable}
+         */
+        public onBeforeComputeObservable = new Observable<Skeleton>();
+
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
@@ -208,6 +215,9 @@
         }
 
         public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void {
+
+            this.onBeforeComputeObservable.notifyObservers(this);
+
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
                 var parentBone = bone.getParent();
