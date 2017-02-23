@@ -168,21 +168,6 @@
         public static acutalSizeProperty: Prim2DPropInfo;
         public static subdivisionsProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.acutalSizeProperty = pi, false, true)
-        /**
-         * Get/Set the size of the ellipse
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            this._actualSize = value;
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Ellipse2D.subdivisionsProperty = pi)
         /**
          * Get/set the number of subdivisions used to draw the ellipsis. Default is 64.
@@ -289,7 +274,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
