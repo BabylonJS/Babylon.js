@@ -980,6 +980,12 @@
             //ty.x /= h;
             //ty.y /= h;
 
+            if (!this.applyActualScaleOnTransform()) {
+                let las = this.actualScale;
+                tx.x /= las.x;
+                ty.y /= las.y;
+            }
+
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
