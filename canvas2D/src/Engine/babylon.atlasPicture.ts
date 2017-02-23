@@ -208,46 +208,38 @@
          * @param onError a callback that will be called in case of error
          */
         public static loadFromUrl(texture: Texture, url: string, onLoad: (api: AtlasPictureInfo) => void, onError: (msg: string, code: number) => void = null) {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        let ext = url.split('.').pop().split(/\#|\?/)[0];
-                        let plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
-                        if (!plugins) {
-                            if (onError) {
-                                onError("couldn't find a plugin for this file extension", -1);
+            Tools.LoadFile(url, (data) => {
+                let ext = url.split('.').pop().split(/\#|\?/)[0];
+                let plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
+                if (!plugins) {
+                    if (onError) {
+                        onError("couldn't find a plugin for this file extension", -1);
+                    }
+                    return;
+                }
+                for (let p of plugins) {
+                    let ret = p.loadFile(data);
+                    if (ret) {
+                        if (ret.api) {
+                            ret.api.texture = texture;
+                            if (onLoad) {
+                                onLoad(ret.api);
                             }
-                            return;
+                        } else if (onError) {
+                            onError(ret.errorMsg, ret.errorCode);
                         }
-                        for (let p of plugins) {
-                            let ret = p.loadFile(xhr.response);
-                            if (ret) {
-                                if (ret.api) {
-                                    ret.api.texture = texture;
-                                    if (onLoad) {
-                                        onLoad(ret.api);
-                                    }
-                                } else if (onError) {
-                                    onError(ret.errorMsg, ret.errorCode);
-                                }
-                                return;
-                            }
-                        }
-
-                        if (onError) {
-                            onError("No plugin to load this Atlas Data file format", -1);
-                        }
-
-                    } else {
-                        if (onError) {
-                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
-                        }
+                        return;
                     }
                 }
-            }
-            xhr.open("GET", url, true);
-            xhr.send();
+
+                if (onError) {
+                    onError("No plugin to load this Atlas Data file format", -1);
+                }
+            }, null, null, null, () => {
+                if (onError) {
+                    onError("Couldn't load file", -1);
+                }
+            });
             return null;
         }
 

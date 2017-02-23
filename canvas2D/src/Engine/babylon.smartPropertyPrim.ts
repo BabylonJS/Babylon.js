@@ -1112,7 +1112,9 @@
                     curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
-                        curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        if (curprim._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+                            curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        }
                     }
 
                     if (curprim instanceof Group2D) {
@@ -1305,6 +1307,9 @@
         public static flagLayoutBoundingInfoDirty = 0x0200000;    // set if the layout bounding info is dirty
         public static flagCollisionActor          = 0x0400000;    // set if the primitive is part of the collision engine
         public static flagModelUpdate             = 0x0800000;    // set if the primitive's model data is to update
+        public static flagLocalTransformDirty     = 0x1000000;    // set if the local transformation matrix must be recomputed
+        public static flagUsePositioning          = 0x2000000;    // set if the primitive rely on the positioning engine (padding or margin is used)
+        public static flagComputingPositioning    = 0x4000000;    // set if the positioning engine is computing the primitive, used to avoid re entrance
 
         private   _uid                : string;
         private   _flags              : number;

@@ -226,7 +226,11 @@
             }
             this._text = value;
             this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
-            this._size = null;
+
+            if(!this._sizeSetByUser){
+                this._size = null;
+            }
+
             this._updateCharCount();
 
             // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
@@ -271,14 +275,12 @@
             return false;
         }
 
-        /**
-         * Get the actual size of the Text2D primitive
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
+        public get isVerticalSizeAuto(): boolean {
+            return false;
+        }
+
+        public get isHorizontalSizeAuto(): boolean {
+            return false;
         }
 
         /**
@@ -299,6 +301,15 @@
             }
             
             return this._textSize;
+        }
+
+        protected onSetOwner() {
+            if (!this._textSize) {
+                this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                this._setLayoutDirty();
+                this._positioningDirty();
+                this._actualSize = null;
+            }
         }
 
         protected get fontTexture(): BaseFontTexture {
@@ -437,7 +448,7 @@
             paddingLeft             ?: number | string,
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
-            padding                 ?: string,
+            padding                 ?: number | string,
             textAlignmentH          ?: number,
             textAlignmentV          ?: number,
             textAlignment           ?: string,
@@ -455,6 +466,15 @@
                 this._fontName        = null;
                 this._fontSuperSample = false;
                 this._fontSDF         = false;
+
+                let ft = this._fontTexture;
+                if (ft != null && !ft.isReady()) {
+                    ft.onLoadObservable.add(() => {
+                        this._positioningDirty();
+                        this._setLayoutDirty();
+                        this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId;  // To make sure the Text2D is issued again for render
+                    });                    
+                }
             } else {
                 this._fontName       = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
                 this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
@@ -464,7 +484,12 @@
             this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize           = null;
             this.text                = text;
-            this.size                = (settings.size==null) ? null : settings.size;
+            if(settings.size != null){
+                this.size = settings.size;
+                this._sizeSetByUser = true;
+            }else{
+                this.size = null;
+            }
             this.textAlignmentH      = (settings.textAlignmentH==null) ? Text2D.AlignLeft : settings.textAlignmentH;
             this.textAlignmentV      = (settings.textAlignmentV==null) ? Text2D.AlignTop : settings.textAlignmentV;
             this.textAlignment       = (settings.textAlignment==null) ? "" : settings.textAlignment;
@@ -848,6 +873,7 @@
         private _textSize: Size;
         private _wordWrap: boolean;
         private _textAlignment: string;
+        private _sizeSetByUser: boolean;
 
         public textAlignmentH: number;
         public textAlignmentV: number;
