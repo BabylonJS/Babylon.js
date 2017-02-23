@@ -27160,7 +27160,7 @@ var BABYLON;
                 if (!particleSystem.isStarted() || !particleSystem.emitter || !particleSystem.emitter.position || !particleSystem.emitter.isEnabled()) {
                     continue;
                 }
-                if (this.renderList.indexOf(particleSystem.emitter) >= 0) {
+                if (currentRenderList.indexOf(particleSystem.emitter) >= 0) {
                     this._renderingManager.dispatchParticles(particleSystem);
                 }
             }
