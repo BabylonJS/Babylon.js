@@ -2947,6 +2947,16 @@
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
         /**
+         * Fill a Vector3 with the extracted translation from the Matrix.  
+         */
+        public getTranslationToRef(result:Vector3): Matrix {
+            result.x = this.m[12];
+            result.y = this.m[13];
+            result.z = this.m[14];
+
+            return this;
+        }
+        /**
          * Remove rotation and scaling part from the Matrix. 
          * Returns the updated Matrix. 
          */
