@@ -697,6 +697,9 @@ declare module BABYLON {
          * The normalized ([0;1]) right/bottom position of the character in the texture
          */
         bottomRightUV: Vector2;
+        xOffset: number;
+        yOffset: number;
+        xAdvance: number;
         charWidth: number;
     }
     /**
@@ -767,6 +770,7 @@ declare module BABYLON {
         atlasName: string;
         padding: Vector4;
         lineHeight: number;
+        baseLine: number;
         textureUrl: string;
         textureFile: string;
     }
@@ -823,6 +827,7 @@ declare module BABYLON {
         private _xMargin;
         private _yMargin;
         private _offset;
+        private _baseLine;
         private _currentFreePosition;
         private _curCharCount;
         private _lastUpdateCharCount;
@@ -831,6 +836,7 @@ declare module BABYLON {
         private _sdfContext;
         private _sdfScale;
         private _usedCounter;
+        debugMode: boolean;
         readonly isDynamicFontTexture: boolean;
         static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): FontTexture;
         static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): void;
@@ -852,7 +858,7 @@ declare module BABYLON {
         getChar(char: string): CharInfo;
         private _computeSDFChar(source);
         private getSuperSampleFont(font);
-        private getFontHeight(font);
+        private getFontHeight(font, chars);
         readonly canRescale: boolean;
         getContext(): CanvasRenderingContext2D;
         /**
