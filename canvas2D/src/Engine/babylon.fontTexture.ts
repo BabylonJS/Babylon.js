@@ -14,6 +14,10 @@
          */
         bottomRightUV: Vector2;
 
+        xOffset: number;
+        yOffset: number;
+        xAdvance: number;
+
         charWidth: number;
     }
 
@@ -154,7 +158,8 @@
         textureSize : Size;
         atlasName   : string;
         padding     : Vector4;       // Left, Top, Right, Bottom
-        lineHeight: number;
+        lineHeight  : number;
+        baseLine    : number;
         textureUrl  : string;
         textureFile : string;
     }
@@ -331,6 +336,7 @@
         private _xMargin: number;
         private _yMargin: number;
         private _offset: number;
+        private _baseLine: number;
         private _currentFreePosition: Vector2;
         private _curCharCount = 0;
         private _lastUpdateCharCount = -1;
@@ -339,6 +345,7 @@
         private _sdfContext: CanvasRenderingContext2D;
         private _sdfScale: number;
         private _usedCounter = 1;
+        public debugMode: boolean;
 
         get isDynamicFontTexture(): boolean {
             return true;
@@ -389,6 +396,7 @@
             super(null, scene, true, false, samplingMode);
 
             this.name = name;
+            this.debugMode = false;
 
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -397,7 +405,7 @@
             this._signedDistanceField = signedDistanceField;
             this._superSample = false;
 
-            // SDF will use supersample no matter what, the resolution is otherwise too poor to produce correct result
+            // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {
                 let sfont = this.getSuperSampleFont(font);
                 if (sfont) {
@@ -413,19 +421,22 @@
             this._context.fillStyle = "white";
             this._context.textBaseline = "top";
 
-            var res = this.getFontHeight(font);
+            var res = this.getFontHeight(font, "j$|");
             this._lineHeightSuper = res.height; //+4;
             this._lineHeight = this._superSample ? (Math.ceil(this._lineHeightSuper / 2)) : this._lineHeightSuper;
-            this._offset = res.offset - 1;
-            this._xMargin = 1 + Math.ceil(this._lineHeightSuper / 15);    // Right now this empiric formula seems to work...
-            this._yMargin = this._xMargin;
+            this._offset = res.offset;
+            res = this.getFontHeight(font, "f");
+            this._baseLine = res.height + res.offset - this._offset;
 
-            var maxCharWidth = this._context.measureText("W").width;
+            var maxCharWidth = Math.max(this._context.measureText("W").width, this._context.measureText("_").width);
             this._spaceWidthSuper = this._context.measureText(" ").width;
             this._spaceWidth = this._superSample ? (this._spaceWidthSuper / 2) : this._spaceWidthSuper;
 
+            this._xMargin = Math.ceil(maxCharWidth / 32);
+            this._yMargin = this._xMargin;
+
             // This is an approximate size, but should always be able to fit at least the maxCharCount
-            var totalEstSurface = (this._lineHeightSuper + this._yMargin) * (maxCharWidth + this._xMargin) * maxCharCount;
+            var totalEstSurface = (Math.ceil(this._lineHeightSuper) + (this._yMargin*2)) * (Math.ceil(maxCharWidth) + (this._xMargin*2)) * maxCharCount;
             var edge = Math.sqrt(totalEstSurface);
             var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
 
@@ -447,13 +458,13 @@
             this._context.clearRect(0, 0, textureSize.width, textureSize.height);
 
             // Create a canvas for the signed distance field mode, we only have to store one char, the purpose is to render a char scaled _sdfScale times
-            //  into this 2D context, then get the bitmap data, create the sdf char and push the result in the _context (which hold the whole Font Texture content)
+            //  into this 2D context, then get the bitmap data, create the SDF char and push the result in the _context (which hold the whole Font Texture content)
             // So you can see this context as an intermediate one, because it is.
             if (this._signedDistanceField) {
                 let sdfC = document.createElement("canvas");
                 let s = this._sdfScale;
-                sdfC.width = maxCharWidth * s;
-                sdfC.height = this._lineHeightSuper * s;
+                sdfC.width = (Math.ceil(maxCharWidth) + this._xMargin * 2) * s;
+                sdfC.height = (Math.ceil(this._lineHeightSuper) + this._yMargin * 2) * s;
                 let sdfCtx = sdfC.getContext("2d");
                 sdfCtx.scale(s, s);
                 sdfCtx.textBaseline = "top";
@@ -497,10 +508,10 @@
             var textureSize = this.getSize();
 
             // we reached the end of the current line?
-            let width = Math.round(measure.width);
+            let width = Math.ceil(measure.width);
             if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeightSuper + this._yMargin;
+                this._currentFreePosition.y += Math.ceil(this._lineHeightSuper + this._yMargin*2);
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -508,22 +519,54 @@
                 }
             }
 
-            // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
-            if (this._signedDistanceField) {
-                this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, -this._offset);
-                let data = this._sdfContext.getImageData(0, 0, width*this._sdfScale, this._sdfCanvas.height);
+            let curPosX = this._currentFreePosition.x + 0.5;
+            let curPosY = this._currentFreePosition.y + 0.5;
+            let curPosXMargin = curPosX + this._xMargin;
+            let curPosYMargin = curPosY + this._yMargin;
 
+            let drawDebug = (ctx: CanvasRenderingContext2D) => {
+                ctx.strokeStyle = "green";
+                ctx.beginPath();
+                ctx.rect(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
+                ctx.closePath();
+                ctx.stroke();
+
+                ctx.strokeStyle = "blue";
+                ctx.beginPath();
+                ctx.moveTo(curPosXMargin, curPosYMargin + Math.round(this._baseLine));
+                ctx.lineTo(curPosXMargin + width, curPosYMargin + Math.round(this._baseLine));
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            // In SDF mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the SDF map accurately)
+            if (this._signedDistanceField) {
+                let s = this._sdfScale;
+                this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
+
+                // Coordinates are subject to the context's scale
+                this._sdfContext.fillText(char, this._xMargin + 0.5, this._yMargin + 0.5 - this._offset);
+
+                // Canvas Pixel Coordinates, no scale
+                let data = this._sdfContext.getImageData(0, 0, (width + (this._xMargin * 2)) * s, this._sdfCanvas.height);
                 let res = this._computeSDFChar(data);
-                this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
+                this._context.putImageData(res, curPosX, curPosY);
+                if (this.debugMode) {
+                    drawDebug(this._context);
+                }
             } else {
+                if (this.debugMode) {
+                    drawDebug(this._context);
+                }
+
                 // Draw the character in the HTML canvas
-                this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
+                this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
             }
 
             // Fill the CharInfo object
-            info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+            info.topLeftUV = new Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
+            info.bottomRightUV = new Vector2((curPosXMargin + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + this._yMargin) / textureSize.height));
+            info.yOffset = info.xOffset = 0;
 
             if (this._signedDistanceField) {
                 let off = 1/textureSize.width;
@@ -532,13 +575,14 @@
             }
 
             info.charWidth = this._superSample ? (width/2) : width;
+            info.xAdvance = info.charWidth;
 
             // Add the info structure
             this._charInfos.add(char, info);
             this._curCharCount++;
 
             // Set the next position
-            this._currentFreePosition.x += width + this._xMargin;
+            this._currentFreePosition.x += Math.ceil(width + this._xMargin*2);
 
             return info;
         }
@@ -710,7 +754,7 @@
         }
 
         // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
-        private getFontHeight(font: string): {height: number, offset: number} {
+        private getFontHeight(font: string, chars: string): {height: number, offset: number} {
             var fontDraw = document.createElement("canvas");
             fontDraw.width = 600;
             fontDraw.height = 600;
@@ -719,7 +763,7 @@
             ctx.textBaseline = 'top';
             ctx.fillStyle = 'white';
             ctx.font = font;
-            ctx.fillText('jH|', 0, 0);
+            ctx.fillText(chars, 0, 0);
             var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
             var start = -1;
             var end = -1;
@@ -742,7 +786,7 @@
                     }
                 }
             }
-            return { height: (end - start)+1, offset: start-1}
+            return { height: (end - start)+1, offset: start}
         }
 
         public get canRescale(): boolean {
@@ -827,13 +871,15 @@
             return obj;
         }
 
-        private _buildCharInfo(initialLine: string, obj: any, textureSize: Size, invertY: boolean, chars: StringDictionary<CharInfo>) {
+        private _buildCharInfo(bfi: BitmapFontInfo, initialLine: string, obj: any, textureSize: Size, invertY: boolean, chars: StringDictionary<CharInfo>) {
             let char: string = null;
             let x: number = null;
             let y: number = null;
-            let xadv: number = null;
             let width: number = null;
             let height: number = null;
+            let xoffset = 0;
+            let yoffset = 0;
+            let xadvance = 0;
             let ci = new CharInfo();
             for (let key in obj) {
                 let value = obj[key];
@@ -854,15 +900,22 @@
                         height = value;
                         break;
                     case "xadvance":
-                        xadv = value;
+                        xadvance = value;
+                        break;
+                    case "xoffset":
+                        xoffset = value;
+                        break;
+                    case "yoffset":
+                        yoffset = value;
                         break;
                 }
             }
 
             if (x != null && y != null && width != null && height != null && char != null) {
-                if (xadv) {
-                    width = xadv;
-                }
+                ci.xAdvance = xadvance;
+                ci.xOffset = xoffset;
+                ci.yOffset = bfi.lineHeight -height - yoffset;
+
                 if (invertY) {
                     ci.topLeftUV = new Vector2(1 - (x / textureSize.width), 1 - (y / textureSize.height));
                     ci.bottomRightUV = new Vector2(1 - ((x + width) / textureSize.width), 1 - ((y + height) / textureSize.height));
@@ -895,6 +948,7 @@
             //common
             var commonObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt.COMMON_EXP)[0]);
             bfi.lineHeight = commonObj["lineHeight"];
+            bfi.baseLine = commonObj["base"];
             bfi.textureSize = new Size(commonObj["scaleW"], commonObj["scaleH"]);
 
             var maxTextureSize = scene.getEngine()._gl.getParameter(0xd33);
@@ -918,7 +972,7 @@
                         let charLines = fontStr.match(BMFontLoaderTxt.CHAR_EXP);
                         for (let i = 0, li = charLines.length; i < li; i++) {
                             let charObj = this._parseStrToObj(charLines[i]);
-                            this._buildCharInfo(charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
+                            this._buildCharInfo(bfi, charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
                         }
 
                         //kerning
