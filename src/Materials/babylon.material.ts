@@ -222,7 +222,7 @@
             }
 
             if (!doNotAdd) {
-                scene.materials.push(this);
+                this._scene.materials.push(this);
             }
         }
 
