@@ -12698,12 +12698,11 @@ var BABYLON;
                     var currentPosition = BABYLON.Tmp.Vector3[3];
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._meshToBoneReferal) {
-                            completeMeshReferalMatrix.getTranslationToRef(currentPosition);
+                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
                         }
                         else {
-                            this.parent.getWorldMatrix().getTranslationToRef(currentPosition);
+                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
                         }
-                        currentPosition.addInPlace(this.position);
                     }
                     else {
                         currentPosition.copyFrom(this.position);
@@ -12741,8 +12740,10 @@ var BABYLON;
                     else {
                         BABYLON.Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
-                    BABYLON.Tmp.Matrix[5].removeRotationAndScaling();
-                    this._localWorld.multiplyToRef(BABYLON.Tmp.Matrix[5], this._worldMatrix);
+                    this._localWorld.getTranslationToRef(BABYLON.Tmp.Vector3[5]);
+                    BABYLON.Vector3.TransformCoordinatesToRef(BABYLON.Tmp.Vector3[5], BABYLON.Tmp.Matrix[5], BABYLON.Tmp.Vector3[5]);
+                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.setTranslation(BABYLON.Tmp.Vector3[5]);
                 }
                 else {
                     if (this._meshToBoneReferal) {
@@ -26440,6 +26441,7 @@ var BABYLON;
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
+            this._scene._removePendingData(this);
             var index = this._scene.textures.indexOf(this);
             if (index >= 0) {
                 this._scene.textures.splice(index, 1);
