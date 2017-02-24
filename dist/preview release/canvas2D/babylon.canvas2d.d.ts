@@ -4136,6 +4136,7 @@ declare module BABYLON {
         private _textSize;
         private _wordWrap;
         private _textAlignment;
+        private _sizeSetByUser;
         textAlignmentH: number;
         textAlignmentV: number;
     }

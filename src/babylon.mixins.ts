@@ -41,10 +41,6 @@ interface WebGLRenderingContext {
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 }
 
-interface AudioContext extends EventTarget {
-    decodeAudioData(audioData: ArrayBuffer, successCallback: DecodeSuccessCallback, errorCallback?: any): void;
-}
-
 interface HTMLURL {
     createObjectURL(param1: any, param2?: any);
 }
@@ -74,6 +70,7 @@ interface CanvasRenderingContext2D {
     mozImageSmoothingEnabled: boolean;
     oImageSmoothingEnabled: boolean;
     webkitImageSmoothingEnabled: boolean;
+    msImageSmoothingEnabled: boolean;
 }
 
 interface WebGLTexture {
