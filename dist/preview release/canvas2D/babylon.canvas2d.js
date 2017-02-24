@@ -14328,7 +14328,13 @@ var BABYLON;
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             _this._textSize = null;
             _this.text = text;
-            _this.size = (settings.size == null) ? null : settings.size;
+            if (settings.size != null) {
+                _this.size = settings.size;
+                _this._sizeSetByUser = true;
+            }
+            else {
+                _this.size = null;
+            }
             _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
             _this.textAlignmentV = (settings.textAlignmentV == null) ? Text2D_1.AlignTop : settings.textAlignmentV;
             _this.textAlignment = (settings.textAlignment == null) ? "" : settings.textAlignment;
@@ -14414,7 +14420,9 @@ var BABYLON;
                 }
                 this._text = value;
                 this._textSize = null; // A change of text will reset the TextSize which will be recomputed next time it's used
-                this._size = null;
+                if (!this._sizeSetByUser) {
+                    this._size = null;
+                }
                 this._updateCharCount();
                 // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
                 var s = this.textSize;
