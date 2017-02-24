@@ -355,8 +355,9 @@
             super(settings);
 
             this.texture = texture;
-            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            // This is removed to let the user the possibility to setup the addressing mode he wants
+            //this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            //this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._useSize = false;
             this._spriteSize = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
             this._spriteLocation = (settings.spriteLocation!=null) ? settings.spriteLocation.clone() : new Vector2(0, 0);
