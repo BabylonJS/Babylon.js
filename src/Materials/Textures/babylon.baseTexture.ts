@@ -179,6 +179,7 @@
             this.getScene().stopAnimation(this);
 
             // Remove from scene
+            this._scene._removePendingData(this);
             var index = this._scene.textures.indexOf(this);
 
             if (index >= 0) {
