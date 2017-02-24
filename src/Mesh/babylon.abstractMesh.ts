@@ -882,13 +882,11 @@
 
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._meshToBoneReferal) {
-                            completeMeshReferalMatrix.getTranslationToRef(currentPosition);
+                            Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
                         } else {
-                            this.parent.getWorldMatrix().getTranslationToRef(currentPosition);
+                            Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
                         }
-                        currentPosition.addInPlace(this.position);
-                    } else
-                    {
+                    } else {
                         currentPosition.copyFrom(this.position);
                     }
 
@@ -911,7 +909,7 @@
                     }
  
                     Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, Tmp.Matrix[0]);
-                } else{
+                } else {
                     Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
 
                     Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
@@ -935,9 +933,12 @@
                     } else {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
-                    Tmp.Matrix[5].removeRotationAndScaling();
-
-                    this._localWorld.multiplyToRef(Tmp.Matrix[5], this._worldMatrix);
+                    
+                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
+                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
+                    
                 } else {
                     if (this._meshToBoneReferal) {
                         this._localWorld.multiplyToRef(completeMeshReferalMatrix, this._worldMatrix);
