@@ -26,7 +26,7 @@
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             scene.skeletons.push(this);
 

@@ -249,7 +249,7 @@ module BABYLON {
          * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
          */
         constructor(name: string, scene: Scene, options?: IHighlightLayerOptions) {
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             var engine = scene.getEngine();
             this._engine = engine;
             this._maxSize = this._engine.getCaps().maxTextureSize;
