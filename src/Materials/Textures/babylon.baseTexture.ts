@@ -69,7 +69,7 @@
         private _uid: string;
 
         constructor(scene: Scene) {
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._scene.textures.push(this);
             this._uid = null;
         }

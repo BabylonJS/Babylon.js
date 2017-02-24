@@ -213,7 +213,7 @@
             this.name = name;
             this.id = name;
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             if (scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
