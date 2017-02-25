@@ -603,6 +603,7 @@
                 let text = this.text;
                 let tabWidth = this._tabulationSize * texture.spaceWidth;
 
+                // First pass: analyze the text to build data like pixel length of each lines, width of each char, number of char per line
                 for (let i = 0; i < text.length; i++) {
                     let char = text[i];
                     numCharsCurrenLine++;
@@ -633,7 +634,7 @@
                     if (char === "\t") {
                         charWidth = tabWidth;
                     }else{
-                        charWidth = ci.charWidth;
+                        charWidth = ci.xAdvance;
                     }
 
                     offset.x += charWidth;
@@ -646,7 +647,7 @@
                         numCharsCurrentWord = 0;
                         widthCurrentWord = 0;
                     }else {
-                        widthCurrentWord += ci.charWidth;
+                        widthCurrentWord += ci.xAdvance;
                         numCharsCurrentWord++;
                     }
 
@@ -730,6 +731,7 @@
                     offset.y -= lineLengths.length * lh;
                 }
 
+                let lineHeight = texture.lineHeight;
                 for (let i = 0; i < lineLengths.length; i++) {
                     let numChars = charsPerLine[i];
                     let lineLength = lineLengths[i];
@@ -746,8 +748,8 @@
 
                         if(char !== "\t" && !this._isWhiteSpaceCharVert(char)){ 
                             //make sure space char gets processed here or overlapping can occur when text is set
-                            this.updateInstanceDataPart(d, offset);
                             let ci = texture.getChar(char);
+                            this.updateInstanceDataPart(d, new Vector2(offset.x + ci.xOffset, offset.y +ci.yOffset));
                             d.topLeftUV = ci.topLeftUV;
                             let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                             d.sizeUV = suv;
@@ -762,7 +764,7 @@
                     }
 
                     offset.x = offsetX;
-                    offset.y -= texture.lineHeight;
+                    offset.y -= lineHeight;
                 }
 
             }

@@ -94,7 +94,7 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
-            scene.addLight(this);
+            this.getScene().addLight(this);
         }
         /**
          * Returns the string "Light".  

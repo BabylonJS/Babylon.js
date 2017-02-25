@@ -129,7 +129,7 @@
         */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
             this.name = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._camera = <TargetCamera>scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
             this._particlesIntersect = options ? options.particleIntersection : false;

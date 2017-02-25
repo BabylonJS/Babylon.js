@@ -908,8 +908,6 @@
             return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
         }
 
-        public static Log: (message: string) => void = Tools._LogEnabled;
-
         private static _LogDisabled(message: string): void {
             // nothing to do
         }
@@ -920,8 +918,6 @@
             var entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
             Tools._AddLogEntry(entry);
         }
-
-        public static Warn: (message: string) => void = Tools._WarnEnabled;
 
         private static _WarnDisabled(message: string): void {
             // nothing to do
@@ -934,8 +930,6 @@
             Tools._AddLogEntry(entry);
         }
 
-        public static Error: (message: string) => void = Tools._ErrorEnabled;
-
         private static _ErrorDisabled(message: string): void {
             // nothing to do
         }
@@ -947,6 +941,12 @@
             var entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
             Tools._AddLogEntry(entry);
         }
+
+        public static Log: (message: string) => void = Tools._LogEnabled;
+
+        public static Warn: (message: string) => void = Tools._WarnEnabled;
+
+        public static Error: (message: string) => void = Tools._ErrorEnabled;
 
         public static get LogCache(): string {
             return Tools._LogCache;
