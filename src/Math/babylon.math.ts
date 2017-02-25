@@ -1736,7 +1736,7 @@
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
             var quat = MathTmp.Quaternion[0];
-            Quaternion.QuaternionRotationFromAxisToRef(axis1, axis2, axis3, quat);
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             quat.toEulerAnglesToRef(ref);
         }
     }
@@ -2699,9 +2699,9 @@
          * cf to Vector3.RotationFromAxis() documentation.  
          * Note : axis1, axis2 and axis3 are normalized during this operation.   
          */
-         public static QuaternionRotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
+         public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
             var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
-            Quaternion.QuaternionRotationFromAxisToRef(axis1, axis2, axis3, quat);
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             return quat;
         }
         /**
@@ -2709,7 +2709,7 @@
          * cf to Vector3.RotationFromAxis() documentation.  
          * Note : axis1, axis2 and axis3 are normalized during this operation.   
          */
-        public static QuaternionRotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
+        public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
             BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
             BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
@@ -2945,6 +2945,16 @@
          */
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
+        }
+        /**
+         * Fill a Vector3 with the extracted translation from the Matrix.  
+         */
+        public getTranslationToRef(result:Vector3): Matrix {
+            result.x = this.m[12];
+            result.y = this.m[13];
+            result.z = this.m[14];
+
+            return this;
         }
         /**
          * Remove rotation and scaling part from the Matrix. 

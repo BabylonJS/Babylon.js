@@ -196,6 +196,29 @@
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
      */
     export class Engine {
+        public static Instances = new Array<Engine>();
+
+        public static get LastCreatedEngine(): Engine {
+            if (Engine.Instances.length === 0) {
+                return null;
+            }
+
+            return Engine.Instances[Engine.Instances.length - 1];
+        }
+
+        public static get LastCreatedScene(): Scene {
+            var lastCreatedEngine = Engine.LastCreatedEngine;
+            if (!lastCreatedEngine) {
+                return null;
+            }
+            
+            if (lastCreatedEngine.scenes.length === 0) {
+                return null;
+            }
+
+            return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
+        }
+
         // Const statics
         private static _ALPHA_DISABLE = 0;
         private static _ALPHA_ADD = 1;
@@ -512,6 +535,8 @@
          */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
+
+            Engine.Instances.push(this);
 
             this._externalData = new StringDictionary<Object>();
 
@@ -3211,6 +3236,13 @@
             document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+
+            // Remove from Instances
+            var index = Engine.Instances.indexOf(this);
+
+            if (index >= 0) {
+                Engine.Instances.splice(index, 1);
+            }
         }
 
         // Loading screen

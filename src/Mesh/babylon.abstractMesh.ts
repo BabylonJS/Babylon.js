@@ -258,7 +258,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.addMesh(this);
+            this.getScene().addMesh(this);
         }
 
         /**
@@ -868,39 +868,52 @@
             this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
-            // Billboarding
+            // Mesh referal
+            var completeMeshReferalMatrix = Tmp.Matrix[6];
+            if (this._meshToBoneReferal && this.parent && this.parent.getWorldMatrix) {
+                this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), completeMeshReferalMatrix);
+            }
+
+            // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
+                    // Need to decompose each rotation here
+                    var currentPosition = Tmp.Vector3[3];
 
-                Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
+                    if (this.parent && this.parent.getWorldMatrix) {
+                        if (this._meshToBoneReferal) {
+                            Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
+                        } else {
+                            Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
+                        }
+                    } else {
+                        currentPosition.copyFrom(this.position);
+                    }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL)
-                {
-                    // Need to extract rotation vectors
-                    var scale = Tmp.Vector3[2];
-                    var rotation = Tmp.Quaternion[0];
-                    var translation = Tmp.Vector3[3];
-                    Tmp.Matrix[0].decompose(scale, rotation, translation);
+                    currentPosition.subtractInPlace(this.getScene().activeCamera.globalPosition);
 
-                    var finalQuaternion = Tmp.Quaternion[1];
-                    finalQuaternion.w = rotation.w;
+                    var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X)
                     {
-                        finalQuaternion.x = rotation.x;
+                        finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
                     }
                     
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y)
                     {
-                        finalQuaternion.y = rotation.y;
+                        finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
                     }
                     
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z)
                     {
-                        finalQuaternion.z = rotation.z;
+                        finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
                     }
  
-                    Matrix.ComposeToRef(scale, finalQuaternion, translation, Tmp.Matrix[0]);
+                    Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, Tmp.Matrix[0]);
+                } else {
+                    Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
+
+                    Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
+                    Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
                 }
 
                 Tmp.Matrix[1].copyFrom(Tmp.Matrix[5]);
@@ -916,17 +929,19 @@
 
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
-                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[5]);
+                        Tmp.Matrix[5].copyFrom(completeMeshReferalMatrix);
                     } else {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
-                    Tmp.Matrix[5].removeRotationAndScaling();
-
-                    this._localWorld.multiplyToRef(Tmp.Matrix[5], this._worldMatrix);
+                    
+                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
+                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
+                    
                 } else {
                     if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
-                        Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                        this._localWorld.multiplyToRef(completeMeshReferalMatrix, this._worldMatrix);
                     } else {
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }

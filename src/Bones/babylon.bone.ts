@@ -626,13 +626,20 @@ module BABYLON {
 
             }else{
                 
+                var wm;
+                
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if(mesh){
+                    wm = mesh.getWorldMatrix();
+                }
+                
                 this._skeleton.computeAbsoluteTransforms();
                 
                 var tmat = Tmp.Matrix[0];
 
                 if (mesh) {
                     tmat.copyFrom(this.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }else{
                     tmat = this.getAbsoluteTransform();
                 }
