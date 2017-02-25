@@ -637,6 +637,26 @@
             }
             return this;
         }
+        
+        /**
+         * Return the point Y of a coordinate on a mesh 
+         * @param {number} x
+         * @param {number} z
+         * @param {number} maxHeight (default 200)
+         */
+        public getHeightMeshAtCoordinates(x: number, z: number, maxHeight = 200): AbstractMesh {		
+		    var ray = new BABYLON.Ray(new BABYLON.Vector3(x, maxHeight, z), new BABYLON.Vector3(0, -1, 0), 2*maxHeight);
+		    var res = this.intersects(ray, true);
+		    return res.pickedPoint.y;
+	    }
+         
+        /**
+         * Redefine updatable on a mesh
+         */
+        public setUpdatable(updatable?: boolean): AbstractMesh {		
+		    this.setVerticesData(BABYLON.VertexBuffer.PositionKind, this.getVerticesData(BABYLON.VertexBuffer.PositionKind), updatable);
+		    this.setVerticesData(BABYLON.VertexBuffer.NormalKind, this.getVerticesData(BABYLON.VertexBuffer.NormalKind), updatable);		
+	    }
 
         // ================================== Point of View Movement =================================
         /**
