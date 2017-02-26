@@ -29,6 +29,7 @@ module BABYLON {
                 GLTFFileLoader.LoadTextureAsync(runtime, properties.diffuseTexture,
                     texture => {
                         material.babylonMaterial.albedoTexture = texture;
+                        GLTFFileLoader.LoadAlphaProperties(runtime, material);
                     },
                     () => {
                         Tools.Warn("Failed to load diffuse texture");

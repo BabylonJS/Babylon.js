@@ -866,6 +866,10 @@ module BABYLON {
             this._byteOffset += length;
             return value;
         }
+
+        public skipBytes(length: number): void {
+            this._byteOffset += length;
+        }
     }
 
     /**
@@ -924,6 +928,7 @@ module BABYLON {
                 GLTFFileLoader.LoadTextureAsync(runtime, properties.baseColorTexture,
                     texture => {
                         material.babylonMaterial.albedoTexture = texture;
+                        GLTFFileLoader.LoadAlphaProperties(runtime, material);
                     },
                     () => {
                         Tools.Warn("Failed to load base color texture");
@@ -968,6 +973,25 @@ module BABYLON {
                 GLTFFileLoader.LoadTextureAsync(runtime, material.emissiveTexture, babylonTexture => {
                     material.babylonMaterial.emissiveTexture = babylonTexture;
                 }, () => Tools.Warn("Failed to load normal texture"));
+            }
+        }
+
+        public static LoadAlphaProperties(runtime: IGLTFRuntime, material: IGLTFMaterial): void {
+            if (material.alphaMode) {
+                material.babylonMaterial.albedoTexture.hasAlpha = true;
+
+                switch (material.alphaMode) {
+                    case "MASK":
+                        material.babylonMaterial.useAlphaFromAlbedoTexture = false;
+                        material.babylonMaterial.alphaMode = Engine.ALPHA_DISABLE;
+                        break;
+                    case "BLEND":
+                        material.babylonMaterial.useAlphaFromAlbedoTexture = true;
+                        material.babylonMaterial.alphaMode = Engine.ALPHA_COMBINE;
+                        break;
+                    default:
+                        Tools.Error("Invalid alpha mode '" + material.alphaMode + "'");
+                }
             }
         }
 
@@ -1196,47 +1220,76 @@ module BABYLON {
         }
 
         private _parseBinary(runtime: IGLTFRuntime, data: ArrayBuffer): boolean {
+            const Binary = {
+                Magic: 0x46546C67,
+                Version: 2,
+                ChunkFormat: {
+                    JSON: 0x4E4F534A,
+                    BIN: 0x004E4942
+                }
+            };
+            
             var binaryReader = new BinaryReader(data);
 
-            var magic = GLTFUtils.DecodeBufferToText(binaryReader.readUint8Array(4));
-            if (magic != "glTF") {
+            var magic = binaryReader.readUint32();
+            if (magic !== Binary.Magic) {
                 Tools.Error("Unexpected magic: " + magic);
                 return false;
             }
 
             var version = binaryReader.readUint32();
-            if (version != 1) {
+            if (version !== Binary.Version) {
                 Tools.Error("Unsupported version: " + version);
                 return false;
             }
 
             var length = binaryReader.readUint32();
-            if (length != data.byteLength) {
+            if (length !== data.byteLength) {
                 Tools.Error("Length in header does not match actual data length: " + length + " != " + data.byteLength);
                 return false;
             }
 
-            var contentLength = binaryReader.readUint32();
-            var contentFormat = <EBinaryContentFormat>binaryReader.readUint32();
-
-            switch (contentFormat) {
-                case EBinaryContentFormat.JSON:
-                    var jsonText = GLTFUtils.DecodeBufferToText(binaryReader.readUint8Array(contentLength));
-                    runtime.gltf = JSON.parse(jsonText);
-                    break;
-                default:
-                    Tools.Error("Unexpected content format: " + contentFormat);
-                    return false;
+            var chunkLength = binaryReader.readUint32();
+            var chunkFormat = binaryReader.readUint32();
+            if (chunkFormat !== Binary.ChunkFormat.JSON) {
+                Tools.Error("First chunk format is not JSON");
+                return false;
             }
 
+            var jsonText = GLTFUtils.DecodeBufferToText(binaryReader.readUint8Array(chunkLength));
+            runtime.gltf = JSON.parse(jsonText);
+
+            var binaryBuffer: IGLTFBuffer;
             var buffers = runtime.gltf.buffers;
             if (buffers.length > 0 && buffers[0].uri === undefined) {
-                buffers[0].loadedBufferView = binaryReader.readUint8Array(buffers[0].byteLength);
+                binaryBuffer = buffers[0];
             }
 
-            if (binaryReader.getPosition() < binaryReader.getLength()) {
-                Tools.Error("Unexpected extra bytes at end of data");
-                return false;
+            while (binaryReader.getPosition() < binaryReader.getLength()) {
+                chunkLength = binaryReader.readUint32();
+                chunkFormat = binaryReader.readUint32();
+                if (chunkFormat === Binary.ChunkFormat.JSON) {
+                    Tools.Error("Unexpected JSON chunk");
+                    return false;
+                }
+
+                if (chunkFormat === Binary.ChunkFormat.BIN) {
+                    if (!binaryBuffer) {
+                        Tools.Error("Unexpected BIN chunk");
+                        return false;
+                    }
+
+                    if (binaryBuffer.byteLength != chunkLength) {
+                        Tools.Error("Binary buffer length from JSON does not match chunk length");
+                        return false;
+                    }
+
+                    binaryBuffer.loadedBufferView = binaryReader.readUint8Array(chunkLength);
+                }
+                else {
+                    // ignore unrecognized chunkFormat
+                    binaryReader.skipBytes(chunkLength);
+                }
             }
 
             return true;

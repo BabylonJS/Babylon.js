@@ -4,10 +4,6 @@ module BABYLON {
     /**
     * Enums
     */
-    export enum EBinaryContentFormat {
-        JSON = 0
-    }
-
     export enum EBufferViewTarget {
         ARRAY_BUFFER = 34962,
         ELEMENT_ARRAY_BUFFER = 34963
@@ -214,6 +210,8 @@ module BABYLON {
         occlusionTexture?: IGLTFMaterialOcclusionTextureInfo;
         emissiveTexture?: IGLTFTextureInfo;
         emissiveFactor?: number[];
+        alphaMode?: string;
+        alphaCutoff: number;
 
         // Babylon.js values (optimize)
         babylonMaterial?: PBRMaterial;
