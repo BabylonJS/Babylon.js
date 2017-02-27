@@ -45,6 +45,7 @@
 
         serializationObject.name = mesh.name;
         serializationObject.id = mesh.id;
+        serializationObject.type = mesh.getClassName();
 
         if (Tags.HasTags(mesh)) {
             serializationObject.tags = Tags.GetTags(mesh);
