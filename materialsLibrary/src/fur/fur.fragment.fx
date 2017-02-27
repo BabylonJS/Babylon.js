@@ -6,6 +6,7 @@ uniform vec4 vDiffuseColor;
 
 // Input
 uniform vec4 furColor;
+uniform float furLength;
 varying vec3 vPositionW;
 varying float vfur_length;
 
@@ -111,7 +112,7 @@ void main(void) {
 	#ifdef HIGHLEVEL
 	vec4 color = vec4(finalDiffuse, alpha);
 	#else
-	float r = vfur_length * 0.5;
+	float r = vfur_length / furLength * 0.5;
 	vec4 color = vec4(finalDiffuse * (0.5 + r), alpha);
 	#endif
 	
