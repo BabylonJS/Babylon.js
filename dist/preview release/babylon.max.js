@@ -46424,6 +46424,7 @@ var BABYLON;
         };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
+            SceneSerializer.ClearCache();
             // Scene
             serializationObject.useDelayedTextureLoading = scene.useDelayedTextureLoading;
             serializationObject.autoClear = scene.autoClear;
@@ -46563,6 +46564,7 @@ var BABYLON;
             if (withParents === void 0) { withParents = false; }
             if (withChildren === void 0) { withChildren = false; }
             var serializationObject = {};
+            SceneSerializer.ClearCache();
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
             if (withParents || withChildren) {
                 //deliberate for loop! not for each, appended should be processed as well.
