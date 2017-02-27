@@ -3701,31 +3701,34 @@
                     // ###MATRIX PART###
                     {
                         // -Origin offset
+                        let t0 = Prim2DBase._t0;
+                        let t1 = Prim2DBase._t1;
+                        let t2 = Prim2DBase._t2;
                         let as = Prim2DBase._ts0;
                         as.copyFrom(this.actualSize);
                         as.width /= postScale.x;
                         as.height /= postScale.y;
-                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase._t0);
+                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
 
                         // -Origin * rotation
-                        rot.toRotationMatrix(Prim2DBase._t1);
-                        Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+                        rot.toRotationMatrix(t1);
+                        t0.multiplyToRef(t1, t2);
 
                         // -Origin * rotation * scale
-                        Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
-                        Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
+                        Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
+                        t2.multiplyToRef(t0, t1);
 
                         // -Origin * rotation * scale * Origin
-                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase._t2);
-                        Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, Prim2DBase._t0);
+                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
+                        t1.multiplyToRef(t2, t0);
 
                         // -Origin * rotation * scale * Origin * postScale
-                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase._t1);
-                        Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
+                        t0.multiplyToRef(t1, t2);
 
                         // -Origin * rotation * scale * Origin * postScale * Position
-                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase._t0);
-                        Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, this._localTransform);
+                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
+                        t2.multiplyToRef(t0, this._localTransform);
 
                         this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
                     }
@@ -3894,7 +3897,7 @@
             // Set the flag to avoid re-entrance
             this._setFlags(SmartPropertyPrim.flagComputingPositioning);
             try {
-//                console.log(`Update Positioning for ${this.id}`);
+                console.log(`Update Positioning for ${this.id}`);
                 let isSizeAuto = this.isSizeAuto;
                 let isVSizeAuto = this.isVerticalSizeAuto;
                 let isHSizeAuto = this.isHorizontalSizeAuto;
@@ -4011,7 +4014,7 @@
                     //  not yet set and computing alignment would result into a bad size.
                     // So we make sure with compute alignment only if the layoutArea is good
                     if (layoutArea && layoutArea.width >= newSize.width && layoutArea.height >= newSize.height) {
-                        margin.computeWithAlignment(layoutArea, newSize, ma, this.actualScale, mo, Prim2DBase._size2);
+                        margin.computeWithAlignment(layoutArea, newSize, ma, new Vector2(1,1)/*this.actualScale*/, mo, Prim2DBase._size2);
                     } else {
                         mo.copyFromFloats(0, 0, 0, 0);
                     }
