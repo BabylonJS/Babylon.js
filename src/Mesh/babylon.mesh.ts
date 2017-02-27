@@ -707,6 +707,14 @@
             return this;
         }
 
+        public markVerticesDataAsUpdatable(kind: string, updatable = true) {
+            if (this.getVertexBuffer(kind).isUpdatable() === updatable) {
+                return;
+            }
+
+            this.setVerticesData(kind, this.getVerticesData(kind), updatable);
+        }
+
         /**
          * Sets the mesh VertexBuffer.  
          * Returns the Mesh.  
@@ -1844,7 +1852,13 @@
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
-            var mesh = new Mesh(parsedMesh.name, scene);
+            var mesh : Mesh;
+
+            if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+                mesh = new GroundMesh(parsedMesh.name, scene);
+            } else {
+                mesh = new Mesh(parsedMesh.name, scene);
+            }
             mesh.id = parsedMesh.id;
 
             Tags.AddTagsTo(mesh, parsedMesh.tags);
