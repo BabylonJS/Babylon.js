@@ -33,7 +33,7 @@
             var curAlphaMode: number;
             if (!sdf) {
                 curAlphaMode = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
+                engine.setAlphaMode(Engine.ALPHA_PREMULTIPLIED, true);
             }
 
             let pid = context.groupInfoPartData[0];

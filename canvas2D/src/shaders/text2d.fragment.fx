@@ -22,6 +22,9 @@ void main(void) {
 	gl_FragColor = vec4(vColor.xyz*dist, vColor.a);
 #else
 	vec4 color = texture2D(diffuseSampler, vUV);
+	if (color.a == 0.0) {
+		discard;
+	}
 	gl_FragColor = color*vColor;
 #endif
 
