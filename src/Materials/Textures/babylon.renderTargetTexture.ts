@@ -99,6 +99,7 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
         private _textureMatrix: Matrix;
+        private _samples = 1;
         protected _renderTargetOptions: {
             generateMipMaps: boolean,
             type: number,
@@ -139,6 +140,18 @@
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
+        }
+
+        public get samples(): number {
+            return this._samples;
+        }
+
+        public set samples(value: number) {
+            if (this._samples === value) {
+                return;
+            }
+            
+            this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
         public resetRefreshCounter(): void {

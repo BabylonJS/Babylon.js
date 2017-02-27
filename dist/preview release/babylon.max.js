@@ -8687,7 +8687,7 @@ var BABYLON;
         };
         Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
             this._currentRenderTarget = texture;
-            this.bindUnboundFramebuffer(texture._framebuffer);
+            this.bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
             var gl = this._gl;
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
@@ -8704,8 +8704,14 @@ var BABYLON;
         Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps) {
             if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
             this._currentRenderTarget = null;
+            // If MSAA, we need to bitblt back to main texture
+            var gl = this._gl;
+            if (texture._MSAAFramebuffer) {
+                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
+                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
+                gl.blitFramebuffer(0, 0, texture._width, texture._height, 0, 0, texture._width, texture._height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+            }
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
-                var gl = this._gl;
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
@@ -9739,29 +9745,11 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
-            var depthStencilBuffer;
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -9770,9 +9758,6 @@ var BABYLON;
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._baseWidth = width;
             texture._baseHeight = height;
             texture._width = width;
@@ -9782,9 +9767,73 @@ var BABYLON;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.type = type;
+            texture._generateDepthBuffer = generateDepthBuffer;
+            texture._generateStencilBuffer = generateStencilBuffer;
             this.resetTextureCache();
             this._loadedTexturesCache.push(texture);
             return texture;
+        };
+        Engine.prototype._setupFramebufferDepthAttachments = function (generateStencilBuffer, generateDepthBuffer, width, height, samples) {
+            if (samples === void 0) { samples = 1; }
+            var depthStencilBuffer = null;
+            var gl = this._gl;
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_STENCIL, width, height);
+                }
+                else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+                }
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
+                }
+                else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+                }
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            return depthStencilBuffer;
+        };
+        Engine.prototype.updateRenderTargetTextureSampleCount = function (texture, samples) {
+            if (this.webGLVersion < 2) {
+                return 1;
+            }
+            var gl = this._gl;
+            samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+            // Dispose previous render buffers
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
+            }
+            if (samples > 1) {
+                texture._MSAAFramebuffer = gl.createFramebuffer();
+                this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
+                var colorRenderbuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture._width, texture._height);
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+                texture._MSAARenderBuffer = colorRenderbuffer;
+            }
+            else {
+                this.bindUnboundFramebuffer(texture._framebuffer);
+            }
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture._width, texture._height, samples);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+            return samples;
         };
         Engine.prototype.createRenderTargetCubeTexture = function (size, options) {
             var gl = this._gl;
@@ -9815,29 +9864,10 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            // Create the depth buffer
-            var depthStencilBuffer;
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
-            }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
             // Mipmaps
             if (texture.generateMipMaps) {
                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
@@ -9848,9 +9878,6 @@ var BABYLON;
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
@@ -10104,8 +10131,14 @@ var BABYLON;
             if (texture._framebuffer) {
                 gl.deleteFramebuffer(texture._framebuffer);
             }
-            if (texture._depthBuffer) {
-                gl.deleteRenderbuffer(texture._depthBuffer);
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
             }
             gl.deleteTexture(texture);
             // Unbind channels
@@ -14943,6 +14976,7 @@ var BABYLON;
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.darkness = this.getDarkness();
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
                 var mesh = this.getShadowMap().renderList[meshIndex];
@@ -14980,6 +15014,9 @@ var BABYLON;
             }
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+            if (parsedShadowGenerator.darkness) {
+                shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
             }
             shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
             return shadowGenerator;
@@ -27011,6 +27048,7 @@ var BABYLON;
             _this.onClearObservable = new BABYLON.Observable();
             _this._currentRefreshId = -1;
             _this._refreshRate = 1;
+            _this._samples = 1;
             _this.name = name;
             _this.isRenderTarget = true;
             _this._size = size;
@@ -27096,6 +27134,19 @@ var BABYLON;
                     this.onClearObservable.remove(this._onClearObserver);
                 }
                 this._onClearObserver = this.onClearObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "samples", {
+            get: function () {
+                return this._samples;
+            },
+            set: function (value) {
+                if (this._samples === value) {
+                    return;
+                }
+                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
             },
             enumerable: true,
             configurable: true
@@ -52815,6 +52866,16 @@ var BABYLON;
             });
             this._projectionMatrix = BABYLON.Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
         }
+        Object.defineProperty(ReflectionProbe.prototype, "samples", {
+            get: function () {
+                return this._renderTargetTexture.samples;
+            },
+            set: function (value) {
+                this._renderTargetTexture.samples = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ReflectionProbe.prototype, "refreshRate", {
             get: function () {
                 return this._renderTargetTexture.refreshRate;
