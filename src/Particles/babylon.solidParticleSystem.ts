@@ -602,15 +602,17 @@
 
             // if the particles will always face the camera
             if (this.billboard) {
+                this.mesh.computeWorldMatrix(true);
                 // compute the camera position and un-rotate it by the current mesh rotation
                 if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
                     this._quaternionToRotationMatrix();
                     this._rotMatrix.invertToRef(this._invertMatrix);
                     this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
-                    Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                    Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
                     this._cam_axisZ.normalize();
-                    // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
-                    Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
+                    // same for camera up vector extracted from the cam view matrix
+                    var view = this._camera.getViewMatrix(true);
+                    Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
                     Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
                     this._cam_axisY.normalize();
                     this._cam_axisX.normalize();
