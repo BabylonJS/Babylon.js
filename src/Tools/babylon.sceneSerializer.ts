@@ -236,6 +236,8 @@
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
+            SceneSerializer.ClearCache();
+
             // Scene
             serializationObject.useDelayedTextureLoading = scene.useDelayedTextureLoading;
             serializationObject.autoClear = scene.autoClear;
@@ -401,6 +403,8 @@
 
         public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false): any {
             var serializationObject: any = {};
+
+            SceneSerializer.ClearCache();
 
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
 
