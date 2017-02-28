@@ -3668,6 +3668,7 @@
         private static _t2: Matrix = new Matrix();
         private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
         private static _v30: Vector3 = Vector3.Zero();   // Must stay with the value 0,0,0
+        private static _iv3: Vector3 = new Vector3(1,1,1); // Must stay identity vector
         private static _ts0 = Size.Zero();
 
         private _updateLocalTransform(): boolean {
@@ -3683,12 +3684,19 @@
                     this._updatePositioning();
                 }
 
+
                 var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
                 var local: Matrix;
                 let pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase._v0);
                 let scale = new Vector3(this._scale.x, this._scale.y, 1);
                 let postScale = this._postScale;
-                let globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
+                let canvasScale = Prim2DBase._iv3;
+                let hasCanvasScale = false;
+                if (this._parent instanceof Canvas2D) {
+                    hasCanvasScale = true;
+                    canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv3;
+                }
+                let globalScale = scale.multiplyByFloats(postScale.x*canvasScale.x, postScale.y*canvasScale.y, 1);
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
@@ -3729,6 +3737,11 @@
                         // -Origin * rotation * scale * Origin * postScale * Position
                         Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
                         t2.multiplyToRef(t0, this._localTransform);
+
+                        if (hasCanvasScale) {
+                            Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase._t1);
+                            this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
+                        }
 
                         this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
                     }
@@ -3805,7 +3818,7 @@
             }
 
             // Check if we must update this prim
-            if ((this === <any>this.owner) || (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty))) {
+            if ((this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty))) {
                 this.owner.addUpdateGlobalTransformCounter(1);
 
                 let curVisibleState = this.isVisible;
@@ -3870,6 +3883,8 @@
 
         private _updatePositioning() {
             if (!this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+                // Just in case, if may happen and if we don't clear some computation will keep going on forever
+                this._clearFlags(SmartPropertyPrim.flagPositioningDirty);
                 return;
             }
 
