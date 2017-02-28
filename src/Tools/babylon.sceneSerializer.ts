@@ -43,138 +43,18 @@
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
-        serializationObject.name = mesh.name;
-        serializationObject.id = mesh.id;
-        serializationObject.type = mesh.getClassName();
-
-        if (Tags.HasTags(mesh)) {
-            serializationObject.tags = Tags.GetTags(mesh);
-        }
-
-        serializationObject.position = mesh.position.asArray();
-
-        if (mesh.rotationQuaternion) {
-            serializationObject.rotationQuaternion = mesh.rotationQuaternion.asArray();
-        } else if (mesh.rotation) {
-            serializationObject.rotation = mesh.rotation.asArray();
-        }
-
-        serializationObject.scaling = mesh.scaling.asArray();
-        serializationObject.localMatrix = mesh.getPivotMatrix().asArray();
-
-        serializationObject.isEnabled = mesh.isEnabled();
-        serializationObject.isVisible = mesh.isVisible;
-        serializationObject.infiniteDistance = mesh.infiniteDistance;
-        serializationObject.pickable = mesh.isPickable;
-
-        serializationObject.receiveShadows = mesh.receiveShadows;
-
-        serializationObject.billboardMode = mesh.billboardMode;
-        serializationObject.visibility = mesh.visibility;
-
-        serializationObject.checkCollisions = mesh.checkCollisions;
-        serializationObject.isBlocker = mesh.isBlocker;
-
-        // Parent
-        if (mesh.parent) {
-            serializationObject.parentId = mesh.parent.id;
-        }
-
-        // Geometry
-        var geometry = mesh._geometry;
+        // Geometry      
+        var geometry = mesh._geometry;      
         if (geometry) {
-            var geometryId = geometry.id;
-            serializationObject.geometryId = geometryId;
-
-            if (!mesh.getScene().getGeometryByID(geometryId)) {
-                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
+            if (!mesh.getScene().getGeometryByID(geometry.id)) {
+                // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
                 serializeGeometry(geometry, serializationScene.geometries);
             }
-
-            // SubMeshes
-            serializationObject.subMeshes = [];
-            for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                var subMesh = mesh.subMeshes[subIndex];
-
-                serializationObject.subMeshes.push({
-                    materialIndex: subMesh.materialIndex,
-                    verticesStart: subMesh.verticesStart,
-                    verticesCount: subMesh.verticesCount,
-                    indexStart: subMesh.indexStart,
-                    indexCount: subMesh.indexCount
-                });
-            }
         }
 
-        // Material
-        if (mesh.material) {
-            serializationObject.materialId = mesh.material.id;
-        } else {
-            mesh.material = null;
-        }
-
-        // Skeleton
-        if (mesh.skeleton) {
-            serializationObject.skeletonId = mesh.skeleton.id;
-        }
-
-        // Physics
-        //TODO implement correct serialization for physics impostors.
-        if (mesh.getPhysicsImpostor()) {
-            serializationObject.physicsMass = mesh.getPhysicsMass();
-            serializationObject.physicsFriction = mesh.getPhysicsFriction();
-            serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
-        }
-
-        // Metadata
-        if (mesh.metadata) {
-            serializationObject.metadata = mesh.metadata;
-        }
-
-        // Instances
-        serializationObject.instances = [];
-        for (var index = 0; index < mesh.instances.length; index++) {
-            var instance = mesh.instances[index];
-            var serializationInstance: any = {
-                name: instance.name,
-                position: instance.position.asArray(),
-                scaling: instance.scaling.asArray()
-            };
-            if (instance.rotationQuaternion) {
-                serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
-            } else if (instance.rotation) {
-                serializationInstance.rotation = instance.rotation.asArray();
-            }
-            serializationObject.instances.push(serializationInstance);
-
-            // Animations
-            Animation.AppendSerializedAnimations(instance, serializationInstance);
-            serializationInstance.ranges = instance.serializeAnimationRanges();
-        }
-
-        // Animations
-        Animation.AppendSerializedAnimations(mesh, serializationObject);
-        serializationObject.ranges = mesh.serializeAnimationRanges();
-
-        // Layer mask
-        serializationObject.layerMask = mesh.layerMask;
-
-        // Alpha
-        serializationObject.alphaIndex = mesh.alphaIndex;
-        serializationObject.hasVertexAlpha = mesh.hasVertexAlpha;
-        
-        // Overlay
-        serializationObject.overlayAlpha = mesh.overlayAlpha;
-        serializationObject.overlayColor = mesh.overlayColor.asArray();
-        serializationObject.renderOverlay = mesh.renderOverlay;
-
-        // Fog
-        serializationObject.applyFog = mesh.applyFog;
-
-        // Action Manager
-        if (mesh.actionManager) {
-            serializationObject.actions = mesh.actionManager.serialize(mesh.name);
+        // Custom
+        if (mesh.serialize) {
+            mesh.serialize(serializationObject);
         }
 
         return serializationObject;
