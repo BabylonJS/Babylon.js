@@ -9044,7 +9044,6 @@ var BABYLON;
             // Set the flag to avoid re-entrance
             this._setFlags(BABYLON.SmartPropertyPrim.flagComputingPositioning);
             try {
-                console.log("Update Positioning for " + this.id);
                 var isSizeAuto = this.isSizeAuto;
                 var isVSizeAuto = this.isVerticalSizeAuto;
                 var isHSizeAuto = this.isHorizontalSizeAuto;

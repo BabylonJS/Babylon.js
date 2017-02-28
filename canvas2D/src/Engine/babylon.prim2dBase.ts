@@ -3912,7 +3912,6 @@
             // Set the flag to avoid re-entrance
             this._setFlags(SmartPropertyPrim.flagComputingPositioning);
             try {
-                console.log(`Update Positioning for ${this.id}`);
                 let isSizeAuto = this.isSizeAuto;
                 let isVSizeAuto = this.isVerticalSizeAuto;
                 let isHSizeAuto = this.isHorizontalSizeAuto;
