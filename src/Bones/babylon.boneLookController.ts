@@ -186,6 +186,18 @@ module BABYLON {
             yaxis.normalize();
             Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, mat1);
 
+            if(xaxis.x === 0 && xaxis.y === 0 && xaxis.z === 0){
+                return;
+            }
+
+            if(yaxis.x === 0 && yaxis.y === 0 && yaxis.z === 0){
+                return;
+            }
+
+            if(zaxis.x === 0 && zaxis.y === 0 && zaxis.z === 0){
+                return;
+            }
+
             if (this.adjustYaw || this.adjustPitch || this.adjustRoll) {
                 Matrix.RotationYawPitchRollToRef(this.adjustYaw, this.adjustPitch, this.adjustRoll, mat2);
                 mat2.multiplyToRef(mat1, mat1);
