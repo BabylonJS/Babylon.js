@@ -2612,6 +2612,7 @@ declare module BABYLON {
         private static _t2;
         private static _v0;
         private static _v30;
+        private static _iv3;
         private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
@@ -2925,7 +2926,7 @@ declare module BABYLON {
         private static _s;
         private static _r;
         private static _t;
-        private static _uV3;
+        private static _iV3;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -4605,7 +4606,9 @@ declare module BABYLON {
         private _designSize;
         private _designUseHorizAxis;
         _primitiveCollisionManager: PrimitiveCollisionManagerBase;
+        _canvasLevelScale: Vector3;
         _renderingSize: Size;
+        private _curHWScale;
         private _drawCallsOpaqueCounter;
         private _drawCallsAlphaTestCounter;
         private _drawCallsTransparentCounter;
