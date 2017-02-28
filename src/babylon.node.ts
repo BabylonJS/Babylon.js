@@ -94,7 +94,7 @@ module BABYLON {
         constructor(name: string, scene: Scene) {
             this.name = name;
             this.id = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._initCache();
         }
 

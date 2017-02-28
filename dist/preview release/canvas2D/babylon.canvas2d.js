@@ -2000,12 +2000,13 @@ var BABYLON;
             _this._lastUpdateCharCount = -1;
             _this._usedCounter = 1;
             _this.name = name;
+            _this.debugMode = false;
             _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this._sdfScale = 8;
             _this._signedDistanceField = signedDistanceField;
             _this._superSample = false;
-            // SDF will use supersample no matter what, the resolution is otherwise too poor to produce correct result
+            // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {
                 var sfont = _this.getSuperSampleFont(font);
                 if (sfont) {
@@ -2019,17 +2020,19 @@ var BABYLON;
             _this._context.font = font;
             _this._context.fillStyle = "white";
             _this._context.textBaseline = "top";
-            var res = _this.getFontHeight(font);
+            var res = _this.getFontHeight(font, "j$|");
             _this._lineHeightSuper = res.height; //+4;
             _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
-            _this._offset = res.offset - 1;
-            _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
-            _this._yMargin = _this._xMargin;
-            var maxCharWidth = _this._context.measureText("W").width;
+            _this._offset = res.offset;
+            res = _this.getFontHeight(font, "f");
+            _this._baseLine = res.height + res.offset - _this._offset;
+            var maxCharWidth = Math.max(_this._context.measureText("W").width, _this._context.measureText("_").width);
             _this._spaceWidthSuper = _this._context.measureText(" ").width;
             _this._spaceWidth = _this._superSample ? (_this._spaceWidthSuper / 2) : _this._spaceWidthSuper;
+            _this._xMargin = Math.ceil(maxCharWidth / 32);
+            _this._yMargin = _this._xMargin;
             // This is an approximate size, but should always be able to fit at least the maxCharCount
-            var totalEstSurface = (_this._lineHeightSuper + _this._yMargin) * (maxCharWidth + _this._xMargin) * maxCharCount;
+            var totalEstSurface = (Math.ceil(_this._lineHeightSuper) + (_this._yMargin * 2)) * (Math.ceil(maxCharWidth) + (_this._xMargin * 2)) * maxCharCount;
             var edge = Math.sqrt(totalEstSurface);
             var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
             // Create the texture that will store the font characters
@@ -2047,13 +2050,13 @@ var BABYLON;
             _this._context.imageSmoothingEnabled = false;
             _this._context.clearRect(0, 0, textureSize.width, textureSize.height);
             // Create a canvas for the signed distance field mode, we only have to store one char, the purpose is to render a char scaled _sdfScale times
-            //  into this 2D context, then get the bitmap data, create the sdf char and push the result in the _context (which hold the whole Font Texture content)
+            //  into this 2D context, then get the bitmap data, create the SDF char and push the result in the _context (which hold the whole Font Texture content)
             // So you can see this context as an intermediate one, because it is.
             if (_this._signedDistanceField) {
                 var sdfC = document.createElement("canvas");
                 var s = _this._sdfScale;
-                sdfC.width = maxCharWidth * s;
-                sdfC.height = _this._lineHeightSuper * s;
+                sdfC.width = (Math.ceil(maxCharWidth) + _this._xMargin * 2) * s;
+                sdfC.height = (Math.ceil(_this._lineHeightSuper) + _this._yMargin * 2) * s;
                 var sdfCtx = sdfC.getContext("2d");
                 sdfCtx.scale(s, s);
                 sdfCtx.textBaseline = "top";
@@ -2114,6 +2117,7 @@ var BABYLON;
          * @return the CharInfo instance corresponding to the given character
          */
         FontTexture.prototype.getChar = function (char) {
+            var _this = this;
             if (char.length !== 1) {
                 return null;
             }
@@ -2125,41 +2129,69 @@ var BABYLON;
             var measure = this._context.measureText(char);
             var textureSize = this.getSize();
             // we reached the end of the current line?
-            var width = Math.round(measure.width);
+            var width = Math.ceil(measure.width);
             if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeightSuper + this._yMargin;
+                this._currentFreePosition.y += Math.ceil(this._lineHeightSuper + this._yMargin * 2);
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
                     return this.getChar("!");
                 }
             }
-            // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
+            var curPosX = this._currentFreePosition.x + 0.5;
+            var curPosY = this._currentFreePosition.y + 0.5;
+            var curPosXMargin = curPosX + this._xMargin;
+            var curPosYMargin = curPosY + this._yMargin;
+            var drawDebug = function (ctx) {
+                ctx.strokeStyle = "green";
+                ctx.beginPath();
+                ctx.rect(curPosXMargin, curPosYMargin, width, _this._lineHeightSuper);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.strokeStyle = "blue";
+                ctx.beginPath();
+                ctx.moveTo(curPosXMargin, curPosYMargin + Math.round(_this._baseLine));
+                ctx.lineTo(curPosXMargin + width, curPosYMargin + Math.round(_this._baseLine));
+                ctx.closePath();
+                ctx.stroke();
+            };
+            // In SDF mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the SDF map accurately)
             if (this._signedDistanceField) {
+                var s = this._sdfScale;
                 this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, -this._offset);
-                var data = this._sdfContext.getImageData(0, 0, width * this._sdfScale, this._sdfCanvas.height);
+                // Coordinates are subject to the context's scale
+                this._sdfContext.fillText(char, this._xMargin + 0.5, this._yMargin + 0.5 - this._offset);
+                // Canvas Pixel Coordinates, no scale
+                var data = this._sdfContext.getImageData(0, 0, (width + (this._xMargin * 2)) * s, this._sdfCanvas.height);
                 var res = this._computeSDFChar(data);
-                this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
+                this._context.putImageData(res, curPosX, curPosY);
+                if (this.debugMode) {
+                    drawDebug(this._context);
+                }
             }
             else {
+                if (this.debugMode) {
+                    drawDebug(this._context);
+                }
                 // Draw the character in the HTML canvas
-                this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
+                this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
             }
             // Fill the CharInfo object
-            info.topLeftUV = new BABYLON.Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new BABYLON.Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+            info.topLeftUV = new BABYLON.Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
+            info.bottomRightUV = new BABYLON.Vector2((curPosXMargin + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + this._yMargin) / textureSize.height));
+            info.yOffset = info.xOffset = 0;
             if (this._signedDistanceField) {
                 var off = 1 / textureSize.width;
                 info.topLeftUV.addInPlace(new BABYLON.Vector2(off, off));
                 info.bottomRightUV.addInPlace(new BABYLON.Vector2(off, off));
             }
             info.charWidth = this._superSample ? (width / 2) : width;
+            info.xAdvance = info.charWidth;
             // Add the info structure
             this._charInfos.add(char, info);
             this._curCharCount++;
             // Set the next position
-            this._currentFreePosition.x += width + this._xMargin;
+            this._currentFreePosition.x += Math.ceil(width + this._xMargin * 2);
             return info;
         };
         FontTexture.prototype._computeSDFChar = function (source) {
@@ -2302,7 +2334,7 @@ var BABYLON;
             return newFont;
         };
         // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
-        FontTexture.prototype.getFontHeight = function (font) {
+        FontTexture.prototype.getFontHeight = function (font, chars) {
             var fontDraw = document.createElement("canvas");
             fontDraw.width = 600;
             fontDraw.height = 600;
@@ -2311,7 +2343,7 @@ var BABYLON;
             ctx.textBaseline = 'top';
             ctx.fillStyle = 'white';
             ctx.font = font;
-            ctx.fillText('jH|', 0, 0);
+            ctx.fillText(chars, 0, 0);
             var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
             var start = -1;
             var end = -1;
@@ -2334,7 +2366,7 @@ var BABYLON;
                     }
                 }
             }
-            return { height: (end - start) + 1, offset: start - 1 };
+            return { height: (end - start) + 1, offset: start };
         };
         Object.defineProperty(FontTexture.prototype, "canRescale", {
             get: function () {
@@ -2410,13 +2442,15 @@ var BABYLON;
             }
             return obj;
         };
-        BMFontLoaderTxt.prototype._buildCharInfo = function (initialLine, obj, textureSize, invertY, chars) {
+        BMFontLoaderTxt.prototype._buildCharInfo = function (bfi, initialLine, obj, textureSize, invertY, chars) {
             var char = null;
             var x = null;
             var y = null;
-            var xadv = null;
             var width = null;
             var height = null;
+            var xoffset = 0;
+            var yoffset = 0;
+            var xadvance = 0;
             var ci = new CharInfo();
             for (var key in obj) {
                 var value = obj[key];
@@ -2437,14 +2471,20 @@ var BABYLON;
                         height = value;
                         break;
                     case "xadvance":
-                        xadv = value;
+                        xadvance = value;
+                        break;
+                    case "xoffset":
+                        xoffset = value;
+                        break;
+                    case "yoffset":
+                        yoffset = value;
                         break;
                 }
             }
             if (x != null && y != null && width != null && height != null && char != null) {
-                if (xadv) {
-                    width = xadv;
-                }
+                ci.xAdvance = xadvance;
+                ci.xOffset = xoffset;
+                ci.yOffset = bfi.lineHeight - height - yoffset;
                 if (invertY) {
                     ci.topLeftUV = new BABYLON.Vector2(1 - (x / textureSize.width), 1 - (y / textureSize.height));
                     ci.bottomRightUV = new BABYLON.Vector2(1 - ((x + width) / textureSize.width), 1 - ((y + height) / textureSize.height));
@@ -2476,6 +2516,7 @@ var BABYLON;
             //common
             var commonObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt_1.COMMON_EXP)[0]);
             bfi.lineHeight = commonObj["lineHeight"];
+            bfi.baseLine = commonObj["base"];
             bfi.textureSize = new BABYLON.Size(commonObj["scaleW"], commonObj["scaleH"]);
             var maxTextureSize = scene.getEngine()._gl.getParameter(0xd33);
             if (commonObj["scaleW"] > maxTextureSize.width || commonObj["scaleH"] > maxTextureSize.height) {
@@ -2500,7 +2541,7 @@ var BABYLON;
                         var charLines = fontStr.match(BMFontLoaderTxt_1.CHAR_EXP);
                         for (var i = 0, li = charLines.length; i < li; i++) {
                             var charObj = this._parseStrToObj(charLines[i]);
-                            this._buildCharInfo(charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
+                            this._buildCharInfo(bfi, charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
                         }
                         //kerning
                         var kerningLines = fontStr.match(BMFontLoaderTxt_1.KERNING_EXP);
@@ -14328,7 +14369,13 @@ var BABYLON;
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             _this._textSize = null;
             _this.text = text;
-            _this.size = (settings.size == null) ? null : settings.size;
+            if (settings.size != null) {
+                _this.size = settings.size;
+                _this._sizeSetByUser = true;
+            }
+            else {
+                _this.size = null;
+            }
             _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
             _this.textAlignmentV = (settings.textAlignmentV == null) ? Text2D_1.AlignTop : settings.textAlignmentV;
             _this.textAlignment = (settings.textAlignment == null) ? "" : settings.textAlignment;
@@ -14414,7 +14461,9 @@ var BABYLON;
                 }
                 this._text = value;
                 this._textSize = null; // A change of text will reset the TextSize which will be recomputed next time it's used
-                this._size = null;
+                if (!this._sizeSetByUser) {
+                    this._size = null;
+                }
                 this._updateCharCount();
                 // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
                 var s = this.textSize;
@@ -14634,6 +14683,7 @@ var BABYLON;
                 var numWordsPerLine = 0;
                 var text = this.text;
                 var tabWidth = this._tabulationSize * texture.spaceWidth;
+                // First pass: analyze the text to build data like pixel length of each lines, width of each char, number of char per line
                 for (var i_1 = 0; i_1 < text.length; i_1++) {
                     var char = text[i_1];
                     numCharsCurrenLine++;
@@ -14658,7 +14708,7 @@ var BABYLON;
                         charWidth = tabWidth;
                     }
                     else {
-                        charWidth = ci.charWidth;
+                        charWidth = ci.xAdvance;
                     }
                     offset.x += charWidth;
                     charWidths[i_1] = charWidth;
@@ -14670,7 +14720,7 @@ var BABYLON;
                         widthCurrentWord = 0;
                     }
                     else {
-                        widthCurrentWord += ci.charWidth;
+                        widthCurrentWord += ci.xAdvance;
                         numCharsCurrentWord++;
                     }
                     if (this._wordWrap && numWordsPerLine > 0 && offset.x > contentAreaWidth) {
@@ -14741,6 +14791,7 @@ var BABYLON;
                 else {
                     offset.y -= lineLengths.length * lh;
                 }
+                var lineHeight = texture.lineHeight;
                 for (var i_3 = 0; i_3 < lineLengths.length; i_3++) {
                     var numChars = charsPerLine[i_3];
                     var lineLength = lineLengths[i_3];
@@ -14755,8 +14806,8 @@ var BABYLON;
                         var charWidth = charWidths[charNum];
                         if (char !== "\t" && !this._isWhiteSpaceCharVert(char)) {
                             //make sure space char gets processed here or overlapping can occur when text is set
-                            this.updateInstanceDataPart(d, offset);
                             var ci = texture.getChar(char);
+                            this.updateInstanceDataPart(d, new BABYLON.Vector2(offset.x + ci.xOffset, offset.y + ci.yOffset));
                             d.topLeftUV = ci.topLeftUV;
                             var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                             d.sizeUV = suv;
@@ -14769,7 +14820,7 @@ var BABYLON;
                         charNum++;
                     }
                     offset.x = offsetX;
-                    offset.y -= texture.lineHeight;
+                    offset.y -= lineHeight;
                 }
             }
             return true;

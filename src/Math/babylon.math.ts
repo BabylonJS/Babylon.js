@@ -1603,10 +1603,10 @@
          * The cross product is then orthogonal to both "left" and "right". 
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(Tmp.Vector3[0]);
+            MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            MathTmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            MathTmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(MathTmp.Vector3[0]);
         }
 
         /**
@@ -1735,8 +1735,8 @@
          * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.  
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
-            var quat = BABYLON.Tmp.Quaternion[1];
-            Quaternion.QuaternionRotationFromAxisToRef(axis1, axis2, axis3, quat);
+            var quat = MathTmp.Quaternion[0];
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             quat.toEulerAnglesToRef(ref);
         }
     }
@@ -2598,6 +2598,12 @@
             }
         }
         /**
+         * Returns a new Quaternion set to (0.0, 0.0, 0.0).  
+         */
+        public static Zero(): Quaternion {
+            return new Quaternion(0.0, 0.0, 0.0, 0.0);
+        }
+        /**
          * Returns a new Quaternion as the inverted current Quaternion.  
          */
         public static Inverse(q: Quaternion): Quaternion {
@@ -2693,9 +2699,9 @@
          * cf to Vector3.RotationFromAxis() documentation.  
          * Note : axis1, axis2 and axis3 are normalized during this operation.   
          */
-         public static QuaternionRotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
+         public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
             var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
-            Quaternion.QuaternionRotationFromAxisToRef(axis1, axis2, axis3, quat);
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             return quat;
         }
         /**
@@ -2703,8 +2709,8 @@
          * cf to Vector3.RotationFromAxis() documentation.  
          * Note : axis1, axis2 and axis3 are normalized during this operation.   
          */
-        public static QuaternionRotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
-            var rotMat = Tmp.Matrix[0];
+        public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
+            var rotMat = MathTmp.Matrix[0];
             BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
             BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
         }
@@ -2915,6 +2921,16 @@
             return this;
         }
         /**
+         * Inserts the translation vector (using 3 x floats) in the current Matrix.  
+         * Returns the updated Matrix.  
+         */
+        public setTranslationFromFloats(x: number, y: number, z: number): Matrix {
+            this.m[12] = x;
+            this.m[13] = y;
+            this.m[14] = z;
+            return this;
+        }
+                /**
          * Inserts the translation vector in the current Matrix.  
          * Returns the updated Matrix.  
          */
@@ -2930,6 +2946,26 @@
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
+        /**
+         * Fill a Vector3 with the extracted translation from the Matrix.  
+         */
+        public getTranslationToRef(result:Vector3): Matrix {
+            result.x = this.m[12];
+            result.y = this.m[13];
+            result.z = this.m[14];
+
+            return this;
+        }
+        /**
+         * Remove rotation and scaling part from the Matrix. 
+         * Returns the updated Matrix. 
+         */
+        public removeRotationAndScaling(): Matrix {
+            this.setRowFromFloats(0, 1, 0, 0, 0);
+            this.setRowFromFloats(1, 0, 1, 0, 0);
+            this.setRowFromFloats(2, 0, 0, 1, 0);
+            return this;
+        }        
         /**
          * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.  
          */
@@ -3092,9 +3128,9 @@
                 this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
                 this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
                 this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
-                0, 0, 0, 1, Tmp.Matrix[0]);
+                0, 0, 0, 1, MathTmp.Matrix[0]);
 
-            Quaternion.FromRotationMatrixToRef(Tmp.Matrix[0], rotation);
+            Quaternion.FromRotationMatrixToRef(MathTmp.Matrix[0], rotation);
 
             return true;
         }
@@ -3208,6 +3244,22 @@
             this.m[i + 3] = row.w;
             return this;
         }
+        
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values.
+         * Returns the updated Matrix.    
+         */
+        public setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = x;
+            this.m[i + 1] = y;
+            this.m[i + 2] = z;
+            this.m[i + 3] = w;
+            return this;
+        }
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -3242,19 +3294,25 @@
          * Returns a new Matrix composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
          */
         public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
-            var result = Matrix.FromValues(scale.x, 0, 0, 0,
-                0, scale.y, 0, 0,
-                0, 0, scale.z, 0,
-                0, 0, 0, 1);
-
-            var rotationMatrix = Matrix.Identity();
-            rotation.toRotationMatrix(rotationMatrix);
-            result = result.multiply(rotationMatrix);
-
-            result.setTranslation(translation);
-
+            var result = Matrix.Identity();
+            Matrix.ComposeToRef(scale, rotation, translation, result);
             return result;
         }
+
+          /**
+         * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
+         */
+        public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
+            Matrix.FromValuesToRef(scale.x, 0, 0, 0,
+                0, scale.y, 0, 0,
+                0, 0, scale.z, 0,
+                0, 0, 0, 1, MathTmp.Matrix[1]);
+
+            rotation.toRotationMatrix(MathTmp.Matrix[0]);
+            MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
+
+            result.setTranslation(translation);
+        }      
         /**
          * Returns a new indentity Matrix.  
          */
@@ -4909,11 +4967,16 @@
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
             Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = [new Quaternion(0.0, 0.0, 0.0, 0.0), 
-            new Quaternion(0.0, 0.0, 0.0, 0.0)];                // 2 temp Quaternion at once should be enough
+        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero()];                // 2 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+    }
+    // Same as Tmp but not exported to keep it onyl for math functions to avoid conflicts
+    class MathTmp {
+        public static Vector3: Vector3[] = [Vector3.Zero()];
+        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
+        public static Quaternion: Quaternion[] = [Quaternion.Zero()];
     }
 }

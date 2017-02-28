@@ -138,10 +138,10 @@
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.addCamera(this);
+            this.getScene().addCamera(this);
 
-            if (!scene.activeCamera) {
-                scene.activeCamera = this;
+            if (!this.getScene().activeCamera) {
+                this.getScene().activeCamera = this;
             }
 
             this.position = position;
