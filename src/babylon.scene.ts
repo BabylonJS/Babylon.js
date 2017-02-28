@@ -570,9 +570,9 @@
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
          */
         constructor(engine: Engine) {
-            this._engine = engine;
+            this._engine = engine || Engine.LastCreatedEngine;
 
-            engine.scenes.push(this);
+            this._engine.scenes.push(this);
 
             this._externalData = new StringDictionary<Object>();
             this._uid = null;
