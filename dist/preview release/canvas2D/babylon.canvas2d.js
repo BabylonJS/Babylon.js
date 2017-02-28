@@ -7466,6 +7466,7 @@ var BABYLON;
                 this._scale.x = this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -7795,6 +7796,7 @@ var BABYLON;
                 this._scale.x = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -7807,6 +7809,7 @@ var BABYLON;
                 this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -8862,7 +8865,13 @@ var BABYLON;
                 var pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase_1._v0);
                 var scale = new BABYLON.Vector3(this._scale.x, this._scale.y, 1);
                 var postScale = this._postScale;
-                var globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
+                var canvasScale = Prim2DBase_1._iv3;
+                var hasCanvasScale = false;
+                if (this._parent instanceof BABYLON.Canvas2D) {
+                    hasCanvasScale = true;
+                    canvasScale = this._parent._canvasLevelScale || Prim2DBase_1._iv3;
+                }
+                var globalScale = scale.multiplyByFloats(postScale.x * canvasScale.x, postScale.y * canvasScale.y, 1);
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
                     {
@@ -8875,26 +8884,33 @@ var BABYLON;
                     // ###MATRIX PART###
                     {
                         // -Origin offset
+                        var t0 = Prim2DBase_1._t0;
+                        var t1 = Prim2DBase_1._t1;
+                        var t2 = Prim2DBase_1._t2;
                         var as = Prim2DBase_1._ts0;
                         as.copyFrom(this.actualSize);
                         as.width /= postScale.x;
                         as.height /= postScale.y;
-                        BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase_1._t0);
+                        BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
                         // -Origin * rotation
-                        rot.toRotationMatrix(Prim2DBase_1._t1);
-                        Prim2DBase_1._t0.multiplyToRef(Prim2DBase_1._t1, Prim2DBase_1._t2);
+                        rot.toRotationMatrix(t1);
+                        t0.multiplyToRef(t1, t2);
                         // -Origin * rotation * scale
-                        BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase_1._t0);
-                        Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, Prim2DBase_1._t1);
+                        BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
+                        t2.multiplyToRef(t0, t1);
                         // -Origin * rotation * scale * Origin
-                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase_1._t2);
-                        Prim2DBase_1._t1.multiplyToRef(Prim2DBase_1._t2, Prim2DBase_1._t0);
+                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
+                        t1.multiplyToRef(t2, t0);
                         // -Origin * rotation * scale * Origin * postScale
-                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase_1._t1);
-                        Prim2DBase_1._t0.multiplyToRef(Prim2DBase_1._t1, Prim2DBase_1._t2);
+                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
+                        t0.multiplyToRef(t1, t2);
                         // -Origin * rotation * scale * Origin * postScale * Position
-                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase_1._t0);
-                        Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, this._localTransform);
+                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
+                        t2.multiplyToRef(t0, this._localTransform);
+                        if (hasCanvasScale) {
+                            BABYLON.Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase_1._t1);
+                            this._localTransform.multiplyToRef(Prim2DBase_1._t1, this._localTransform);
+                        }
                         this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     }
                 }
@@ -8955,7 +8971,7 @@ var BABYLON;
                 this._parentContentArea.copyFrom(this._parent.contentArea);
             }
             // Check if we must update this prim
-            if ((this === this.owner) || (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty))) {
+            if ((this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty))) {
                 this.owner.addUpdateGlobalTransformCounter(1);
                 var curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
@@ -9003,6 +9019,8 @@ var BABYLON;
         Prim2DBase.prototype._updatePositioning = function () {
             var _this = this;
             if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning)) {
+                // Just in case, if may happen and if we don't clear some computation will keep going on forever
+                this._clearFlags(BABYLON.SmartPropertyPrim.flagPositioningDirty);
                 return;
             }
             var success = true;
@@ -9126,7 +9144,7 @@ var BABYLON;
                     //  not yet set and computing alignment would result into a bad size.
                     // So we make sure with compute alignment only if the layoutArea is good
                     if (layoutArea && layoutArea.width >= newSize.width && layoutArea.height >= newSize.height) {
-                        margin.computeWithAlignment(layoutArea, newSize, ma, this.actualScale, mo, Prim2DBase_1._size2);
+                        margin.computeWithAlignment(layoutArea, newSize, ma, new BABYLON.Vector2(1, 1) /*this.actualScale*/, mo, Prim2DBase_1._size2);
                     }
                     else {
                         mo.copyFromFloats(0, 0, 0, 0);
@@ -9434,6 +9452,7 @@ var BABYLON;
     Prim2DBase._t2 = new BABYLON.Matrix();
     Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
     Prim2DBase._v30 = BABYLON.Vector3.Zero(); // Must stay with the value 0,0,0
+    Prim2DBase._iv3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector
     Prim2DBase._ts0 = BABYLON.Size.Zero();
     Prim2DBase._transMtx = BABYLON.Matrix.Zero();
     Prim2DBase._transTT = BABYLON.Transform2D.Zero();
@@ -10702,7 +10721,15 @@ var BABYLON;
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
-            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            var scl = RenderablePrim2D_1._s;
+            var rot = RenderablePrim2D_1._r;
+            var trn = RenderablePrim2D_1._t;
+            t.decompose(scl, rot, trn);
+            var pas = this.actualScale;
+            scl.x = pas.x;
+            scl.y = pas.y;
+            scl.z = 1;
+            t = BABYLON.Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D_1._iV3, rot, trn);
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -10721,22 +10748,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
-            //if (!this.applyActualScaleOnTransform()) {
-            //    t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
-            //    t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
-            //    let las = this.actualScale;
-            //    t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
-            //    let scale = new Vector3(RenderablePrim2D._s.x / las.x, RenderablePrim2D._s.y / las.y, 1);
-            //    t = Matrix.Compose(scale, RenderablePrim2D._r, RenderablePrim2D._t);
-            //    tx = new Vector4(t.m[0], t.m[4], 0, t.m[12]);
-            //    ty = new Vector4(t.m[1], t.m[5], 0, t.m[13]);
-            //}
-            //tx.x /= w;
-            //tx.y /= w;
-            //ty.x /= h;
-            //ty.y /= h;
+            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -10761,7 +10774,7 @@ var BABYLON;
     RenderablePrim2D._s = BABYLON.Vector3.Zero();
     RenderablePrim2D._r = BABYLON.Quaternion.Identity();
     RenderablePrim2D._t = BABYLON.Vector3.Zero();
-    RenderablePrim2D._uV3 = new BABYLON.Vector3(1, 1, 1);
+    RenderablePrim2D._iV3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector3
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
     ], RenderablePrim2D.prototype, "isAlphaTest", null);
@@ -11393,8 +11406,9 @@ var BABYLON;
             }
             var s = this.actualSize;
             var a = this.actualScale;
-            var sw = Math.ceil(s.width * a.x);
-            var sh = Math.ceil(s.height * a.y);
+            var hwsl = 1 / this.owner.engine.getHardwareScalingLevel();
+            var sw = Math.ceil(s.width * a.x * hwsl);
+            var sh = Math.ceil(s.height * a.y * hwsl);
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
             if ((this instanceof BABYLON.Canvas2D || this.id === "__cachedCanvasGroup__") && this.owner.designSize != null) {
@@ -11406,7 +11420,7 @@ var BABYLON;
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 var t = this._globalTransform.getTranslation();
-                var rs = this.owner._renderingSize;
+                var rs = this.owner._renderingSize.multiplyByFloats(hwsl, hwsl);
                 sh = Math.min(sh, rs.height - t.y);
                 sw = Math.min(sw, rs.width - t.x);
                 var x = t.x;
@@ -16287,6 +16301,8 @@ var BABYLON;
             _this._scene = scene;
             _this._engine = engine;
             _this._renderingSize = new BABYLON.Size(0, 0);
+            _this._curHWScale = 0;
+            _this._canvasLevelScale = new BABYLON.Vector3(1, 1, 1);
             _this._designSize = settings.designSize || null;
             _this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!_this._trackedGroups) {
@@ -17417,14 +17433,25 @@ var BABYLON;
             if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
+            // Detect a change of HWRendering scale
+            var hwsl = this.engine.getHardwareScalingLevel();
+            var hwslChanged = this._curHWScale !== hwsl;
+            if (hwslChanged) {
+                this._curHWScale = hwsl;
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    child._setFlags(BABYLON.SmartPropertyPrim.flagLocalTransformDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
             // Detect a change of rendering size
             var renderingSizeChanged = false;
-            var newWidth = this.engine.getRenderWidth();
+            var newWidth = this.engine.getRenderWidth() * hwsl;
             if (newWidth !== this._renderingSize.width) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.width = newWidth;
-            var newHeight = this.engine.getRenderHeight();
+            var newHeight = this.engine.getRenderHeight() * hwsl;
             if (newHeight !== this._renderingSize.height) {
                 renderingSizeChanged = true;
             }
@@ -17442,16 +17469,21 @@ var BABYLON;
             if (this._designSize) {
                 var scale = void 0;
                 if (this._designUseHorizAxis) {
-                    scale = this._renderingSize.width / this._designSize.width;
+                    scale = this._renderingSize.width / (this._designSize.width * hwsl);
                 }
                 else {
-                    scale = this._renderingSize.height / this._designSize.height;
+                    scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this.scale = scale;
+                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+            }
+            else if (this._curHWScale !== 1) {
+                var ratio = 1 / this._curHWScale;
+                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
             }
             var context = new BABYLON.PrepareRender2DContext();
             ++this._globalTransformProcessStep;
+            this._setFlags(BABYLON.SmartPropertyPrim.flagLocalTransformDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
             this.updateCachedStates(false);
             this._prepareGroupRender(context);
             this._updateRenderId = this.scene.getRenderId();
