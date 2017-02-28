@@ -1,7 +1,7 @@
 module BABYLON {
     export class BoneLookController {
 
-        public static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat = Quaternion.Identity();
         private static _tmpMat1 = Matrix.Identity();
         private static _tmpMat2 = Matrix.Identity();
