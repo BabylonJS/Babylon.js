@@ -215,7 +215,7 @@
 
             this._scene = scene || Engine.LastCreatedScene;
 
-            if (scene.useRightHandedSystem) {
+            if (this._scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
             } else {
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
