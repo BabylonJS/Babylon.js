@@ -17597,6 +17597,12 @@ var BABYLON;
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         };
         TargetCamera.prototype._updatePosition = function () {
+            if (this.parent) {
+                this.parent.getWorldMatrix().invertToRef(BABYLON.Tmp.Matrix[0]);
+                BABYLON.Vector3.TransformNormalToRef(this.cameraDirection, BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Vector3[0]);
+                this.position.addInPlace(BABYLON.Tmp.Vector3[0]);
+                return;
+            }
             this.position.addInPlace(this.cameraDirection);
         };
         TargetCamera.prototype._checkInputs = function () {
@@ -17923,7 +17929,7 @@ var BABYLON;
                 this._collideWithWorld(this.cameraDirection);
             }
             else {
-                this.position.addInPlace(this.cameraDirection);
+                _super.prototype._updatePosition.call(this);
             }
         };
         FreeCamera.prototype.dispose = function () {
@@ -33806,12 +33812,17 @@ var BABYLON;
                 lm.m[14] += vec.z;
             }
             else {
+                var wm;
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if (mesh) {
+                    wm = mesh.getWorldMatrix();
+                }
                 this._skeleton.computeAbsoluteTransforms();
                 var tmat = BABYLON.Tmp.Matrix[0];
                 var tvec = BABYLON.Tmp.Vector3[0];
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }
                 else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -33842,12 +33853,17 @@ var BABYLON;
                 lm.m[14] = position.z;
             }
             else {
+                var wm;
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if (mesh) {
+                    wm = mesh.getWorldMatrix();
+                }
                 this._skeleton.computeAbsoluteTransforms();
                 var tmat = BABYLON.Tmp.Matrix[0];
                 var vec = BABYLON.Tmp.Vector3[0];
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }
                 else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -34240,11 +34256,16 @@ var BABYLON;
          * @param result The vector3 that the world direction will be copied to.
          */
         Bone.prototype.getDirectionToRef = function (localAxis, mesh, result) {
+            var wm;
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (mesh) {
+                wm = mesh.getWorldMatrix();
+            }
             this._skeleton.computeAbsoluteTransforms();
             var mat = BABYLON.Tmp.Matrix[0];
             mat.copyFrom(this.getAbsoluteTransform());
             if (mesh) {
-                mat.multiplyToRef(mesh.getWorldMatrix(), mat);
+                mat.multiplyToRef(wm, mat);
             }
             BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
             result.normalize();
@@ -34367,11 +34388,16 @@ var BABYLON;
          * @param result The vector3 that the world position should be copied to.
          */
         Bone.prototype.getAbsolutePositionFromLocalToRef = function (position, mesh, result) {
+            var wm;
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (mesh) {
+                wm = mesh.getWorldMatrix();
+            }
             this._skeleton.computeAbsoluteTransforms();
             var tmat = BABYLON.Tmp.Matrix[0];
             if (mesh) {
                 tmat.copyFrom(this.getAbsoluteTransform());
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                tmat.multiplyToRef(wm, tmat);
             }
             else {
                 tmat = this.getAbsoluteTransform();
@@ -34396,11 +34422,16 @@ var BABYLON;
          * @param result The vector3 that the local position should be copied to.
          */
         Bone.prototype.getLocalPositionFromAbsoluteToRef = function (position, mesh, result) {
+            var wm;
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if (mesh) {
+                wm = mesh.getWorldMatrix();
+            }
             this._skeleton.computeAbsoluteTransforms();
             var tmat = BABYLON.Tmp.Matrix[0];
             tmat.copyFrom(this.getAbsoluteTransform());
             if (mesh) {
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                tmat.multiplyToRef(wm, tmat);
             }
             tmat.invert();
             BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, result);
@@ -34625,10 +34656,10 @@ var BABYLON;
     var BoneLookController = (function () {
         function BoneLookController(mesh, bone, target, options) {
             this.upAxis = BABYLON.Vector3.Up();
-            this.adjustYaw = 0;
-            this.adjustPitch = 0;
-            this.adjustRoll = 0;
             this.slerpAmount = 1;
+            this._adjustRotY = 0;
+            this._adjustRotX = 0;
+            this._adjustRotZ = 0;
             this._boneQuat = BABYLON.Quaternion.Identity();
             this._slerping = false;
             this.mesh = mesh;
@@ -34636,73 +34667,116 @@ var BABYLON;
             this.target = target;
             if (options) {
                 if (options.adjustYaw) {
-                    this.adjustYaw = options.adjustYaw;
+                    this._adjustRotY = options.adjustYaw;
                 }
                 if (options.adjustPitch) {
-                    this.adjustPitch = options.adjustPitch;
+                    this._adjustRotX = options.adjustPitch;
                 }
                 if (options.adjustRoll) {
-                    this.adjustRoll = options.adjustRoll;
+                    this._adjustRotZ = options.adjustRoll;
                 }
-                if (options.maxYaw != undefined) {
-                    this.maxYaw = options.maxYaw;
+                if (options.adjustRotationY) {
+                    this._adjustRotY = options.adjustRotationY;
                 }
-                if (options.minYaw != undefined) {
-                    this.minYaw = options.minYaw;
+                if (options.adjustRotationX) {
+                    this._adjustRotX = options.adjustRotationX;
                 }
-                if (options.maxPitch != undefined) {
-                    this.maxPitch = options.maxPitch;
+                if (options.adjustRotationZ) {
+                    this._adjustRotZ = options.adjustRotationZ;
                 }
-                if (options.minPitch != undefined) {
-                    this.minPitch = options.minPitch;
+                if (options.maxRotationY != undefined) {
+                    this.maxRotationY = options.maxRotationY;
+                }
+                if (options.minRotationY != undefined) {
+                    this.minRotationY = options.minRotationY;
+                }
+                if (options.maxRotationX != undefined) {
+                    this.maxRotationX = options.maxRotationX;
+                }
+                if (options.minRotationX != undefined) {
+                    this.minRotationX = options.minRotationX;
+                }
+                if (options.maxRotationZ != undefined) {
+                    this.maxRotationZ = options.maxRotationZ;
+                }
+                if (options.minRotationZ != undefined) {
+                    this.minRotationZ = options.minRotationZ;
                 }
                 if (options.slerpAmount != undefined) {
                     this.slerpAmount = options.slerpAmount;
                 }
             }
         }
-        Object.defineProperty(BoneLookController.prototype, "minYaw", {
+        Object.defineProperty(BoneLookController.prototype, "minRotationY", {
             get: function () {
-                return this._minYaw;
+                return this._minRotY - this._adjustRotY;
             },
             set: function (value) {
-                this._minYaw = value;
-                this._minYawSin = Math.sin(value);
-                this._minYawCos = Math.cos(value);
+                this._minRotY = value + this._adjustRotY;
+                this._minRotYSin = Math.sin(this._minRotY);
+                this._minRotYCos = Math.cos(this._minRotY);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BoneLookController.prototype, "maxYaw", {
+        Object.defineProperty(BoneLookController.prototype, "maxRoationY", {
             get: function () {
-                return this._maxYaw;
-            },
-            set: function (value) {
-                this._maxYaw = value;
-                this._maxYawSin = Math.sin(value);
-                this._maxYawCos = Math.cos(value);
+                return this._maxRotY - this._adjustRotY;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BoneLookController.prototype, "minPitch", {
-            get: function () {
-                return this._minPitch;
-            },
+        Object.defineProperty(BoneLookController.prototype, "maxRotationY", {
             set: function (value) {
-                this._minPitch = value;
-                this._minPitchTan = Math.tan(value);
+                this._maxRotY = value + this._adjustRotY;
+                this._maxRotYSin = Math.sin(this._maxRotY);
+                this._maxRotYCos = Math.cos(this._maxRotY);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BoneLookController.prototype, "maxPitch", {
+        Object.defineProperty(BoneLookController.prototype, "minRotationX", {
             get: function () {
-                return this._maxPitch;
+                return this._minRotX - this._adjustRotX;
             },
             set: function (value) {
-                this._maxPitch = value;
-                this._maxPitchTan = Math.tan(value);
+                this._minRotX = value + this._adjustRotX;
+                this._minRotXTan = Math.tan(this._minRotX);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoneLookController.prototype, "maxRotationX", {
+            get: function () {
+                return this._maxRotX - this._adjustRotX;
+            },
+            set: function (value) {
+                this._maxRotX = value + this._adjustRotX;
+                this._maxRotXTan = Math.tan(this._maxRotX);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoneLookController.prototype, "minRotationZ", {
+            get: function () {
+                return this._minRotZ - this._adjustRotZ;
+            },
+            set: function (value) {
+                this._minRotZ = value + this._adjustRotZ;
+                this._minRotZSin = Math.sin(this._minRotZ);
+                this._minRotZCos = Math.cos(this._minRotZ);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoneLookController.prototype, "maxRotationZ", {
+            get: function () {
+                return this._maxRotZ - this._adjustRotZ;
+            },
+            set: function (value) {
+                this._maxRotZ = value + this._adjustRotZ;
+                this._maxRotZSin = Math.sin(this._maxRotZ);
+                this._maxRotZCos = Math.cos(this._maxRotZ);
             },
             enumerable: true,
             configurable: true
@@ -34714,7 +34788,7 @@ var BABYLON;
             var mat2 = BoneLookController._tmpMat2;
             var parentBone = bone.getParent();
             if (parentBone) {
-                if (this._maxPitch != undefined || this._minPitch != undefined) {
+                if (this._maxRotX != undefined || this._minRotX != undefined) {
                     var localTarget = BoneLookController._tmpVecs[4];
                     var _tmpVec5 = BoneLookController._tmpVecs[5];
                     parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
@@ -34723,36 +34797,60 @@ var BABYLON;
                     localTarget.y -= _tmpVec5.y;
                     localTarget.z -= _tmpVec5.z;
                     var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
-                    var pitch = Math.atan2(localTarget.y, xzlen);
-                    if (pitch > this._maxPitch) {
-                        localTarget.y = this._maxPitchTan * xzlen + _tmpVec5.y;
+                    var rotX = Math.atan2(localTarget.y, xzlen);
+                    if (rotX > this._maxRotX) {
+                        localTarget.y = this._maxRotXTan * xzlen + _tmpVec5.y;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
-                    else if (pitch < this._minPitch) {
-                        localTarget.y = this._minPitchTan * xzlen + _tmpVec5.y;
+                    else if (rotX < this._minRotX) {
+                        localTarget.y = this._minRotXTan * xzlen + _tmpVec5.y;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
                 }
-                if (this._maxYaw != undefined || this._minYaw != undefined) {
+                if (this._maxRotY != undefined || this._minRotY != undefined) {
                     var localTarget = BoneLookController._tmpVecs[6];
                     var _tmpVec7 = BoneLookController._tmpVecs[7];
                     parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
                     bone.getPositionToRef(BABYLON.Space.LOCAL, null, _tmpVec7);
                     localTarget.x -= _tmpVec7.x;
                     localTarget.z -= _tmpVec7.z;
-                    var yaw = Math.atan2(localTarget.x, localTarget.z);
-                    var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
-                    if (yaw > this._maxYaw) {
-                        localTarget.z = this._maxYawCos * xzlen;
-                        localTarget.x = this._maxYawSin * xzlen;
+                    var rotY = Math.atan2(localTarget.x, localTarget.z);
+                    if (rotY > this._maxRotY) {
+                        var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                        localTarget.z = this._maxRotYCos * xzlen;
+                        localTarget.x = this._maxRotYSin * xzlen;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
-                    else if (yaw < this._minYaw) {
-                        localTarget.z = this._minYawCos * xzlen;
-                        localTarget.x = this._minYawSin * xzlen;
+                    else if (rotY < this._minRotY) {
+                        var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                        localTarget.z = this._minRotYCos * xzlen;
+                        localTarget.x = this._minRotYSin * xzlen;
+                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
+                        target = localTarget;
+                    }
+                }
+                if (this._maxRotZ != undefined || this._minRotZ != undefined) {
+                    var localTarget = BoneLookController._tmpVecs[8];
+                    var _tmpVec9 = BoneLookController._tmpVecs[9];
+                    parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
+                    bone.getPositionToRef(BABYLON.Space.LOCAL, null, _tmpVec9);
+                    localTarget.x -= _tmpVec9.x;
+                    localTarget.y -= _tmpVec9.y;
+                    var rotZ = Math.atan2(localTarget.y, localTarget.x);
+                    if (rotZ > this._maxRotZ) {
+                        var xylen = Math.sqrt(localTarget.x * localTarget.x + localTarget.y * localTarget.y);
+                        localTarget.x = this._maxRotZCos * xylen;
+                        localTarget.y = this._maxRotZSin * xylen;
+                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
+                        target = localTarget;
+                    }
+                    else if (rotZ < this._minRotZ) {
+                        var xylen = Math.sqrt(localTarget.x * localTarget.x + localTarget.y * localTarget.y);
+                        localTarget.x = this._minRotZCos * xylen;
+                        localTarget.y = this._minRotZSin * xylen;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
@@ -34780,8 +34878,8 @@ var BABYLON;
             if (zaxis.x === 0 && zaxis.y === 0 && zaxis.z === 0) {
                 return;
             }
-            if (this.adjustYaw || this.adjustPitch || this.adjustRoll) {
-                BABYLON.Matrix.RotationYawPitchRollToRef(this.adjustYaw, this.adjustPitch, this.adjustRoll, mat2);
+            if (this._adjustRotY || this._adjustRotX || this._adjustRotZ) {
+                BABYLON.Matrix.RotationYawPitchRollToRef(this._adjustRotY, this._adjustRotX, this._adjustRotZ, mat2);
                 mat2.multiplyToRef(mat1, mat1);
             }
             if (this.slerpAmount < 1) {
@@ -34800,7 +34898,7 @@ var BABYLON;
         };
         return BoneLookController;
     }());
-    BoneLookController._tmpVecs = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+    BoneLookController._tmpVecs = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
     BoneLookController._tmpQuat = BABYLON.Quaternion.Identity();
     BoneLookController._tmpMat1 = BABYLON.Matrix.Identity();
     BoneLookController._tmpMat2 = BABYLON.Matrix.Identity();
