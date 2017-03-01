@@ -13,9 +13,9 @@ That's why many of the guidelines of this document are obvious and serve only on
 ## Forum and Github issues
 
 Since the very beginning, Babylon.js relies on a great forum and a tremendous community: http://www.html5gamedevs.com/forum/16-babylonjs/.
-Please use the forum for ANY questions you have.
+Please use the forum for **ANY questions you may have**.
 
-Please use the Github issues for:
+Please use the Github issues **only** for:
 - Bugs
 - Feature requests
 
