@@ -850,6 +850,7 @@ declare module BABYLON {
          * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
          */
         constructor(name: string, font: string, scene: Scene, maxCharCount?: number, samplingMode?: number, superSample?: boolean, signedDistanceField?: boolean);
+        private _saveToImage(url);
         /**
          * Make sure the given char is present in the font map.
          * @param char the character to get or add
@@ -3969,6 +3970,7 @@ declare module BABYLON {
     class Text2D extends RenderablePrim2D {
         static TEXT2D_MAINPARTID: number;
         static TEXT2D_CATEGORY_SDF: string;
+        static TEXT2D_CATEGORY_FONTTEXTURE: string;
         static fontProperty: Prim2DPropInfo;
         static defaultFontColorProperty: Prim2DPropInfo;
         static textProperty: Prim2DPropInfo;

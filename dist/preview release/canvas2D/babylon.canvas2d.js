@@ -6,7 +6,7 @@ BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid m
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
 BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n} ";
-BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\ngl_FragColor=color*vColor;\n#endif\n}";
+BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxxx)*vColor;\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nvec4 pp=vec4(dot(p,transformX),dot(p,transformY),zBias.x,1);\nif (properties.x == 1.0) {\npp.xy=pp.xy-mod(pp.xy,properties.yz)+(properties.yz*0.5);\n}\ngl_Position=pp;\n} ";
@@ -2067,13 +2067,14 @@ var BABYLON;
                 _this._sdfContext = sdfCtx;
             }
             _this._currentFreePosition = BABYLON.Vector2.Zero();
-            // Add the basic ASCII based characters
+            // Add the basic ASCII based characters                                                               
             for (var i = 0x20; i < 0x7F; i++) {
                 var c = String.fromCharCode(i);
                 _this.getChar(c);
             }
             _this.update();
             return _this;
+            //this._saveToImage("");
         }
         Object.defineProperty(FontTexture.prototype, "isDynamicFontTexture", {
             get: function () {
@@ -2109,6 +2110,34 @@ var BABYLON;
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
                 font.dispose();
+            }
+        };
+        FontTexture.prototype._saveToImage = function (url) {
+            var base64Image = this._canvas.toDataURL("image/png");
+            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = base64Image;
+                var date = new Date();
+                var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) +
+                    "-" +
+                    date.getDate() +
+                    "_" +
+                    date.getHours() +
+                    "-" +
+                    ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                window.document.body.appendChild(a);
+                a.addEventListener("click", function () {
+                    a.parentElement.removeChild(a);
+                });
+                a.click();
+            }
+            else {
+                var newWindow = window.open("");
+                var img = newWindow.document.createElement("img");
+                img.src = base64Image;
+                newWindow.document.body.appendChild(img);
             }
         };
         /**
@@ -2175,6 +2204,18 @@ var BABYLON;
                 }
                 // Draw the character in the HTML canvas
                 this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
+                // Premul Alpha manually
+                var id = this._context.getImageData(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
+                for (var i = 0; i < id.data.length; i += 4) {
+                    var v = id.data[i + 3];
+                    if (v > 0 && v < 255) {
+                        id.data[i + 0] = v;
+                        id.data[i + 1] = v;
+                        id.data[i + 2] = v;
+                        id.data[i + 3] = v;
+                    }
+                }
+                this._context.putImageData(id, curPosXMargin, curPosYMargin);
             }
             // Fill the CharInfo object
             info.topLeftUV = new BABYLON.Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
@@ -2350,7 +2391,8 @@ var BABYLON;
             for (var row = 0; row < fontDraw.height; row++) {
                 for (var column = 0; column < fontDraw.width; column++) {
                     var index = (row * fontDraw.width + column) * 4;
-                    if (pixels[index] === 0) {
+                    var pix = pixels[index];
+                    if (pix === 0) {
                         if (column === fontDraw.width - 1 && start !== -1) {
                             end = row;
                             row = fontDraw.height;
@@ -14190,7 +14232,7 @@ var BABYLON;
             var curAlphaMode;
             if (!sdf) {
                 curAlphaMode = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_PREMULTIPLIED, true);
             }
             var pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
@@ -14671,6 +14713,9 @@ var BABYLON;
             if (this._fontSDF) {
                 cat.push(Text2D_1.TEXT2D_CATEGORY_SDF);
             }
+            if (this._fontTexture instanceof BABYLON.FontTexture) {
+                cat.push(Text2D_1.TEXT2D_CATEGORY_FONTTEXTURE);
+            }
             return cat;
         };
         Text2D.prototype.refreshInstanceDataPart = function (part) {
@@ -14925,6 +14970,7 @@ var BABYLON;
     }(BABYLON.RenderablePrim2D));
     Text2D.TEXT2D_MAINPARTID = 1;
     Text2D.TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+    Text2D.TEXT2D_CATEGORY_FONTTEXTURE = "FontTexture";
     Text2D._AlignLeft = 1;
     Text2D._AlignTop = 1; // Same as left
     Text2D._AlignRight = 2;
