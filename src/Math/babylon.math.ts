@@ -238,6 +238,15 @@
             this.b = b;
             return this;
         }
+
+        /**
+         * Updates the Color3 rgb values from the passed floats.  
+         * Returns the Color3.  
+         */
+        public set(r: number, g: number, b: number): Color3 {
+            return this.copyFromFloats(r, g, b);
+        }
+
         /**
          * Returns the Color3 hexadecimal code as a string.  
          */
@@ -489,6 +498,26 @@
             this.a = source.a;
             return this;
         }
+
+        /**
+         * Copies the passed float values into the current one.  
+         * Returns the updated Color4.  
+         */
+        public copyFromFloats(r: number, g: number, b: number, a: number): Color4 {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+            return this;
+        }
+
+        /**
+         * Copies the passed float values into the current one.  
+         * Returns the updated Color4.  
+         */
+        public set(r: number, g: number, b: number, a: number): Color4 {
+            return this.copyFromFloats(r, g, b,a);
+        }
         /**
          * Returns a string containing the hexadecimal Color4 code.  
          */
@@ -632,6 +661,13 @@
             this.x = x;
             this.y = y;
             return this;
+        }
+        /**
+         * Sets the Vector2 coordinates with the passed floats.  
+         * Returns the updated Vector2.  
+         */
+        public set(x: number, y: number): Vector2 {
+            return this.copyFromFloats(x, y);
         }
         /**
          * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.  
@@ -1336,6 +1372,14 @@
             this.y = y;
             this.z = z;
             return this;
+        }
+
+        /**
+         * Copies the passed floats to the current Vector3 coordinates.  
+         * Returns the updated Vector3.  
+         */
+        public set(x: number, y: number, z: number): Vector3 {
+            return this.copyFromFloats(x, y, z);
         }
 
         // Statics
@@ -2088,6 +2132,13 @@
             this.w = w;
             return this;
         }
+        /**
+         * Updates the current Vector4 coordinates with the passed floats.  
+         * Returns the updated Vector4.  
+         */
+        public set(x: number, y: number, z: number, w: number): Vector4 {
+            return this.copyFromFloats(x, y, z, w);
+        }
 
         // Statics
         /**
@@ -2238,6 +2289,13 @@
             return this;
         }
         /**
+         * Updates in place the current Size from the passed floats.  
+         * Returns the updated Size.   
+         */
+        public set(width: number, height: number): Size {
+            return this.copyFromFloats(width, height);
+        }        
+        /**
          * Returns a new Size set with the multiplication result of the current Size and the passed floats.  
          */
         public multiplyByFloats(w: number, h: number): Size {
@@ -2367,6 +2425,13 @@
             this.w = w;
             return this;
         }
+        /**
+         * Updates the current Quaternion from the passed float coordinates.  
+         * Returns the updated Quaterion.  
+         */
+        public set(x: number, y: number, z: number, w: number): Quaternion {
+            return this.copyFromFloats(x, y, z, w);
+        }        
         /**
          * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.  
          */
