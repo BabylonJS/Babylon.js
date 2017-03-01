@@ -14210,6 +14210,7 @@ var BABYLON;
             _this.fontTexture = null;
             _this.effect = null;
             _this.effectInstanced = null;
+            _this.fontPremulAlpha = false;
             return _this;
         }
         Text2DRenderCache.prototype.render = function (instanceInfo, context) {
@@ -14232,7 +14233,7 @@ var BABYLON;
             var curAlphaMode;
             if (!sdf) {
                 curAlphaMode = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_PREMULTIPLIED, true);
+                engine.setAlphaMode(this.fontPremulAlpha ? BABYLON.Engine.ALPHA_PREMULTIPLIED : BABYLON.Engine.ALPHA_COMBINE, true);
             }
             var pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
@@ -14368,6 +14369,8 @@ var BABYLON;
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
+         * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
+         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -14423,6 +14426,7 @@ var BABYLON;
             }
             _this._defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor.clone();
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            _this._textureIsPremulAlpha = settings.fontTexturePremulAlpha === true;
             _this._textSize = null;
             _this.text = text;
             if (settings.size != null) {
@@ -14554,6 +14558,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Text2D.prototype, "textureIsPremulAlpha", {
+            get: function () {
+                return this._textureIsPremulAlpha;
+            },
+            set: function (value) {
+                this._textureIsPremulAlpha = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Text2D.prototype, "isSizeAuto", {
             get: function () {
                 return false;
@@ -14667,6 +14681,7 @@ var BABYLON;
             var engine = this.owner.engine;
             renderCache.fontTexture = this.fontTexture;
             renderCache.fontTexture.incCachedFontTextureCounter();
+            renderCache.fontPremulAlpha = this.textureIsPremulAlpha;
             var vb = new Float32Array(4);
             for (var i = 0; i < 4; i++) {
                 vb[i] = i;
@@ -14992,8 +15007,11 @@ var BABYLON;
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Text2D_1.fontSuperSampleProperty = pi; }, false, false)
     ], Text2D.prototype, "fontSuperSample", null);
     __decorate([
-        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D_1.fontSuperSampleProperty = pi; }, false, false)
+        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D_1.fontSignedDistanceFieldProperty = pi; }, false, false)
     ], Text2D.prototype, "fontSignedDistanceField", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Text2D_1.textureIsPremulAlphaProperty = pi; })
+    ], Text2D.prototype, "textureIsPremulAlpha", null);
     Text2D = Text2D_1 = __decorate([
         BABYLON.className("Text2D", "BABYLON")
     ], Text2D);
