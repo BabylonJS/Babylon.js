@@ -484,6 +484,7 @@
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.darkness = this.getDarkness();
 
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -527,6 +528,10 @@
 
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+
+            if (parsedShadowGenerator.darkness) {
+                shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
             }
 
             shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;

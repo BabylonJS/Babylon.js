@@ -355,8 +355,9 @@
 
             let s = this.actualSize;
             let a = this.actualScale;
-            let sw = Math.ceil(s.width * a.x);
-            let sh = Math.ceil(s.height * a.y);
+            let hwsl = 1/this.owner.engine.getHardwareScalingLevel();
+            let sw = Math.ceil(s.width * a.x * hwsl);
+            let sh = Math.ceil(s.height * a.y * hwsl);
 
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
@@ -370,7 +371,7 @@
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 let t = this._globalTransform.getTranslation();
-                let rs = this.owner._renderingSize;
+                let rs = this.owner._renderingSize.multiplyByFloats(hwsl, hwsl);
                 sh = Math.min(sh, rs.height - t.y);
                 sw = Math.min(sw, rs.width - t.x);
                 let x = t.x;

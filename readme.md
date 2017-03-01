@@ -15,7 +15,7 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.6-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+- **3.0-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
 - We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
 - Need help contributing, here are some links:

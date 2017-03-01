@@ -2228,6 +2228,7 @@
             this._scale.x = this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
+            this._positioningDirty();
         }
 
         public get scale(): number {
@@ -2553,6 +2554,7 @@
             this._scale.x = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
+            this._positioningDirty();
         }
 
         public get scaleX(): number {
@@ -2567,6 +2569,7 @@
             this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
+            this._positioningDirty();
         }
 
         public get scaleY(): number {
@@ -3665,6 +3668,7 @@
         private static _t2: Matrix = new Matrix();
         private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
         private static _v30: Vector3 = Vector3.Zero();   // Must stay with the value 0,0,0
+        private static _iv3: Vector3 = new Vector3(1,1,1); // Must stay identity vector
         private static _ts0 = Size.Zero();
 
         private _updateLocalTransform(): boolean {
@@ -3680,12 +3684,19 @@
                     this._updatePositioning();
                 }
 
+
                 var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
                 var local: Matrix;
                 let pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase._v0);
                 let scale = new Vector3(this._scale.x, this._scale.y, 1);
                 let postScale = this._postScale;
-                let globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
+                let canvasScale = Prim2DBase._iv3;
+                let hasCanvasScale = false;
+                if (this._parent instanceof Canvas2D) {
+                    hasCanvasScale = true;
+                    canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv3;
+                }
+                let globalScale = scale.multiplyByFloats(postScale.x*canvasScale.x, postScale.y*canvasScale.y, 1);
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
@@ -3698,31 +3709,39 @@
                     // ###MATRIX PART###
                     {
                         // -Origin offset
+                        let t0 = Prim2DBase._t0;
+                        let t1 = Prim2DBase._t1;
+                        let t2 = Prim2DBase._t2;
                         let as = Prim2DBase._ts0;
                         as.copyFrom(this.actualSize);
                         as.width /= postScale.x;
                         as.height /= postScale.y;
-                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase._t0);
+                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
 
                         // -Origin * rotation
-                        rot.toRotationMatrix(Prim2DBase._t1);
-                        Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+                        rot.toRotationMatrix(t1);
+                        t0.multiplyToRef(t1, t2);
 
                         // -Origin * rotation * scale
-                        Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
-                        Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
+                        Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
+                        t2.multiplyToRef(t0, t1);
 
                         // -Origin * rotation * scale * Origin
-                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase._t2);
-                        Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, Prim2DBase._t0);
+                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
+                        t1.multiplyToRef(t2, t0);
 
                         // -Origin * rotation * scale * Origin * postScale
-                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase._t1);
-                        Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
+                        t0.multiplyToRef(t1, t2);
 
                         // -Origin * rotation * scale * Origin * postScale * Position
-                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase._t0);
-                        Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, this._localTransform);
+                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
+                        t2.multiplyToRef(t0, this._localTransform);
+
+                        if (hasCanvasScale) {
+                            Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase._t1);
+                            this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
+                        }
 
                         this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
                     }
@@ -3799,7 +3818,7 @@
             }
 
             // Check if we must update this prim
-            if ((this === <any>this.owner) || (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty))) {
+            if ((this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty))) {
                 this.owner.addUpdateGlobalTransformCounter(1);
 
                 let curVisibleState = this.isVisible;
@@ -3864,6 +3883,8 @@
 
         private _updatePositioning() {
             if (!this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+                // Just in case, if may happen and if we don't clear some computation will keep going on forever
+                this._clearFlags(SmartPropertyPrim.flagPositioningDirty);
                 return;
             }
 
@@ -3891,7 +3912,6 @@
             // Set the flag to avoid re-entrance
             this._setFlags(SmartPropertyPrim.flagComputingPositioning);
             try {
-
                 let isSizeAuto = this.isSizeAuto;
                 let isVSizeAuto = this.isVerticalSizeAuto;
                 let isHSizeAuto = this.isHorizontalSizeAuto;
@@ -4008,7 +4028,7 @@
                     //  not yet set and computing alignment would result into a bad size.
                     // So we make sure with compute alignment only if the layoutArea is good
                     if (layoutArea && layoutArea.width >= newSize.width && layoutArea.height >= newSize.height) {
-                        margin.computeWithAlignment(layoutArea, newSize, ma, this.actualScale, mo, Prim2DBase._size2);
+                        margin.computeWithAlignment(layoutArea, newSize, ma, new Vector2(1,1)/*this.actualScale*/, mo, Prim2DBase._size2);
                     } else {
                         mo.copyFromFloats(0, 0, 0, 0);
                     }
