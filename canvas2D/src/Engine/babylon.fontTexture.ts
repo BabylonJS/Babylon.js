@@ -478,7 +478,7 @@
 
             this._currentFreePosition = Vector2.Zero();
 
-            // Add the basic ASCII based characters
+            // Add the basic ASCII based characters                                                               
             for (let i = 0x20; i < 0x7F; i++) {
                 var c = String.fromCharCode(i);
                 this.getChar(c);
@@ -602,11 +602,12 @@
                 // Premul Alpha manually
                 let id = this._context.getImageData(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
                 for (let i = 0; i < id.data.length; i += 4) {
-                    let v = id.data[i+3];
+                    let v = id.data[i + 3];
                     if (v > 0 && v < 255) {
                         id.data[i + 0] = v;
                         id.data[i + 1] = v;
                         id.data[i + 2] = v;
+                        id.data[i + 3] = v;
                     }
 
                 }

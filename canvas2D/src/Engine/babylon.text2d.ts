@@ -140,6 +140,7 @@
         static TEXT2D_MAINPARTID = 1;
 
         static TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+        static TEXT2D_CATEGORY_FONTTEXTURE = "FontTexture";
 
         public static fontProperty: Prim2DPropInfo;
         public static defaultFontColorProperty: Prim2DPropInfo;
@@ -570,6 +571,9 @@
 
             if (this._fontSDF) {
                 cat.push(Text2D.TEXT2D_CATEGORY_SDF);
+            }
+            if (this._fontTexture instanceof FontTexture) {
+                cat.push(Text2D.TEXT2D_CATEGORY_FONTTEXTURE);
             }
             return cat;
         }
