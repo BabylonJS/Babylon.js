@@ -16,6 +16,7 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 ## Preview release
 
 **3.0-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
