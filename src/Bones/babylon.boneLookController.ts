@@ -1,7 +1,7 @@
 module BABYLON {
     export class BoneLookController {
 
-        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat = Quaternion.Identity();
         private static _tmpMat1 = Matrix.Identity();
         private static _tmpMat2 = Matrix.Identity();
@@ -10,67 +10,107 @@ module BABYLON {
         public mesh: AbstractMesh;
         public bone: Bone;
         public upAxis: Vector3 = Vector3.Up();
-
-        public adjustYaw = 0;
-        public adjustPitch = 0;
-        public adjustRoll = 0;
-
         public slerpAmount = 1;
 
-        private _minYaw:number;
-        private _maxYaw:number;
-        private _minPitch:number;
-        private _maxPitch:number;
-        private _minYawSin:number;
-        private _minYawCos:number;
-        private _maxYawSin:number;
-        private _maxYawCos:number;
-        private _minPitchTan:number;
-        private _maxPitchTan:number;
-        
+        private _adjustRotY = 0;
+        private _adjustRotX = 0;
+        private _adjustRotZ = 0;
+        private _minRotY:number;
+        private _maxRotY:number;
+        private _minRotX:number;
+        private _maxRotX:number;
+        private _minRotYSin:number;
+        private _minRotYCos:number;
+        private _maxRotYSin:number;
+        private _maxRotYCos:number;
+        private _minRotXTan:number;
+        private _maxRotXTan:number;
+        private _minRotZ:number;
+        private _maxRotZ:number;
+        private _minRotZSin:number;
+        private _minRotZCos:number;
+        private _maxRotZSin:number;
+        private _maxRotZCos:number;
         private _boneQuat:Quaternion = Quaternion.Identity();
-        
         private _slerping = false;
 
-        get minYaw():number{
-            return this._minYaw;
+        get minRotationY():number{
+            return this._minRotY - this._adjustRotY;
         }
 
-        set minYaw(value:number){
-            this._minYaw = value;
-            this._minYawSin = Math.sin(value);
-            this._minYawCos = Math.cos(value);
+        set minRotationY(value:number){
+            this._minRotY = value + this._adjustRotY;
+            this._minRotYSin = Math.sin(this._minRotY);
+            this._minRotYCos = Math.cos(this._minRotY);
         }
 
-        get maxYaw():number{
-            return this._maxYaw;
+        get maxRoationY():number{
+            return this._maxRotY - this._adjustRotY;
         }
 
-        set maxYaw(value:number){
-            this._maxYaw = value;
-            this._maxYawSin = Math.sin(value);
-            this._maxYawCos = Math.cos(value);
+        set maxRotationY(value:number){
+            this._maxRotY = value + this._adjustRotY;
+            this._maxRotYSin = Math.sin(this._maxRotY);
+            this._maxRotYCos = Math.cos(this._maxRotY);
         }
 
-        get minPitch():number{
-            return this._minPitch;
+        get minRotationX():number{
+            return this._minRotX - this._adjustRotX;
         }
 
-        set minPitch(value:number){
-            this._minPitch = value;
-            this._minPitchTan = Math.tan(value);
+        set minRotationX(value:number){
+            this._minRotX = value + this._adjustRotX;
+            this._minRotXTan = Math.tan(this._minRotX);
         }
 
-        get maxPitch():number{
-            return this._maxPitch;
+        get maxRotationX():number{
+            return this._maxRotX - this._adjustRotX;
         }
 
-        set maxPitch(value:number){
-            this._maxPitch = value;
-            this._maxPitchTan = Math.tan(value);
+        set maxRotationX(value:number){
+            this._maxRotX = value + this._adjustRotX;
+            this._maxRotXTan = Math.tan(this._maxRotX);
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {adjustYaw?: number, adjustPitch?: number, adjustRoll?: number, slerpAmount?: number, maxYaw?:number, minYaw?:number, maxPitch?:number, minPitch?:number} ){
+        get minRotationZ():number{
+            return this._minRotZ - this._adjustRotZ;
+        }
+
+        set minRotationZ(value:number){
+            this._minRotZ = value + this._adjustRotZ;
+            this._minRotZSin = Math.sin(this._minRotZ);
+            this._minRotZCos = Math.cos(this._minRotZ);
+        }
+
+        get maxRotationZ():number{
+            return this._maxRotZ - this._adjustRotZ;
+        }
+
+        set maxRotationZ(value:number){
+            this._maxRotZ = value + this._adjustRotZ;
+            this._maxRotZSin = Math.sin(this._maxRotZ);
+            this._maxRotZCos = Math.cos(this._maxRotZ);
+        }
+
+        constructor(mesh: AbstractMesh, 
+                    bone: Bone, 
+                    target: Vector3, 
+                    options?: { 
+                        adjustRotationX?: number, 
+                        adjustRotationY?: number, 
+                        adjustRotationZ?: number, 
+                        slerpAmount?: number, 
+                        maxRotationY?:number, 
+                        minRotationY?:number,
+                        maxRotationX?:number, 
+                        minRotationX?:number,
+                        maxRotationZ?:number, 
+                        minRotationZ?:number,
+                        adjustYaw?: number, 
+                        adjustPitch?: number, 
+                        adjustRoll?: number 
+                    } 
+                    ){
 
             this.mesh = mesh;
             this.bone = bone;
@@ -79,31 +119,51 @@ module BABYLON {
             if(options){
 
                 if(options.adjustYaw){
-                    this.adjustYaw = options.adjustYaw;
+                    this._adjustRotY = options.adjustYaw;
                 }
 
                 if(options.adjustPitch){
-                    this.adjustPitch = options.adjustPitch;
+                    this._adjustRotX = options.adjustPitch;
                 }
 
                 if(options.adjustRoll){
-                    this.adjustRoll = options.adjustRoll;
+                    this._adjustRotZ = options.adjustRoll;
                 }
 
-                if(options.maxYaw != undefined){
-                    this.maxYaw = options.maxYaw;
+                if(options.adjustRotationY){
+                    this._adjustRotY = options.adjustRotationY;
                 }
 
-                if(options.minYaw != undefined){
-                    this.minYaw = options.minYaw;
+                if(options.adjustRotationX){
+                    this._adjustRotX = options.adjustRotationX;
                 }
 
-                if(options.maxPitch != undefined){
-                    this.maxPitch = options.maxPitch;
+                if(options.adjustRotationZ){
+                    this._adjustRotZ = options.adjustRotationZ;
                 }
 
-                if(options.minPitch != undefined){
-                    this.minPitch = options.minPitch;
+                if(options.maxRotationY != undefined){
+                    this.maxRotationY = options.maxRotationY;
+                }
+
+                if(options.minRotationY != undefined){
+                    this.minRotationY = options.minRotationY;
+                }
+
+                if(options.maxRotationX != undefined){
+                    this.maxRotationX = options.maxRotationX;
+                }
+
+                if(options.minRotationX != undefined){
+                    this.minRotationX = options.minRotationX;
+                }
+
+                if(options.maxRotationZ != undefined){
+                    this.maxRotationZ = options.maxRotationZ;
+                }
+
+                if(options.minRotationZ != undefined){
+                    this.minRotationZ = options.minRotationZ;
                 }
 
                 if(options.slerpAmount != undefined){
@@ -124,7 +184,7 @@ module BABYLON {
             var parentBone = bone.getParent();
 
             if(parentBone){
-                if(this._maxPitch != undefined || this._minPitch != undefined){
+                if(this._maxRotX != undefined || this._minRotX != undefined){
                     var localTarget = BoneLookController._tmpVecs[4];
                     var _tmpVec5 = BoneLookController._tmpVecs[5];
                     parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
@@ -133,41 +193,67 @@ module BABYLON {
                     localTarget.y -= _tmpVec5.y;
                     localTarget.z -= _tmpVec5.z;
                     var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
-                    var pitch = Math.atan2(localTarget.y, xzlen);
+                    var rotX = Math.atan2(localTarget.y, xzlen);
 
-                    if(pitch > this._maxPitch){
-                        localTarget.y = this._maxPitchTan*xzlen + _tmpVec5.y;
+                    if(rotX > this._maxRotX){
+                        localTarget.y = this._maxRotXTan*xzlen + _tmpVec5.y;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
-                    }else if(pitch < this._minPitch){
-                        localTarget.y = this._minPitchTan*xzlen + _tmpVec5.y;
+                    }else if(rotX < this._minRotX){
+                        localTarget.y = this._minRotXTan*xzlen + _tmpVec5.y;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
                 }
 
-                if(this._maxYaw != undefined || this._minYaw != undefined){
+                if(this._maxRotY != undefined || this._minRotY != undefined){
                     var localTarget = BoneLookController._tmpVecs[6];
                     var _tmpVec7 = BoneLookController._tmpVecs[7];
                     parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
                     bone.getPositionToRef(Space.LOCAL, null, _tmpVec7);
                     localTarget.x -= _tmpVec7.x;
                     localTarget.z -= _tmpVec7.z;
-                    var yaw = Math.atan2(localTarget.x, localTarget.z);
-                    var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
+                    var rotY = Math.atan2(localTarget.x, localTarget.z);
                     
-                    if(yaw > this._maxYaw){
-                        localTarget.z = this._maxYawCos*xzlen;
-                        localTarget.x = this._maxYawSin*xzlen;
+                    if(rotY > this._maxRotY){
+                        var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
+                        localTarget.z = this._maxRotYCos*xzlen;
+                        localTarget.x = this._maxRotYSin*xzlen;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
-                    }else if(yaw < this._minYaw){
-                        localTarget.z = this._minYawCos*xzlen;
-                        localTarget.x = this._minYawSin*xzlen;
+                    }else if(rotY < this._minRotY){
+                        var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
+                        localTarget.z = this._minRotYCos*xzlen;
+                        localTarget.x = this._minRotYSin*xzlen;
                         parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
                         target = localTarget;
                     }
                 }
+
+                if(this._maxRotZ != undefined || this._minRotZ != undefined){
+                    var localTarget = BoneLookController._tmpVecs[8];
+                    var _tmpVec9 = BoneLookController._tmpVecs[9];
+                    parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
+                    bone.getPositionToRef(Space.LOCAL, null, _tmpVec9);
+                    localTarget.x -= _tmpVec9.x;
+                    localTarget.y -= _tmpVec9.y;
+                    var rotZ = Math.atan2(localTarget.y, localTarget.x);
+                    
+                    if(rotZ > this._maxRotZ){
+                        var xylen = Math.sqrt(localTarget.x*localTarget.x + localTarget.y*localTarget.y);
+                        localTarget.x = this._maxRotZCos*xylen;
+                        localTarget.y = this._maxRotZSin*xylen;
+                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
+                        target = localTarget;
+                    }else if(rotZ < this._minRotZ){
+                        var xylen = Math.sqrt(localTarget.x*localTarget.x + localTarget.y*localTarget.y);
+                        localTarget.x = this._minRotZCos*xylen;
+                        localTarget.y = this._minRotZSin*xylen;
+                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
+                        target = localTarget;
+                    }
+                }
+
 
             }
 
@@ -198,8 +284,8 @@ module BABYLON {
                 return;
             }
 
-            if (this.adjustYaw || this.adjustPitch || this.adjustRoll) {
-                Matrix.RotationYawPitchRollToRef(this.adjustYaw, this.adjustPitch, this.adjustRoll, mat2);
+            if (this._adjustRotY || this._adjustRotX || this._adjustRotZ) {
+                Matrix.RotationYawPitchRollToRef(this._adjustRotY, this._adjustRotX, this._adjustRotZ, mat2);
                 mat2.multiplyToRef(mat1, mat1);
             }
 
