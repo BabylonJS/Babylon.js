@@ -169,6 +169,8 @@
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
+            this._curHWScale = 0;
+            this._canvasLevelScale = new Vector3(1, 1, 1);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!this._trackedGroups) {
@@ -1292,7 +1294,9 @@
         private _designUseHorizAxis: boolean;
         public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
-        public _renderingSize: Size;
+        public _canvasLevelScale: Vector3;
+        public  _renderingSize: Size;
+        private _curHWScale;
 
         private _drawCallsOpaqueCounter          : PerfCounter;
         private _drawCallsAlphaTestCounter       : PerfCounter;
@@ -1458,15 +1462,26 @@
                 return;
             }
 
+            // Detect a change of HWRendering scale
+            let hwsl = this.engine.getHardwareScalingLevel();
+            let hwslChanged = this._curHWScale !== hwsl;
+            if (hwslChanged) {
+                this._curHWScale = hwsl;
+                for (let child of this.children) {
+                    child._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
+
             // Detect a change of rendering size
             let renderingSizeChanged = false;
-            let newWidth = this.engine.getRenderWidth();
+            let newWidth = this.engine.getRenderWidth() * hwsl;
             if (newWidth !== this._renderingSize.width) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.width = newWidth;
 
-            let newHeight = this.engine.getRenderHeight();
+            let newHeight = this.engine.getRenderHeight() * hwsl;
             if (newHeight !== this._renderingSize.height) {
                 renderingSizeChanged = true;
             }
@@ -1487,17 +1502,21 @@
             if (this._designSize) {
                 let scale: number;
                 if (this._designUseHorizAxis) {
-                    scale = this._renderingSize.width / this._designSize.width;
+                    scale = this._renderingSize.width / (this._designSize.width * hwsl);
                 } else {
-                    scale = this._renderingSize.height / this._designSize.height;
+                    scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this.scale = scale;
+                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+            } else if (this._curHWScale !== 1) {
+                let ratio = 1 / this._curHWScale;
+                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
             }
 
             var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
+            this._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
             this.updateCachedStates(false);
 
             this._prepareGroupRender(context);

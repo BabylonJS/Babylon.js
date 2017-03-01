@@ -24,6 +24,9 @@ namespace BabylonExport.Entities
         public bool useBlurVarianceShadowMap { get; set; }
 
         [DataMember]
+        public float darkness { get; set; }
+
+        [DataMember]
         public float blurScale { get; set; }
 
         [DataMember]
@@ -35,5 +38,13 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool forceBackFacesOnly { get; set; }
 
+        public BabylonShadowGenerator()
+        {
+            darkness = 0;
+            blurScale = 2;
+            blurBoxOffset = 0;
+            bias = 0.00005f;
+            forceBackFacesOnly = false;
+        }
     }
 }
