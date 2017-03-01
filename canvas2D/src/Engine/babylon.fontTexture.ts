@@ -478,13 +478,50 @@
 
             this._currentFreePosition = Vector2.Zero();
 
-            // Add the basic ASCII based characters
+            // Add the basic ASCII based characters                                                               
             for (let i = 0x20; i < 0x7F; i++) {
                 var c = String.fromCharCode(i);
                 this.getChar(c);
             }
 
             this.update();
+
+            //this._saveToImage("");
+            
+        }
+
+        private _saveToImage(url: string) {
+            let base64Image = this._canvas.toDataURL("image/png");
+
+            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = base64Image;
+                var date = new Date();
+                var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) +
+                    "-" +
+                    date.getDate() +
+                    "_" +
+                    date.getHours() +
+                    "-" +
+                    ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
+
+                window.document.body.appendChild(a);
+
+                a.addEventListener("click",
+                    () => {
+                        a.parentElement.removeChild(a);
+                    });
+                a.click();
+
+                //Or opening a new tab with the image if it is not possible to automatically start download.
+            } else {
+                var newWindow = window.open("");
+                var img = newWindow.document.createElement("img");
+                img.src = base64Image;
+                newWindow.document.body.appendChild(img);
+            }
         }
 
         /**
@@ -561,6 +598,20 @@
 
                 // Draw the character in the HTML canvas
                 this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
+
+                // Premul Alpha manually
+                let id = this._context.getImageData(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
+                for (let i = 0; i < id.data.length; i += 4) {
+                    let v = id.data[i + 3];
+                    if (v > 0 && v < 255) {
+                        id.data[i + 0] = v;
+                        id.data[i + 1] = v;
+                        id.data[i + 2] = v;
+                        id.data[i + 3] = v;
+                    }
+
+                }
+                this._context.putImageData(id, curPosXMargin, curPosYMargin);
             }
 
             // Fill the CharInfo object
@@ -765,12 +816,14 @@
             ctx.font = font;
             ctx.fillText(chars, 0, 0);
             var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
+
             var start = -1;
             var end = -1;
             for (var row = 0; row < fontDraw.height; row++) {
                 for (var column = 0; column < fontDraw.width; column++) {
                     var index = (row * fontDraw.width + column) * 4;
-                    if (pixels[index] === 0) {
+                    let pix = pixels[index];
+                    if (pix === 0) {
                         if (column === fontDraw.width - 1 && start !== -1) {
                             end = row;
                             row = fontDraw.height;
