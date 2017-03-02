@@ -304,7 +304,7 @@
                     case "function":
                         var result = Tools.CorsBehavior(url);
                         if (result) {
-                            return result;
+                            img.crossOrigin = result;
                         }
                         break;
                     case "string":
