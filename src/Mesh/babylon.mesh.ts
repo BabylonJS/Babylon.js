@@ -1845,6 +1845,137 @@
             return this;
         }
 
+        public serialize(serializationObject: any): void {
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+
+            if (Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.position = this.position.asArray();
+
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            } else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isVisible = this.isVisible;
+            serializationObject.infiniteDistance = this.infiniteDistance;
+            serializationObject.pickable = this.isPickable;
+
+            serializationObject.receiveShadows = this.receiveShadows;
+
+            serializationObject.billboardMode = this.billboardMode;
+            serializationObject.visibility = this.visibility;
+
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.isBlocker = this.isBlocker;
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            // Geometry
+            var geometry = this._geometry;
+            if (geometry) {
+                var geometryId = geometry.id;
+                serializationObject.geometryId = geometryId;
+
+                // SubMeshes
+                serializationObject.subMeshes = [];
+                for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+                    var subMesh = this.subMeshes[subIndex];
+
+                    serializationObject.subMeshes.push({
+                        materialIndex: subMesh.materialIndex,
+                        verticesStart: subMesh.verticesStart,
+                        verticesCount: subMesh.verticesCount,
+                        indexStart: subMesh.indexStart,
+                        indexCount: subMesh.indexCount
+                    });
+                }
+            }
+
+            // Material
+            if (this.material) {
+                serializationObject.materialId = this.material.id;
+            } else {
+                this.material = null;
+            }
+
+            // Skeleton
+            if (this.skeleton) {
+                serializationObject.skeletonId = this.skeleton.id;
+            }
+
+            // Physics
+            //TODO implement correct serialization for physics impostors.
+            if (this.getPhysicsImpostor()) {
+                serializationObject.physicsMass = this.getPhysicsMass();
+                serializationObject.physicsFriction = this.getPhysicsFriction();
+                serializationObject.physicsRestitution = this.getPhysicsRestitution();
+                serializationObject.physicsImpostor = this.getPhysicsImpostor().type;
+            }
+
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+
+            // Instances
+            serializationObject.instances = [];
+            for (var index = 0; index < this.instances.length; index++) {
+                var instance = this.instances[index];
+                var serializationInstance: any = {
+                    name: instance.name,
+                    position: instance.position.asArray(),
+                    scaling: instance.scaling.asArray()
+                };
+                if (instance.rotationQuaternion) {
+                    serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
+                } else if (instance.rotation) {
+                    serializationInstance.rotation = instance.rotation.asArray();
+                }
+                serializationObject.instances.push(serializationInstance);
+
+                // Animations
+                Animation.AppendSerializedAnimations(instance, serializationInstance);
+                serializationInstance.ranges = instance.serializeAnimationRanges();
+            }
+
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
+
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+
+            // Alpha
+            serializationObject.alphaIndex = this.alphaIndex;
+            serializationObject.hasVertexAlpha = this.hasVertexAlpha;
+            
+            // Overlay
+            serializationObject.overlayAlpha = this.overlayAlpha;
+            serializationObject.overlayColor = this.overlayColor.asArray();
+            serializationObject.renderOverlay = this.renderOverlay;
+
+            // Fog
+            serializationObject.applyFog = this.applyFog;
+
+            // Action Manager
+            if (this.actionManager) {
+                serializationObject.actions = this.actionManager.serialize(this.name);
+            }
+        }
+
         // Statics
         /**
          * Returns a new Mesh object what is a deep copy of the passed mesh.   
@@ -1855,7 +1986,7 @@
             var mesh : Mesh;
 
             if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
-                mesh = new GroundMesh(parsedMesh.name, scene);
+                mesh = GroundMesh.Parse(parsedMesh, scene);
             } else {
                 mesh = new Mesh(parsedMesh.name, scene);
             }

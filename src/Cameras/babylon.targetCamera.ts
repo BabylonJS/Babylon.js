@@ -142,6 +142,10 @@ module BABYLON {
             }
         }
 
+
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         */
         public getTarget(): Vector3 {
             return this._currentTarget;
         }
@@ -151,6 +155,12 @@ module BABYLON {
         }
 
         public _updatePosition(): void {
+            if (this.parent) {
+                this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
+                Vector3.TransformNormalToRef(this.cameraDirection, Tmp.Matrix[0], Tmp.Vector3[0]);
+                this.position.addInPlace(Tmp.Vector3[0]);
+                return;
+            }
             this.position.addInPlace(this.cameraDirection);
         }
         public _checkInputs(): void {
