@@ -850,6 +850,7 @@ declare module BABYLON {
          * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
          */
         constructor(name: string, font: string, scene: Scene, maxCharCount?: number, samplingMode?: number, superSample?: boolean, signedDistanceField?: boolean);
+        private _saveToImage(url);
         /**
          * Make sure the given char is present in the font map.
          * @param char the character to get or add
@@ -2612,6 +2613,7 @@ declare module BABYLON {
         private static _t2;
         private static _v0;
         private static _v30;
+        private static _iv3;
         private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
@@ -2925,7 +2927,7 @@ declare module BABYLON {
         private static _s;
         private static _r;
         private static _t;
-        private static _uV3;
+        private static _iV3;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -3954,6 +3956,7 @@ declare module BABYLON {
         fontTexture: BaseFontTexture;
         effect: Effect;
         effectInstanced: Effect;
+        fontPremulAlpha: boolean;
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
         dispose(): boolean;
     }
@@ -3968,12 +3971,14 @@ declare module BABYLON {
     class Text2D extends RenderablePrim2D {
         static TEXT2D_MAINPARTID: number;
         static TEXT2D_CATEGORY_SDF: string;
+        static TEXT2D_CATEGORY_FONTTEXTURE: string;
         static fontProperty: Prim2DPropInfo;
         static defaultFontColorProperty: Prim2DPropInfo;
         static textProperty: Prim2DPropInfo;
         static sizeProperty: Prim2DPropInfo;
         static fontSuperSampleProperty: Prim2DPropInfo;
         static fontSignedDistanceFieldProperty: Prim2DPropInfo;
+        static textureIsPremulAlphaProperty: Prim2DPropInfo;
         /**
          * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
          */
@@ -4005,6 +4010,7 @@ declare module BABYLON {
         size: Size;
         readonly fontSuperSample: boolean;
         readonly fontSignedDistanceField: boolean;
+        textureIsPremulAlpha: boolean;
         readonly isSizeAuto: boolean;
         readonly isVerticalSizeAuto: boolean;
         readonly isHorizontalSizeAuto: boolean;
@@ -4040,6 +4046,8 @@ declare module BABYLON {
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
+         * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
+         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -4087,6 +4095,7 @@ declare module BABYLON {
             fontSuperSample?: boolean;
             fontSignedDistanceField?: boolean;
             bitmapFontTexture?: BitmapFontTexture;
+            fontTexturePremulAlpha?: boolean;
             defaultFontColor?: Color4;
             size?: Size;
             tabulationSize?: number;
@@ -4143,6 +4152,7 @@ declare module BABYLON {
         private _wordWrap;
         private _textAlignment;
         private _sizeSetByUser;
+        private _textureIsPremulAlpha;
         textAlignmentH: number;
         textAlignmentV: number;
     }
@@ -4605,7 +4615,9 @@ declare module BABYLON {
         private _designSize;
         private _designUseHorizAxis;
         _primitiveCollisionManager: PrimitiveCollisionManagerBase;
+        _canvasLevelScale: Vector3;
         _renderingSize: Size;
+        private _curHWScale;
         private _drawCallsOpaqueCounter;
         private _drawCallsAlphaTestCounter;
         private _drawCallsTransparentCounter;

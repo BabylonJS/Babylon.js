@@ -6,7 +6,7 @@ BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid m
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
 BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n} ";
-BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\ngl_FragColor=color*vColor;\n#endif\n}";
+BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxxx)*vColor;\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nvec4 pp=vec4(dot(p,transformX),dot(p,transformY),zBias.x,1);\nif (properties.x == 1.0) {\npp.xy=pp.xy-mod(pp.xy,properties.yz)+(properties.yz*0.5);\n}\ngl_Position=pp;\n} ";
@@ -2067,13 +2067,14 @@ var BABYLON;
                 _this._sdfContext = sdfCtx;
             }
             _this._currentFreePosition = BABYLON.Vector2.Zero();
-            // Add the basic ASCII based characters
+            // Add the basic ASCII based characters                                                               
             for (var i = 0x20; i < 0x7F; i++) {
                 var c = String.fromCharCode(i);
                 _this.getChar(c);
             }
             _this.update();
             return _this;
+            //this._saveToImage("");
         }
         Object.defineProperty(FontTexture.prototype, "isDynamicFontTexture", {
             get: function () {
@@ -2109,6 +2110,34 @@ var BABYLON;
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
                 font.dispose();
+            }
+        };
+        FontTexture.prototype._saveToImage = function (url) {
+            var base64Image = this._canvas.toDataURL("image/png");
+            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = base64Image;
+                var date = new Date();
+                var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) +
+                    "-" +
+                    date.getDate() +
+                    "_" +
+                    date.getHours() +
+                    "-" +
+                    ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                window.document.body.appendChild(a);
+                a.addEventListener("click", function () {
+                    a.parentElement.removeChild(a);
+                });
+                a.click();
+            }
+            else {
+                var newWindow = window.open("");
+                var img = newWindow.document.createElement("img");
+                img.src = base64Image;
+                newWindow.document.body.appendChild(img);
             }
         };
         /**
@@ -2175,6 +2204,18 @@ var BABYLON;
                 }
                 // Draw the character in the HTML canvas
                 this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
+                // Premul Alpha manually
+                var id = this._context.getImageData(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
+                for (var i = 0; i < id.data.length; i += 4) {
+                    var v = id.data[i + 3];
+                    if (v > 0 && v < 255) {
+                        id.data[i + 0] = v;
+                        id.data[i + 1] = v;
+                        id.data[i + 2] = v;
+                        id.data[i + 3] = v;
+                    }
+                }
+                this._context.putImageData(id, curPosXMargin, curPosYMargin);
             }
             // Fill the CharInfo object
             info.topLeftUV = new BABYLON.Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
@@ -2350,7 +2391,8 @@ var BABYLON;
             for (var row = 0; row < fontDraw.height; row++) {
                 for (var column = 0; column < fontDraw.width; column++) {
                     var index = (row * fontDraw.width + column) * 4;
-                    if (pixels[index] === 0) {
+                    var pix = pixels[index];
+                    if (pix === 0) {
                         if (column === fontDraw.width - 1 && start !== -1) {
                             end = row;
                             row = fontDraw.height;
@@ -7466,6 +7508,7 @@ var BABYLON;
                 this._scale.x = this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -7795,6 +7838,7 @@ var BABYLON;
                 this._scale.x = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -7807,6 +7851,7 @@ var BABYLON;
                 this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
+                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -8862,7 +8907,13 @@ var BABYLON;
                 var pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase_1._v0);
                 var scale = new BABYLON.Vector3(this._scale.x, this._scale.y, 1);
                 var postScale = this._postScale;
-                var globalScale = scale.multiplyByFloats(postScale.x, postScale.y, 1);
+                var canvasScale = Prim2DBase_1._iv3;
+                var hasCanvasScale = false;
+                if (this._parent instanceof BABYLON.Canvas2D) {
+                    hasCanvasScale = true;
+                    canvasScale = this._parent._canvasLevelScale || Prim2DBase_1._iv3;
+                }
+                var globalScale = scale.multiplyByFloats(postScale.x * canvasScale.x, postScale.y * canvasScale.y, 1);
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     // ###MATRIX PART###
                     {
@@ -8875,26 +8926,33 @@ var BABYLON;
                     // ###MATRIX PART###
                     {
                         // -Origin offset
+                        var t0 = Prim2DBase_1._t0;
+                        var t1 = Prim2DBase_1._t1;
+                        var t2 = Prim2DBase_1._t2;
                         var as = Prim2DBase_1._ts0;
                         as.copyFrom(this.actualSize);
                         as.width /= postScale.x;
                         as.height /= postScale.y;
-                        BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase_1._t0);
+                        BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
                         // -Origin * rotation
-                        rot.toRotationMatrix(Prim2DBase_1._t1);
-                        Prim2DBase_1._t0.multiplyToRef(Prim2DBase_1._t1, Prim2DBase_1._t2);
+                        rot.toRotationMatrix(t1);
+                        t0.multiplyToRef(t1, t2);
                         // -Origin * rotation * scale
-                        BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase_1._t0);
-                        Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, Prim2DBase_1._t1);
+                        BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
+                        t2.multiplyToRef(t0, t1);
                         // -Origin * rotation * scale * Origin
-                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, Prim2DBase_1._t2);
-                        Prim2DBase_1._t1.multiplyToRef(Prim2DBase_1._t2, Prim2DBase_1._t0);
+                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
+                        t1.multiplyToRef(t2, t0);
                         // -Origin * rotation * scale * Origin * postScale
-                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, Prim2DBase_1._t1);
-                        Prim2DBase_1._t0.multiplyToRef(Prim2DBase_1._t1, Prim2DBase_1._t2);
+                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
+                        t0.multiplyToRef(t1, t2);
                         // -Origin * rotation * scale * Origin * postScale * Position
-                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, Prim2DBase_1._t0);
-                        Prim2DBase_1._t2.multiplyToRef(Prim2DBase_1._t0, this._localTransform);
+                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
+                        t2.multiplyToRef(t0, this._localTransform);
+                        if (hasCanvasScale) {
+                            BABYLON.Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase_1._t1);
+                            this._localTransform.multiplyToRef(Prim2DBase_1._t1, this._localTransform);
+                        }
                         this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     }
                 }
@@ -8955,7 +9013,7 @@ var BABYLON;
                 this._parentContentArea.copyFrom(this._parent.contentArea);
             }
             // Check if we must update this prim
-            if ((this === this.owner) || (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty))) {
+            if ((this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty))) {
                 this.owner.addUpdateGlobalTransformCounter(1);
                 var curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
@@ -9003,6 +9061,8 @@ var BABYLON;
         Prim2DBase.prototype._updatePositioning = function () {
             var _this = this;
             if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning)) {
+                // Just in case, if may happen and if we don't clear some computation will keep going on forever
+                this._clearFlags(BABYLON.SmartPropertyPrim.flagPositioningDirty);
                 return;
             }
             var success = true;
@@ -9126,7 +9186,7 @@ var BABYLON;
                     //  not yet set and computing alignment would result into a bad size.
                     // So we make sure with compute alignment only if the layoutArea is good
                     if (layoutArea && layoutArea.width >= newSize.width && layoutArea.height >= newSize.height) {
-                        margin.computeWithAlignment(layoutArea, newSize, ma, this.actualScale, mo, Prim2DBase_1._size2);
+                        margin.computeWithAlignment(layoutArea, newSize, ma, new BABYLON.Vector2(1, 1) /*this.actualScale*/, mo, Prim2DBase_1._size2);
                     }
                     else {
                         mo.copyFromFloats(0, 0, 0, 0);
@@ -9434,6 +9494,7 @@ var BABYLON;
     Prim2DBase._t2 = new BABYLON.Matrix();
     Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
     Prim2DBase._v30 = BABYLON.Vector3.Zero(); // Must stay with the value 0,0,0
+    Prim2DBase._iv3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector
     Prim2DBase._ts0 = BABYLON.Size.Zero();
     Prim2DBase._transMtx = BABYLON.Matrix.Zero();
     Prim2DBase._transTT = BABYLON.Transform2D.Zero();
@@ -10702,7 +10763,15 @@ var BABYLON;
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
-            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            var scl = RenderablePrim2D_1._s;
+            var rot = RenderablePrim2D_1._r;
+            var trn = RenderablePrim2D_1._t;
+            t.decompose(scl, rot, trn);
+            var pas = this.actualScale;
+            scl.x = pas.x;
+            scl.y = pas.y;
+            scl.z = 1;
+            t = BABYLON.Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D_1._iV3, rot, trn);
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -10721,22 +10790,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
-            //if (!this.applyActualScaleOnTransform()) {
-            //    t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
-            //    t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
-            //    let las = this.actualScale;
-            //    t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
-            //    let scale = new Vector3(RenderablePrim2D._s.x / las.x, RenderablePrim2D._s.y / las.y, 1);
-            //    t = Matrix.Compose(scale, RenderablePrim2D._r, RenderablePrim2D._t);
-            //    tx = new Vector4(t.m[0], t.m[4], 0, t.m[12]);
-            //    ty = new Vector4(t.m[1], t.m[5], 0, t.m[13]);
-            //}
-            //tx.x /= w;
-            //tx.y /= w;
-            //ty.x /= h;
-            //ty.y /= h;
+            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -10761,7 +10816,7 @@ var BABYLON;
     RenderablePrim2D._s = BABYLON.Vector3.Zero();
     RenderablePrim2D._r = BABYLON.Quaternion.Identity();
     RenderablePrim2D._t = BABYLON.Vector3.Zero();
-    RenderablePrim2D._uV3 = new BABYLON.Vector3(1, 1, 1);
+    RenderablePrim2D._iV3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector3
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
     ], RenderablePrim2D.prototype, "isAlphaTest", null);
@@ -11393,8 +11448,9 @@ var BABYLON;
             }
             var s = this.actualSize;
             var a = this.actualScale;
-            var sw = Math.ceil(s.width * a.x);
-            var sh = Math.ceil(s.height * a.y);
+            var hwsl = 1 / this.owner.engine.getHardwareScalingLevel();
+            var sw = Math.ceil(s.width * a.x * hwsl);
+            var sh = Math.ceil(s.height * a.y * hwsl);
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
             if ((this instanceof BABYLON.Canvas2D || this.id === "__cachedCanvasGroup__") && this.owner.designSize != null) {
@@ -11406,7 +11462,7 @@ var BABYLON;
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 var t = this._globalTransform.getTranslation();
-                var rs = this.owner._renderingSize;
+                var rs = this.owner._renderingSize.multiplyByFloats(hwsl, hwsl);
                 sh = Math.min(sh, rs.height - t.y);
                 sw = Math.min(sw, rs.width - t.x);
                 var x = t.x;
@@ -14154,6 +14210,7 @@ var BABYLON;
             _this.fontTexture = null;
             _this.effect = null;
             _this.effectInstanced = null;
+            _this.fontPremulAlpha = false;
             return _this;
         }
         Text2DRenderCache.prototype.render = function (instanceInfo, context) {
@@ -14176,7 +14233,7 @@ var BABYLON;
             var curAlphaMode;
             if (!sdf) {
                 curAlphaMode = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
+                engine.setAlphaMode(this.fontPremulAlpha ? BABYLON.Engine.ALPHA_PREMULTIPLIED : BABYLON.Engine.ALPHA_COMBINE, true);
             }
             var pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
@@ -14312,6 +14369,8 @@ var BABYLON;
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
+         * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
+         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -14367,6 +14426,7 @@ var BABYLON;
             }
             _this._defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor.clone();
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            _this._textureIsPremulAlpha = settings.fontTexturePremulAlpha === true;
             _this._textSize = null;
             _this.text = text;
             if (settings.size != null) {
@@ -14498,6 +14558,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Text2D.prototype, "textureIsPremulAlpha", {
+            get: function () {
+                return this._textureIsPremulAlpha;
+            },
+            set: function (value) {
+                this._textureIsPremulAlpha = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Text2D.prototype, "isSizeAuto", {
             get: function () {
                 return false;
@@ -14611,6 +14681,7 @@ var BABYLON;
             var engine = this.owner.engine;
             renderCache.fontTexture = this.fontTexture;
             renderCache.fontTexture.incCachedFontTextureCounter();
+            renderCache.fontPremulAlpha = this.textureIsPremulAlpha;
             var vb = new Float32Array(4);
             for (var i = 0; i < 4; i++) {
                 vb[i] = i;
@@ -14656,6 +14727,9 @@ var BABYLON;
             var cat = _super.prototype.getUsedShaderCategories.call(this, dataPart);
             if (this._fontSDF) {
                 cat.push(Text2D_1.TEXT2D_CATEGORY_SDF);
+            }
+            if (this._fontTexture instanceof BABYLON.FontTexture) {
+                cat.push(Text2D_1.TEXT2D_CATEGORY_FONTTEXTURE);
             }
             return cat;
         };
@@ -14911,6 +14985,7 @@ var BABYLON;
     }(BABYLON.RenderablePrim2D));
     Text2D.TEXT2D_MAINPARTID = 1;
     Text2D.TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+    Text2D.TEXT2D_CATEGORY_FONTTEXTURE = "FontTexture";
     Text2D._AlignLeft = 1;
     Text2D._AlignTop = 1; // Same as left
     Text2D._AlignRight = 2;
@@ -14932,8 +15007,11 @@ var BABYLON;
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Text2D_1.fontSuperSampleProperty = pi; }, false, false)
     ], Text2D.prototype, "fontSuperSample", null);
     __decorate([
-        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D_1.fontSuperSampleProperty = pi; }, false, false)
+        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D_1.fontSignedDistanceFieldProperty = pi; }, false, false)
     ], Text2D.prototype, "fontSignedDistanceField", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Text2D_1.textureIsPremulAlphaProperty = pi; })
+    ], Text2D.prototype, "textureIsPremulAlpha", null);
     Text2D = Text2D_1 = __decorate([
         BABYLON.className("Text2D", "BABYLON")
     ], Text2D);
@@ -16287,6 +16365,8 @@ var BABYLON;
             _this._scene = scene;
             _this._engine = engine;
             _this._renderingSize = new BABYLON.Size(0, 0);
+            _this._curHWScale = 0;
+            _this._canvasLevelScale = new BABYLON.Vector3(1, 1, 1);
             _this._designSize = settings.designSize || null;
             _this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!_this._trackedGroups) {
@@ -17417,14 +17497,25 @@ var BABYLON;
             if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
+            // Detect a change of HWRendering scale
+            var hwsl = this.engine.getHardwareScalingLevel();
+            var hwslChanged = this._curHWScale !== hwsl;
+            if (hwslChanged) {
+                this._curHWScale = hwsl;
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    child._setFlags(BABYLON.SmartPropertyPrim.flagLocalTransformDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
             // Detect a change of rendering size
             var renderingSizeChanged = false;
-            var newWidth = this.engine.getRenderWidth();
+            var newWidth = this.engine.getRenderWidth() * hwsl;
             if (newWidth !== this._renderingSize.width) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.width = newWidth;
-            var newHeight = this.engine.getRenderHeight();
+            var newHeight = this.engine.getRenderHeight() * hwsl;
             if (newHeight !== this._renderingSize.height) {
                 renderingSizeChanged = true;
             }
@@ -17442,16 +17533,21 @@ var BABYLON;
             if (this._designSize) {
                 var scale = void 0;
                 if (this._designUseHorizAxis) {
-                    scale = this._renderingSize.width / this._designSize.width;
+                    scale = this._renderingSize.width / (this._designSize.width * hwsl);
                 }
                 else {
-                    scale = this._renderingSize.height / this._designSize.height;
+                    scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this.scale = scale;
+                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+            }
+            else if (this._curHWScale !== 1) {
+                var ratio = 1 / this._curHWScale;
+                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
             }
             var context = new BABYLON.PrepareRender2DContext();
             ++this._globalTransformProcessStep;
+            this._setFlags(BABYLON.SmartPropertyPrim.flagLocalTransformDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
             this.updateCachedStates(false);
             this._prepareGroupRender(context);
             this._updateRenderId = this.scene.getRenderId();
