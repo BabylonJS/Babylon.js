@@ -209,5 +209,10 @@ namespace BabylonExport.Entities
             overloadedEmissive = new[] {1f, 1f, 1f };
             overloadedReflection = new[] { 1f, 1f, 1f };
         }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
+        }
     }
 }
