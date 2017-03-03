@@ -74,7 +74,7 @@
             if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
                 newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
-            else if ((<string>gamepad.id).search("VR") !== -1) {
+            else if ((<string>gamepad.id).search("Open VR") !== -1 || (<string>gamepad.id).search("Oculus Touch") !== -1) {
                 newGamepad = new WebVRController(gamepad.id, gamepad.index, gamepad);
             }
             else {
@@ -154,6 +154,9 @@
         }
     }
     export class Gamepad {
+
+        public type: number;
+
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
@@ -165,7 +168,13 @@
         private _onleftstickchanged: (values: StickValues) => void;
         private _onrightstickchanged: (values: StickValues) => void;
 
-        constructor(public id: string, public index: number, public browserGamepad, leftStickX:number = 0, leftStickY:number = 1, rightStickX:number = 2, rightStickY:number = 3) {
+        public static GAMEPAD = 0;
+        public static GENERIC = 1;
+        public static XBOX = 2;
+        public static WEBVR = 3;
+
+        constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
+            this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
             this._rightStickAxisX = rightStickX;
@@ -250,19 +259,28 @@
 
         constructor(public id: string, public index: number, public vrGamepad) {
             super(id, index, vrGamepad);
+            this.type = Gamepad.WEBVR;
             this._buttons = new Array(vrGamepad.buttons.length);
             this.position = Vector3.Zero();
             this.rotationQuaternion = new Quaternion();
         }
 
         private _setButtonValue(newState: VRButtonState, currentState: VRButtonState, buttonIndex: number): VRButtonState {
-            if (!currentState ||
+            if (!currentState) {
+                return newState;
+            }
+            if (
                 newState.pressed !== currentState.pressed ||
                 newState.touched !== currentState.touched ||
                 newState.value !== currentState.value) {
-                this._onButtonStateChange(this.index, buttonIndex, newState);
+
+                this._onButtonStateChange && this._onButtonStateChange(this.index, buttonIndex, newState);
             }
-            return newState;
+            return {
+                pressed: newState.pressed,
+                touched: newState.touched,
+                value: newState.value
+            };
         }
 
         public update() {
@@ -274,15 +292,13 @@
             if (pose) {
                 this.rawPose = pose;
                 if (pose.hasPosition) {
-                    this.position.copyFromFloats(pose.position[0], pose.position[1], pose.position[2]);
+                    this.position.copyFromFloats(pose.position[0], pose.position[1], -pose.position[2]);
                 }
                 if (pose.hasOrientation) {
                     this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
                 }
             }
         }
-
-
     }
 
     export class GenericPad extends Gamepad {
@@ -299,6 +315,7 @@
 
         constructor(public id: string, public index: number, public gamepad) {
             super(id, index, gamepad);
+            this.type = Gamepad.GENERIC;
             this._buttons = new Array(gamepad.buttons.length);
         }
 
@@ -370,10 +387,11 @@
         private _dPadLeft: number = 0;
         private _dPadRight: number = 0;
 
-        private _isXboxOnePad:boolean = false;
+        private _isXboxOnePad: boolean = false;
 
-        constructor(id: string, index: number, gamepad:any, xboxOne:boolean = false) {
+        constructor(id: string, index: number, gamepad: any, xboxOne: boolean = false) {
             super(id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3));
+            this.type = Gamepad.XBOX;
             this._isXboxOnePad = xboxOne;
         }
 
@@ -572,9 +590,4 @@ interface Navigator {
     webkitGetGamepads(func?: any): any
     msGetGamepads(func?: any): any;
     webkitGamepads(func?: any): any;
-}
-
-
-interface GamepadPose {
-
 }
