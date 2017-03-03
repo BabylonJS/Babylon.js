@@ -70,9 +70,9 @@
             }
 
             var newGamepad;
-
-            if ((<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
-                newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad);
+            var xboxOne: boolean = ((<string>gamepad.id).search("Xbox One") !== -1);
+            if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
+                newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
             else if ((<string>gamepad.id).search("VR") !== -1) {
                 newGamepad = new WebVRController(gamepad.id, gamepad.index, gamepad);
@@ -157,15 +157,24 @@
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
+        private _leftStickAxisX: number;
+        private _leftStickAxisY: number;
+        private _rightStickAxisX: number;
+        private _rightStickAxisY: number;
+
         private _onleftstickchanged: (values: StickValues) => void;
         private _onrightstickchanged: (values: StickValues) => void;
 
-        constructor(public id: string, public index: number, public browserGamepad) {
+        constructor(public id: string, public index: number, public browserGamepad, leftStickX:number = 0, leftStickY:number = 1, rightStickX:number = 2, rightStickY:number = 3) {
+            this._leftStickAxisX = leftStickX;
+            this._leftStickAxisY = leftStickY;
+            this._rightStickAxisX = rightStickX;
+            this._rightStickAxisY = rightStickY;
             if (this.browserGamepad.axes.length >= 2) {
-                this._leftStick = { x: this.browserGamepad.axes[0], y: this.browserGamepad.axes[1] };
+                this._leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
             }
             if (this.browserGamepad.axes.length >= 4) {
-                this._rightStick = { x: this.browserGamepad.axes[2], y: this.browserGamepad.axes[3] };
+                this._rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         }
 
@@ -198,10 +207,10 @@
 
         public update() {
             if (this._leftStick) {
-                this.leftStick = { x: this.browserGamepad.axes[0], y: this.browserGamepad.axes[1] };
+                this.leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
             }
             if (this._rightStick) {
-                this.rightStick = { x: this.browserGamepad.axes[2], y: this.browserGamepad.axes[3] };
+                this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         }
     }
@@ -361,6 +370,13 @@
         private _dPadLeft: number = 0;
         private _dPadRight: number = 0;
 
+        private _isXboxOnePad:boolean = false;
+
+        constructor(id: string, index: number, gamepad:any, xboxOne:boolean = false) {
+            super(id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3));
+            this._isXboxOnePad = xboxOne;
+        }
+
         public onlefttriggerchanged(callback: (value: number) => void) {
             this._onlefttriggerchanged = callback;
         }
@@ -512,22 +528,41 @@
         }
         public update() {
             super.update();
-            this.buttonA = this.browserGamepad.buttons[0].value;
-            this.buttonB = this.browserGamepad.buttons[1].value;
-            this.buttonX = this.browserGamepad.buttons[2].value;
-            this.buttonY = this.browserGamepad.buttons[3].value;
-            this.buttonLB = this.browserGamepad.buttons[4].value;
-            this.buttonRB = this.browserGamepad.buttons[5].value;
-            this.leftTrigger = this.browserGamepad.buttons[6].value;
-            this.rightTrigger = this.browserGamepad.buttons[7].value;
-            this.buttonBack = this.browserGamepad.buttons[8].value;
-            this.buttonStart = this.browserGamepad.buttons[9].value;
-            this.buttonLeftStick = this.browserGamepad.buttons[10].value;
-            this.buttonRightStick = this.browserGamepad.buttons[11].value;
-            this.dPadUp = this.browserGamepad.buttons[12].value;
-            this.dPadDown = this.browserGamepad.buttons[13].value;
-            this.dPadLeft = this.browserGamepad.buttons[14].value;
-            this.dPadRight = this.browserGamepad.buttons[15].value;
+            if (this._isXboxOnePad) {
+                this.buttonA = this.browserGamepad.buttons[0].value;
+                this.buttonB = this.browserGamepad.buttons[1].value;
+                this.buttonX = this.browserGamepad.buttons[2].value;
+                this.buttonY = this.browserGamepad.buttons[3].value;
+                this.buttonLB = this.browserGamepad.buttons[4].value;
+                this.buttonRB = this.browserGamepad.buttons[5].value;
+                this.leftTrigger = this.browserGamepad.axes[2];
+                this.rightTrigger = this.browserGamepad.axes[5];
+                this.buttonBack = this.browserGamepad.buttons[9].value;
+                this.buttonStart = this.browserGamepad.buttons[8].value;
+                this.buttonLeftStick = this.browserGamepad.buttons[6].value;
+                this.buttonRightStick = this.browserGamepad.buttons[7].value;
+                this.dPadUp = this.browserGamepad.buttons[11].value;
+                this.dPadDown = this.browserGamepad.buttons[12].value;
+                this.dPadLeft = this.browserGamepad.buttons[13].value;
+                this.dPadRight = this.browserGamepad.buttons[14].value;
+            } else {
+                this.buttonA = this.browserGamepad.buttons[0].value;
+                this.buttonB = this.browserGamepad.buttons[1].value;
+                this.buttonX = this.browserGamepad.buttons[2].value;
+                this.buttonY = this.browserGamepad.buttons[3].value;
+                this.buttonLB = this.browserGamepad.buttons[4].value;
+                this.buttonRB = this.browserGamepad.buttons[5].value;
+                this.leftTrigger = this.browserGamepad.buttons[6].value;
+                this.rightTrigger = this.browserGamepad.buttons[7].value;
+                this.buttonBack = this.browserGamepad.buttons[8].value;
+                this.buttonStart = this.browserGamepad.buttons[9].value;
+                this.buttonLeftStick = this.browserGamepad.buttons[10].value;
+                this.buttonRightStick = this.browserGamepad.buttons[11].value;
+                this.dPadUp = this.browserGamepad.buttons[12].value;
+                this.dPadDown = this.browserGamepad.buttons[13].value;
+                this.dPadLeft = this.browserGamepad.buttons[14].value;
+                this.dPadRight = this.browserGamepad.buttons[15].value;
+            }
         }
     }
 }

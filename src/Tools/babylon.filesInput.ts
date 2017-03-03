@@ -9,8 +9,8 @@
         private _textureLoadingCallback;
         private _startingProcessingFilesCallback;
         private _elementToMonitor: HTMLElement;
-        public static FilesTextures: any[] = new Array();
-        public static FilesToLoad: any[] = new Array();
+        public static FilesTextures: File[] = new Array();
+        public static FilesToLoad: File[] = new Array();
 
         private _sceneFileToLoad: File;
         private _filesToLoad: File[];
@@ -55,12 +55,12 @@
             }
         }
 
-        private drag(e): void {
+        private drag(e: DragEvent): void {
             e.stopPropagation();
             e.preventDefault();
         }
 
-        private drop(eventDrop): void {
+        private drop(eventDrop: DragEvent): void {
             eventDrop.stopPropagation();
             eventDrop.preventDefault();
 
@@ -82,39 +82,22 @@
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    switch (this._filesToLoad[i].type) {
-                        case "image/jpeg":
-                        case "image/png":
-                        case "image/bmp":
-                            FilesInput.FilesTextures[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            break;
-                        case "image/targa":
-                        case "image/vnd.ms-dds":
-                        case "audio/wav":
-                        case "audio/x-wav":
-                        case "audio/mp3":
-                        case "audio/mpeg":
-                        case "audio/mpeg3":
-                        case "audio/x-mpeg-3":
-                        case "audio/ogg":
-                            FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            break;
-                        default:
-                            if (this._filesToLoad[i].name.indexOf(".mtl") !== -1) {
-                                FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            }
-                            else if ((
-                                this._filesToLoad[i].name.indexOf(".babylon") !== -1 || 
-                                this._filesToLoad[i].name.indexOf(".stl") !== -1 ||
-                                this._filesToLoad[i].name.indexOf(".obj") !== -1
-                                )   
-                                && this._filesToLoad[i].name.indexOf(".manifest") === -1
-                                && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
-                                && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1 && this._filesToLoad[i].name.indexOf(".babylonbinarymeshdata") === -1 && 
-                                this._filesToLoad[i].name.indexOf(".binary.babylon") === -1) {
-                                this._sceneFileToLoad = this._filesToLoad[i];
-                            }
-                            break;
+                    let name = this._filesToLoad[i].name.toLowerCase();
+                    let extension = name.split('.').pop();
+                    let type = this._filesToLoad[i].type;
+                    
+                    if (extension === "jpg" || extension === "png" || extension === "bmp" || extension === "jpeg" || 
+                        type === "image/jpeg" || type === "image/png" || type === "image/bmp") {
+                           FilesInput.FilesTextures[name] = this._filesToLoad[i]; 
+                        }
+                    else {
+                        if ((extension === "babylon" || extension === "stl" || extension === "obj") 
+                            && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+                            this._sceneFileToLoad = this._filesToLoad[i];
+                        }
+                        else {
+                            FilesInput.FilesToLoad[name] = this._filesToLoad[i];
+                        }
                     }
                 }
 

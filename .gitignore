@@ -14,6 +14,17 @@ TestResults
 *.sln.docstates
 *.map
 
+# javascript files
+src/**/*.js
+src/**/*.d.ts
+loaders/src/**/*.js
+materialsLibrary/src/**/*.js
+proceduralTexturesLibrary/src/**/*.js
+postProcessLibrary/src/**/*.js
+canvas2D/src/**/*.js
+inspector/src/**/*.js
+serializers/src/**/*.js
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
@@ -104,6 +115,19 @@ ClientBin
 *.dbmdl
 Generated_Code #added for RIA/Silverlight projects
 
+# OS or Editor folders
+*.DS_Store
+._*
+Thumbs.db
+.cache
+.tmproj
+nbproject
+*.sublime-project
+*.sublime-workspace
+.directory
+build
+.history
+
 # Backup & report files from converting an old project file to a newer
 # Visual Studio version. Backup files are not needed, because we have git ;-)
 _UpgradeReport_Files/
@@ -121,10 +145,23 @@ UpgradeLog*.XML
 
 # Do not ignore loaders/obj
 !loaders/*
+**/node_modules
 node_modules
 
 # for JetBrains IDE
 .idea
 
 # for VSCode
-.vscode
+.vs
+.tempChromeProfileForDebug
+.temp
+*.js.map
+*.js.fx
+*.d.ts
+!dist/**/*.d.ts
+!lib.d.ts
+
+# local dev
+localDev/src/*
+/dist/preview release/babylon.custom.js
+/dist/preview release/babylon.custom.max.js

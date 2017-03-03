@@ -23,10 +23,30 @@ interface Window {
     Math: Math;
     Uint8Array: Uint8ArrayConstructor;
     Float32Array: Float32ArrayConstructor;
+    mozURL: any;
+    msURL: any;
 }
 
-interface AudioContext extends EventTarget {
-    decodeAudioData(audioData: ArrayBuffer, successCallback: DecodeSuccessCallback, errorCallback?: any): void;
+interface WebGLVertexArrayObject {
+
+}
+
+interface WebGLRenderingContext {
+    drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
+    drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
+    vertexAttribDivisor(index: number, divisor: number): void;
+
+    createVertexArray(): any;
+    bindVertexArray(vao: WebGLVertexArrayObject): void;
+    deleteVertexArray(vao: WebGLVertexArrayObject): void;
+
+    blitFramebuffer(srcX0 : number, srcY0 : number, srcX1 : number, srcY1 : number, dstX0 : number, dstY0 : number, dstX1 : number, dstY1 : number, mask : number, filter : number) : void;
+    renderbufferStorageMultisample(target : number, samples : number, internalformat : number, width : number, height : number) : void;
+
+    MAX_SAMPLES: number;
+    RGBA8: number;
+    READ_FRAMEBUFFER : number;
+    DRAW_FRAMEBUFFER : number;
 }
 
 interface HTMLURL {
@@ -58,6 +78,7 @@ interface CanvasRenderingContext2D {
     mozImageSmoothingEnabled: boolean;
     oImageSmoothingEnabled: boolean;
     webkitImageSmoothingEnabled: boolean;
+    msImageSmoothingEnabled: boolean;
 }
 
 interface WebGLTexture {
@@ -78,11 +99,15 @@ interface WebGLTexture {
     _workingCanvas: HTMLCanvasElement;
     _workingContext: CanvasRenderingContext2D;
     _framebuffer: WebGLFramebuffer;
-    _depthBuffer: WebGLRenderbuffer;
+    _depthStencilBuffer: WebGLRenderbuffer;
+    _MSAAFramebuffer: WebGLFramebuffer;
+    _MSAARenderBuffer: WebGLRenderbuffer;
     _cachedCoordinatesMode: number;
     _cachedWrapU: number;
     _cachedWrapV: number;
     _isDisabled: boolean;
+    _generateStencilBuffer: boolean;
+    _generateDepthBuffer: boolean;
 }
 
 interface WebGLBuffer {
@@ -109,6 +134,14 @@ interface Navigator {
     getVRDisplays: () => any;
     mozGetVRDevices: (any: any) => any;
     isCocoonJS: boolean;
+    getUserMedia: any;
+    webkitGetUserMedia: any;
+    mozGetUserMedia: any;
+    msGetUserMedia: any;
+}
+
+interface HTMLVideoElement {
+    mozSrcObject: any;
 }
 
 interface Screen {

@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
@@ -17,6 +19,10 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
         }
+
+        public getClassName(): string {
+            return "GroundMesh";
+        }        
 
         public get subdivisions(): number {
             return Math.min(this._subdivisionsX, this._subdivisionsY);
@@ -41,14 +47,15 @@
          * Returns a height (y) value in the Worl system :
          * the ground altitude at the coordinates (x, z) expressed in the World system.
          * Returns the ground y position if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
          */
         public getHeightAtCoordinates(x: number, z: number): number {
-            // express x and y in the ground local system
-            x -= this.position.x;
-            z -= this.position.z;
-            x /= this.scaling.x;
-            z /= this.scaling.z;
+            var world = this.getWorldMatrix();
+            var invMat = Tmp.Matrix[5];
+            world.invertToRef(invMat);
+            var tmpVect = Tmp.Vector3[8];
+            Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
+            x = tmpVect.x;
+            z = tmpVect.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
                 return this.position.y;
             }
@@ -59,17 +66,17 @@
             var facet = this._getFacetAt(x, z);
             var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
             // return y in the World system
-            return y * this.scaling.y + this.position.y;
+            Vector3.TransformCoordinatesFromFloatsToRef(0.0, y, 0.0, world, tmpVect);
+            return tmpVect.y;
         }
 
         /**
          * Returns a normalized vector (Vector3) orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Returns Vector3(0, 1, 0) if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
+         * Returns Vector3(0.0, 1.0, 0.0) if (x, z) are outside the ground surface.
          */
         public getNormalAtCoordinates(x: number, z: number): Vector3 {
-            var normal = new Vector3(0, 1, 0);
+            var normal = new Vector3(0.0, 1.0, 0.0);
             this.getNormalAtCoordinatesToRef(x, z, normal);
             return normal;
         }
@@ -77,38 +84,41 @@
         /**
          * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
+         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.  
+         * Returns the GroundMesh.  
          */
-        public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): void {
-            // express x and y in the ground local system
-            x -= this.position.x;
-            z -= this.position.z;
-            x /= this.scaling.x;
-            z /= this.scaling.z;
+        public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
+            var world = this.getWorldMatrix();
+            var tmpMat = Tmp.Matrix[5];
+            world.invertToRef(tmpMat);
+            var tmpVect = Tmp.Vector3[8];
+            Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, tmpMat, tmpVect); // transform x,z in the mesh local space
+            x = tmpVect.x;
+            z = tmpVect.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
-                return;
+                return this;
             }
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._initHeightQuads();
                 this._computeHeightQuads();
             }
             var facet = this._getFacetAt(x, z);
-            ref.x = facet.x;
-            ref.y = facet.y;
-            ref.z = facet.z;
+            Vector3.TransformNormalFromFloatsToRef(facet.x, facet.y, facet.z, world, ref);
+            return this;
         }
 
         /**
         * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
         * if the ground has been updated.
-        * This can be used in the render loop
+        * This can be used in the render loop.  
+        * Returns the GroundMesh.  
         */
-        public updateCoordinateHeights(): void {
+        public updateCoordinateHeights(): GroundMesh {
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._initHeightQuads();
             }
             this._computeHeightQuads();
+            return this;
         }
 
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
@@ -132,24 +142,27 @@
         // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
-        private _initHeightQuads(): void {
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
+        private _initHeightQuads(): GroundMesh {
             var subdivisionsX = this._subdivisionsX;
             var subdivisionsY = this._subdivisionsY;
             this._heightQuads = new Array();
             for (var row = 0; row < subdivisionsY; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
-                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0, 0), facet2: new BABYLON.Vector4(0, 0, 0, 0) };
+                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0), facet2: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0) };
                     this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }
+            return this;
         }
 
         // Compute each quad element values and update the the heightMap array :
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
-        private _computeHeightQuads(): void {
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
+        private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var v1 = Tmp.Vector3[3];
             var v2 = Tmp.Vector3[2];
@@ -214,6 +227,40 @@
                     quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
                 }
             }
+            return this;
+        }
+
+        public serialize(serializationObject: any): void {
+            super.serialize(serializationObject);
+            serializationObject.subdivisionsX = this._subdivisionsX;
+            serializationObject.subdivisionsY = this._subdivisionsY;
+
+            serializationObject.minX = this._minX;
+            serializationObject.maxX = this._maxX;
+
+            serializationObject.minZ = this._minZ;
+            serializationObject.maxZ = this._maxZ;
+
+            serializationObject.width = this._width;
+            serializationObject.height = this._height;
+        }
+
+        public static Parse(parsedMesh: any, scene: Scene): GroundMesh {
+            var result = new GroundMesh(parsedMesh.name, scene);
+
+            result._subdivisionsX = parsedMesh.subdivisionsX || 1;
+            result._subdivisionsY = parsedMesh.subdivisionsY || 1;
+
+            result._minX = parsedMesh.minX;
+            result._maxX = parsedMesh.maxX;
+
+            result._minZ = parsedMesh.minZ;
+            result._maxZ = parsedMesh.maxZ;
+
+            result._width = parsedMesh.width;
+            result._height = parsedMesh.height;
+
+            return result;
         }
     }
 }

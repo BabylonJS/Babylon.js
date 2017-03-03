@@ -38,7 +38,7 @@
                 engine.setDepthFunctionToLessOrEqual();
             }
 
-            let curAlphaMode = engine.getAlphaMode();
+            var curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
@@ -168,21 +168,6 @@
         public static acutalSizeProperty: Prim2DPropInfo;
         public static subdivisionsProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.acutalSizeProperty = pi, false, true)
-        /**
-         * Get/Set the size of the ellipse
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            this._actualSize = value;
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Ellipse2D.subdivisionsProperty = pi)
         /**
          * Get/set the number of subdivisions used to draw the ellipsis. Default is 64.
@@ -203,8 +188,9 @@
             return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         }
 
         /**
@@ -229,6 +215,9 @@
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -270,6 +259,9 @@
             isPickable            ?: boolean,
             isContainer           ?: boolean,
             childrenFlatZOrder    ?: boolean,
+            levelCollision        ?: boolean,
+            deepCollision         ?: boolean,
+            layoutData            ?: ILayoutData,
             marginTop             ?: number | string,
             marginLeft            ?: number | string,
             marginRight           ?: number | string,
@@ -282,7 +274,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -302,6 +294,35 @@
 
             let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
             this.subdivisions = sub;
+        }
+
+        protected updateTriArray() {
+            let subDiv = this._subdivisions;
+            if (this._primTriArray == null) {
+                this._primTriArray = new Tri2DArray(subDiv);
+            } else {
+                this._primTriArray.clear(subDiv);
+            }
+
+            let size = this.actualSize;
+            let center = new Vector2(0.5 * size.width, 0.5 * size.height);
+            let v1 = Vector2.Zero();
+            let v2 = Vector2.Zero();
+
+            for (let i = 0; i < subDiv; i++) {
+	            let angle1 = Math.PI * 2 * (i-1) / subDiv;
+	            let angle2 = Math.PI * 2 * i / subDiv;
+
+                v1.x = ((Math.cos(angle1) / 2.0) + 0.5) * size.width;
+                v1.y = ((Math.sin(angle1) / 2.0) + 0.5) * size.height;
+
+                v2.x = ((Math.cos(angle2) / 2.0) + 0.5) * size.width;
+                v2.y = ((Math.sin(angle2) / 2.0) + 0.5) * size.height;
+
+                this._primTriArray.storeTriangle(i, center, v1, v2);
+
+            }
+
         }
 
         protected createModelRenderCache(modelKey: string): ModelRenderCache {
@@ -326,10 +347,10 @@
                 let ib = new Float32Array(triCount * 3);
                 for (let i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 2] = i + 1;
-                    ib[i * 3 + 1] = i + 2;
+                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 1] = i + 1;
                 }
-                ib[triCount * 3 - 2] = 1;
+                ib[triCount * 3 - 1] = 1;
 
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;

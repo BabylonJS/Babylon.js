@@ -19,12 +19,16 @@ namespace BabylonExport.Entities
         [DataMember]
         public float alpha { get; set; }
 
+        [DataMember]
+        public int alphaMode { get; set; }
 
         public BabylonMaterial()
         {
             backFaceCulling = true;
 
             alpha = 1.0f;
+
+            alphaMode = 2;
         }
     }
 }

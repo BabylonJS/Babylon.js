@@ -34,6 +34,9 @@
             return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
         }
 
+        /**
+         * Returns the submesh BoudingInfo object.  
+         */
         public getBoundingInfo(): BoundingInfo {
             if (this.IsGlobal) {
                 return this._mesh.getBoundingInfo();
@@ -42,14 +45,32 @@
             return this._boundingInfo;
         }
 
+        /**
+         * Sets the submesh BoundingInfo.  
+         * Return the SubMesh.  
+         */
+        public setBoundingInfo(boundingInfo: BoundingInfo): SubMesh {
+            this._boundingInfo = boundingInfo;
+            return this;
+        }
+
+        /** 
+         * Returns the mesh of the current submesh.  
+         */
         public getMesh(): AbstractMesh {
             return this._mesh;
         }
 
+        /**
+         * Returns the rendering mesh of the submesh.  
+         */
         public getRenderingMesh(): Mesh {
             return this._renderingMesh;
         }
 
+        /**
+         * Returns the submesh material.  
+         */
         public getMaterial(): Material {
             var rootMaterial = this._renderingMesh.material;
 
@@ -66,7 +87,11 @@
         }
 
         // Methods
-        public refreshBoundingInfo(): void {
+        /**
+         * Sets a new updated BoundingInfo object to the submesh.  
+         * Returns the SubMesh.  
+         */
+        public refreshBoundingInfo(): SubMesh {
             this._lastColliderWorldVertices = null;
 
             if (this.IsGlobal) {
@@ -90,32 +115,55 @@
                 extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
             this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+            return this;
         }
 
         public _checkCollision(collider: Collider): boolean {
             return this.getBoundingInfo()._checkCollision(collider);
         }
 
-        public updateBoundingInfo(world: Matrix): void {
+        /**
+         * Updates the submesh BoundingInfo.  
+         * Returns the Submesh.  
+         */
+        public updateBoundingInfo(world: Matrix): SubMesh {
             if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
             this.getBoundingInfo().update(world);
+            return this;
         }
 
+        /**
+         * True is the submesh bounding box intersects the frustum defined by the passed array of planes.  
+         * Boolean returned.  
+         */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             return this.getBoundingInfo().isInFrustum(frustumPlanes);
         }
 
+        /**
+         * True is the submesh bounding box is completely inside the frustum defined by the passed array of planes.  
+         * Boolean returned.  
+         */        
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
         }
 
-        public render(enableAlphaMode: boolean): void {
+        /**
+         * Renders the submesh.  
+         * Returns it.  
+         */
+        public render(enableAlphaMode: boolean): SubMesh {
             this._renderingMesh.render(this, enableAlphaMode);
+            return this;
         }
 
-        public getLinesIndexBuffer(indices: number[] | Int32Array, engine: Engine): WebGLBuffer {
+        /**
+         * Returns a new Index Buffer.  
+         * Type returned : WebGLBuffer.  
+         */
+        public getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
 
@@ -131,11 +179,18 @@
             return this._linesIndexBuffer;
         }
 
+        /**
+         * True is the passed Ray intersects the submesh bounding box.  
+         * Boolean returned.  
+         */
         public canIntersects(ray: Ray): boolean {
             return ray.intersectsBox(this.getBoundingInfo().boundingBox);
         }
 
-        public intersects(ray: Ray, positions: Vector3[], indices: number[] | Int32Array, fastCheck?: boolean): IntersectionInfo {
+        /**
+         * Returns an object IntersectionInfo.  
+         */
+        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): IntersectionInfo {
             var intersectInfo: IntersectionInfo = null;
 
             // LineMesh first as it's also a Mesh...
@@ -191,6 +246,9 @@
         }
 
         // Clone    
+        /**
+         * Creates a new Submesh from the passed Mesh.  
+         */
         public clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh {
             var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
 
@@ -202,7 +260,11 @@
         }
 
         // Dispose
-        public dispose() {
+        /**
+         * Disposes the Submesh.  
+         * Returns nothing.  
+         */
+        public dispose(): void {
             if (this._linesIndexBuffer) {
                 this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
                 this._linesIndexBuffer = null;
@@ -214,6 +276,14 @@
         }
 
         // Statics
+        /**
+         * Creates a new Submesh from the passed parameters : 
+         * - materialIndex (integer) : the index of the main mesh material.  
+         * - startIndex (integer) : the index where to start the copy in the mesh indices array.  
+         * - indexCount (integer) : the number of indices to copy then from the startIndex.  
+         * - mesh (Mesh) : the main mesh to create the submesh from.  
+         * - renderingMesh (optional Mesh) : rendering mesh.  
+         */
         public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh {
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
@@ -234,4 +304,3 @@
         }
     }
 }
-

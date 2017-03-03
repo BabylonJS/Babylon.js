@@ -28,6 +28,7 @@
                 }
                 this.effectsReady = true;
             }
+
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
 
@@ -40,7 +41,6 @@
             var curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
-
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
                 let pid = context.groupInfoPartData[partIndex];
 
@@ -170,21 +170,6 @@
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the rectangle size (width/height)
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            this._actualSize = value;
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
         /**
          * Get if the rectangle is notRound (returns true) or rounded (returns false).
@@ -288,8 +273,9 @@
             return true;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         }
 
         /**
@@ -314,6 +300,9 @@
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -354,6 +343,9 @@
             isPickable            ?: boolean,
             isContainer           ?: boolean,
             childrenFlatZOrder    ?: boolean,
+            levelCollision        ?: boolean,
+            deepCollision         ?: boolean,
+            layoutData            ?: ILayoutData,
             marginTop             ?: number | string,
             marginLeft            ?: number | string,
             marginRight           ?: number | string,
@@ -366,7 +358,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -398,6 +390,79 @@
         protected createModelRenderCache(modelKey: string): ModelRenderCache {
             let renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
+        }
+
+        protected updateTriArray() {
+            // Not Rounded = sharp edge rect, the default implementation is the right one!
+            if (this.notRounded) {
+                super.updateTriArray();
+                return;
+            }
+
+            // Rounded Corner? It's more complicated! :)
+
+            let subDiv = Rectangle2D.roundSubdivisions * 4;
+            if (this._primTriArray == null) {
+                this._primTriArray = new Tri2DArray(subDiv);
+            } else {
+                this._primTriArray.clear(subDiv);
+            }
+
+            let size = this.actualSize;
+			let w = size.width;
+			let h = size.height;
+            let r = this.roundRadius;
+            let rsub0 = subDiv * 0.25;
+            let rsub1 = subDiv * 0.50;
+            let rsub2 = subDiv * 0.75;
+            let center = new Vector2(0.5 * size.width, 0.5 * size.height);
+            let twopi = Math.PI * 2;
+			let nru = r / w;
+			let nrv = r / h;
+
+            let computePos = (index: number, p: Vector2) => {
+			    // right/bottom
+			    if (index < rsub0) {
+				    p.x = 1.0 - nru;
+				    p.y = nrv;
+			    }
+			    // left/bottom
+			    else if (index < rsub1) {
+				    p.x = nru;
+				    p.y = nrv;
+			    }
+			    // left/top
+			    else if (index < rsub2) {
+				    p.x = nru;
+				    p.y = 1.0 - nrv;
+			    }
+			    // right/top
+			    else {
+				    p.x = 1.0 - nru;
+				    p.y = 1.0 - nrv;
+			    }
+
+                let angle = twopi - (index * twopi / (subDiv - 0.5));
+			    p.x += Math.cos(angle) * nru;
+                p.y += Math.sin(angle) * nrv;
+                p.x *= w;
+                p.y *= h;
+            }
+
+            console.log("Genetre TriList for " + this.id);
+            let first = Vector2.Zero();
+            let cur = Vector2.Zero();
+            computePos(0, first);
+            let prev = first.clone();
+            for (let index = 1; index < subDiv; index++) {
+                computePos(index, cur);
+                this._primTriArray.storeTriangle(index - 1, center, prev, cur);
+                console.log(`${index-1}, ${center}, ${prev}, ${cur}`);
+                prev.copyFrom(cur);
+            }
+            this._primTriArray.storeTriangle(subDiv-1, center, first, prev);
+                console.log(`${subDiv-1}, ${center}, ${prev}, ${first}`);
+
         }
 
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
@@ -493,15 +558,19 @@
             }
         }
 
-        protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size) {
+        protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size) {
             // Fall back to default implementation if there's no round Radius
             if (this._notRounded) {
-                super._getActualSizeFromContentToRef(primSize, newPrimSize);
+                super._getActualSizeFromContentToRef(primSize, paddingOffset, newPrimSize);
             } else {
                 let rr = Math.round((this.roundRadius - (this.roundRadius / Math.sqrt(2))) * 1.3);
                 newPrimSize.copyFrom(primSize);
                 newPrimSize.width  += rr * 2;
                 newPrimSize.height += rr * 2;
+                paddingOffset.x += rr;
+                paddingOffset.y += rr;
+                paddingOffset.z += rr;
+                paddingOffset.w += rr;
             }
         }
 

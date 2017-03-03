@@ -30,6 +30,7 @@
             }
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
+            engine.setState(false, undefined, true);
 
             let depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
@@ -223,7 +224,7 @@
 
         public set points(value: Vector2[]) {
             this._points = value;
-            this._contour = null;
+            this._primTriArrayDirty = true;
             this._boundingBoxDirty();
         }
 
@@ -282,66 +283,10 @@
         private static _curB: Vector2 = Vector2.Zero();
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
-            if (this._contour == null) {
-                this._computeLines2D();
-            }
-
-            let pl = this.points.length;
-            let l = this.closed ? pl + 1 : pl;
-
             let p = intersectInfo._localPickPosition;
+            this.updateTriArray();
 
-            this.transformPointWithOriginToRef(this._contour[0], null, Lines2D._prevA);
-            this.transformPointWithOriginToRef(this._contour[1], null, Lines2D._prevB);
-            for (let i = 1; i < l; i++) {
-                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 0], null, Lines2D._curA);
-                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 1], null, Lines2D._curB);
-
-                if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curA)) {
-                    return true;
-                }
-                if (Vector2.PointInTriangle(p, Lines2D._curA, Lines2D._prevB, Lines2D._curB)) {
-                    return true;
-                }
-
-                Lines2D._prevA.x = Lines2D._curA.x;
-                Lines2D._prevA.y = Lines2D._curA.y;
-                Lines2D._prevB.x = Lines2D._curB.x;
-                Lines2D._prevB.y = Lines2D._curB.y;
-            }
-
-            let capIntersect = (tri: number[], points: number[]): boolean => {
-                let l = tri.length;
-                for (let i = 0; i < l; i += 3) {
-                    Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
-                    Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
-                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
-
-                    Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
-                    Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
-                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
-
-                    Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
-                    Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
-                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
-
-                    if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curB)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            if (this._startCapTriIndices) {
-                if (this._startCapTriIndices && capIntersect(this._startCapTriIndices, this._startCapContour)) {
-                    return true;
-                }
-                if (this._endCapTriIndices && capIntersect(this._endCapTriIndices, this._endCapContour)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return this._primTriArray.doesContain(p);
         }
 
         protected get boundingMin(): Vector2 {
@@ -369,11 +314,15 @@
             return res;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
+            if (!this._size) {
+                return false;
+            }
             if (!this._boundingMin) {
                 this._computeLines2D();
             }
             BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo);
+            return true;
         }
 
         /**
@@ -401,6 +350,9 @@
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -442,6 +394,9 @@
             isPickable            ?: boolean,
             isContainer           ?: boolean,
             childrenFlatZOrder    ?: boolean,
+            levelCollision        ?: boolean,
+            deepCollision         ?: boolean,
+            layoutData            ?: ILayoutData,
             marginTop             ?: number | string,
             marginLeft            ?: number | string,
             marginRight           ?: number | string,
@@ -454,7 +409,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             if (!settings) {
@@ -1083,6 +1038,12 @@
             return renderCache;
         }
 
+        protected updateTriArray() {
+            if (this._primTriArrayDirty) {
+                this._computeLines2D();
+            }
+        }
+
         private _computeLines2D() {
             // Init min/max because their being computed here
             this._boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
@@ -1164,23 +1125,80 @@
                 this._buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, Lines2D._endDir, endCapContour);
             }
 
-            this._contour = contour;
+            let startCapTri: any[];
             if (startCapContour.length > 0) {
-                let startCapTri = Earcut.earcut(startCapContour, null, 2);
-                this._startCapTriIndices = startCapTri;
-                this._startCapContour = startCapContour;
-            } else {
-                this._startCapTriIndices = null;
-                this._startCapContour = null;
+                startCapTri = Earcut.earcut(startCapContour, null, 2);
             }
+
+            let endCapTri: any[];
             if (endCapContour.length > 0) {
-                let endCapTri = Earcut.earcut(endCapContour, null, 2);
-                this._endCapContour = endCapContour;
-                this._endCapTriIndices = endCapTri;
-            } else {
-                this._endCapContour = null;
-                this._endCapTriIndices = null;
+                endCapTri = Earcut.earcut(endCapContour, null, 2);
             }
+
+            // Build the Tri2DArray using the contour info from the shape and the caps (if any)
+            {
+                let pl = this.points.length;
+
+                // Count the number of needed triangles
+                let count = ((this.closed ? pl : (pl-1)) * 2) + (startCapTri != null ? ((startCapTri.length + endCapTri.length)/3) : 0);
+
+                // Init/Clear the TriArray
+                if (!this._primTriArray) {
+                    this._primTriArray = new Tri2DArray(count);
+                } else {
+                    this._primTriArray.clear(count);
+                }
+
+                let pta = this._primTriArray;
+                let l = this.closed ? pl + 1 : pl;
+
+                this.transformPointWithOriginToRef(contour[0], null, Lines2D._prevA);
+                this.transformPointWithOriginToRef(contour[1], null, Lines2D._prevB);
+                let si = 0;
+                for (let i = 1; i < l; i++) {
+                    this.transformPointWithOriginToRef(contour[(i % pl) * 2 + 0], null, Lines2D._curA);
+                    this.transformPointWithOriginToRef(contour[(i % pl) * 2 + 1], null, Lines2D._curB);
+
+                    pta.storeTriangle(si++, Lines2D._prevA, Lines2D._prevB, Lines2D._curA);
+                    pta.storeTriangle(si++, Lines2D._curA,  Lines2D._prevB, Lines2D._curB);
+
+                    Lines2D._prevA.x = Lines2D._curA.x;
+                    Lines2D._prevA.y = Lines2D._curA.y;
+                    Lines2D._prevB.x = Lines2D._curB.x;
+                    Lines2D._prevB.y = Lines2D._curB.y;
+                }
+
+                let capIntersect = (tri: number[], points: number[]): boolean => {
+                    let l = tri.length;
+                    for (let i = 0; i < l; i += 3) {
+                        Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
+                        Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
+                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
+
+                        Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
+                        Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
+                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
+
+                        Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
+                        Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
+                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
+
+                        pta.storeTriangle(si++, Lines2D._prevA, Lines2D._prevB, Lines2D._curB);
+                    }
+                    return false;
+                }
+
+                if (startCapTri) {
+                    if (startCapTri) {
+                        capIntersect(startCapTri, startCapContour);
+                    }
+                    if (endCapTri) {
+                        capIntersect(endCapTri, endCapContour);
+                    }
+                }
+                this._primTriArrayDirty = false;
+            }
+
             let bs = this._boundingMax.subtract(this._boundingMin);
             this._size.width = bs.x;
             this._size.height = bs.y;
@@ -1245,18 +1263,11 @@
         private _borderIB: Float32Array;
         private _boundingMin: Vector2;
         private _boundingMax: Vector2;
-        private _contour: Vector2[];
-        private _startCapContour: number[];
-        private _startCapTriIndices: number[];
-        private _endCapContour: number[];
-        private _endCapTriIndices: number[];
-
+        
         private _closed: boolean;
         private _startCap: number;
         private _endCap: number;
         private _fillThickness: number;
         private _points: Vector2[];
-
-
     }
 }

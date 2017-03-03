@@ -138,21 +138,25 @@
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.addCamera(this);
+            this.getScene().addCamera(this);
 
-            if (!scene.activeCamera) {
-                scene.activeCamera = this;
+            if (!this.getScene().activeCamera) {
+                this.getScene().activeCamera = this;
             }
 
             this.position = position;
         }
+
+        public getClassName(): string {
+            return "Camera";
+        }          
 
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
-            ret += ", type: " + this.getTypeName();
+            ret += ", type: " + this.getClassName();
             if (this.animations) {
                 for (var i = 0; i < this.animations.length; i++) {
                     ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
@@ -349,6 +353,7 @@
                         result.push(i);
                         continue;
                     }
+                    index = atIndices[i];
                     this._postProcesses.splice(index, 1);
                 }
             }
@@ -398,6 +403,10 @@
                 this._markSyncedWithParent();
             }
 
+            if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
+                this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+            }
+
             this._currentRenderId = this.getScene().getRenderId();
 
             return this._computedViewMatrix;
@@ -420,11 +429,11 @@
                 this._projectionMatrix = projection;
             }
         };
-        
+
         public unfreezeProjectionMatrix(): void {
             this._doNotComputeProjectionMatrix = false;
         };
-        
+
         public getProjectionMatrix(force?: boolean): Matrix {
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
@@ -523,7 +532,8 @@
             }
 
             // Postprocesses
-            for (var i = 0; i < this._postProcesses.length; ++i) {
+            var i = this._postProcesses.length;
+            while (--i >= 0) {
                 this._postProcesses[i].dispose(this);
             }
 
@@ -680,7 +690,7 @@
             var serializationObject = SerializationHelper.Serialize(this);
 
             // Type
-            serializationObject.type = this.getTypeName();
+            serializationObject.type = this.getClassName();
 
             // Parent
             if (this.parent) {
@@ -697,12 +707,20 @@
             return serializationObject;
         }
 
-        public getTypeName(): string {
-            return "Camera";
+        public clone(name: string): Camera {
+            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         }
 
-        public clone(name: string): Camera {
-            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        public getDirection(localAxis: Vector3): Vector3 {
+            var result = Vector3.Zero();
+
+            this.getDirectionToRef(localAxis, result);
+
+            return result;
+        }
+
+        public getDirectionToRef(localAxis: Vector3, result: Vector3): void {
+            Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
@@ -723,8 +741,12 @@
                     return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
                 case "WebVRFreeCamera":
                     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+                case "WebVRGamepadCamera":
+                    return () => new WebVRGamepadCamera(name, Vector3.Zero(), scene);
                 case "VRDeviceOrientationFreeCamera":
                     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
+                case "VRDeviceOrientationGamepadCamera":
+                    return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
                 case "AnaglyphArcRotateCamera":
                     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
                 case "AnaglyphFreeCamera":

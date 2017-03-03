@@ -230,15 +230,15 @@ module BABYLON {
 
         private _onPointerUp(e: PointerEvent) {
             if (this._joystickPointerID == e.pointerId) {
-                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);
-                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 64, this._joystickPointerStartPos.y - 64, 128, 128);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 42, this._joystickPreviousPointerPos.y - 42, 84, 84);
                 this._joystickPointerID = -1;
                 this.pressed = false;
             }
             else {
                 var touch = <{ x: number, y: number, prevX: number, prevY: number }>this._touches.get(e.pointerId.toString());
                 if (touch) {
-                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
                 }
             }
             this._deltaJoystickVector.x = 0;
@@ -298,10 +298,10 @@ module BABYLON {
 
         private _drawVirtualJoystick() {
             if (this.pressed) {
-                this._touches.forEach((touch: any) => {
-                    if (touch.pointerId === this._joystickPointerID) {
-                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);                       
-                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
+                this._touches.forEach((key, touch) => {
+                    if ((<PointerEvent>touch).pointerId === this._joystickPointerID) {
+                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 64, this._joystickPointerStartPos.y - 64, 128, 128);                       
+                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 42, this._joystickPreviousPointerPos.y - 42, 84, 84);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
                         VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
@@ -318,11 +318,11 @@ module BABYLON {
                         VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
-                        VirtualJoystick.vjCanvasContext.closePath();
+                        VirtualJoystick.vjCanvasContext.closePath(); 
                         this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
                     }
                     else {
-                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                        VirtualJoystick.vjCanvasContext.clearRect((<any>touch).prevX - 44, (<any>touch).prevY - 44, 88, 88);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -331,8 +331,8 @@ module BABYLON {
                         VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
                         VirtualJoystick.vjCanvasContext.closePath();
-                        touch.prevX = touch.x;
-                        touch.prevY = touch.y;
+                        (<any>touch).prevX = touch.x;
+                        (<any>touch).prevY = touch.y;
                     };
                 });
             }

@@ -134,6 +134,15 @@
 
         private _useFullFloat = true;
 
+        /**
+         * Creates a ShadowGenerator object.  
+         * A ShadowGenerator is the required tool to use the shadows.  
+         * Each light casting shadows needs to use its own ShadowGenerator.  
+         * Required parameters : 
+         * -  `mapSize` (integer), the size of the texture what stores the shadows. Example : 1024.    
+         * - `light` : the light object generating the shadows.  
+         * Documentation : http://doc.babylonjs.com/tutorials/shadows  
+         */
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
             this._scene = light.getScene();
@@ -272,7 +281,9 @@
                 }
             });
         }
-
+        /**
+         * Boolean : true when the ShadowGenerator is finally computed.  
+         */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
 
@@ -345,11 +356,15 @@
 
             return this._effect.isReady();
         }
-
+        /**
+         * Returns a RenderTargetTexture object : the shadow map texture.  
+         */
         public getShadowMap(): RenderTargetTexture {
             return this._shadowMap;
         }
-
+        /**
+         * Returns the most ready computed shadow map as a RenderTargetTexture object.  
+         */
         public getShadowMapForRendering(): RenderTargetTexture {
             if (this._shadowMap2) {
                 return this._shadowMap2;
@@ -357,12 +372,17 @@
 
             return this._shadowMap;
         }
-
+        /**
+         * Returns the associated light object.  
+         */
         public getLight(): IShadowLight {
             return this._light;
         }
 
         // Methods
+        /**
+         * Returns a Matrix object : the updated transformation matrix.  
+         */
         public getTransformMatrix(): Matrix {
             var scene = this._scene;
             if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
@@ -398,21 +418,32 @@
             return this._transformMatrix;
         }
 
+        /**
+         * Returns the darkness value (float).  
+         */
         public getDarkness(): number {
             return this._darkness;
         }
-
-        public setDarkness(darkness: number): void {
+        /**
+         * Sets the ShadowGenerator darkness value (float <= 1.0).  
+         * Returns the ShadowGenerator.  
+         */
+        public setDarkness(darkness: number): ShadowGenerator {
             if (darkness >= 1.0)
                 this._darkness = 1.0;
             else if (darkness <= 0.0)
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
+            return this;
         }
-
-        public setTransparencyShadow(hasShadow: boolean): void {
+        /**
+         * Sets the ability to have transparent shadow (boolean).  
+         * Returns the ShadowGenerator.  
+         */
+        public setTransparencyShadow(hasShadow: boolean): ShadowGenerator {
             this._transparencyShadow = hasShadow;
+            return this;
         }
 
         private _packHalf(depth: number): Vector2 {
@@ -421,7 +452,10 @@
 
             return new Vector2(depth - fract / 255.0, fract);
         }
-
+        /**
+         * Disposes the ShadowGenerator.  
+         * Returns nothing.  
+         */
         public dispose(): void {
             this._shadowMap.dispose();
 
@@ -436,8 +470,12 @@
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
             }
-        }
 
+            this._light._shadowGenerator = null;
+        }
+        /**
+         * Serializes the ShadowGenerator and returns a serializationObject.  
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
@@ -446,6 +484,7 @@
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.darkness = this.getDarkness();
 
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -456,7 +495,9 @@
 
             return serializationObject;
         }
-
+        /**
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.  
+         */
         public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
             //casting to point light, as light is missing the position attr and typescript complains.
             var light = <PointLight>scene.getLightByID(parsedShadowGenerator.lightId);
@@ -487,6 +528,10 @@
 
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+
+            if (parsedShadowGenerator.darkness) {
+                shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
             }
 
             shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;

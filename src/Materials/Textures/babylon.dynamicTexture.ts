@@ -1,11 +1,13 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.texture.ts" />
+
+module BABYLON {
     export class DynamicTexture extends Texture {
         private _generateMipMaps: boolean;
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
 
-        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super(null, scene, !generateMipMaps);
+        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, format: number = Engine.TEXTUREFORMAT_RGBA) {
+            super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
 
             this.name = name;
 
@@ -62,7 +64,7 @@
         }
 
         public update(invertY?: boolean): void {
-            this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
+            this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, undefined, this._format);
         }
 
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {

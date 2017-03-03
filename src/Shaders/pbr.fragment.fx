@@ -87,7 +87,7 @@ uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
-#if defined(REFLECTIVITY)
+#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
 uniform vec2 vReflectivityInfos;
 uniform sampler2D reflectivitySampler;
@@ -255,17 +255,54 @@ void main(void) {
 	surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
 	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
-#ifdef OVERLOADEDVALUES
-	surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
+	#ifdef OVERLOADEDVALUES
+		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
+	#endif
+
+	#ifdef MICROSURFACEFROMREFLECTIVITYMAP
+		microSurface = surfaceReflectivityColorMap.a;
+	#else
+		#ifdef MICROSURFACEAUTOMATIC
+			microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+		#endif
+	#endif
 #endif
 
-#ifdef MICROSURFACEFROMREFLECTIVITYMAP
-	microSurface = surfaceReflectivityColorMap.a;
-#else
-#ifdef MICROSURFACEAUTOMATIC
-	microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
-#endif
-#endif
+#ifdef METALLICWORKFLOW
+	vec2 metallicRoughness = surfaceReflectivityColor.rg;
+
+	#ifdef METALLICROUGHNESSMAP
+		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+
+		// No gamma space from the metallic map in metallic workflow.
+		metallicRoughness.r *= surfaceMetallicColorMap.r;
+		#ifdef METALLICROUGHNESSGSTOREINALPHA
+			metallicRoughness.g *= surfaceMetallicColorMap.a;
+		#else
+			#ifdef METALLICROUGHNESSGSTOREINGREEN
+				metallicRoughness.g *= surfaceMetallicColorMap.g;
+			#endif
+		#endif
+	#endif
+
+	// Diffuse is used as the base of the reflectivity.
+	vec3 baseColor = surfaceAlbedo.rgb;
+
+	// Drop the surface diffuse by the 1.0 - metalness.
+	surfaceAlbedo.rgb *= (1.0 - metallicRoughness.r);
+	
+	// Default specular reflectance at normal incidence.
+	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
+	const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
+
+	// Compute the converted reflectivity.
+	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
+
+	#ifdef OVERLOADEDVALUES
+		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
+	#endif
+
+	microSurface = 1.0 - metallicRoughness.g;
 #endif
 
 #ifdef OVERLOADEDVALUES
@@ -488,30 +525,31 @@ void main(void) {
 
 	// Compute refractance
 	vec3 refractance = vec3(0.0, 0.0, 0.0);
+
 #ifdef REFRACTION
 	vec3 transmission = vec3(1.0, 1.0, 1.0);
-#ifdef LINKREFRACTIONTOTRANSPARENCY
-	// Transmission based on alpha.
-	transmission *= (1.0 - alpha);
+	#ifdef LINKREFRACTIONTOTRANSPARENCY
+		// Transmission based on alpha.
+		transmission *= (1.0 - alpha);
 
-	// Tint the material with albedo.
-	// TODO. PBR Tinting.
-	vec3 mixedAlbedo = surfaceAlbedoContribution.rgb * surfaceAlbedo.rgb;
-	float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
-	vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
+		// Tint the material with albedo.
+		// TODO. PBR Tinting.
+		vec3 mixedAlbedo = surfaceAlbedoContribution.rgb * surfaceAlbedo.rgb;
+		float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
+		vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
 
-	// Decrease Albedo Contribution
-	surfaceAlbedoContribution *= alpha;
+		// Decrease Albedo Contribution
+		surfaceAlbedoContribution *= alpha;
 
-	// Decrease irradiance Contribution
-	environmentIrradiance *= alpha;
+		// Decrease irradiance Contribution
+		environmentIrradiance *= alpha;
 
-	// Tint reflectance
-	surfaceRefractionColor *= tint;
+		// Tint reflectance
+		surfaceRefractionColor *= tint;
 
-	// Put alpha back to 1;
-	alpha = 1.0;
-#endif
+		// Put alpha back to 1;
+		alpha = 1.0;
+	#endif
 
 	// Add Multiple internal bounces.
 	vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);

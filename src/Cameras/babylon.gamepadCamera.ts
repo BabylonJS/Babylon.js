@@ -1,3 +1,5 @@
+/// <reference path="babylon.universalCamera.ts" />
+
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class GamepadCamera extends UniversalCamera {
@@ -33,7 +35,7 @@ module BABYLON {
             super(name, position, scene);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "GamepadCamera";
         }
     }

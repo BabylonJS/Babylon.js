@@ -8,17 +8,15 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN
-- http://cdn.babylonjs.com/2-4/babylon.js 
-- http://cdn.babylonjs.com/2-4/babylon.max.js 
-- http://cdn.babylonjs.com/2-4/babylon.noworker.js 
-- http://cdn.babylonjs.com/2-4/babylon.core.js 
+- http://cdn.babylonjs.com/2-5/babylon.js 
+- http://cdn.babylonjs.com/2-5/babylon.max.js 
+- http://cdn.babylonjs.com/2-5/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-5/babylon.core.js 
 
 ## Preview release
-You can help by testing or contributing to the next version.
-- **2.5-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
-- We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
-- Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
-- Need help to contribute? We have a [general purpose documentation for you](http://pixelcodr.com/tutos/contribute/contribute.html) and a [Visual Studio specific one](http://doc.babylonjs.com/generals/setup_visualStudio)
+
+**3.0-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
@@ -113,7 +111,7 @@ In no event and under no legal theory, whether in tort (including negligence), c
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
 ## External dependencies
-- hand.js: http://handjs.codeplex.com
+- hand.js: https://github.com/deltakosh/handjs
 
 
 

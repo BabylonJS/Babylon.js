@@ -228,6 +228,10 @@
             }
         }
 
+        public getClassName(): string {
+            return "StandardMaterial";
+        }        
+
         @serialize()
         public get useLogarithmicDepth(): boolean {
             return this._useLogarithmicDepth;
@@ -430,6 +434,11 @@
 
                         if (this.invertNormalMapY) {
                             this._defines.INVERTNORMALMAPY = true;
+                        }
+
+                        if (scene._mirroredCameraPosition) {
+                            this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
+                            this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
                         }
                     }
                 }

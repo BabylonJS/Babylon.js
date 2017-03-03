@@ -1,0 +1,16 @@
+/* Babylon Typescript Class Template */
+/* <reference path="{*path*}/Assets/Babylon/Library/babylon.d.ts" /> */
+
+module PROJECT {
+    export class NewScriptClass {
+        public hello:string;
+
+        public constructor() {
+            this.hello = "Hello World";
+        }
+
+        public sayHello(name:String): string {
+            return "Hello, " + name;
+        }
+    }
+}

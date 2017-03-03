@@ -95,6 +95,9 @@ namespace BabylonExport.Entities
         public BabylonTexture lightmapTexture { get; set; }
 
         [DataMember]
+        public BabylonTexture metallicTexture { get; set; }
+
+        [DataMember]
         public bool useLightmapAsShadowmap { get; set; }
 
         [DataMember]
@@ -116,6 +119,24 @@ namespace BabylonExport.Entities
         public float[] emissive { get; set; }
 
         [DataMember]
+        public float? roughness { get; set; }
+
+        [DataMember]
+        public float? metallic { get; set; }
+
+        [DataMember]
+        public bool useMicroSurfaceFromReflectivityMapAplha { get; set; }
+
+        [DataMember]
+        public bool linkRefractionWithTransparency { get; set; }
+
+        [DataMember]
+        public bool useRoughnessFromMetallicTextureAlpha { get; set; }
+
+        [DataMember]
+        public bool useRoughnessFromMetallicTextureGreen { get; set; }
+
+        [DataMember]
         public bool useAlphaFromAlbedoTexture { get; set; }
 
         [DataMember]
@@ -129,6 +150,9 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public bool useRadianceOverAlpha { get; set; }
+
+        [DataMember]
+        public bool usePhysicalLightFalloff { get; set; }
 
         [DataMember]
         public float indexOfRefraction { get; set; }
@@ -155,21 +179,40 @@ namespace BabylonExport.Entities
             specularIntensity = 1.0f;
             cameraExposure = 1.0f;
             cameraContrast = 1.0f;
+            indexOfRefraction = 0.66f;
+            useRadianceOverAlpha = true;
+            useSpecularOverAlpha = true;
+            usePhysicalLightFalloff = true;
+            useEmissiveAsIllumination = false;
+
+            // Default Null Metallic Workflow
+            metallic = null;
+            roughness = null;
+            useRoughnessFromMetallicTextureAlpha = true;
+            useRoughnessFromMetallicTextureGreen = false;
+
+            microSurface = 0.9f;
+            useMicroSurfaceFromReflectivityMapAplha = false;
 
             overloadedShadowIntensity = 1.0f;
             overloadedShadeIntensity = 1.0f;
 
             ambient = new[] { 0f, 0f, 0f };
-            albedo = new[] { 0f, 0f, 0f };
-            reflectivity = new[] { 0f, 0f, 0f };
-            reflection = new[] { 0f, 0f, 0f };
+            albedo = new[] { 1f, 1f, 1f };
+            reflectivity = new[] { 1f, 1f, 1f };
+            reflection = new[] { 0.5f, 0.5f, 0.5f };
             emissive = new[] { 0f, 0f, 0f };
 
             overloadedAmbient = new[] { 0f, 0f, 0f };
-            overloadedAlbedo = new[] { 0f, 0f, 0f };
-            overloadedReflectivity = new[] { 0f, 0f, 0f };
-            overloadedEmissive = new[] { 0f, 0f, 0f };
-            overloadedReflection = new[] { 0f, 0f, 0f };
+            overloadedAlbedo = new[] { 1f, 1f, 1f };
+            overloadedReflectivity = new[] { 0.3f, 0.3f, 0.3f };
+            overloadedEmissive = new[] {1f, 1f, 1f };
+            overloadedReflection = new[] { 1f, 1f, 1f };
+        }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
         }
     }
 }

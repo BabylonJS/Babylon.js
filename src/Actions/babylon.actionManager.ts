@@ -268,7 +268,7 @@
                         || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
 
-                        if (parameter) {
+                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
                             var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
                             var actualkey = String.fromCharCode(unicode).toLowerCase();
                             if (actualkey !== parameter.toLowerCase()) {
@@ -315,12 +315,20 @@
                 };
                 
                 var triggerOptions = this.actions[i].triggerOptions;
+
                 if (triggerOptions && typeof triggerOptions !== "number") {
                     if (triggerOptions.parameter instanceof Node) {
                         triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
                     }
                     else {
-                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                        var parameter = <any>{};
+                        Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
+
+                        if (triggerOptions.parameter.mesh) {
+                            parameter._meshId = triggerOptions.parameter.mesh.id;
+                        }
+
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
                     }
                 }
                 
@@ -501,6 +509,11 @@
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
                     var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
+
+                    if (value._meshId) {
+                        value.mesh = scene.getMeshByID(value._meshId);
+                    }
+
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
