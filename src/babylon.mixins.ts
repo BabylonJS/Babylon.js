@@ -40,13 +40,13 @@ interface WebGLRenderingContext {
     bindVertexArray(vao: WebGLVertexArrayObject): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 
-    blitFramebuffer(srcX0 : number, srcY0 : number, srcX1 : number, srcY1 : number, dstX0 : number, dstY0 : number, dstX1 : number, dstY1 : number, mask : number, filter : number) : void;
-    renderbufferStorageMultisample(target : number, samples : number, internalformat : number, width : number, height : number) : void;
+    blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
+    renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
 
     MAX_SAMPLES: number;
     RGBA8: number;
-    READ_FRAMEBUFFER : number;
-    DRAW_FRAMEBUFFER : number;
+    READ_FRAMEBUFFER: number;
+    DRAW_FRAMEBUFFER: number;
 }
 
 interface HTMLURL {
@@ -179,14 +179,14 @@ interface SIMD {
 }
 
 interface GamepadPose {
-    angularAccelaration: number;
-    angularVelocity: Float32Array
     hasOrientation: boolean;
     hasPosition: boolean;
-    linearAcceleration: number;
-    linearVelocity: Float32Array;
-    orientation: Float32Array
-    position: Float32Array;
+    position?: Float32Array;
+    linearVelocity?: Float32Array;
+    linearAcceleration?: Float32Array;
+    orientation?: Float32Array;
+    angularVelocity?: Float32Array;
+    angularAcceleration?: Float32Array;
 }
 
 declare namespace SIMD {
