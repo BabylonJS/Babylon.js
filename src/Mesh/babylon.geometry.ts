@@ -11,7 +11,7 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices: number[] | Int32Array;
+        private _indices: IndicesArray;
         private _vertexBuffers: { [key: string]: VertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
@@ -21,6 +21,7 @@
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
+        private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
 
         /**
          *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y 
@@ -58,6 +59,10 @@
                 this._indices = [];
             }
 
+            if (this._engine.getCaps().vertexArrayObject) {
+                this._vertexArrayObjects = {};
+            }
+
             // applyToMesh
             if (mesh) {
                 if (mesh instanceof LinesMesh) {
@@ -84,6 +89,16 @@
 
         public isReady(): boolean {
             return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
+        }
+
+        public get doNotSerialize(): boolean {
+            for (var index = 0; index < this._meshes.length; index++) {
+                if (!this._meshes[index].doNotSerialize) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
@@ -126,6 +141,11 @@
             }
 
             this.notifyUpdate(kind);
+
+            if (this._vertexArrayObjects) {
+                this._disposeVertexArrayObjects();
+                this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+            }
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -179,6 +199,24 @@
                     }
                 }
             }
+        }
+
+        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {  
+            if (indexToBind === undefined) {
+                indexToBind = this._indexBuffer;
+            }
+
+            if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
+                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                return;
+            }
+
+            // Using VAO
+            if (!this._vertexArrayObjects[effect.key]) {
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+            }
+
+            this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         }
 
         public getTotalVertices(): number {
@@ -247,10 +285,12 @@
             return result;
         }
 
-        public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
+        public setIndices(indices: IndicesArray, totalVertices?: number): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
+
+            this._disposeVertexArrayObjects();
 
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
@@ -277,7 +317,7 @@
             return this._indices.length;
         }
 
-        public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
+        public getIndices(copyWhenShared?: boolean): IndicesArray {
             if (!this.isReady()) {
                 return null;
             }
@@ -307,14 +347,6 @@
 
             if (index === -1) {
                 return;
-            }
-
-            for (var kind in this._vertexBuffers) {
-                this._vertexBuffers[kind].dispose();
-            }
-
-            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
-                this._indexBuffer = null;
             }
 
             meshes.splice(index, 1);
@@ -479,6 +511,15 @@
             return this._isDisposed;
         }
 
+        private _disposeVertexArrayObjects(): void {
+            if (this._vertexArrayObjects) {
+                for (var kind in this._vertexArrayObjects) {
+                    this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
+                }
+                this._vertexArrayObjects = {};
+            }
+        }
+
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -487,6 +528,8 @@
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
+
+            this._disposeVertexArrayObjects();
 
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();
@@ -573,47 +616,80 @@
 
             if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 serializationObject.positions = this.getVerticesData(VertexBuffer.PositionKind);
+                if (this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable) {
+                    serializationObject.positions._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 serializationObject.normals = this.getVerticesData(VertexBuffer.NormalKind);
+                if (this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable) {
+                    serializationObject.normals._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 serializationObject.uvs = this.getVerticesData(VertexBuffer.UVKind);
+                if (this.getVertexBuffer(VertexBuffer.UVKind).isUpdatable) {
+                    serializationObject.uvs._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                serializationObject.uvs2 = this.getVerticesData(VertexBuffer.UV2Kind);
+                serializationObject.uv2s = this.getVerticesData(VertexBuffer.UV2Kind);
+                if (this.getVertexBuffer(VertexBuffer.UV2Kind).isUpdatable) {
+                    serializationObject.uv2s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                serializationObject.uvs3 = this.getVerticesData(VertexBuffer.UV3Kind);
+                serializationObject.uv3s = this.getVerticesData(VertexBuffer.UV3Kind);
+                if (this.getVertexBuffer(VertexBuffer.UV3Kind).isUpdatable) {
+                    serializationObject.uv3s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                serializationObject.uvs4 = this.getVerticesData(VertexBuffer.UV4Kind);
+                serializationObject.uv4s = this.getVerticesData(VertexBuffer.UV4Kind);
+                if (this.getVertexBuffer(VertexBuffer.UV4Kind).isUpdatable) {
+                    serializationObject.uv4s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                serializationObject.uvs5 = this.getVerticesData(VertexBuffer.UV5Kind);
+                serializationObject.uv5s = this.getVerticesData(VertexBuffer.UV5Kind);
+                if (this.getVertexBuffer(VertexBuffer.UV5Kind).isUpdatable) {
+                    serializationObject.uv5s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                serializationObject.uvs6 = this.getVerticesData(VertexBuffer.UV6Kind);
+                serializationObject.uv6s = this.getVerticesData(VertexBuffer.UV6Kind);
+                if (this.getVertexBuffer(VertexBuffer.UV6Kind).isUpdatable) {
+                    serializationObject.uv6s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                 serializationObject.colors = this.getVerticesData(VertexBuffer.ColorKind);
+                if (this.getVertexBuffer(VertexBuffer.ColorKind).isUpdatable) {
+                    serializationObject.colors._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
                 serializationObject.matricesIndices = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
                 serializationObject.matricesIndices._isExpanded = true;
+                if (this.getVertexBuffer(VertexBuffer.MatricesIndicesKind).isUpdatable) {
+                    serializationObject.matricesIndices._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 serializationObject.matricesWeights = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                if (this.getVertexBuffer(VertexBuffer.MatricesWeightsKind).isUpdatable) {
+                    serializationObject.matricesWeights._updatable = true;
+                }
             }
 
             serializationObject.indices = this.getIndices();
@@ -731,35 +807,36 @@
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
-                mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, false);
-                mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, false);
+                mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, parsedGeometry.positions._updatable);
+
+                mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, parsedGeometry.normals._updatable);
 
                 if (parsedGeometry.uvs) {
-                    mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, false);
+                    mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, parsedGeometry.uvs._updatable);
                 }
 
                 if (parsedGeometry.uvs2) {
-                    mesh.setVerticesData(VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
+                    mesh.setVerticesData(VertexBuffer.UV2Kind, parsedGeometry.uvs2, parsedGeometry.uvs2._updatable);
                 }
 
                 if (parsedGeometry.uvs3) {
-                    mesh.setVerticesData(VertexBuffer.UV3Kind, parsedGeometry.uvs3, false);
+                    mesh.setVerticesData(VertexBuffer.UV3Kind, parsedGeometry.uvs3, parsedGeometry.uvs3._updatable);
                 }
 
                 if (parsedGeometry.uvs4) {
-                    mesh.setVerticesData(VertexBuffer.UV4Kind, parsedGeometry.uvs4, false);
+                    mesh.setVerticesData(VertexBuffer.UV4Kind, parsedGeometry.uvs4, parsedGeometry.uvs4._updatable);
                 }
 
                 if (parsedGeometry.uvs5) {
-                    mesh.setVerticesData(VertexBuffer.UV5Kind, parsedGeometry.uvs5, false);
+                    mesh.setVerticesData(VertexBuffer.UV5Kind, parsedGeometry.uvs5, parsedGeometry.uvs5._updatable);
                 }
 
                 if (parsedGeometry.uvs6) {
-                    mesh.setVerticesData(VertexBuffer.UV6Kind, parsedGeometry.uvs6, false);
+                    mesh.setVerticesData(VertexBuffer.UV6Kind, parsedGeometry.uvs6, parsedGeometry.uvs6._updatable);
                 }
 
                 if (parsedGeometry.colors) {
-                    mesh.setVerticesData(VertexBuffer.ColorKind, Color4.CheckColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), false);
+                    mesh.setVerticesData(VertexBuffer.ColorKind, Color4.CheckColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), parsedGeometry.colors._updatable);
                 }
 
                 if (parsedGeometry.matricesIndices) {
@@ -775,10 +852,10 @@
                             floatIndices.push(matricesIndex >> 24);
                         }
 
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
                     } else {
                         delete parsedGeometry.matricesIndices._isExpanded;
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, parsedGeometry.matricesIndices._updatable);
                     }
                 }
 
@@ -795,19 +872,19 @@
                             floatIndices.push(matricesIndex >> 24);
                         }
 
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
                     } else {
                         delete parsedGeometry.matricesIndices._isExpanded;
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, parsedGeometry.matricesIndicesExtra._updatable);
                     }
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, false);
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
                 if (parsedGeometry.matricesWeightsExtra) {
-                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, false);
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
@@ -940,7 +1017,7 @@
                 super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(kind: string, data: number[] | Int32Array | Float32Array, updatable?: boolean): void {
+            public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }

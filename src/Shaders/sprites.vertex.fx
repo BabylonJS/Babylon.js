@@ -46,6 +46,6 @@ void main(void) {
 
 	// Fog
 #ifdef FOG
-	fFogDistance = viewPos.z;
+	vFogDistance = viewPos;
 #endif
 }

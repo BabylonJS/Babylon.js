@@ -5,6 +5,7 @@
     "minNoWorkerFilename": "babylon.noworker.js",
     "minCoreFilename": "babylon.core.js",
     "declarationFilename": "babylon.d.ts",
+    "declarationModuleFilename": "babylon.module.d.ts",
     "outputDirectory": "../../dist/preview release",
     "srcOutputDirectory": "../../src/"
   },
@@ -34,6 +35,7 @@
       "../../src/Culling/babylon.boundingBox.js",
       "../../src/Culling/babylon.boundingInfo.js",
       "../../src/Culling/babylon.ray.js",
+      "../../src/Culling/babylon.rayHelper.js",
       "../../src/Mesh/babylon.abstractMesh.js",
       "../../src/Lights/babylon.light.js",
       "../../src/Lights/babylon.pointLight.js",
@@ -159,10 +161,10 @@
       "../../src/Math/babylon.math.SIMD.js",
       "../../src/Tools/babylon.rectPackingMap.js",
       "../../src/Tools/babylon.dynamicFloatArray.js",
-      "../../src/Materials/Textures/babylon.fontTexture.js",
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
+      "../../src/Tools/babylon.khronosTextureContainer.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
       "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
       "../../src/PostProcess/babylon.displayPassPostProcess.js",
@@ -218,11 +220,362 @@
       "../../src/Tools/HDR/babylon.tools.pmremgenerator.js",
       "../../src/Materials/Textures/babylon.hdrCubeTexture.js",
       "../../src/Debug/babylon.skeletonViewer.js",
+      "../../src/Debug/babylon.axesViewer.js",
+      "../../src/Debug/babylon.boneAxesViewer.js",
       "../../src/Materials/Textures/babylon.colorGradingTexture.js",
       "../../src/Materials/babylon.colorCurves.js",
       "../../src/Materials/babylon.pbrMaterial.js",      
       "../../src/Debug/babylon.debugLayer.js",
       "../../src/PostProcess/babylon.standardRenderingPipeline.js"
     ]
-  }
+  },
+
+  "modules": ["canvas2D", "materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary", "loaders", "serializers", "inspector"],
+
+  "materialsLibrary": {
+    "libraries": [
+      {
+        "files": ["../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/gradient/gradient.vertex.fx",
+          "../../materialsLibrary/src/gradient/gradient.fragment.fx"
+        ],
+        "output": "babylon.gradientMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/normal/babylon.normalMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/normal/normal.vertex.fx",
+          "../../materialsLibrary/src/normal/normal.fragment.fx"
+        ],
+        "output": "babylon.normalMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/lava/babylon.lavaMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/lava/lava.vertex.fx",
+          "../../materialsLibrary/src/lava/lava.fragment.fx"
+        ],
+        "output": "babylon.lavaMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/simple/babylon.simpleMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/simple/simple.vertex.fx",
+          "../../materialsLibrary/src/simple/simple.fragment.fx"
+        ],
+        "output": "babylon.simpleMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/water/babylon.waterMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/water/water.vertex.fx",
+          "../../materialsLibrary/src/water/water.fragment.fx"
+        ],
+        "output": "babylon.waterMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/fire/babylon.fireMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/fire/fire.vertex.fx",
+          "../../materialsLibrary/src/fire/fire.fragment.fx"
+        ],
+        "output": "babylon.fireMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/fur/babylon.furMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/fur/fur.vertex.fx",
+          "../../materialsLibrary/src/fur/fur.fragment.fx"
+        ],
+        "output": "babylon.furMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/terrain/babylon.terrainMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/terrain/terrain.vertex.fx",
+          "../../materialsLibrary/src/terrain/terrain.fragment.fx"
+        ],
+        "output": "babylon.terrainMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/triPlanar/babylon.triPlanarMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/triPlanar/triplanar.vertex.fx",
+          "../../materialsLibrary/src/triPlanar/triplanar.fragment.fx"
+        ],
+        "output": "babylon.triPlanarMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/sky/babylon.skyMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/sky/sky.vertex.fx",
+          "../../materialsLibrary/src/sky/sky.fragment.fx"
+        ],
+        "output": "babylon.skyMaterial.js"
+      },
+      {
+        "files": ["../../materialsLibrary/src/grid/babylon.gridmaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/grid/grid.vertex.fx",
+          "../../materialsLibrary/src/grid/grid.fragment.fx",
+          "../../materialsLibrary/src/grid/legacygrid.vertex.fx",
+          "../../materialsLibrary/src/grid/legacygrid.fragment.fx"
+        ],
+        "output": "babylon.gridMaterial.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../materialsLibrary/",
+      "distOutputDirectory": "/materialsLibrary/"
+    }
+  },
+
+  "postProcessesLibrary": {
+      "libraries": [    
+      {
+        "files": ["../../postProcessLibrary/src/asciiArt/babylon.asciiArtPostProcess.ts"],
+        "shaderFiles": [
+          "../../postProcessLibrary/src/asciiArt/asciiart.fragment.fx"
+        ],
+        "output": "babylon.asciiArtPostProcess.js"
+      },
+      {
+        "files": ["../../postProcessLibrary/src/digitalRain/babylon.digitalRainPostProcess.ts"],
+        "shaderFiles": [
+          "../../postProcessLibrary/src/digitalRain/digitalrain.fragment.fx"
+        ],
+        "output": "babylon.digitalRainPostProcess.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../postProcessLibrary/",
+      "distOutputDirectory": "/postProcessesLibrary/"
+    }
+  },
+
+  "proceduralTexturesLibrary": {
+    "libraries": [
+      {
+        "files": ["../../proceduralTexturesLibrary/src/wood/babylon.woodProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/wood/woodProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.woodProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/fire/babylon.fireProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/fire/fireProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.fireProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/cloud/babylon.cloudProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/cloud/cloudProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.cloudProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/grass/babylon.grassProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/grass/grassProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.grassProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/road/babylon.roadProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/road/roadProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.roadProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/brick/babylon.brickProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/brick/brickProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.brickProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/marble/babylon.marbleProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/marble/marbleProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.marbleProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/starfield/babylon.starfieldProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/starfield/starfieldProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.starfieldProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/normalMap/babylon.normalMapProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.normalMapProceduralTexture.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../proceduralTexturesLibrary/",      
+      "distOutputDirectory": "/proceduralTexturesLibrary/"
+    }
+  },
+
+  "loaders": {
+    "libraries": [
+     {
+      "files": ["../../loaders/src/STL/babylon.stlFileLoader.ts"],
+      "output": "babylon.stlFileLoader.js"
+    },
+
+    {
+      "files": ["../../loaders/src/OBJ/babylon.objFileLoader.ts"],
+      "output": "babylon.objFileLoader.js"
+    },
+
+    {
+      "files": [
+        "../../loaders/src/glTF/babylon.glTFFileLoaderInterfaces.ts",
+        "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
+        "../../loaders/src/glTF/babylon.glTFFileLoaderUtils.ts",
+        "../../loaders/src/glTF/babylon.glTFFileLoaderExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFMaterialCommonExtension.ts"
+      ],
+      "output": "babylon.glTFFileLoader.js"
+    }],
+
+    "build": {
+      "srcOutputDirectory": "../../loaders/",
+      "distOutputDirectory": "/loaders/"
+    }
+  },
+
+  "serializers": {
+      "libraries": [    
+      {
+        "files": ["../../serializers/src/OBJ/babylon.objSerializer.ts"],
+        "output": "babylon.objSerializer.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../serializers/",
+      "distOutputDirectory": "/serializers/"
+    }
+  },
+
+  "canvas2D": {
+    "libraries": [  
+    {
+      "files": [
+        "../../canvas2D/src/Tools/babylon.math2D.ts",
+        "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
+        "../../canvas2D/src/Tools/babylon.observableArray.ts",
+        "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
+        "../../canvas2D/src/Engine/babylon.fontTexture.ts",
+        "../../canvas2D/src/Engine/babylon.bounding2d.ts",
+        "../../canvas2D/src/Engine/babylon.primitiveCollisionManager.ts",
+        "../../canvas2D/src/Engine/babylon.canvas2dLayoutEngine.ts",
+        "../../canvas2D/src/Engine/babylon.brushes2d.ts",
+        "../../canvas2D/src/Engine/babylon.smartPropertyPrim.ts",
+        "../../canvas2D/src/Engine/babylon.prim2dBase.ts",
+        "../../canvas2D/src/Engine/babylon.modelRenderCache.ts",
+        "../../canvas2D/src/Engine/babylon.renderablePrim2d.ts",
+        "../../canvas2D/src/Engine/babylon.shape2d.ts",
+        "../../canvas2D/src/Engine/babylon.group2d.ts",
+        "../../canvas2D/src/Engine/babylon.wireFrame2d.ts",
+        "../../canvas2D/src/Engine/babylon.rectangle2d.ts",
+        "../../canvas2D/src/Engine/babylon.ellipse2d.ts",
+        "../../canvas2D/src/Engine/babylon.sprite2d.ts",
+        "../../canvas2D/src/Engine/babylon.atlasPicture.ts",
+        "../../canvas2D/src/Engine/babylon.text2d.ts",
+        "../../canvas2D/src/Engine/babylon.lines2d.ts",
+        "../../canvas2D/src/Engine/babylon.canvas2d.ts",
+        "../../canvas2D/src/Engine/babylon.worldSpaceCanvas2dNode.ts",
+        "../../canvas2D/src/GUI/babylon.gui.UIElement.ts",
+        "../../canvas2D/src/GUI/Layouts/babylon.gui.stackPanel.ts",
+        "../../canvas2D/src/GUI/babylon.gui.control.ts",
+        "../../canvas2D/src/GUI/babylon.gui.contentControl.ts",
+        "../../canvas2D/src/GUI/babylon.gui.window.ts",
+        "../../canvas2D/src/GUI/babylon.gui.label.ts",
+        "../../canvas2D/src/GUI/babylon.gui.button.ts",
+        "../../canvas2D/src/lib.d.ts"
+      ],
+      "shaderFiles": [
+          "../../canvas2D/src/shaders/**.fx", "!../../canvas2D/src/shaders/**.js.fx"
+      ],
+      "output": "babylon.canvas2d.js"
+    }],
+    "build": {
+      "srcOutputDirectory": "../../canvas2D/",      
+      "distOutputDirectory": "/canvas2D/"
+    }
+  },
+
+  "inspector": {
+    "libraries": [  
+    {
+      "files": [
+        "../../inspector/src/Inspector.ts",
+        "../../inspector/src/properties.ts",
+        "../../inspector/src/gui/BasicElement.ts",
+        "../../inspector/src/adapters/Adapter.ts",
+        "../../inspector/src/adapters/Canvas2DAdapter.ts",
+        "../../inspector/src/adapters/LightAdapter.ts",
+        "../../inspector/src/adapters/MaterialAdapter.ts",
+        "../../inspector/src/adapters/MeshAdapter.ts",
+        "../../inspector/src/details/DetailPanel.ts",
+        "../../inspector/src/details/Property.ts",
+        "../../inspector/src/details/PropertyLine.ts",
+        "../../inspector/src/gui/ColorElement.ts",
+        "../../inspector/src/gui/CubeTextureElement.ts",
+        "../../inspector/src/gui/HDRCubeTextureElement.ts",
+        "../../inspector/src/gui/SearchBar.ts",
+        "../../inspector/src/gui/TextureElement.ts",
+        "../../inspector/src/gui/Tooltip.ts",
+        "../../inspector/src/helpers/Helpers.ts",
+        "../../inspector/src/scheduler/Scheduler.ts",
+        "../../inspector/src/tabs/Tab.ts",
+        "../../inspector/src/tabs/PropertyTab.ts",
+        "../../inspector/src/tabs/Canvas2DTab.ts",
+        "../../inspector/src/tabs/LightTab.ts",
+        "../../inspector/src/tabs/MaterialTab.ts",
+        "../../inspector/src/tabs/MeshTab.ts",
+        "../../inspector/src/tabs/SceneTab.ts",
+        "../../inspector/src/tabs/ShaderTab.ts",
+        "../../inspector/src/tabs/ConsoleTab.ts",
+        "../../inspector/src/tabs/StatsTab.ts",
+        "../../inspector/src/tabs/TabBar.ts",
+        "../../inspector/src/tools/AbstractTool.ts",
+        "../../inspector/src/tools/PauseScheduleTool.ts",
+        "../../inspector/src/tools/PickTool.ts",
+        "../../inspector/src/tools/PopupTool.ts",
+        "../../inspector/src/tools/RefreshTool.ts",
+        "../../inspector/src/tools/LabelTool.ts",
+        "../../inspector/src/tools/Toolbar.ts",
+        "../../inspector/src/tools/DisposeTool.ts",
+        "../../inspector/src/tree/TreeItem.ts",
+        "../../inspector/src/treetools/AbstractTreeTool.ts",
+        "../../inspector/src/treetools/BoundingBox.ts",
+        "../../inspector/src/treetools/Checkbox.ts",
+        "../../inspector/src/treetools/DebugArea.ts",
+        "../../inspector/src/treetools/Info.ts",
+        "../../inspector/src/lib.d.ts"
+        ],
+      "sassFiles": [
+        "../../inspector/sass/**/*.scss"
+      ],
+      "output": "babylon.inspector.js",
+      "webpack": "../../inspector/webpack.config.js" 
+    }],
+    "build": {
+      "srcOutputDirectory": "../../inspector/",      
+      "distOutputDirectory": "/inspector/"
+    }
+  } 
 }

@@ -19,10 +19,17 @@ void main(void) {
 	//float opacity = dist * smoothstep(edgeDistance - edgeWidth, edgeDistance + edgeWidth, dist);
 
 	//float opacity = smoothstep(0.25, 0.75, dist);
-	gl_FragColor = vec4(vColor.xyz*dist, 1.0);
+	gl_FragColor = vec4(vColor.xyz*dist, vColor.a);
 #else
 	vec4 color = texture2D(diffuseSampler, vUV);
+	if (color.a == 0.0) {
+		discard;
+	}
+#ifdef FontTexture
+	gl_FragColor = vec4(color.xxxx)*vColor;
+#else
 	gl_FragColor = color*vColor;
+#endif
 #endif
 
 }

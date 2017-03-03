@@ -1,88 +1,91 @@
-- 2.4.0:
-  - **Major updates**    
-    - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
-    - Added support for HDR cubemaps. [demo here](http://www.babylonjs-playground.com/#19JGPR#4) ([sebavan](https://github.com/sebavan))
-    - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
-    - New mesh type : `LineSystem`. [Demo here](http://www.babylonjs-playground.com/#2K1IS4#5) ([jerome](https://github.com/jbousquie))
-    - SerializationHelper for complex classes using TypeScript decorators ([deltakosh](https://github.com/deltakosh))
-    - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([tutorial](http://doc.babylonjs.com/tutorials/Using_parallax_mapping)) ([nockawa](https://github.com/nockawa))
-    - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](http://doc.babylonjs.com/tutorials/Animations#animation-blending) ([deltakosh](https://github.com/deltakosh))
-    - New debuger tool: SkeletonViewer. See [demo here](http://www.babylonjs-playground.com/#1BZJVJ#8) (Adam & [deltakosh](https://github.com/deltakosh))
-    - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance. [Documentation here](http://doc.babylonjs.com/tutorials/Customizing_Camera_Inputs) ([gleborgne](https://github.com/gleborgne))
-    - Introduced new observable system to handle events. [Documentation here](http://doc.babylonjs.com/overviews/Observables) ([nockawa](https://github.com/nockawa), [deltakosh](https://github.com/deltakosh))
-    - Added a new VR camera : VRDeviceOrientationArcRotateCamera ([temechon](https://github.com/Temechon))
-    - Moved PBR Material to core ([deltakosh](https://github.com/deltakosh))
-    - StandardMaterial.maxSimultaneousLights can define how many dynamic lights the material can handle. [Demo here](http://www.babylonjs-playground.com/#IRVAX#10) ([deltakosh](https://github.com/deltakosh))
-    - Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))
-    - Added two new types of Texture: FontTexture and MapTexture ([quick doc](http://www.html5gamedevs.com/topic/22565-two-new-texture-types-fonttexture-and-maptexture/)) ([nockawa](https://github.com/nockawa))
-    - Added a dynamic [2D Bin Packing Algorithm](http://stackoverflow.com/questions/8762569/how-is-2d-bin-packing-achieved-programmatically), ([more info here](http://www.html5gamedevs.com/topic/22565-two-new-texture-types-fonttexture-and-maptexture/)) ([nockawa](https://github.com/nockawa))
-    - Physics engine was completely rewritten, including both plugins for Oimo.js and Cannon.js. [overview](http://doc.babylonjs.com/overviews/Using_The_Physics_Engine) ([RaananW](https://github.com/RaananW))
-    - Interleaved buffers are now directly supported. Create a `Buffer` object and then use `buffer.createVertexBuffer` to specify the vertex buffers ([benaadams](https://github.com/benaadams)) 
-    - Vertex buffers can be marked as instanced to allow custom instancing attributes ([benaadams](https://github.com/benaadams)) 
-    - Mesh can have `overridenInstanceCount` set to specify the number of meshes to draw when custom instancing is used ([benaadams](https://github.com/benaadams)) 
-    - Now supporting the [Earcut](https://github.com/mapbox/earcut) polygon triangulation library as part of babylon.js library. (Look for the `Earcut` module). The `PolygonMeshBuilder` class now relies on Earcut. ([nockawa](https://github.com/nockawa))	
-  - **Updates**
-    - Added `renderTargetTexture.useCameraPostProcesses` to control postprocesses for render targets ([deltakosh](https://github.com/deltakosh))
-    - Added `mesh.toLefthanded()` to convert a mesh from right handed system ([kesshi](https://github.com/Kesshi))
-    - Renderlists can now also be defined using predicates ([deltakosh](https://github.com/deltakosh))
-    - Added support for various normal maps conventions ([deltakosh](https://github.com/deltakosh))
-    - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
-    - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
-    - Got Skeleton.copyAminationRange scaling better for different bone lengths ([jcpalmer](https://github.com/Palmer-JC))
-    - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
-    - Added `node._children` to track children hierarchy ([deltakosh](https://github.com/deltakosh))
-    - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
-    - Support for Layer.alphaTest ([deltakosh](https://github.com/deltakosh))
-    - New scene.pointerDownPredicate, scene.pointerMovePredicate, scene.pointerUpPredicate to define your own predicates for meshes picking selection ([deltakosh](https://github.com/deltakosh))
-    - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
-    - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    
-    - New SPS property `computeBoundingBox` ([jerome](https://github.com/jbousquie))  
-    - New SPS particle property `isVisible` ([jerome](https://github.com/jbousquie)) 
-    - Added a new OnPickOut trigger fired when you release the pointer button outside of a mesh or sprite. ([deltakosh](https://github.com/deltakosh))
-    - Added support for OnPointerOver and OnPointerOut for sprites. ([deltakosh](https://github.com/deltakosh))
-    - Added an optional predicate on Node.getDescendants, Node.getChildren to filter out Nodes based on a callback execution. ([nockawa](https://github.com/nockawa))
-    - Added Ray.intersectionPlane & intersectionSegment. ([nockawa](https://github.com/nockawa))
-    - LinesMesh class now supports Intersection. Added the intersectionThreshold property to set a tolerance margin during intersection with wire lines. ([nockawa](https://github.com/nockawa))
-    - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
-    - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
-    - Added StringDictionary<T> class to implement an efficient generic typed string dictionary based on Javascript associative array. ([quick doc](http://www.html5gamedevs.com/topic/22566-be-efficient-my-friend-use-stringdictionary/)) ([nockawa](https://github.com/nockawa))
-    - Added RectanglePackingMap class to fit several rectangles in a big map in the most optimal way, dynamically. ([nockawa](https://github.com/nockawa))
-    - Added DynamicFloatArray class to store float32 based elements of a given size (stride) into one big Float32Array, with allocation/free/pack operations to then access an optimal buffer that can be used to update a WebGLBuffer dynamically.([quick doc](http://www.html5gamedevs.com/topic/22567-dynamicfloatarray-to-the-rescue-for-efficient-instanced-array/)) ([nockawa](https://github.com/nockawa))
-    - Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
-    - Oimo.js updated to the latest version ([RaananW](https://github.com/RaananW))
-    - Added PhysicsImpostor and PhysicsJoint classes  ([RaananW](https://github.com/RaananW))
-    - LensFlareSystem now has both ID and name  ([RaananW](https://github.com/RaananW))
-    - TargetCamera has now a rotationQuaternion variable to can be used to set the camera's rotation  ([RaananW](https://github.com/RaananW))
-    - SSAORenderingPipeline now uses bilateral blur post-processes instead of standard blur post-process, in order to remove more efficiently the "textile effect"
-    - `Engine.updateDynamicVertexBuffer` now has optional count as well as offset to allow partial updates ([benaadams](https://github.com/benaadams)) 
-    - vertex attributes are only disabled if they aren't going to be reeabled by the next draw, to reduce gpu state changes ([benaadams](https://github.com/benaadams)) 
-  - **Exporters**
-    - Unity3D exporter: Added support for lightmaps ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
-    - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
-    - Unity exporter now support skeletons ([sebavan](https://github.com/sebavan))
-    - Support for 3dsmax 2017 ([deltakosh](https://github.com/deltakosh))
-    - Added support for up to 8 bones influences per vertex for 3dsmax exporter ([deltakosh](https://github.com/deltakosh))
-    - Added console logging for .babylon file loading & depreciated SceneLoader.Load() in favor of Append() ([jcpalmer](https://github.com/Palmer-JC))
-  - **API doc**
-    - class `SolidParticleSystem` documented ([jerome](https://github.com/jbousquie))
-    - class `MeshBuilder` documented ([jerome](https://github.com/jbousquie))
-    - class `Mesh` documented ([jerome](https://github.com/jbousquie))
-  - **Bug fixes**
-    - Fixed bug with billboards and parenting ([deltakosh](https://github.com/deltakosh))
-    - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
-    - Fixed bug with OBJ Loader - All meshes were concatenated with the previous one ([Temechon](https://github.com/Temechon))
-    - Fixed the device orientation cameras (both VR and non-VR cameras)  ([RaananW](https://github.com/RaananW))
-    - Fixed the WebVR implementation  ([RaananW](https://github.com/RaananW))
-    - `DynamicTexture.clone()` now preserves height in addition to width  ([dahlbyk](https://github.com/dahlbyk))
-    - Fixed missing some parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
-    - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
-  - **Breaking changes**
-    - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
-    - `scene.onNewXXXAdded` and `scene.onXXXRemoved` callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
-    - `Material.dispose` does not dispose textures by default. You have to call `material.dispose(false, true)` to get the previous behavior.
-    - `SSAORenderingPipeline.getBlurHPostProcess` and `SSAORenderingPipeline.getBlurVPostProcess`. The SSAO rendering pipeline doesn't use standard blur post-process anymore. A bilateral blur post-process is used instead.
-    - `Engine.bindBuffers` is now `Engine.bindBuffersDirectly` ([benaadams](https://github.com/benaadams))
-    - `Engine.bindMultiBuffers` is now `Engine.bindBuffers` and strongly typed `{ [key: string]: VertexBuffer; }` of buffers ([benaadams](https://github.com/benaadams))
-    - `Engine.createDynamicVertexBuffer` takes vertices rather than capacity, creating and initalizing in one gpu instruction ([benaadams](https://github.com/benaadams)) 
-    - Internally new `Engine.bindBuffer` is used rather than `gl.bindBuffer` which only binds when the bound buffer is changing ([benaadams](https://github.com/benaadams)) 
-    - `DynamicTexture` no longer forces height/width to exponents of 2 if MIP maps are disabled ([dahlbyk](https://github.com/dahlbyk))
+# 2.5.0:
+
+### Major updates
+- New `StandardRenderingPipeline` effect to support screen space lens flare and depth of field. [Demo](http://www.babylonjs.com/Demos/StandardRenderingPipeline/) - ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+- New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
+- Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
+- Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
+- New BoneIKController [Demo](http://www.babylonjs-playground.com/#1EVNNB#15) ([abow](https://github.com/abow))
+- New BoneLookController [Demo](http://www.babylonjs-playground.com/#1B1PUZ#15) ([abow](https://github.com/abow))
+- You can now build your own version of babylon.js with `gulp build-custom` [Doc](http://doc.babylonjs.com/generals/how_to_start) ([deltakosh](https://github.com/deltakosh))
+
+### Updates
+- Added `node.doNotSerialize` to prevent specific nodes to be serialized by `SceneSerializer` ([deltakosh](https://github.com/deltakosh))
+- Added `scene.multiPick` and `scene.multiPickWithRay` to return an array of pickedMesh objects ([deltakosh](https://github.com/deltakosh))
+- Added `Effect.GetVertexShaderSource()` and `Effect.GetFragmentShaderSource()` ([deltakosh](https://github.com/deltakosh))
+- New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
+- Added Engine detection of the compresed texture formats supported by Hw / browser.  You can specify those formats you have files for using `Engine.setTextureFormatToUse()`, and an appropriate one will be chosen. ([Palmer-JC](https://github.com/Palmer-JC/))
+- Added Ray.intersectsMesh, Ray.show, Ray.hide ([abow](https://github.com/abow))
+- Added AbstractMesh.setPivotPoint, AbstractMesh.getPivotPoint, AbstractMesh.getAbsolutePivotPoint ([abow](https://github.com/abow))
+- Added Debug.AxesViewer and Debug.BoneAxesViewer ([abow](https://github.com/abow))
+- Added Bone.getAbsolutePositionFromLocal and getLocalPositionFromAbsolute ([abow](https://github.com/abow))
+- Added Bone.setRotation, Bone.getRotation, Bone.setRotationQuaternion, Bone.getRotationQuaternion ([abow](https://github.com/abow))
+- Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
+- Added Bone.translate, Bone.setPosition, Bone.setAbsolutePosition ([abow](https://github.com/abow))
+- Added Bone.setYawPitchRoll, Bone.setRotationMatrix, Bone.setScale, Bone.setAxisAngle ([abow](https://github.com/abow))
+- Added Bone.rotate ([abow](https://github.com/abow))
+- Added Bone.scale ([abow](https://github.com/abow))
+- Added Camera.getDirection, AbstractMesh.getDirection, Bone.getDirection ([abow](https://github.com/abow))
+- Added subdivisionsX, subdivisionsY option to GroundMesh ([abow](https://github.com/abow))
+- New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
+- Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
+- Added onAnimationEnd callback for `sprite.playAnimation` ([deltakosh](https://github.com/deltakosh)) 
+- Added support for non square textures for sprites ([deltakosh](https://github.com/deltakosh)) 
+- Added support for texture arrays ([deltakosh](https://github.com/deltakosh)) 
+- Added `camera.isInFrustum` and `camera.isCompletelyInFrustum`. Can be used with meshes, submeshes and boundingInfo ([deltakosh](https://github.com/deltakosh)) 
+- Several memory allocation reduction ([benaadams](https://github.com/benaadams))
+- Several GPU state change reduction ([benaadams](https://github.com/benaadams)) 
+- MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
+- New SPS feature : solid particle intersection with other solid particle or with any mesh `particle.intersectsMesh()` ([jerome](https://github.com/jbousquie))
+- New `invertUV` parameter an all ribbon based shapes : ribbon, tube, lathe, basic and custom extrusion ([jerome](https://github.com/jbousquie))
+- Text2D: new `fontSuperSample` setting to use high quality font ([nockawa](https://github.com/nockawa))
+- PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object ([nockawa](https://github.com/nockawa))
+- Better keyboard event handling which is now done at canvas level and not at window level ([deltakosh](https://github.com/deltakosh)) 
+- New `scene.hoverCursor` property to define a custom cursor when moving mouse over meshes ([deltakosh](https://github.com/deltakosh)) 
+- Canvas2D: ([nockawa](https://github.com/nockawa)) 
+ - Performance metrics added
+ - Text2D super sampling to enhance quality in World Space Canvas
+ - World Space Canvas is now rendering in an adaptive way for its resolution to fit the on screen projected one to achieve a good rendering quality
+ - Transparent Primitives are now drawn with Instanced Array when supported
+ - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
+- WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
+- New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
+- Scene.stopAnimation has now an optional second parameter, the name of the animation to kill. Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
+
+### Bug fixes
+- Fixed issue with SkeletonViewer not displaying correctly with meshes that have a PoseMatrix ([abow](https://github.com/abow))
+- Fixed issue with Quaternion.toEulerAnglesToRef ([abow](https://github.com/abow))
+- Fixed issue with Animatable.goToFrame ([abow](https://github.com/abow))
+- Fixed issue with instancse and viewports ([deltakosh](https://github.com/deltakosh))
+- Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
+- MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
+- Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
+- Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))
+- Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
+- Added BBox update on each ribbon based shape (ribbon, tube, extrusion, etc) on dynamic updates ([jerome](https://github.com/jbousquie))
+- Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed billboard when the SPS mesh is parented in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
+- Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
+- Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
+- Canvas2D: ([nockawa](https://github.com/nockawa))
+ - `WorldSpaceCanvas2D`:
+	- Intersection/interaction now works on non squared canvas
+ - Primitive:
+	- `ZOrder` fixed in Primitives created inline
+	- Z-Order is now correctly distributed along the whole canvas object graph
+ - `Sprite2D`: 
+	- texture size is now set by default as expected
+	- can have no `id` set
+ - `Text2D`: 
+	- Fix bad rendering quality on Chrome
+	- Rendering above transparent surface is now blending correctly
+
+### Breaking changes
+ - FollowCamera.target was renamed to FollowCamera.lockedTarget to avoid conflicts ([deltakosh](https://github.com/deltakosh)) 
+ - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
+ - Canvas2D: ([nockawa](https://github.com/nockawa))
+  - `WorldSpaceCanvas2D`:
+	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
+

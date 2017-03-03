@@ -9,9 +9,7 @@ var options = {
 	castShadows: false,
 	spotLight: false,
 	fog: false,
-	skybox: false,
-	ascii: false,
-	digitalRain: false
+	skybox: false
 }
 
 var registeredUIs = {};

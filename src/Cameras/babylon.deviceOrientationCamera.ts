@@ -1,3 +1,5 @@
+/// <reference path="babylon.freeCamera.ts" />
+
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class DeviceOrientationCamera extends FreeCamera {
@@ -11,7 +13,7 @@ module BABYLON {
             this.inputs.addDeviceOrientation();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "DeviceOrientationCamera";
         }
 

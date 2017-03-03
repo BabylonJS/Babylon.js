@@ -6,6 +6,9 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
+        private _tmpRay: Ray;
+        private _rayHelper: RayHelper;
+
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
 
@@ -193,6 +196,85 @@
             }
         }
 
+        public intersectsMesh(mesh:AbstractMesh, fastCheck?: boolean): PickingInfo {
+
+            var tm = Tmp.Matrix[0];
+
+            mesh.getWorldMatrix().invertToRef(tm);
+
+            if(this._tmpRay){
+                Ray.TransformToRef(this, tm, this._tmpRay);
+            }else{
+                this._tmpRay = Ray.Transform(this, tm);
+            }
+
+            return mesh.intersects(this._tmpRay, fastCheck);
+
+        }
+
+        public intersectsMeshes(meshes:Array<AbstractMesh>, fastCheck?: boolean, results?:Array<PickingInfo>): Array<PickingInfo> {
+
+            if(results){
+                results.length = 0;
+            }else{
+                results = [];
+            }
+
+            for(var i = 0; i < meshes.length; i++){
+                var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
+
+                if(pickInfo.hit){
+                    results.push(pickInfo);
+                }
+            }
+
+            results.sort(this._comparePickingInfo);
+
+            return results;
+
+        }
+
+        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
+
+            if(pickingInfoA.distance < pickingInfoB.distance){
+                return -1;
+            }else if(pickingInfoA.distance > pickingInfoB.distance){
+                return 1;
+            }else{
+                return 0;
+            }
+
+        }
+
+        /**
+         *  @Deprecated. Use new RayHelper.show() instead.
+         * */
+        public show(scene:Scene, color:Color3): void{
+
+            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
+
+            if(!this._rayHelper){
+                this._rayHelper = new RayHelper(this);
+            }
+            
+            this._rayHelper.show(scene, color);
+
+        }
+
+        /**
+         *  @Deprecated. Use new RayHelper.hide() instead.
+         * */
+        public hide(): void{
+
+            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
+
+            if(this._rayHelper){
+                this._rayHelper.hide();
+                this._rayHelper = null;
+            }
+
+        }
+
         private static smallnum = 0.00000001;
         private static rayl = 10e8;
 
@@ -305,12 +387,27 @@
         }
 
         public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
+            var result = new Ray(new Vector3(0,0,0), new Vector3(0,0,0));
+            Ray.TransformToRef(ray, matrix, result);
+            
+            return result;
+        }
 
-            newDirection.normalize();
+        public static TransformToRef(ray: Ray, matrix: Matrix, result:Ray): void {
+            Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
+            Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
+            result.length = ray.length;
+            
+            var dir = result.direction;
+            var len = dir.length();
 
-            return new Ray(newOrigin, newDirection, ray.length);
+            if(!(len === 0 || len === 1)){
+                var num = 1.0 / len;
+                dir.x *= num;
+                dir.y *= num;
+                dir.z *= num;
+                result.length *= len;
+            }
         }
     }
 }

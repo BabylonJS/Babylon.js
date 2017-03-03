@@ -9,8 +9,21 @@ module BABYLON {
         }
 
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "VRDeviceOrientationFreeCamera";
+        }
+    }
+
+    export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+            super(name, position, scene, compensateDistortion, vrCameraMetrics);
+            
+            this.inputs.addGamepad();
+        }
+
+        public getClassName(): string {
+            return "VRDeviceOrientationGamepadCamera";
         }
     }
 
@@ -25,7 +38,7 @@ module BABYLON {
             this.inputs.addVRDeviceOrientation();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "VRDeviceOrientationArcRotateCamera";
         }
     }

@@ -1,0 +1,97 @@
+﻿<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Actions Builder</title>
+
+    <!-- CSS FILES -->
+    <link href="./index.css" rel="stylesheet" />
+    <link href="./fonts.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+    <!-- PARENT CONTAINER -->
+    <div id="ParentContainerID">
+
+        <ul id="ToolsButtonsID">
+            <li id="ToolsButtonIDSaveActionGraph">save action graph</li>
+            <li id="ResetActionGraphID">reset action graph</li>
+            <li id="TestActionGraphID">test action graph</li>
+        </ul>
+
+        <!-- LIST CONTAINER -->
+        <div id="ListsElementID">
+            <div id="TriggersListID"></div>
+            <div id="ActionsListID"></div>
+            <div id="FlowActionsListID"></div>
+        </div>
+
+        <!-- GRAPH CONTAINER -->
+        <div id="GraphContainerID">
+            <div id="GraphElementID"></div>
+
+            <div id="ToolbarElementID">
+                <ul>
+                    <li id="ViewerReduceAll">reduce all</li>
+                    <li id="ViewerExpandAll">expand all</li>
+                    <li id="ViewerDisconnectAll">disconnect all</li>
+                    <li id="ViewerReconnectAll">reconnect all</li>
+                    <li class="border" style="width: 15px; text-align: center" id="ViewerDeZoomID"> - </li>
+                    <li class="border" style="width: 15px; text-align: center" id="ViewerZoomID"> + </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PARAMETERS CONTAINER -->
+        <div id="ParametersContainerID">
+            <div id="ParametersElementID"></div>
+            <div id="ParametersHelpElementID"></div>
+        </div>
+
+    </div>
+
+    <canvas id="RenderCanvasID" style="display:none;"></canvas>
+    <input id="ActionsBuilderObjectName" type="hidden" />
+    <input id="ActionsBuilderJSON" type="hidden" />
+
+    <!-- JS FILES -->
+    <script src="raphael.js" type="text/javascript"></script>
+    <script src="babylon.max.js" type="text/javascript"></script>
+    <script src="actionsbuilder.js" type="text/javascript"></script>
+    <script src="actionsbuilder.actionNode.js" type="text/javascript"></script>
+    <script src="actionsbuilder.parameters.js" type="text/javascript"></script>
+    <script src="actionsbuilder.toolbar.js" type="text/javascript"></script>
+    <script src="actionsbuilder.utils.js" type="text/javascript"></script>
+    <script src="actionsbuilder.viewer.js" type="text/javascript"></script>
+    <script src="actionsbuilder.contextMenu.js" type="text/javascript"></script>
+    <script src="actionsbuilder.list.js" type="text/javascript"></script>
+    <script src="actionsbuilder.main.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        run();
+
+        setIsScene();
+        resetList();
+
+        ActionsBuilder.SceneElements.MESHES.push("Jeffrey");
+        ActionsBuilder.SceneElements.MESHES.push("DavCa");
+        ActionsBuilder.SceneElements.MESHES.push("Julien");
+        ActionsBuilder.SceneElements.MESHES.push("DavRous");
+
+        ActionsBuilder.SceneElements.LIGHTS.push("Light1");
+        ActionsBuilder.SceneElements.LIGHTS.push("Light2");
+
+        var structureTest = '{"name":"Unnamed Object","type":3,"detached":false,"children":[{"name":"OnLeftPickTrigger","type":0,"detached":false,"children":[{"name":"InterpolateValueAction","type":1,"detached":false,"children":[],"combine":[],"properties":[{"name":"target","value":"Box001","targetType":"MeshProperties"},{"name":"propertyPath","value":"position","targetType":null},{"name":"value","value":"0,0,0","targetType":null},{"name":"duration","value":"1000","targetType":null},{"name":"stopOtherAnimations","value":"false","targetType":null}]}],"combine":[],"properties":[]},{"name":"OnLeftPickTrigger","type":0,"detached":false,"children":[{"name":"SetValueAction","type":1,"detached":false,"children":[],"combine":[],"properties":[{"name":"target","value":"","targetType":"LightProperties"},{"name":"propertyPath","value":"intensity","targetType":null},{"name":"value","value":"0","targetType":null}]}],"combine":[],"properties":[]}],"combine":[],"properties":[]}';
+        actionsBuilderJsonInput.value = structureTest;
+
+        loadFromJSON();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.camera.ts" />
+
+module BABYLON {
     export class TargetCamera extends Camera {
 
         public cameraDirection = new Vector3(0, 0, 0);
@@ -48,7 +50,11 @@
                 return null;
             }
 
-            return this.lockedTarget.position || this.lockedTarget;
+            if (this.lockedTarget.absolutePosition) {
+                this.lockedTarget.computeWorldMatrix();
+            }
+
+            return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
         // Cache
@@ -136,16 +142,25 @@
             }
         }
 
+
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         */
         public getTarget(): Vector3 {
             return this._currentTarget;
         }
-
 
         public _decideIfNeedsToMove(): boolean {
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
         public _updatePosition(): void {
+            if (this.parent) {
+                this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
+                Vector3.TransformNormalToRef(this.cameraDirection, Tmp.Matrix[0], Tmp.Vector3[0]);
+                this.position.addInPlace(Tmp.Vector3[0]);
+                return;
+            }
             this.position.addInPlace(this.cameraDirection);
         }
         public _checkInputs(): void {
@@ -307,7 +322,7 @@
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "TargetCamera";
         }
     }

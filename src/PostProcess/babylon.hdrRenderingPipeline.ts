@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
+
+module BABYLON {
     export class HDRRenderingPipeline extends PostProcessRenderPipeline implements IDisposable {
 
         /**
@@ -183,18 +185,26 @@
         * Releases the rendering pipeline and its internal effects. Detaches pipeline from cameras
         */
         public dispose(): void {
-            this._originalPostProcess = undefined;
-            this._brightPassPostProcess = undefined;
-            this._downSampleX4PostProcess = undefined;
-            this._guassianBlurHPostProcess = undefined;
-            this._guassianBlurVPostProcess = undefined;
-            this._textureAdderPostProcess = undefined;
-            for (var i = HDRRenderingPipeline.LUM_STEPS - 1; i >= 0; i--) {
-                this._downSamplePostProcesses[i] = undefined;
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
+
+                this._originalPostProcess.dispose(camera);
+                this._brightPassPostProcess.dispose(camera);
+                this._downSampleX4PostProcess.dispose(camera);
+                this._guassianBlurHPostProcess.dispose(camera);
+                this._guassianBlurVPostProcess.dispose(camera);
+                this._textureAdderPostProcess.dispose(camera);
+
+                for (var j = HDRRenderingPipeline.LUM_STEPS - 1; j >= 0; j--) {
+                    this._downSamplePostProcesses[j].dispose(camera);
+                }
+
+                this._hdrPostProcess.dispose(camera);
             }
-            this._hdrPostProcess = undefined;
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+
+            super.dispose();
         }
 
         /**

@@ -27,6 +27,9 @@
                     // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
                     if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
                         let index = effect.getAttributeLocationByName(attrib.attributeName);
+                        if (index === - 1) {
+                            throw new Error(`Attribute ${attrib.attributeName} was not found in Effect: ${effect.name}. It's certainly no longer used in the Effect's Shaders`);
+                        }
                         let iai = new InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
@@ -489,6 +492,11 @@
                 this.setupModelRenderCache(this._modelRenderCache);
             }
 
+            if (this._isFlagSet(SmartPropertyPrim.flagModelUpdate)) {
+                if (this._modelRenderCache.updateModelRenderCache(this)) {
+                    this._clearFlags(SmartPropertyPrim.flagModelUpdate);
+                }
+            }
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
@@ -920,7 +928,10 @@
         }
 
         private static _uV = new Vector2(1, 1);
-
+        private static _s = Vector3.Zero();
+        private static _r = Quaternion.Identity();
+        private static _t = Vector3.Zero();
+        private static _iV3 = new Vector3(1, 1, 1); // Must stay identity vector3
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -928,12 +939,22 @@
          */
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);    // Compute the transformation into the renderGroup's space
-            let rgScale = this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            let scl = RenderablePrim2D._s;
+            let rot = RenderablePrim2D._r;
+            let trn = RenderablePrim2D._t;
+            t.decompose(scl, rot, trn);
+            let pas = this.actualScale;
+            scl.x = pas.x;
+            scl.y = pas.y;
+            scl.z = 1;
+            t = Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV3, rot, trn);
+
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;
 
             let offX = 0;
             let offY = 0;
+
             // If there's an offset, apply the global transformation matrix on it to get a global offset
             if (positionOffset) {
                 offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
@@ -949,14 +970,9 @@
             let w = size.width;
             let h = size.height;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
 
-            if (!this.applyActualScaleOnTransform()) {
-                let las = this.actualScale;
-                tx.x /= las.x;
-                ty.y /= las.y;
-            }
 
             part.transformX = tx;
             part.transformY = ty;

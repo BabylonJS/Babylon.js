@@ -289,12 +289,12 @@
                 this._effect.setMatrix(name, this._matrices[name]);
             }            
 
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
-
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     engine.bindFramebuffer(this._texture, face);
+
+                    // VBOs
+                    engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
                     this._effect.setFloat("face", face);
 
@@ -311,6 +311,9 @@
                 }
             } else {
                 engine.bindFramebuffer(this._texture);
+
+                // VBOs
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
                 // Clear
                 engine.clear(scene.clearColor, true, true, true);
