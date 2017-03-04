@@ -106,20 +106,14 @@ module BABYLON {
             this._onButtonStateChange = callback;
         }
 
+        public pad: StickValues = { x: 0, y: 0 };
+
         public hand: string; // 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
 
         constructor(vrGamepad) {
             super(vrGamepad);
             this._buttons = new Array<ExtendedGamepadButton>(vrGamepad.buttons.length);
             this.hand = vrGamepad.hand;
-            // stick values changed?
-            this.onleftstickchanged = () => {
-                this.onPadValuesChangedObservable.notifyObservers(this.pad);
-            }
-        }
-
-        public get pad() {
-            return this.leftStick;
         }
 
         public update() {
@@ -127,6 +121,11 @@ module BABYLON {
             for (var index = 0; index < this._buttons.length; index++) {
                 this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
             };
+            if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
+                this.pad.x = this.leftStick.x;
+                this.pad.y = this.leftStick.y;
+                this.onPadValuesChangedObservable.notifyObservers(this.pad);
+            }
         }
 
         protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges);
