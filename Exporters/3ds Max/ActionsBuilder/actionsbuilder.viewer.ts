@@ -177,11 +177,11 @@
             }
 
             switch (type) {
-                case Type.TRIGGER: return Raphael.rgb(133, 154, 185); break;
-                case Type.ACTION:  return Raphael.rgb(182, 185, 132); break;
-                case Type.FLOW_CONTROL: return Raphael.rgb(185, 132, 140); break;
+                case Type.TRIGGER: return Raphael.rgb(133, 154, 185);
+                case Type.ACTION:  return Raphael.rgb(182, 185, 132);
+                case Type.FLOW_CONTROL: return Raphael.rgb(185, 132, 140);
                 case Type.OBJECT:
-                case Type.SCENE: return Raphael.rgb(255, 255, 255); break;
+                case Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
 
@@ -199,11 +199,11 @@
             }
 
             switch (type) {
-                case Type.TRIGGER: return Raphael.rgb(41, 129, 255); break;
-                case Type.ACTION: return Raphael.rgb(255, 220, 42); break;
-                case Type.FLOW_CONTROL: return Raphael.rgb(255, 41, 53); break;
+                case Type.TRIGGER: return Raphael.rgb(41, 129, 255);
+                case Type.ACTION: return Raphael.rgb(255, 220, 42);
+                case Type.FLOW_CONTROL: return Raphael.rgb(255, 41, 53);
                 case Type.OBJECT:
-                case Type.SCENE: return Raphael.rgb(255, 255, 255); break;
+                case Type.SCENE: return Raphael.rgb(255, 255, 255);
                 default: break;
             }
 

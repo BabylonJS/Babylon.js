@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
+
+module BABYLON {
     export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         /**
         * Public members

@@ -1,4 +1,7 @@
-﻿module BABYLON {
+﻿/// <reference path="..\PostProcess\babylon.postProcess.ts" />
+/// <reference path="..\Math\babylon.math.ts" />
+
+module BABYLON {
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
@@ -246,7 +249,7 @@
          * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
          */
         constructor(name: string, scene: Scene, options?: IHighlightLayerOptions) {
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             var engine = scene.getEngine();
             this._engine = engine;
             this._maxSize = this._engine.getCaps().maxTextureSize;

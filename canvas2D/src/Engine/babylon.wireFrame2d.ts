@@ -233,25 +233,6 @@
             this.internalSetSize(value);
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => WireFrame2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the actual size of the sprite to display
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
-
         protected updateLevelBoundingInfo(): boolean {
             let v = this._computeMinMaxTrans();
             BoundingInfo2D.CreateFromMinMaxToRef(v.x, v.z, v.y, v.w, this._levelBoundingInfo);
@@ -337,7 +318,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             if (!settings) {

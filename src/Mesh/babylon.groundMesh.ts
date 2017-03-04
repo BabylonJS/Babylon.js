@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.mesh.ts" />
+
+module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
@@ -226,6 +228,39 @@
                 }
             }
             return this;
+        }
+
+        public serialize(serializationObject: any): void {
+            super.serialize(serializationObject);
+            serializationObject.subdivisionsX = this._subdivisionsX;
+            serializationObject.subdivisionsY = this._subdivisionsY;
+
+            serializationObject.minX = this._minX;
+            serializationObject.maxX = this._maxX;
+
+            serializationObject.minZ = this._minZ;
+            serializationObject.maxZ = this._maxZ;
+
+            serializationObject.width = this._width;
+            serializationObject.height = this._height;
+        }
+
+        public static Parse(parsedMesh: any, scene: Scene): GroundMesh {
+            var result = new GroundMesh(parsedMesh.name, scene);
+
+            result._subdivisionsX = parsedMesh.subdivisionsX || 1;
+            result._subdivisionsY = parsedMesh.subdivisionsY || 1;
+
+            result._minX = parsedMesh.minX;
+            result._maxX = parsedMesh.maxX;
+
+            result._minZ = parsedMesh.minZ;
+            result._maxZ = parsedMesh.maxZ;
+
+            result._width = parsedMesh.width;
+            result._height = parsedMesh.height;
+
+            return result;
         }
     }
 }

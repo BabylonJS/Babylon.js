@@ -64,7 +64,7 @@
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._scene.layers.push(this);
 
             var engine = scene.getEngine();

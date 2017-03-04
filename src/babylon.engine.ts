@@ -196,6 +196,29 @@
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
      */
     export class Engine {
+        public static Instances = new Array<Engine>();
+
+        public static get LastCreatedEngine(): Engine {
+            if (Engine.Instances.length === 0) {
+                return null;
+            }
+
+            return Engine.Instances[Engine.Instances.length - 1];
+        }
+
+        public static get LastCreatedScene(): Scene {
+            var lastCreatedEngine = Engine.LastCreatedEngine;
+            if (!lastCreatedEngine) {
+                return null;
+            }
+            
+            if (lastCreatedEngine.scenes.length === 0) {
+                return null;
+            }
+
+            return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
+        }
+
         // Const statics
         private static _ALPHA_DISABLE = 0;
         private static _ALPHA_ADD = 1;
@@ -385,7 +408,7 @@
         }
 
         public static get Version(): string {
-            return "2.6-alpha";
+            return "3.0-alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -512,6 +535,8 @@
          */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
+
+            Engine.Instances.push(this);
 
             this._externalData = new StringDictionary<Object>();
 
@@ -1191,10 +1216,9 @@
 
         public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
             this._currentRenderTarget = texture;
-            this.bindUnboundFramebuffer(texture._framebuffer);
+            this.bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
             var gl = this._gl;
             if (texture.isCube) {
-
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
 
@@ -1212,8 +1236,19 @@
 
         public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
             this._currentRenderTarget = null;
+
+            // If MSAA, we need to bitblt back to main texture
+            var gl = this._gl;
+
+            if (texture._MSAAFramebuffer) {
+                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
+                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
+                gl.blitFramebuffer( 0, 0, texture._width, texture._height, 
+                                    0, 0, texture._width, texture._height,
+                                    gl.COLOR_BUFFER_BIT, gl.NEAREST);
+            }
+
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
-                var gl = this._gl;
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
@@ -1970,7 +2005,7 @@
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_PREMULTIPLIED:
-                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_COMBINE:
@@ -2067,7 +2102,7 @@
             return this._textureFormatInUse = null;
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture): WebGLTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
             var texture = fallBack ? fallBack : this._gl.createTexture();
 
             var extension: string;
@@ -2186,7 +2221,8 @@
                             }
                         }
 
-                        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
+                        let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+                        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
                     }, samplingMode);
                 };
 
@@ -2321,13 +2357,14 @@
              texture.samplingMode = samplingMode;
         }
 
-        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false): void {
+        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
             }
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
+            let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, canvas);
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -2440,32 +2477,12 @@
 
             gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-            var depthStencilBuffer: WebGLRenderbuffer;
-
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -2477,9 +2494,6 @@
             this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._baseWidth = width;
             texture._baseHeight = height;
             texture._width = width;
@@ -2489,12 +2503,91 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.type = type;
+            texture._generateDepthBuffer = generateDepthBuffer;
+            texture._generateStencilBuffer = generateStencilBuffer;
 
             this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);
 
             return texture;
+        }
+
+        private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): WebGLRenderbuffer {
+            var depthStencilBuffer: WebGLRenderbuffer = null;
+            var gl = this._gl;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_STENCIL, width, height);
+                } else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+                }
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
+                } else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+                }
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+
+            return depthStencilBuffer;
+        }
+
+        public updateRenderTargetTextureSampleCount(texture: WebGLTexture, samples: number) : number {
+            if (this.webGLVersion < 2) {
+                return 1;
+            }
+            var gl = this._gl;
+
+            samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+
+            // Dispose previous render buffers
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
+            }
+
+            if (samples > 1) {
+                texture._MSAAFramebuffer = gl.createFramebuffer();
+                this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
+
+                var colorRenderbuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture._width, texture._height);
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+
+                texture._MSAARenderBuffer = colorRenderbuffer;
+            } else {
+                this.bindUnboundFramebuffer(texture._framebuffer);
+            }
+
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture._width, texture._height, samples);
+
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+
+            return samples;
         }
 
         public createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture {
@@ -2536,32 +2629,11 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            // Create the depth buffer
-            var depthStencilBuffer: WebGLRenderbuffer;
-
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
-            }
-
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
 
             // Mipmaps
             if (texture.generateMipMaps) {
@@ -2575,9 +2647,6 @@
             this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
@@ -2589,7 +2658,7 @@
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null, format?: number): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -2677,9 +2746,10 @@
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
+                    let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                     for (var index = 0; index < faces.length; index++) {
                         this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                        gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._workingCanvas);
+                        gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
                     }
 
                     if (!noMipmap) {
@@ -2890,8 +2960,16 @@
                 gl.deleteFramebuffer(texture._framebuffer);
             }
 
-            if (texture._depthBuffer) {
-                gl.deleteRenderbuffer(texture._depthBuffer);
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
             }
 
             gl.deleteTexture(texture);
@@ -3208,6 +3286,13 @@
             document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+
+            // Remove from Instances
+            var index = Engine.Instances.indexOf(this);
+
+            if (index >= 0) {
+                Engine.Instances.splice(index, 1);
+            }
         }
 
         // Loading screen

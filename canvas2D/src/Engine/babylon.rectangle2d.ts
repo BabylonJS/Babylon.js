@@ -170,25 +170,6 @@
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the rectangle size (width/height)
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize = value.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
         /**
          * Get if the rectangle is notRound (returns true) or rounded (returns false).
@@ -377,7 +358,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -577,15 +558,19 @@
             }
         }
 
-        protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size) {
+        protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size) {
             // Fall back to default implementation if there's no round Radius
             if (this._notRounded) {
-                super._getActualSizeFromContentToRef(primSize, newPrimSize);
+                super._getActualSizeFromContentToRef(primSize, paddingOffset, newPrimSize);
             } else {
                 let rr = Math.round((this.roundRadius - (this.roundRadius / Math.sqrt(2))) * 1.3);
                 newPrimSize.copyFrom(primSize);
                 newPrimSize.width  += rr * 2;
                 newPrimSize.height += rr * 2;
+                paddingOffset.x += rr;
+                paddingOffset.y += rr;
+                paddingOffset.z += rr;
+                paddingOffset.w += rr;
             }
         }
 

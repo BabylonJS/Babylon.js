@@ -311,7 +311,7 @@
             var activeCamera = this._scene.activeCamera;
             this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._spriteManagers.length; id++) {
-                var spriteManager = this._scene.spriteManagers[id];
+                var spriteManager = this._spriteManagers.data[id];
 
                 if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     spriteManager.render();

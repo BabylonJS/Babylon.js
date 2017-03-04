@@ -409,7 +409,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             if (!settings) {

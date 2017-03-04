@@ -1,4 +1,7 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.targetCamera.ts" />
+/// <reference path="..\Tools\babylon.tools.ts" />
+
+module BABYLON {
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
         public alpha: number;

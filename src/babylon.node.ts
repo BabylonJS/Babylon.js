@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="Tools\babylon.decorators.ts" />
+
+module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
@@ -92,7 +94,7 @@
         constructor(name: string, scene: Scene) {
             this.name = name;
             this.id = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._initCache();
         }
 

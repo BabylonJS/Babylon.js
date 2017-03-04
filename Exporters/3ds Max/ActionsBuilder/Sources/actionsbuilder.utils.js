@@ -428,7 +428,7 @@ var ActionsBuilder;
             element.style.display = visible ? "block" : "none";
         };
         return Utils;
-    })();
+    }());
     ActionsBuilder.Utils = Utils;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.utils.js.map

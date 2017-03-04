@@ -7,6 +7,7 @@
         fontTexture: BaseFontTexture                    = null;
         effect: Effect                                  = null;
         effectInstanced: Effect                         = null;
+        fontPremulAlpha: boolean                        = false;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
@@ -33,7 +34,7 @@
             var curAlphaMode: number;
             if (!sdf) {
                 curAlphaMode = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
+                engine.setAlphaMode(this.fontPremulAlpha ? Engine.ALPHA_PREMULTIPLIED : Engine.ALPHA_COMBINE, true);
             }
 
             let pid = context.groupInfoPartData[0];
@@ -140,6 +141,7 @@
         static TEXT2D_MAINPARTID = 1;
 
         static TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+        static TEXT2D_CATEGORY_FONTTEXTURE = "FontTexture";
 
         public static fontProperty: Prim2DPropInfo;
         public static defaultFontColorProperty: Prim2DPropInfo;
@@ -147,6 +149,7 @@
         public static sizeProperty: Prim2DPropInfo;
         public static fontSuperSampleProperty: Prim2DPropInfo;
         public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
+        public static textureIsPremulAlphaProperty: Prim2DPropInfo;
 
         /**
          * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
@@ -226,7 +229,11 @@
             }
             this._text = value;
             this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
-            this._size = null;
+
+            if(!this._sizeSetByUser){
+                this._size = null;
+            }
+
             this._updateCharCount();
 
             // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
@@ -258,7 +265,7 @@
             return this._fontTexture && this._fontTexture.isSuperSampled;
         }
 
-        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Text2D.fontSuperSampleProperty = pi, false, false)
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Text2D.fontSignedDistanceFieldProperty = pi, false, false)
         /**
          * Get/set the font name to use, using HTML CSS notation.
          * Set is not supported right now.
@@ -267,18 +274,28 @@
             return this._fontTexture && this._fontTexture.isSignedDistanceField;
         }
 
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Text2D.textureIsPremulAlphaProperty = pi)
+        /**
+         * Set to true if the FontTexture use Premultiplied Alpha, default is false
+         */
+        public get textureIsPremulAlpha(): boolean {
+            return this._textureIsPremulAlpha;
+        }
+
+        public set textureIsPremulAlpha(value: boolean) {
+            this._textureIsPremulAlpha = value;
+        }
+
         public get isSizeAuto(): boolean {
             return false;
         }
 
-        /**
-         * Get the actual size of the Text2D primitive
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
+        public get isVerticalSizeAuto(): boolean {
+            return false;
+        }
+
+        public get isHorizontalSizeAuto(): boolean {
+            return false;
         }
 
         /**
@@ -299,6 +316,15 @@
             }
             
             return this._textSize;
+        }
+
+        protected onSetOwner() {
+            if (!this._textSize) {
+                this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                this._setLayoutDirty();
+                this._positioningDirty();
+                this._actualSize = null;
+            }
         }
 
         protected get fontTexture(): BaseFontTexture {
@@ -367,6 +393,8 @@
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
+         * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
+         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -415,6 +443,7 @@
             fontSuperSample         ?: boolean,
             fontSignedDistanceField ?: boolean,
             bitmapFontTexture       ?: BitmapFontTexture,
+            fontTexturePremulAlpha  ?: boolean,
             defaultFontColor        ?: Color4,
             size                    ?: Size,
             tabulationSize          ?: number,
@@ -437,7 +466,7 @@
             paddingLeft             ?: number | string,
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
-            padding                 ?: string,
+            padding                 ?: number | string,
             textAlignmentH          ?: number,
             textAlignmentV          ?: number,
             textAlignment           ?: string,
@@ -455,16 +484,33 @@
                 this._fontName        = null;
                 this._fontSuperSample = false;
                 this._fontSDF         = false;
+
+                let ft = this._fontTexture;
+                if (ft != null && !ft.isReady()) {
+                    ft.onLoadObservable.add(() => {
+                        this._positioningDirty();
+                        this._setLayoutDirty();
+                        this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId;  // To make sure the Text2D is issued again for render
+                    });                    
+                }
             } else {
                 this._fontName       = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
                 this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
                 this._fontSDF        = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
             }
-            this._defaultFontColor   = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor.clone();
-            this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
-            this._textSize           = null;
-            this.text                = text;
-            this.size                = (settings.size==null) ? null : settings.size;
+
+            this._defaultFontColor     = (settings.defaultFontColor == null) ? new Color4(1, 1, 1, 1) : settings.defaultFontColor.clone();
+            this._tabulationSize       = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            this._textureIsPremulAlpha = settings.fontTexturePremulAlpha === true;
+            this._textSize             = null;
+            this.text                  = text;
+
+            if(settings.size != null){
+                this.size = settings.size;
+                this._sizeSetByUser = true;
+            }else{
+                this.size = null;
+            }
             this.textAlignmentH      = (settings.textAlignmentH==null) ? Text2D.AlignLeft : settings.textAlignmentH;
             this.textAlignmentV      = (settings.textAlignmentV==null) ? Text2D.AlignTop : settings.textAlignmentV;
             this.textAlignment       = (settings.textAlignment==null) ? "" : settings.textAlignment;
@@ -489,6 +535,7 @@
 
             renderCache.fontTexture = this.fontTexture;
             renderCache.fontTexture.incCachedFontTextureCounter();
+            renderCache.fontPremulAlpha = this.textureIsPremulAlpha;
 
             let vb = new Float32Array(4);
             for (let i = 0; i < 4; i++) {
@@ -546,6 +593,9 @@
             if (this._fontSDF) {
                 cat.push(Text2D.TEXT2D_CATEGORY_SDF);
             }
+            if (this._fontTexture instanceof FontTexture) {
+                cat.push(Text2D.TEXT2D_CATEGORY_FONTTEXTURE);
+            }
             return cat;
         }
 
@@ -578,6 +628,7 @@
                 let text = this.text;
                 let tabWidth = this._tabulationSize * texture.spaceWidth;
 
+                // First pass: analyze the text to build data like pixel length of each lines, width of each char, number of char per line
                 for (let i = 0; i < text.length; i++) {
                     let char = text[i];
                     numCharsCurrenLine++;
@@ -608,7 +659,7 @@
                     if (char === "\t") {
                         charWidth = tabWidth;
                     }else{
-                        charWidth = ci.charWidth;
+                        charWidth = ci.xAdvance;
                     }
 
                     offset.x += charWidth;
@@ -621,7 +672,7 @@
                         numCharsCurrentWord = 0;
                         widthCurrentWord = 0;
                     }else {
-                        widthCurrentWord += ci.charWidth;
+                        widthCurrentWord += ci.xAdvance;
                         numCharsCurrentWord++;
                     }
 
@@ -705,6 +756,7 @@
                     offset.y -= lineLengths.length * lh;
                 }
 
+                let lineHeight = texture.lineHeight;
                 for (let i = 0; i < lineLengths.length; i++) {
                     let numChars = charsPerLine[i];
                     let lineLength = lineLengths[i];
@@ -721,8 +773,8 @@
 
                         if(char !== "\t" && !this._isWhiteSpaceCharVert(char)){ 
                             //make sure space char gets processed here or overlapping can occur when text is set
-                            this.updateInstanceDataPart(d, offset);
                             let ci = texture.getChar(char);
+                            this.updateInstanceDataPart(d, new Vector2(offset.x + ci.xOffset, offset.y +ci.yOffset));
                             d.topLeftUV = ci.topLeftUV;
                             let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                             d.sizeUV = suv;
@@ -737,7 +789,7 @@
                     }
 
                     offset.x = offsetX;
-                    offset.y -= texture.lineHeight;
+                    offset.y -= lineHeight;
                 }
 
             }
@@ -848,6 +900,8 @@
         private _textSize: Size;
         private _wordWrap: boolean;
         private _textAlignment: string;
+        private _sizeSetByUser: boolean;
+        private _textureIsPremulAlpha: boolean;
 
         public textAlignmentH: number;
         public textAlignmentV: number;

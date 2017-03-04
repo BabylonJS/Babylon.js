@@ -208,7 +208,6 @@
       "../../src/PostProcess/babylon.lensRenderingPipeline.js",
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
-      "../../src/Cameras/Holographic/babylon.holographicCamera.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
@@ -412,6 +411,13 @@
           "../../proceduralTexturesLibrary/src/starfield/starfieldProceduralTexture.fragment.fx"
         ],
         "output": "babylon.starfieldProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/normalMap/babylon.normalMapProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.normalMapProceduralTexture.js"
       }
     ],
     "build": {

@@ -47,7 +47,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 	float attenuation = max(0., 1.0 - length(direction) / range);
 
 	// diffuse
-	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));
+	float cosAngle = max(0., dot(lightDirection.xyz, -lightVectorW));
 
 	if (cosAngle >= lightDirection.w)
 	{
@@ -55,12 +55,12 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		attenuation *= cosAngle;
 
 		// Diffuse
-		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
+		float ndl = max(0., dot(vNormal, lightVectorW));
 		result.diffuse = ndl * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
 		// Specular
-		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
+		vec3 angleW = normalize(viewDirectionW + lightVectorW);
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, max(1., glossiness));
 

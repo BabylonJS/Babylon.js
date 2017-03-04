@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="..\babylon.node.ts" />
+
+module BABYLON {
     export class Bone extends Node {
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
@@ -34,7 +36,7 @@
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
             this._localMatrix = matrix;
-            this._baseMatrix = matrix;
+            this._baseMatrix = matrix.clone();
             this._restPose = restPose ? restPose : matrix.clone();
 
             skeleton.bones.push(this);
@@ -201,13 +203,20 @@
 
             }else{
 
+                var wm:Matrix;
+
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if(mesh){
+                    wm = mesh.getWorldMatrix();
+                }
+
                 this._skeleton.computeAbsoluteTransforms();
                 var tmat = Tmp.Matrix[0];
                 var tvec = Tmp.Vector3[0];
 
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                 }
@@ -247,6 +256,13 @@
 
             }else{
 
+                var wm:Matrix;
+
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if(mesh){
+                    wm = mesh.getWorldMatrix();
+                }
+
                 this._skeleton.computeAbsoluteTransforms();
 
                 var tmat = Tmp.Matrix[0];
@@ -254,7 +270,7 @@
 
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                 }
@@ -624,13 +640,20 @@
 
             }else{
                 
+                var wm;
+                
+                //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+                if(mesh){
+                    wm = mesh.getWorldMatrix();
+                }
+                
                 this._skeleton.computeAbsoluteTransforms();
                 
                 var tmat = Tmp.Matrix[0];
 
                 if (mesh) {
                     tmat.copyFrom(this.getAbsoluteTransform());
-                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                    tmat.multiplyToRef(wm, tmat);
                 }else{
                     tmat = this.getAbsoluteTransform();
                 }
@@ -745,6 +768,13 @@
          */
         public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
 
+            var wm:Matrix;
+
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if(mesh){
+                wm = mesh.getWorldMatrix();
+            }
+
             this._skeleton.computeAbsoluteTransforms();
             
             var mat = Tmp.Matrix[0];
@@ -752,7 +782,7 @@
             mat.copyFrom(this.getAbsoluteTransform());
 
             if(mesh){
-                mat.multiplyToRef(mesh.getWorldMatrix(), mat);
+                mat.multiplyToRef(wm, mat);
             }
 
             Vector3.TransformNormalToRef(localAxis, mat, result);
@@ -914,13 +944,20 @@
          */
         public getAbsolutePositionFromLocalToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
 
+            var wm:Matrix;
+
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if(mesh){
+                wm = mesh.getWorldMatrix();
+            }
+
             this._skeleton.computeAbsoluteTransforms();
 
             var tmat = Tmp.Matrix[0];
             
             if (mesh) {
                 tmat.copyFrom(this.getAbsoluteTransform());
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                tmat.multiplyToRef(wm, tmat);
             }else{
                 tmat = this.getAbsoluteTransform();
             }
@@ -953,6 +990,13 @@
          */
         public getLocalPositionFromAbsoluteToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
 
+            var wm:Matrix;
+
+            //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            if(mesh){
+                wm = mesh.getWorldMatrix();
+            }
+
             this._skeleton.computeAbsoluteTransforms();
 
             var tmat = Tmp.Matrix[0];
@@ -960,7 +1004,7 @@
             tmat.copyFrom(this.getAbsoluteTransform());
             
             if (mesh) {
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                tmat.multiplyToRef(wm, tmat);
             }
 
             tmat.invert();

@@ -1,4 +1,5 @@
-﻿var gulp = require('gulp');
+/// <binding />
+var gulp = require('gulp');
 var ts = require('gulp-typescript');
 
 var files = [
@@ -15,8 +16,7 @@ var files = [
     "actionsbuilder.viewer.ts",
     // References
     "raphaeljs.d.ts",
-    "../../dist/*.d.ts",
-    "../..external references/**/*.d.ts"
+    "../../../dist/preview release/babylon.d.ts"
 ];
 
 gulp.task("default", function () {
