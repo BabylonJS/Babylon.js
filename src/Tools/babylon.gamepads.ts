@@ -74,8 +74,10 @@
             if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
                 newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
-            else if ((<string>gamepad.id).search("Open VR") !== -1 || (<string>gamepad.id).search("Oculus Touch") !== -1) {
-                newGamepad = new WebVRController(gamepad.id, gamepad.index, gamepad);
+            // (<string>gamepad.id).search("Open VR") !== -1 || (<string>gamepad.id).search("Oculus Touch") !== -1
+            // if pose is supported, use the (WebVR) pose enabled controller
+            else if (gamepad.pose) {
+                newGamepad = PoseEnabledControllerHelper.InitiateController(gamepad);
             }
             else {
                 newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
@@ -171,7 +173,7 @@
         public static GAMEPAD = 0;
         public static GENERIC = 1;
         public static XBOX = 2;
-        public static WEBVR = 3;
+        public static POSE_ENABLED = 3;
 
         constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
@@ -220,83 +222,6 @@
             }
             if (this._rightStick) {
                 this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
-            }
-        }
-    }
-
-    export interface VRButtonState {
-        pressed: boolean;
-        touched: boolean;
-        value: number;
-    }
-
-    export class WebVRController extends Gamepad {
-        public position: Vector3;
-        public rotationQuaternion: Quaternion;
-        /**
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
-         */
-        private _buttons: Array<VRButtonState>;
-
-        public rawPose: GamepadPose;
-
-        private _onButtonStateChange: (controlledIndex: number, buttonIndex: number, state: VRButtonState) => void;
-
-        public onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: VRButtonState) => void) {
-            this._onButtonStateChange = callback;
-        }
-
-        public getButtonAxis(index: number = 0): StickValues {
-            if (index) {
-                return this.rightStick;
-            }
-            return this.leftStick;
-        }
-
-        constructor(public id: string, public index: number, public vrGamepad) {
-            super(id, index, vrGamepad);
-            this.type = Gamepad.WEBVR;
-            this._buttons = new Array(vrGamepad.buttons.length);
-            this.position = Vector3.Zero();
-            this.rotationQuaternion = new Quaternion();
-        }
-
-        private _setButtonValue(newState: VRButtonState, currentState: VRButtonState, buttonIndex: number): VRButtonState {
-            if (!currentState) {
-                return newState;
-            }
-            if (
-                newState.pressed !== currentState.pressed ||
-                newState.touched !== currentState.touched ||
-                newState.value !== currentState.value) {
-
-                this._onButtonStateChange && this._onButtonStateChange(this.index, buttonIndex, newState);
-            }
-            return {
-                pressed: newState.pressed,
-                touched: newState.touched,
-                value: newState.value
-            };
-        }
-
-        public update() {
-            super.update();
-            for (var index = 0; index < this._buttons.length; index++) {
-                this._buttons[index] = this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
-            };
-            var pose: GamepadPose = this.vrGamepad.pose;
-            if (pose) {
-                this.rawPose = pose;
-                if (pose.hasPosition) {
-                    this.position.copyFromFloats(pose.position[0], pose.position[1], -pose.position[2]);
-                }
-                if (pose.hasOrientation) {
-                    this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
-                }
             }
         }
     }
