@@ -28,20 +28,10 @@ module BABYLON {
         public position: Vector3;
         public rotationQuaternion: Quaternion;
         public controllerType: PoseEnabledControllerType;
-        /**
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
-         */
 
-        /**
-         * 
-         *oculus:
+        public positionOffset: Vector3 = Vector3.Zero();
+        public positionScale: number = 1;
 
-         
-         */
         public rawPose: GamepadPose;
 
         private _mesh: AbstractMesh; // a node that will be attached to this Gamepad
@@ -61,6 +51,7 @@ module BABYLON {
                 this.rawPose = pose;
                 if (pose.hasPosition) {
                     this.position.copyFromFloats(pose.position[0], pose.position[1], -pose.position[2]);
+                    this.position.scaleInPlace(this.positionScale);
                 }
                 if (pose.hasOrientation) {
                     this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
@@ -68,6 +59,7 @@ module BABYLON {
             }
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.position);
+                this._mesh.position.addInPlace(this.positionOffset);
                 this._mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
             }
         }
@@ -77,6 +69,10 @@ module BABYLON {
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
+        }
+
+        public detachMesh() {
+            this._mesh = undefined;
         }
     }
 
