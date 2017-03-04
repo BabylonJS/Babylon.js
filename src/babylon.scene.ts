@@ -570,9 +570,9 @@
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
          */
         constructor(engine: Engine) {
-            this._engine = engine;
+            this._engine = engine || Engine.LastCreatedEngine;
 
-            engine.scenes.push(this);
+            this._engine.scenes.push(this);
 
             this._externalData = new StringDictionary<Object>();
             this._uid = null;
@@ -816,7 +816,7 @@
                 var canvas = this._engine.getRenderingCanvas();
 
                 if (!this.pointerMovePredicate) {
-                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
                 }
 
                 // Meshes

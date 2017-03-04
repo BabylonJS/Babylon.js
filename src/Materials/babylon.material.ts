@@ -213,16 +213,16 @@
             this.name = name;
             this.id = name;
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
-            if (scene.useRightHandedSystem) {
+            if (this._scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
             } else {
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
             }
 
             if (!doNotAdd) {
-                scene.materials.push(this);
+                this._scene.materials.push(this);
             }
         }
 

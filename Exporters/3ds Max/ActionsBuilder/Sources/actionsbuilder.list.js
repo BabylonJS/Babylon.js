@@ -9,7 +9,7 @@ var ActionsBuilder;
             this.element = null;
         }
         return ListElement;
-    })();
+    }());
     ActionsBuilder.ListElement = ListElement;
     var List = (function () {
         /**
@@ -250,7 +250,7 @@ var ActionsBuilder;
             element.text.drag(onMove, onStart, onEnd);
         };
         return List;
-    })();
+    }());
     ActionsBuilder.List = List;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.list.js.map

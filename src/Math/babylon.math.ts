@@ -1603,10 +1603,10 @@
          * The cross product is then orthogonal to both "left" and "right". 
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(Tmp.Vector3[0]);
+            MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            MathTmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            MathTmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(MathTmp.Vector3[0]);
         }
 
         /**
@@ -1722,6 +1722,7 @@
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system.  
+         * Note : axis1, axis2 and axis3 are normalized during this operation.   
          * Returns a new Vector3.  
          */
         public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
@@ -1734,120 +1735,12 @@
          * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.  
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
-            var u = axis1.normalize();
-            var w = axis3.normalize();
-
-            // world axis
-            var X = Axis.X;
-            var Y = Axis.Y;
-
-            // equation unknowns and vars
-            var yaw = 0.0;
-            var pitch = 0.0;
-            var roll = 0.0;
-            var x = 0.0;
-            var y = 0.0;
-            var z = 0.0;
-            var t = 0.0;
-            var sign = -1.0;
-            var nbRevert = 0;
-            var cross: Vector3 = Tmp.Vector3[0];
-            var dot = 0.0;
-
-            // step 1  : rotation around w
-            // Rv3(u) = u1, and u1 belongs to plane xOz
-            // Rv3(w) = w1 = w invariant
-            var u1: Vector3 = Tmp.Vector3[1];
-            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
-                z = 1.0;
-            }
-            else if (MathTools.WithinEpsilon(w.x, 0, Epsilon)) {
-                x = 1.0;
-            }
-            else {
-                t = w.z / w.x;
-                x = - t * Math.sqrt(1 / (1 + t * t));
-                z = Math.sqrt(1 / (1 + t * t));
-            }
-
-            u1.x = x;
-            u1.y = y;
-            u1.z = z;
-            u1.normalize();
-            Vector3.CrossToRef(u, u1, cross);  // returns same direction as w (=local z) if positive angle : cross(source, image)
-            cross.normalize();
-            if (Vector3.Dot(w, cross) < 0) {
-                sign = 1.0;
-            }
-
-            dot = Vector3.Dot(u, u1);
-            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
-            roll = Math.acos(dot) * sign;
-
-            if (Vector3.Dot(u1, X) < 0) { // checks X orientation
-                roll = Math.PI + roll;
-                u1 = u1.scaleInPlace(-1);
-                nbRevert++;
-            }
-
-            // step 2 : rotate around u1
-            // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
-            // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
-            var w2: Vector3 = Tmp.Vector3[2];
-            var v2: Vector3 = Tmp.Vector3[3];
-            x = 0.0;
-            y = 0.0;
-            z = 0.0;
-            sign = -1.0;
-            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
-                x = 1.0;
-            }
-            else {
-                t = u1.z / u1.x;
-                x = - t * Math.sqrt(1 / (1 + t * t));
-                z = Math.sqrt(1 / (1 + t * t));
-            }
-
-            w2.x = x;
-            w2.y = y;
-            w2.z = z;
-            w2.normalize();
-            Vector3.CrossToRef(w2, u1, v2);   // v2 image of v1 through rotation around u1
-            v2.normalize();
-            Vector3.CrossToRef(w, w2, cross); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
-            cross.normalize();
-            if (Vector3.Dot(u1, cross) < 0) {
-                sign = 1.0;
-            }
-
-            dot = Vector3.Dot(w, w2);
-            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
-            pitch = Math.acos(dot) * sign;
-            if (Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
-                pitch = Math.PI + pitch;
-                nbRevert++;
-            }
-
-            // step 3 : rotate around v2
-            // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
-            sign = -1.0;
-            Vector3.CrossToRef(X, u1, cross); // returns same direction as Y if positive angle : cross(source, image)
-            cross.normalize();
-            if (Vector3.Dot(cross, Y) < 0) {
-                sign = 1.0;
-            }
-            dot = Vector3.Dot(u1, X);
-            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
-            yaw = - Math.acos(dot) * sign;         // negative : plane zOx oriented clockwise
-            if (dot < 0 && nbRevert < 2) {
-                yaw = Math.PI + yaw;
-            }
-
-            ref.x = pitch;
-            ref.y = yaw;
-            ref.z = roll;
+            var quat = MathTmp.Quaternion[0];
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
+            quat.toEulerAnglesToRef(ref);
         }
     }
+
 
     //Vector4 class created for EulerAngle class conversion to Quaternion
     export class Vector4 {
@@ -2705,6 +2598,12 @@
             }
         }
         /**
+         * Returns a new Quaternion set to (0.0, 0.0, 0.0).  
+         */
+        public static Zero(): Quaternion {
+            return new Quaternion(0.0, 0.0, 0.0, 0.0);
+        }
+        /**
          * Returns a new Quaternion as the inverted current Quaternion.  
          */
         public static Inverse(q: Quaternion): Quaternion {
@@ -2793,6 +2692,27 @@
             result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
             result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
             result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
+        }
+
+        /**
+         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.   
+         * cf to Vector3.RotationFromAxis() documentation.  
+         * Note : axis1, axis2 and axis3 are normalized during this operation.   
+         */
+         public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
+            var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
+            Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
+            return quat;
+        }
+        /**
+         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.   
+         * cf to Vector3.RotationFromAxis() documentation.  
+         * Note : axis1, axis2 and axis3 are normalized during this operation.   
+         */
+        public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
+            var rotMat = MathTmp.Matrix[0];
+            BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+            BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
@@ -3001,6 +2921,16 @@
             return this;
         }
         /**
+         * Inserts the translation vector (using 3 x floats) in the current Matrix.  
+         * Returns the updated Matrix.  
+         */
+        public setTranslationFromFloats(x: number, y: number, z: number): Matrix {
+            this.m[12] = x;
+            this.m[13] = y;
+            this.m[14] = z;
+            return this;
+        }
+                /**
          * Inserts the translation vector in the current Matrix.  
          * Returns the updated Matrix.  
          */
@@ -3016,6 +2946,26 @@
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
+        /**
+         * Fill a Vector3 with the extracted translation from the Matrix.  
+         */
+        public getTranslationToRef(result:Vector3): Matrix {
+            result.x = this.m[12];
+            result.y = this.m[13];
+            result.z = this.m[14];
+
+            return this;
+        }
+        /**
+         * Remove rotation and scaling part from the Matrix. 
+         * Returns the updated Matrix. 
+         */
+        public removeRotationAndScaling(): Matrix {
+            this.setRowFromFloats(0, 1, 0, 0, 0);
+            this.setRowFromFloats(1, 0, 1, 0, 0);
+            this.setRowFromFloats(2, 0, 0, 1, 0);
+            return this;
+        }        
         /**
          * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.  
          */
@@ -3178,9 +3128,9 @@
                 this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
                 this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
                 this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
-                0, 0, 0, 1, Tmp.Matrix[0]);
+                0, 0, 0, 1, MathTmp.Matrix[0]);
 
-            Quaternion.FromRotationMatrixToRef(Tmp.Matrix[0], rotation);
+            Quaternion.FromRotationMatrixToRef(MathTmp.Matrix[0], rotation);
 
             return true;
         }
@@ -3294,6 +3244,22 @@
             this.m[i + 3] = row.w;
             return this;
         }
+        
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values.
+         * Returns the updated Matrix.    
+         */
+        public setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = x;
+            this.m[i + 1] = y;
+            this.m[i + 2] = z;
+            this.m[i + 3] = w;
+            return this;
+        }
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -3328,19 +3294,25 @@
          * Returns a new Matrix composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
          */
         public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
-            var result = Matrix.FromValues(scale.x, 0, 0, 0,
-                0, scale.y, 0, 0,
-                0, 0, scale.z, 0,
-                0, 0, 0, 1);
-
-            var rotationMatrix = Matrix.Identity();
-            rotation.toRotationMatrix(rotationMatrix);
-            result = result.multiply(rotationMatrix);
-
-            result.setTranslation(translation);
-
+            var result = Matrix.Identity();
+            Matrix.ComposeToRef(scale, rotation, translation, result);
             return result;
         }
+
+          /**
+         * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
+         */
+        public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
+            Matrix.FromValuesToRef(scale.x, 0, 0, 0,
+                0, scale.y, 0, 0,
+                0, 0, scale.z, 0,
+                0, 0, 0, 1, MathTmp.Matrix[1]);
+
+            rotation.toRotationMatrix(MathTmp.Matrix[0]);
+            MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
+
+            result.setTranslation(translation);
+        }      
         /**
          * Returns a new indentity Matrix.  
          */
@@ -3695,12 +3667,17 @@
                 ex, ey, ez, 1, result);
         }
 
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
             let f = zfar;
@@ -3718,7 +3695,9 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
@@ -3726,8 +3705,10 @@
 
             return matrix;
         }
-
-        public static OrthoOffCenterLHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
+        public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
             let f = zfar;
 
@@ -3746,18 +3727,24 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         */
         public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
-
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         */
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
@@ -3779,13 +3766,17 @@
 
             return matrix;
         }
-
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             let n = znear;
             let f = zfar;
@@ -3804,13 +3795,17 @@
                 result
             );
         }
-
+        /**
+         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
-
+        /**
+         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             //alternatively this could be expressed as:
             //    m = PerspectiveFovLHToRef
@@ -3834,7 +3829,9 @@
                 result
             );
         }
-
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         */
         public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             //left handed
             var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
@@ -3962,6 +3959,9 @@
             result.m[15] = 1.0;
         }
 
+        /**
+         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.  
+         */
         public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
             
             mat.m[0] = xaxis.x;
@@ -4783,6 +4783,30 @@
         }
 
         /**
+         * Returns a Curve3 object along a CatmullRom Spline curve : 
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.  
+         * @param nbPoints (integer) the wanted number of points between each curve control points.
+         */
+        public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3 {
+            var totalPoints = new Array<Vector3>();
+            totalPoints.push(points[0].clone());
+            Array.prototype.push.apply(totalPoints, points);
+            totalPoints.push(points[points.length - 1].clone());
+            var catmullRom = new Array<Vector3>();
+            var step = 1.0 / nbPoints;
+            for (var i = 0; i < totalPoints.length - 3; i++) {
+                var amount = 0.0;
+                for (var c = 0; c < nbPoints; c++) {
+                    catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+                    amount += step
+                }
+            }
+            i--;
+            catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+            return new Curve3(catmullRom);
+        }
+
+        /**
          * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
          * A Curve3 is designed from a series of successive Vector3.  
          * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
@@ -4943,11 +4967,16 @@
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
             Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = [new Quaternion(0.0, 0.0, 0.0, 0.0), 
-            new Quaternion(0.0, 0.0, 0.0, 0.0)];                // 2 temp Quaternion at once should be enough
+        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero()];                // 2 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+    }
+    // Same as Tmp but not exported to keep it onyl for math functions to avoid conflicts
+    class MathTmp {
+        public static Vector3: Vector3[] = [Vector3.Zero()];
+        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
+        public static Quaternion: Quaternion[] = [Quaternion.Zero()];
     }
 }

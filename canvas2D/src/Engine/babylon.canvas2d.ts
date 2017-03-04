@@ -87,18 +87,19 @@
         }) {
             super(settings);
 
-            this._drawCallsOpaqueCounter       = new PerfCounter();
-            this._drawCallsAlphaTestCounter    = new PerfCounter();
-            this._drawCallsTransparentCounter  = new PerfCounter();
-            this._groupRenderCounter           = new PerfCounter();
-            this._updateTransparentDataCounter = new PerfCounter();
-            this._cachedGroupRenderCounter     = new PerfCounter();
-            this._updateCachedStateCounter     = new PerfCounter();
-            this._updateLayoutCounter          = new PerfCounter();
-            this._updatePositioningCounter     = new PerfCounter();
-            this._updateLocalTransformCounter  = new PerfCounter();
-            this._updateGlobalTransformCounter = new PerfCounter();
-            this._boundingInfoRecomputeCounter = new PerfCounter();
+            this._drawCallsOpaqueCounter          = new PerfCounter();
+            this._drawCallsAlphaTestCounter       = new PerfCounter();
+            this._drawCallsTransparentCounter     = new PerfCounter();
+            this._groupRenderCounter              = new PerfCounter();
+            this._updateTransparentDataCounter    = new PerfCounter();
+            this._cachedGroupRenderCounter        = new PerfCounter();
+            this._updateCachedStateCounter        = new PerfCounter();
+            this._updateLayoutCounter             = new PerfCounter();
+            this._updatePositioningCounter        = new PerfCounter();
+            this._updateLocalTransformCounter     = new PerfCounter();
+            this._updateGlobalTransformCounter    = new PerfCounter();
+            this._boundingInfoRecomputeCounter    = new PerfCounter();
+            this._layoutBoundingInfoUpdateCounter = new PerfCounter();
 
             this._cachedCanvasGroup = null;
 
@@ -168,6 +169,8 @@
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
+            this._curHWScale = 0;
+            this._canvasLevelScale = new Vector3(1, 1, 1);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!this._trackedGroups) {
@@ -274,6 +277,10 @@
 
         public get boundingInfoRecomputeCounter(): PerfCounter {
             return this._boundingInfoRecomputeCounter;
+        }
+
+        public get layoutBoundingInfoUpdateCounter(): PerfCounter {
+            return this._layoutBoundingInfoUpdateCounter;
         }
 
         public static get instances() : Array<Canvas2D> {
@@ -1134,6 +1141,7 @@
             this._updateLocalTransformCounter.fetchNewFrame();
             this._updateGlobalTransformCounter.fetchNewFrame();
             this._boundingInfoRecomputeCounter.fetchNewFrame();
+            this._layoutBoundingInfoUpdateCounter.fetchNewFrame();
         }
 
         private _fetchPerfMetrics() {
@@ -1149,6 +1157,7 @@
             this._updateLocalTransformCounter.addCount(0, true);
             this._updateGlobalTransformCounter.addCount(0, true);
             this._boundingInfoRecomputeCounter.addCount(0, true);
+            this._layoutBoundingInfoUpdateCounter.addCount(0, true);
         }
 
         private _updateProfileCanvas() {
@@ -1170,7 +1179,8 @@
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
                     ` - Update Local  Trans: ${this.updateLocalTransformCounter.current}, (avg:${format(this.updateLocalTransformCounter.lastSecAverage)}, t:${format(this.updateLocalTransformCounter.total)})\n` + 
                     ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n` + 
-                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})`;
+                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})\n` +
+                    ` - LayoutBoundingInfo Recompute: ${this.layoutBoundingInfoUpdateCounter.current}, (avg:${format(this.layoutBoundingInfoUpdateCounter.lastSecAverage)}, t:${format(this.layoutBoundingInfoUpdateCounter.total)})` ;
             this._profileInfoText.text = p;
         }
 
@@ -1189,35 +1199,57 @@
         }
 
         public _addGroupRenderCount(count: number) {
-            this._groupRenderCounter.addCount(count, false);
+            if (this._groupRenderCounter) {
+                this._groupRenderCounter.addCount(count, false);
+            }
         }
 
         public _addUpdateTransparentDataCount(count: number) {
-            this._updateTransparentDataCounter.addCount(count, false);
+            if (this._updateTransparentDataCounter) {
+                this._updateTransparentDataCounter.addCount(count, false);
+            }
         }
 
         public addCachedGroupRenderCounter(count: number) {
-            this._cachedGroupRenderCounter.addCount(count, false);
+            if (this._cachedGroupRenderCounter) {
+                this._cachedGroupRenderCounter.addCount(count, false);
+            }
         }
 
         public addUpdateCachedStateCounter(count: number) {
-            this._updateCachedStateCounter.addCount(count, false);
+            if (this._updateCachedStateCounter) {
+                this._updateCachedStateCounter.addCount(count, false);
+            }
         }
 
         public addUpdateLayoutCounter(count: number) {
-            this._updateLayoutCounter.addCount(count, false);
+            if (this._updateLayoutCounter) {
+                this._updateLayoutCounter.addCount(count, false);
+            }
         }
 
         public addUpdatePositioningCounter(count: number) {
-            this._updatePositioningCounter.addCount(count, false);
+            if (this._updatePositioningCounter) {
+                this._updatePositioningCounter.addCount(count, false);
+            }
         }
 
         public addupdateLocalTransformCounter(count: number) {
-            this._updateLocalTransformCounter.addCount(count, false);
+            if (this._updateLocalTransformCounter) {
+                this._updateLocalTransformCounter.addCount(count, false);
+            }
         }
 
         public addUpdateGlobalTransformCounter(count: number) {
-            this._updateGlobalTransformCounter.addCount(count, false);
+            if (this._updateGlobalTransformCounter) {
+                this._updateGlobalTransformCounter.addCount(count, false);
+            }
+        }
+
+        public addLayoutBoundingInfoUpdateCounter(count: number) {
+            if (this._layoutBoundingInfoUpdateCounter) {
+                this._layoutBoundingInfoUpdateCounter.addCount(count, false);
+            }
         }
 
         private _renderObservable: Observable<Canvas2D>;
@@ -1262,20 +1294,23 @@
         private _designUseHorizAxis: boolean;
         public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
-        public _renderingSize: Size;
+        public _canvasLevelScale: Vector3;
+        public  _renderingSize: Size;
+        private _curHWScale;
 
-        private _drawCallsOpaqueCounter      : PerfCounter;
-        private _drawCallsAlphaTestCounter   : PerfCounter;
-        private _drawCallsTransparentCounter : PerfCounter;
-        private _groupRenderCounter          : PerfCounter;
-        private _updateTransparentDataCounter: PerfCounter;
-        private _cachedGroupRenderCounter    : PerfCounter;
-        private _updateCachedStateCounter    : PerfCounter;
-        private _updateLayoutCounter         : PerfCounter;
-        private _updatePositioningCounter    : PerfCounter;
-        private _updateGlobalTransformCounter: PerfCounter;
-        private _updateLocalTransformCounter : PerfCounter;
-        private _boundingInfoRecomputeCounter: PerfCounter;
+        private _drawCallsOpaqueCounter          : PerfCounter;
+        private _drawCallsAlphaTestCounter       : PerfCounter;
+        private _drawCallsTransparentCounter     : PerfCounter;
+        private _groupRenderCounter              : PerfCounter;
+        private _updateTransparentDataCounter    : PerfCounter;
+        private _cachedGroupRenderCounter        : PerfCounter;
+        private _updateCachedStateCounter        : PerfCounter;
+        private _updateLayoutCounter             : PerfCounter;
+        private _updatePositioningCounter        : PerfCounter;
+        private _updateGlobalTransformCounter    : PerfCounter;
+        private _updateLocalTransformCounter     : PerfCounter;
+        private _boundingInfoRecomputeCounter    : PerfCounter;
+        private _layoutBoundingInfoUpdateCounter : PerfCounter;
 
         private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;
@@ -1427,15 +1462,26 @@
                 return;
             }
 
+            // Detect a change of HWRendering scale
+            let hwsl = this.engine.getHardwareScalingLevel();
+            let hwslChanged = this._curHWScale !== hwsl;
+            if (hwslChanged) {
+                this._curHWScale = hwsl;
+                for (let child of this.children) {
+                    child._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
+
             // Detect a change of rendering size
             let renderingSizeChanged = false;
-            let newWidth = this.engine.getRenderWidth();
+            let newWidth = this.engine.getRenderWidth() * hwsl;
             if (newWidth !== this._renderingSize.width) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.width = newWidth;
 
-            let newHeight = this.engine.getRenderHeight();
+            let newHeight = this.engine.getRenderHeight() * hwsl;
             if (newHeight !== this._renderingSize.height) {
                 renderingSizeChanged = true;
             }
@@ -1443,7 +1489,6 @@
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this.actualSize = this._renderingSize.clone();
                 this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
@@ -1457,18 +1502,21 @@
             if (this._designSize) {
                 let scale: number;
                 if (this._designUseHorizAxis) {
-                    scale = this._renderingSize.width / this._designSize.width;
+                    scale = this._renderingSize.width / (this._designSize.width * hwsl);
                 } else {
-                    scale = this._renderingSize.height / this._designSize.height;
+                    scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this.actualSize = this._designSize.clone();
-                this.scale = scale;
+                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+            } else if (this._curHWScale !== 1) {
+                let ratio = 1 / this._curHWScale;
+                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
             }
 
             var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
+            this._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
             this.updateCachedStates(false);
 
             this._prepareGroupRender(context);
