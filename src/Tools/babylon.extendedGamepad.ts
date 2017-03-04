@@ -89,7 +89,7 @@ module BABYLON {
 
     export abstract class WebVRController extends PoseEnabledController {
 
-        public onTriggerChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
         public onMainButtonStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
@@ -138,6 +138,7 @@ module BABYLON {
                     touched: newState.touched,
                     value: newState.value
                 }
+                return;
             }
             this._checkChanges(newState, currentState);
             if (this._changes.changed) {
@@ -152,7 +153,12 @@ module BABYLON {
         }
 
         // avoid GC, store state in a tmp object
-        private _changes: GamepadButtonChanges;
+        private _changes: GamepadButtonChanges = {
+            pressChanged: false,
+            touchChanged: false,
+            valueChanged: false,
+            changed: false
+        };
 
         private _checkChanges(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton) {
             this._changes.pressChanged = newState.pressed !== currentState.pressed;
@@ -220,8 +226,9 @@ module BABYLON {
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
+                    return;
                 case 1: // index trigger
-                    this.onTriggerChangedObservable.notifyObservers(notifyObject);
+                    this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // secondary trigger
                     this.onSecondaryTriggerChangedObservable.notifyObservers(notifyObject);
@@ -272,8 +279,9 @@ module BABYLON {
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
+                    return;
                 case 1: // index trigger
-                    this.onTriggerChangedObservable.notifyObservers(notifyObject);
+                    this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // left AND right button
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
