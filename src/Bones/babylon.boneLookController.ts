@@ -3,114 +3,121 @@ module BABYLON {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMat1 = Matrix.Identity();
-        private static _tmpMat2 = Matrix.Identity();
-
+        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
+        
         public target: Vector3;
         public mesh: AbstractMesh;
         public bone: Bone;
         public upAxis: Vector3 = Vector3.Up();
+        public upAxisSpace: Space = Space.LOCAL;
+
+        public adjustYaw = 0;
+        public adjustPitch = 0;
+        public adjustRoll = 0;
+
         public slerpAmount = 1;
 
-        private _adjustRotY = 0;
-        private _adjustRotX = 0;
-        private _adjustRotZ = 0;
-        private _minRotY:number;
-        private _maxRotY:number;
-        private _minRotX:number;
-        private _maxRotX:number;
-        private _minRotYSin:number;
-        private _minRotYCos:number;
-        private _maxRotYSin:number;
-        private _maxRotYCos:number;
-        private _minRotXTan:number;
-        private _maxRotXTan:number;
-        private _minRotZ:number;
-        private _maxRotZ:number;
-        private _minRotZSin:number;
-        private _minRotZCos:number;
-        private _maxRotZSin:number;
-        private _maxRotZCos:number;
+        private _minYaw:number;
+        private _maxYaw:number;
+        private _minPitch:number;
+        private _maxPitch:number;
+        private _minYawSin:number;
+        private _minYawCos:number;
+        private _maxYawSin:number;
+        private _maxYawCos:number;
+        private _midYawConstraint:number;
+        private _minPitchTan:number;
+        private _maxPitchTan:number;
+        
         private _boneQuat:Quaternion = Quaternion.Identity();
         private _slerping = false;
+        private _transformYawPitch:Matrix;
+        private _transformYawPitchInv:Matrix;
+        private _firstFrameSkipped = false;
+        private _yawRange:number;
+        private _fowardAxis: Vector3 = Vector3.Forward();
 
-        get minRotationY():number{
-            return this._minRotY - this._adjustRotY;
+        get minYaw():number{
+            return this._minYaw;
         }
 
-        set minRotationY(value:number){
-            this._minRotY = value + this._adjustRotY;
-            this._minRotYSin = Math.sin(this._minRotY);
-            this._minRotYCos = Math.cos(this._minRotY);
+        set minYaw(value:number){
+            this._minYaw = value;
+            this._minYawSin = Math.sin(value);
+            this._minYawCos = Math.cos(value);
+            if(this._maxYaw != null){
+                this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw)*.5 + this._minYaw;
+                this._yawRange = this._maxYaw - this._minYaw;
+            }
         }
 
-        get maxRoationY():number{
-            return this._maxRotY - this._adjustRotY;
+        get maxYaw():number{
+            return this._maxYaw;
         }
 
-        set maxRotationY(value:number){
-            this._maxRotY = value + this._adjustRotY;
-            this._maxRotYSin = Math.sin(this._maxRotY);
-            this._maxRotYCos = Math.cos(this._maxRotY);
+        set maxYaw(value:number){
+            this._maxYaw = value;
+            this._maxYawSin = Math.sin(value);
+            this._maxYawCos = Math.cos(value);
+            if(this._minYaw != null){
+                this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw)*.5 + this._minYaw;
+                this._yawRange = this._maxYaw - this._minYaw;
+            }
         }
 
-        get minRotationX():number{
-            return this._minRotX - this._adjustRotX;
+        get minPitch():number{
+            return this._minPitch;
         }
 
-        set minRotationX(value:number){
-            this._minRotX = value + this._adjustRotX;
-            this._minRotXTan = Math.tan(this._minRotX);
+        set minPitch(value:number){
+            this._minPitch = value;
+            this._minPitchTan = Math.tan(value);
         }
 
-        get maxRotationX():number{
-            return this._maxRotX - this._adjustRotX;
+        get maxPitch():number{
+            return this._maxPitch;
         }
 
-        set maxRotationX(value:number){
-            this._maxRotX = value + this._adjustRotX;
-            this._maxRotXTan = Math.tan(this._maxRotX);
+        set maxPitch(value:number){
+            this._maxPitch = value;
+            this._maxPitchTan = Math.tan(value);
         }
 
-        get minRotationZ():number{
-            return this._minRotZ - this._adjustRotZ;
-        }
-
-        set minRotationZ(value:number){
-            this._minRotZ = value + this._adjustRotZ;
-            this._minRotZSin = Math.sin(this._minRotZ);
-            this._minRotZCos = Math.cos(this._minRotZ);
-        }
-
-        get maxRotationZ():number{
-            return this._maxRotZ - this._adjustRotZ;
-        }
-
-        set maxRotationZ(value:number){
-            this._maxRotZ = value + this._adjustRotZ;
-            this._maxRotZSin = Math.sin(this._maxRotZ);
-            this._maxRotZCos = Math.cos(this._maxRotZ);
-        }
-
+        /**
+         * Create a BoneLookController
+         * @param mesh the mesh that the bone belongs to
+         * @param settings optional settings:
+         * - maxYaw: the maximum angle the bone will yaw to
+         * - minYaw: the minimum angle the bone will yaw to
+         * - maxPitch: the maximum angle the bone will pitch to
+         * - minPitch: the minimum angle the bone will yaw to
+         * - slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
+         * - upAxis: the up axis of the coordinate system
+         * - upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         * - yawAxis: set yawAxis if the bone does not yaw on the y axis
+         * - pitchAxis: set pitchAxis if the bone does not pitch on the x axis
+         * - adjustYaw: used to make an adjustment to the yaw of the bone
+         * - adjustPitch: used to make an adjustment to the pitch of the bone
+         * - adjustRoll: used to make an adjustment to the roll of the bone
+         **/
         constructor(mesh: AbstractMesh, 
                     bone: Bone, 
                     target: Vector3, 
-                    options?: { 
-                        adjustRotationX?: number, 
-                        adjustRotationY?: number, 
-                        adjustRotationZ?: number, 
-                        slerpAmount?: number, 
-                        maxRotationY?:number, 
-                        minRotationY?:number,
-                        maxRotationX?:number, 
-                        minRotationX?:number,
-                        maxRotationZ?:number, 
-                        minRotationZ?:number,
+                    options?: {
                         adjustYaw?: number, 
                         adjustPitch?: number, 
-                        adjustRoll?: number 
-                    } 
-                    ){
+                        adjustRoll?: number, 
+                        slerpAmount?: number, 
+                        maxYaw?:number, 
+                        minYaw?:number, 
+                        maxPitch?:number, 
+                        minPitch?:number,
+                        upAxis?:Vector3,
+                        upAxisSpace?:Space,
+                        yawAxis?:Vector3,
+                        pitchAxis?:Vector3,
+                        showSpaceAxes?:boolean
+                    }){
 
             this.mesh = mesh;
             this.bone = bone;
@@ -119,158 +126,253 @@ module BABYLON {
             if(options){
 
                 if(options.adjustYaw){
-                    this._adjustRotY = options.adjustYaw;
+                    this.adjustYaw = options.adjustYaw;
                 }
 
                 if(options.adjustPitch){
-                    this._adjustRotX = options.adjustPitch;
+                    this.adjustPitch = options.adjustPitch;
                 }
 
                 if(options.adjustRoll){
-                    this._adjustRotZ = options.adjustRoll;
+                    this.adjustRoll = options.adjustRoll;
                 }
 
-                if(options.adjustRotationY){
-                    this._adjustRotY = options.adjustRotationY;
+                if(options.maxYaw != null){
+                    this.maxYaw = options.maxYaw;
                 }
 
-                if(options.adjustRotationX){
-                    this._adjustRotX = options.adjustRotationX;
+                if(options.minYaw != null){
+                    this.minYaw = options.minYaw;
                 }
 
-                if(options.adjustRotationZ){
-                    this._adjustRotZ = options.adjustRotationZ;
+                if(options.maxPitch != null){
+                    this.maxPitch = options.maxPitch;
                 }
 
-                if(options.maxRotationY != undefined){
-                    this.maxRotationY = options.maxRotationY;
+                if(options.minPitch != null){
+                    this.minPitch = options.minPitch;
                 }
 
-                if(options.minRotationY != undefined){
-                    this.minRotationY = options.minRotationY;
-                }
-
-                if(options.maxRotationX != undefined){
-                    this.maxRotationX = options.maxRotationX;
-                }
-
-                if(options.minRotationX != undefined){
-                    this.minRotationX = options.minRotationX;
-                }
-
-                if(options.maxRotationZ != undefined){
-                    this.maxRotationZ = options.maxRotationZ;
-                }
-
-                if(options.minRotationZ != undefined){
-                    this.minRotationZ = options.minRotationZ;
-                }
-
-                if(options.slerpAmount != undefined){
+                if(options.slerpAmount != null){
                     this.slerpAmount = options.slerpAmount;
                 }
 
+                if(options.upAxis != null){
+                    this.upAxis = options.upAxis;
+                }
+
+                if(options.upAxisSpace != null){
+                    this.upAxisSpace = options.upAxisSpace;
+                }
+
+                if(options.yawAxis != null || options.pitchAxis != null){
+
+                    var newYawAxis = Axis.Y;
+                    var newPitchAxis = Axis.X;
+
+                    if(options.yawAxis != null){
+                        newYawAxis = options.yawAxis.clone();
+                        newYawAxis.normalize();
+                    }
+
+                    if(options.pitchAxis != null){
+                        newPitchAxis = options.pitchAxis.clone();
+                        newPitchAxis.normalize();
+                    }
+
+                    var newRollAxis = Vector3.Cross(newPitchAxis, newYawAxis);
+
+                    this._transformYawPitch = Matrix.Identity();
+                    Matrix.FromXYZAxesToRef(newPitchAxis, newYawAxis, newRollAxis, this._transformYawPitch);
+
+                    this._transformYawPitchInv = this._transformYawPitch.clone();
+                    this._transformYawPitch.invert();
+                    
+                }
+
+            }
+
+            if(!bone.getParent() && this.upAxisSpace == Space.BONE){
+                this.upAxisSpace = Space.LOCAL;
             }
 
         }
 
         public update (): void {
-                
-            var bone = this.bone;
-            var target = this.target;
-            var mat1 = BoneLookController._tmpMat1;
-            var mat2 = BoneLookController._tmpMat2;
 
+            if(this._slerping && !this._firstFrameSkipped){
+                this._firstFrameSkipped = true;
+                return;
+            }
+
+            var bone = this.bone;
+            var bonePos = BoneLookController._tmpVecs[0];
+            bone.getAbsolutePositionToRef(this.mesh, bonePos);
+
+            var target = this.target;
+            var _tmpMat1 = BoneLookController._tmpMats[0];
+            var _tmpMat2 = BoneLookController._tmpMats[1];
+            
+            var mesh = this.mesh;
             var parentBone = bone.getParent();
 
-            if(parentBone){
-                if(this._maxRotX != undefined || this._minRotX != undefined){
+            var upAxis = BoneLookController._tmpVecs[1];
+            upAxis.copyFrom(this.upAxis);
+
+            if(this.upAxisSpace == Space.BONE){
+                if (this._transformYawPitch){
+                    Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitchInv, upAxis);
+                }
+                parentBone.getDirectionToRef(upAxis, this.mesh, upAxis);
+            }else if(this.upAxisSpace == Space.LOCAL){
+                mesh.getDirectionToRef(upAxis, upAxis);
+                if(mesh.scaling.x != 1 || mesh.scaling.y != 1 || mesh.scaling.z != 1){
+                    upAxis.normalize();
+                }
+            }
+
+            if(this._maxPitch != null || this._minPitch != null || this._maxYaw != null || this._minYaw != null){
+
+                var _tmpMat3 = BoneLookController._tmpMats[2];
+                var _tmpMat3Inv = BoneLookController._tmpMats[3];
+
+                if(this.upAxisSpace == Space.BONE && upAxis.y == 1){
+
+                    parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, _tmpMat3);
+                    
+                }else if(this.upAxisSpace == Space.LOCAL && upAxis.y == 1 && !parentBone){
+
+                    _tmpMat3.copyFrom(mesh.getWorldMatrix());
+
+                }else{
+
+                    var forwardAxis = BoneLookController._tmpVecs[2];
+                    forwardAxis.copyFrom(this._fowardAxis);
+                    
+                    if (this._transformYawPitch) {
+                        Vector3.TransformCoordinatesToRef(forwardAxis, this._transformYawPitchInv, forwardAxis);
+                    }
+
+                    if(parentBone){
+                        parentBone.getDirectionToRef(forwardAxis, this.mesh, forwardAxis);
+                    }else{
+                        mesh.getDirectionToRef(forwardAxis, forwardAxis);
+                    }
+
+                    var rightAxis = Vector3.Cross(upAxis, forwardAxis);
+                    rightAxis.normalize();
+                    var forwardAxis = Vector3.Cross(rightAxis, upAxis);
+
+                    Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, _tmpMat3);
+                    
+                }
+
+                _tmpMat3.invertToRef(_tmpMat3Inv);
+                
+                var xzlen:number;
+
+                if(this._maxPitch != null || this._minPitch != null){
+                    var localTarget = BoneLookController._tmpVecs[3];
+                    Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+
+                    var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                    var pitch = Math.atan2(localTarget.y, xzlen);
+                    var newPitch = pitch;
+
+                    if(pitch > this._maxPitch){
+                        localTarget.y = this._maxPitchTan*xzlen;
+                        newPitch = this._maxPitch;
+                    }else if(pitch < this._minPitch){
+                        localTarget.y = this._minPitchTan*xzlen;
+                        newPitch = this._minPitch;
+                    }
+                    
+                    if(pitch != newPitch){
+                        Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        localTarget.addInPlace(bonePos);
+                        target = localTarget;
+                    }
+                }
+
+                if(this._maxYaw != null || this._minYaw != null){
                     var localTarget = BoneLookController._tmpVecs[4];
-                    var _tmpVec5 = BoneLookController._tmpVecs[5];
-                    parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
-                    bone.getPositionToRef(Space.LOCAL, null, _tmpVec5);
-                    localTarget.x -= _tmpVec5.x;
-                    localTarget.y -= _tmpVec5.y;
-                    localTarget.z -= _tmpVec5.z;
-                    var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
-                    var rotX = Math.atan2(localTarget.y, xzlen);
+                    Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
 
-                    if(rotX > this._maxRotX){
-                        localTarget.y = this._maxRotXTan*xzlen + _tmpVec5.y;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
-                        target = localTarget;
-                    }else if(rotX < this._minRotX){
-                        localTarget.y = this._minRotXTan*xzlen + _tmpVec5.y;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
+                    var yaw = Math.atan2(localTarget.x, localTarget.z);
+                    var newYaw = yaw;
+
+                    if(yaw > this._maxYaw || yaw < this._minYaw){
+                        
+                        if(xzlen == null){
+                            xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                        }
+
+                        if(yaw > this._maxYaw){
+                            localTarget.z = this._maxYawCos*xzlen;
+                            localTarget.x = this._maxYawSin*xzlen;
+                            newYaw = this._maxYaw;
+                        }else if(yaw < this._minYaw){
+                            localTarget.z = this._minYawCos*xzlen;
+                            localTarget.x = this._minYawSin*xzlen;
+                            newYaw = this._minYaw;
+                        }
+                    }
+
+                    if(this._slerping && this._yawRange > Math.PI){
+                        //are we going to be crossing into the min/max region
+                        var _tmpVec8 = BoneLookController._tmpVecs[8];
+                        _tmpVec8.copyFrom(BABYLON.Axis.Z);
+                        if (this._transformYawPitch){
+                            Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitchInv, upAxis);
+                        }
+
+                        var _tmpVec9 = BoneLookController._tmpVecs[9];
+                        Vector3.TransformCoordinatesToRef(_tmpVec8, bone.getLocalMatrix(), _tmpVec9);
+                        if (this._transformYawPitch){
+                            Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitch, upAxis);
+                        }
+
+                        var boneYaw = Math.atan2(_tmpVec9.x, _tmpVec9.z);
+                        var ang1 = this._getAngleBetween(boneYaw, yaw);
+                        var ang2 = this._getAngleBetween(boneYaw, this._midYawConstraint);
+
+                        if(ang1 > ang2){
+                            var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
+                            var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
+
+                            if(ang4 < ang3){
+                                newYaw = boneYaw+Math.PI*.95;
+                                localTarget.z = Math.cos(newYaw) * xzlen;
+                                localTarget.x = Math.sin(newYaw) * xzlen;
+                            }else{
+                                newYaw = boneYaw-Math.PI*.95;
+                                localTarget.z = Math.cos(newYaw) * xzlen;
+                                localTarget.x = Math.sin(newYaw) * xzlen;
+                            }
+                        }
+                    }
+
+                    if(yaw != newYaw){
+                        Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
                 }
-
-                if(this._maxRotY != undefined || this._minRotY != undefined){
-                    var localTarget = BoneLookController._tmpVecs[6];
-                    var _tmpVec7 = BoneLookController._tmpVecs[7];
-                    parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
-                    bone.getPositionToRef(Space.LOCAL, null, _tmpVec7);
-                    localTarget.x -= _tmpVec7.x;
-                    localTarget.z -= _tmpVec7.z;
-                    var rotY = Math.atan2(localTarget.x, localTarget.z);
-                    
-                    if(rotY > this._maxRotY){
-                        var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
-                        localTarget.z = this._maxRotYCos*xzlen;
-                        localTarget.x = this._maxRotYSin*xzlen;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
-                        target = localTarget;
-                    }else if(rotY < this._minRotY){
-                        var xzlen = Math.sqrt(localTarget.x*localTarget.x + localTarget.z*localTarget.z);
-                        localTarget.z = this._minRotYCos*xzlen;
-                        localTarget.x = this._minRotYSin*xzlen;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
-                        target = localTarget;
-                    }
-                }
-
-                if(this._maxRotZ != undefined || this._minRotZ != undefined){
-                    var localTarget = BoneLookController._tmpVecs[8];
-                    var _tmpVec9 = BoneLookController._tmpVecs[9];
-                    parentBone.getLocalPositionFromAbsoluteToRef(target, this.mesh, localTarget);
-                    bone.getPositionToRef(Space.LOCAL, null, _tmpVec9);
-                    localTarget.x -= _tmpVec9.x;
-                    localTarget.y -= _tmpVec9.y;
-                    var rotZ = Math.atan2(localTarget.y, localTarget.x);
-                    
-                    if(rotZ > this._maxRotZ){
-                        var xylen = Math.sqrt(localTarget.x*localTarget.x + localTarget.y*localTarget.y);
-                        localTarget.x = this._maxRotZCos*xylen;
-                        localTarget.y = this._maxRotZSin*xylen;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
-                        target = localTarget;
-                    }else if(rotZ < this._minRotZ){
-                        var xylen = Math.sqrt(localTarget.x*localTarget.x + localTarget.y*localTarget.y);
-                        localTarget.x = this._minRotZCos*xylen;
-                        localTarget.y = this._minRotZSin*xylen;
-                        parentBone.getAbsolutePositionFromLocalToRef(localTarget, this.mesh, localTarget);
-                        target = localTarget;
-                    }
-                }
-
 
             }
 
-            var bonePos = BoneLookController._tmpVecs[0];
-            var zaxis = BoneLookController._tmpVecs[1];
-            var xaxis = BoneLookController._tmpVecs[2];
-            var yaxis = BoneLookController._tmpVecs[3];
+            var zaxis = BoneLookController._tmpVecs[5];
+            var xaxis = BoneLookController._tmpVecs[6];
+            var yaxis = BoneLookController._tmpVecs[7];
             var _tmpQuat = BoneLookController._tmpQuat;
 
-            bone.getAbsolutePositionToRef(this.mesh, bonePos);
             target.subtractToRef(bonePos, zaxis);
             zaxis.normalize();
-            Vector3.CrossToRef(this.upAxis, zaxis, xaxis);
+            Vector3.CrossToRef(upAxis, zaxis, xaxis);
             xaxis.normalize();
             Vector3.CrossToRef(zaxis, xaxis, yaxis);
             yaxis.normalize();
-            Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, mat1);
+            Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, _tmpMat1);
 
             if(xaxis.x === 0 && xaxis.y === 0 && xaxis.z === 0){
                 return;
@@ -284,24 +386,68 @@ module BABYLON {
                 return;
             }
 
-            if (this._adjustRotY || this._adjustRotX || this._adjustRotZ) {
-                Matrix.RotationYawPitchRollToRef(this._adjustRotY, this._adjustRotX, this._adjustRotZ, mat2);
-                mat2.multiplyToRef(mat1, mat1);
+            if (this.adjustYaw || this.adjustPitch || this.adjustRoll) {
+                Matrix.RotationYawPitchRollToRef(this.adjustYaw, this.adjustPitch, this.adjustRoll, _tmpMat2);
+                _tmpMat2.multiplyToRef(_tmpMat1, _tmpMat1);
             }
 
             if (this.slerpAmount < 1) {
                 if (!this._slerping) {
                     this.bone.getRotationQuaternionToRef(Space.WORLD, this.mesh, this._boneQuat);
                 }
-                Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
+                if(this._transformYawPitch){
+                    this._transformYawPitch.multiplyToRef(_tmpMat1, _tmpMat1);
+                }
+                Quaternion.FromRotationMatrixToRef(_tmpMat1, _tmpQuat);
                 Quaternion.SlerpToRef(this._boneQuat, _tmpQuat, this.slerpAmount, this._boneQuat);
+                
                 this.bone.setRotationQuaternion(this._boneQuat, Space.WORLD, this.mesh);
                 this._slerping = true;
             } else {
-                this.bone.setRotationMatrix(mat1, Space.WORLD, this.mesh);
+                if(this._transformYawPitch){
+                    this._transformYawPitch.multiplyToRef(_tmpMat1, _tmpMat1);
+                }
+                this.bone.setRotationMatrix(_tmpMat1, Space.WORLD, this.mesh);
                 this._slerping = false;
             }
 
+        }
+
+        private _getAngleDiff(ang1, ang2):number {
+
+            var angDiff = ang2 - ang1;
+            angDiff %= Math.PI*2;
+            
+            if(angDiff > Math.PI){
+                angDiff -= Math.PI*2;
+            }else if (angDiff < -Math.PI){
+                angDiff += Math.PI*2;
+            }
+            
+            return angDiff;
+        }
+
+        private _getAngleBetween(ang1, ang2):number {
+
+            ang1 %= (2 * Math.PI);
+            ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
+
+            ang2 %= (2 * Math.PI);
+            ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
+
+            var ab = 0;
+
+            if(ang1 < ang2){
+                ab = ang2 - ang1;
+            }else{
+                ab = ang1 - ang2;
+            }
+
+            if(ab > Math.PI){
+                ab = Math.PI*2 - ab;
+            }
+
+            return ab;
         }
 
     }
