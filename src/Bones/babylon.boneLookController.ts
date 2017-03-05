@@ -250,7 +250,8 @@ module BABYLON {
          */
         public update (): void {
 
-            if(this._slerping && !this._firstFrameSkipped){
+            //skip the first frame when slerping so that the mesh rotation is correct
+            if(this.slerpAmount < 1 && !this._firstFrameSkipped){
                 this._firstFrameSkipped = true;
                 return;
             }
