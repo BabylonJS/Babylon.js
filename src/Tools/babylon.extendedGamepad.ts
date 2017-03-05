@@ -166,7 +166,7 @@ module BABYLON {
 
     export class OculusTouchController extends WebVRController {
 
-        public onSecondaryTriggerChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onSecondaryTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
         public onThumbRestChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
@@ -226,7 +226,7 @@ module BABYLON {
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // secondary trigger
-                    this.onSecondaryTriggerChangedObservable.notifyObservers(notifyObject);
+                    this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
