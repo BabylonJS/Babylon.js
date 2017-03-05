@@ -141,25 +141,25 @@ module BABYLON {
          * @memberOf WebVRFreeCamera
          */
         public setPositionOffset(newPosition?: Vector3) {
-            if(newPosition) {
+            if (newPosition) {
                 this._positionOffset = newPosition;
             } else {
                 this._positionOffset.copyFrom(this.position);
             }
         }
     }
-    
+
     export class WebVRGamepadCamera extends WebVRFreeCamera {
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion:boolean = false, webVROptions: WebVROptions = {}) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion: boolean = false, webVROptions: WebVROptions = {}) {
             super(name, position, scene, compensateDistortion, webVROptions);
-            
+
             this.inputs.addGamepad();
         }
 
         public getClassName(): string {
             return "WebVRGamepadCamera";
         }
-    }    
+    }
 }
 

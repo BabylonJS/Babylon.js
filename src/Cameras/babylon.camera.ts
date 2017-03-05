@@ -149,7 +149,7 @@
 
         public getClassName(): string {
             return "Camera";
-        }          
+        }
 
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
@@ -597,21 +597,23 @@
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
                         this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
                         //this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
-                        //this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
+                        this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = Matrix.Translation(-leftEye.offset[0], 0, 0);
+
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         //this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
-                        //this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
+                        this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = Matrix.Translation(-rightEye.offset[0], 0, 0);
+
                     }
                     break;
 
@@ -642,7 +644,7 @@
         private _getWebVRViewMatrix(): Matrix {
             var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
             //babylon compatible matrix
-            [8, 9, 10, 11].forEach(function (num) {
+            [10].forEach(function (num) {
                 projectionArray[num] *= -1;
             });
             Matrix.FromArrayToRef(projectionArray, 0, this._webvrViewMatrix);
