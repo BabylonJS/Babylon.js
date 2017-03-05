@@ -5,16 +5,49 @@ module BABYLON {
         private static _tmpQuat = Quaternion.Identity();
         private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
         
+        /**
+         * The target Vector3 that the bone will look at.
+         */
         public target: Vector3;
+
+        /**
+         * The mesh that the bone is attached to.
+         */
         public mesh: AbstractMesh;
+
+        /**
+         * The bone that will be looking to the target.
+         */
         public bone: Bone;
+
+        /**
+         * The up axis of the coordinate system that is used when the bone is rotated.
+         */
         public upAxis: Vector3 = Vector3.Up();
+
+        /**
+         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         */
         public upAxisSpace: Space = Space.LOCAL;
 
+        /**
+         * Used to make an adjustment to the yaw of the bone.
+         */
         public adjustYaw = 0;
+
+        /**
+         * Used to make an adjustment to the pitch of the bone.
+         */
         public adjustPitch = 0;
+
+        /**
+         * Used to make an adjustment to the roll of the bone.
+         */
         public adjustRoll = 0;
 
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp).
+         */
         public slerpAmount = 1;
 
         private _minYaw:number;
@@ -37,6 +70,9 @@ module BABYLON {
         private _yawRange:number;
         private _fowardAxis: Vector3 = Vector3.Forward();
 
+        /**
+         * Get/set the minimum yaw angle that the bone can look to.
+         */
         get minYaw():number{
             return this._minYaw;
         }
@@ -51,6 +87,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Get/set the maximum yaw angle that the bone can look to.
+         */
         get maxYaw():number{
             return this._maxYaw;
         }
@@ -65,6 +104,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Get/set the minimum pitch angle that the bone can look to.
+         */
         get minPitch():number{
             return this._minPitch;
         }
@@ -74,6 +116,9 @@ module BABYLON {
             this._minPitchTan = Math.tan(value);
         }
 
+        /**
+         * Get/set the maximum pitch angle that the bone can look to.
+         */
         get maxPitch():number{
             return this._maxPitch;
         }
@@ -86,6 +131,8 @@ module BABYLON {
         /**
          * Create a BoneLookController
          * @param mesh the mesh that the bone belongs to
+         * @param bone the bone that will be looking to the target
+         * @param target the target Vector3 to look at
          * @param settings optional settings:
          * - maxYaw: the maximum angle the bone will yaw to
          * - minYaw: the minimum angle the bone will yaw to
@@ -198,6 +245,9 @@ module BABYLON {
 
         }
 
+        /**
+         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender()).
+         */
         public update (): void {
 
             if(this._slerping && !this._firstFrameSkipped){
