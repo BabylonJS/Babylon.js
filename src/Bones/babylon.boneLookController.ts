@@ -3,7 +3,7 @@ module BABYLON {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
+        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
         
         /**
          * The target Vector3 that the bone will look at.
@@ -394,9 +394,12 @@ module BABYLON {
                         if (this._transformYawPitch) {
                             Vector3.TransformCoordinatesToRef(_tmpVec8, this._transformYawPitchInv, _tmpVec8);
                         }
-                        bone.getAbsolutePositionFromLocalToRef(_tmpVec8, this.mesh, _tmpVec8);
-                        _tmpVec8.subtractInPlace(bonePos);
-                        Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
+
+                        var boneRotMat = BABYLON.BoneLookController._tmpMats[4];
+                        this._boneQuat.toRotationMatrix(boneRotMat);
+                        this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
+                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, boneRotMat, _tmpVec8);
+                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
 
                         var boneYaw = Math.atan2(_tmpVec8.x, _tmpVec8.z);
                         var ang1 = this._getAngleBetween(boneYaw, yaw);
@@ -407,16 +410,16 @@ module BABYLON {
                             if (xzlen == null) {
                                 xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                             }
-                            
+
                             var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
                             var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
 
                             if(ang4 < ang3){
-                                newYaw = boneYaw+Math.PI*.95;
+                                newYaw = boneYaw+Math.PI*.75;
                                 localTarget.z = Math.cos(newYaw) * xzlen;
                                 localTarget.x = Math.sin(newYaw) * xzlen;
                             }else{
-                                newYaw = boneYaw-Math.PI*.95;
+                                newYaw = boneYaw-Math.PI*.75;
                                 localTarget.z = Math.cos(newYaw) * xzlen;
                                 localTarget.x = Math.sin(newYaw) * xzlen;
                             }
