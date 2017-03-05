@@ -186,18 +186,26 @@ module BABYLON {
 
                 if(options.maxYaw != null){
                     this.maxYaw = options.maxYaw;
+                }else{
+                    this.maxYaw = Math.PI;
                 }
 
                 if(options.minYaw != null){
                     this.minYaw = options.minYaw;
+                }else{
+                    this.minYaw = -Math.PI;
                 }
 
                 if(options.maxPitch != null){
                     this.maxPitch = options.maxPitch;
+                }else{
+                    this.maxPitch = Math.PI;
                 }
 
                 if(options.minPitch != null){
                     this.minPitch = options.minPitch;
+                }else{
+                    this.minPitch = -Math.PI;
                 }
 
                 if(options.slerpAmount != null){
@@ -282,7 +290,17 @@ module BABYLON {
                 }
             }
 
-            if(this._maxPitch != null || this._minPitch != null || this._maxYaw != null || this._minYaw != null){
+            var checkYaw = false;
+            var checkPitch = false;
+
+            if(this._maxYaw != Math.PI || this._minYaw != -Math.PI){
+                checkYaw = true;
+            }
+            if(this._maxPitch != Math.PI || this._minPitch != -Math.PI){
+                checkPitch = true;
+            }
+
+            if(checkYaw || checkPitch){
 
                 var _tmpMat3 = BoneLookController._tmpMats[2];
                 var _tmpMat3Inv = BoneLookController._tmpMats[3];
@@ -322,7 +340,7 @@ module BABYLON {
                 
                 var xzlen:number;
 
-                if(this._maxPitch != null || this._minPitch != null){
+                if(checkPitch){
                     var localTarget = BoneLookController._tmpVecs[3];
                     Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
 
@@ -345,7 +363,7 @@ module BABYLON {
                     }
                 }
 
-                if(this._maxYaw != null || this._minYaw != null){
+                if(checkYaw){
                     var localTarget = BoneLookController._tmpVecs[4];
                     Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
 
@@ -372,22 +390,24 @@ module BABYLON {
                     if(this._slerping && this._yawRange > Math.PI){
                         //are we going to be crossing into the min/max region
                         var _tmpVec8 = BoneLookController._tmpVecs[8];
-                        _tmpVec8.copyFrom(BABYLON.Axis.Z);
-                        if (this._transformYawPitch){
-                            Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitchInv, upAxis);
+                        _tmpVec8.copyFrom(Axis.Z);
+                        if (this._transformYawPitch) {
+                            Vector3.TransformCoordinatesToRef(_tmpVec8, this._transformYawPitchInv, _tmpVec8);
                         }
+                        bone.getAbsolutePositionFromLocalToRef(_tmpVec8, this.mesh, _tmpVec8);
+                        _tmpVec8.subtractInPlace(bonePos);
+                        Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
 
-                        var _tmpVec9 = BoneLookController._tmpVecs[9];
-                        Vector3.TransformCoordinatesToRef(_tmpVec8, bone.getLocalMatrix(), _tmpVec9);
-                        if (this._transformYawPitch){
-                            Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitch, upAxis);
-                        }
-
-                        var boneYaw = Math.atan2(_tmpVec9.x, _tmpVec9.z);
+                        var boneYaw = Math.atan2(_tmpVec8.x, _tmpVec8.z);
                         var ang1 = this._getAngleBetween(boneYaw, yaw);
                         var ang2 = this._getAngleBetween(boneYaw, this._midYawConstraint);
 
                         if(ang1 > ang2){
+
+                            if (xzlen == null) {
+                                xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                            }
+                            
                             var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
                             var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
 
