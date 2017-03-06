@@ -4271,7 +4271,8 @@
 
     export enum Space {
         LOCAL = 0,
-        WORLD = 1
+        WORLD = 1,
+        BONE = 2
     }
 
     export class Axis {
