@@ -361,7 +361,7 @@
                 var serializedBone: any = {
                     parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
                     name: bone.name,
-                    matrix: bone.getLocalMatrix().toArray(),
+                    matrix: bone.getBaseMatrix().toArray(),
                     rest: bone.getRestPose().toArray()
                 };
 
