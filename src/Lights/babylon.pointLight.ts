@@ -5,6 +5,8 @@
 
         @serializeAsVector3()
         public position: Vector3;
+        
+        public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
 
         /**
          * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.  
@@ -117,8 +119,12 @@
          * Returns the PointLight.  
          */
         public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): PointLight {
-            var activeCamera = this.getScene().activeCamera;
-            Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            if (this.customProjectionMatrixBuilder) {
+                this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
+            } else {
+                var activeCamera = this.getScene().activeCamera;
+                Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            }
             return this;
         }
 
