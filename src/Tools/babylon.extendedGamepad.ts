@@ -51,10 +51,17 @@ module BABYLON {
                 this.rawPose = pose;
                 if (pose.hasPosition) {
                     this.position.copyFromFloats(pose.position[0], pose.position[1], -pose.position[2]);
+                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
+                        this.position.z *= -1;
+                    }
                     this.position.scaleInPlace(this.positionScale);
                 }
                 if (pose.hasOrientation) {
                     this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
+                        this.rotationQuaternion.z *= -1;
+                        this.rotationQuaternion.w *= -1;
+                    }
                 }
             }
             if (this._mesh) {
