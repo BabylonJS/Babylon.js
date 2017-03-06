@@ -401,7 +401,9 @@
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
                 }
-                this._vertexBuffers[kind].getBuffer().references = numOfMeshes;
+                var buffer = this._vertexBuffers[kind].getBuffer();
+                if (buffer)
+                    buffer.references = numOfMeshes;
 
                 if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
