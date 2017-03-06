@@ -49,6 +49,7 @@
 	<script src="test/addBrickPT.js"></script>
 	<script src="test/addMarblePT.js"></script>
 	<script src="test/addStarfieldPT.js"></script>
+	<script src="test/addNormalMapPT.js"></script>
 	<script>
 		BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
@@ -186,6 +187,10 @@
 				
 				// Starfield Procedural Texture
                 var starfieldPT = addStarfieldPT();
+
+				// Normal Map Procedural Texture
+				var normalMapPT = addNormalMapPT();
+				normalMapPT.baseTexture = diffuseTexture;
 								
 				// Default to std
 				var currentTexture = diffuseTexture;
@@ -302,7 +307,7 @@
 					}
 				}
 				
-				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
+				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield', 'normalMap']).onFinishChange(function () {
 					resetPTOptions();
 					switch (options.texture) {
 						case "fire":
@@ -336,6 +341,9 @@
 						case "starfield":
 							currentTexture = starfieldPT;
 							addPToptions(starfieldPT, ['saturation', 'distfading', 'darkmatter', 'alpha', 'time', 'beta', 'zoom', 'formuparam', 'stepsize', 'tile', 'brightness']);
+							break;
+						case "normalMap":
+							currentTexture = normalMapPT;
 							break;
 						case "none":
 						default:

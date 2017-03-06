@@ -21,7 +21,10 @@ module BABYLON {
         }
         
         public isVisible(): boolean {
-            return false;
+            if (!this._inspector) {
+                return false;
+            }
+            return true;
         }
 
         public hide() {
