@@ -27,7 +27,7 @@ module BABYLON {
     export class PoseEnabledController extends Gamepad implements PoseControlled {
         devicePosition: Vector3;
         deviceRotationQuaternion: Quaternion;
-        deviceScaleFactor: number;
+        deviceScaleFactor: number = 1;
 
         public position: Vector3;
         public rotationQuaternion: Quaternion;
@@ -63,6 +63,7 @@ module BABYLON {
                 this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
             }
             var pose: GamepadPose = this.vrGamepad.pose;
+            this.updateFromDevice(pose);
 
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
@@ -98,7 +99,7 @@ module BABYLON {
                     // if the camera is set, rotate to the camera's rotation
                     this.rotationQuaternion.multiplyToRef(this.deviceRotationQuaternion, this._calculatedRotation);
                     if (this._poseControlledCamera) {
-                        this._poseControlledCamera.rotationQuaternion.multiplyToRef(this._calculatedRotation, this._calculatedRotation);
+                        this._calculatedRotation.multiplyToRef(this._poseControlledCamera.rotationQuaternion, this._calculatedRotation);
                     }
                 }
             }
