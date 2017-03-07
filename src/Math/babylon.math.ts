@@ -2615,6 +2615,10 @@
         public static Identity(): Quaternion {
             return new Quaternion(0.0, 0.0, 0.0, 1.0);
         }
+
+        public static IsIdentity(quaternion: Quaternion) {
+            return quaternion && quaternion.x === 0 && quaternion.y === 0 && quaternion.z === 0 && quaternion.w === 1;
+        }
         /**
          * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float). 
          */
