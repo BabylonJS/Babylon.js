@@ -23,7 +23,7 @@ module BABYLON {
 
         private _quaternionCache: Quaternion;
 
-        private _positionOffset: Vector3;
+        private _positionOffset: Vector3 = Vector3.Zero();
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
@@ -84,8 +84,20 @@ module BABYLON {
                 if (currentPost && currentPost.orientation) {
                     this._cacheState = currentPost;
                     this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], -this._cacheState.orientation[2], -this._cacheState.orientation[3]);
+
+                    if (this.getScene().useRightHandedSystem) {
+                        this.rotationQuaternion.z *= -1;
+                        this.rotationQuaternion.w *= -1;
+                        /*let m = Matrix.Identity();
+                        this.rotationQuaternion.toRotationMatrix(m);
+                        m.multiplyToRef(Matrix.RotationAxis(Axis.Y, Math.PI), m);
+                        this.rotationQuaternion.fromRotationMatrix(m);*/
+                    }
                     if (this.webVROptions.trackPosition && this._cacheState.position) {
                         this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                        if (this.getScene().useRightHandedSystem) {
+                            this.position.z *= -1;
+                        }
                         //scale the position accordingly
                         this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale);
                         //add the position offset
@@ -146,6 +158,33 @@ module BABYLON {
             } else {
                 this._positionOffset.copyFrom(this.position);
             }
+        }
+
+        private _tmpMat = Matrix.Identity();
+
+        protected _getWebVRViewMatrix(): Matrix {
+            /*
+            Teleport - you have to invert the viewmatrix first
+            then add the position (last row)
+            and invert again
+            */
+            var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+
+            if (!this.getScene().useRightHandedSystem) {
+                [2, 6, 8, 9, 14].forEach(function (num) {
+                    viewArray[num] *= -1;
+                });
+            }
+            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
+
+            this._webvrViewMatrix.invert();
+            this._webvrViewMatrix.m[12] += 0; //this._positionOffset.x;
+            this._webvrViewMatrix.m[13] += -0.5// this._positionOffset.y;
+            this._webvrViewMatrix.m[14] += - 0.5;// this._positionOffset.z;
+            this._webvrViewMatrix.invert();
+
+
+            return this._webvrViewMatrix;
         }
     }
 
