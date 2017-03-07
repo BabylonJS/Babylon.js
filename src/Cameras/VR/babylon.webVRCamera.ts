@@ -233,10 +233,14 @@ module BABYLON {
             // is rotation offset set? 
             if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
                 this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
-                this._webvrViewMatrix.multiplyToRef(this._tempMatrix, this._webvrViewMatrix);
+                this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
 
             return this._webvrViewMatrix;
+        }
+
+        public _isSynchronizedViewMatrix() {
+            return false;
         }
 
         protected _getWebVRProjectionMatrix(): Matrix {
