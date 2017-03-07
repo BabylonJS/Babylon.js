@@ -1,7 +1,7 @@
-module BABYLON {       
+module BABYLON {
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera : FreeCamera;
-        
+        camera: FreeCamera;
+
         public gamepad: Gamepad;
         private _gamepads: Gamepads<Gamepad>;
 
@@ -10,19 +10,25 @@ module BABYLON {
 
         @serialize()
         public gamepadMoveSensibility = 40;
-        
-        attachControl(element : HTMLElement, noPreventDefault?: boolean){
+
+        // private members
+        private _cameraTransform: Matrix = Matrix.Identity();
+        private _deltaTransform: Vector3 = Vector3.Zero();
+        private _vector3: Vector3 = Vector3.Zero();
+        private _vector2: Vector2 = Vector2.Zero();
+
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-        
+
         detachControl(element: HTMLElement) {
             if (this._gamepads) {
                 this._gamepads.dispose();
             }
             this.gamepad = null;
         }
-        
-        checkInputs(){
+
+        checkInputs() {
             if (this.gamepad) {
                 var camera = this.camera;
                 var LSValues = this.gamepad.leftStick;
@@ -37,30 +43,37 @@ module BABYLON {
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
 
-                var cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                if (!camera.rotationQuaternion) {
+                    Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, this._cameraTransform);
+                } else {
+                    camera.rotationQuaternion.toRotationMatrix(this._cameraTransform);
+                }
 
                 var speed = camera._computeLocalCameraSpeed() * 50.0;
-                var deltaTransform = Vector3.TransformCoordinates(new Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-                camera.cameraRotation = camera.cameraRotation.add(new Vector2(RSValues.y, RSValues.x));
+                this._vector3.copyFromFloats(LSValues.x * speed, 0, -LSValues.y * speed);
+
+                Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
+                camera.cameraDirection.addInPlace(this._deltaTransform);
+                this._vector2.copyFromFloats(RSValues.y, RSValues.x)
+                camera.cameraRotation.addInPlace(this._vector2);
             }
         }
-        
+
         private _onNewGameConnected(gamepad: Gamepad) {
             // Only the first gamepad can control the camera
             if (gamepad.index === 0) {
                 this.gamepad = gamepad;
             }
         }
-        
-        getTypeName(): string{
+
+        getTypeName(): string {
             return "FreeCameraGamepadInput";
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "gamepad";
         }
     }
-    
+
     CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 }
