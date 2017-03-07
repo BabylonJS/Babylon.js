@@ -292,6 +292,14 @@
         public _checkInputs(): void {
         }
 
+        public get rigCameras(): Camera[] {
+            return this._rigCameras;
+        }
+
+        public get rigPostProcess(): PostProcess {
+            return this._rigPostProcess;
+        }
+
         private _cascadePostProcessesToRigCams(): void {
             // invalidate framebuffer
             if (this._postProcesses.length > 0) {

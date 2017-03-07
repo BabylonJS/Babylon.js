@@ -298,13 +298,13 @@
             }
         }
 
-        public static SetCorsBehavior(url: string, img: HTMLImageElement): string {
+        public static SetCorsBehavior(url: string, img: HTMLImageElement): void {
             if (Tools.CorsBehavior) {
                 switch (typeof (Tools.CorsBehavior)) {
                     case "function":
                         var result = Tools.CorsBehavior(url);
                         if (result) {
-                            return result;
+                            img.crossOrigin = result;
                         }
                         break;
                     case "string":
