@@ -304,6 +304,7 @@
             result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
+                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
                 result = result.replace(/texture2D\(/g, "texture(");
                 result = result.replace(/textureCube\(/g, "texture(");
