@@ -132,13 +132,16 @@ module BABYLON {
 
     export abstract class WebVRController extends PoseEnabledController {
 
-        public onTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        //public onTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
-        public onMainButtonStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        public onSecondaryButtonStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
 
-        public onPadStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
+
+        public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
+
+        public onPadStateChangedObservable = new Observable<ExtendedGamepadButton>();
         public onPadValuesChangedObservable = new Observable<StickValues>();
 
         protected _buttons: Array<MutableGamepadButton>;
@@ -213,9 +216,9 @@ module BABYLON {
 
     export class OculusTouchController extends WebVRController {
 
-        public onSecondaryTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        public onThumbRestChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
+        public onThumbRestChangedObservable = new Observable<ExtendedGamepadButton>();
 
         constructor(vrGamepad) {
             super(vrGamepad);
@@ -264,7 +267,7 @@ module BABYLON {
          5) thumb rest
         */
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
-            let notifyObject = { state: state, changes: changes };
+            let notifyObject = state; //{ state: state, changes: changes };
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
@@ -317,7 +320,7 @@ module BABYLON {
          * 3: menu button
          */
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
-            let notifyObject = { state: state, changes: changes };
+            let notifyObject = state; //{ state: state, changes: changes };
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
