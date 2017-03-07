@@ -127,6 +127,10 @@
             b._worldAABBDirty = true;
         }
 
+        public toString(): string {
+            return `Center: ${this.center}, Extent: ${this.extent}, Radius: ${this.radius}`;
+        }
+
         /**
          * Duplicate this instance and return a new one
          * @return the duplicated instance

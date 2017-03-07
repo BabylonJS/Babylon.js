@@ -87,20 +87,6 @@
         }) {
             super(settings);
 
-            this._drawCallsOpaqueCounter          = new PerfCounter();
-            this._drawCallsAlphaTestCounter       = new PerfCounter();
-            this._drawCallsTransparentCounter     = new PerfCounter();
-            this._groupRenderCounter              = new PerfCounter();
-            this._updateTransparentDataCounter    = new PerfCounter();
-            this._cachedGroupRenderCounter        = new PerfCounter();
-            this._updateCachedStateCounter        = new PerfCounter();
-            this._updateLayoutCounter             = new PerfCounter();
-            this._updatePositioningCounter        = new PerfCounter();
-            this._updateLocalTransformCounter     = new PerfCounter();
-            this._updateGlobalTransformCounter    = new PerfCounter();
-            this._boundingInfoRecomputeCounter    = new PerfCounter();
-            this._layoutBoundingInfoUpdateCounter = new PerfCounter();
-
             this._cachedCanvasGroup = null;
 
             this._renderingGroupObserver = null;
@@ -200,18 +186,24 @@
                     this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
                         if ((this._scene.activeCamera === settings.renderingPhase.camera) && (e.renderStage===RenderingGroupInfo.STAGE_POSTTRANSPARENT)) {
                             this._engine.clear(null, false, true, true);
+                            C2DLogging._startFrameRender();
                             this._render();
+                            C2DLogging._endFrameRender();
                         }
                     }, Math.pow(2, settings.renderingPhase.renderingGroupID));
                 } else {
                     this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
                         this._engine.clear(null, false, true, true);
+                        C2DLogging._startFrameRender();
                         this._render();
+                        C2DLogging._endFrameRender();
                     });
                 }
             } else {
                 this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add((d, s) => {
+                    C2DLogging._startFrameRender();
                     this._render();
+                    C2DLogging._endFrameRender();
                 });
             }
 
@@ -232,54 +224,93 @@
         }
 
         public get drawCallsOpaqueCounter(): PerfCounter {
+            if (!this._drawCallsOpaqueCounter) {
+                this._drawCallsOpaqueCounter = new PerfCounter();
+            }
             return this._drawCallsOpaqueCounter;
         }
 
         public get drawCallsAlphaTestCounter(): PerfCounter {
+            if (!this._drawCallsAlphaTestCounter) {
+                this._drawCallsAlphaTestCounter = new PerfCounter();
+            }
             return this._drawCallsAlphaTestCounter;
         }
 
         public get drawCallsTransparentCounter(): PerfCounter {
+            if (!this._drawCallsTransparentCounter) {
+                this._drawCallsTransparentCounter = new PerfCounter();
+            }
             return this._drawCallsTransparentCounter;
         }
 
         public get groupRenderCounter(): PerfCounter {
+            if (!this._groupRenderCounter) {
+                this._groupRenderCounter = new PerfCounter();
+            }
             return this._groupRenderCounter;
         }
 
         public get updateTransparentDataCounter(): PerfCounter {
+            if (!this._updateTransparentDataCounter) {
+                this._updateTransparentDataCounter = new PerfCounter();
+            }
             return this._updateTransparentDataCounter;
         }
 
         public get cachedGroupRenderCounter(): PerfCounter {
+            if (!this._cachedGroupRenderCounter) {
+                this._cachedGroupRenderCounter = new PerfCounter();
+            }
             return this._cachedGroupRenderCounter;
         }
 
         public get updateCachedStateCounter(): PerfCounter {
+            if (!this._updateCachedStateCounter) {
+                this._updateCachedStateCounter = new PerfCounter();
+            }
             return this._updateCachedStateCounter;
         }
 
         public get updateLayoutCounter(): PerfCounter {
+            if (!this._updateLayoutCounter) {
+                this._updateLayoutCounter = new PerfCounter();
+            }
             return this._updateLayoutCounter;
         }
 
         public get updatePositioningCounter(): PerfCounter {
+            if (!this._updatePositioningCounter) {
+                this._updatePositioningCounter = new PerfCounter();
+            }
             return this._updatePositioningCounter;
         }
 
         public get updateLocalTransformCounter(): PerfCounter {
+            if (!this._updateLocalTransformCounter) {
+                this._updateLocalTransformCounter = new PerfCounter();
+            }
             return this._updateLocalTransformCounter;
         }
 
         public get updateGlobalTransformCounter(): PerfCounter {
+            if (!this._updateGlobalTransformCounter) {
+                this._updateGlobalTransformCounter = new PerfCounter();
+            }
             return this._updateGlobalTransformCounter;
         }
 
         public get boundingInfoRecomputeCounter(): PerfCounter {
+            if (!this._boundingInfoRecomputeCounter) {
+                this._boundingInfoRecomputeCounter = new PerfCounter();
+            }
             return this._boundingInfoRecomputeCounter;
         }
 
         public get layoutBoundingInfoUpdateCounter(): PerfCounter {
+            if (!this._layoutBoundingInfoUpdateCounter) {
+                this._layoutBoundingInfoUpdateCounter = new PerfCounter();
+            }
             return this._layoutBoundingInfoUpdateCounter;
         }
 
@@ -1129,35 +1160,35 @@
         }
 
         private _initPerfMetrics() {
-            this._drawCallsOpaqueCounter.fetchNewFrame();
-            this._drawCallsAlphaTestCounter.fetchNewFrame();
-            this._drawCallsTransparentCounter.fetchNewFrame();
-            this._groupRenderCounter.fetchNewFrame();
-            this._updateTransparentDataCounter.fetchNewFrame();
-            this._cachedGroupRenderCounter.fetchNewFrame();
-            this._updateCachedStateCounter.fetchNewFrame();
-            this._updateLayoutCounter.fetchNewFrame();
-            this._updatePositioningCounter.fetchNewFrame();
-            this._updateLocalTransformCounter.fetchNewFrame();
-            this._updateGlobalTransformCounter.fetchNewFrame();
-            this._boundingInfoRecomputeCounter.fetchNewFrame();
-            this._layoutBoundingInfoUpdateCounter.fetchNewFrame();
+            this.drawCallsOpaqueCounter.fetchNewFrame();
+            this.drawCallsAlphaTestCounter.fetchNewFrame();
+            this.drawCallsTransparentCounter.fetchNewFrame();
+            this.groupRenderCounter.fetchNewFrame();
+            this.updateTransparentDataCounter.fetchNewFrame();
+            this.cachedGroupRenderCounter.fetchNewFrame();
+            this.updateCachedStateCounter.fetchNewFrame();
+            this.updateLayoutCounter.fetchNewFrame();
+            this.updatePositioningCounter.fetchNewFrame();
+            this.updateLocalTransformCounter.fetchNewFrame();
+            this.updateGlobalTransformCounter.fetchNewFrame();
+            this.boundingInfoRecomputeCounter.fetchNewFrame();
+            this.layoutBoundingInfoUpdateCounter.fetchNewFrame();
         }
 
         private _fetchPerfMetrics() {
-            this._drawCallsOpaqueCounter.addCount(0, true);
-            this._drawCallsAlphaTestCounter.addCount(0, true);
-            this._drawCallsTransparentCounter.addCount(0, true);
-            this._groupRenderCounter.addCount(0, true);
-            this._updateTransparentDataCounter.addCount(0, true);
-            this._cachedGroupRenderCounter.addCount(0, true);
-            this._updateCachedStateCounter.addCount(0, true);
-            this._updateLayoutCounter.addCount(0, true);
-            this._updatePositioningCounter.addCount(0, true);
-            this._updateLocalTransformCounter.addCount(0, true);
-            this._updateGlobalTransformCounter.addCount(0, true);
-            this._boundingInfoRecomputeCounter.addCount(0, true);
-            this._layoutBoundingInfoUpdateCounter.addCount(0, true);
+            this.drawCallsOpaqueCounter.addCount(0, true);
+            this.drawCallsAlphaTestCounter.addCount(0, true);
+            this.drawCallsTransparentCounter.addCount(0, true);
+            this.groupRenderCounter.addCount(0, true);
+            this.updateTransparentDataCounter.addCount(0, true);
+            this.cachedGroupRenderCounter.addCount(0, true);
+            this.updateCachedStateCounter.addCount(0, true);
+            this.updateLayoutCounter.addCount(0, true);
+            this.updatePositioningCounter.addCount(0, true);
+            this.updateLocalTransformCounter.addCount(0, true);
+            this.updateGlobalTransformCounter.addCount(0, true);
+            this.boundingInfoRecomputeCounter.addCount(0, true);
+            this.layoutBoundingInfoUpdateCounter.addCount(0, true);
         }
 
         private _updateProfileCanvas() {
@@ -1455,6 +1486,7 @@
                 this._setRenderingScale(scale);
             }
         }
+        private static _pCLS = Vector3.Zero();
 
         private _updateCanvasState(forceRecompute: boolean) {
             // Check if the update has already been made for this render Frame
@@ -1464,14 +1496,7 @@
 
             // Detect a change of HWRendering scale
             let hwsl = this.engine.getHardwareScalingLevel();
-            let hwslChanged = this._curHWScale !== hwsl;
-            if (hwslChanged) {
-                this._curHWScale = hwsl;
-                for (let child of this.children) {
-                    child._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
-                }
-                this._setLayoutDirty();
-            }
+            this._curHWScale = hwsl;
 
             // Detect a change of rendering size
             let renderingSizeChanged = false;
@@ -1487,16 +1512,8 @@
             }
             this._renderingSize.height = newHeight;
 
-            // If the canvas fit the rendering size and it changed, update
-            if (renderingSizeChanged && this._fitRenderingDevice) {
-                this.size = this._renderingSize.clone();
-                if (this._background) {
-                    this._background.size = this.size;
-                }
-
-                // Dirty the Layout at the Canvas level to recompute as the size changed
-                this._setLayoutDirty();
-            }
+            let prevCLS = Canvas2D._pCLS;
+            prevCLS.copyFrom(this._canvasLevelScale);
 
             // If there's a design size, update the scale according to the renderingSize
             if (this._designSize) {
@@ -1508,9 +1525,27 @@
                 }
                 this.size = this._designSize.clone();
                 this._canvasLevelScale.copyFromFloats(scale, scale, 1);
-            } else if (this._curHWScale !== 1) {
+            } else {
                 let ratio = 1 / this._curHWScale;
                 this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
+            }
+
+            if (!prevCLS.equals(this._canvasLevelScale)) {
+                for (let child of this.children) {
+                    child._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
+
+            // If the canvas fit the rendering size and it changed, update
+            if (renderingSizeChanged && this._fitRenderingDevice) {
+                this.size = this._renderingSize.clone();
+                if (this._background) {
+                    this._background.size = this.size;
+                }
+
+                // Dirty the Layout at the Canvas level to recompute as the size changed
+                this._setLayoutDirty();
             }
 
             var context = new PrepareRender2DContext();
@@ -1527,8 +1562,8 @@
         /**
          * Method that renders the Canvas, you should not invoke
          */
+        @logMethod("==========CANVAS RENDER===============")
         private _render() {
-
             this._initPerfMetrics();
 
             if (this._renderObservable && this._renderObservable.hasObservers()) {

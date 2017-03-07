@@ -232,6 +232,7 @@
 
             if(!this._sizeSetByUser){
                 this._size = null;
+                this._actualSize = null;
             }
 
             this._updateCharCount();
@@ -324,10 +325,11 @@
                 this._setLayoutDirty();
                 this._positioningDirty();
                 this._actualSize = null;
+                this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty|SmartPropertyPrim.flagBoundingInfoDirty);
             }
         }
 
-        protected get fontTexture(): BaseFontTexture {
+        public get fontTexture(): BaseFontTexture {
             if (this._fontTexture) {
                 return this._fontTexture;
             }
@@ -337,6 +339,7 @@
             }
 
             this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+            this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
             return this._fontTexture;
         }
 
@@ -387,6 +390,7 @@
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -394,7 +398,6 @@
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
-         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -436,6 +439,7 @@
             scaleX                  ?: number,
             scaleY                  ?: number,
             dontInheritParentScale  ?: boolean,
+            alignToPixel            ?: boolean,
             opacity                 ?: number,
             zOrder                  ?: number, 
             origin                  ?: Vector2,
@@ -443,7 +447,6 @@
             fontSuperSample         ?: boolean,
             fontSignedDistanceField ?: boolean,
             bitmapFontTexture       ?: BitmapFontTexture,
-            fontTexturePremulAlpha  ?: boolean,
             defaultFontColor        ?: Color4,
             size                    ?: Size,
             tabulationSize          ?: number,
@@ -480,10 +483,11 @@
             super(settings);
 
             if (settings.bitmapFontTexture != null) {
-                this._fontTexture     = settings.bitmapFontTexture;
-                this._fontName        = null;
-                this._fontSuperSample = false;
-                this._fontSDF         = false;
+                this._fontTexture          = settings.bitmapFontTexture;
+                this._fontName             = null;
+                this._fontSuperSample      = false;
+                this._fontSDF              = false;
+                this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
 
                 let ft = this._fontTexture;
                 if (ft != null && !ft.isReady()) {
@@ -501,7 +505,7 @@
 
             this._defaultFontColor     = (settings.defaultFontColor == null) ? new Color4(1, 1, 1, 1) : settings.defaultFontColor.clone();
             this._tabulationSize       = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
-            this._textureIsPremulAlpha = settings.fontTexturePremulAlpha === true;
+            this._textureIsPremulAlpha = true;//settings.fontTexturePremulAlpha === true;
             this._textSize             = null;
             this.text                  = text;
 
@@ -511,6 +515,10 @@
             }else{
                 this.size = null;
             }
+
+            // Text rendering must always be aligned to the target's pixel to ensure a good quality
+            this.alignToPixel = true;
+
             this.textAlignmentH      = (settings.textAlignmentH==null) ? Text2D.AlignLeft : settings.textAlignmentH;
             this.textAlignmentV      = (settings.textAlignmentV==null) ? Text2D.AlignTop : settings.textAlignmentV;
             this.textAlignment       = (settings.textAlignment==null) ? "" : settings.textAlignment;
