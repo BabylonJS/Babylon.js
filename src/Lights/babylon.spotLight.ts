@@ -14,6 +14,8 @@
 
         public transformedPosition: Vector3;
 
+        public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
+
         private _transformedDirection: Vector3;
         private _worldMatrix: Matrix;
 
@@ -52,8 +54,12 @@
          * Returns the SpotLight.  
          */
         public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): SpotLight {
-            var activeCamera = this.getScene().activeCamera;
-            Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            if (this.customProjectionMatrixBuilder) {
+                this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
+            } else {
+                var activeCamera = this.getScene().activeCamera;
+                Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            }
             return this;
         }
         /**

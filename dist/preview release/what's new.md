@@ -15,6 +15,8 @@
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
 
 ### Updates
+- Added `Light.customProjectionMatrixBuilder` to allow developers to define their own projection matrix for shadows ([deltakosh](https://github.com/deltakosh))
+- Added `set()` function to all basic types ([deltakosh](https://github.com/deltakosh))
 - Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
 - Engine now uses range based fog ([deltakosh](https://github.com/deltakosh))
 - `VertexBuffer.updatable` is now serialized ([deltakosh](https://github.com/deltakosh))

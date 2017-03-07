@@ -411,6 +411,13 @@
           "../../proceduralTexturesLibrary/src/starfield/starfieldProceduralTexture.fragment.fx"
         ],
         "output": "babylon.starfieldProceduralTexture.js"
+      },
+      {
+        "files": ["../../proceduralTexturesLibrary/src/normalMap/babylon.normalMapProceduralTexture.ts"],
+        "shaderFiles": [
+          "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
+        ],
+        "output": "babylon.normalMapProceduralTexture.js"
       }
     ],
     "build": {
