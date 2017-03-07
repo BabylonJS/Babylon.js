@@ -322,6 +322,19 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class C2DLogging {
+        static snooze: boolean;
+        static logFrameRender(frameCount: number): void;
+        static setPostMessage(message: () => string): void;
+        static _startFrameRender(): void;
+        static _endFrameRender(): void;
+        private static _logFramesCount;
+    }
+    function logProp<T>(message?: string, alsoGet?: boolean, setNoProlog?: boolean, getNoProlog?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function logMethod(message?: string, noProlog?: boolean): (target: any, key: any, descriptor: any) => any;
+}
+
+declare module BABYLON {
     /**
      * Class for the ObservableArray.onArrayChanged observable
      */
@@ -706,7 +719,7 @@ declare module BABYLON {
      * This is an abstract base class to hold a Texture that will contain a FontMap
      */
     abstract class BaseFontTexture extends Texture {
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number);
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, premultipliedAlpha?: boolean);
         /**
          * Is the Font is using Super Sampling (each font texel is doubled).
          */
@@ -716,6 +729,10 @@ declare module BABYLON {
          * @returns {}
          */
         readonly isSignedDistanceField: boolean;
+        /**
+         * True if the font was drawn using multiplied alpha
+         */
+        readonly isPremultipliedAlpha: boolean;
         /**
          * Get the Width (in pixel) of the Space character
          */
@@ -761,6 +778,7 @@ declare module BABYLON {
         protected _spaceWidth: any;
         protected _superSample: boolean;
         protected _signedDistanceField: boolean;
+        protected _isPremultipliedAlpha: boolean;
         protected _cachedFontId: string;
     }
     class BitmapFontInfo {
@@ -782,7 +800,7 @@ declare module BABYLON {
         };
     }
     class BitmapFontTexture extends BaseFontTexture {
-        constructor(scene: Scene, bmFontUrl: string, textureUrl?: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: (msg: string, code: number) => void);
+        constructor(scene: Scene, bmFontUrl: string, textureUrl?: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, premultipliedAlpha?: boolean, onLoad?: () => void, onError?: (msg: string, code: number) => void);
         static GetCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): BitmapFontTexture;
         static ReleaseCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): void;
         /**
@@ -944,6 +962,7 @@ declare module BABYLON {
          * @param b must be a valid/allocated object, it will contain the result of the operation
          */
         static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D): void;
+        toString(): string;
         /**
          * Duplicate this instance and return a new one
          * @return the duplicated instance
@@ -1622,6 +1641,7 @@ declare module BABYLON {
          * @param state true to set them, false to clear them
          */
         _changeFlags(flags: number, state: boolean): void;
+        _getFlagsDebug(flags: number): string;
         static flagNoPartOfLayout: number;
         static flagLevelBoundingInfoDirty: number;
         static flagModelDirty: number;
@@ -1649,6 +1669,7 @@ declare module BABYLON {
         static flagLocalTransformDirty: number;
         static flagUsePositioning: number;
         static flagComputingPositioning: number;
+        static flagAlignPrimitive: number;
         private _uid;
         private _flags;
         private _modelKey;
@@ -2088,7 +2109,7 @@ declare module BABYLON {
          * @param dstOffset the position of the resulting area
          * @param dstArea the size of the resulting area
          */
-        compute(sourceArea: Size, sourceAreaScale: Vector2, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
+        compute(sourceArea: Size, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
         /**
          * Compute an area considering this thickness properties based on a given source area
          * @param sourceArea the source area
@@ -2146,6 +2167,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -2337,40 +2359,15 @@ declare module BABYLON {
         y: number;
         private static boundinbBoxReentrency;
         protected static nullSize: Size;
-        /**
-         * Size of the primitive or its bounding area
-         * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
-         * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
-         */
         size: Size;
         protected internalGetSize(): Size;
         protected internalSetSize(value: Size): void;
-        /**
-         * Direct access to the size.width value of the primitive
-         * Use this property when you only want to change one component of the size property
-         */
         width: number;
-        /**
-         * Direct access to the size.height value of the primitive
-         * Use this property when you only want to change one component of the size property
-         */
         height: number;
         rotation: number;
         scale: number;
-        /**
-         * Return the size of the primitive as it's being rendered into the target.
-         * This value may be different of the size property when layout/alignment is used or specific primitive types can implement a custom logic through this property.
-         * BEWARE: don't use the setter, it's for internal purpose only
-         * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
-         */
         actualSize: Size;
-        /**
-         * Shortcut to actualSize.width
-         */
         actualWidth: number;
-        /**
-         * Shortcut to actualPosition.height
-         */
         actualHeight: number;
         readonly actualZOffset: number;
         /**
@@ -2424,6 +2421,11 @@ declare module BABYLON {
          * Get the actual Scale of the X axis, shortcut for this.actualScale.x
          */
         readonly actualScaleX: number;
+        /**
+         * This method stores the actual global scale (including DesignMode and DPR related scales) in the given Vector2
+         * @param res the object that will receive the actual global scale: this is actualScale * DPRScale * DesignModeScale
+         */
+        getActualGlobalScaleToRef(res: Vector2): void;
         /**
          * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
          */
@@ -2489,6 +2491,10 @@ declare module BABYLON {
          */
         readonly localTransform: Matrix;
         readonly localLayoutTransform: Matrix;
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
+        alignToPixel: boolean;
         private static _bMinMax;
         private static _bMax;
         private static _bSize;
@@ -2496,7 +2502,6 @@ declare module BABYLON {
         private static _tpsBB2;
         /**
          * Get the boundingInfo associated to the primitive and its children.
-         * The value is supposed to be always up to date
          */
         readonly boundingInfo: BoundingInfo2D;
         /**
@@ -2624,14 +2629,20 @@ declare module BABYLON {
         private static _icArea;
         private static _size;
         private static _size2;
+        private static _size3;
+        private static _size4;
+        private static _pv0;
         private static _curContentArea;
+        private static _piv;
+        private static _tbi;
+        private static _pv1;
+        private static _pv2;
         private _updatePositioning();
         /**
          * Get the content are of this primitive, this area is computed the primitive size and using the padding property.
          * Children of this primitive will be positioned relative to the bottom/left corner of this area.
          */
         readonly contentArea: Size;
-        readonly marginSize: Size;
         _patchHierarchy(owner: Canvas2D): void;
         protected onSetOwner(): void;
         private static _zOrderChangedNotifList;
@@ -2697,7 +2708,6 @@ declare module BABYLON {
         private _layoutArea;
         private _layoutData;
         private _contentArea;
-        private _marginSize;
         private _rotation;
         private _scale;
         protected _postScale: Vector2;
@@ -2847,6 +2857,7 @@ declare module BABYLON {
         zBias: Vector2;
         transformX: Vector4;
         transformY: Vector4;
+        renderingInfo: Vector3;
         opacity: number;
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
         allocElements(): void;
@@ -2893,15 +2904,7 @@ declare module BABYLON {
         _updateTransparentSegmentIndices(ts: TransparentSegment): void;
         _getNextPrimZOrder(): number;
         _getPrevPrimZOrder(): number;
-        /**
-         * Transform a given point using the Primitive's origin setting.
-         * This method requires the Primitive's actualSize to be accurate
-         * @param p the point to transform
-         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
-         * @param res an allocated Vector2 that will receive the transformed content
-         */
-        protected transformPointWithOriginByRef(p: Vector2, originOffset: Vector2, res: Vector2): void;
-        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2): Vector2;
+        private static _toz;
         /**
          * Get the info for a given effect based on the dataPart metadata
          * @param dataPartId partId in part list to get the info
@@ -3420,6 +3423,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -3461,6 +3465,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -3499,6 +3504,7 @@ declare module BABYLON {
         protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
         protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size): void;
         protected createInstanceDataParts(): InstanceDataBase[];
+        private static _riv0;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _notRounded;
         private _roundRadius;
@@ -3544,6 +3550,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -3585,6 +3592,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -3620,6 +3628,7 @@ declare module BABYLON {
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
         protected createInstanceDataParts(): InstanceDataBase[];
+        private static _riv0;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _subdivisions;
     }
@@ -3656,10 +3665,6 @@ declare module BABYLON {
         spriteFrame: number;
         invertY: boolean;
         readonly isScale9: boolean;
-        /**
-         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
-         */
-        alignToPixel: boolean;
         protected updateLevelBoundingInfo(): boolean;
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
@@ -3679,6 +3684,7 @@ declare module BABYLON {
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -3687,7 +3693,6 @@ declare module BABYLON {
          * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
-         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
@@ -3722,6 +3727,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -3730,7 +3736,6 @@ declare module BABYLON {
             spriteScaleFactor?: Vector2;
             scale9?: Vector4;
             invertY?: boolean;
-            alignToPixel?: boolean;
             isVisible?: boolean;
             isPickable?: boolean;
             isContainer?: boolean;
@@ -3774,7 +3779,6 @@ declare module BABYLON {
         private _spriteFrame;
         private _scale9;
         private _invertY;
-        private _alignToPixel;
     }
     class Sprite2DInstanceData extends InstanceDataBase {
         constructor(partId: number);
@@ -4019,7 +4023,7 @@ declare module BABYLON {
          */
         readonly textSize: Size;
         protected onSetOwner(): void;
-        protected readonly fontTexture: BaseFontTexture;
+        readonly fontTexture: BaseFontTexture;
         /**
          * Dispose the primitive, remove it from its parent
          */
@@ -4040,6 +4044,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -4047,7 +4052,6 @@ declare module BABYLON {
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
-         * - fontTexturePremulAlpha: set true if the BitmapFontTexture use premultiplied alpha, default is false
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -4088,6 +4092,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -4095,7 +4100,6 @@ declare module BABYLON {
             fontSuperSample?: boolean;
             fontSignedDistanceField?: boolean;
             bitmapFontTexture?: BitmapFontTexture;
-            fontTexturePremulAlpha?: boolean;
             defaultFontColor?: Color4;
             size?: Size;
             tabulationSize?: number;
@@ -4241,6 +4245,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -4284,6 +4289,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -4647,6 +4653,7 @@ declare module BABYLON {
          */
         updateCanvasLayout(forceRecompute: boolean): void;
         private _updateAdaptiveSizeWorldCanvas();
+        private static _pCLS;
         private _updateCanvasState(forceRecompute);
         /**
          * Method that renders the Canvas, you should not invoke
