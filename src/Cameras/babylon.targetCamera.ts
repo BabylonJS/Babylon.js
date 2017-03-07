@@ -247,7 +247,7 @@ module BABYLON {
             } else {
                 Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             }
-            
+
             return this._viewMatrix;
         }
 
