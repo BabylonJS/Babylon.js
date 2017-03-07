@@ -24,17 +24,22 @@ module BABYLON {
         }
     }
 
-    export class PoseEnabledController extends Gamepad {
+    export class PoseEnabledController extends Gamepad implements PoseControlled {
+        devicePosition: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        deviceScaleFactor: number;
+
         public position: Vector3;
         public rotationQuaternion: Quaternion;
         public controllerType: PoseEnabledControllerType;
 
-        public positionOffset: Vector3 = Vector3.Zero();
-        public positionScale: number = 1;
+        private _calculatedPosition: Vector3;
+        private _calculatedRotation: Quaternion;
 
-        public rawPose: GamepadPose;
+        public rawPose: DevicePose; //GamepadPose;
 
         private _mesh: AbstractMesh; // a node that will be attached to this Gamepad
+        private _poseControlledCamera: PoseControlled;
 
         constructor(public vrGamepad) {
             super(vrGamepad.id, vrGamepad.index, vrGamepad);
@@ -42,40 +47,74 @@ module BABYLON {
             this.controllerType = PoseEnabledControllerType.GENERIC;
             this.position = Vector3.Zero();
             this.rotationQuaternion = new Quaternion();
+            this.devicePosition = Vector3.Zero();
+            this.deviceRotationQuaternion = new Quaternion();
+
+            this._calculatedPosition = Vector3.Zero();
+            this._calculatedRotation = new Quaternion();
         }
 
         public update() {
             super.update();
-            var pose: GamepadPose = this.vrGamepad.pose;
-            if (pose) {
-                this.rawPose = pose;
-                if (pose.hasPosition) {
-                    this.position.copyFromFloats(pose.position[0], pose.position[1], -pose.position[2]);
-                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.position.z *= -1;
-                    }
-                    this.position.scaleInPlace(this.positionScale);
-                }
-                if (pose.hasOrientation) {
-                    this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
-                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.rotationQuaternion.z *= -1;
-                        this.rotationQuaternion.w *= -1;
-                    }
-                }
+            // update this device's offset position from the attached camera, if provided
+            if (this._poseControlledCamera) {
+                //this.position.copyFrom(this._poseControlledCamera.position);
+                //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
+                this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
             }
+            var pose: GamepadPose = this.vrGamepad.pose;
+
             if (this._mesh) {
-                this._mesh.position.copyFrom(this.position);
-                this._mesh.position.addInPlace(this.positionOffset);
-                this._mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                this._mesh.position.copyFrom(this._calculatedPosition);
+                this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
             }
         }
+
+        updateFromDevice(poseData: DevicePose) {
+            if (poseData) {
+                this.rawPose = poseData;
+                if (poseData.position) {
+                    this.devicePosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
+                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
+                        this.devicePosition.z *= -1;
+                    }
+
+                    this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    this._calculatedPosition.addInPlace(this.position);
+
+                    // scale the position using the scale factor, add the device's position
+                    if (this._poseControlledCamera) {
+                        // this allows total positioning freedom - the device, the camera and the mesh can be individually controlled.
+                        this._calculatedPosition.addInPlace(this._poseControlledCamera.position);
+                    }
+                }
+                if (poseData.orientation) {
+                    this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
+                        this.deviceRotationQuaternion.z *= -1;
+                        this.deviceRotationQuaternion.w *= -1;
+                    }
+
+                    // if the camera is set, rotate to the camera's rotation
+                    this.rotationQuaternion.multiplyToRef(this.deviceRotationQuaternion, this._calculatedRotation);
+                    if (this._poseControlledCamera) {
+                        this._poseControlledCamera.rotationQuaternion.multiplyToRef(this._calculatedRotation, this._calculatedRotation);
+                    }
+                }
+            }
+        }
+
 
         public attachToMesh(mesh: AbstractMesh) {
             this._mesh = mesh;
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
+        }
+
+        public attachToPoseControlledCamera(camera: PoseControlled) {
+            this._poseControlledCamera = camera;
+            this.deviceScaleFactor = camera.deviceScaleFactor;
         }
 
         public detachMesh() {
