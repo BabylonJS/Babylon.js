@@ -4,15 +4,41 @@ declare var VRFrameData;
 
 module BABYLON {
 
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    export interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+
+    export interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: DevicePose;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose);
+    }
+
     export interface WebVROptions {
         trackPosition?: boolean; //update the camera's position
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
     }
 
-    export class WebVRFreeCamera extends FreeCamera {
+    export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         public _vrDevice = null;
-        private _cacheState = null;
+        public rawPose: DevicePose = null;
         private _vrEnabled = false;
         private _attached: boolean = false;
 
@@ -25,11 +51,19 @@ module BABYLON {
 
         private _positionOffset: Vector3 = Vector3.Zero();
 
+        public devicePosition = Vector3.Zero();
+        public deviceRotationQuaternion = new Quaternion();
+        public deviceScaleFactor: number = 1;
+
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
             //using the position provided as the current position offset
             this._positionOffset = position;
+
+            if (this.webVROptions && this.webVROptions.positionScale) {
+                this.deviceScaleFactor = this.webVROptions.positionScale;
+            }
 
             //enable VR
             this.getEngine().initWebVR();
@@ -62,7 +96,7 @@ module BABYLON {
                         }
 
                         //reset the rig parameters.
-                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { vrDisplay: this._vrDevice, frameData: this._frameData });
+                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData });
 
                         if (this._attached) {
                             this.getEngine().enableVR(this._vrDevice)
@@ -74,41 +108,48 @@ module BABYLON {
             }
 
             this.rotationQuaternion = new Quaternion();
-            this._quaternionCache = new Quaternion();
+            this.deviceRotationQuaternion = new Quaternion();
         }
 
         public _checkInputs(): void {
             if (this._vrEnabled && this._vrDevice.getFrameData(this._frameData)) {
-                var currentPost = this._frameData.pose;
-                //make sure we have data
-                if (currentPost && currentPost.orientation) {
-                    this._cacheState = currentPost;
-                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], -this._cacheState.orientation[2], -this._cacheState.orientation[3]);
-
-                    if (this.getScene().useRightHandedSystem) {
-                        this.rotationQuaternion.z *= -1;
-                        this.rotationQuaternion.w *= -1;
-                        /*let m = Matrix.Identity();
-                        this.rotationQuaternion.toRotationMatrix(m);
-                        m.multiplyToRef(Matrix.RotationAxis(Axis.Y, Math.PI), m);
-                        this.rotationQuaternion.fromRotationMatrix(m);*/
-                    }
-                    if (this.webVROptions.trackPosition && this._cacheState.position) {
-                        this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
-                        if (this.getScene().useRightHandedSystem) {
-                            this.position.z *= -1;
-                        }
-                        //scale the position accordingly
-                        this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale);
-                        //add the position offset
-                        this.position.addInPlace(this._positionOffset);
-                    }
-                }
+                var currentPose = this._frameData.pose;
+                this.updateFromDevice(currentPose);
             }
 
             super._checkInputs();
         }
 
+        updateFromDevice(poseData: DevicePose) {
+            if (poseData && poseData.orientation) {
+                this.rawPose = poseData;
+                this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+
+                if (this.getScene().useRightHandedSystem) {
+                    this.deviceRotationQuaternion.z *= -1;
+                    this.deviceRotationQuaternion.w *= -1;
+                }
+                if (this.webVROptions.trackPosition && this.rawPose.position) {
+                    this.devicePosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
+                    if (this.getScene().useRightHandedSystem) {
+                        this.devicePosition.z *= -1;
+                    }
+                }
+            }
+        }
+
+
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         * 
+         * @param {HTMLElement} element 
+         * @param {boolean} [noPreventDefault] 
+         * 
+         * @memberOf WebVRFreeCamera
+         */
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             super.attachControl(element, noPreventDefault);
             this._attached = true;
@@ -129,7 +170,7 @@ module BABYLON {
 
         public requestVRFullscreen(requestPointerlock: boolean) {
             //Backwards comp.
-            Tools.Warn("requestVRFullscreen is deprecated. call attachControl() to start sending frames to the VR display.")
+            Tools.Warn("requestVRFullscreen is deprecated. call attachControl() inside a user-interaction callback to start sending frames to the VR display.")
             //this.getEngine().switchFullscreen(requestPointerlock);
         }
 
@@ -144,30 +185,25 @@ module BABYLON {
         }
 
         /**
-         * 
-         * Set the position offset of the VR camera
-         * The offset will be added to the WebVR pose, after scaling it (if set).
-         * 
+         *
+         * @deprecated
+         * This function was used to change the position offset. it is now done using camera.position.
+         *  
          * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
          * 
          * @memberOf WebVRFreeCamera
          */
         public setPositionOffset(newPosition?: Vector3) {
             if (newPosition) {
-                this._positionOffset = newPosition;
-            } else {
-                this._positionOffset.copyFrom(this.position);
+                this.position.copyFrom(newPosition);
             }
         }
 
-        private _tmpMat = Matrix.Identity();
-
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
         protected _getWebVRViewMatrix(): Matrix {
-            /*
-            Teleport - you have to invert the viewmatrix first
-            then add the position (last row)
-            and invert again
-            */
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
 
             if (!this.getScene().useRightHandedSystem) {
@@ -177,14 +213,42 @@ module BABYLON {
             }
             Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
-            this._webvrViewMatrix.invert();
-            this._webvrViewMatrix.m[12] += 0; //this._positionOffset.x;
-            this._webvrViewMatrix.m[13] += -0.5// this._positionOffset.y;
-            this._webvrViewMatrix.m[14] += - 0.5;// this._positionOffset.z;
-            this._webvrViewMatrix.invert();
+            let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
+            // should the view matrix be updated with scale and position offset?
+            if (parentCamera.position.lengthSquared() || parentCamera.deviceScaleFactor !== 1) {
+                this._webvrViewMatrix.invert();
+                // scale the position, if set
+                if (parentCamera.deviceScaleFactor) {
+                    this._webvrViewMatrix.m[12] *= parentCamera.deviceScaleFactor;
+                    this._webvrViewMatrix.m[13] *= parentCamera.deviceScaleFactor;
+                    this._webvrViewMatrix.m[14] *= parentCamera.deviceScaleFactor;
+                }
+                // change the position (for "teleporting");
+                this._webvrViewMatrix.m[12] += parentCamera.position.x;
+                this._webvrViewMatrix.m[13] += parentCamera.position.y;
+                this._webvrViewMatrix.m[14] += parentCamera.position.z;
+                this._webvrViewMatrix.invert();
+            }
+            // is rotation offset set? 
+            if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
+                this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
+                this._webvrViewMatrix.multiplyToRef(this._tempMatrix, this._webvrViewMatrix);
+            }
 
             return this._webvrViewMatrix;
+        }
+
+        protected _getWebVRProjectionMatrix(): Matrix {
+            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            //babylon compatible matrix
+            if (!this.getScene().useRightHandedSystem) {
+                [8, 9, 10, 11].forEach(function (num) {
+                    projectionArray[num] *= -1;
+                });
+            }
+            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
+            return this._projectionMatrix;
         }
     }
 
