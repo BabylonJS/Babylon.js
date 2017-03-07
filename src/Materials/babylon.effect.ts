@@ -28,6 +28,9 @@
             this._meshRank = rank;
             this._mesh = mesh;
 
+            if (rank < this._currentRank) {
+                this._currentRank = rank;
+            }
             if (rank > this._maxRank) {
                 this._maxRank = rank;
             }
@@ -40,9 +43,10 @@
         public reduce(currentDefines: string): string {
 
             var currentFallbacks = this._defines[this._currentRank];
-
-            for (var index = 0; index < currentFallbacks.length; index++) {
-                currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            if (currentFallbacks) {
+                for (var index = 0; index < currentFallbacks.length; index++) {
+                    currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+                }
             }
 
             if (this._mesh && this._currentRank === this._meshRank) {
@@ -300,6 +304,7 @@
             result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
+                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
                 result = result.replace(/texture2D\(/g, "texture(");
                 result = result.replace(/textureCube\(/g, "texture(");

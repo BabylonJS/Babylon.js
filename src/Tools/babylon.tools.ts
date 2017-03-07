@@ -298,7 +298,7 @@
             }
         }
 
-        public static SetCorsBehavior(url: string, img: HTMLImageElement): string {
+        public static SetCorsBehavior(url: string, img: HTMLImageElement): void {
             if (Tools.CorsBehavior) {
                 switch (typeof (Tools.CorsBehavior)) {
                     case "function":
