@@ -55,6 +55,8 @@ module BABYLON {
         public deviceRotationQuaternion = new Quaternion();
         public deviceScaleFactor: number = 1;
 
+        public controllers: Array<WebVRController> = [];
+
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
@@ -159,6 +161,9 @@ module BABYLON {
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice)
             }
+
+            // try to attach the controllers, if found.
+            this.initControllers();
         }
 
         public detachControl(element: HTMLElement): void {
@@ -253,6 +258,17 @@ module BABYLON {
             }
             Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
+        }
+
+        public initControllers() {
+            this.controllers = [];
+            new BABYLON.Gamepads((gp) => {
+                if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    let webVrController: WebVRController = <WebVRController>gp;
+                    webVrController.attachToPoseControlledCamera(this);
+                    this.controllers.push(webVrController);
+                }
+            });
         }
     }
 
