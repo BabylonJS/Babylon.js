@@ -5736,6 +5736,11 @@ var BABYLON;
             }
             value.__smartArrayFlags[this._id] = this._duplicateId;
         };
+        SmartArray.prototype.forEach = function (func) {
+            for (var index = 0; index < this.length; index++) {
+                func(this.data[index]);
+            }
+        };
         SmartArray.prototype.pushNoDuplicate = function (value) {
             if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
                 return false;
@@ -9824,6 +9829,7 @@ var BABYLON;
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
+            texture.samples = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
@@ -9867,6 +9873,9 @@ var BABYLON;
             if (this.webGLVersion < 2) {
                 return 1;
             }
+            if (texture.samples === samples) {
+                return samples;
+            }
             var gl = this._gl;
             samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
             // Dispose previous render buffers
@@ -9891,6 +9900,7 @@ var BABYLON;
             else {
                 this.bindUnboundFramebuffer(texture._framebuffer);
             }
+            texture.samples = samples;
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture._width, texture._height, samples);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
@@ -9915,6 +9925,7 @@ var BABYLON;
             texture.references = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samples = 1;
             texture.samplingMode = samplingMode;
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
@@ -15919,6 +15930,20 @@ var BABYLON;
         };
         Camera.prototype._checkInputs = function () {
         };
+        Object.defineProperty(Camera.prototype, "rigCameras", {
+            get: function () {
+                return this._rigCameras;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "rigPostProcess", {
+            get: function () {
+                return this._rigPostProcess;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Camera.prototype._cascadePostProcessesToRigCams = function () {
             // invalidate framebuffer
             if (this._postProcesses.length > 0) {
@@ -16989,6 +17014,11 @@ var BABYLON;
         function FreeCameraGamepadInput() {
             this.gamepadAngularSensibility = 200;
             this.gamepadMoveSensibility = 40;
+            // private members
+            this._cameraTransform = BABYLON.Matrix.Identity();
+            this._deltaTransform = BABYLON.Vector3.Zero();
+            this._vector3 = BABYLON.Vector3.Zero();
+            this._vector2 = BABYLON.Vector2.Zero();
         }
         FreeCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -17013,11 +17043,18 @@ var BABYLON;
                 var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                if (!camera.rotationQuaternion) {
+                    BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, this._cameraTransform);
+                }
+                else {
+                    camera.rotationQuaternion.toRotationMatrix(this._cameraTransform);
+                }
                 var speed = camera._computeLocalCameraSpeed() * 50.0;
-                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-                camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
+                this._vector3.copyFromFloats(LSValues.x * speed, 0, -LSValues.y * speed);
+                BABYLON.Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
+                camera.cameraDirection.addInPlace(this._deltaTransform);
+                this._vector2.copyFromFloats(RSValues.y, RSValues.x);
+                camera.cameraRotation.addInPlace(this._vector2);
             }
         };
         FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
@@ -28606,6 +28643,7 @@ var BABYLON;
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
             if (isFragment) {
+                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
                 result = result.replace(/texture2D\(/g, "texture(");
                 result = result.replace(/textureCube\(/g, "texture(");
@@ -35016,15 +35054,29 @@ var BABYLON;
                         if (xzlen == null) {
                             xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                         }
-                        if (yaw > this._maxYaw) {
-                            localTarget.z = this._maxYawCos * xzlen;
-                            localTarget.x = this._maxYawSin * xzlen;
-                            newYaw = this._maxYaw;
+                        if (this._yawRange > Math.PI) {
+                            if (this._isAngleBetween(yaw, this._maxYaw, this._midYawConstraint)) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }
+                            else if (this._isAngleBetween(yaw, this._midYawConstraint, this._minYaw)) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
                         }
-                        else if (yaw < this._minYaw) {
-                            localTarget.z = this._minYawCos * xzlen;
-                            localTarget.x = this._minYawSin * xzlen;
-                            newYaw = this._minYaw;
+                        else {
+                            if (yaw > this._maxYaw) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }
+                            else if (yaw < this._minYaw) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
                         }
                     }
                     if (this._slerping && this._yawRange > Math.PI) {
@@ -35138,6 +35190,25 @@ var BABYLON;
                 ab = Math.PI * 2 - ab;
             }
             return ab;
+        };
+        BoneLookController.prototype._isAngleBetween = function (ang, ang1, ang2) {
+            ang %= (2 * Math.PI);
+            ang = (ang < 0) ? ang + (2 * Math.PI) : ang;
+            ang1 %= (2 * Math.PI);
+            ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
+            ang2 %= (2 * Math.PI);
+            ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
+            if (ang1 < ang2) {
+                if (ang > ang1 && ang < ang2) {
+                    return true;
+                }
+            }
+            else {
+                if (ang > ang2 && ang < ang1) {
+                    return true;
+                }
+            }
+            return false;
         };
         return BoneLookController;
     }());
@@ -35534,6 +35605,7 @@ var BABYLON;
                 Can only be used on a single postprocess or on the last one of a chain.
             */
             this.enablePixelPerfectMode = false;
+            this.samples = 1;
             this._reusable = false;
             this._textures = new BABYLON.SmartArray(2);
             this._currentRenderTextureInd = 0;
@@ -35645,6 +35717,7 @@ var BABYLON;
             this.width = -1;
         };
         PostProcess.prototype.activate = function (camera, sourceTexture) {
+            var _this = this;
             camera = camera || this._camera;
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
@@ -35683,6 +35756,11 @@ var BABYLON;
                 }
                 this.onSizeChangedObservable.notifyObservers(this);
             }
+            this._textures.forEach(function (texture) {
+                if (texture.samples !== _this.samples) {
+                    _this._engine.updateRenderTargetTextureSampleCount(texture, _this.samples);
+                }
+            });
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
                 this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd], 0, requiredWidth, requiredHeight);
