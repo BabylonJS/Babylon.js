@@ -18716,7 +18716,7 @@ var BABYLON;
             else {
                 this.position.copyFrom(this._newPosition);
                 var up = this.upVector;
-                if (this.allowUpsideDown && this.beta < 0) {
+                if (this.allowUpsideDown && sinb < 0) {
                     up = up.clone();
                     up = up.negate();
                 }
