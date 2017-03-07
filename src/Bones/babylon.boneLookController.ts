@@ -162,8 +162,7 @@ module BABYLON {
                         upAxis?:Vector3,
                         upAxisSpace?:Space,
                         yawAxis?:Vector3,
-                        pitchAxis?:Vector3,
-                        showSpaceAxes?:boolean
+                        pitchAxis?:Vector3
                     }){
 
             this.mesh = mesh;
@@ -376,14 +375,26 @@ module BABYLON {
                             xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                         }
 
-                        if(yaw > this._maxYaw){
-                            localTarget.z = this._maxYawCos*xzlen;
-                            localTarget.x = this._maxYawSin*xzlen;
-                            newYaw = this._maxYaw;
-                        }else if(yaw < this._minYaw){
-                            localTarget.z = this._minYawCos*xzlen;
-                            localTarget.x = this._minYawSin*xzlen;
-                            newYaw = this._minYaw;
+                        if(this._yawRange > Math.PI){
+                            if (this._isAngleBetween(yaw, this._maxYaw, this._midYawConstraint)) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }else if (this._isAngleBetween(yaw, this._midYawConstraint, this._minYaw)) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
+                        }else{
+                            if (yaw > this._maxYaw) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }else if (yaw < this._minYaw) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
                         }
                     }
 
@@ -522,6 +533,27 @@ module BABYLON {
             }
 
             return ab;
+        }
+
+        private _isAngleBetween(ang, ang1, ang2):boolean {
+
+            ang %= (2 * Math.PI);
+            ang = (ang < 0) ? ang + (2 * Math.PI) : ang;
+            ang1 %= (2 * Math.PI);
+            ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
+            ang2 %= (2 * Math.PI);
+            ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
+
+            if(ang1 < ang2){
+                if(ang > ang1 && ang < ang2){
+                    return true;
+                }
+            }else{
+                if(ang > ang2 && ang < ang1){
+                    return true;
+                }
+            }
+            return false;
         }
 
     }
