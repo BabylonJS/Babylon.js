@@ -14,6 +14,8 @@
         */ 
         public enablePixelPerfectMode = false;
 
+        public samples = 1;
+
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
@@ -192,6 +194,12 @@
 
                 this.onSizeChangedObservable.notifyObservers(this);
             }
+
+            this._textures.forEach(texture => {
+                if (texture.samples !== this.samples) {
+                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
+                }
+            });
 
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);

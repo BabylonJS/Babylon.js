@@ -2499,6 +2499,7 @@
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
+            texture.samples = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
@@ -2550,6 +2551,11 @@
             if (this.webGLVersion < 2) {
                 return 1;
             }
+
+            if (texture.samples === samples) {
+                return samples;
+            }
+
             var gl = this._gl;
 
             samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
@@ -2582,6 +2588,7 @@
                 this.bindUnboundFramebuffer(texture._framebuffer);
             }
 
+            texture.samples = samples;
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture._width, texture._height, samples);
 
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -2614,6 +2621,7 @@
             texture.references = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samples = 1;
             texture.samplingMode = samplingMode;
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
