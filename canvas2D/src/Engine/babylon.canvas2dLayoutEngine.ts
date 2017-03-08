@@ -61,6 +61,7 @@
         // A very simple (no) layout computing...
         // The Canvas and its direct children gets the Canvas' size as Layout Area
         // Indirect children have their Layout Area to the actualSize (margin area) of their parent
+        @logMethod()
         public updateLayout(prim: Prim2DBase) {
 
             // If this prim is layoutDiry we update  its layoutArea and also the one of its direct children
@@ -73,6 +74,7 @@
 
         }
 
+        @logMethod()
         private _doUpdate(prim: Prim2DBase) {
             // Canvas ?
             if (prim instanceof Canvas2D) {

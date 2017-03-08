@@ -57,7 +57,7 @@ module BABYLON {
         public update() {
             super.update();
             // update this device's offset position from the attached camera, if provided
-            if (this._poseControlledCamera) {
+            if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
                 //this.position.copyFrom(this._poseControlledCamera.position);
                 //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
                 this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;

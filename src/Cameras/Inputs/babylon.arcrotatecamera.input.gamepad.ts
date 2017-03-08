@@ -11,10 +11,10 @@ module BABYLON {
         @serialize()
         public gamepadMoveSensibility = 40;
 
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-        
+
         detachControl(element: HTMLElement) {
             if (this._gamepads) {
                 this._gamepads.dispose();
@@ -54,7 +54,7 @@ module BABYLON {
 
         private _onNewGameConnected(gamepad: Gamepad) {
             // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            if (!this.gamepad && gamepad.type !== Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         }
