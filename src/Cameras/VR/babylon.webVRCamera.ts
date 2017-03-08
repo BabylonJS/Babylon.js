@@ -60,9 +60,6 @@ module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
-            //using the position provided as the current position offset
-            this._positionOffset = position;
-
             if (this.webVROptions && this.webVROptions.positionScale) {
                 this.deviceScaleFactor = this.webVROptions.positionScale;
             }
@@ -240,6 +237,13 @@ module BABYLON {
                 this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
                 this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
+
+            this._updateCameraRotationMatrix();
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+            // Computing target for getTarget()
+            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
+            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
 
             return this._webvrViewMatrix;
         }
