@@ -1550,6 +1550,8 @@
             this._invGlobalTransform         = null;
             this._globalTransformProcessStep = 0;
             this._globalTransformStep        = 0;
+            this._prepareProcessStep         = 0;
+            this._updateCachesProcessStep    = 0;
             this._renderGroup                = null;
             this._primLinearPosition         = 0;
             this._manualZOrder               = null;
@@ -3593,8 +3595,12 @@
         }
 
         public _prepareRender(context: PrepareRender2DContext) {
-            this._prepareRenderPre(context);
-            this._prepareRenderPost(context);
+            let globalTransformStep = this.owner._globalTransformStep;
+            if (this._prepareProcessStep < globalTransformStep) {
+                this._prepareRenderPre(context);
+                this._prepareRenderPost(context);
+                this._prepareProcessStep = globalTransformStep;
+            }
         }
 
         public _prepareRenderPre(context: PrepareRender2DContext) {
@@ -3747,12 +3753,9 @@
                         let t2 = Prim2DBase._t2;
                         let as = Prim2DBase._ts0;
                         as.copyFrom(this.actualSize);
-                        let bi = this.boundingInfo;
-                        let dx = bi.center.x - bi.extent.x;
-                        let dy = bi.center.y - bi.extent.y;
                         as.width /= postScale.x;
                         as.height /= postScale.y;
-                        Matrix.TranslationToRef((-as.width * this._origin.x) - dx, (-as.height * this._origin.y) - dy, 0, t0);
+                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
 
                         // -Origin * rotation
                         rot.toRotationMatrix(t1);
@@ -3763,7 +3766,7 @@
                         t2.multiplyToRef(t0, t1);
 
                         // -Origin * rotation * scale * Origin
-                        Matrix.TranslationToRef((as.width * this._origin.x) + dx, (as.height * this._origin.y) + dx, 0, t2);
+                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
                         t1.multiplyToRef(t2, t0);
 
                         // -Origin * rotation * scale * Origin * postScale
@@ -3801,7 +3804,13 @@
                 return;
             }
 
-            this.owner.addCachedGroupRenderCounter(1);
+            let ownerProcessStep = this.owner._globalTransformProcessStep;
+            if (this._updateCachesProcessStep === ownerProcessStep) {
+                return;
+            }
+            this._updateCachesProcessStep = ownerProcessStep;
+
+            this.owner.addUpdateCachedStateCounter(1);
             
             // Check if the parent is synced
             if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagZOrderDirty))) {
@@ -4462,6 +4471,8 @@
 
         // Stores the previous 
         protected _globalTransformProcessStep: number;
+        protected _prepareProcessStep: number;
+        protected _updateCachesProcessStep: number;
         protected _localTransform: Matrix;
         protected _localLayoutTransform: Matrix;
         protected _globalTransform: Matrix;

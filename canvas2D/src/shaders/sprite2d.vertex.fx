@@ -93,7 +93,7 @@ void main(void) {
 	}
 	else {
 		vTopLeftUV = topLeftUV;
-		vBottomRightUV = vec2(topLeftUV.x, topLeftUV.y + sizeUV.y);
+		vBottomRightUV = vec2(topLeftUV.x + sizeUV.x, topLeftUV.y + sizeUV.y);
 		vScale9 = scale9;
 	}
 	vScaleFactor = scaleFactor;

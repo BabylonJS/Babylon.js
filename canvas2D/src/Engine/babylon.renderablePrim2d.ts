@@ -80,15 +80,24 @@
         attributeName: string;
         category: string;
         size: number;
-        shaderOffset: number;
         instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+
+        curCategory: string;
+        curCategoryOffset: number;
+
         //uniformLocation: WebGLUniformLocation;
 
         delimitedCategory: string;
 
         constructor() {
+            this.attributeName = null;
+            this.category = null;
+            this.size = null;
             this.instanceOffset = new StringDictionary<number>();
+            this.dataType = 0;
+            this.curCategory = "";
+            this.curCategoryOffset = 0;
         }
 
         setSize(val) {
@@ -233,16 +242,25 @@
                 if (info.category && InstanceClassInfo._CurCategories.indexOf(info.delimitedCategory) === -1) {
                     return;
                 }
-                if (!info.size) {
-                    info.setSize(val);
-                    node.classContent.mapProperty(info, true);
-                } else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
-                    node.classContent.mapProperty(info, false);
+
+                let catOffset: number;
+                if (info.curCategory === InstanceClassInfo._CurCategories) {
+                    catOffset = info.curCategoryOffset;
+                } else {
+                    if (!info.size) {
+                        info.setSize(val);
+                        node.classContent.mapProperty(info, true);
+                    } else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
+                        node.classContent.mapProperty(info, false);
+                    }
+                    catOffset = info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    info.curCategory = InstanceClassInfo._CurCategories;
+                    info.curCategoryOffset = catOffset;
                 }
 
                 let obj: InstanceDataBase = this;
                 if (obj.dataBuffer && obj.dataElements) {
-                    let offset = obj.dataElements[obj.curElement].offset + info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    let offset = obj.dataElements[obj.curElement].offset + catOffset;
                     info.writeData(obj.dataBuffer.buffer, offset, val);
                 }
             }
