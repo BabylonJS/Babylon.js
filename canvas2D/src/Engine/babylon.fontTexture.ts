@@ -361,17 +361,17 @@
             return true;
         }
 
-        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false): FontTexture {
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false): FontTexture {
             let dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", () => new StringDictionary<FontTexture>());
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             let ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
 
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, signedDistanceField ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, (signedDistanceField || bilinearFiltering) ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
             ft._cachedFontId = lfn;
             dic.add(lfn, ft);
 

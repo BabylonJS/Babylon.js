@@ -163,15 +163,16 @@ declare module BABYLON {
         invertTransformFloats(x: number, y: number): Vector2;
     }
     /**
-     * A class storing a Matrix for 2D transformations
-     * The stored matrix is a 2*3 Matrix
-     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
-     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
-     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
-     *
-     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-     */
+       * A class storing a Matrix for 2D transformations
+       * The stored matrix is a 3*3 Matrix
+       * I   [0,1,3]   [mX, mY, 0]   R   [ CosZ, SinZ, 0]  T    [ 0,  0, 0]  S   [Sx,  0, 0]
+       * D = [3,4,5] = [nX, nY, 0]   O = [-SinZ, CosZ, 0]  R =  [ 0,  0, 0]  C = [ 0, Sy, 0]
+       * X   [6,7,8]   [tX, tY, 1]   T   [  0  ,  0  , 0]  N    [Tx, Ty, 0]  L   [ 0,  0, 0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
     class Matrix2D {
+        m: Float32Array;
         static Identity(): Matrix2D;
         static IdentityToRef(res: Matrix2D): void;
         copyFrom(other: Matrix2D): void;
@@ -186,7 +187,6 @@ declare module BABYLON {
         transformFloatsToRef(x: number, y: number, r: Vector2): void;
         transformPoint(p: Vector2): Vector2;
         transformPointToRef(p: Vector2, r: Vector2): void;
-        m: Float32Array;
     }
     /**
      * Stores information about a 2D Triangle.
@@ -856,7 +856,7 @@ declare module BABYLON {
         private _usedCounter;
         debugMode: boolean;
         readonly isDynamicFontTexture: boolean;
-        static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): FontTexture;
+        static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean, bilinearFiltering?: boolean): FontTexture;
         static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): void;
         /**
          * Create a new instance of the FontTexture class
@@ -4056,6 +4056,7 @@ declare module BABYLON {
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - useBilinearFiltering: if true a FontTexture using Bilinear filtering will be used, if false a FontTexture using Nearest filtering will be used. If not specified then bilinear will be chosen for Signed Distance Field mode or a Text2D inside a WorldSpaceCanvas2D, otherwise nearest will be chose.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          * - isVisible: true if the text must be visible, false for hidden. Default is true.
@@ -4104,6 +4105,7 @@ declare module BABYLON {
             fontSignedDistanceField?: boolean;
             bitmapFontTexture?: BitmapFontTexture;
             defaultFontColor?: Color4;
+            useBilinearFiltering?: boolean;
             size?: Size;
             tabulationSize?: number;
             isVisible?: boolean;
@@ -4160,6 +4162,7 @@ declare module BABYLON {
         private _textAlignment;
         private _sizeSetByUser;
         private _textureIsPremulAlpha;
+        private _useBilinearFiltering;
         textAlignmentH: number;
         textAlignmentV: number;
     }
