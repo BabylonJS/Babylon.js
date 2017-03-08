@@ -258,13 +258,6 @@
             return this._updateTransparentDataCounter;
         }
 
-        public get cachedGroupRenderCounter(): PerfCounter {
-            if (!this._cachedGroupRenderCounter) {
-                this._cachedGroupRenderCounter = new PerfCounter();
-            }
-            return this._cachedGroupRenderCounter;
-        }
-
         public get updateCachedStateCounter(): PerfCounter {
             if (!this._updateCachedStateCounter) {
                 this._updateCachedStateCounter = new PerfCounter();
@@ -312,6 +305,13 @@
                 this._layoutBoundingInfoUpdateCounter = new PerfCounter();
             }
             return this._layoutBoundingInfoUpdateCounter;
+        }
+
+        public get canvasRenderTimeCounter(): PerfCounter {
+            if (!this._canvasRenderTimeCounter) {
+                this._canvasRenderTimeCounter = new PerfCounter();
+            }
+            return this._canvasRenderTimeCounter;
         }
 
         public static get instances() : Array<Canvas2D> {
@@ -1165,7 +1165,6 @@
             this.drawCallsTransparentCounter.fetchNewFrame();
             this.groupRenderCounter.fetchNewFrame();
             this.updateTransparentDataCounter.fetchNewFrame();
-            this.cachedGroupRenderCounter.fetchNewFrame();
             this.updateCachedStateCounter.fetchNewFrame();
             this.updateLayoutCounter.fetchNewFrame();
             this.updatePositioningCounter.fetchNewFrame();
@@ -1173,6 +1172,7 @@
             this.updateGlobalTransformCounter.fetchNewFrame();
             this.boundingInfoRecomputeCounter.fetchNewFrame();
             this.layoutBoundingInfoUpdateCounter.fetchNewFrame();
+            this.canvasRenderTimeCounter.beginMonitoring();
         }
 
         private _fetchPerfMetrics() {
@@ -1181,7 +1181,6 @@
             this.drawCallsTransparentCounter.addCount(0, true);
             this.groupRenderCounter.addCount(0, true);
             this.updateTransparentDataCounter.addCount(0, true);
-            this.cachedGroupRenderCounter.addCount(0, true);
             this.updateCachedStateCounter.addCount(0, true);
             this.updateLayoutCounter.addCount(0, true);
             this.updatePositioningCounter.addCount(0, true);
@@ -1189,6 +1188,7 @@
             this.updateGlobalTransformCounter.addCount(0, true);
             this.boundingInfoRecomputeCounter.addCount(0, true);
             this.layoutBoundingInfoUpdateCounter.addCount(0, true);
+            this.canvasRenderTimeCounter.endMonitoring(true);
         }
 
         private _updateProfileCanvas() {
@@ -1198,13 +1198,13 @@
 
             let format = (v: number) => (Math.round(v*100)/100).toString();
 
-            let p = `Draw Calls:\n` +
+            let p = `Render Time: avg:${format(this.canvasRenderTimeCounter.lastSecAverage)}ms ${format(this.canvasRenderTimeCounter.current)}ms\n` +
+                    `Draw Calls:\n` +
                     ` - Opaque:      ${format(this.drawCallsOpaqueCounter.current)}, (avg:${format(this.drawCallsOpaqueCounter.lastSecAverage)}, t:${format(this.drawCallsOpaqueCounter.total)})\n` +
                     ` - AlphaTest:   ${format(this.drawCallsAlphaTestCounter.current)}, (avg:${format(this.drawCallsAlphaTestCounter.lastSecAverage)}, t:${format(this.drawCallsAlphaTestCounter.total)})\n` +
                     ` - Transparent: ${format(this.drawCallsTransparentCounter.current)}, (avg:${format(this.drawCallsTransparentCounter.lastSecAverage)}, t:${format(this.drawCallsTransparentCounter.total)})\n` +
                     `Group Render: ${this.groupRenderCounter.current}, (avg:${format(this.groupRenderCounter.lastSecAverage)}, t:${format(this.groupRenderCounter.total)})\n` + 
                     `Update Transparent Data: ${this.updateTransparentDataCounter.current}, (avg:${format(this.updateTransparentDataCounter.lastSecAverage)}, t:${format(this.updateTransparentDataCounter.total)})\n` + 
-                    `Cached Group Render: ${this.cachedGroupRenderCounter.current}, (avg:${format(this.cachedGroupRenderCounter.lastSecAverage)}, t:${format(this.cachedGroupRenderCounter.total)})\n` + 
                     `Update Cached States: ${this.updateCachedStateCounter.current}, (avg:${format(this.updateCachedStateCounter.lastSecAverage)}, t:${format(this.updateCachedStateCounter.total)})\n` + 
                     ` - Update Layout: ${this.updateLayoutCounter.current}, (avg:${format(this.updateLayoutCounter.lastSecAverage)}, t:${format(this.updateLayoutCounter.total)})\n` + 
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
@@ -1238,12 +1238,6 @@
         public _addUpdateTransparentDataCount(count: number) {
             if (this._updateTransparentDataCounter) {
                 this._updateTransparentDataCounter.addCount(count, false);
-            }
-        }
-
-        public addCachedGroupRenderCounter(count: number) {
-            if (this._cachedGroupRenderCounter) {
-                this._cachedGroupRenderCounter.addCount(count, false);
             }
         }
 
@@ -1334,7 +1328,6 @@
         private _drawCallsTransparentCounter     : PerfCounter;
         private _groupRenderCounter              : PerfCounter;
         private _updateTransparentDataCounter    : PerfCounter;
-        private _cachedGroupRenderCounter        : PerfCounter;
         private _updateCachedStateCounter        : PerfCounter;
         private _updateLayoutCounter             : PerfCounter;
         private _updatePositioningCounter        : PerfCounter;
@@ -1342,6 +1335,7 @@
         private _updateLocalTransformCounter     : PerfCounter;
         private _boundingInfoRecomputeCounter    : PerfCounter;
         private _layoutBoundingInfoUpdateCounter : PerfCounter;
+        private _canvasRenderTimeCounter         : PerfCounter;
 
         private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;

@@ -2721,6 +2721,8 @@ declare module BABYLON {
         protected _parentTransformStep: number;
         protected _globalTransformStep: number;
         protected _globalTransformProcessStep: number;
+        protected _prepareProcessStep: number;
+        protected _updateCachesProcessStep: number;
         protected _localTransform: Matrix;
         protected _localLayoutTransform: Matrix;
         protected _globalTransform: Matrix;
@@ -2841,9 +2843,10 @@ declare module BABYLON {
         attributeName: string;
         category: string;
         size: number;
-        shaderOffset: number;
         instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+        curCategory: string;
+        curCategoryOffset: number;
         delimitedCategory: string;
         constructor();
         setSize(val: any): void;
@@ -4433,7 +4436,6 @@ declare module BABYLON {
         readonly drawCallsTransparentCounter: PerfCounter;
         readonly groupRenderCounter: PerfCounter;
         readonly updateTransparentDataCounter: PerfCounter;
-        readonly cachedGroupRenderCounter: PerfCounter;
         readonly updateCachedStateCounter: PerfCounter;
         readonly updateLayoutCounter: PerfCounter;
         readonly updatePositioningCounter: PerfCounter;
@@ -4441,6 +4443,7 @@ declare module BABYLON {
         readonly updateGlobalTransformCounter: PerfCounter;
         readonly boundingInfoRecomputeCounter: PerfCounter;
         readonly layoutBoundingInfoUpdateCounter: PerfCounter;
+        readonly canvasRenderTimeCounter: PerfCounter;
         static readonly instances: Array<Canvas2D>;
         readonly primitiveCollisionManager: PrimitiveCollisionManagerBase;
         protected _canvasPreInit(settings: any): void;
@@ -4573,7 +4576,6 @@ declare module BABYLON {
         _addDrawCallCount(count: number, renderMode: number): void;
         _addGroupRenderCount(count: number): void;
         _addUpdateTransparentDataCount(count: number): void;
-        addCachedGroupRenderCounter(count: number): void;
         addUpdateCachedStateCounter(count: number): void;
         addUpdateLayoutCounter(count: number): void;
         addUpdatePositioningCounter(count: number): void;
@@ -4629,7 +4631,6 @@ declare module BABYLON {
         private _drawCallsTransparentCounter;
         private _groupRenderCounter;
         private _updateTransparentDataCounter;
-        private _cachedGroupRenderCounter;
         private _updateCachedStateCounter;
         private _updateLayoutCounter;
         private _updatePositioningCounter;
@@ -4637,6 +4638,7 @@ declare module BABYLON {
         private _updateLocalTransformCounter;
         private _boundingInfoRecomputeCounter;
         private _layoutBoundingInfoUpdateCounter;
+        private _canvasRenderTimeCounter;
         private _profilingCanvas;
         private _profileInfoText;
         private static _v;
