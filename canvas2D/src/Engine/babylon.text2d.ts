@@ -338,7 +338,7 @@
                 return null;
             }
 
-            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, (this._useBilinearFiltering === null) ? (this.owner instanceof WorldSpaceCanvas2D) : this._useBilinearFiltering);
             this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
             return this._fontTexture;
         }
@@ -399,6 +399,7 @@
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - useBilinearFiltering: if true a FontTexture using Bilinear filtering will be used, if false a FontTexture using Nearest filtering will be used. If not specified then bilinear will be chosen for Signed Distance Field mode or a Text2D inside a WorldSpaceCanvas2D, otherwise nearest will be chose.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          * - isVisible: true if the text must be visible, false for hidden. Default is true.
@@ -448,6 +449,7 @@
             fontSignedDistanceField ?: boolean,
             bitmapFontTexture       ?: BitmapFontTexture,
             defaultFontColor        ?: Color4,
+            useBilinearFiltering    ?: boolean,
             size                    ?: Size,
             tabulationSize          ?: number,
             isVisible               ?: boolean,
@@ -509,12 +511,14 @@
             this._textSize             = null;
             this.text                  = text;
 
-            if(settings.size != null){
+            if (settings.size != null){
                 this.size = settings.size;
                 this._sizeSetByUser = true;
             }else{
                 this.size = null;
             }
+
+            this._useBilinearFiltering = (settings.useBilinearFiltering != null) ? settings.useBilinearFiltering : null;
 
             // Text rendering must always be aligned to the target's pixel to ensure a good quality
             this.alignToPixel = true;
@@ -910,6 +914,7 @@
         private _textAlignment: string;
         private _sizeSetByUser: boolean;
         private _textureIsPremulAlpha: boolean;
+        private _useBilinearFiltering: boolean;
 
         public textAlignmentH: number;
         public textAlignmentV: number;

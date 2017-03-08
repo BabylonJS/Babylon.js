@@ -349,17 +349,17 @@ var BABYLON;
     }());
     BABYLON.Transform2D = Transform2D;
     /**
-     * A class storing a Matrix for 2D transformations
-     * The stored matrix is a 2*3 Matrix
-     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
-     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
-     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
-     *
-     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-     */
+       * A class storing a Matrix for 2D transformations
+       * The stored matrix is a 3*3 Matrix
+       * I   [0,1,3]   [mX, mY, 0]   R   [ CosZ, SinZ, 0]  T    [ 0,  0, 0]  S   [Sx,  0, 0]
+       * D = [3,4,5] = [nX, nY, 0]   O = [-SinZ, CosZ, 0]  R =  [ 0,  0, 0]  C = [ 0, Sy, 0]
+       * X   [6,7,8]   [tX, tY, 1]   T   [  0  ,  0  , 0]  N    [Tx, Ty, 0]  L   [ 0,  0, 0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
     var Matrix2D = (function () {
         function Matrix2D() {
-            this.m = new Float32Array(6);
+            this.m = new Float32Array(9);
         }
         Matrix2D.Identity = function () {
             var res = new Matrix2D();
@@ -367,16 +367,20 @@ var BABYLON;
             return res;
         };
         Matrix2D.IdentityToRef = function (res) {
-            res.m[1] = res.m[2] = res.m[4] = res.m[5] = 0;
-            res.m[0] = res.m[3] = 1;
+            res.m[1] = res.m[2] = res.m[3] = res.m[5] = res.m[6] = res[7] = 0;
+            res.m[0] = res.m[4] = res[8] = 1;
         };
         Matrix2D.prototype.copyFrom = function (other) {
-            for (var i = 0; i < 6; i++) {
+            for (var i = 0; i < 9; i++) {
                 this.m[i] = other.m[i];
             }
         };
         Matrix2D.prototype.determinant = function () {
-            return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
+            //return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
+            var temp1 = (this.m[4] * this.m[8]) - (this.m[5] * this.m[7]);
+            var temp2 = (this.m[3] * this.m[8]) - (this.m[5] * this.m[6]);
+            var temp3 = (this.m[3] * this.m[7]) - (this.m[4] * this.m[6]);
+            return this.m[0] * temp1 - this.m[1] * temp1 + this.m[2] * temp3;
         };
         Matrix2D.prototype.invertToThis = function () {
             this.invertToRef(this);
@@ -386,20 +390,40 @@ var BABYLON;
             this.invertToRef(res);
             return res;
         };
+        // http://mathworld.wolfram.com/MatrixInverse.html
         Matrix2D.prototype.invertToRef = function (res) {
-            var a00 = this.m[0], a01 = this.m[1], a10 = this.m[2], a11 = this.m[3], a20 = this.m[4], a21 = this.m[5];
-            var det21 = a21 * a10 - a11 * a20;
-            var det = (a00 * a11) - (a01 * a10);
+            var l1 = this.m[0];
+            var l2 = this.m[1];
+            var l3 = this.m[2];
+            var l4 = this.m[3];
+            var l5 = this.m[4];
+            var l6 = this.m[5];
+            var l7 = this.m[6];
+            var l8 = this.m[7];
+            var l9 = this.m[8];
+            var det = this.determinant();
             if (det < (BABYLON.Epsilon * BABYLON.Epsilon)) {
                 throw new Error("Can't invert matrix, near null determinant");
             }
-            det = 1 / det;
-            res.m[0] = a11 * det;
-            res.m[1] = -a01 * det;
-            res.m[2] = -a10 * det;
-            res.m[3] = a00 * det;
-            res.m[4] = det21 * det;
-            res.m[5] = (-a21 * a00 + a01 * a20) * det;
+            var detDiv = 1 / this.determinant();
+            var det1 = l5 * l9 - l6 * l8;
+            var det2 = l3 * l8 - l2 * l9;
+            var det3 = l2 * l6 - l3 * l5;
+            var det4 = l6 * 7 - l4 * l9;
+            var det5 = l1 * l9 - l3 * l7;
+            var det6 = l3 * l4 - l6 * l1;
+            var det7 = l4 * l8 - l5 * l7;
+            var det8 = l2 * l7 - l1 * l8;
+            var det9 = l1 * l5 - l2 * l4;
+            res.m[0] = det1 * det;
+            res.m[1] = det2 * det;
+            res.m[2] = det3 * det;
+            res.m[3] = det4 * det;
+            res.m[4] = det5 * det;
+            res.m[5] = det6 * det;
+            res.m[6] = det7 * det;
+            res.m[7] = det8 * det;
+            res.m[8] = det9 * det;
         };
         Matrix2D.prototype.multiplyToThis = function (other) {
             this.multiplyToRef(other, this);
@@ -410,54 +434,33 @@ var BABYLON;
             return res;
         };
         Matrix2D.prototype.multiplyToRef = function (other, result) {
-            var tm0 = this.m[0];
-            var tm1 = this.m[1];
-            //var tm2 = this.m[2];
-            //var tm3 = this.m[3];
-            var tm4 = this.m[2];
-            var tm5 = this.m[3];
-            //var tm6 = this.m[6];
-            //var tm7 = this.m[7];
-            var tm8 = this.m[4];
-            var tm9 = this.m[5];
-            //var tm10 = this.m[10];
-            //var tm11 = this.m[11];
-            //var tm12 = this.m[12];
-            //var tm13 = this.m[13];
-            //var tm14 = this.m[14];
-            //var tm15 = this.m[15];
-            var om0 = other.m[0];
-            var om1 = other.m[1];
-            //var om2 = other.m[2];
-            //var om3 = other.m[3];
-            var om4 = other.m[2];
-            var om5 = other.m[3];
-            //var om6 = other.m[6];
-            //var om7 = other.m[7];
-            var om8 = other.m[4];
-            var om9 = other.m[5];
-            //var om10 = other.m[10];
-            //var om11 = other.m[11];
-            //var om12 = other.m[12];
-            //var om13 = other.m[13];
-            //var om14 = other.m[14];
-            //var om15 = other.m[15];
-            result.m[0] = tm0 * om0 + tm1 * om4;
-            result.m[1] = tm0 * om1 + tm1 * om5;
-            //result.m[2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
-            //result.m[3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
-            result.m[2] = tm4 * om0 + tm5 * om4;
-            result.m[3] = tm4 * om1 + tm5 * om5;
-            //result.m[6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
-            //result.m[7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
-            result.m[4] = tm8 * om0 + tm9 * om4 + om8;
-            result.m[5] = tm8 * om1 + tm9 * om5 + om9;
-            //result.m[10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
-            //result.m[11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
-            //result.m[12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
-            //result.m[13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
-            //result.m[14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
-            //result.m[15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+            var l1 = this.m[0];
+            var l2 = this.m[1];
+            var l3 = this.m[2];
+            var l4 = this.m[3];
+            var l5 = this.m[4];
+            var l6 = this.m[5];
+            var l7 = this.m[6];
+            var l8 = this.m[7];
+            var l9 = this.m[8];
+            var r1 = other.m[0];
+            var r2 = other.m[1];
+            var r3 = other.m[2];
+            var r4 = other.m[3];
+            var r5 = other.m[4];
+            var r6 = other.m[5];
+            var r7 = other.m[6];
+            var r8 = other.m[7];
+            var r9 = other.m[8];
+            result.m[0] = l1 * r1 + l2 * r4 + l3 * r7;
+            result.m[1] = l1 * r2 + l2 * r5 + l3 * r8;
+            result.m[2] = l1 * r3 + l2 * r6 + l3 * r9;
+            result.m[3] = l4 * r1 + l5 * r4 + l6 * r7;
+            result.m[4] = l4 * r2 + l5 * r5 + l6 * r8;
+            result.m[5] = l4 * r3 + l5 * r6 + l6 * r9;
+            result.m[6] = l7 * r1 + l8 * r4 + l9 * r7;
+            result.m[7] = l7 * r2 + l8 * r5 + l9 * r8;
+            result.m[8] = l7 * r3 + l8 * r6 + l9 * r9;
         };
         Matrix2D.prototype.transformFloats = function (x, y) {
             var res = BABYLON.Vector2.Zero();
@@ -2336,17 +2339,18 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        FontTexture.GetCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
+        FontTexture.GetCachedFontTexture = function (scene, fontName, supersample, signedDistanceField, bilinearFiltering) {
             if (supersample === void 0) { supersample = false; }
             if (signedDistanceField === void 0) { signedDistanceField = false; }
+            if (bilinearFiltering === void 0) { bilinearFiltering = false; }
             var dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", function () { return new BABYLON.StringDictionary(); });
-            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, signedDistanceField ? BABYLON.Texture.BILINEAR_SAMPLINGMODE : BABYLON.Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, (signedDistanceField || bilinearFiltering) ? BABYLON.Texture.BILINEAR_SAMPLINGMODE : BABYLON.Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
             ft._cachedFontId = lfn;
             dic.add(lfn, ft);
             return ft;
@@ -14748,6 +14752,7 @@ var BABYLON;
          * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - useBilinearFiltering: if true a FontTexture using Bilinear filtering will be used, if false a FontTexture using Nearest filtering will be used. If not specified then bilinear will be chosen for Signed Distance Field mode or a Text2D inside a WorldSpaceCanvas2D, otherwise nearest will be chose.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          * - isVisible: true if the text must be visible, false for hidden. Default is true.
@@ -14813,6 +14818,7 @@ var BABYLON;
             else {
                 _this.size = null;
             }
+            _this._useBilinearFiltering = (settings.useBilinearFiltering != null) ? settings.useBilinearFiltering : null;
             // Text rendering must always be aligned to the target's pixel to ensure a good quality
             _this.alignToPixel = true;
             _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
@@ -15009,7 +15015,7 @@ var BABYLON;
                 if (this.fontName == null || this.owner == null || this.owner.scene == null) {
                     return null;
                 }
-                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, (this._useBilinearFiltering === null) ? (this.owner instanceof BABYLON.WorldSpaceCanvas2D) : this._useBilinearFiltering);
                 this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
                 return this._fontTexture;
             },
