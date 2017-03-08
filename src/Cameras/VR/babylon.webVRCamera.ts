@@ -64,9 +64,6 @@ module BABYLON {
             this.rotationQuaternion = new Quaternion();
             this.deviceRotationQuaternion = new Quaternion();
 
-            //using the position provided as the current position offset
-            this._positionOffset = position;
-
             if (this.webVROptions && this.webVROptions.positionScale) {
                 this.deviceScaleFactor = this.webVROptions.positionScale;
             }
@@ -240,7 +237,18 @@ module BABYLON {
                 this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
 
+            this._updateCameraRotationMatrix();
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+            // Computing target for getTarget()
+            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
+            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
+
             return this._webvrViewMatrix;
+        }
+
+        protected _updateCameraRotationMatrix() {
+            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
         }
 
         public _isSynchronizedViewMatrix() {
