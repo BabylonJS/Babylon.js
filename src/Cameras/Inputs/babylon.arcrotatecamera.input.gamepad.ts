@@ -3,7 +3,7 @@ module BABYLON {
         camera: ArcRotateCamera;
 
         public gamepad: Gamepad;
-        private _gamepads: Gamepads;
+        private _gamepads: Gamepads<Gamepad>;
 
         @serialize()
         public gamepadRotationSensibility = 80;
