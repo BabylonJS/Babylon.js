@@ -1897,6 +1897,21 @@
         }
 
         /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null. 
+         */
+        public getHighlightLayerByName(name: string): HighlightLayer {
+            for (var index = 0; index < this.highlightLayers.length; index++) {
+                if (this.highlightLayers[index].name === name) {
+                    return this.highlightLayers[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * Return a unique id as a string which can serve as an identifier for the scene
          */
         public get uid(): string {

@@ -1275,7 +1275,7 @@
 
         /**
          * Returns a new Vector3 set witth the result of the division of the current Vector3 coordinates by the passed ones.  
-         */        
+         */
         public divide(otherVector: Vector3): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
@@ -2485,7 +2485,7 @@
         public conjugateToRef(ref: Quaternion): Quaternion {
             ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
             return this;
-        }   
+        }
         /** 
          * Conjugates in place the current Quaternion.
          * Returns the updated Quaternion.  
@@ -2535,7 +2535,7 @@
          * Returns the current Quaternion.  
          */
         public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
-            
+
             var qz = this.z;
             var qx = this.x;
             var qy = this.y;
@@ -2546,25 +2546,25 @@
             var sqx = qx * qx;
             var sqy = qy * qy;
 
-            var zAxisY = qy*qz - qx*qw;
+            var zAxisY = qy * qz - qx * qw;
             var limit = .4999999;
 
-            if(zAxisY < -limit){
-                result.y = 2 * Math.atan2(qy,qw);
-                result.x = Math.PI/2;
+            if (zAxisY < -limit) {
+                result.y = 2 * Math.atan2(qy, qw);
+                result.x = Math.PI / 2;
                 result.z = 0;
-            }else if(zAxisY > limit){
-                result.y = 2 * Math.atan2(qy,qw);
-                result.x = -Math.PI/2;
+            } else if (zAxisY > limit) {
+                result.y = 2 * Math.atan2(qy, qw);
+                result.x = -Math.PI / 2;
                 result.z = 0;
-            }else{
+            } else {
                 result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
                 result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
                 result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
             }
 
             return this;
-            
+
         }
         /**
          * Updates the passed rotation matrix with the current Quaternion values.  
@@ -2680,6 +2680,10 @@
         public static Identity(): Quaternion {
             return new Quaternion(0.0, 0.0, 0.0, 1.0);
         }
+
+        public static IsIdentity(quaternion: Quaternion) {
+            return quaternion && quaternion.x === 0 && quaternion.y === 0 && quaternion.z === 0 && quaternion.w === 1;
+        }
         /**
          * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float). 
          */
@@ -2764,7 +2768,7 @@
          * cf to Vector3.RotationFromAxis() documentation.  
          * Note : axis1, axis2 and axis3 are normalized during this operation.   
          */
-         public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
+        public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion {
             var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
             Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             return quat;
@@ -2781,7 +2785,7 @@
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
-            
+
             var result = Quaternion.Identity();
 
             Quaternion.SlerpToRef(left, right, amount, result);
@@ -2790,7 +2794,7 @@
 
         }
 
-        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result:Quaternion): void {
+        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void {
             var num2;
             var num3;
             var num = amount;
@@ -2868,9 +2872,9 @@
         public toArray(): Float32Array {
             return this.m;
         }
-         /**
-         * Returns the matrix underlying array.  
-         */       
+        /**
+        * Returns the matrix underlying array.  
+        */
         public asArray(): Float32Array {
             return this.toArray();
         }
@@ -2995,10 +2999,10 @@
             this.m[14] = z;
             return this;
         }
-                /**
-         * Inserts the translation vector in the current Matrix.  
-         * Returns the updated Matrix.  
-         */
+        /**
+ * Inserts the translation vector in the current Matrix.  
+ * Returns the updated Matrix.  
+ */
         public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
@@ -3014,7 +3018,7 @@
         /**
          * Fill a Vector3 with the extracted translation from the Matrix.  
          */
-        public getTranslationToRef(result:Vector3): Matrix {
+        public getTranslationToRef(result: Vector3): Matrix {
             result.x = this.m[12];
             result.y = this.m[13];
             result.z = this.m[14];
@@ -3030,7 +3034,7 @@
             this.setRowFromFloats(1, 0, 1, 0, 0);
             this.setRowFromFloats(2, 0, 0, 1, 0);
             return this;
-        }        
+        }
         /**
          * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.  
          */
@@ -3202,7 +3206,7 @@
         /**
          * Returns a new Matrix as the extracted rotation matrix from the current one.  
          */
-        public getRotationMatrix(): Matrix{
+        public getRotationMatrix(): Matrix {
             var result = Matrix.Identity();
             this.getRotationMatrixToRef(result);
             return result;
@@ -3211,7 +3215,7 @@
          * Extracts the rotation matrix from the current one and sets it as the passed "result".  
          * Returns the current Matrix.  
          */
-        public getRotationMatrixToRef(result:Matrix): Matrix {
+        public getRotationMatrixToRef(result: Matrix): Matrix {
             var m = this.m;
 
             var xs = m[0] * m[1] * m[2] * m[3] < 0 ? -1 : 1;
@@ -3309,7 +3313,7 @@
             this.m[i + 3] = row.w;
             return this;
         }
-        
+
         /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
@@ -3364,9 +3368,9 @@
             return result;
         }
 
-          /**
-         * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
-         */
+        /**
+       * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
+       */
         public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
             Matrix.FromValuesToRef(scale.x, 0, 0, 0,
                 0, scale.y, 0, 0,
@@ -3377,7 +3381,7 @@
             MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
 
             result.setTranslation(translation);
-        }      
+        }
         /**
          * Returns a new indentity Matrix.  
          */
@@ -3750,7 +3754,7 @@
             let a = 2.0 / width;
             let b = 2.0 / height;
             let c = 2.0 / (f - n);
-            let d = -(f + n)/(f - n);
+            let d = -(f + n) / (f - n);
 
             BABYLON.Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
@@ -3780,7 +3784,7 @@
             let a = 2.0 / (right - left);
             let b = 2.0 / (top - bottom);
             let c = 2.0 / (f - n);
-            let d = -(f + n)/(f - n);
+            let d = -(f + n) / (f - n);
             let i0 = (left + right) / (left - right);
             let i1 = (top + bottom) / (bottom - top);
 
@@ -3818,8 +3822,8 @@
 
             let a = 2.0 * n / width;
             let b = 2.0 * n / height;
-            let c = (f + n)/(f - n);
-            let d = -2.0 * f * n/(f - n);
+            let c = (f + n) / (f - n);
+            let d = -2.0 * f * n / (f - n);
 
             BABYLON.Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
@@ -3849,8 +3853,8 @@
             let t = 1.0 / (Math.tan(fov * 0.5));
             let a = isVerticalFovFixed ? (t / aspect) : t;
             let b = isVerticalFovFixed ? t : (t * aspect);
-            let c = (f + n)/(f - n);
-            let d = -2.0 * f * n/(f - n);
+            let c = (f + n) / (f - n);
+            let d = -2.0 * f * n / (f - n);
 
             BABYLON.Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
@@ -3883,13 +3887,13 @@
             let t = 1.0 / (Math.tan(fov * 0.5));
             let a = isVerticalFovFixed ? (t / aspect) : t;
             let b = isVerticalFovFixed ? t : (t * aspect);
-            let c = -(f + n)/(f - n);
-            let d = -2*f*n/(f - n);
+            let c = -(f + n) / (f - n);
+            let d = -2 * f * n / (f - n);
 
             BABYLON.Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
-                0.0, 0.0, c,-1.0,
+                0.0, 0.0, c, -1.0,
                 0.0, 0.0, d, 0.0,
                 result
             );
@@ -3897,8 +3901,10 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-            //left handed
+        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+
+            var rightHandedFactor = rightHanded ? -1 : 1;
+
             var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
             var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
             var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
@@ -3908,12 +3914,12 @@
             result.m[0] = xScale;
             result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
             result.m[5] = yScale;
-            result.m[6] = result.m[7] =  0.0;
-            result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
-            result.m[9] = -((upTan - downTan) * yScale * 0.5);
-            result.m[10] = -(znear + zfar) / (zfar - znear);
+            result.m[6] = result.m[7] = 0.0;
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5) * rightHandedFactor;
+            result.m[9] = -((upTan - downTan) * yScale * 0.5) * rightHandedFactor;
+            result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
             // result.m[10] = -zfar / (znear - zfar);
-            result.m[11] = 1.0;
+            result.m[11] = 1.0 * rightHandedFactor;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
             // result.m[14] = (znear * zfar) / (znear - zfar);
@@ -4028,29 +4034,29 @@
          * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.  
          */
         public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
-            
+
             mat.m[0] = xaxis.x;
             mat.m[1] = xaxis.y;
             mat.m[2] = xaxis.z;
 
             mat.m[3] = 0.0;
-            
+
             mat.m[4] = yaxis.x;
             mat.m[5] = yaxis.y;
             mat.m[6] = yaxis.z;
-            
+
             mat.m[7] = 0.0;
-            
+
             mat.m[8] = zaxis.x;
             mat.m[9] = zaxis.y;
             mat.m[10] = zaxis.z;
-            
+
             mat.m[11] = 0.0;
-            
+
             mat.m[12] = 0.0;
             mat.m[13] = 0.0;
             mat.m[14] = 0.0;
-            
+
             mat.m[15] = 1.0;
 
         }
@@ -4058,7 +4064,7 @@
         /**
          * Sets the passed matrix "result" as a rotation matrix according to the passed quaternion.  
          */
-        public static FromQuaternionToRef(quat:Quaternion, result:Matrix){
+        public static FromQuaternionToRef(quat: Quaternion, result: Matrix) {
 
             var xx = quat.x * quat.x;
             var yy = quat.y * quat.y;
@@ -4863,12 +4869,12 @@
             for (var i = 0; i < totalPoints.length - 3; i++) {
                 var amount = 0.0;
                 for (var c = 0; c < nbPoints; c++) {
-                    catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+                    catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step
                 }
             }
             i--;
-            catmullRom.push( Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount) );
+            catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
             return new Curve3(catmullRom);
         }
 
@@ -5031,13 +5037,13 @@
         public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
-            Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
+        Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
         public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero()];                // 2 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
-            Matrix.Zero(), Matrix.Zero(),
-            Matrix.Zero(), Matrix.Zero(),
-            Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+        Matrix.Zero(), Matrix.Zero(),
+        Matrix.Zero(), Matrix.Zero(),
+        Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
     // Same as Tmp but not exported to keep it onyl for math functions to avoid conflicts
     class MathTmp {
