@@ -80,15 +80,24 @@
         attributeName: string;
         category: string;
         size: number;
-        shaderOffset: number;
         instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+
+        curCategory: string;
+        curCategoryOffset: number;
+
         //uniformLocation: WebGLUniformLocation;
 
         delimitedCategory: string;
 
         constructor() {
+            this.attributeName = null;
+            this.category = null;
+            this.size = null;
             this.instanceOffset = new StringDictionary<number>();
+            this.dataType = 0;
+            this.curCategory = "";
+            this.curCategoryOffset = 0;
         }
 
         setSize(val) {
@@ -233,16 +242,25 @@
                 if (info.category && InstanceClassInfo._CurCategories.indexOf(info.delimitedCategory) === -1) {
                     return;
                 }
-                if (!info.size) {
-                    info.setSize(val);
-                    node.classContent.mapProperty(info, true);
-                } else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
-                    node.classContent.mapProperty(info, false);
+
+                let catOffset: number;
+                if (info.curCategory === InstanceClassInfo._CurCategories) {
+                    catOffset = info.curCategoryOffset;
+                } else {
+                    if (!info.size) {
+                        info.setSize(val);
+                        node.classContent.mapProperty(info, true);
+                    } else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
+                        node.classContent.mapProperty(info, false);
+                    }
+                    catOffset = info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    info.curCategory = InstanceClassInfo._CurCategories;
+                    info.curCategoryOffset = catOffset;
                 }
 
                 let obj: InstanceDataBase = this;
                 if (obj.dataBuffer && obj.dataElements) {
-                    let offset = obj.dataElements[obj.curElement].offset + info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    let offset = obj.dataElements[obj.curElement].offset + catOffset;
                     info.writeData(obj.dataBuffer.buffer, offset, val);
                 }
             }
@@ -282,6 +300,15 @@
             return null;
         }
         set transformY(value: Vector4) {
+        }
+
+        // The vector3 is: rendering width, height and 1 if the primitive must be aligned to pixel or 0 otherwise
+        @instanceData()
+        get renderingInfo(): Vector3 {
+            return null;
+        }
+
+        set renderingInfo(val: Vector3) {
         }
 
         @instanceData()
@@ -824,23 +851,7 @@
             return null;
         }
 
-        /**
-         * Transform a given point using the Primitive's origin setting.
-         * This method requires the Primitive's actualSize to be accurate
-         * @param p the point to transform
-         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
-         * @param res an allocated Vector2 that will receive the transformed content
-         */
-        protected transformPointWithOriginByRef(p: Vector2, originOffset:Vector2, res: Vector2) {
-            let actualSize = this.actualSize;
-            res.x = p.x - ((this.origin.x + (originOffset ? originOffset.x : 0)) * actualSize.width);
-            res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
-        }
-
-        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2) {
-            this.transformPointWithOriginByRef(p, originOffset, res);
-            return res;
-        }
+        private static _toz = Size.Zero();
 
         /**
          * Get the info for a given effect based on the dataPart metadata
@@ -932,6 +943,7 @@
         private static _r = Quaternion.Identity();
         private static _t = Vector3.Zero();
         private static _iV3 = new Vector3(1, 1, 1); // Must stay identity vector3
+
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -944,8 +956,9 @@
             let trn = RenderablePrim2D._t;
             t.decompose(scl, rot, trn);
             let pas = this.actualScale;
-            scl.x = pas.x;
-            scl.y = pas.y;
+            let canvasScale = this.owner._canvasLevelScale;
+            scl.x = pas.x * canvasScale.x * this._postScale.x;
+            scl.y = pas.y * canvasScale.y * this._postScale.y;
             scl.z = 1;
             t = Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV3, rot, trn);
 
@@ -970,10 +983,11 @@
             let w = size.width;
             let h = size.height;
             let invZBias = 1 / zBias;
+
             let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
 
-
+            part.renderingInfo = new Vector3(w, h, this.alignToPixel ? 1 : 0);
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
