@@ -17060,8 +17060,8 @@ var BABYLON;
             }
         };
         FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            // Only the first gamepad found can control the camera
+            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         };
@@ -17516,7 +17516,7 @@ var BABYLON;
         };
         ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         };
@@ -49194,11 +49194,10 @@ var BABYLON;
             _this._attached = false;
             _this._positionOffset = BABYLON.Vector3.Zero();
             _this.devicePosition = BABYLON.Vector3.Zero();
-            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
-            //using the position provided as the current position offset
-            _this._positionOffset = position;
+            _this.rotationQuaternion = new BABYLON.Quaternion();
+            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             if (_this.webVROptions && _this.webVROptions.positionScale) {
                 _this.deviceScaleFactor = _this.webVROptions.positionScale;
             }
@@ -49208,8 +49207,6 @@ var BABYLON;
                 BABYLON.Tools.Error("WebVR is not enabled on your browser");
             }
             else {
-                //TODO get the metrics updated using the device's eye parameters!
-                //TODO also check that the device has the right capabilities!
                 _this._frameData = new VRFrameData();
                 _this.getEngine().vrDisplaysPromise.then(function (devices) {
                     if (devices.length > 0) {
@@ -49244,8 +49241,8 @@ var BABYLON;
                     }
                 });
             }
-            _this.rotationQuaternion = new BABYLON.Quaternion();
-            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
+            // try to attach the controllers, if found.
+            _this.initControllers();
             return _this;
         }
         WebVRFreeCamera.prototype._checkInputs = function () {
@@ -49289,8 +49286,6 @@ var BABYLON;
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice);
             }
-            // try to attach the controllers, if found.
-            this.initControllers();
         };
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
@@ -49358,7 +49353,15 @@ var BABYLON;
                 this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
                 this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
+            this._updateCameraRotationMatrix();
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            // Computing target for getTarget()
+            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
+            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
+        };
+        WebVRFreeCamera.prototype._updateCameraRotationMatrix = function () {
+            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
         };
         WebVRFreeCamera.prototype._isSynchronizedViewMatrix = function () {
             return false;
@@ -49381,7 +49384,15 @@ var BABYLON;
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gp;
                     webVrController.attachToPoseControlledCamera(_this);
-                    _this.controllers.push(webVrController);
+                    // since this is async - sanity check. Is the controller already stored?
+                    if (_this.controllers.indexOf(webVrController) === -1) {
+                        //add to the controllers array
+                        _this.controllers.push(webVrController);
+                        //did we find enough controllers? Great! let the developer know.
+                        if (_this.onControllersAttached && _this.controllers.length === 2) {
+                            _this.onControllersAttached(_this.controllers);
+                        }
+                    }
                 }
             });
         };
@@ -51519,7 +51530,7 @@ var BABYLON;
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
             // update this device's offset position from the attached camera, if provided
-            if (this._poseControlledCamera) {
+            if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
                 //this.position.copyFrom(this._poseControlledCamera.position);
                 //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
                 this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
