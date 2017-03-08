@@ -9,6 +9,7 @@ attribute float index;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
+att vec3 renderingInfo;
 att float opacity;
 
 #ifdef Border
@@ -104,6 +105,14 @@ void main(void) {
 	pos.xy = pos2.xy * properties.xy;
 	pos.z = 1.0;
 	pos.w = 1.0;
-	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);
 
+	float rx = dot(pos, transformX);
+	float ry = dot(pos, transformY);
+
+	if (renderingInfo.z == 1.0) {
+		rx = floor((rx / renderingInfo.x) + 0.5) * renderingInfo.x;
+		ry = floor((ry / renderingInfo.y) + 0.5) * renderingInfo.y;
+	}
+
+	gl_Position = vec4(rx, ry, zBias.x, 1);
 }

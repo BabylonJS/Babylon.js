@@ -524,7 +524,8 @@
             {
                 "files": [
                     "../../canvas2D/src/Tools/babylon.math2D.ts",
-                    "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
+                    "../../canvas2D/src/Tools/babylon.iPropertyChanged.ts",
+                    "../../canvas2D/src/Tools/babylon.babylon.c2dlogging.ts",
                     "../../canvas2D/src/Tools/babylon.observableArray.ts",
                     "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
                     "../../canvas2D/src/Engine/babylon.fontTexture.ts",
