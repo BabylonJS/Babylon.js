@@ -52,13 +52,17 @@ module BABYLON {
         private _positionOffset: Vector3 = Vector3.Zero();
 
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion = new Quaternion();
+        public deviceRotationQuaternion;
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
+        public onControllersAttached: (controllers: Array<WebVRController>) => void;
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
+
+            this.rotationQuaternion = new Quaternion();
+            this.deviceRotationQuaternion = new Quaternion();
 
             //using the position provided as the current position offset
             this._positionOffset = position;
@@ -73,8 +77,6 @@ module BABYLON {
             if (!this.getEngine().vrDisplaysPromise) {
                 Tools.Error("WebVR is not enabled on your browser");
             } else {
-                //TODO get the metrics updated using the device's eye parameters!
-                //TODO also check that the device has the right capabilities!
                 this._frameData = new VRFrameData();
                 this.getEngine().vrDisplaysPromise.then((devices) => {
                     if (devices.length > 0) {
@@ -106,11 +108,11 @@ module BABYLON {
                     } else {
                         Tools.Error("No WebVR devices found!");
                     }
-                })
+                });
             }
 
-            this.rotationQuaternion = new Quaternion();
-            this.deviceRotationQuaternion = new Quaternion();
+            // try to attach the controllers, if found.
+            this.initControllers();
         }
 
         public _checkInputs(): void {
@@ -161,9 +163,6 @@ module BABYLON {
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice)
             }
-
-            // try to attach the controllers, if found.
-            this.initControllers();
         }
 
         public detachControl(element: HTMLElement): void {
@@ -266,7 +265,17 @@ module BABYLON {
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gp;
                     webVrController.attachToPoseControlledCamera(this);
-                    this.controllers.push(webVrController);
+
+                    // since this is async - sanity check. Is the controller already stored?
+                    if (this.controllers.indexOf(webVrController) === -1) {
+                        //add to the controllers array
+                        this.controllers.push(webVrController);
+
+                        //did we find enough controllers? Great! let the developer know.
+                        if (this.onControllersAttached && this.controllers.length === 2) {
+                            this.onControllersAttached(this.controllers);
+                        }
+                    }
                 }
             });
         }
