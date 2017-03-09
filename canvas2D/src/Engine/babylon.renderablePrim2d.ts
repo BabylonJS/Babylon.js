@@ -449,8 +449,9 @@
             for (let part of this._instanceDataParts) {
                 part.freeElements();
                 gii = part.groupInstanceInfo;
+                part.groupInstanceInfo = null;
             }
-            if (gii) {
+            if (gii && !gii.isDisposed) {
                 let usedCount = 0;
                 if (gii.hasOpaqueData) {
                     let od = gii.opaqueData[0];
@@ -678,6 +679,9 @@
             let rd = this.renderGroup._renderableData;
             if (!gii) {
                 gii = rd._renderGroupInstancesInfo.get(this.modelKey);
+            }
+            if (gii.isDisposed) {
+                return;
             }
 
             let isTransparent = this.isTransparent;

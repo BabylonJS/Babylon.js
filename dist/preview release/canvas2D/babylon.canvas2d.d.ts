@@ -2600,6 +2600,7 @@ declare module BABYLON {
     class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
         dispose(): boolean;
+        readonly isDisposed: boolean;
         private _isDisposed;
         owner: Group2D;
         modelRenderCache: ModelRenderCache;
