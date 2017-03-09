@@ -28325,18 +28325,28 @@ var BABYLON;
             configurable: true
         });
         EffectFallbacks.prototype.reduce = function (currentDefines) {
-            var currentFallbacks = this._defines[this._currentRank];
-            if (currentFallbacks) {
-                for (var index = 0; index < currentFallbacks.length; index++) {
-                    currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
-                }
-            }
-            if (this._mesh && this._currentRank === this._meshRank) {
+            // First we try to switch to CPU skinning
+            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 BABYLON.Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
+                var scene = this._mesh.getScene();
+                for (var index = 0; index < scene.meshes.length; index++) {
+                    var otherMesh = scene.meshes[index];
+                    if (otherMesh.material === this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
+                }
             }
-            this._currentRank++;
+            else {
+                var currentFallbacks = this._defines[this._currentRank];
+                if (currentFallbacks) {
+                    for (var index = 0; index < currentFallbacks.length; index++) {
+                        currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+                    }
+                }
+                this._currentRank++;
+            }
             return currentDefines;
         };
         return EffectFallbacks;
