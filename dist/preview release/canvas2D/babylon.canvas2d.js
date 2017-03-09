@@ -2352,14 +2352,15 @@ var BABYLON;
             dic.add(lfn, ft);
             return ft;
         };
-        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
+        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField, bilinearFiltering) {
             if (supersample === void 0) { supersample = false; }
             if (signedDistanceField === void 0) { signedDistanceField = false; }
+            if (bilinearFiltering === void 0) { bilinearFiltering = false; }
             var dic = scene.getExternalData("FontTextureCache");
             if (!dic) {
                 return;
             }
-            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -15026,7 +15027,7 @@ var BABYLON;
                 return false;
             }
             if (this._fontTexture) {
-                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 this._fontTexture = null;
             }
             return true;

@@ -857,7 +857,7 @@ declare module BABYLON {
         debugMode: boolean;
         readonly isDynamicFontTexture: boolean;
         static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean, bilinearFiltering?: boolean): FontTexture;
-        static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): void;
+        static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean, bilinearFiltering?: boolean): void;
         /**
          * Create a new instance of the FontTexture class
          * @param name the name of the texture
