@@ -14568,6 +14568,7 @@ var BABYLON;
                 _this.size = null;
             }
             _this._useBilinearFiltering = (settings.useBilinearFiltering != null) ? settings.useBilinearFiltering : null;
+            _this._fontBilinearFiltering = false;
             // Text rendering must always be aligned to the target's pixel to ensure a good quality
             _this.alignToPixel = true;
             _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
@@ -14764,7 +14765,8 @@ var BABYLON;
                 if (this.fontName == null || this.owner == null || this.owner.scene == null) {
                     return null;
                 }
-                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, (this._useBilinearFiltering === null) ? (this.owner instanceof BABYLON.WorldSpaceCanvas2D) : this._useBilinearFiltering);
+                this._fontBilinearFiltering = (this._useBilinearFiltering === null) ? (this.owner instanceof BABYLON.WorldSpaceCanvas2D) : this._useBilinearFiltering;
+                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
                 this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
                 return this._fontTexture;
             },
@@ -14779,7 +14781,7 @@ var BABYLON;
                 return false;
             }
             if (this._fontTexture) {
-                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
                 this._fontTexture = null;
             }
             return true;

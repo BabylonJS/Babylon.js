@@ -4016,6 +4016,7 @@ declare module BABYLON {
         private _sizeSetByUser;
         private _textureIsPremulAlpha;
         private _useBilinearFiltering;
+        private _fontBilinearFiltering;
         textAlignmentH: number;
         textAlignmentV: number;
     }

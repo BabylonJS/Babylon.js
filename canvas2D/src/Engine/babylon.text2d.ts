@@ -338,7 +338,8 @@
                 return null;
             }
 
-            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, (this._useBilinearFiltering === null) ? (this.owner instanceof WorldSpaceCanvas2D) : this._useBilinearFiltering);
+            this._fontBilinearFiltering = (this._useBilinearFiltering === null) ? (this.owner instanceof WorldSpaceCanvas2D) : this._useBilinearFiltering;
+            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
             this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
             return this._fontTexture;
         }
@@ -352,7 +353,7 @@
             }
 
             if (this._fontTexture) {
-                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === Texture.BILINEAR_SAMPLINGMODE);
+                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
                 this._fontTexture = null;
             }
 
@@ -519,6 +520,7 @@
             }
 
             this._useBilinearFiltering = (settings.useBilinearFiltering != null) ? settings.useBilinearFiltering : null;
+            this._fontBilinearFiltering = false;
 
             // Text rendering must always be aligned to the target's pixel to ensure a good quality
             this.alignToPixel = true;
@@ -915,6 +917,7 @@
         private _sizeSetByUser: boolean;
         private _textureIsPremulAlpha: boolean;
         private _useBilinearFiltering: boolean;
+        private _fontBilinearFiltering: boolean;
 
         public textAlignmentH: number;
         public textAlignmentV: number;
