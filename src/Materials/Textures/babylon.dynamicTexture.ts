@@ -79,7 +79,11 @@ module BABYLON {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
             }
-
+            if (y === null) {
+                var fontSize = parseInt((font.replace(/\D/g,'')));;
+                y = (size.height /2) + (fontSize/4);
+            }
+            
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
 
