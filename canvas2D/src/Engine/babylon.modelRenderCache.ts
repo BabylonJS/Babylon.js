@@ -50,6 +50,10 @@
             return true;
         }
 
+        public get isDisposed(): boolean {
+            return this._isDisposed;
+        }
+
         private _isDisposed: boolean;
         owner: Group2D;
 

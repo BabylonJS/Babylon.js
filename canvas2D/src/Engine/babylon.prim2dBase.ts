@@ -3734,7 +3734,7 @@
                     hasCanvasScale = true;
                     canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv3;
                 }
-                let globalScale = this._scale.multiplyByFloats(postScale.x*canvasScale.x, postScale.y*canvasScale.y);
+                let globalScale = this._scale.multiplyByFloats(/*postScale.x**/canvasScale.x, /*postScale.y**/canvasScale.y);
 
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
                     local = Matrix2D.Compose(globalScale, rot, new Vector2(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y));
@@ -3747,8 +3747,8 @@
                     let t2 = Prim2DBase._t2;
                     let as = Prim2DBase._ts0;
                     as.copyFrom(this.actualSize);
-                    as.width /= postScale.x;
-                    as.height /= postScale.y;
+                    //as.width /= postScale.x;
+                    //as.height /= postScale.y;
                     Matrix2D.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), t0);
 
                     // -Origin * rotation

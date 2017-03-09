@@ -352,6 +352,7 @@
             if (settings.size != null) {
                 this.size = settings.size;
             }
+            this._updatePositioningState();
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
