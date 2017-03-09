@@ -81,7 +81,7 @@ module BABYLON {
             }
             if (y === null) {
                 var fontSize = parseInt((font.replace(/\D/g,'')));;
-                y = (size.height /2) + (fontSize/4);
+                y = (size.height /2) + (fontSize/3.65);
             }
             
             this._context.fillStyle = color;
