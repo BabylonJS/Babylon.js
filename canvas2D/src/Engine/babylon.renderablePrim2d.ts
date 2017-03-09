@@ -116,8 +116,8 @@
                 this.dataType = ShaderDataType.Vector4;
                 return;
             }
-            if (val instanceof Matrix) {
-                throw new Error("Matrix type is not supported by WebGL Instance Buffer, you have to use four Vector4 properties instead");
+            if (val instanceof Matrix2D) {
+                throw new Error("Matrix2D type is not supported by WebGL Instance Buffer, you have to use four Vector4 properties instead");
             }
             if (typeof (val) === "number") {
                 this.size = 4;
@@ -188,14 +188,6 @@
                     {
                         let v = <number>val;
                         array[offset] = v;
-                        break;
-                    }
-                case ShaderDataType.Matrix:
-                    {
-                        let v = <Matrix>val;
-                        for (let i = 0; i < 16; i++) {
-                            array[offset + i] = v.m[i];
-                        }
                         break;
                     }
                 case ShaderDataType.Size:
@@ -939,10 +931,10 @@
         }
 
         private static _uV = new Vector2(1, 1);
-        private static _s = Vector3.Zero();
+        private static _s = Vector2.Zero();
         private static _r = Quaternion.Identity();
-        private static _t = Vector3.Zero();
-        private static _iV3 = new Vector3(1, 1, 1); // Must stay identity vector3
+        private static _t = Vector2.Zero();
+        private static _iV2 = new Vector2(1, 1); // Must stay identity vector3
 
         /**
          * Update the instanceDataBase level properties of a part
@@ -952,15 +944,13 @@
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);    // Compute the transformation into the renderGroup's space
             let scl = RenderablePrim2D._s;
-            let rot = RenderablePrim2D._r;
             let trn = RenderablePrim2D._t;
-            t.decompose(scl, rot, trn);
+            let rot = t.decompose(scl, trn);
             let pas = this.actualScale;
             let canvasScale = this.owner._canvasLevelScale;
             scl.x = pas.x * canvasScale.x * this._postScale.x;
             scl.y = pas.y * canvasScale.y * this._postScale.y;
-            scl.z = 1;
-            t = Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV3, rot, trn);
+            t = Matrix2D.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV2, rot, trn);
 
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;
@@ -970,8 +960,8 @@
 
             // If there's an offset, apply the global transformation matrix on it to get a global offset
             if (positionOffset) {
-                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
-                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[2];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[3];
             }
 
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
@@ -984,8 +974,8 @@
             let h = size.height;
             let invZBias = 1 / zBias;
 
-            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[2] * 2 / w, 0, ((t.m[4] + offX) * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * 2 / h, t.m[3] * 2 / h, 0, ((t.m[5] + offY) * 2 / h) - 1);
 
             part.renderingInfo = new Vector3(w, h, this.alignToPixel ? 1 : 0);
             part.transformX = tx;

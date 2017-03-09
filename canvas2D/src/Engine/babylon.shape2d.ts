@@ -146,9 +146,9 @@
                     } else if (fill instanceof GradientColorBrush2D) {
                         d.fillGradientColor1 = fill.color1;
                         d.fillGradientColor2 = fill.color2;
-                        var t = Matrix.Compose(new Vector3(fill.scale, fill.scale, fill.scale), Quaternion.RotationAxis(new Vector3(0, 0, 1), fill.rotation), new Vector3(fill.translation.x, fill.translation.y, 0));
+                        var t = Matrix2D.Compose(new Vector2(fill.scale, fill.scale), fill.rotation, new Vector2(fill.translation.x, fill.translation.y));
 
-                        let ty = new Vector4(t.m[1], t.m[5], t.m[9], t.m[13]);
+                        let ty = new Vector4(t.m[1], t.m[3], 0, t.m[5]);
                         d.fillGradientTY = ty;
                     }
                 }
@@ -166,9 +166,9 @@
                     } else if (border instanceof GradientColorBrush2D) {
                         d.borderGradientColor1 = border.color1;
                         d.borderGradientColor2 = border.color2;
-                        var t = Matrix.Compose(new Vector3(border.scale, border.scale, border.scale), Quaternion.RotationAxis(new Vector3(0, 0, 1), border.rotation), new Vector3(border.translation.x, border.translation.y, 0));
+                        var t = Matrix2D.Compose(new Vector2(border.scale, border.scale), border.rotation, new Vector2(border.translation.x, border.translation.y));
 
-                        let ty = new Vector4(t.m[1], t.m[5], t.m[9], t.m[13]);
+                        let ty = new Vector4(t.m[1], t.m[3], 0, t.m[5]);
                         d.borderGradientTY = ty;
                     }
                 }
