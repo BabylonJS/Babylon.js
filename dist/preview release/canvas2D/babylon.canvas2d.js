@@ -9012,7 +9012,7 @@ var BABYLON;
                     hasCanvasScale = true;
                     canvasScale = this._parent._canvasLevelScale || Prim2DBase_1._iv3;
                 }
-                var globalScale = this._scale.multiplyByFloats(postScale.x * canvasScale.x, postScale.y * canvasScale.y);
+                var globalScale = this._scale.multiplyByFloats(/*postScale.x**/ canvasScale.x, /*postScale.y**/ canvasScale.y);
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
                     local = BABYLON.Matrix2D.Compose(globalScale, rot, new BABYLON.Vector2(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y));
                     this._localTransform = local;
@@ -9025,8 +9025,8 @@ var BABYLON;
                     var t2 = Prim2DBase_1._t2;
                     var as = Prim2DBase_1._ts0;
                     as.copyFrom(this.actualSize);
-                    as.width /= postScale.x;
-                    as.height /= postScale.y;
+                    //as.width /= postScale.x;
+                    //as.height /= postScale.y;
                     BABYLON.Matrix2D.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), t0);
                     // -Origin * rotation
                     BABYLON.Matrix2D.RotationToRef(rot, t1);
@@ -9773,6 +9773,13 @@ var BABYLON;
             this._isDisposed = true;
             return true;
         };
+        Object.defineProperty(GroupInstanceInfo.prototype, "isDisposed", {
+            get: function () {
+                return this._isDisposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GroupInstanceInfo.prototype, "hasOpaqueData", {
             get: function () {
                 return this._opaqueData != null;
@@ -10475,8 +10482,9 @@ var BABYLON;
                 var part = _a[_i];
                 part.freeElements();
                 gii = part.groupInstanceInfo;
+                part.groupInstanceInfo = null;
             }
-            if (gii) {
+            if (gii && !gii.isDisposed) {
                 var usedCount = 0;
                 if (gii.hasOpaqueData) {
                     var od = gii.opaqueData[0];
@@ -10675,6 +10683,9 @@ var BABYLON;
             var rd = this.renderGroup._renderableData;
             if (!gii) {
                 gii = rd._renderGroupInstancesInfo.get(this.modelKey);
+            }
+            if (gii.isDisposed) {
+                return;
             }
             var isTransparent = this.isTransparent;
             var isAlphaTest = this.isAlphaTest;
@@ -13721,6 +13732,7 @@ var BABYLON;
             if (settings.size != null) {
                 _this.size = settings.size;
             }
+            _this._updatePositioningState();
             _this.spriteFrame = 0;
             _this.invertY = (settings.invertY == null) ? false : settings.invertY;
             _this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
