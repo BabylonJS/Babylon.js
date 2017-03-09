@@ -24,13 +24,17 @@
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        switch (BABYLON.Engine.Version) {
-            case "2.5":
-                document.getElementById("currentVersion").innerHTML = "Version: " + BABYLON.Engine.Version;
-                break;
-            default:
-                document.getElementById("currentVersion").innerHTML = "Version: Latest";
-                break;
+        var currentVersionElement = document.getElementById("currentVersion");
+
+        if (currentVersionElement) {
+            switch (BABYLON.Engine.Version) {
+                case "2.5":
+                    currentVersionElement.innerHTML = "Version: " + BABYLON.Engine.Version;
+                    break;
+                default:
+                    currentVersionElement.innerHTML = "Version: Latest";
+                    break;
+            }
         }
 
 
@@ -415,10 +419,10 @@
         setVersion = function (version) {
             switch (version) {
                 case "2.5":
-                    location.href = "index2_5.html";
+                    location.href = "index2_5.html" + location.hash;
                     break;
                 default:
-                    location.href = "index.html";
+                    location.href = "index.html" + location.hash;
                     break;
             }
         }
