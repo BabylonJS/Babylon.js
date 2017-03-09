@@ -10901,14 +10901,6 @@ var BABYLON;
             return results;
         };
         /**
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
-         * @Deprecated, legacy support.
-         * use getDecendants instead.
-         */
-        Node.prototype.getChildren = function (predicate) {
-            return this.getDescendants(true, predicate);
-        };
-        /**
          * Get all child-meshes of this node.
          */
         Node.prototype.getChildMeshes = function (directDecendantsOnly, predicate) {
@@ -11738,26 +11730,6 @@ var BABYLON;
             }
             else {
                 return 0;
-            }
-        };
-        /**
-         *  @Deprecated. Use new RayHelper.show() instead.
-         * */
-        Ray.prototype.show = function (scene, color) {
-            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
-            if (!this._rayHelper) {
-                this._rayHelper = new BABYLON.RayHelper(this);
-            }
-            this._rayHelper.show(scene, color);
-        };
-        /**
-         *  @Deprecated. Use new RayHelper.hide() instead.
-         * */
-        Ray.prototype.hide = function () {
-            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
-            if (this._rayHelper) {
-                this._rayHelper.hide();
-                this._rayHelper = null;
             }
         };
         /**
@@ -13025,39 +12997,8 @@ var BABYLON;
             }
             return this._boundingInfo.intersectsPoint(point);
         };
-        // Physics
-        /**
-         *  @Deprecated. Use new PhysicsImpostor instead.
-         * */
-        AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
-            //legacy support
-            if (impostor.impostor) {
-                options = impostor;
-                impostor = impostor.impostor;
-            }
-            this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options, this.getScene());
-            return this.physicsImpostor.physicsBody;
-        };
         AbstractMesh.prototype.getPhysicsImpostor = function () {
             return this.physicsImpostor;
-        };
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
-         */
-        AbstractMesh.prototype.getPhysicsMass = function () {
-            return this.physicsImpostor.getParam("mass");
-        };
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
-         */
-        AbstractMesh.prototype.getPhysicsFriction = function () {
-            return this.physicsImpostor.getParam("friction");
-        };
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
-         */
-        AbstractMesh.prototype.getPhysicsRestitution = function () {
-            return this.physicsImpostor.getParam("restitution");
         };
         AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
             if (!camera) {
@@ -13092,21 +13033,6 @@ var BABYLON;
                 nativeParams: options
             });
             return this;
-        };
-        /**
-         * @Deprecated
-         */
-        AbstractMesh.prototype.updatePhysicsBodyPosition = function () {
-            BABYLON.Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
-            this.updatePhysicsBody();
-        };
-        /**
-         * @Deprecated
-         * Calling this function is not needed anymore.
-         * The physics engine takes care of transofmration automatically.
-         */
-        AbstractMesh.prototype.updatePhysicsBody = function () {
-            //Unneeded
         };
         Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
             // Collisions
@@ -17060,8 +16986,8 @@ var BABYLON;
             }
         };
         FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            // Only the first gamepad found can control the camera
+            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         };
@@ -17516,7 +17442,7 @@ var BABYLON;
         };
         ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         };
@@ -21966,40 +21892,6 @@ var BABYLON;
         Scene.prototype.isPhysicsEnabled = function () {
             return this._physicsEngine !== undefined;
         };
-        /**
-         *
-         * Sets the gravity of the physics engine (and NOT of the scene)
-         * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
-         */
-        Scene.prototype.setGravity = function (gravity) {
-            BABYLON.Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'");
-            if (!this._physicsEngine) {
-                return;
-            }
-            this._physicsEngine.setGravity(gravity);
-        };
-        /**
-         * Legacy support, using the new API
-         * @Deprecated
-         */
-        Scene.prototype.createCompoundImpostor = function (parts, options) {
-            BABYLON.Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child");
-            if (parts.parts) {
-                options = parts;
-                parts = parts.parts;
-            }
-            var mainMesh = parts[0].mesh;
-            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options, this);
-            for (var index = 1; index < parts.length; index++) {
-                var mesh = parts[index].mesh;
-                if (mesh.parent !== mainMesh) {
-                    mesh.position = mesh.position.subtract(mainMesh.position);
-                    mesh.parent = mainMesh;
-                }
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options, this);
-            }
-            mainMesh.physicsImpostor.forceUpdate();
-        };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
             var mesh = compound.parts[0].mesh;
             mesh.physicsImpostor.dispose();
@@ -23360,22 +23252,6 @@ var BABYLON;
             return this;
         };
         /**
-         * Deprecated since BabylonJS v2.3
-         */
-        Mesh.prototype.updateVerticesDataDirectly = function (kind, data, offset, makeItUnique) {
-            BABYLON.Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
-            if (!this._geometry) {
-                return;
-            }
-            if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data, offset);
-            }
-            else {
-                this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, offset, false);
-            }
-        };
-        /**
          * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
@@ -24340,9 +24216,10 @@ var BABYLON;
             // Physics
             //TODO implement correct serialization for physics impostors.
             if (this.getPhysicsImpostor()) {
-                serializationObject.physicsMass = this.getPhysicsMass();
-                serializationObject.physicsFriction = this.getPhysicsFriction();
-                serializationObject.physicsRestitution = this.getPhysicsRestitution();
+                var impostor = this.getPhysicsImpostor();
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
                 serializationObject.physicsImpostor = this.getPhysicsImpostor().type;
             }
             // Metadata
@@ -24544,7 +24421,7 @@ var BABYLON;
             else {
                 mesh.layerMask = 0x0FFFFFFF;
             }
-            //(Deprecated) physics
+            // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
@@ -28448,18 +28325,28 @@ var BABYLON;
             configurable: true
         });
         EffectFallbacks.prototype.reduce = function (currentDefines) {
-            var currentFallbacks = this._defines[this._currentRank];
-            if (currentFallbacks) {
-                for (var index = 0; index < currentFallbacks.length; index++) {
-                    currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
-                }
-            }
-            if (this._mesh && this._currentRank === this._meshRank) {
+            // First we try to switch to CPU skinning
+            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 BABYLON.Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
+                var scene = this._mesh.getScene();
+                for (var index = 0; index < scene.meshes.length; index++) {
+                    var otherMesh = scene.meshes[index];
+                    if (otherMesh.material === this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
+                }
             }
-            this._currentRank++;
+            else {
+                var currentFallbacks = this._defines[this._currentRank];
+                if (currentFallbacks) {
+                    for (var index = 0; index < currentFallbacks.length; index++) {
+                        currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+                    }
+                }
+                this._currentRank++;
+            }
             return currentDefines;
         };
         return EffectFallbacks;
@@ -36668,21 +36555,7 @@ var BABYLON;
         };
         return PhysicsEngine;
     }());
-    // Statics, Legacy support.
-    /**
-     * @Deprecated
-     *
-     */
-    PhysicsEngine.NoImpostor = BABYLON.PhysicsImpostor.NoImpostor;
-    PhysicsEngine.SphereImpostor = BABYLON.PhysicsImpostor.SphereImpostor;
-    PhysicsEngine.BoxImpostor = BABYLON.PhysicsImpostor.BoxImpostor;
-    PhysicsEngine.PlaneImpostor = BABYLON.PhysicsImpostor.PlaneImpostor;
-    PhysicsEngine.MeshImpostor = BABYLON.PhysicsImpostor.MeshImpostor;
-    PhysicsEngine.CylinderImpostor = BABYLON.PhysicsImpostor.CylinderImpostor;
-    PhysicsEngine.HeightmapImpostor = BABYLON.PhysicsImpostor.HeightmapImpostor;
-    PhysicsEngine.CapsuleImpostor = -1;
-    PhysicsEngine.ConeImpostor = -1;
-    PhysicsEngine.ConvexHullImpostor = -1;
+    // Statics
     PhysicsEngine.Epsilon = 0.001;
     BABYLON.PhysicsEngine = PhysicsEngine;
 })(BABYLON || (BABYLON = {}));
@@ -45689,7 +45562,7 @@ var BABYLON;
             var returnValue;
             var extendSize = impostor.getObjectExtendSize();
             switch (impostor.type) {
-                case BABYLON.PhysicsEngine.SphereImpostor:
+                case BABYLON.PhysicsImpostor.SphereImpostor:
                     var radiusX = extendSize.x;
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
@@ -45788,7 +45661,7 @@ var BABYLON;
                 impostor.setDeltaRotation(this._plus90X);
             }
             //If it is a heightfield, if should be centered.
-            if (impostor.type === BABYLON.PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === BABYLON.PhysicsImpostor.HeightmapImpostor) {
                 var mesh = object;
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
@@ -45812,7 +45685,7 @@ var BABYLON;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
-            else if (impostor.type === BABYLON.PhysicsEngine.MeshImpostor) {
+            else if (impostor.type === BABYLON.PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 this._tmpPosition.copyFrom(object.position);
             }
@@ -49194,11 +49067,10 @@ var BABYLON;
             _this._attached = false;
             _this._positionOffset = BABYLON.Vector3.Zero();
             _this.devicePosition = BABYLON.Vector3.Zero();
-            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
-            //using the position provided as the current position offset
-            _this._positionOffset = position;
+            _this.rotationQuaternion = new BABYLON.Quaternion();
+            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             if (_this.webVROptions && _this.webVROptions.positionScale) {
                 _this.deviceScaleFactor = _this.webVROptions.positionScale;
             }
@@ -49208,8 +49080,6 @@ var BABYLON;
                 BABYLON.Tools.Error("WebVR is not enabled on your browser");
             }
             else {
-                //TODO get the metrics updated using the device's eye parameters!
-                //TODO also check that the device has the right capabilities!
                 _this._frameData = new VRFrameData();
                 _this.getEngine().vrDisplaysPromise.then(function (devices) {
                     if (devices.length > 0) {
@@ -49244,8 +49114,8 @@ var BABYLON;
                     }
                 });
             }
-            _this.rotationQuaternion = new BABYLON.Quaternion();
-            _this.deviceRotationQuaternion = new BABYLON.Quaternion();
+            // try to attach the controllers, if found.
+            _this.initControllers();
             return _this;
         }
         WebVRFreeCamera.prototype._checkInputs = function () {
@@ -49289,19 +49159,12 @@ var BABYLON;
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice);
             }
-            // try to attach the controllers, if found.
-            this.initControllers();
         };
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
             this._attached = false;
             this.getEngine().disableVR();
-        };
-        WebVRFreeCamera.prototype.requestVRFullscreen = function (requestPointerlock) {
-            //Backwards comp.
-            BABYLON.Tools.Warn("requestVRFullscreen is deprecated. call attachControl() inside a user-interaction callback to start sending frames to the VR display.");
-            //this.getEngine().switchFullscreen(requestPointerlock);
         };
         WebVRFreeCamera.prototype.getClassName = function () {
             return "WebVRFreeCamera";
@@ -49310,20 +49173,6 @@ var BABYLON;
             //uses the vrDisplay's "resetPose()".
             //pitch and roll won't be affected.
             this._vrDevice.resetPose();
-        };
-        /**
-         *
-         * @deprecated
-         * This function was used to change the position offset. it is now done using camera.position.
-         *
-         * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        WebVRFreeCamera.prototype.setPositionOffset = function (newPosition) {
-            if (newPosition) {
-                this.position.copyFrom(newPosition);
-            }
         };
         /**
          * This function is called by the two RIG cameras.
@@ -49358,7 +49207,15 @@ var BABYLON;
                 this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
                 this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
+            this._updateCameraRotationMatrix();
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            // Computing target for getTarget()
+            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
+            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
+        };
+        WebVRFreeCamera.prototype._updateCameraRotationMatrix = function () {
+            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
         };
         WebVRFreeCamera.prototype._isSynchronizedViewMatrix = function () {
             return false;
@@ -49381,7 +49238,15 @@ var BABYLON;
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gp;
                     webVrController.attachToPoseControlledCamera(_this);
-                    _this.controllers.push(webVrController);
+                    // since this is async - sanity check. Is the controller already stored?
+                    if (_this.controllers.indexOf(webVrController) === -1) {
+                        //add to the controllers array
+                        _this.controllers.push(webVrController);
+                        //did we find enough controllers? Great! let the developer know.
+                        if (_this.onControllersAttached && _this.controllers.length === 2) {
+                            _this.onControllersAttached(_this.controllers);
+                        }
+                    }
                 }
             });
         };
@@ -51519,7 +51384,7 @@ var BABYLON;
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
             // update this device's offset position from the attached camera, if provided
-            if (this._poseControlledCamera) {
+            if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
                 //this.position.copyFrom(this._poseControlledCamera.position);
                 //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
                 this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
@@ -51808,10 +51673,7 @@ var BABYLON;
         __extends(GamepadCamera, _super);
         //-- end properties for backward compatibility for inputs
         function GamepadCamera(name, position, scene) {
-            var _this;
-            BABYLON.Tools.Warn("Deprecated. Please use Universal Camera instead.");
-            _this = _super.call(this, name, position, scene) || this;
-            return _this;
+            return _super.call(this, name, position, scene) || this;
         }
         Object.defineProperty(GamepadCamera.prototype, "gamepadAngularSensibility", {
             //-- Begin properties for backward compatibility for inputs
@@ -52200,22 +52062,6 @@ var BABYLON;
             return _this;
         }
         // Public Methods
-        /**
-         * Returns the horizontal blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
-         */
-        SSAORenderingPipeline.prototype.getBlurHPostProcess = function () {
-            BABYLON.Tools.Error("SSAORenderinPipeline.getBlurHPostProcess() is deprecated, no more blur post-process exists");
-            return null;
-        };
-        /**
-         * Returns the vertical blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The vertical blur post-process
-         */
-        SSAORenderingPipeline.prototype.getBlurVPostProcess = function () {
-            BABYLON.Tools.Error("SSAORenderinPipeline.getBlurVPostProcess() is deprecated, no more blur post-process exists");
-            return null;
-        };
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */

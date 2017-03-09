@@ -769,24 +769,6 @@
         }
 
         /**
-         * Deprecated since BabylonJS v2.3
-         */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
-            Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
-
-            if (!this._geometry) {
-                return;
-            }
-            if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data, offset);
-            }
-            else {
-                this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, offset, false);
-            }
-        }
-
-        /**
          * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions  
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
@@ -1919,9 +1901,10 @@
             // Physics
             //TODO implement correct serialization for physics impostors.
             if (this.getPhysicsImpostor()) {
-                serializationObject.physicsMass = this.getPhysicsMass();
-                serializationObject.physicsFriction = this.getPhysicsFriction();
-                serializationObject.physicsRestitution = this.getPhysicsRestitution();
+                var impostor = this.getPhysicsImpostor();
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
                 serializationObject.physicsImpostor = this.getPhysicsImpostor().type;
             }
 
@@ -2173,7 +2156,7 @@
             }
 
 
-            //(Deprecated) physics
+            // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,

@@ -60,8 +60,8 @@ module BABYLON {
         }
 
         private _onNewGameConnected(gamepad: Gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
+            // Only the first gamepad found can control the camera
+            if (!this.gamepad && gamepad.type !== Gamepad.POSE_ENABLED) {
                 this.gamepad = gamepad;
             }
         }

@@ -4,7 +4,7 @@ BABYLON.Effect.ShadersStore['lines2dPixelShader'] = "varying vec4 vColor;\nvoid 
 BABYLON.Effect.ShadersStore['lines2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute vec2 position;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec2 boundingMin;\natt vec2 boundingMax;\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4((position.xy-boundingMin)/(boundingMax-boundingMin),1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4((position.xy-boundingMin)/(boundingMax-boundingMin),1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=position.xy;\npos.z=1.0;\npos.w=1.0;\nfloat rx=dot(pos,transformX);\nfloat ry=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nrx=floor((rx/renderingInfo.x)+0.5)*renderingInfo.x;\nry=floor((ry/renderingInfo.y)+0.5)*renderingInfo.y;\n}\ngl_Position=vec4(rx,ry,zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\nfloat rx=dot(pos,transformX);\nfloat ry=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nrx=floor((rx/renderingInfo.x)+0.5)*renderingInfo.x;\nry=floor((ry/renderingInfo.y)+0.5)*renderingInfo.y;\n}\ngl_Position=vec4(rx,ry,zBias.x,1);\n}";
-BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n\n\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n\n\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n\n\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
+BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
 BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=floor((x/irw)+0.5)*irw;\ny=floor((y/irh)+0.5)*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n} ";
 BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxxx)*vColor;\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=floor((x/irw)+0.5)*irw;\ny=floor((y/irh)+0.5)*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
@@ -349,17 +349,17 @@ var BABYLON;
     }());
     BABYLON.Transform2D = Transform2D;
     /**
-       * A class storing a Matrix for 2D transformations
-       * The stored matrix is a 3*3 Matrix
-       * I   [0,1,3]   [mX, mY, 0]   R   [ CosZ, SinZ, 0]  T    [ 0,  0, 0]  S   [Sx,  0, 0]
-       * D = [3,4,5] = [nX, nY, 0]   O = [-SinZ, CosZ, 0]  R =  [ 0,  0, 0]  C = [ 0, Sy, 0]
-       * X   [6,7,8]   [tX, tY, 1]   T   [  0  ,  0  , 0]  N    [Tx, Ty, 0]  L   [ 0,  0, 0]
-       *
-       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-       */
+     * A class storing a Matrix for 2D transformations
+     * The stored matrix is a 2*3 Matrix
+     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+     *
+     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+     */
     var Matrix2D = (function () {
         function Matrix2D() {
-            this.m = new Float32Array(9);
+            this.m = new Float32Array(6);
         }
         Matrix2D.Identity = function () {
             var res = new Matrix2D();
@@ -367,20 +367,16 @@ var BABYLON;
             return res;
         };
         Matrix2D.IdentityToRef = function (res) {
-            res.m[1] = res.m[2] = res.m[3] = res.m[5] = res.m[6] = res[7] = 0;
-            res.m[0] = res.m[4] = res[8] = 1;
+            res.m[1] = res.m[2] = res.m[4] = res.m[5] = 0;
+            res.m[0] = res.m[3] = 1;
         };
         Matrix2D.prototype.copyFrom = function (other) {
-            for (var i = 0; i < 9; i++) {
+            for (var i = 0; i < 6; i++) {
                 this.m[i] = other.m[i];
             }
         };
         Matrix2D.prototype.determinant = function () {
-            //return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
-            var temp1 = (this.m[4] * this.m[8]) - (this.m[5] * this.m[7]);
-            var temp2 = (this.m[3] * this.m[8]) - (this.m[5] * this.m[6]);
-            var temp3 = (this.m[3] * this.m[7]) - (this.m[4] * this.m[6]);
-            return this.m[0] * temp1 - this.m[1] * temp1 + this.m[2] * temp3;
+            return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
         };
         Matrix2D.prototype.invertToThis = function () {
             this.invertToRef(this);
@@ -390,40 +386,20 @@ var BABYLON;
             this.invertToRef(res);
             return res;
         };
-        // http://mathworld.wolfram.com/MatrixInverse.html
         Matrix2D.prototype.invertToRef = function (res) {
-            var l1 = this.m[0];
-            var l2 = this.m[1];
-            var l3 = this.m[2];
-            var l4 = this.m[3];
-            var l5 = this.m[4];
-            var l6 = this.m[5];
-            var l7 = this.m[6];
-            var l8 = this.m[7];
-            var l9 = this.m[8];
-            var det = this.determinant();
+            var a00 = this.m[0], a01 = this.m[1], a10 = this.m[2], a11 = this.m[3], a20 = this.m[4], a21 = this.m[5];
+            var det21 = a21 * a10 - a11 * a20;
+            var det = (a00 * a11) - (a01 * a10);
             if (det < (BABYLON.Epsilon * BABYLON.Epsilon)) {
                 throw new Error("Can't invert matrix, near null determinant");
             }
-            var detDiv = 1 / this.determinant();
-            var det1 = l5 * l9 - l6 * l8;
-            var det2 = l3 * l8 - l2 * l9;
-            var det3 = l2 * l6 - l3 * l5;
-            var det4 = l6 * 7 - l4 * l9;
-            var det5 = l1 * l9 - l3 * l7;
-            var det6 = l3 * l4 - l6 * l1;
-            var det7 = l4 * l8 - l5 * l7;
-            var det8 = l2 * l7 - l1 * l8;
-            var det9 = l1 * l5 - l2 * l4;
-            res.m[0] = det1 * det;
-            res.m[1] = det2 * det;
-            res.m[2] = det3 * det;
-            res.m[3] = det4 * det;
-            res.m[4] = det5 * det;
-            res.m[5] = det6 * det;
-            res.m[6] = det7 * det;
-            res.m[7] = det8 * det;
-            res.m[8] = det9 * det;
+            det = 1 / det;
+            res.m[0] = a11 * det;
+            res.m[1] = -a01 * det;
+            res.m[2] = -a10 * det;
+            res.m[3] = a00 * det;
+            res.m[4] = det21 * det;
+            res.m[5] = (-a21 * a00 + a01 * a20) * det;
         };
         Matrix2D.prototype.multiplyToThis = function (other) {
             this.multiplyToRef(other, this);
@@ -434,33 +410,54 @@ var BABYLON;
             return res;
         };
         Matrix2D.prototype.multiplyToRef = function (other, result) {
-            var l1 = this.m[0];
-            var l2 = this.m[1];
-            var l3 = this.m[2];
-            var l4 = this.m[3];
-            var l5 = this.m[4];
-            var l6 = this.m[5];
-            var l7 = this.m[6];
-            var l8 = this.m[7];
-            var l9 = this.m[8];
-            var r1 = other.m[0];
-            var r2 = other.m[1];
-            var r3 = other.m[2];
-            var r4 = other.m[3];
-            var r5 = other.m[4];
-            var r6 = other.m[5];
-            var r7 = other.m[6];
-            var r8 = other.m[7];
-            var r9 = other.m[8];
-            result.m[0] = l1 * r1 + l2 * r4 + l3 * r7;
-            result.m[1] = l1 * r2 + l2 * r5 + l3 * r8;
-            result.m[2] = l1 * r3 + l2 * r6 + l3 * r9;
-            result.m[3] = l4 * r1 + l5 * r4 + l6 * r7;
-            result.m[4] = l4 * r2 + l5 * r5 + l6 * r8;
-            result.m[5] = l4 * r3 + l5 * r6 + l6 * r9;
-            result.m[6] = l7 * r1 + l8 * r4 + l9 * r7;
-            result.m[7] = l7 * r2 + l8 * r5 + l9 * r8;
-            result.m[8] = l7 * r3 + l8 * r6 + l9 * r9;
+            var tm0 = this.m[0];
+            var tm1 = this.m[1];
+            //var tm2 = this.m[2];
+            //var tm3 = this.m[3];
+            var tm4 = this.m[2];
+            var tm5 = this.m[3];
+            //var tm6 = this.m[6];
+            //var tm7 = this.m[7];
+            var tm8 = this.m[4];
+            var tm9 = this.m[5];
+            //var tm10 = this.m[10];
+            //var tm11 = this.m[11];
+            //var tm12 = this.m[12];
+            //var tm13 = this.m[13];
+            //var tm14 = this.m[14];
+            //var tm15 = this.m[15];
+            var om0 = other.m[0];
+            var om1 = other.m[1];
+            //var om2 = other.m[2];
+            //var om3 = other.m[3];
+            var om4 = other.m[2];
+            var om5 = other.m[3];
+            //var om6 = other.m[6];
+            //var om7 = other.m[7];
+            var om8 = other.m[4];
+            var om9 = other.m[5];
+            //var om10 = other.m[10];
+            //var om11 = other.m[11];
+            //var om12 = other.m[12];
+            //var om13 = other.m[13];
+            //var om14 = other.m[14];
+            //var om15 = other.m[15];
+            result.m[0] = tm0 * om0 + tm1 * om4;
+            result.m[1] = tm0 * om1 + tm1 * om5;
+            //result.m[2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
+            //result.m[3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
+            result.m[2] = tm4 * om0 + tm5 * om4;
+            result.m[3] = tm4 * om1 + tm5 * om5;
+            //result.m[6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
+            //result.m[7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
+            result.m[4] = tm8 * om0 + tm9 * om4 + om8;
+            result.m[5] = tm8 * om1 + tm9 * om5 + om9;
+            //result.m[10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
+            //result.m[11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
+            //result.m[12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
+            //result.m[13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
+            //result.m[14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
+            //result.m[15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
         };
         Matrix2D.prototype.transformFloats = function (x, y) {
             var res = BABYLON.Vector2.Zero();
@@ -2355,14 +2352,15 @@ var BABYLON;
             dic.add(lfn, ft);
             return ft;
         };
-        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
+        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField, bilinearFiltering) {
             if (supersample === void 0) { supersample = false; }
             if (signedDistanceField === void 0) { signedDistanceField = false; }
+            if (bilinearFiltering === void 0) { bilinearFiltering = false; }
             var dic = scene.getExternalData("FontTextureCache");
             if (!dic) {
                 return;
             }
-            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -4110,14 +4108,14 @@ var BABYLON;
     var RowDefinition = (function (_super) {
         __extends(RowDefinition, _super);
         function RowDefinition() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         return RowDefinition;
     }(GridDimensionDefinition));
     var ColumnDefinition = (function (_super) {
         __extends(ColumnDefinition, _super);
         function ColumnDefinition() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         return ColumnDefinition;
     }(GridDimensionDefinition));
@@ -7232,7 +7230,7 @@ var BABYLON;
     var Prim2DBase = Prim2DBase_1 = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -11416,7 +11414,7 @@ var BABYLON;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
         function Shape2DInstanceData() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         Object.defineProperty(Shape2DInstanceData.prototype, "fillSolidColor", {
             // FILL ATTRIBUTES
@@ -11591,7 +11589,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Group2D(settings) {
-            var _this = this;
+            var _this;
             if (settings == null) {
                 settings = {};
             }
@@ -12530,7 +12528,7 @@ var BABYLON;
     var WireFrame2DRenderCache = (function (_super) {
         __extends(WireFrame2DRenderCache, _super);
         function WireFrame2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.vtxCount = 0;
@@ -12756,7 +12754,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WireFrame2D(wireFrameGroups, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -13135,7 +13133,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Rectangle2D(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -13652,7 +13650,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Ellipse2D(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -13837,7 +13835,7 @@ var BABYLON;
     var Sprite2DRenderCache = (function (_super) {
         __extends(Sprite2DRenderCache, _super);
         function Sprite2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -13932,7 +13930,6 @@ var BABYLON;
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -13957,7 +13954,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -14221,7 +14218,7 @@ var BABYLON;
                     d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
                     var scale9 = this._scale9;
                     if (scale9 != null) {
-                        var normalizedScale9 = new BABYLON.Vector4(scale9.x / ts.width, scale9.y / ts.height, scale9.z / ts.width, scale9.w / ts.height);
+                        var normalizedScale9 = new BABYLON.Vector4(scale9.x * suv.x / ss.width, scale9.y * suv.y / ss.height, scale9.z * suv.x / ss.width, scale9.w * suv.y / ss.height);
                         d.scale9 = normalizedScale9;
                     }
                 }
@@ -14582,7 +14579,7 @@ var BABYLON;
     var Text2DRenderCache = (function (_super) {
         __extends(Text2DRenderCache, _super);
         function Text2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -14781,7 +14778,7 @@ var BABYLON;
          * - wordWrap: if true the text will wrap inside content area
          */
         function Text2D(text, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -15030,7 +15027,7 @@ var BABYLON;
                 return false;
             }
             if (this._fontTexture) {
-                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 this._fontTexture = null;
             }
             return true;
@@ -15626,7 +15623,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Lines2D(points, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -18314,7 +18311,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
-            var _this = this;
+            var _this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
@@ -18476,7 +18473,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         function ScreenSpaceCanvas2D(scene, settings) {
-            var _this = this;
+            var _this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             _this = _super.call(this, scene, settings) || this;
             return _this;
@@ -19460,7 +19457,7 @@ var BABYLON;
     var StackPanel = StackPanel_1 = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -19523,7 +19520,7 @@ var BABYLON;
     var DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultStackPanelRenderingTemplate, _super);
         function DefaultStackPanelRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultStackPanelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             return { root: visualPlaceholder, contentPlaceholder: visualPlaceholder };
@@ -19652,7 +19649,7 @@ var BABYLON;
     var ContentControl = ContentControl_1 = (function (_super) {
         __extends(ContentControl, _super);
         function ContentControl(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -19807,7 +19804,7 @@ var BABYLON;
     var Window = Window_1 = (function (_super) {
         __extends(Window, _super);
         function Window(scene, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -19992,7 +19989,7 @@ var BABYLON;
     var DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate_1 = (function (_super) {
         __extends(DefaultWindowRenderingTemplate, _super);
         function DefaultWindowRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultWindowRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#808080FF" });
@@ -20023,7 +20020,7 @@ var BABYLON;
     var Label = Label_1 = (function (_super) {
         __extends(Label, _super);
         function Label(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -20070,7 +20067,7 @@ var BABYLON;
     var DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultLabelRenderingTemplate, _super);
         function DefaultLabelRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultLabelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Text2D("", { parent: visualPlaceholder });
@@ -20103,7 +20100,7 @@ var BABYLON;
     var Button = Button_1 = (function (_super) {
         __extends(Button, _super);
         function Button(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -20257,7 +20254,7 @@ var BABYLON;
     var DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate_1 = (function (_super) {
         __extends(DefaultButtonRenderingTemplate, _super);
         function DefaultButtonRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultButtonRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             this._rect = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#FF8080FF", border: "#FF8080FF", roundRadius: 10, borderThickness: 2 });
