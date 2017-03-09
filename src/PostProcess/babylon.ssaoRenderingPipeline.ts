@@ -126,23 +126,6 @@
         }
 
         // Public Methods
-        /**
-         * Returns the horizontal blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
-         */
-        public getBlurHPostProcess(): BlurPostProcess {
-            Tools.Error("SSAORenderinPipeline.getBlurHPostProcess() is deprecated, no more blur post-process exists");
-            return null;
-        }
-
-        /**
-         * Returns the vertical blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The vertical blur post-process
-         */
-        public getBlurVPostProcess(): BlurPostProcess {
-            Tools.Error("SSAORenderinPipeline.getBlurVPostProcess() is deprecated, no more blur post-process exists");
-            return null;
-        }
 
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras

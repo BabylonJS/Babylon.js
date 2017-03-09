@@ -23,6 +23,17 @@
         var scripts;
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+
+        switch (BABYLON.Engine.Version) {
+            case "2.5":
+                document.getElementById("currentVersion").innerHTML = "Version: " + BABYLON.Engine.Version;
+                break;
+            default:
+                document.getElementById("currentVersion").innerHTML = "Version: Latest";
+                break;
+        }
+
+
         var loadScript = function (scriptURL, title) {
             var xhr = new XMLHttpRequest();
 
@@ -398,6 +409,18 @@
                                 });
                         });
                 });
+        }
+
+        // Versions
+        setVersion = function (version) {
+            switch (version) {
+                case "2.5":
+                    location.href = "index2_5.html";
+                    break;
+                default:
+                    location.href = "index.html";
+                    break;
+            }
         }
 
         // Fonts
