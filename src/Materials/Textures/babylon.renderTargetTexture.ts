@@ -370,8 +370,6 @@
                 scene.updateTransformMatrix(true);
             }
 
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
-
             // Dump ?
             if (dumpForDebug) {
                 Tools.DumpFramebuffer(this._size, this._size, engine);
@@ -386,7 +384,11 @@
                     }
                 }
 
-                engine.unBindFramebuffer(this._texture, this.isCube);
+                engine.unBindFramebuffer(this._texture, this.isCube, () => {
+                    this.onAfterRenderObservable.notifyObservers(faceIndex);    
+                });
+            } else {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
             }
         }
 
