@@ -1,180 +1,35 @@
 declare module BABYLON {
     /**
-     * This class stores the data to make 2D transformation using a Translation (tX, tY), a Scale (sX, sY) and a rotation around the Z axis (rZ).
-     * You can multiply two Transform2D object to produce the result of their concatenation.
-     * You can transform a given Point (a Vector2D instance) with a Transform2D object or with the Invert of the Transform2D object.
-     * There no need to compute/store the Invert of a Transform2D as the invertTranform methods are almost as fast as the transform ones.
-     * This class is as light as it could be and the transformation operations are pretty optimal.
-     */
-    class Transform2D {
-        /**
-         * A 2D Vector representing the translation to the origin
-         */
-        translation: Vector2;
-        /**
-         * A number (in radian) representing the rotation around the Z axis at the origin
-         */
-        rotation: number;
-        /**
-         * A 2D Vector representing the scale to apply at the origin
-         */
-        scale: Vector2;
-        constructor();
-        /**
-         * Set the Transform2D object with the given values
-         * @param translation The translation to set
-         * @param rotation The rotation (in radian) to set
-         * @param scale The scale to set
-         */
-        set(translation: Vector2, rotation: number, scale: Vector2): void;
-        /**
-         * Set the Transform2D object from float values
-         * @param transX The translation on X axis, nothing is set if not specified
-         * @param transY The translation on Y axis, nothing is set if not specified
-         * @param rotation The rotation in radian, nothing is set if not specified
-         * @param scaleX The scale along the X axis, nothing is set if not specified
-         * @param scaleY The scale along the Y axis, nothing is set if not specified
-         */
-        setFromFloats(transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number): void;
-        /**
-         * Return a copy of the object
-         */
-        clone(): Transform2D;
-        /**
-         * Convert a given degree angle into its radian equivalent
-         * @param angleDegree the number to convert
-         */
-        static ToRadian(angleDegree: number): number;
-        /**
-         * Create a new instance and returns it
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        static Make(translation?: Vector2, rotation?: number, scale?: Vector2): Transform2D;
-        /**
-         * Set the given Transform2D object with the given values
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        static MakeToRef(res: Transform2D, translation?: Vector2, rotation?: number, scale?: Vector2): void;
-        /**
-         * Create a Transform2D object from float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        static MakeFromFloats(transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number): Transform2D;
-        /**
-         * Set the given Transform2D object with the given float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        static MakeFromFloatsToRef(res: Transform2D, transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number): void;
-        /**
-         * Create a Transform2D containing only Zeroed values
-         */
-        static Zero(): Transform2D;
-        /**
-         * Copy the value of the other object into 'this'
-         * @param other The other object to copy values from
-         */
-        copyFrom(other: Transform2D): void;
-        toMatrix2D(): Matrix2D;
-        toMatrix2DToRef(res: Matrix2D): void;
-        /**
-         * In place transformation from a parent matrix.
-         * @param parent transform object. "this" will be the result of parent * this
-         */
-        multiplyToThis(parent: Transform2D): void;
-        /**
-         * Transform this object with a parent and return the result. Result = parent * this
-         * @param parent The parent transformation
-         */
-        multiply(parent: Transform2D): Transform2D;
-        /**
-         * Transform a point and store the result in the very same object
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        transformPointInPlace(p: Vector2): void;
-        /**
-         * Transform a point and store the result into a reference object
-         * @param p The point to transform
-         * @param res Will contain the new transformed coordinates. Can be the object of 'p'.
-         */
-        transformPointToRef(p: Vector2, res: Vector2): void;
-        /**
-         * Transform this object with a parent and store the result in reference object
-         * @param parent The parent transformation
-         * @param result Will contain parent * this. Can be the object of either parent or 'this'
-         */
-        multiplyToRef(parent: Transform2D, result: Transform2D): void;
-        /**
-         * Transform the given coordinates and store the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         * @param res The Vector2 object that will contain the result of the transformation
-         */
-        transformFloatsToRef(x: number, y: number, res: Vector2): void;
-        /**
-         * Invert transform the given coordinates and store the result in a reference object. res = invert(this) * (x,y)
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation.
-         */
-        invertTransformFloatsToRef(x: number, y: number, res: Vector2): void;
-        /**
-         * Transform a point and return the result
-         * @param p the point to transform
-         */
-        transformPoint(p: Vector2): Vector2;
-        /**
-         * Transform the given coordinates and return the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        transformFloats(x: number, y: number): Vector2;
-        /**
-         * Invert transform a given point and store the result in the very same object. p = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        invertTransformPointInPlace(p: Vector2): void;
-        /**
-         * Invert transform a given point and store the result in a reference object. res = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation. 'res' can be the same object as 'p'
-         */
-        invertTransformPointToRef(p: Vector2, res: Vector2): void;
-        /**
-         * Invert transform a given point and return the result. return = invert(this) * p
-         * @param p The Point to transform
-         */
-        invertTransformPoint(p: Vector2): Vector2;
-        /**
-         * Invert transform the given coordinates and return the result. return = invert(this) * (x,y)
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        invertTransformFloats(x: number, y: number): Vector2;
-    }
-    /**
-     * A class storing a Matrix for 2D transformations
-     * The stored matrix is a 2*3 Matrix
-     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
-     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
-     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
-     *
-     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-     */
+       * A class storing a Matrix2D for 2D transformations
+       * The stored matrix is a 3*3 Matrix2D
+       * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+       * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+       * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
     class Matrix2D {
+        static Zero(): Matrix2D;
+        static FromValuesToRef(m0: number, m1: number, m2: number, m3: number, m4: number, m5: number, result: Matrix2D): void;
+        static FromMatrix(source: Matrix): Matrix2D;
+        static FromMatrixToRef(source: Matrix, result: Matrix2D): void;
+        static Rotation(angle: number): Matrix2D;
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        static Translation(x: number, y: number): Matrix2D;
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        static Scaling(x: number, y: number): Matrix2D;
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        m: Float32Array;
         static Identity(): Matrix2D;
         static IdentityToRef(res: Matrix2D): void;
+        static FromQuaternion(quaternion: Quaternion): Matrix2D;
+        static FromQuaternionToRef(quaternion: Quaternion, result: Matrix2D): void;
+        static Compose(scale: Vector2, rotation: number, translation: Vector2): Matrix2D;
+        static Invert(source: Matrix2D): Matrix2D;
+        clone(): Matrix2D;
         copyFrom(other: Matrix2D): void;
+        getTranslation(): Vector2;
+        setTranslation(translation: Vector2): void;
         determinant(): number;
         invertToThis(): void;
         invert(): Matrix2D;
@@ -186,7 +41,8 @@ declare module BABYLON {
         transformFloatsToRef(x: number, y: number, r: Vector2): void;
         transformPoint(p: Vector2): Vector2;
         transformPointToRef(p: Vector2, r: Vector2): void;
-        m: Float32Array;
+        private static _decomp;
+        decompose(scale: Vector2, translation: Vector2): number;
     }
     /**
      * Stores information about a 2D Triangle.
@@ -204,7 +60,7 @@ declare module BABYLON {
         radius: number;
         static Zero(): Tri2DInfo;
         set(a: Vector2, b: Vector2, c: Vector2): void;
-        transformInPlace(transform: Matrix): void;
+        transformInPlace(transform: Matrix2D): void;
         doesContain(p: Vector2): boolean;
         private _updateCenterRadius();
     }
@@ -241,7 +97,7 @@ declare module BABYLON {
          * @param tri2dInfo The triangle to transform
          * @param transform The transformation matrix
          */
-        transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix): void;
+        transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix2D): void;
         /**
          * Get the element count that can be stored in this array
          * @returns {}
@@ -260,7 +116,7 @@ declare module BABYLON {
          * @param setB The second set of triangles
          * @param bToATransform The transformation matrix to transform the setB triangles into the frame of reference of the setA
          */
-        static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix): boolean;
+        static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix2D): boolean;
         private static _checkInitStatics();
         private _count;
         private _array;
@@ -1010,7 +866,7 @@ declare module BABYLON {
          * @param matrix the transformation matrix to apply
          * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
          */
-        transform(matrix: Matrix): BoundingInfo2D;
+        transform(matrix: Matrix2D): BoundingInfo2D;
         /**
          * Compute the union of this BoundingInfo2D with a given one, returns a new BoundingInfo2D as a result
          * @param other the second BoundingInfo2D to compute the union with this one
@@ -1025,9 +881,9 @@ declare module BABYLON {
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
-        transformToRef(matrix: Matrix, result: BoundingInfo2D): void;
+        transformToRef(matrix: Matrix2D, result: BoundingInfo2D): void;
         private _updateWorldAABB(worldMatrix);
-        worldMatrixAccess: () => Matrix;
+        worldMatrixAccess: () => Matrix2D;
         readonly worldAABBDirtyObservable: Observable<BoundingInfo2D>;
         readonly isWorldAABBDirty: boolean;
         dirtyWorldAABB(): void;
@@ -2472,7 +2328,7 @@ declare module BABYLON {
         /**
          * Get the global transformation matrix of the primitive
          */
-        readonly globalTransform: Matrix;
+        readonly globalTransform: Matrix2D;
         /**
          * return the global position of the primitive, relative to its canvas
          */
@@ -2485,12 +2341,12 @@ declare module BABYLON {
         /**
          * Get invert of the global transformation matrix of the primitive
          */
-        readonly invGlobalTransform: Matrix;
+        readonly invGlobalTransform: Matrix2D;
         /**
          * Get the local transformation of the primitive
          */
-        readonly localTransform: Matrix;
-        readonly localLayoutTransform: Matrix;
+        readonly localTransform: Matrix2D;
+        readonly localLayoutTransform: Matrix2D;
         /**
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
          */
@@ -2622,7 +2478,6 @@ declare module BABYLON {
         private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
-        private static _transTT;
         protected updateCachedStates(recurse: boolean): void;
         private static _icPos;
         private static _icZone;
@@ -2723,10 +2578,10 @@ declare module BABYLON {
         protected _globalTransformProcessStep: number;
         protected _prepareProcessStep: number;
         protected _updateCachesProcessStep: number;
-        protected _localTransform: Matrix;
-        protected _localLayoutTransform: Matrix;
-        protected _globalTransform: Matrix;
-        protected _invGlobalTransform: Matrix;
+        protected _localTransform: Matrix2D;
+        protected _localLayoutTransform: Matrix2D;
+        protected _globalTransform: Matrix2D;
+        protected _invGlobalTransform: Matrix2D;
         protected _primTriArrayDirty: boolean;
         protected _primTriArray: Tri2DArray;
     }
@@ -2737,11 +2592,10 @@ declare module BABYLON {
         Vector2 = 0,
         Vector3 = 1,
         Vector4 = 2,
-        Matrix = 3,
-        float = 4,
-        Color3 = 5,
-        Color4 = 6,
-        Size = 7,
+        float = 3,
+        Color3 = 4,
+        Color4 = 5,
+        Size = 6,
     }
     class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
@@ -2933,7 +2787,7 @@ declare module BABYLON {
         private static _s;
         private static _r;
         private static _t;
-        private static _iV3;
+        private static _iV2;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -4162,6 +4016,7 @@ declare module BABYLON {
         private _sizeSetByUser;
         private _textureIsPremulAlpha;
         private _useBilinearFiltering;
+        private _fontBilinearFiltering;
         textAlignmentH: number;
         textAlignmentV: number;
     }

@@ -14,369 +14,155 @@ BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#d
 var BABYLON;
 (function (BABYLON) {
     /**
-     * This class stores the data to make 2D transformation using a Translation (tX, tY), a Scale (sX, sY) and a rotation around the Z axis (rZ).
-     * You can multiply two Transform2D object to produce the result of their concatenation.
-     * You can transform a given Point (a Vector2D instance) with a Transform2D object or with the Invert of the Transform2D object.
-     * There no need to compute/store the Invert of a Transform2D as the invertTranform methods are almost as fast as the transform ones.
-     * This class is as light as it could be and the transformation operations are pretty optimal.
-     */
-    var Transform2D = (function () {
-        function Transform2D() {
-            this.translation = BABYLON.Vector2.Zero();
-            this.rotation = 0;
-            this.scale = new BABYLON.Vector2(1, 1);
-        }
-        /**
-         * Set the Transform2D object with the given values
-         * @param translation The translation to set
-         * @param rotation The rotation (in radian) to set
-         * @param scale The scale to set
-         */
-        Transform2D.prototype.set = function (translation, rotation, scale) {
-            this.translation.copyFrom(translation);
-            this.rotation = rotation;
-            this.scale.copyFrom(scale);
-        };
-        /**
-         * Set the Transform2D object from float values
-         * @param transX The translation on X axis, nothing is set if not specified
-         * @param transY The translation on Y axis, nothing is set if not specified
-         * @param rotation The rotation in radian, nothing is set if not specified
-         * @param scaleX The scale along the X axis, nothing is set if not specified
-         * @param scaleY The scale along the Y axis, nothing is set if not specified
-         */
-        Transform2D.prototype.setFromFloats = function (transX, transY, rotation, scaleX, scaleY) {
-            if (transX) {
-                this.translation.x = transX;
-            }
-            if (transY) {
-                this.translation.y = transY;
-            }
-            if (rotation) {
-                this.rotation = rotation;
-            }
-            if (scaleX) {
-                this.scale.x = scaleX;
-            }
-            if (scaleY) {
-                this.scale.y = scaleY;
-            }
-        };
-        /**
-         * Return a copy of the object
-         */
-        Transform2D.prototype.clone = function () {
-            var res = new Transform2D();
-            res.translation.copyFrom(this.translation);
-            res.rotation = this.rotation;
-            res.scale.copyFrom(this.scale);
-            return res;
-        };
-        /**
-         * Convert a given degree angle into its radian equivalent
-         * @param angleDegree the number to convert
-         */
-        Transform2D.ToRadian = function (angleDegree) {
-            return angleDegree * Math.PI * 2 / 360;
-        };
-        /**
-         * Create a new instance and returns it
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        Transform2D.Make = function (translation, rotation, scale) {
-            var res = new Transform2D();
-            if (translation) {
-                res.translation.copyFrom(translation);
-            }
-            if (rotation) {
-                res.rotation = rotation;
-            }
-            if (scale) {
-                res.scale.copyFrom(scale);
-            }
-            return res;
-        };
-        /**
-         * Set the given Transform2D object with the given values
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        Transform2D.MakeToRef = function (res, translation, rotation, scale) {
-            if (translation) {
-                res.translation.copyFrom(translation);
-            }
-            else {
-                res.translation.copyFromFloats(0, 0);
-            }
-            if (rotation) {
-                res.rotation = rotation;
-            }
-            else {
-                res.rotation = 0;
-            }
-            if (scale) {
-                res.scale.copyFrom(scale);
-            }
-            else {
-                res.scale.copyFromFloats(1, 1);
-            }
-        };
-        /**
-         * Create a Transform2D object from float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        Transform2D.MakeFromFloats = function (transX, transY, rotation, scaleX, scaleY) {
-            var res = new Transform2D();
-            if (transX) {
-                res.translation.x = transX;
-            }
-            if (transY) {
-                res.translation.y = transY;
-            }
-            if (rotation) {
-                res.rotation = rotation;
-            }
-            if (scaleX) {
-                res.scale.x = scaleX;
-            }
-            if (scaleY) {
-                res.scale.y = scaleY;
-            }
-            return res;
-        };
-        /**
-         * Set the given Transform2D object with the given float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        Transform2D.MakeFromFloatsToRef = function (res, transX, transY, rotation, scaleX, scaleY) {
-            res.translation.x = (transX != null) ? transX : 0;
-            res.translation.y = (transY != null) ? transY : 0;
-            res.rotation = (rotation != null) ? rotation : 0;
-            res.scale.x = (scaleX != null) ? scaleX : 1;
-            res.scale.y = (scaleY != null) ? scaleY : 1;
-        };
-        /**
-         * Create a Transform2D containing only Zeroed values
-         */
-        Transform2D.Zero = function () {
-            var res = new Transform2D();
-            res.scale.copyFromFloats(0, 0);
-            return res;
-        };
-        /**
-         * Copy the value of the other object into 'this'
-         * @param other The other object to copy values from
-         */
-        Transform2D.prototype.copyFrom = function (other) {
-            this.translation.copyFrom(other.translation);
-            this.rotation = other.rotation;
-            this.scale.copyFrom(other.scale);
-        };
-        Transform2D.prototype.toMatrix2D = function () {
-            var res = new Matrix2D();
-            this.toMatrix2DToRef(res);
-            return res;
-        };
-        Transform2D.prototype.toMatrix2DToRef = function (res) {
-            var tx = this.translation.x;
-            var ty = this.translation.y;
-            var r = this.rotation;
-            var cosr = Math.cos(r);
-            var sinr = Math.sin(r);
-            var sx = this.scale.x;
-            var sy = this.scale.y;
-            res.m[0] = cosr * sx;
-            res.m[1] = sinr * sy;
-            res.m[2] = -sinr * sx;
-            res.m[3] = cosr * sy;
-            res.m[4] = tx;
-            res.m[5] = ty;
-        };
-        /**
-         * In place transformation from a parent matrix.
-         * @param parent transform object. "this" will be the result of parent * this
-         */
-        Transform2D.prototype.multiplyToThis = function (parent) {
-            this.multiplyToRef(parent, this);
-        };
-        /**
-         * Transform this object with a parent and return the result. Result = parent * this
-         * @param parent The parent transformation
-         */
-        Transform2D.prototype.multiply = function (parent) {
-            var res = new Transform2D();
-            this.multiplyToRef(parent, res);
-            return res;
-        };
-        /**
-         * Transform a point and store the result in the very same object
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        Transform2D.prototype.transformPointInPlace = function (p) {
-            this.transformPointToRef(p, p);
-        };
-        /**
-         * Transform a point and store the result into a reference object
-         * @param p The point to transform
-         * @param res Will contain the new transformed coordinates. Can be the object of 'p'.
-         */
-        Transform2D.prototype.transformPointToRef = function (p, res) {
-            this.transformFloatsToRef(p.x, p.y, res);
-        };
-        /**
-         * Transform this object with a parent and store the result in reference object
-         * @param parent The parent transformation
-         * @param result Will contain parent * this. Can be the object of either parent or 'this'
-         */
-        Transform2D.prototype.multiplyToRef = function (parent, result) {
-            if (!parent || !result) {
-                throw new Error("Valid parent and result objects must be specified");
-            }
-            var tx = this.translation.x;
-            var ty = this.translation.y;
-            var ptx = parent.translation.x;
-            var pty = parent.translation.y;
-            var pr = parent.rotation;
-            var psx = parent.scale.x;
-            var psy = parent.scale.y;
-            var cosr = Math.cos(pr);
-            var sinr = Math.sin(pr);
-            result.translation.x = (((tx * cosr) - (ty * sinr)) * psx) + ptx;
-            result.translation.y = (((tx * sinr) + (ty * cosr)) * psy) + pty;
-            this.scale.multiplyToRef(parent.scale, result.scale);
-            result.rotation = this.rotation;
-        };
-        /**
-         * Transform the given coordinates and store the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         * @param res The Vector2 object that will contain the result of the transformation
-         */
-        Transform2D.prototype.transformFloatsToRef = function (x, y, res) {
-            var tx = this.translation.x;
-            var ty = this.translation.y;
-            var pr = this.rotation;
-            var sx = this.scale.x;
-            var sy = this.scale.y;
-            var cosr = Math.cos(pr);
-            var sinr = Math.sin(pr);
-            res.x = (((x * cosr) - (y * sinr)) * sx) + tx;
-            res.y = (((x * sinr) + (y * cosr)) * sy) + ty;
-        };
-        /**
-         * Invert transform the given coordinates and store the result in a reference object. res = invert(this) * (x,y)
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation.
-         */
-        Transform2D.prototype.invertTransformFloatsToRef = function (x, y, res) {
-            var px = x - this.translation.x;
-            var py = y - this.translation.y;
-            var pr = -this.rotation;
-            var sx = this.scale.x;
-            var sy = this.scale.y;
-            var psx = (sx === 1) ? 1 : (1 / sx);
-            var psy = (sy === 1) ? 1 : (1 / sy);
-            var cosr = Math.cos(pr);
-            var sinr = Math.sin(pr);
-            res.x = (((px * cosr) - (py * sinr)) * psx);
-            res.y = (((px * sinr) + (py * cosr)) * psy);
-        };
-        /**
-         * Transform a point and return the result
-         * @param p the point to transform
-         */
-        Transform2D.prototype.transformPoint = function (p) {
-            var res = BABYLON.Vector2.Zero();
-            this.transformPointToRef(p, res);
-            return res;
-        };
-        /**
-         * Transform the given coordinates and return the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        Transform2D.prototype.transformFloats = function (x, y) {
-            var res = BABYLON.Vector2.Zero();
-            this.transformFloatsToRef(x, y, res);
-            return res;
-        };
-        /**
-         * Invert transform a given point and store the result in the very same object. p = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        Transform2D.prototype.invertTransformPointInPlace = function (p) {
-            this.invertTransformPointToRef(p, p);
-        };
-        /**
-         * Invert transform a given point and store the result in a reference object. res = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation. 'res' can be the same object as 'p'
-         */
-        Transform2D.prototype.invertTransformPointToRef = function (p, res) {
-            this.invertTransformFloatsToRef(p.x, p.y, res);
-        };
-        /**
-         * Invert transform a given point and return the result. return = invert(this) * p
-         * @param p The Point to transform
-         */
-        Transform2D.prototype.invertTransformPoint = function (p) {
-            var res = BABYLON.Vector2.Zero();
-            this.invertTransformPointToRef(p, res);
-            return res;
-        };
-        /**
-         * Invert transform the given coordinates and return the result. return = invert(this) * (x,y)
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        Transform2D.prototype.invertTransformFloats = function (x, y) {
-            var res = BABYLON.Vector2.Zero();
-            this.invertTransformFloatsToRef(x, y, res);
-            return res;
-        };
-        return Transform2D;
-    }());
-    BABYLON.Transform2D = Transform2D;
-    /**
-     * A class storing a Matrix for 2D transformations
-     * The stored matrix is a 2*3 Matrix
-     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
-     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
-     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
-     *
-     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-     */
+       * A class storing a Matrix2D for 2D transformations
+       * The stored matrix is a 3*3 Matrix2D
+       * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+       * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+       * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
     var Matrix2D = (function () {
         function Matrix2D() {
             this.m = new Float32Array(6);
         }
+        Matrix2D.Zero = function () {
+            return new Matrix2D();
+        };
+        Matrix2D.FromValuesToRef = function (m0, m1, m2, m3, m4, m5, result) {
+            result.m[0] = m0;
+            result.m[1] = m1;
+            result.m[2] = m2;
+            result.m[3] = m3;
+            result.m[4] = m4;
+            result.m[5] = m5;
+        };
+        Matrix2D.FromMatrix = function (source) {
+            var result = new Matrix2D();
+            Matrix2D.FromMatrixToRef(source, result);
+            return result;
+        };
+        Matrix2D.FromMatrixToRef = function (source, result) {
+            result.m[0] = source.m[0];
+            result.m[1] = source.m[1];
+            result.m[2] = source.m[4];
+            result.m[3] = source.m[5];
+            result.m[4] = source.m[8];
+            result.m[5] = source.m[9];
+        };
+        Matrix2D.Rotation = function (angle) {
+            var result = new Matrix2D();
+            Matrix2D.RotationToRef(angle, result);
+            return result;
+        };
+        Matrix2D.RotationToRef = function (angle, result) {
+            var s = Math.sin(angle);
+            var c = Math.cos(angle);
+            result.m[0] = c;
+            result.m[1] = s;
+            result.m[2] = -s;
+            result.m[3] = c;
+            result.m[4] = 0;
+            result.m[5] = 0;
+        };
+        Matrix2D.Translation = function (x, y) {
+            var result = new Matrix2D();
+            Matrix2D.TranslationToRef(x, y, result);
+            return result;
+        };
+        Matrix2D.TranslationToRef = function (x, y, result) {
+            result.m[0] = 1;
+            result.m[1] = 0;
+            result.m[2] = 0;
+            result.m[3] = 1;
+            result.m[4] = x;
+            result.m[5] = y;
+        };
+        Matrix2D.Scaling = function (x, y) {
+            var result = new Matrix2D();
+            Matrix2D.ScalingToRef(x, y, result);
+            return result;
+        };
+        Matrix2D.ScalingToRef = function (x, y, result) {
+            result.m[0] = x;
+            result.m[1] = 0;
+            result.m[2] = 0;
+            result.m[3] = y;
+            result.m[4] = 0;
+            result.m[5] = 0;
+        };
         Matrix2D.Identity = function () {
             var res = new Matrix2D();
             Matrix2D.IdentityToRef(res);
             return res;
         };
         Matrix2D.IdentityToRef = function (res) {
-            res.m[1] = res.m[2] = res.m[4] = res.m[5] = 0;
+            res.m[1] = res.m[2] = res.m[4] = res[5] = 0;
             res.m[0] = res.m[3] = 1;
+        };
+        Matrix2D.FromQuaternion = function (quaternion) {
+            var result = new Matrix2D();
+            Matrix2D.FromQuaternionToRef(quaternion, result);
+            return result;
+        };
+        Matrix2D.FromQuaternionToRef = function (quaternion, result) {
+            var xx = quaternion.x * quaternion.x;
+            var yy = quaternion.y * quaternion.y;
+            var zz = quaternion.z * quaternion.z;
+            var xy = quaternion.x * quaternion.y;
+            var zw = quaternion.z * quaternion.w;
+            //var zx = quaternion.z * quaternion.x;
+            //var yw = quaternion.y * quaternion.w;
+            //var yz = quaternion.y * quaternion.z;
+            //var xw = quaternion.x * quaternion.w;
+            result.m[0] = 1.0 - (2.0 * (yy + zz));
+            result.m[1] = 2.0 * (xy + zw);
+            //result.m[2] = 2.0 * (zx - yw);
+            //result.m[3] = 0;
+            result.m[2] = 2.0 * (xy - zw);
+            result.m[3] = 1.0 - (2.0 * (zz + xx));
+            //result.m[6] = 2.0 * (yz + xw);
+            //result.m[7] = 0;
+            //result.m[8] = 2.0 * (zx + yw);
+            //result.m[9] = 2.0 * (yz - xw);
+            //result.m[10] = 1.0 - (2.0 * (yy + xx));
+            //result.m[11] = 0;
+            //result.m[12] = 0;
+            //result.m[13] = 0;
+            //result.m[14] = 0;
+            //result.m[15] = 1.0;
+        };
+        Matrix2D.Compose = function (scale, rotation, translation) {
+            var result = Matrix2D.Scaling(scale.x, scale.y);
+            var rotationMatrix = Matrix2D.Rotation(rotation);
+            result = result.multiply(rotationMatrix);
+            result.setTranslation(translation);
+            return result;
+        };
+        Matrix2D.Invert = function (source) {
+            var result = new Matrix2D();
+            source.invertToRef(result);
+            return result;
+        };
+        Matrix2D.prototype.clone = function () {
+            var result = new Matrix2D();
+            result.copyFrom(this);
+            return result;
         };
         Matrix2D.prototype.copyFrom = function (other) {
             for (var i = 0; i < 6; i++) {
                 this.m[i] = other.m[i];
             }
         };
+        Matrix2D.prototype.getTranslation = function () {
+            return new BABYLON.Vector2(this.m[4], this.m[5]);
+        };
+        Matrix2D.prototype.setTranslation = function (translation) {
+            this.m[4] = translation.x;
+            this.m[5] = translation.y;
+        };
         Matrix2D.prototype.determinant = function () {
-            return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
+            return this.m[0] * this.m[3] - this.m[1] * this.m[2];
         };
         Matrix2D.prototype.invertToThis = function () {
             this.invertToRef(this);
@@ -386,20 +172,27 @@ var BABYLON;
             this.invertToRef(res);
             return res;
         };
+        // http://mathworld.wolfram.com/MatrixInverse.html
         Matrix2D.prototype.invertToRef = function (res) {
-            var a00 = this.m[0], a01 = this.m[1], a10 = this.m[2], a11 = this.m[3], a20 = this.m[4], a21 = this.m[5];
-            var det21 = a21 * a10 - a11 * a20;
-            var det = (a00 * a11) - (a01 * a10);
+            var l0 = this.m[0];
+            var l1 = this.m[1];
+            var l2 = this.m[2];
+            var l3 = this.m[3];
+            var l4 = this.m[4];
+            var l5 = this.m[5];
+            var det = this.determinant();
             if (det < (BABYLON.Epsilon * BABYLON.Epsilon)) {
                 throw new Error("Can't invert matrix, near null determinant");
             }
-            det = 1 / det;
-            res.m[0] = a11 * det;
-            res.m[1] = -a01 * det;
-            res.m[2] = -a10 * det;
-            res.m[3] = a00 * det;
-            res.m[4] = det21 * det;
-            res.m[5] = (-a21 * a00 + a01 * a20) * det;
+            var detDiv = 1 / det;
+            var det4 = l2 * l5 - l3 * l4;
+            var det5 = l1 * l4 - l0 * l5;
+            res.m[0] = l3 * detDiv;
+            res.m[1] = -l1 * detDiv;
+            res.m[2] = -l2 * detDiv;
+            res.m[3] = l0 * detDiv;
+            res.m[4] = det4 * detDiv;
+            res.m[5] = det5 * detDiv;
         };
         Matrix2D.prototype.multiplyToThis = function (other) {
             this.multiplyToRef(other, this);
@@ -410,54 +203,24 @@ var BABYLON;
             return res;
         };
         Matrix2D.prototype.multiplyToRef = function (other, result) {
-            var tm0 = this.m[0];
-            var tm1 = this.m[1];
-            //var tm2 = this.m[2];
-            //var tm3 = this.m[3];
-            var tm4 = this.m[2];
-            var tm5 = this.m[3];
-            //var tm6 = this.m[6];
-            //var tm7 = this.m[7];
-            var tm8 = this.m[4];
-            var tm9 = this.m[5];
-            //var tm10 = this.m[10];
-            //var tm11 = this.m[11];
-            //var tm12 = this.m[12];
-            //var tm13 = this.m[13];
-            //var tm14 = this.m[14];
-            //var tm15 = this.m[15];
-            var om0 = other.m[0];
-            var om1 = other.m[1];
-            //var om2 = other.m[2];
-            //var om3 = other.m[3];
-            var om4 = other.m[2];
-            var om5 = other.m[3];
-            //var om6 = other.m[6];
-            //var om7 = other.m[7];
-            var om8 = other.m[4];
-            var om9 = other.m[5];
-            //var om10 = other.m[10];
-            //var om11 = other.m[11];
-            //var om12 = other.m[12];
-            //var om13 = other.m[13];
-            //var om14 = other.m[14];
-            //var om15 = other.m[15];
-            result.m[0] = tm0 * om0 + tm1 * om4;
-            result.m[1] = tm0 * om1 + tm1 * om5;
-            //result.m[2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
-            //result.m[3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
-            result.m[2] = tm4 * om0 + tm5 * om4;
-            result.m[3] = tm4 * om1 + tm5 * om5;
-            //result.m[6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
-            //result.m[7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
-            result.m[4] = tm8 * om0 + tm9 * om4 + om8;
-            result.m[5] = tm8 * om1 + tm9 * om5 + om9;
-            //result.m[10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
-            //result.m[11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
-            //result.m[12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
-            //result.m[13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
-            //result.m[14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
-            //result.m[15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+            var l0 = this.m[0];
+            var l1 = this.m[1];
+            var l2 = this.m[2];
+            var l3 = this.m[3];
+            var l4 = this.m[4];
+            var l5 = this.m[5];
+            var r0 = other.m[0];
+            var r1 = other.m[1];
+            var r2 = other.m[2];
+            var r3 = other.m[3];
+            var r4 = other.m[4];
+            var r5 = other.m[5];
+            result.m[0] = l0 * r0 + l1 * r2;
+            result.m[1] = l0 * r1 + l1 * r3;
+            result.m[2] = l2 * r0 + l3 * r2;
+            result.m[3] = l2 * r1 + l3 * r3;
+            result.m[4] = l4 * r0 + l5 * r2 + r4;
+            result.m[5] = l4 * r1 + l5 * r3 + r5;
         };
         Matrix2D.prototype.transformFloats = function (x, y) {
             var res = BABYLON.Vector2.Zero();
@@ -476,8 +239,19 @@ var BABYLON;
         Matrix2D.prototype.transformPointToRef = function (p, r) {
             this.transformFloatsToRef(p.x, p.y, r);
         };
+        Matrix2D.prototype.decompose = function (scale, translation) {
+            translation.x = this.m[4];
+            translation.y = this.m[5];
+            scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1]);
+            scale.y = Math.sqrt(this.m[2] * this.m[2] + this.m[3] * this.m[3]);
+            if (scale.x === 0 || scale.y === 0) {
+                return null;
+            }
+            return Math.atan2(-this.m[2] / scale.y, this.m[0] / scale.x);
+        };
         return Matrix2D;
     }());
+    Matrix2D._decomp = new Matrix2D();
     BABYLON.Matrix2D = Matrix2D;
     /**
      * Stores information about a 2D Triangle.
@@ -511,9 +285,12 @@ var BABYLON;
             this._updateCenterRadius();
         };
         Tri2DInfo.prototype.transformInPlace = function (transform) {
-            BABYLON.Vector2.TransformToRef(this.a, transform, this.a);
-            BABYLON.Vector2.TransformToRef(this.b, transform, this.b);
-            BABYLON.Vector2.TransformToRef(this.c, transform, this.c);
+            transform.transformPointToRef(this.a, this.a);
+            transform.transformPointToRef(this.b, this.b);
+            transform.transformPointToRef(this.c, this.c);
+            //Vector2.TransformToRef(this.a, transform, this.a);
+            //Vector2.TransformToRef(this.b, transform, this.b);
+            //Vector2.TransformToRef(this.c, transform, this.c);
             this._updateCenterRadius();
         };
         Tri2DInfo.prototype.doesContain = function (p) {
@@ -3117,7 +2894,7 @@ var BABYLON;
             p[3].y = this.center.y + this.extent.y;
             // Transform the four points of the bounding box with the matrix
             for (var i = 0; i < 4; i++) {
-                BABYLON.Vector2.TransformToRef(p[i], matrix, p[i]);
+                matrix.transformPointToRef(p[i], p[i]);
             }
             BoundingInfo2D.CreateFromPointsToRef(p, result);
         };
@@ -3134,7 +2911,7 @@ var BABYLON;
             p[3].y = this.center.y + this.extent.y;
             // Transform the four points of the bounding box with the matrix
             for (var i = 0; i < 4; i++) {
-                BABYLON.Vector2.TransformToRef(p[i], worldMatrix, p[i]);
+                worldMatrix.transformPointToRef(p[i], p[i]);
             }
             this._worldAABB.x = Math.min(Math.min(p[0].x, p[1].x), Math.min(p[2].x, p[3].x));
             this._worldAABB.y = Math.min(Math.min(p[0].y, p[1].y), Math.min(p[2].y, p[3].y));
@@ -4108,14 +3885,14 @@ var BABYLON;
     var RowDefinition = (function (_super) {
         __extends(RowDefinition, _super);
         function RowDefinition() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return RowDefinition;
     }(GridDimensionDefinition));
     var ColumnDefinition = (function (_super) {
         __extends(ColumnDefinition, _super);
         function ColumnDefinition() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return ColumnDefinition;
     }(GridDimensionDefinition));
@@ -7230,7 +7007,7 @@ var BABYLON;
     var Prim2DBase = Prim2DBase_1 = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -7281,8 +7058,8 @@ var BABYLON;
             _this._marginAlignment = null;
             _this._id = settings.id;
             _this._children = new Array();
-            _this._localTransform = new BABYLON.Matrix();
-            _this._localLayoutTransform = new BABYLON.Matrix();
+            _this._localTransform = new BABYLON.Matrix2D();
+            _this._localLayoutTransform = new BABYLON.Matrix2D();
             _this._globalTransform = null;
             _this._invGlobalTransform = null;
             _this._globalTransformProcessStep = 0;
@@ -8406,8 +8183,8 @@ var BABYLON;
          * @param v the valid Vector2 object where the global position will be stored
          */
         Prim2DBase.prototype.getGlobalPositionByRef = function (v) {
-            v.x = this.globalTransform.m[12];
-            v.y = this.globalTransform.m[13];
+            v.x = this.globalTransform.m[4];
+            v.y = this.globalTransform.m[5];
         };
         Object.defineProperty(Prim2DBase.prototype, "invGlobalTransform", {
             /**
@@ -8885,7 +8662,7 @@ var BABYLON;
             if (firstLevel) {
                 // Compute the pickPosition in global space and use it to find the local position for each level down, always relative from the world to get the maximum accuracy (and speed). The other way would have been to compute in local every level down relative to its parent's local, which wouldn't be as accurate (even if javascript number is 80bits accurate).
                 intersectInfo._globalPickPosition = BABYLON.Vector2.Zero();
-                BABYLON.Vector2.TransformToRef(intersectInfo.pickPosition, this.globalTransform, intersectInfo._globalPickPosition);
+                this.globalTransform.transformPointToRef(intersectInfo.pickPosition, intersectInfo._globalPickPosition);
                 intersectInfo._localPickPosition = intersectInfo.pickPosition.clone();
                 intersectInfo.intersectedPrimitives = new Array();
                 intersectInfo.topMostIntersectedPrimitive = null;
@@ -8958,7 +8735,7 @@ var BABYLON;
                         continue;
                     }
                     // Must compute the localPickLocation for the children level
-                    BABYLON.Vector2.TransformToRef(intersectInfo._globalPickPosition, curChild.invGlobalTransform, intersectInfo._localPickPosition);
+                    curChild.invGlobalTransform.transformPointToRef(intersectInfo._globalPickPosition, intersectInfo._localPickPosition);
                     // If we got an intersection with the child and we only need to find the first one, quit!
                     if (curChild.intersect(intersectInfo) && intersectInfo.findFirstOnly) {
                         intersectInfo._exit(firstLevel);
@@ -9225,10 +9002,9 @@ var BABYLON;
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty)) {
                     this._updatePositioning();
                 }
-                var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
+                var rot = this._rotation;
                 var local;
                 var pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase_1._v0);
-                var scale = new BABYLON.Vector3(this._scale.x, this._scale.y, 1);
                 var postScale = this._postScale;
                 var canvasScale = Prim2DBase_1._iv3;
                 var hasCanvasScale = false;
@@ -9236,48 +9012,38 @@ var BABYLON;
                     hasCanvasScale = true;
                     canvasScale = this._parent._canvasLevelScale || Prim2DBase_1._iv3;
                 }
-                var globalScale = scale.multiplyByFloats(postScale.x * canvasScale.x, postScale.y * canvasScale.y, 1);
+                var globalScale = this._scale.multiplyByFloats(postScale.x * canvasScale.x, postScale.y * canvasScale.y);
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
-                    // ###MATRIX PART###
-                    {
-                        local = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
-                        this._localTransform = local;
-                        this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
-                    }
+                    local = BABYLON.Matrix2D.Compose(globalScale, rot, new BABYLON.Vector2(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y));
+                    this._localTransform = local;
+                    this._localLayoutTransform = BABYLON.Matrix2D.Compose(globalScale, rot, new BABYLON.Vector2(pos.x, pos.y));
                 }
                 else {
-                    // ###MATRIX PART###
-                    {
-                        // -Origin offset
-                        var t0 = Prim2DBase_1._t0;
-                        var t1 = Prim2DBase_1._t1;
-                        var t2 = Prim2DBase_1._t2;
-                        var as = Prim2DBase_1._ts0;
-                        as.copyFrom(this.actualSize);
-                        as.width /= postScale.x;
-                        as.height /= postScale.y;
-                        BABYLON.Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
-                        // -Origin * rotation
-                        rot.toRotationMatrix(t1);
-                        t0.multiplyToRef(t1, t2);
-                        // -Origin * rotation * scale
-                        BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
-                        t2.multiplyToRef(t0, t1);
-                        // -Origin * rotation * scale * Origin
-                        BABYLON.Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
-                        t1.multiplyToRef(t2, t0);
-                        // -Origin * rotation * scale * Origin * postScale
-                        BABYLON.Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
-                        t0.multiplyToRef(t1, t2);
-                        // -Origin * rotation * scale * Origin * postScale * Position
-                        BABYLON.Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
-                        t2.multiplyToRef(t0, this._localTransform);
-                        if (hasCanvasScale) {
-                            BABYLON.Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase_1._t1);
-                            this._localTransform.multiplyToRef(Prim2DBase_1._t1, this._localTransform);
-                        }
-                        this._localLayoutTransform = BABYLON.Matrix.Compose(globalScale, rot, new BABYLON.Vector3(pos.x, pos.y, 0));
+                    // -Origin offset
+                    var t0 = Prim2DBase_1._t0;
+                    var t1 = Prim2DBase_1._t1;
+                    var t2 = Prim2DBase_1._t2;
+                    var as = Prim2DBase_1._ts0;
+                    as.copyFrom(this.actualSize);
+                    as.width /= postScale.x;
+                    as.height /= postScale.y;
+                    BABYLON.Matrix2D.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), t0);
+                    // -Origin * rotation
+                    BABYLON.Matrix2D.RotationToRef(rot, t1);
+                    t0.multiplyToRef(t1, t2);
+                    BABYLON.Matrix2D.ScalingToRef(this._scale.x, this._scale.y, t0);
+                    t2.multiplyToRef(t0, t1);
+                    BABYLON.Matrix2D.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), t2);
+                    t1.multiplyToRef(t2, t0);
+                    BABYLON.Matrix2D.ScalingToRef(postScale.x, postScale.y, t1);
+                    t0.multiplyToRef(t1, t2);
+                    BABYLON.Matrix2D.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, t0);
+                    t2.multiplyToRef(t0, this._localTransform);
+                    if (hasCanvasScale) {
+                        BABYLON.Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase_1._t1);
+                        this._localTransform.multiplyToRef(Prim2DBase_1._t1, this._localTransform);
                     }
+                    this._localLayoutTransform = BABYLON.Matrix2D.Compose(globalScale, rot, pos);
                 }
                 this.clearPropertiesDirty(tflags);
                 this._setFlags(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
@@ -9360,17 +9126,14 @@ var BABYLON;
                 var parentDirty = (this._parent != null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged || this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty)) {
-                    //###MATRIX PART###
-                    {
-                        var globalTransform = this._parent ? this._parent._globalTransform : null;
-                        var localTransform = void 0;
-                        Prim2DBase_1._transMtx.copyFrom(this._localTransform);
-                        Prim2DBase_1._transMtx.m[12] += parentPaddingOffset.x;
-                        Prim2DBase_1._transMtx.m[13] += parentPaddingOffset.y;
-                        localTransform = Prim2DBase_1._transMtx;
-                        this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
-                        this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
-                    }
+                    var globalTransform = this._parent ? this._parent._globalTransform : null;
+                    var localTransform = void 0;
+                    Prim2DBase_1._transMtx.copyFrom(this._localTransform);
+                    Prim2DBase_1._transMtx.m[4] += parentPaddingOffset.x;
+                    Prim2DBase_1._transMtx.m[5] += parentPaddingOffset.y;
+                    localTransform = Prim2DBase_1._transMtx;
+                    this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
+                    this._invGlobalTransform = BABYLON.Matrix2D.Invert(this._globalTransform);
                     this._levelBoundingInfo.dirtyWorldAABB();
                     this._boundingInfo.dirtyWorldAABB();
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
@@ -9432,7 +9195,7 @@ var BABYLON;
                 var bSize = Prim2DBase_1._size4;
                 var bi = this.boundingInfo;
                 var tbi = Prim2DBase_1._tbi;
-                bi.transformToRef(BABYLON.Matrix.RotationZ(this.rotation), tbi);
+                bi.transformToRef(BABYLON.Matrix2D.Rotation(this.rotation), tbi);
                 tbi.sizeToRef(transformedBSize);
                 bi.sizeToRef(bSize);
                 bi.extent.subtractToRef(bi.center, Prim2DBase_1._pv1);
@@ -9825,15 +9588,14 @@ var BABYLON;
     Prim2DBase._updatingDebugArea = false;
     Prim2DBase._bypassGroup2DExclusion = false;
     Prim2DBase._isCanvasInit = false;
-    Prim2DBase._t0 = new BABYLON.Matrix();
-    Prim2DBase._t1 = new BABYLON.Matrix();
-    Prim2DBase._t2 = new BABYLON.Matrix();
+    Prim2DBase._t0 = new BABYLON.Matrix2D();
+    Prim2DBase._t1 = new BABYLON.Matrix2D();
+    Prim2DBase._t2 = new BABYLON.Matrix2D();
     Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
     Prim2DBase._v30 = BABYLON.Vector3.Zero(); // Must stay with the value 0,0,0
     Prim2DBase._iv3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector
     Prim2DBase._ts0 = BABYLON.Size.Zero();
-    Prim2DBase._transMtx = BABYLON.Matrix.Zero();
-    Prim2DBase._transTT = BABYLON.Transform2D.Zero();
+    Prim2DBase._transMtx = BABYLON.Matrix2D.Zero();
     Prim2DBase._icPos = BABYLON.Vector2.Zero();
     Prim2DBase._icZone = BABYLON.Vector4.Zero();
     Prim2DBase._icArea = BABYLON.Size.Zero();
@@ -10225,7 +9987,7 @@ var BABYLON;
             pci.fullContent.forEach(function (k, v) {
                 if (!v.category || pd._partUsedCategories.indexOf(v.category) !== -1) {
                     switch (v.dataType) {
-                        case 4 /* float */:
+                        case 3 /* float */:
                             {
                                 var attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
                                 effect.setFloat(v.attributeName, data.buffer[offset + attribOffset]);
@@ -10239,7 +10001,7 @@ var BABYLON;
                                 effect.setVector2(v.attributeName, ModelRenderCache.v2);
                                 break;
                             }
-                        case 5 /* Color3 */:
+                        case 4 /* Color3 */:
                         case 1 /* Vector3 */:
                             {
                                 var attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
@@ -10249,7 +10011,7 @@ var BABYLON;
                                 effect.setVector3(v.attributeName, ModelRenderCache.v3);
                                 break;
                             }
-                        case 6 /* Color4 */:
+                        case 5 /* Color4 */:
                         case 2 /* Vector4 */:
                             {
                                 var attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
@@ -10399,27 +10161,27 @@ var BABYLON;
                 this.dataType = 2 /* Vector4 */;
                 return;
             }
-            if (val instanceof BABYLON.Matrix) {
-                throw new Error("Matrix type is not supported by WebGL Instance Buffer, you have to use four Vector4 properties instead");
+            if (val instanceof BABYLON.Matrix2D) {
+                throw new Error("Matrix2D type is not supported by WebGL Instance Buffer, you have to use four Vector4 properties instead");
             }
             if (typeof (val) === "number") {
                 this.size = 4;
-                this.dataType = 4 /* float */;
+                this.dataType = 3 /* float */;
                 return;
             }
             if (val instanceof BABYLON.Color3) {
                 this.size = 12;
-                this.dataType = 5 /* Color3 */;
+                this.dataType = 4 /* Color3 */;
                 return;
             }
             if (val instanceof BABYLON.Color4) {
                 this.size = 16;
-                this.dataType = 6 /* Color4 */;
+                this.dataType = 5 /* Color4 */;
                 return;
             }
             if (val instanceof BABYLON.Size) {
                 this.size = 8;
-                this.dataType = 7 /* Size */;
+                this.dataType = 6 /* Size */;
                 return;
             }
             return;
@@ -10450,7 +10212,7 @@ var BABYLON;
                         array[offset + 3] = v.w;
                         break;
                     }
-                case 5 /* Color3 */:
+                case 4 /* Color3 */:
                     {
                         var v = val;
                         array[offset + 0] = v.r;
@@ -10458,7 +10220,7 @@ var BABYLON;
                         array[offset + 2] = v.b;
                         break;
                     }
-                case 6 /* Color4 */:
+                case 5 /* Color4 */:
                     {
                         var v = val;
                         array[offset + 0] = v.r;
@@ -10467,21 +10229,13 @@ var BABYLON;
                         array[offset + 3] = v.a;
                         break;
                     }
-                case 4 /* float */:
+                case 3 /* float */:
                     {
                         var v = val;
                         array[offset] = v;
                         break;
                     }
-                case 3 /* Matrix */:
-                    {
-                        var v = val;
-                        for (var i = 0; i < 16; i++) {
-                            array[offset + i] = v.m[i];
-                        }
-                        break;
-                    }
-                case 7 /* Size */:
+                case 6 /* Size */:
                     {
                         var s = val;
                         array[offset + 0] = s.width;
@@ -11150,23 +10904,21 @@ var BABYLON;
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
             var scl = RenderablePrim2D_1._s;
-            var rot = RenderablePrim2D_1._r;
             var trn = RenderablePrim2D_1._t;
-            t.decompose(scl, rot, trn);
+            var rot = t.decompose(scl, trn);
             var pas = this.actualScale;
             var canvasScale = this.owner._canvasLevelScale;
             scl.x = pas.x * canvasScale.x * this._postScale.x;
             scl.y = pas.y * canvasScale.y * this._postScale.y;
-            scl.z = 1;
-            t = BABYLON.Matrix.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D_1._iV3, rot, trn);
+            t = BABYLON.Matrix2D.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D_1._iV2, rot, trn);
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
             var offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
             if (positionOffset) {
-                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
-                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[2];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[3];
             }
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
             // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
@@ -11177,8 +10929,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0, ((t.m[12] + offX) * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0, ((t.m[13] + offY) * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[2] * 2 / w, 0, ((t.m[4] + offX) * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[3] * 2 / h, 0, ((t.m[5] + offY) * 2 / h) - 1);
             part.renderingInfo = new BABYLON.Vector3(w, h, this.alignToPixel ? 1 : 0);
             part.transformX = tx;
             part.transformY = ty;
@@ -11202,10 +10954,10 @@ var BABYLON;
     RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
     RenderablePrim2D._toz = BABYLON.Size.Zero();
     RenderablePrim2D._uV = new BABYLON.Vector2(1, 1);
-    RenderablePrim2D._s = BABYLON.Vector3.Zero();
+    RenderablePrim2D._s = BABYLON.Vector2.Zero();
     RenderablePrim2D._r = BABYLON.Quaternion.Identity();
-    RenderablePrim2D._t = BABYLON.Vector3.Zero();
-    RenderablePrim2D._iV3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector3
+    RenderablePrim2D._t = BABYLON.Vector2.Zero();
+    RenderablePrim2D._iV2 = new BABYLON.Vector2(1, 1); // Must stay identity vector3
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
     ], RenderablePrim2D.prototype, "isAlphaTest", null);
@@ -11345,8 +11097,8 @@ var BABYLON;
                     else if (fill instanceof BABYLON.GradientColorBrush2D) {
                         d.fillGradientColor1 = fill.color1;
                         d.fillGradientColor2 = fill.color2;
-                        var t = BABYLON.Matrix.Compose(new BABYLON.Vector3(fill.scale, fill.scale, fill.scale), BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), fill.rotation), new BABYLON.Vector3(fill.translation.x, fill.translation.y, 0));
-                        var ty = new BABYLON.Vector4(t.m[1], t.m[5], t.m[9], t.m[13]);
+                        var t = BABYLON.Matrix2D.Compose(new BABYLON.Vector2(fill.scale, fill.scale), fill.rotation, new BABYLON.Vector2(fill.translation.x, fill.translation.y));
+                        var ty = new BABYLON.Vector4(t.m[1], t.m[3], 0, t.m[5]);
                         d.fillGradientTY = ty;
                     }
                 }
@@ -11362,8 +11114,8 @@ var BABYLON;
                     else if (border instanceof BABYLON.GradientColorBrush2D) {
                         d.borderGradientColor1 = border.color1;
                         d.borderGradientColor2 = border.color2;
-                        var t = BABYLON.Matrix.Compose(new BABYLON.Vector3(border.scale, border.scale, border.scale), BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), border.rotation), new BABYLON.Vector3(border.translation.x, border.translation.y, 0));
-                        var ty = new BABYLON.Vector4(t.m[1], t.m[5], t.m[9], t.m[13]);
+                        var t = BABYLON.Matrix2D.Compose(new BABYLON.Vector2(border.scale, border.scale), border.rotation, new BABYLON.Vector2(border.translation.x, border.translation.y));
+                        var ty = new BABYLON.Vector4(t.m[1], t.m[3], 0, t.m[5]);
                         d.borderGradientTY = ty;
                     }
                 }
@@ -11414,7 +11166,7 @@ var BABYLON;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
         function Shape2DInstanceData() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(Shape2DInstanceData.prototype, "fillSolidColor", {
             // FILL ATTRIBUTES
@@ -11589,7 +11341,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Group2D(settings) {
-            var _this;
+            var _this = this;
             if (settings == null) {
                 settings = {};
             }
@@ -12528,7 +12280,7 @@ var BABYLON;
     var WireFrame2DRenderCache = (function (_super) {
         __extends(WireFrame2DRenderCache, _super);
         function WireFrame2DRenderCache() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.vtxCount = 0;
@@ -12754,7 +12506,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WireFrame2D(wireFrameGroups, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -13133,7 +12885,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Rectangle2D(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -13650,7 +13402,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Ellipse2D(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -13835,7 +13587,7 @@ var BABYLON;
     var Sprite2DRenderCache = (function (_super) {
         __extends(Sprite2DRenderCache, _super);
         function Sprite2DRenderCache() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -13954,7 +13706,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -14579,7 +14331,7 @@ var BABYLON;
     var Text2DRenderCache = (function (_super) {
         __extends(Text2DRenderCache, _super);
         function Text2DRenderCache() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -14778,7 +14530,7 @@ var BABYLON;
          * - wordWrap: if true the text will wrap inside content area
          */
         function Text2D(text, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -14816,6 +14568,7 @@ var BABYLON;
                 _this.size = null;
             }
             _this._useBilinearFiltering = (settings.useBilinearFiltering != null) ? settings.useBilinearFiltering : null;
+            _this._fontBilinearFiltering = false;
             // Text rendering must always be aligned to the target's pixel to ensure a good quality
             _this.alignToPixel = true;
             _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
@@ -15012,7 +14765,8 @@ var BABYLON;
                 if (this.fontName == null || this.owner == null || this.owner.scene == null) {
                     return null;
                 }
-                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, (this._useBilinearFiltering === null) ? (this.owner instanceof BABYLON.WorldSpaceCanvas2D) : this._useBilinearFiltering);
+                this._fontBilinearFiltering = (this._useBilinearFiltering === null) ? (this.owner instanceof BABYLON.WorldSpaceCanvas2D) : this._useBilinearFiltering;
+                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
                 this._textureIsPremulAlpha = this._fontTexture.isPremultipliedAlpha;
                 return this._fontTexture;
             },
@@ -15027,7 +14781,7 @@ var BABYLON;
                 return false;
             }
             if (this._fontTexture) {
-                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontBilinearFiltering);
                 this._fontTexture = null;
             }
             return true;
@@ -15623,7 +15377,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Lines2D(points, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -17082,7 +16836,7 @@ var BABYLON;
             }
             // Update the relatedTarget info with the over primitive or the captured one (if any)
             var targetPrim = capturedPrim || this._actualOverPrimitive.prim;
-            var targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new BABYLON.Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
+            var targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new BABYLON.Vector2(targetPrim.globalTransform.m[4], targetPrim.globalTransform.m[5])) : this._actualOverPrimitive.intersectionLocation;
             this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
             // Analyze the pointer event type and fire proper events on the primitive
             var skip = false;
@@ -18311,7 +18065,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
-            var _this;
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
@@ -18473,7 +18227,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         function ScreenSpaceCanvas2D(scene, settings) {
-            var _this;
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             _this = _super.call(this, scene, settings) || this;
             return _this;
@@ -19457,7 +19211,7 @@ var BABYLON;
     var StackPanel = StackPanel_1 = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -19520,7 +19274,7 @@ var BABYLON;
     var DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultStackPanelRenderingTemplate, _super);
         function DefaultStackPanelRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultStackPanelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             return { root: visualPlaceholder, contentPlaceholder: visualPlaceholder };
@@ -19649,7 +19403,7 @@ var BABYLON;
     var ContentControl = ContentControl_1 = (function (_super) {
         __extends(ContentControl, _super);
         function ContentControl(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -19804,7 +19558,7 @@ var BABYLON;
     var Window = Window_1 = (function (_super) {
         __extends(Window, _super);
         function Window(scene, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -19989,7 +19743,7 @@ var BABYLON;
     var DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate_1 = (function (_super) {
         __extends(DefaultWindowRenderingTemplate, _super);
         function DefaultWindowRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultWindowRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#808080FF" });
@@ -20020,7 +19774,7 @@ var BABYLON;
     var Label = Label_1 = (function (_super) {
         __extends(Label, _super);
         function Label(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -20067,7 +19821,7 @@ var BABYLON;
     var DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultLabelRenderingTemplate, _super);
         function DefaultLabelRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultLabelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Text2D("", { parent: visualPlaceholder });
@@ -20100,7 +19854,7 @@ var BABYLON;
     var Button = Button_1 = (function (_super) {
         __extends(Button, _super);
         function Button(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -20254,7 +20008,7 @@ var BABYLON;
     var DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate_1 = (function (_super) {
         __extends(DefaultButtonRenderingTemplate, _super);
         function DefaultButtonRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultButtonRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             this._rect = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#FF8080FF", border: "#FF8080FF", roundRadius: 10, borderThickness: 2 });

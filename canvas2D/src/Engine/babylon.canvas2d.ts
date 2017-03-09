@@ -533,7 +533,7 @@
             // Update the relatedTarget info with the over primitive or the captured one (if any)
             let targetPrim = capturedPrim || this._actualOverPrimitive.prim;
 
-            let targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
+            let targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new Vector2(targetPrim.globalTransform.m[4], targetPrim.globalTransform.m[5])) : this._actualOverPrimitive.intersectionLocation;
 
             this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
 
