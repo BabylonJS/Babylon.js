@@ -220,6 +220,7 @@ module BABYLON {
             Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
             // Computing target for getTarget()
+            this._positionOffset = this._positionOffset || Vector3.Zero();
             this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
             this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
 
