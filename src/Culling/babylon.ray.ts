@@ -246,34 +246,6 @@
 
         }
 
-        /**
-         *  @Deprecated. Use new RayHelper.show() instead.
-         * */
-        public show(scene:Scene, color:Color3): void{
-
-            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
-
-            if(!this._rayHelper){
-                this._rayHelper = new RayHelper(this);
-            }
-            
-            this._rayHelper.show(scene, color);
-
-        }
-
-        /**
-         *  @Deprecated. Use new RayHelper.hide() instead.
-         * */
-        public hide(): void{
-
-            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
-
-            if(this._rayHelper){
-                this._rayHelper.hide();
-                this._rayHelper = null;
-            }
-
-        }
 
         private static smallnum = 0.00000001;
         private static rayl = 10e8;

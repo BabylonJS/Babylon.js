@@ -161,8 +161,6 @@
 
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;
-        //Deprecated, Legacy support
-        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void;
 
         // Collisions
         private _checkCollisions = false;
@@ -1100,43 +1098,8 @@
             return this._boundingInfo.intersectsPoint(point);
         }
 
-        // Physics
-        /**
-         *  @Deprecated. Use new PhysicsImpostor instead.
-         * */
-        public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
-            //legacy support
-            if (impostor.impostor) {
-                options = impostor;
-                impostor = impostor.impostor;
-            }
-            this.physicsImpostor = new PhysicsImpostor(this, impostor, options, this.getScene());
-            return this.physicsImpostor.physicsBody;
-        }
-
         public getPhysicsImpostor(): PhysicsImpostor {
             return this.physicsImpostor;
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
-         */
-        public getPhysicsMass(): number {
-            return this.physicsImpostor.getParam("mass")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
-         */
-        public getPhysicsFriction(): number {
-            return this.physicsImpostor.getParam("friction")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
-         */
-        public getPhysicsRestitution(): number {
-            return this.physicsImpostor.getParam("restitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
@@ -1177,24 +1140,6 @@
             });
             return this;
         }
-
-        /**
-         * @Deprecated
-         */
-        public updatePhysicsBodyPosition(): void {
-            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
-            this.updatePhysicsBody();
-        }
-
-        /**
-         * @Deprecated
-         * Calling this function is not needed anymore. 
-         * The physics engine takes care of transofmration automatically.
-         */
-        public updatePhysicsBody(): void {
-            //Unneeded
-        }
-
 
         // Collisions
 
