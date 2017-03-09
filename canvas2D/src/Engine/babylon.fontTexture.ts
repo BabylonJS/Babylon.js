@@ -378,13 +378,13 @@
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false) {
             let dic = scene.getExternalData<StringDictionary<FontTexture>>("FontTextureCache");
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
