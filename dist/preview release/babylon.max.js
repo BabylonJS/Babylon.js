@@ -8767,7 +8767,7 @@ var BABYLON;
                 this._currentFramebuffer = framebuffer;
             }
         };
-        Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps) {
+        Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps, onBeforeUnbind) {
             if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
             this._currentRenderTarget = null;
             // If MSAA, we need to bitblt back to main texture
@@ -8781,6 +8781,13 @@ var BABYLON;
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            }
+            if (onBeforeUnbind) {
+                if (texture._MSAAFramebuffer) {
+                    // Bind the correct framebuffer
+                    this.bindUnboundFramebuffer(texture._framebuffer);
+                }
+                onBeforeUnbind();
             }
             this.bindUnboundFramebuffer(null);
         };
@@ -16120,6 +16127,7 @@ var BABYLON;
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
+                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
                         //Right eye
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
                         //this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
@@ -16129,6 +16137,7 @@ var BABYLON;
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
+                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
                     }
                     break;
             }
@@ -16140,6 +16149,9 @@ var BABYLON;
             BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
             this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
+        };
+        Camera.prototype._updateCameraRotationMatrix = function () {
+            // only here for webvr
         };
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
@@ -16987,8 +16999,11 @@ var BABYLON;
         };
         FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad found can control the camera
-            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                this.gamepad = gamepad;
+            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                // prioritize XBOX gamepads.
+                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                    this.gamepad = gamepad;
+                }
             }
         };
         FreeCameraGamepadInput.prototype.getTypeName = function () {
@@ -17441,9 +17456,11 @@ var BABYLON;
             }
         };
         ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad can control the camera
-            if (!this.gamepad && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                this.gamepad = gamepad;
+            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                // prioritize XBOX gamepads.
+                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                    this.gamepad = gamepad;
+                }
             }
         };
         ArcRotateCameraGamepadInput.prototype.getTypeName = function () {
@@ -27426,6 +27443,7 @@ var BABYLON;
             scene.resetCachedMaterial();
         };
         RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
+            var _this = this;
             var scene = this.getScene();
             var engine = scene.getEngine();
             // Bind
@@ -27456,7 +27474,6 @@ var BABYLON;
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
             // Dump ?
             if (dumpForDebug) {
                 BABYLON.Tools.DumpFramebuffer(this._size, this._size, engine);
@@ -27468,7 +27485,12 @@ var BABYLON;
                         engine.generateMipMapsForCubemap(this._texture);
                     }
                 }
-                engine.unBindFramebuffer(this._texture, this.isCube);
+                engine.unBindFramebuffer(this._texture, this.isCube, function () {
+                    _this.onAfterRenderObservable.notifyObservers(faceIndex);
+                });
+            }
+            else {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
             }
         };
         /**
@@ -49210,6 +49232,7 @@ var BABYLON;
             this._updateCameraRotationMatrix();
             BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
             // Computing target for getTarget()
+            this._positionOffset = this._positionOffset || BABYLON.Vector3.Zero();
             this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
             this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
