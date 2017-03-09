@@ -169,12 +169,6 @@ module BABYLON {
             this.getEngine().disableVR();
         }
 
-        public requestVRFullscreen(requestPointerlock: boolean) {
-            //Backwards comp.
-            Tools.Warn("requestVRFullscreen is deprecated. call attachControl() inside a user-interaction callback to start sending frames to the VR display.")
-            //this.getEngine().switchFullscreen(requestPointerlock);
-        }
-
         public getClassName(): string {
             return "WebVRFreeCamera";
         }
@@ -183,21 +177,6 @@ module BABYLON {
             //uses the vrDisplay's "resetPose()".
             //pitch and roll won't be affected.
             this._vrDevice.resetPose();
-        }
-
-        /**
-         *
-         * @deprecated
-         * This function was used to change the position offset. it is now done using camera.position.
-         *  
-         * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
-         * 
-         * @memberOf WebVRFreeCamera
-         */
-        public setPositionOffset(newPosition?: Vector3) {
-            if (newPosition) {
-                this.position.copyFrom(newPosition);
-            }
         }
 
         /**
