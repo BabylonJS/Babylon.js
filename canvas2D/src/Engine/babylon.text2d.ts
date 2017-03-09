@@ -352,7 +352,7 @@
             }
 
             if (this._fontTexture) {
-                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
+                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF, this._fontTexture._samplingMode === Texture.BILINEAR_SAMPLINGMODE);
                 this._fontTexture = null;
             }
 
