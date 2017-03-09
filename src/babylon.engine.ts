@@ -1230,7 +1230,7 @@
             }
         }
 
-        public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
+        public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
 
             // If MSAA, we need to bitblt back to main texture
@@ -1248,6 +1248,14 @@
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            }
+
+            if (onBeforeUnbind) {
+                if (texture._MSAAFramebuffer) {
+                    // Bind the correct framebuffer
+                    this.bindUnboundFramebuffer(texture._framebuffer);
+                }
+                onBeforeUnbind();
             }
 
             this.bindUnboundFramebuffer(null);
