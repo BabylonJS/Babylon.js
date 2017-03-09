@@ -1544,8 +1544,8 @@
             this._marginAlignment            = null;
             this._id                         = settings.id;
             this._children                   = new Array<Prim2DBase>();
-            this._localTransform             = new Matrix();
-            this._localLayoutTransform       = new Matrix();
+            this._localTransform             = new Matrix2D();
+            this._localLayoutTransform       = new Matrix2D();
             this._globalTransform            = null;
             this._invGlobalTransform         = null;
             this._globalTransformProcessStep = 0;
@@ -2791,7 +2791,7 @@
         /**
          * Get the global transformation matrix of the primitive
          */
-        public get globalTransform(): Matrix {
+        public get globalTransform(): Matrix2D {
             if (!this._globalTransform || (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep)) {
                 this.updateCachedStates(false);
             }
@@ -2812,14 +2812,14 @@
          * @param v the valid Vector2 object where the global position will be stored
          */
         public getGlobalPositionByRef(v: Vector2) {
-            v.x = this.globalTransform.m[12];
-            v.y = this.globalTransform.m[13];
+            v.x = this.globalTransform.m[4];
+            v.y = this.globalTransform.m[5];
         }
 
         /**
          * Get invert of the global transformation matrix of the primitive
          */
-        public get invGlobalTransform(): Matrix {
+        public get invGlobalTransform(): Matrix2D {
             this._updateLocalTransform();
             return this._invGlobalTransform;
         }
@@ -2827,12 +2827,12 @@
         /**
          * Get the local transformation of the primitive
          */
-        public get localTransform(): Matrix {
+        public get localTransform(): Matrix2D {
             this._updateLocalTransform();
             return this._localTransform;
         }
 
-        public get localLayoutTransform(): Matrix {
+        public get localLayoutTransform(): Matrix2D {
             this._updateLocalTransform();
             return this._localLayoutTransform;
         }
@@ -3327,7 +3327,7 @@
             if (firstLevel) {
                 // Compute the pickPosition in global space and use it to find the local position for each level down, always relative from the world to get the maximum accuracy (and speed). The other way would have been to compute in local every level down relative to its parent's local, which wouldn't be as accurate (even if javascript number is 80bits accurate).
                 intersectInfo._globalPickPosition = Vector2.Zero();
-                Vector2.TransformToRef(intersectInfo.pickPosition, this.globalTransform, intersectInfo._globalPickPosition);
+                this.globalTransform.transformPointToRef(intersectInfo.pickPosition, intersectInfo._globalPickPosition);
                 intersectInfo._localPickPosition = intersectInfo.pickPosition.clone();
                 intersectInfo.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
                 intersectInfo.topMostIntersectedPrimitive = null;
@@ -3406,7 +3406,7 @@
                     }
 
                     // Must compute the localPickLocation for the children level
-                    Vector2.TransformToRef(intersectInfo._globalPickPosition, curChild.invGlobalTransform, intersectInfo._localPickPosition);
+                    curChild.invGlobalTransform.transformPointToRef(intersectInfo._globalPickPosition, intersectInfo._localPickPosition);
 
                     // If we got an intersection with the child and we only need to find the first one, quit!
                     if (curChild.intersect(intersectInfo) && intersectInfo.findFirstOnly) {
@@ -3703,9 +3703,9 @@
             this._layoutEngine = engine;
         }
 
-        private static _t0: Matrix = new Matrix();
-        private static _t1: Matrix = new Matrix();
-        private static _t2: Matrix = new Matrix();
+        private static _t0: Matrix2D = new Matrix2D();
+        private static _t1: Matrix2D = new Matrix2D();
+        private static _t2: Matrix2D = new Matrix2D();
         private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
         private static _v30: Vector3 = Vector3.Zero();   // Must stay with the value 0,0,0
         private static _iv3: Vector3 = new Vector3(1,1,1); // Must stay identity vector
@@ -3724,10 +3724,9 @@
                     this._updatePositioning();
                 }
 
-                var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
-                var local: Matrix;
+                var rot = this._rotation;
+                var local: Matrix2D;
                 let pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase._v0);
-                let scale = new Vector3(this._scale.x, this._scale.y, 1);
                 let postScale = this._postScale;
                 let canvasScale = Prim2DBase._iv3;
                 let hasCanvasScale = false;
@@ -3735,55 +3734,45 @@
                     hasCanvasScale = true;
                     canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv3;
                 }
-                let globalScale = scale.multiplyByFloats(postScale.x*canvasScale.x, postScale.y*canvasScale.y, 1);
+                let globalScale = this._scale.multiplyByFloats(postScale.x*canvasScale.x, postScale.y*canvasScale.y);
 
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
-                    // ###MATRIX PART###
-                    {
-                        local = Matrix.Compose(globalScale, rot, new Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
-                        this._localTransform = local;
-                        this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
-                    }
+                    local = Matrix2D.Compose(globalScale, rot, new Vector2(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y));
+                    this._localTransform = local;
+                    this._localLayoutTransform = Matrix2D.Compose(globalScale, rot, new Vector2(pos.x, pos.y));
                 } else {
-                    // ###MATRIX PART###
-                    {
-                        // -Origin offset
-                        let t0 = Prim2DBase._t0;
-                        let t1 = Prim2DBase._t1;
-                        let t2 = Prim2DBase._t2;
-                        let as = Prim2DBase._ts0;
-                        as.copyFrom(this.actualSize);
-                        as.width /= postScale.x;
-                        as.height /= postScale.y;
-                        Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, t0);
+                    // -Origin offset
+                    let t0 = Prim2DBase._t0;
+                    let t1 = Prim2DBase._t1;
+                    let t2 = Prim2DBase._t2;
+                    let as = Prim2DBase._ts0;
+                    as.copyFrom(this.actualSize);
+                    as.width /= postScale.x;
+                    as.height /= postScale.y;
+                    Matrix2D.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), t0);
 
-                        // -Origin * rotation
-                        rot.toRotationMatrix(t1);
-                        t0.multiplyToRef(t1, t2);
+                    // -Origin * rotation
+                    Matrix2D.RotationToRef(rot, t1);
+                    t0.multiplyToRef(t1, t2);
 
-                        // -Origin * rotation * scale
-                        Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, t0);
-                        t2.multiplyToRef(t0, t1);
+                    Matrix2D.ScalingToRef(this._scale.x, this._scale.y, t0);
+                    t2.multiplyToRef(t0, t1);
 
-                        // -Origin * rotation * scale * Origin
-                        Matrix.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), 0, t2);
-                        t1.multiplyToRef(t2, t0);
+                    Matrix2D.TranslationToRef((as.width * this._origin.x), (as.height * this._origin.y), t2);
+                    t1.multiplyToRef(t2, t0);
 
-                        // -Origin * rotation * scale * Origin * postScale
-                        Matrix.ScalingToRef(postScale.x, postScale.y, 1, t1);
-                        t0.multiplyToRef(t1, t2);
+                    Matrix2D.ScalingToRef(postScale.x, postScale.y, t1);
+                    t0.multiplyToRef(t1, t2);
 
-                        // -Origin * rotation * scale * Origin * postScale * Position
-                        Matrix.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0, t0);
-                        t2.multiplyToRef(t0, this._localTransform);
+                    Matrix2D.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, t0);
+                    t2.multiplyToRef(t0, this._localTransform);
 
-                        if (hasCanvasScale) {
-                            Matrix.ScalingToRef(canvasScale.x, canvasScale.y, canvasScale.z, Prim2DBase._t1);
-                            this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
-                        }
-
-                        this._localLayoutTransform = Matrix.Compose(globalScale, rot, new Vector3(pos.x, pos.y, 0));
+                    if (hasCanvasScale) {
+                        Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase._t1);
+                        this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
                     }
+
+                    this._localLayoutTransform = Matrix2D.Compose(globalScale, rot, pos);
                 }
 
                 this.clearPropertiesDirty(tflags);
@@ -3794,8 +3783,7 @@
             return false;
         }
 
-        private static _transMtx = Matrix.Zero();
-        private static _transTT = Transform2D.Zero();
+        private static _transMtx = Matrix2D.Zero();
 
         @logMethod()
         protected updateCachedStates(recurse: boolean) {
@@ -3889,20 +3877,17 @@
 
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged || this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty)) {
-                    //###MATRIX PART###
-                    {
-                        let globalTransform = this._parent ? this._parent._globalTransform : null;
+                    let globalTransform = this._parent ? this._parent._globalTransform : null;
 
-                        let localTransform: Matrix;
-                        Prim2DBase._transMtx.copyFrom(this._localTransform);
-                        Prim2DBase._transMtx.m[12] += parentPaddingOffset.x;
-                        Prim2DBase._transMtx.m[13] += parentPaddingOffset.y;
-                        localTransform = Prim2DBase._transMtx;
+                    let localTransform: Matrix2D;
+                    Prim2DBase._transMtx.copyFrom(this._localTransform);
+                    Prim2DBase._transMtx.m[4] += parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[5] += parentPaddingOffset.y;
+                    localTransform = Prim2DBase._transMtx;
 
-                        this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
+                    this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
 
-                        this._invGlobalTransform = Matrix.Invert(this._globalTransform);
-                    }
+                    this._invGlobalTransform = Matrix2D.Invert(this._globalTransform);
 
                     this._levelBoundingInfo.dirtyWorldAABB();
                     this._boundingInfo.dirtyWorldAABB();
@@ -3990,7 +3975,7 @@
                 let bSize = Prim2DBase._size4;
                 let bi = this.boundingInfo;
                 let tbi = Prim2DBase._tbi;
-                bi.transformToRef(Matrix.RotationZ(this.rotation), tbi);
+                bi.transformToRef(Matrix2D.Rotation(this.rotation), tbi);
                 tbi.sizeToRef(transformedBSize);
                 bi.sizeToRef(bSize);
                 bi.extent.subtractToRef(bi.center, Prim2DBase._pv1);
@@ -4473,10 +4458,10 @@
         protected _globalTransformProcessStep: number;
         protected _prepareProcessStep: number;
         protected _updateCachesProcessStep: number;
-        protected _localTransform: Matrix;
-        protected _localLayoutTransform: Matrix;
-        protected _globalTransform: Matrix;
-        protected _invGlobalTransform: Matrix;
+        protected _localTransform: Matrix2D;
+        protected _localLayoutTransform: Matrix2D;
+        protected _globalTransform: Matrix2D;
+        protected _invGlobalTransform: Matrix2D;
 
         // Intersection related data
         protected _primTriArrayDirty: boolean;
