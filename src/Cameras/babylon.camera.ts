@@ -599,7 +599,8 @@
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
-                    if (metrics.compensateDistortion) {
+   
+                   if (metrics.compensateDistortion) {
                         this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
                         this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
                     }
@@ -619,7 +620,7 @@
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-
+                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
                         //this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
@@ -629,6 +630,7 @@
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
+                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
                     }
                     break;
 
