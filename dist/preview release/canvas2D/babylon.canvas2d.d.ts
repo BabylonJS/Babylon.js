@@ -163,16 +163,15 @@ declare module BABYLON {
         invertTransformFloats(x: number, y: number): Vector2;
     }
     /**
-       * A class storing a Matrix for 2D transformations
-       * The stored matrix is a 3*3 Matrix
-       * I   [0,1,3]   [mX, mY, 0]   R   [ CosZ, SinZ, 0]  T    [ 0,  0, 0]  S   [Sx,  0, 0]
-       * D = [3,4,5] = [nX, nY, 0]   O = [-SinZ, CosZ, 0]  R =  [ 0,  0, 0]  C = [ 0, Sy, 0]
-       * X   [6,7,8]   [tX, tY, 1]   T   [  0  ,  0  , 0]  N    [Tx, Ty, 0]  L   [ 0,  0, 0]
-       *
-       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-       */
+     * A class storing a Matrix for 2D transformations
+     * The stored matrix is a 2*3 Matrix
+     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+     *
+     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+     */
     class Matrix2D {
-        m: Float32Array;
         static Identity(): Matrix2D;
         static IdentityToRef(res: Matrix2D): void;
         copyFrom(other: Matrix2D): void;
@@ -187,6 +186,7 @@ declare module BABYLON {
         transformFloatsToRef(x: number, y: number, r: Vector2): void;
         transformPoint(p: Vector2): Vector2;
         transformPointToRef(p: Vector2, r: Vector2): void;
+        m: Float32Array;
     }
     /**
      * Stores information about a 2D Triangle.
@@ -3693,7 +3693,6 @@ declare module BABYLON {
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
