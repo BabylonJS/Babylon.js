@@ -1,4 +1,4 @@
-﻿﻿module BABYLON {
+﻿module BABYLON {
     export interface IAnimatable {
         animations: Array<Animation>;
     }
@@ -745,7 +745,7 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
-        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1): void {
             var width: number;
             var height: number;
 
@@ -792,6 +792,7 @@
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
+            texture.samples = samples;
 
             texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
