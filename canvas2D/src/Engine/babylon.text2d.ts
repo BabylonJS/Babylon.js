@@ -305,7 +305,11 @@
         public get textSize(): Size {
             if (!this._textSize) {
                 if (this.owner && this._text) {
-                    let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                    let ft = this.fontTexture;
+                    if (ft == null) {
+                        return Text2D.nullSize;
+                    }
+                    let newSize = ft.measureText(this._text, this._tabulationSize);
                     if (!newSize.equals(this._textSize)) {
                         this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
                         this._positioningDirty();
@@ -621,11 +625,15 @@
             if (part.id === Text2D.TEXT2D_MAINPARTID) {
 
                 let d = <Text2DInstanceData>part;
-                let texture = this.fontTexture;
+                let ft = this.fontTexture;
+                let texture = ft;
+                if (!texture) {
+                    return false;
+                }
                 let superSampleFactor = texture.isSuperSampled ? 0.5 : 1;
                 let ts = texture.getSize();
                 let offset = Vector2.Zero();
-                let lh = this.fontTexture.lineHeight;
+                let lh = ft.lineHeight;
 
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
