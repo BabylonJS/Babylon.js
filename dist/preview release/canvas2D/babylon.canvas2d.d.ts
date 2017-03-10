@@ -3233,7 +3233,6 @@ declare module BABYLON {
     }
     class WireFrame2DInstanceData extends InstanceDataBase {
         constructor(partId: number);
-        properties: Vector3;
     }
 }
 
