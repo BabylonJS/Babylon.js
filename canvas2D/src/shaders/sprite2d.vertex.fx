@@ -1,4 +1,4 @@
-﻿// based on if Instanced Array are supported or not, declare the field either as attribute or uniform
+﻿//based on if Instanced Array are supported or not, declare the field either as attribute or uniform
 #ifdef Instanced
 #define att attribute
 #else
