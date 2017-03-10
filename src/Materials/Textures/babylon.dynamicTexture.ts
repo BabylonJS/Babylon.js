@@ -75,11 +75,11 @@ module BABYLON {
             }
 
             this._context.font = font;
-            if (x === null  || typeof x === "undefined") {
+            if (x === null  || x === undefined) {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
             }
-            if (y === null || typeof y === "undefined") {
+            if (y === null || y === undefined) {
                 var fontSize = parseInt((font.replace(/\D/g,'')));;
                 y = (size.height /2) + (fontSize/3.65);
             }
