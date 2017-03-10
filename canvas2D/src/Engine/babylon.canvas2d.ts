@@ -326,6 +326,7 @@
             let cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
+            this._hierarchyDepth = 0;
         }
 
         public static _zMinDelta: number = 1 / (Math.pow(2, 24) - 1);

@@ -66,13 +66,17 @@ void main(void) {
 	pos.z = 1.0;
 	pos.w = 1.0;
 	
-	float rx = dot(pos, transformX);
-	float ry = dot(pos, transformY);
-
+	float x = dot(pos, transformX);
+	float y = dot(pos, transformY);
 	if (renderingInfo.z == 1.0) {
-		rx = floor((rx / renderingInfo.x) + 0.5) * renderingInfo.x;
-		ry = floor((ry / renderingInfo.y) + 0.5) * renderingInfo.y;
+		float rw = renderingInfo.x;
+		float rh = renderingInfo.y;
+		float irw = 2.0 / rw;
+		float irh = 2.0 / rh;
+
+		x = (floor((x / irw) + 0.5) * irw) + irw / 2.0;
+		y = (floor((y / irh) + 0.5) * irh) + irh / 2.0;
 	}
 
-	gl_Position = vec4(rx, ry, zBias.x, 1);
+	gl_Position = vec4(x, y, zBias.x, 1);
 }
