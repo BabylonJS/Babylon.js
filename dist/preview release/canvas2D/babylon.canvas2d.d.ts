@@ -2191,10 +2191,16 @@ declare module BABYLON {
         /**
          * Shortcut to actualPosition.x
          */
+        /**
+         * DO NOT INVOKE for internal purpose only
+         */
         actualX: number;
         /**
          * Shortcut to actualPosition.y
          */
+        /**
+        * DO NOT INVOKE for internal purpose only
+        */
         actualY: number;
         /**
          * Position of the primitive, relative to its parent.
@@ -2254,12 +2260,28 @@ declare module BABYLON {
         readonly isManualZOrder: boolean;
         margin: PrimitiveThickness;
         /**
+         * Set the margin from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        setMargin(value: string): void;
+        /**
          * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
          */
         readonly _hasMargin: boolean;
         padding: PrimitiveThickness;
+        /**
+         * Set the padding from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.         */
+        setPadding(value: string): void;
         private readonly _hasPadding;
         marginAlignment: PrimitiveAlignment;
+        /**
+         * Set the margin's horizontal and or vertical alignments from a string value.
+         * @param value can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
+        setMarginalignment(value: string): void;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
@@ -2465,7 +2487,7 @@ declare module BABYLON {
         protected updateCachedStatesOf(list: Prim2DBase[], recurse: boolean): void;
         private _parentLayoutDirty();
         protected _setLayoutDirty(): void;
-        private _checkPositionChange();
+        private _checkUseMargin();
         protected _positioningDirty(): void;
         protected _spreadActualOpacityChanged(): void;
         private _changeLayoutEngine(engine);

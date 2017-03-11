@@ -7376,6 +7376,9 @@ var BABYLON;
             get: function () {
                 return this.actualPosition.x;
             },
+            /**
+             * DO NOT INVOKE for internal purpose only
+             */
             set: function (val) {
                 this._actualPosition.x = val;
                 this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, this._actualPosition);
@@ -7390,6 +7393,9 @@ var BABYLON;
             get: function () {
                 return this.actualPosition.y;
             },
+            /**
+            * DO NOT INVOKE for internal purpose only
+            */
             set: function (val) {
                 this._actualPosition.y = val;
                 this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, this._actualPosition);
@@ -7411,22 +7417,47 @@ var BABYLON;
                 return this._position;
             },
             set: function (value) {
-                if (!this._checkPositionChange()) {
+                //if (!this._checkPositionChange()) {
+                //    return;
+                //}
+                if (this._checkUseMargin()) {
+                    switch (this._marginAlignment.horizontal) {
+                        case PrimitiveAlignment.AlignLeft:
+                        case PrimitiveAlignment.AlignStretch:
+                        case PrimitiveAlignment.AlignCenter:
+                            this.margin.leftPixels = value.x;
+                            break;
+                        case PrimitiveAlignment.AlignRight:
+                            this.margin.rightPixels = value.x;
+                            break;
+                    }
+                    switch (this._marginAlignment.vertical) {
+                        case PrimitiveAlignment.AlignBottom:
+                        case PrimitiveAlignment.AlignStretch:
+                        case PrimitiveAlignment.AlignCenter:
+                            this.margin.bottomPixels = value.y;
+                            break;
+                        case PrimitiveAlignment.AlignTop:
+                            this.margin.topPixels = value.y;
+                            break;
+                    }
                     return;
                 }
-                if (!value) {
-                    this._position = null;
-                }
                 else {
-                    if (!this._position) {
-                        this._position = value.clone();
+                    if (!value) {
+                        this._position = null;
                     }
                     else {
-                        this._position.copyFrom(value);
+                        if (!this._position) {
+                            this._position = value.clone();
+                        }
+                        else {
+                            this._position.copyFrom(value);
+                        }
                     }
+                    this._actualPosition = null;
+                    this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
                 }
-                this._actualPosition = null;
-                this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
             },
             enumerable: true,
             configurable: true
@@ -7443,22 +7474,37 @@ var BABYLON;
                 return this._position.x;
             },
             set: function (value) {
-                if (!this._checkPositionChange()) {
-                    return;
-                }
+                //if (!this._checkPositionChange()) {
+                //    return;
+                //}
                 if (value == null) {
                     throw new Error("Can't set a null x in primitive " + this.id + ", only the position can be turned to null");
                 }
-                if (!this._position) {
-                    this._position = BABYLON.Vector2.Zero();
-                }
-                if (this._position.x === value) {
+                if (this._checkUseMargin()) {
+                    switch (this._marginAlignment.horizontal) {
+                        case PrimitiveAlignment.AlignLeft:
+                        case PrimitiveAlignment.AlignStretch:
+                        case PrimitiveAlignment.AlignCenter:
+                            this.margin.leftPixels = value;
+                            break;
+                        case PrimitiveAlignment.AlignRight:
+                            this.margin.rightPixels = value;
+                            break;
+                    }
                     return;
                 }
-                this._position.x = value;
-                this._actualPosition = null;
-                this._triggerPropertyChanged(Prim2DBase_1.positionProperty, value);
-                this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
+                else {
+                    if (!this._position) {
+                        this._position = BABYLON.Vector2.Zero();
+                    }
+                    if (this._position.x === value) {
+                        return;
+                    }
+                    this._position.x = value;
+                    this._actualPosition = null;
+                    this._triggerPropertyChanged(Prim2DBase_1.positionProperty, value);
+                    this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -7475,22 +7521,37 @@ var BABYLON;
                 return this._position.y;
             },
             set: function (value) {
-                if (!this._checkPositionChange()) {
-                    return;
-                }
+                //if (!this._checkPositionChange()) {
+                //    return;
+                //}
                 if (value == null) {
                     throw new Error("Can't set a null y in primitive " + this.id + ", only the position can be turned to null");
                 }
-                if (!this._position) {
-                    this._position = BABYLON.Vector2.Zero();
-                }
-                if (this._position.y === value) {
+                if (this._checkUseMargin()) {
+                    switch (this._marginAlignment.vertical) {
+                        case PrimitiveAlignment.AlignBottom:
+                        case PrimitiveAlignment.AlignStretch:
+                        case PrimitiveAlignment.AlignCenter:
+                            this.margin.bottomPixels = value;
+                            break;
+                        case PrimitiveAlignment.AlignTop:
+                            this.margin.topPixels = value;
+                            break;
+                    }
                     return;
                 }
-                this._position.y = value;
-                this._actualPosition = null;
-                this._triggerPropertyChanged(Prim2DBase_1.positionProperty, value);
-                this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
+                else {
+                    if (!this._position) {
+                        this._position = BABYLON.Vector2.Zero();
+                    }
+                    if (this._position.y === value) {
+                        return;
+                    }
+                    this._position.y = value;
+                    this._actualPosition = null;
+                    this._triggerPropertyChanged(Prim2DBase_1.positionProperty, value);
+                    this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -7827,6 +7888,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Set the margin from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        Prim2DBase.prototype.setMargin = function (value) {
+            this.margin.fromString(value);
+            this._updatePositioningState();
+        };
         Object.defineProperty(Prim2DBase.prototype, "_hasMargin", {
             /**
              * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
@@ -7863,6 +7933,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Set the padding from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.         */
+        Prim2DBase.prototype.setPadding = function (value) {
+            this.padding.fromString(value);
+            this._updatePositioningState();
+        };
         Object.defineProperty(Prim2DBase.prototype, "_hasPadding", {
             get: function () {
                 return this._padding !== null && !this._padding.isDefault;
@@ -7891,6 +7969,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Set the margin's horizontal and or vertical alignments from a string value.
+         * @param value can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
+        Prim2DBase.prototype.setMarginalignment = function (value) {
+            this.marginAlignment.fromString(value);
+            this._updatePositioningState();
+        };
         Object.defineProperty(Prim2DBase.prototype, "_hasMarginAlignment", {
             /**
              * Check if there a marginAlignment specified (non null and not default)
@@ -8960,18 +9046,25 @@ var BABYLON;
             this.onPrimBecomesDirty();
             this._setFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
         };
-        Prim2DBase.prototype._checkPositionChange = function () {
-            if (this.parent && this.parent.layoutEngine.isChildPositionAllowed === false) {
-                console.log("Can't manually set the position of " + this.id + ", the Layout Engine of its parent doesn't allow it");
+        //private _checkPositionChange(): boolean {
+        //    if (this.parent && this.parent.layoutEngine.isChildPositionAllowed === false) {
+        //        console.log(`Can't manually set the position of ${this.id}, the Layout Engine of its parent doesn't allow it`);
+        //        return false;
+        //    }
+        //    if (this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+        //        if (<any>this instanceof Group2D && (<Group2D><any>this).trackedNode == null) {
+        //            console.log(`You can't set the position/x/y of ${this.id} properties while positioning engine is used (margin, margin alignment and/or padding are set`);
+        //            return false;
+        //        }
+        //    }
+        //    return true;
+        //}
+        Prim2DBase.prototype._checkUseMargin = function () {
+            // Special cae: tracked node
+            if (this instanceof BABYLON.Group2D && this.trackedNode != null) {
                 return false;
             }
-            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning)) {
-                if (this instanceof BABYLON.Group2D && this.trackedNode == null) {
-                    console.log("You can't set the position/x/y of " + this.id + " properties while positioning engine is used (margin, margin alignment and/or padding are set");
-                    return false;
-                }
-            }
-            return true;
+            return this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning);
         };
         Prim2DBase.prototype._positioningDirty = function () {
             if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagUsePositioning)) {

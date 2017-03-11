@@ -1178,7 +1178,7 @@
                         } else {
                             dstArea.width = (sourceArea.width * isx) - (dstOffset.x + rightPixels) * isx;
                         }
-                        
+
                         dstOffset.z = this.rightPixels;
                         break;
                     }
@@ -1208,7 +1208,7 @@
                         break;
                     }
                 }
-                
+
             }
 
             if (computeAxis & PrimitiveThickness.ComputeV) {
@@ -1308,7 +1308,7 @@
 
                         break;
                     }
-                }                
+                }
             }
         }
 
@@ -1466,7 +1466,7 @@
             dontInheritParentScale  ?: boolean,
             alignToPixel            ?: boolean,
             opacity                 ?: number,
-            zOrder                  ?: number, 
+            zOrder                  ?: number,
             origin                  ?: Vector2,
             layoutEngine            ?: LayoutEngineBase | string,
             isVisible               ?: boolean,
@@ -1757,7 +1757,7 @@
         /**
          * Return the ObservableStringDictionary containing all the primitives intersecting with this one.
          * The key is the primitive uid, the value is the ActorInfo object
-         * @returns {} 
+         * @returns {}
          */
         public get intersectWith(): ObservableStringDictionary<ActorInfoBase> {
             if (!this._actorInfo) {
@@ -1994,6 +1994,9 @@
             return this.actualPosition.x;
         }
 
+        /**
+         * DO NOT INVOKE for internal purpose only
+         */
         public set actualX(val: number) {
             this._actualPosition.x = val;
             this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
@@ -2007,6 +2010,9 @@
             return this.actualPosition.y;
         }
 
+        /**
+        * DO NOT INVOKE for internal purpose only
+        */
         public set actualY(val: number) {
             this._actualPosition.y = val;
             this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
@@ -2027,20 +2033,44 @@
         }
 
         public set position(value: Vector2) {
-            if (!this._checkPositionChange()) {
-                return;
-            }
-            if (!value) {
-                this._position = null;
-            } else {
-                if (!this._position) {
-                    this._position = value.clone();
-                } else {
-                    this._position.copyFrom(value);
+            //if (!this._checkPositionChange()) {
+            //    return;
+            //}
+            if (this._checkUseMargin()) {
+                switch (this._marginAlignment.horizontal) {
+                    case PrimitiveAlignment.AlignLeft:
+                    case PrimitiveAlignment.AlignStretch:
+                    case PrimitiveAlignment.AlignCenter:
+                        this.margin.leftPixels = value.x;
+                        break;
+                    case PrimitiveAlignment.AlignRight:
+                        this.margin.rightPixels = value.x;
+                        break;
+                    }
+                switch (this._marginAlignment.vertical) {
+                    case PrimitiveAlignment.AlignBottom:
+                    case PrimitiveAlignment.AlignStretch:
+                    case PrimitiveAlignment.AlignCenter:
+                        this.margin.bottomPixels = value.y;
+                        break;
+                    case PrimitiveAlignment.AlignTop:
+                        this.margin.topPixels = value.y;
+                        break;
                 }
+                return;
+            } else {
+                if (!value) {
+                    this._position = null;
+                } else {
+                    if (!this._position) {
+                        this._position = value.clone();
+                    } else {
+                        this._position.copyFrom(value);
+                    }
+                }
+                this._actualPosition = null;
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
             }
-            this._actualPosition = null;
-            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
         }
 
         /**
@@ -2056,24 +2086,38 @@
         }
 
         public set x(value: number) {
-            if (!this._checkPositionChange()) {
-                return;
-            }
+            //if (!this._checkPositionChange()) {
+            //    return;
+            //}
             if (value == null) {
                 throw new Error(`Can't set a null x in primitive ${this.id}, only the position can be turned to null`);
             }
-            if (!this._position) {
-                this._position = Vector2.Zero();
-            }
-
-            if (this._position.x === value) {
+            if (this._checkUseMargin()) {
+                switch (this._marginAlignment.horizontal) {
+                    case PrimitiveAlignment.AlignLeft:
+                    case PrimitiveAlignment.AlignStretch:
+                    case PrimitiveAlignment.AlignCenter:
+                        this.margin.leftPixels = value;
+                        break;
+                    case PrimitiveAlignment.AlignRight:
+                        this.margin.rightPixels = value;
+                        break;
+                    }
                 return;
-            }
+            } else {
+                if (!this._position) {
+                    this._position = Vector2.Zero();
+                }
 
-            this._position.x = value;
-            this._actualPosition = null;
-            this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
-            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
+                if (this._position.x === value) {
+                    return;
+                }
+
+                this._position.x = value;
+                this._actualPosition = null;
+                this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
+            }
         }
 
         /**
@@ -2089,24 +2133,38 @@
         }
 
         public set y(value: number) {
-            if (!this._checkPositionChange()) {
-                return;
-            }
+            //if (!this._checkPositionChange()) {
+            //    return;
+            //}
             if (value == null) {
                 throw new Error(`Can't set a null y in primitive ${this.id}, only the position can be turned to null`);
             }
-            if (!this._position) {
-                this._position = Vector2.Zero();
-            }
-
-            if (this._position.y === value) {
+            if (this._checkUseMargin()) {
+                switch (this._marginAlignment.vertical) {
+                    case PrimitiveAlignment.AlignBottom:
+                    case PrimitiveAlignment.AlignStretch:
+                    case PrimitiveAlignment.AlignCenter:
+                        this.margin.bottomPixels = value;
+                        break;
+                    case PrimitiveAlignment.AlignTop:
+                        this.margin.topPixels = value;
+                        break;
+                }
                 return;
-            }
+            } else {
+                if (!this._position) {
+                    this._position = Vector2.Zero();
+                }
 
-            this._position.y = value;
-            this._actualPosition = null;
-            this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
-            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
+                if (this._position.y === value) {
+                    return;
+                }
+
+                this._position.y = value;
+                this._actualPosition = null;
+                this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
+            }
         }
 
         private static boundinbBoxReentrency: number = -1;
@@ -2153,7 +2211,7 @@
 
                 return this._internalSize || Prim2DBase._nullSize;
             } else {
-                C2DLogging.setPostMessage(() => "user set size");                
+                C2DLogging.setPostMessage(() => "user set size");
             }
             return this._size || Prim2DBase._nullSize;
         }
@@ -2484,6 +2542,16 @@
         }
 
         /**
+         * Set the margin from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        public setMargin(value: string) {
+            this.margin.fromString(value);
+            this._updatePositioningState();
+        }
+
+        /**
          * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
          */
         public get _hasMargin(): boolean {
@@ -2517,6 +2585,15 @@
             this._updatePositioningState();
         }
 
+        /**
+         * Set the padding from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.         */
+        public setPadding(value: string) {
+            this.padding.fromString(value);
+            this._updatePositioningState();
+        }
+
         private get _hasPadding(): boolean {
             return this._padding !== null && !this._padding.isDefault;
         }
@@ -2539,6 +2616,15 @@
             } else {
                 this.marginAlignment.copyFrom(value);
             }
+            this._updatePositioningState();
+        }
+
+        /**
+         * Set the margin's horizontal and or vertical alignments from a string value.
+         * @param value can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
+        public setMarginalignment(value: string) {
+            this.marginAlignment.fromString(value);
             this._updatePositioningState();
         }
 
@@ -2910,7 +2996,7 @@
 
                 this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
             } else {
-                C2DLogging.setPostMessage(() => "cache hit");                
+                C2DLogging.setPostMessage(() => "cache hit");
             }
             return this._boundingInfo;
         }
@@ -2950,7 +3036,7 @@
 
                 this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             } else {
-                C2DLogging.setPostMessage(() => "cache hit");                
+                C2DLogging.setPostMessage(() => "cache hit");
             }
             return usePositioning ? this._layoutBoundingInfo : this.boundingInfo;
         }
@@ -3128,7 +3214,7 @@
             prims[3][0].levelVisible = true;
 
             // Current offset
-            let curOffset = Vector2.Zero(); 
+            let curOffset = Vector2.Zero();
 
             // Store the area info of the layout area
             let curAreaIndex = 0;
@@ -3353,7 +3439,7 @@
                     return ownerGroup.intersect(intersectInfo);
                 } finally  {
                     Prim2DBase._bypassGroup2DExclusion = false;
-                } 
+                }
             }
 
             // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
@@ -3667,18 +3753,27 @@
 
         }
 
-        private _checkPositionChange(): boolean {
-            if (this.parent && this.parent.layoutEngine.isChildPositionAllowed === false) {
-                console.log(`Can't manually set the position of ${this.id}, the Layout Engine of its parent doesn't allow it`);
+        //private _checkPositionChange(): boolean {
+        //    if (this.parent && this.parent.layoutEngine.isChildPositionAllowed === false) {
+        //        console.log(`Can't manually set the position of ${this.id}, the Layout Engine of its parent doesn't allow it`);
+        //        return false;
+        //    }
+        //    if (this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+        //        if (<any>this instanceof Group2D && (<Group2D><any>this).trackedNode == null) {
+        //            console.log(`You can't set the position/x/y of ${this.id} properties while positioning engine is used (margin, margin alignment and/or padding are set`);
+        //            return false;
+        //        }
+        //    }
+        //    return true;
+        //}
+
+        private _checkUseMargin(): boolean {
+            // Special cae: tracked node
+            if (<any>this instanceof Group2D && (<Group2D><any>this).trackedNode != null) {
                 return false;
             }
-            if (this._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
-                if (<any>this instanceof Group2D && (<Group2D><any>this).trackedNode == null) {
-                    console.log(`You can't set the position/x/y of ${this.id} properties while positioning engine is used (margin, margin alignment and/or padding are set`);
-                    return false;
-                }
-            }
-            return true;
+
+            return this._isFlagSet(SmartPropertyPrim.flagUsePositioning);
         }
 
         @logMethod("", true)
@@ -3799,7 +3894,7 @@
             this._updateCachesProcessStep = ownerProcessStep;
 
             this.owner.addUpdateCachedStateCounter(1);
-            
+
             // Check if the parent is synced
             if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagZOrderDirty))) {
                 this._parent.updateCachedStates(false);
@@ -4197,7 +4292,7 @@
         }
 
         protected onSetOwner() {
-            
+
         }
 
         private static _zOrderChangedNotifList = new Array<Prim2DBase>();
@@ -4454,7 +4549,7 @@
         // If a child prim has an older _parentTransformStep it means the child's transform should be updated
         protected _globalTransformStep: number;
 
-        // Stores the previous 
+        // Stores the previous
         protected _globalTransformProcessStep: number;
         protected _prepareProcessStep: number;
         protected _updateCachesProcessStep: number;
