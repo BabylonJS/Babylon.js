@@ -6601,8 +6601,9 @@ var BABYLON;
             renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
-        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType) {
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples) {
             if (mimeType === void 0) { mimeType = "image/png"; }
+            if (samples === void 0) { samples = 1; }
             var width;
             var height;
             //If a precision value is specified
@@ -6642,6 +6643,7 @@ var BABYLON;
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
+            texture.samples = samples;
             texture.onAfterRenderObservable.add(function () {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
             });
@@ -10916,6 +10918,12 @@ var BABYLON;
                 return ((!predicate || predicate(node)) && (node instanceof BABYLON.AbstractMesh));
             });
             return results;
+        };
+        /**
+         * Get all direct children of this node.
+        */
+        Node.prototype.getChildren = function (predicate) {
+            return this.getDescendants(true, predicate);
         };
         Node.prototype._setReady = function (state) {
             if (state === this._isReady) {
@@ -25552,6 +25560,11 @@ var BABYLON;
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The parameter `uvs` is an optional flat array of `Vector4` to update/set each ribbon vertex with its own custom UV values instead of the computed ones.
+         * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values.
+         * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that
+         * if you set `closePath` to `true`, there's one extra vertex per path in the geometry.
+         * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateRibbon = function (name, options, scene) {
@@ -25616,6 +25629,24 @@ var BABYLON;
                 instance._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (options.colors) {
+                    var colors = instance.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                    for (var c = 0; c < options.colors.length; c++) {
+                        colors[c * 4] = options.colors[c].r;
+                        colors[c * 4 + 1] = options.colors[c].g;
+                        colors[c * 4 + 2] = options.colors[c].b;
+                        colors[c * 4 + 3] = options.colors[c].a;
+                    }
+                    instance.updateVerticesData(BABYLON.VertexBuffer.ColorKind, colors, false, false);
+                }
+                if (options.uvs) {
+                    var uvs = instance.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                    for (var i = 0; i < options.uvs.length; i++) {
+                        uvs[i * 2] = options.uvs[i].x;
+                        uvs[i * 2 + 1] = options.uvs[i].y;
+                    }
+                    instance.updateVerticesData(BABYLON.VertexBuffer.UVKind, uvs, false, false);
+                }
                 if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
@@ -28032,9 +28063,14 @@ var BABYLON;
                 this._context.fillRect(0, 0, size.width, size.height);
             }
             this._context.font = font;
-            if (x === null) {
+            if (x === null || x === undefined) {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
+            }
+            if (y === null || y === undefined) {
+                var fontSize = parseInt((font.replace(/\D/g, '')));
+                ;
+                y = (size.height / 2) + (fontSize / 3.65);
             }
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
@@ -33485,7 +33521,7 @@ var BABYLON;
     var CircleEase = (function (_super) {
         __extends(CircleEase, _super);
         function CircleEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         CircleEase.prototype.easeInCore = function (gradient) {
             gradient = Math.max(0, Math.min(1, gradient));
@@ -33545,7 +33581,7 @@ var BABYLON;
     var CubicEase = (function (_super) {
         __extends(CubicEase, _super);
         function CubicEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         CubicEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient);
@@ -33613,7 +33649,7 @@ var BABYLON;
     var QuadraticEase = (function (_super) {
         __extends(QuadraticEase, _super);
         function QuadraticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuadraticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient);
@@ -33624,7 +33660,7 @@ var BABYLON;
     var QuarticEase = (function (_super) {
         __extends(QuarticEase, _super);
         function QuarticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuarticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient);
@@ -33635,7 +33671,7 @@ var BABYLON;
     var QuinticEase = (function (_super) {
         __extends(QuinticEase, _super);
         function QuinticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuinticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient * gradient);
@@ -33646,7 +33682,7 @@ var BABYLON;
     var SineEase = (function (_super) {
         __extends(SineEase, _super);
         function SineEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         SineEase.prototype.easeInCore = function (gradient) {
             return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
@@ -34922,13 +34958,13 @@ var BABYLON;
                 checkPitch = true;
             }
             if (checkYaw || checkPitch) {
-                var _tmpMat3 = BoneLookController._tmpMats[2];
-                var _tmpMat3Inv = BoneLookController._tmpMats[3];
+                var spaceMat = BoneLookController._tmpMats[2];
+                var spaceMatInv = BoneLookController._tmpMats[3];
                 if (this.upAxisSpace == BABYLON.Space.BONE && upAxis.y == 1) {
-                    parentBone.getRotationMatrixToRef(BABYLON.Space.WORLD, this.mesh, _tmpMat3);
+                    parentBone.getRotationMatrixToRef(BABYLON.Space.WORLD, this.mesh, spaceMat);
                 }
                 else if (this.upAxisSpace == BABYLON.Space.LOCAL && upAxis.y == 1 && !parentBone) {
-                    _tmpMat3.copyFrom(mesh.getWorldMatrix());
+                    spaceMat.copyFrom(mesh.getWorldMatrix());
                 }
                 else {
                     var forwardAxis = BoneLookController._tmpVecs[2];
@@ -34945,13 +34981,14 @@ var BABYLON;
                     var rightAxis = BABYLON.Vector3.Cross(upAxis, forwardAxis);
                     rightAxis.normalize();
                     var forwardAxis = BABYLON.Vector3.Cross(rightAxis, upAxis);
-                    BABYLON.Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, _tmpMat3);
+                    BABYLON.Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
                 }
-                _tmpMat3.invertToRef(_tmpMat3Inv);
+                spaceMat.invertToRef(spaceMatInv);
                 var xzlen;
                 if (checkPitch) {
                     var localTarget = BoneLookController._tmpVecs[3];
-                    BABYLON.Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
                     var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     var pitch = Math.atan2(localTarget.y, xzlen);
                     var newPitch = pitch;
@@ -34964,14 +35001,15 @@ var BABYLON;
                         newPitch = this._minPitch;
                     }
                     if (pitch != newPitch) {
-                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
                 }
                 if (checkYaw) {
                     var localTarget = BoneLookController._tmpVecs[4];
-                    BABYLON.Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
                     var yaw = Math.atan2(localTarget.x, localTarget.z);
                     var newYaw = yaw;
                     if (yaw > this._maxYaw || yaw < this._minYaw) {
@@ -35004,27 +35042,27 @@ var BABYLON;
                         }
                     }
                     if (this._slerping && this._yawRange > Math.PI) {
-                        //are we going to be crossing into the min/max region
-                        var _tmpVec8 = BoneLookController._tmpVecs[8];
-                        _tmpVec8.copyFrom(BABYLON.Axis.Z);
+                        //are we going to be crossing into the min/max region?
+                        var boneFwd = BoneLookController._tmpVecs[8];
+                        boneFwd.copyFrom(BABYLON.Axis.Z);
                         if (this._transformYawPitch) {
-                            BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, this._transformYawPitchInv, _tmpVec8);
+                            BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                         }
                         var boneRotMat = BABYLON.BoneLookController._tmpMats[4];
                         this._boneQuat.toRotationMatrix(boneRotMat);
                         this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, boneRotMat, _tmpVec8);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
-                        var boneYaw = Math.atan2(_tmpVec8.x, _tmpVec8.z);
-                        var ang1 = this._getAngleBetween(boneYaw, yaw);
-                        var ang2 = this._getAngleBetween(boneYaw, this._midYawConstraint);
-                        if (ang1 > ang2) {
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, spaceMatInv, boneFwd);
+                        var boneYaw = Math.atan2(boneFwd.x, boneFwd.z);
+                        var angBtwTar = this._getAngleBetween(boneYaw, yaw);
+                        var angBtwMidYaw = this._getAngleBetween(boneYaw, this._midYawConstraint);
+                        if (angBtwTar > angBtwMidYaw) {
                             if (xzlen == null) {
                                 xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                             }
-                            var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
-                            var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
-                            if (ang4 < ang3) {
+                            var angBtwMax = this._getAngleBetween(boneYaw, this._maxYaw);
+                            var angBtwMin = this._getAngleBetween(boneYaw, this._minYaw);
+                            if (angBtwMin < angBtwMax) {
                                 newYaw = boneYaw + Math.PI * .75;
                                 localTarget.z = Math.cos(newYaw) * xzlen;
                                 localTarget.x = Math.sin(newYaw) * xzlen;
@@ -35037,7 +35075,7 @@ var BABYLON;
                         }
                     }
                     if (yaw != newYaw) {
-                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
@@ -36960,6 +36998,8 @@ var BABYLON;
             var offset = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var customUV = options.uvs;
+            var customColors = options.colors;
             var positions = [];
             var indices = [];
             var normals = [];
@@ -36986,7 +37026,7 @@ var BABYLON;
             }
             // positions and horizontal distances (u)
             var idc = 0;
-            var closePathCorr = (closePath) ? 1 : 0;
+            var closePathCorr = (closePath) ? 1 : 0; // the final index will be +1 if closePath
             var path;
             var l;
             minlg = pathArray[0].length;
@@ -37059,15 +37099,22 @@ var BABYLON;
             // uvs
             var u;
             var v;
-            for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
-                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
-                    if (invertUV) {
-                        uvs.push(v, u);
-                    }
-                    else {
-                        uvs.push(u, v);
+            if (customUV) {
+                for (p = 0; p < customUV.length; p++) {
+                    uvs.push(customUV[p].x, customUV[p].y);
+                }
+            }
+            else {
+                for (p = 0; p < pathArray.length; p++) {
+                    for (i = 0; i < minlg + closePathCorr; i++) {
+                        u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                        v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                        if (invertUV) {
+                            uvs.push(v, u);
+                        }
+                        else {
+                            uvs.push(u, v);
+                        }
                     }
                 }
             }
@@ -37123,12 +37170,25 @@ var BABYLON;
             }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            // Colors
+            if (customColors) {
+                var colors = new Float32Array(customColors.length * 4);
+                for (var c = 0; c < customColors.length; c++) {
+                    colors[c * 4] = customColors[c].r;
+                    colors[c * 4 + 1] = customColors[c].g;
+                    colors[c * 4 + 2] = customColors[c].b;
+                    colors[c * 4 + 3] = customColors[c].a;
+                }
+            }
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (customColors) {
+                vertexData.set(colors, BABYLON.VertexBuffer.ColorKind);
+            }
             if (closePath) {
                 vertexData._idx = idx;
             }
@@ -49351,7 +49411,7 @@ var BABYLON;
     var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
@@ -49364,7 +49424,7 @@ var BABYLON;
     var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
@@ -49377,7 +49437,7 @@ var BABYLON;
     var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
@@ -49390,7 +49450,7 @@ var BABYLON;
     var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
@@ -49403,7 +49463,7 @@ var BABYLON;
     var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
@@ -49416,7 +49476,7 @@ var BABYLON;
     var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this._canBeMerged = function (abstractMesh) {
                 if (!(abstractMesh instanceof BABYLON.Mesh)) {
                     return false;
@@ -56428,7 +56488,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
@@ -59687,6 +59747,12 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], StandardRenderingPipeline.prototype, "depthOfFieldBlurWidth", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], StandardRenderingPipeline.prototype, "DepthOfFieldEnabled", null);
+    __decorate([
+        BABYLON.serialize()
+    ], StandardRenderingPipeline.prototype, "LensFlareEnabled", null);
     BABYLON.StandardRenderingPipeline = StandardRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
 
