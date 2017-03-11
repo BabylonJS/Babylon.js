@@ -11637,7 +11637,9 @@ var BABYLON;
                 if (context.forceRefreshPrimitive) {
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var p = _a[_i];
-                        p._prepareRender(context);
+                        if (!p.isDisposed) {
+                            p._prepareRender(context);
+                        }
                     }
                 }
                 else {
