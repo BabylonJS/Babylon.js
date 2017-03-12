@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export const enum ShaderDataType {
-        Vector2, Vector3, Vector4, Matrix, float, Color3, Color4, Size
+        Vector2, Vector3, Vector4, float, Color3, Color4, Size
     }
 
     export class GroupInstanceInfo {
@@ -48,6 +48,10 @@
             this.partIndexFromId = null;
             this._isDisposed = true;
             return true;
+        }
+
+        public get isDisposed(): boolean {
+            return this._isDisposed;
         }
 
         private _isDisposed: boolean;

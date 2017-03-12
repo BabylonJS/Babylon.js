@@ -304,21 +304,9 @@
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
 
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
@@ -1897,6 +1885,21 @@
         }
 
         /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null. 
+         */
+        public getHighlightLayerByName(name: string): HighlightLayer {
+            for (var index = 0; index < this.highlightLayers.length; index++) {
+                if (this.highlightLayers[index].name === name) {
+                    return this.highlightLayers[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * Return a unique id as a string which can serve as an identifier for the scene
          */
         public get uid(): string {
@@ -3070,46 +3073,6 @@
 
         public isPhysicsEnabled(): boolean {
             return this._physicsEngine !== undefined;
-        }
-
-        /**
-         * 
-         * Sets the gravity of the physics engine (and NOT of the scene)
-         * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
-         */
-        public setGravity(gravity: Vector3): void {
-            Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'")
-            if (!this._physicsEngine) {
-                return;
-            }
-
-            this._physicsEngine.setGravity(gravity);
-        }
-
-        /**
-         * Legacy support, using the new API
-         * @Deprecated
-         */
-        public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
-            Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child")
-
-            if (parts.parts) { // Old API
-                options = parts;
-                parts = parts.parts;
-            }
-
-            var mainMesh: AbstractMesh = parts[0].mesh;
-            mainMesh.physicsImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options, this)
-            for (var index = 1; index < parts.length; index++) {
-                var mesh: AbstractMesh = parts[index].mesh;
-                if (mesh.parent !== mainMesh) {
-                    mesh.position = mesh.position.subtract(mainMesh.position);
-                    mesh.parent = mainMesh;
-                }
-                mesh.physicsImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options, this)
-
-            }
-            mainMesh.physicsImpostor.forceUpdate();
         }
 
         public deleteCompoundImpostor(compound: any): void {

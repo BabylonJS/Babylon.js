@@ -248,7 +248,7 @@ module BABYLON {
          * @param scene The scene to use the layer in
          * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
          */
-        constructor(name: string, scene: Scene, options?: IHighlightLayerOptions) {
+        constructor(public name: string, scene: Scene, options?: IHighlightLayerOptions) {
             this._scene = scene || Engine.LastCreatedScene;
             var engine = scene.getEngine();
             this._engine = engine;

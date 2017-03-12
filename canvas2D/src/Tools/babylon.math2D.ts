@@ -1,397 +1,84 @@
 ﻿module BABYLON {
 
     /**
-     * This class stores the data to make 2D transformation using a Translation (tX, tY), a Scale (sX, sY) and a rotation around the Z axis (rZ).
-     * You can multiply two Transform2D object to produce the result of their concatenation.
-     * You can transform a given Point (a Vector2D instance) with a Transform2D object or with the Invert of the Transform2D object.
-     * There no need to compute/store the Invert of a Transform2D as the invertTranform methods are almost as fast as the transform ones.
-     * This class is as light as it could be and the transformation operations are pretty optimal.
-     */
-    export class Transform2D {
-        /**
-         * A 2D Vector representing the translation to the origin
-         */
-        public translation: Vector2;
-
-        /**
-         * A number (in radian) representing the rotation around the Z axis at the origin
-         */
-        public rotation: number;
-
-        /**
-         * A 2D Vector representing the scale to apply at the origin
-         */
-        public scale: Vector2;
-
-        constructor() {
-            this.translation = Vector2.Zero();
-            this.rotation = 0;
-            this.scale = new Vector2(1, 1);
-        }
-
-        /**
-         * Set the Transform2D object with the given values
-         * @param translation The translation to set
-         * @param rotation The rotation (in radian) to set
-         * @param scale The scale to set
-         */
-        public set(translation: Vector2, rotation: number, scale: Vector2) {
-            this.translation.copyFrom(translation);
-            this.rotation = rotation;
-            this.scale.copyFrom(scale);
-        }
-
-        /**
-         * Set the Transform2D object from float values
-         * @param transX The translation on X axis, nothing is set if not specified
-         * @param transY The translation on Y axis, nothing is set if not specified
-         * @param rotation The rotation in radian, nothing is set if not specified
-         * @param scaleX The scale along the X axis, nothing is set if not specified
-         * @param scaleY The scale along the Y axis, nothing is set if not specified
-         */
-        public setFromFloats(transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number) {
-            if (transX) {
-                this.translation.x = transX;
-            }
-
-            if (transY) {
-                this.translation.y = transY;
-            }
-
-            if (rotation) {
-                this.rotation = rotation;
-            }
-
-            if (scaleX) {
-                this.scale.x = scaleX;
-            }
-
-            if (scaleY) {
-                this.scale.y = scaleY;
-            }
-        }
-
-        /**
-         * Return a copy of the object
-         */
-        public clone(): Transform2D {
-            let res = new Transform2D();
-            res.translation.copyFrom(this.translation);
-            res.rotation = this.rotation;
-            res.scale.copyFrom(this.scale);
-
-            return res;
-        }
-
-        /**
-         * Convert a given degree angle into its radian equivalent
-         * @param angleDegree the number to convert
-         */
-        public static ToRadian(angleDegree: number): number {
-            return angleDegree * Math.PI * 2 / 360;
-        }
-
-        /**
-         * Create a new instance and returns it
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        public static Make(translation?: Vector2, rotation?: number, scale?: Vector2): Transform2D {
-            let res = new Transform2D();
-            if (translation) {
-                res.translation.copyFrom(translation);
-            }
-            if (rotation) {
-                res.rotation = rotation;
-            }
-            if (scale) {
-                res.scale.copyFrom(scale);
-            }
-
-            return res;
-        }
-
-        /**
-         * Set the given Transform2D object with the given values
-         * @param translation The translation to store, default is (0,0)
-         * @param rotation The rotation to store, default is 0
-         * @param scale The scale to store, default is (1,1)
-         */
-        public static MakeToRef(res: Transform2D, translation?: Vector2, rotation?: number, scale?: Vector2) {
-            if (translation) {
-                res.translation.copyFrom(translation);
-            } else {
-                res.translation.copyFromFloats(0, 0);
-            }
-            if (rotation) {
-                res.rotation = rotation;
-            } else {
-                res.rotation = 0;
-            }
-            if (scale) {
-                res.scale.copyFrom(scale);
-            } else {
-                res.scale.copyFromFloats(1, 1);
-            }
-        }
-
-        /**
-         * Create a Transform2D object from float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        public static MakeFromFloats(transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number): Transform2D {
-            let res = new Transform2D();
-
-            if (transX) {
-                res.translation.x = transX;
-            }
-
-            if (transY) {
-                res.translation.y = transY;
-            }
-
-            if (rotation) {
-                res.rotation = rotation;
-            }
-
-            if (scaleX) {
-                res.scale.x = scaleX;
-            }
-
-            if (scaleY) {
-                res.scale.y = scaleY;
-            }
-
-            return res;
-        }
-
-        /**
-         * Set the given Transform2D object with the given float values
-         * @param transX The translation on X axis, 0 per default
-         * @param transY The translation on Y axis, 0 per default
-         * @param rotation The rotation in radian, 0 per default
-         * @param scaleX The scale along the X axis, 1 per default
-         * @param scaleY The scale along the Y axis, 1 per default
-         */
-        public static MakeFromFloatsToRef(res: Transform2D, transX?: number, transY?: number, rotation?: number, scaleX?: number, scaleY?: number) {
-            res.translation.x = (transX!=null)   ? transX   : 0;
-            res.translation.y = (transY!=null)   ? transY   : 0;
-            res.rotation      = (rotation!=null) ? rotation : 0;
-            res.scale.x       = (scaleX!=null)   ? scaleX   : 1;
-            res.scale.y       = (scaleY!=null)   ? scaleY   : 1;
-        }
-
-        /**
-         * Create a Transform2D containing only Zeroed values
-         */
-        public static Zero(): Transform2D {
-            let res = new Transform2D();
-            res.scale.copyFromFloats(0, 0);
-            return res;
-        }
-
-        /**
-         * Copy the value of the other object into 'this'
-         * @param other The other object to copy values from
-         */
-        public copyFrom(other: Transform2D) {
-            this.translation.copyFrom(other.translation);
-            this.rotation = other.rotation;
-            this.scale.copyFrom(other.scale);
-        }
-
-        public toMatrix2D(): Matrix2D {
-            let res = new Matrix2D();
-            this.toMatrix2DToRef(res);
-            return res;
-        }
-
-        public toMatrix2DToRef(res: Matrix2D) {
-            let tx = this.translation.x;
-            let ty = this.translation.y;
-            let r = this.rotation;
-            let cosr = Math.cos(r);
-            let sinr = Math.sin(r);
-            let sx = this.scale.x;
-            let sy = this.scale.y;
-
-            res.m[0] = cosr * sx;   res.m[1] = sinr * sy;
-            res.m[2] = -sinr* sx;   res.m[3] = cosr * sy;
-            res.m[4] = tx;          res.m[5] = ty;
-        }
-
-        /**
-         * In place transformation from a parent matrix.
-         * @param parent transform object. "this" will be the result of parent * this
-         */
-        public multiplyToThis(parent: Transform2D) {
-            this.multiplyToRef(parent, this);
-        }
-
-        /**
-         * Transform this object with a parent and return the result. Result = parent * this
-         * @param parent The parent transformation
-         */
-        public multiply(parent: Transform2D): Transform2D {
-            let res = new Transform2D();
-            this.multiplyToRef(parent, res);
-            return res;
-        }
-
-        /**
-         * Transform a point and store the result in the very same object
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        public transformPointInPlace(p: Vector2) {
-            this.transformPointToRef(p, p);
-        }
-
-        /**
-         * Transform a point and store the result into a reference object
-         * @param p The point to transform
-         * @param res Will contain the new transformed coordinates. Can be the object of 'p'.
-         */
-        public transformPointToRef(p: Vector2, res: Vector2) {
-            this.transformFloatsToRef(p.x, p.y, res);
-        }
-
-        /**
-         * Transform this object with a parent and store the result in reference object
-         * @param parent The parent transformation
-         * @param result Will contain parent * this. Can be the object of either parent or 'this'
-         */
-        public multiplyToRef(parent: Transform2D, result: Transform2D) {
-            if (!parent || !result) {
-                throw new Error("Valid parent and result objects must be specified");
-            }
-            let tx = this.translation.x;
-            let ty = this.translation.y;
-            let ptx = parent.translation.x;
-            let pty = parent.translation.y;
-            let pr = parent.rotation;
-            let psx = parent.scale.x;
-            let psy = parent.scale.y;
-            let cosr = Math.cos(pr);
-            let sinr = Math.sin(pr);
-            result.translation.x = (((tx * cosr) - (ty * sinr)) * psx) + ptx;
-            result.translation.y = (((tx * sinr) + (ty * cosr)) * psy) + pty;
-            this.scale.multiplyToRef(parent.scale, result.scale);
-            result.rotation = this.rotation;
-        }
-
-        /**
-         * Transform the given coordinates and store the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         * @param res The Vector2 object that will contain the result of the transformation
-         */
-        public transformFloatsToRef(x: number, y: number, res: Vector2) {
-            let tx = this.translation.x;
-            let ty = this.translation.y;
-            let pr = this.rotation;
-            let sx = this.scale.x;
-            let sy = this.scale.y;
-            let cosr = Math.cos(pr);
-            let sinr = Math.sin(pr);
-            res.x = (((x * cosr) - (y * sinr)) * sx) + tx;
-            res.y = (((x * sinr) + (y * cosr)) * sy) + ty;
-        }
-
-        /**
-         * Invert transform the given coordinates and store the result in a reference object. res = invert(this) * (x,y)
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation.
-         */
-        public invertTransformFloatsToRef(x: number, y: number, res: Vector2) {
-            let px = x - this.translation.x;
-            let py = y - this.translation.y;
-
-            let pr = -this.rotation;
-            let sx = this.scale.x;
-            let sy = this.scale.y;
-            let psx = (sx===1) ? 1 : (1/sx);
-            let psy = (sy===1) ? 1 : (1/sy);
-            let cosr = Math.cos(pr);
-            let sinr = Math.sin(pr);
-            res.x = (((px * cosr) - (py * sinr)) * psx);
-            res.y = (((px * sinr) + (py * cosr)) * psy);
-        }
-
-        /**
-         * Transform a point and return the result
-         * @param p the point to transform
-         */
-        public transformPoint(p: Vector2): Vector2 {
-            let res = Vector2.Zero();
-            this.transformPointToRef(p, res);
-            return res;
-        }
-
-        /**
-         * Transform the given coordinates and return the result in a Vector2 object
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        public transformFloats(x: number, y: number): Vector2 {
-            let res = Vector2.Zero();
-            this.transformFloatsToRef(x, y, res);
-            return res;
-        }
-
-        /**
-         * Invert transform a given point and store the result in the very same object. p = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         */
-        public invertTransformPointInPlace(p: Vector2) {
-            this.invertTransformPointToRef(p, p);
-        }
-
-        /**
-         * Invert transform a given point and store the result in a reference object. res = invert(this) * p
-         * @param p Transform this point and change the values with the transformed ones
-         * @param res Will contain the result of the invert transformation. 'res' can be the same object as 'p'
-         */
-        public invertTransformPointToRef(p: Vector2, res: Vector2) {
-            this.invertTransformFloatsToRef(p.x, p.y, res);
-        }
-
-        /**
-         * Invert transform a given point and return the result. return = invert(this) * p
-         * @param p The Point to transform
-         */
-        public invertTransformPoint(p: Vector2): Vector2 {
-            let res = Vector2.Zero();
-            this.invertTransformPointToRef(p, res);
-            return res;
-        }
-
-        /**
-         * Invert transform the given coordinates and return the result. return = invert(this) * (x,y)
-         * @param x The X coordinate to transform
-         * @param y The Y coordinate to transform
-         */
-        public invertTransformFloats(x: number, y: number): Vector2 {
-            let res = Vector2.Zero();
-            this.invertTransformFloatsToRef(x, y, res);
-            return res;
-        }
-    }
-
-    /**
-     * A class storing a Matrix for 2D transformations
-     * The stored matrix is a 2*3 Matrix
-     * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
-     * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
-     * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
-     *
-     * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
-     */
+       * A class storing a Matrix2D for 2D transformations
+       * The stored matrix is a 3*3 Matrix2D
+       * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+       * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+       * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
     export class Matrix2D {
+
+        public static Zero(): Matrix2D {
+            return new Matrix2D();
+        }
+        
+        public static FromValuesToRef(m0: number, m1: number, m2: number, m3: number, m4: number, m5: number, result: Matrix2D) {
+            result.m[0] = m0;   result.m[1] = m1;
+            result.m[2] = m2;   result.m[3] = m3;
+            result.m[4] = m4;   result.m[5] = m5;
+        }
+
+        public static FromMatrix(source: Matrix): Matrix2D {
+            let result = new Matrix2D();
+            Matrix2D.FromMatrixToRef(source, result);
+            return result;
+        }
+
+        public static FromMatrixToRef(source: Matrix, result: Matrix2D) {
+            result.m[0] = source.m[0];    result.m[1] = source.m[1];
+            result.m[2] = source.m[4];    result.m[3] = source.m[5];
+            result.m[4] = source.m[8];    result.m[5] = source.m[9];
+        }
+
+        public static Rotation(angle: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.RotationToRef(angle, result);
+
+            return result;
+        }
+
+        public static RotationToRef(angle: number, result: Matrix2D): void {
+            var s = Math.sin(angle);
+            var c = Math.cos(angle);
+
+            result.m[0] = c;    result.m[1] = s;
+            result.m[2] = -s;   result.m[3] = c;
+            result.m[4] = 0;    result.m[5] = 0;
+        }
+
+        public static Translation(x: number, y: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.TranslationToRef(x, y, result);
+
+            return result;
+        }
+
+        public static TranslationToRef(x: number, y: number, result: Matrix2D): void {
+            result.m[0] = 1;    result.m[1] = 0;
+            result.m[2] = 0;    result.m[3] = 1;
+            result.m[4] = x;    result.m[5] = y;
+        }
+
+        public static Scaling(x: number, y: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.ScalingToRef(x, y, result);
+
+            return result;
+        }
+
+        public static ScalingToRef(x: number, y: number, result: Matrix2D): void {
+            result.m[0] = x;    result.m[1] = 0;
+            result.m[2] = 0;    result.m[3] = y;
+            result.m[4] = 0;    result.m[5] = 0;
+        }
+
+        public m = new Float32Array(6);
 
         public static Identity(): Matrix2D {
             let res = new Matrix2D();
@@ -400,8 +87,66 @@
         }
 
         public static IdentityToRef(res: Matrix2D) {
-            res.m[1] = res.m[2] = res.m[4] = res.m[5] = 0;
-            res.m[0] = res.m[3] = 1;           
+            res.m[1] = res.m[2] = res.m[4] = res[5] = 0;
+            res.m[0] = res.m[3] = 1;
+        }
+
+        public static FromQuaternion(quaternion: Quaternion): Matrix2D {
+            let result = new Matrix2D();
+            Matrix2D.FromQuaternionToRef(quaternion, result);
+            return result;
+        }
+
+        public static FromQuaternionToRef(quaternion: Quaternion, result: Matrix2D) {
+            var xx = quaternion.x * quaternion.x;
+            var yy = quaternion.y * quaternion.y;
+            var zz = quaternion.z * quaternion.z;
+            var xy = quaternion.x * quaternion.y;
+            var zw = quaternion.z * quaternion.w;
+            //var zx = quaternion.z * quaternion.x;
+            //var yw = quaternion.y * quaternion.w;
+            //var yz = quaternion.y * quaternion.z;
+            //var xw = quaternion.x * quaternion.w;
+
+            result.m[0] = 1.0 - (2.0 * (yy + zz));
+            result.m[1] = 2.0 * (xy + zw);
+            //result.m[2] = 2.0 * (zx - yw);
+            //result.m[3] = 0;
+            result.m[2] = 2.0 * (xy - zw);
+            result.m[3] = 1.0 - (2.0 * (zz + xx));
+            //result.m[6] = 2.0 * (yz + xw);
+            //result.m[7] = 0;
+            //result.m[8] = 2.0 * (zx + yw);
+            //result.m[9] = 2.0 * (yz - xw);
+            //result.m[10] = 1.0 - (2.0 * (yy + xx));
+            //result.m[11] = 0;
+            //result.m[12] = 0;
+            //result.m[13] = 0;
+            //result.m[14] = 0;
+            //result.m[15] = 1.0;
+        }
+
+        public static Compose(scale: Vector2, rotation: number, translation: Vector2): Matrix2D {
+            var result = Matrix2D.Scaling(scale.x, scale.y);
+
+            var rotationMatrix = Matrix2D.Rotation(rotation);
+            result = result.multiply(rotationMatrix);
+
+            result.setTranslation(translation);
+
+            return result;
+        }
+
+        public static Invert(source: Matrix2D): Matrix2D {
+            let result = new Matrix2D();
+            source.invertToRef(result);
+            return result;
+        }
+
+        public clone(): Matrix2D {
+            let result = new Matrix2D();
+            result.copyFrom(this);
+            return result;
         }
 
         public copyFrom(other: Matrix2D) {
@@ -410,8 +155,17 @@
             }
         }
 
+        public getTranslation(): Vector2 {
+            return new Vector2(this.m[4], this.m[5]);
+        }
+
+        public setTranslation(translation: Vector2) {
+            this.m[4] = translation.x;
+            this.m[5] = translation.y;
+        }
+
         public determinant(): number {
-            return (this.m[0] * this.m[3]) - (this.m[1] * this.m[2]);
+            return this.m[0] * this.m[3] - this.m[1] * this.m[2];
         }
 
         public invertToThis() {
@@ -424,26 +178,25 @@
             return res;
         }
 
+        // http://mathworld.wolfram.com/MatrixInverse.html
         public invertToRef(res: Matrix2D) {
-            let a00 = this.m[0], a01 = this.m[1],
-                a10 = this.m[2], a11 = this.m[3],
-                a20 = this.m[4], a21 = this.m[5];
+            let l0 = this.m[0]; let l1 = this.m[1];
+            let l2 = this.m[2]; let l3 = this.m[3];
+            let l4 = this.m[4]; let l5 = this.m[5];
 
-            let det21 = a21 * a10 - a11 * a20;
-
-            let det = (a00 * a11) - (a01 * a10);
-            if (det < (Epsilon*Epsilon)) {
+            let det = this.determinant();
+            if (det < (Epsilon * Epsilon)) {
                 throw new Error("Can't invert matrix, near null determinant");
             }
 
-            det = 1 / det;
+            let detDiv = 1 / det;
 
-            res.m[0] = a11 * det;
-            res.m[1] = -a01 * det;
-            res.m[2] = -a10 * det;
-            res.m[3] = a00 * det;
-            res.m[4] = det21 * det;
-            res.m[5] = (-a21 * a00 + a01 * a20) * det;
+            let det4 = l2 * l5 - l3 * l4;
+            let det5 = l1 * l4 - l0 * l5;
+
+            res.m[0] = l3 * detDiv;     res.m[1] = -l1 * detDiv;
+            res.m[2] = -l2 * detDiv;    res.m[3] = l0 * detDiv;
+            res.m[4] = det4 * detDiv;   res.m[5] = det5 * detDiv;
         }
 
         public multiplyToThis(other: Matrix2D) {
@@ -457,59 +210,17 @@
         }
 
         public multiplyToRef(other: Matrix2D, result: Matrix2D) {
-            var tm0 = this.m[0];
-            var tm1 = this.m[1];
-            //var tm2 = this.m[2];
-            //var tm3 = this.m[3];
-            var tm4 = this.m[2];
-            var tm5 = this.m[3];
-            //var tm6 = this.m[6];
-            //var tm7 = this.m[7];
-            var tm8 = this.m[4];
-            var tm9 = this.m[5];
-            //var tm10 = this.m[10];
-            //var tm11 = this.m[11];
-            //var tm12 = this.m[12];
-            //var tm13 = this.m[13];
-            //var tm14 = this.m[14];
-            //var tm15 = this.m[15];
+            let l0 = this.m[0];     let l1 = this.m[1];
+            let l2 = this.m[2];     let l3 = this.m[3];
+            let l4 = this.m[4];     let l5 = this.m[5];
 
-            var om0 = other.m[0];
-            var om1 = other.m[1];
-            //var om2 = other.m[2];
-            //var om3 = other.m[3];
-            var om4 = other.m[2];
-            var om5 = other.m[3];
-            //var om6 = other.m[6];
-            //var om7 = other.m[7];
-            var om8 = other.m[4];
-            var om9 = other.m[5];
-            //var om10 = other.m[10];
-            //var om11 = other.m[11];
-            //var om12 = other.m[12];
-            //var om13 = other.m[13];
-            //var om14 = other.m[14];
-            //var om15 = other.m[15];
+            let r0 = other.m[0];    let r1 = other.m[1];
+            let r2 = other.m[2];    let r3 = other.m[3];
+            let r4 = other.m[4];    let r5 = other.m[5];
 
-            result.m[0] = tm0 * om0 + tm1 * om4;
-            result.m[1] = tm0 * om1 + tm1 * om5;
-            //result.m[2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
-            //result.m[3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
-
-            result.m[2] = tm4 * om0 + tm5 * om4;
-            result.m[3] = tm4 * om1 + tm5 * om5;
-            //result.m[6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
-            //result.m[7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
-
-            result.m[4] = tm8 * om0 + tm9 * om4 + om8;
-            result.m[5] = tm8 * om1 + tm9 * om5 + om9;
-            //result.m[10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
-            //result.m[11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
-
-            //result.m[12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
-            //result.m[13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
-            //result.m[14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
-            //result.m[15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+            result.m[0] = l0 * r0 + l1 * r2;        result.m[1] = l0 * r1 + l1 * r3;
+            result.m[2] = l2 * r0 + l3 * r2;        result.m[3] = l2 * r1 + l3 * r3;
+            result.m[4] = l4 * r0 + l5 * r2 + r4;   result.m[5] = l4 * r1 + l5 * r3 + r5;
         }
 
         public transformFloats(x: number, y: number): Vector2 {
@@ -533,7 +244,21 @@
             this.transformFloatsToRef(p.x, p.y, r);
         }
 
-        public m = new Float32Array(6);
+        private static _decomp: Matrix2D = new Matrix2D();
+
+        public decompose(scale: Vector2, translation: Vector2): number {
+            translation.x = this.m[4];
+            translation.y = this.m[5];
+
+            scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1]);
+            scale.y = Math.sqrt(this.m[2] * this.m[2] + this.m[3] * this.m[3]);
+
+            if (scale.x === 0 || scale.y === 0) {
+                return null;
+            }
+
+            return Math.atan2(-this.m[2] / scale.y, this.m[0] / scale.x);
+        }
     }
 
     /**
@@ -579,10 +304,13 @@
             this._updateCenterRadius();
         }
 
-        public transformInPlace(transform: Matrix) {
-            Vector2.TransformToRef(this.a, transform, this.a);
-            Vector2.TransformToRef(this.b, transform, this.b);
-            Vector2.TransformToRef(this.c, transform, this.c);
+        public transformInPlace(transform: Matrix2D) {
+            transform.transformPointToRef(this.a, this.a);
+            transform.transformPointToRef(this.b, this.b);
+            transform.transformPointToRef(this.c, this.c);
+            //Vector2.TransformToRef(this.a, transform, this.a);
+            //Vector2.TransformToRef(this.b, transform, this.b);
+            //Vector2.TransformToRef(this.c, transform, this.c);
 
             this._updateCenterRadius();
         }
@@ -686,7 +414,7 @@
          * @param tri2dInfo The triangle to transform
          * @param transform The transformation matrix
          */
-        public transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix) {
+        public transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix2D) {
             if (index >= this._count) {
                 throw new Error(`Can't fetch the triangle at index ${index}, max index is ${this._count - 1}`);
             }
@@ -735,7 +463,7 @@
          * @param setB The second set of triangles
          * @param bToATransform The transformation matrix to transform the setB triangles into the frame of reference of the setA
          */
-        public static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix): boolean {
+        public static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix2D): boolean {
             Tri2DArray._checkInitStatics();
 
             let a = Tri2DArray.tempT[0];
