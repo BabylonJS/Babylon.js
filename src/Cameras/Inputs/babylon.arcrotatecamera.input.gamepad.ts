@@ -3,7 +3,7 @@ module BABYLON {
         camera: ArcRotateCamera;
 
         public gamepad: Gamepad;
-        private _gamepads: Gamepads;
+        private _gamepads: Gamepads<Gamepad>;
 
         @serialize()
         public gamepadRotationSensibility = 80;
@@ -11,10 +11,10 @@ module BABYLON {
         @serialize()
         public gamepadMoveSensibility = 40;
 
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-        
+
         detachControl(element: HTMLElement) {
             if (this._gamepads) {
                 this._gamepads.dispose();
@@ -53,9 +53,11 @@ module BABYLON {
         }
 
         private _onNewGameConnected(gamepad: Gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
-                this.gamepad = gamepad;
+            if (gamepad.type !== Gamepad.POSE_ENABLED) {
+                // prioritize XBOX gamepads.
+                if (!this.gamepad || gamepad.type === Gamepad.XBOX) {
+                    this.gamepad = gamepad;
+                }
             }
         }
 

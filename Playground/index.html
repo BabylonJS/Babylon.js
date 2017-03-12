@@ -76,6 +76,16 @@
                     <li><a href="#" onclick="setFontSize(22);">22</a></li>
                 </ul>
             </div>
+            <div class="btn-group desktopOnly">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="currentVersion">Version: Latest</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="versionList">
+                    <li><a href="#" onclick="setVersion('latest');">Latest</a></li>
+                    <li><a href="#" onclick="setVersion('2.5');">2.5</a></li>
+                </ul>
+            </div>            
             <div class="btn-group">
                 <label class="btn btn-sm active">
                     <input type="checkbox" autocomplete="off" id='safemodeToggle' style="margin-top:-0.1em;margin-right:4px">Safe Mode

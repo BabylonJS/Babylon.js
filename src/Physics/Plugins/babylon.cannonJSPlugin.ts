@@ -227,7 +227,7 @@
             var returnValue;
             var extendSize = impostor.getObjectExtendSize();
             switch (impostor.type) {
-                case PhysicsEngine.SphereImpostor:
+                case PhysicsImpostor.SphereImpostor:
                     var radiusX = extendSize.x;
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
@@ -352,7 +352,7 @@
             }
 
             //If it is a heightfield, if should be centered.
-            if (impostor.type === PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === PhysicsImpostor.HeightmapImpostor) {
                 var mesh = <AbstractMesh>(<any>object);
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
@@ -382,7 +382,7 @@
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
-            } else if (impostor.type === PhysicsEngine.MeshImpostor) {
+            } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 this._tmpPosition.copyFrom(object.position);
             }

@@ -151,19 +151,18 @@ module BABYLON {
                     bone: Bone, 
                     target: Vector3, 
                     options?: {
-                        adjustYaw?: number, 
-                        adjustPitch?: number, 
-                        adjustRoll?: number, 
-                        slerpAmount?: number, 
                         maxYaw?:number, 
                         minYaw?:number, 
                         maxPitch?:number, 
                         minPitch?:number,
+                        slerpAmount?: number, 
                         upAxis?:Vector3,
                         upAxisSpace?:Space,
                         yawAxis?:Vector3,
                         pitchAxis?:Vector3,
-                        showSpaceAxes?:boolean
+                        adjustYaw?: number, 
+                        adjustPitch?: number, 
+                        adjustRoll?: number, 
                     }){
 
             this.mesh = mesh;
@@ -302,16 +301,16 @@ module BABYLON {
 
             if(checkYaw || checkPitch){
 
-                var _tmpMat3 = BoneLookController._tmpMats[2];
-                var _tmpMat3Inv = BoneLookController._tmpMats[3];
+                var spaceMat = BoneLookController._tmpMats[2];
+                var spaceMatInv = BoneLookController._tmpMats[3];
 
                 if(this.upAxisSpace == Space.BONE && upAxis.y == 1){
 
-                    parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, _tmpMat3);
+                    parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, spaceMat);
                     
                 }else if(this.upAxisSpace == Space.LOCAL && upAxis.y == 1 && !parentBone){
 
-                    _tmpMat3.copyFrom(mesh.getWorldMatrix());
+                    spaceMat.copyFrom(mesh.getWorldMatrix());
 
                 }else{
 
@@ -332,17 +331,18 @@ module BABYLON {
                     rightAxis.normalize();
                     var forwardAxis = Vector3.Cross(rightAxis, upAxis);
 
-                    Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, _tmpMat3);
+                    Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
                     
                 }
 
-                _tmpMat3.invertToRef(_tmpMat3Inv);
+                spaceMat.invertToRef(spaceMatInv);
                 
                 var xzlen:number;
 
                 if(checkPitch){
                     var localTarget = BoneLookController._tmpVecs[3];
-                    Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
                     var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     var pitch = Math.atan2(localTarget.y, xzlen);
@@ -357,7 +357,7 @@ module BABYLON {
                     }
                     
                     if(pitch != newPitch){
-                        Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
@@ -365,7 +365,8 @@ module BABYLON {
 
                 if(checkYaw){
                     var localTarget = BoneLookController._tmpVecs[4];
-                    Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
                     var yaw = Math.atan2(localTarget.x, localTarget.z);
                     var newYaw = yaw;
@@ -376,45 +377,57 @@ module BABYLON {
                             xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                         }
 
-                        if(yaw > this._maxYaw){
-                            localTarget.z = this._maxYawCos*xzlen;
-                            localTarget.x = this._maxYawSin*xzlen;
-                            newYaw = this._maxYaw;
-                        }else if(yaw < this._minYaw){
-                            localTarget.z = this._minYawCos*xzlen;
-                            localTarget.x = this._minYawSin*xzlen;
-                            newYaw = this._minYaw;
+                        if(this._yawRange > Math.PI){
+                            if (this._isAngleBetween(yaw, this._maxYaw, this._midYawConstraint)) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }else if (this._isAngleBetween(yaw, this._midYawConstraint, this._minYaw)) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
+                        }else{
+                            if (yaw > this._maxYaw) {
+                                localTarget.z = this._maxYawCos * xzlen;
+                                localTarget.x = this._maxYawSin * xzlen;
+                                newYaw = this._maxYaw;
+                            }else if (yaw < this._minYaw) {
+                                localTarget.z = this._minYawCos * xzlen;
+                                localTarget.x = this._minYawSin * xzlen;
+                                newYaw = this._minYaw;
+                            }
                         }
                     }
 
                     if(this._slerping && this._yawRange > Math.PI){
-                        //are we going to be crossing into the min/max region
-                        var _tmpVec8 = BoneLookController._tmpVecs[8];
-                        _tmpVec8.copyFrom(Axis.Z);
+                        //are we going to be crossing into the min/max region?
+                        var boneFwd = BoneLookController._tmpVecs[8];
+                        boneFwd.copyFrom(Axis.Z);
                         if (this._transformYawPitch) {
-                            Vector3.TransformCoordinatesToRef(_tmpVec8, this._transformYawPitchInv, _tmpVec8);
+                            Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                         }
 
                         var boneRotMat = BABYLON.BoneLookController._tmpMats[4];
                         this._boneQuat.toRotationMatrix(boneRotMat);
                         this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, boneRotMat, _tmpVec8);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, spaceMatInv, boneFwd);
 
-                        var boneYaw = Math.atan2(_tmpVec8.x, _tmpVec8.z);
-                        var ang1 = this._getAngleBetween(boneYaw, yaw);
-                        var ang2 = this._getAngleBetween(boneYaw, this._midYawConstraint);
+                        var boneYaw = Math.atan2(boneFwd.x, boneFwd.z);
+                        var angBtwTar = this._getAngleBetween(boneYaw, yaw);
+                        var angBtwMidYaw = this._getAngleBetween(boneYaw, this._midYawConstraint);
 
-                        if(ang1 > ang2){
+                        if(angBtwTar > angBtwMidYaw){
 
                             if (xzlen == null) {
                                 xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                             }
 
-                            var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
-                            var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
+                            var angBtwMax = this._getAngleBetween(boneYaw, this._maxYaw);
+                            var angBtwMin = this._getAngleBetween(boneYaw, this._minYaw);
 
-                            if(ang4 < ang3){
+                            if(angBtwMin < angBtwMax){
                                 newYaw = boneYaw+Math.PI*.75;
                                 localTarget.z = Math.cos(newYaw) * xzlen;
                                 localTarget.x = Math.sin(newYaw) * xzlen;
@@ -427,7 +440,7 @@ module BABYLON {
                     }
 
                     if(yaw != newYaw){
-                        Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
@@ -522,6 +535,27 @@ module BABYLON {
             }
 
             return ab;
+        }
+
+        private _isAngleBetween(ang, ang1, ang2):boolean {
+
+            ang %= (2 * Math.PI);
+            ang = (ang < 0) ? ang + (2 * Math.PI) : ang;
+            ang1 %= (2 * Math.PI);
+            ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
+            ang2 %= (2 * Math.PI);
+            ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
+
+            if(ang1 < ang2){
+                if(ang > ang1 && ang < ang2){
+                    return true;
+                }
+            }else{
+                if(ang > ang2 && ang < ang1){
+                    return true;
+                }
+            }
+            return false;
         }
 
     }

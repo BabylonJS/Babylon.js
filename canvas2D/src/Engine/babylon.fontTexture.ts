@@ -26,12 +26,13 @@
      */
     export abstract class BaseFontTexture extends Texture {
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, premultipliedAlpha: boolean = false) {
 
             super(url, scene, noMipmap, invertY, samplingMode);
 
             this._cachedFontId = null;
             this._charInfos = new StringDictionary<CharInfo>();
+            this._isPremultipliedAlpha = premultipliedAlpha;
         }
 
         /**
@@ -47,6 +48,13 @@
          */
         public get isSignedDistanceField(): boolean {
             return this._signedDistanceField;
+        }
+
+        /**
+         * True if the font was drawn using multiplied alpha
+         */
+        public get isPremultipliedAlpha(): boolean {
+            return this._isPremultipliedAlpha;
         }
 
         /**
@@ -148,6 +156,7 @@
         protected _spaceWidth;
         protected _superSample: boolean;
         protected _signedDistanceField: boolean;
+        protected _isPremultipliedAlpha: boolean;
         protected _cachedFontId: string;
     }
 
@@ -174,11 +183,12 @@
                             textureUrl: string = null,
                             noMipmap: boolean = false,
                             invertY: boolean = true,
-                            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
+                            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+                            premultipliedAlpha: boolean = false,
                             onLoad: () => void = null,
                             onError: (msg: string, code: number) => void = null)
         {
-            super(null, scene, noMipmap, invertY, samplingMode);
+            super(null, scene, noMipmap, invertY, samplingMode, premultipliedAlpha);
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = () => {
@@ -351,30 +361,30 @@
             return true;
         }
 
-        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false): FontTexture {
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false): FontTexture {
             let dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", () => new StringDictionary<FontTexture>());
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             let ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
 
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample, signedDistanceField);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, (signedDistanceField || bilinearFiltering) ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
             ft._cachedFontId = lfn;
             dic.add(lfn, ft);
 
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false) {
             let dic = scene.getExternalData<StringDictionary<FontTexture>>("FontTextureCache");
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -404,6 +414,7 @@
             this._sdfScale = 8;
             this._signedDistanceField = signedDistanceField;
             this._superSample = false;
+            this._isPremultipliedAlpha = !signedDistanceField;
 
             // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {

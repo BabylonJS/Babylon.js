@@ -219,7 +219,7 @@ module BABYLON {
             super._checkInputs();
         }
 
-        private _updateCameraRotationMatrix() {
+        protected _updateCameraRotationMatrix() {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
                 //update the up vector!
@@ -247,7 +247,7 @@ module BABYLON {
             } else {
                 Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             }
-            
+
             return this._viewMatrix;
         }
 
