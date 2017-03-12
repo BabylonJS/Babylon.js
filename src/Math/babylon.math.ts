@@ -2200,7 +2200,7 @@
         /**
          * Returns a new Vector4 set from the starting index of the passed array.  
          */
-        public static FromArray(array: number[], offset?: number): Vector4 {
+        public static FromArray(array: number[]  | Float32Array, offset?: number): Vector4 {
             if (!offset) {
                 offset = 0;
             }
@@ -2209,7 +2209,7 @@
         /**
          * Updates the passed vector "result" from the starting index of the passed array.  
          */
-        public static FromArrayToRef(array: number[], offset: number, result: Vector4): void {
+        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector4): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
@@ -2275,7 +2275,6 @@
         /**
          * Returns the squared distance (float) between the vectors "value1" and "value2".  
          */
-        publi
         public static DistanceSquared(value1: Vector4, value2: Vector4): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
@@ -2291,6 +2290,41 @@
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
+        }
+
+        /**
+         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.  
+         * This methods computes transformed normalized direction vectors only.  
+         */
+        public static TransformNormal(vector: Vector4, transformation: Matrix): Vector4 {
+            var result = Vector4.Zero();
+            Vector4.TransformNormalToRef(vector, transformation, result);
+            return result;
+        }
+
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.  
+         * This methods computes transformed normalized direction vectors only. 
+         */
+        public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
+            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            result.x = x;
+            result.y = y;
+            result.z = z;
+            result.w = vector.w;
+        }
+
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).  
+         * This methods computes transformed normalized direction vectors only. 
+         */
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
+            result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
+            result.y = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]);
+            result.z = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]);
+            result.w = w;
         }
     }
 
