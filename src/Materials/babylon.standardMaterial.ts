@@ -24,6 +24,7 @@
         public EMISSIVEFRESNEL = false;
         public FRESNEL = false;
         public NORMAL = false;
+        public TANGENT = false;
         public UV1 = false;
         public UV2 = false;
         public VERTEXCOLOR = false;
@@ -547,6 +548,9 @@
             if (mesh) {
                 if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
+                    if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                        this._defines.TANGENT = true;
+                    }
                 }
                 if (needUVs) {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -649,6 +653,10 @@
 
                 if (this._defines.NORMAL) {
                     attribs.push(VertexBuffer.NormalKind);
+                }
+
+                if (this._defines.TANGENT) {
+                    attribs.push(VertexBuffer.TangentKind);
                 }
 
                 if (this._defines.UV1) {

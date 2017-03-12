@@ -550,6 +550,10 @@ module BABYLON {
 
                     verticesCounts.push(tempVertexData.positions.length);
                 }
+                else if (semantic === "TANGENT") {
+                    tempVertexData.tangents = new Float32Array(buffer.length);
+                    (<Float32Array>tempVertexData.tangents).set(buffer);
+                }
                 else if (semantic.indexOf("TEXCOORD_") !== -1) {
                     var channel = Number(semantic.split("_")[1]);
                     var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
@@ -591,7 +595,7 @@ module BABYLON {
                 tempVertexData.indices = new Int32Array(indices);
                 indexCounts.push(tempVertexData.indices.length);
             }
-
+            
             vertexData.merge(tempVertexData);
             tempVertexData = undefined;
 
@@ -1228,7 +1232,7 @@ module BABYLON {
                     BIN: 0x004E4942
                 }
             };
-            
+
             var binaryReader = new BinaryReader(data);
 
             var magic = binaryReader.readUint32();
