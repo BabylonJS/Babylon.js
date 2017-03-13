@@ -63,11 +63,11 @@
 
 ### Breaking changes
 - WebVRCamera:
- - `requestVRFullscreen` has been removed. Call attachControl() inside a user-interaction callback to start sending frames to the VR display
+ - `requestVRFullscreen` has been removed. Call `attachControl()` inside a user-interaction callback to start sending frames to the VR display
  - `setPositionOffset` has been used to change the position offset. it is now done using camera.position
 - Ray :
- - `show` has been removed. Use new RayHelper.show() instead
- - `hide` has been removed. Use new RayHelper.hide() instead
+ - `show` has been removed. Use new `RayHelper.show()` instead
+ - `hide` has been removed. Use new `RayHelper.hide()` instead
 - AbstractMesh:
  - `onPhysicsCollide` has been removed. Use `mesh.physicsImpostor.registerOnPhysicsCollide()` instead
  - `setPhysicsState` has been removed. Use `new PhysicsImpostor()` instead
