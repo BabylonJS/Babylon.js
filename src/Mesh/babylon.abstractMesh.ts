@@ -865,13 +865,7 @@
             // Composing transformations
             this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-            // Mesh referal
-            var completeMeshReferalMatrix = Tmp.Matrix[6];
-            if (this._meshToBoneReferal && this.parent && this.parent.getWorldMatrix) {
-                this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), completeMeshReferalMatrix);
-            }
-
+            
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
@@ -880,7 +874,8 @@
 
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._meshToBoneReferal) {
-                            Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
+                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                            Vector3.TransformCoordinatesToRef(this.position, Tmp.Matrix[6], currentPosition);
                         } else {
                             Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
                         }
@@ -927,7 +922,8 @@
 
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
-                        Tmp.Matrix[5].copyFrom(completeMeshReferalMatrix);
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                        Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
                     } else {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
@@ -939,7 +935,8 @@
                     
                 } else {
                     if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(completeMeshReferalMatrix, this._worldMatrix);
+                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                        Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                     } else {
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }
