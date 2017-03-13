@@ -45,7 +45,7 @@
 - Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 
 ### API Documentation
-- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
+`- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  
@@ -64,7 +64,7 @@
 ### Breaking changes
 - WebVRCamera:
  - `requestVRFullscreen` has been removed. Call `attachControl()` inside a user-interaction callback to start sending frames to the VR display
- - `setPositionOffset` has been used to change the position offset. it is now done using camera.position
+ - `setPositionOffset` has been used to change the position offset. it is now done using `camera.position`
 - Ray :
  - `show` has been removed. Use new `RayHelper.show()` instead
  - `hide` has been removed. Use new `RayHelper.hide()` instead
