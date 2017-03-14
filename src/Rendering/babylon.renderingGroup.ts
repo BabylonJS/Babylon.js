@@ -256,6 +256,14 @@
             this._spriteManagers.reset();
         }
 
+        public dispose(): void {
+            this._opaqueSubMeshes.dispose();
+            this._transparentSubMeshes.dispose();
+            this._alphaTestSubMeshes.dispose();
+            this._particleSystems.dispose();
+            this._spriteManagers.dispose();
+        }
+
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch

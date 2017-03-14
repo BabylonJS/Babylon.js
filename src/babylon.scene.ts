@@ -2682,6 +2682,22 @@
                 this._depthRenderer.dispose();
             }
 
+            // Smart arrays            
+            if (this.activeCamera) {
+                this.activeCamera._activeMeshes.dispose();
+                this.activeCamera = null;
+            }
+            this._activeMeshes.dispose();
+            this._renderingManager.dispose();
+            this._processedMaterials.dispose();
+            this._activeParticleSystems.dispose();
+            this._activeSkeletons.dispose();
+            this._softwareSkinnedMeshes.dispose();
+            this._boundingBoxRenderer.dispose();
+            this._edgesRenderers.dispose();
+            this._meshesForIntersections.dispose();
+            this._toBeDisposed.dispose();
+
             // Debug layer
             if (this._debugLayer) {
                 this._debugLayer.hide();
