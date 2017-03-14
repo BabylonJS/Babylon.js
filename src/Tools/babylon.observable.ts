@@ -154,6 +154,27 @@
 
             return result;
         }
+
+        public hasPickMasks(): boolean {
+            for (var obs of this._observers) {
+                if (obs.mask && (obs.mask === PointerEventTypes.POINTERPICK// ||
+                                // obs.mask === PointerEventTypes.POINTERTAP  ||
+                                // obs.mask === PointerEventTypes.POINTERDOUBLETAP
+                                )) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public hasSpecificMask(mask: number = -1): boolean {
+            for (var obs of this._observers) {
+                if (obs.mask & mask && obs.mask === mask) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 }
