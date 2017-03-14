@@ -44,9 +44,6 @@
         }
 
         public reset(): void {
-            for (var index = 0; index < this.data.length; index++) {
-                this.data[index] = null;
-            }
             this.length = 0;
             this._duplicateId++;
         }
