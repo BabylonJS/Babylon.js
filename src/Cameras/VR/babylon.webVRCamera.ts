@@ -208,12 +208,15 @@ module BABYLON {
                 this._webvrViewMatrix.m[12] += parentCamera.position.x;
                 this._webvrViewMatrix.m[13] += parentCamera.position.y;
                 this._webvrViewMatrix.m[14] += parentCamera.position.z;
+
+                // is rotation offset set? 
+                if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
+                    this._webvrViewMatrix.decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
+                    this.rotationQuaternion.multiplyToRef(Tmp.Quaternion[0], Tmp.Quaternion[0]);
+                    Matrix.ComposeToRef(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1], this._webvrViewMatrix);
+                }
+
                 this._webvrViewMatrix.invert();
-            }
-            // is rotation offset set? 
-            if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
-                this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
-                this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
 
             this._updateCameraRotationMatrix();
