@@ -7676,6 +7676,9 @@ var BABYLON;
                 return this._scale.x;
             },
             set: function (value) {
+                if (value <= 0) {
+                    throw new Error("You can't set the scale to less or equal to 0");
+                }
                 this._scale.x = this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
@@ -8019,6 +8022,9 @@ var BABYLON;
                 return this._scale.x;
             },
             set: function (value) {
+                if (value <= 0) {
+                    throw new Error("You can't set the scaleX to less or equal to 0");
+                }
                 this._scale.x = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
@@ -8032,6 +8038,9 @@ var BABYLON;
                 return this._scale.y;
             },
             set: function (value) {
+                if (value <= 0) {
+                    throw new Error("You can't set the scaleY to less or equal to 0");
+                }
                 this._scale.y = value;
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
                 this._spreadActualScaleDirty();
@@ -8363,7 +8372,9 @@ var BABYLON;
                         }
                         this._boundingInfo.unionToRef(contentBI, this._boundingInfo);
                     }
-                    this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
+                    if (sizedByContent || !this._isFlagSet(BABYLON.SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                        this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
+                    }
                 }
                 else {
                     BABYLON.C2DLogging.setPostMessage(function () { return "cache hit"; });
@@ -8399,6 +8410,17 @@ var BABYLON;
                             BABYLON.C2DLogging.setPostMessage(function () { return "re entrance detected, boundingInfo returned"; });
                             return this.boundingInfo;
                         }
+                        if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty)) {
+                            BABYLON.C2DLogging.setPostMessage(function () { return "couldn't compute positioning, boundingInfo returned"; });
+                            return this.boundingInfo;
+                        }
+                    }
+                    if (!usePositioning) {
+                        var bi = this.boundingInfo;
+                        if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                            this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                        }
+                        return bi;
                     }
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
                 }
@@ -9287,6 +9309,9 @@ var BABYLON;
                 var transformedBSize = Prim2DBase_1._size3;
                 var bSize = Prim2DBase_1._size4;
                 var bi = this.boundingInfo;
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    success = false;
+                }
                 var tbi = Prim2DBase_1._tbi;
                 bi.transformToRef(BABYLON.Matrix2D.Rotation(this.rotation), tbi);
                 tbi.sizeToRef(transformedBSize);
@@ -11425,7 +11450,7 @@ var BABYLON;
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
          * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
@@ -11454,10 +11479,12 @@ var BABYLON;
             }
             _this = _super.call(this, settings) || this;
             var size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new BABYLON.Size(settings.width || 0, settings.height || 0)));
-            _this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
-            _this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
-            if (_this._trackedNode && _this.owner) {
-                _this.owner._registerTrackedNode(_this);
+            if (!(_this instanceof BABYLON.WorldSpaceCanvas2D)) {
+                _this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+                _this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
+                if (_this._trackedNode && _this.owner) {
+                    _this.owner._registerTrackedNode(_this);
+                }
             }
             _this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D_1.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             var rd = _this._renderableData;
@@ -14882,6 +14909,10 @@ var BABYLON;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
             if (!this.owner || !this._text) {
+                return false;
+            }
+            var asize = this.actualSize;
+            if (asize.width === 0 && asize.height === 0) {
                 return false;
             }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);

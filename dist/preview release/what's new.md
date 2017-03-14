@@ -45,7 +45,7 @@
 - Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 
 ### API Documentation
-- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
+`- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  
@@ -61,6 +61,29 @@
 - File `spotLight.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `shadowGenerator.ts` documented ([jerome](https://github.com/jbousquie))  
 
+### Breaking changes
+- WebVRCamera:
+ - `requestVRFullscreen` has been removed. Call `attachControl()` inside a user-interaction callback to start sending frames to the VR display
+ - `setPositionOffset` has been used to change the position offset. it is now done using `camera.position`
+- Ray :
+ - `show` has been removed. Use new `RayHelper.show()` instead
+ - `hide` has been removed. Use new `RayHelper.hide()` instead
+- AbstractMesh:
+ - `onPhysicsCollide` has been removed. Use `mesh.physicsImpostor.registerOnPhysicsCollide()` instead
+ - `setPhysicsState` has been removed. Use `new PhysicsImpostor()` instead
+ - `getPhysicsMass` has been removed. Use `mesh.physicsImpostor.getParam("mass")` instead
+ - `getPhysicsFriction` has been removed. Use `mesh.physicsImpostor.getParam("friction")` instead
+ - `getPhysicsRestitution` has been removed. Use `mesh.physicsImpostor.getParam("restitution")` instead
+ - `updatePhysicsBodyPosition` has been removed. Changes are synchronized automatically now
+- Mesh:
+ - `updateVerticesDataDirectly` has been removed. Use `mesh.geometry.updateVerticesDataDirectly()` instead
+- SsaoRenderingPipeline:
+ - `getBlurHPostProcess` has been removed. Blur post-process is no more required
+ - `getBlurVPostProcess` has been removed. Blur post-process is no more required
+- Scene:
+ - `setGravity` has been removed. Use `scene.getPhysicsEngine().setGravity()` instead
+ - `createCompoundImpostor` has been removed. Use PhysicsImpostor parent/child instead
+ 
 ## Canvas2D
 
 ### Major Updates
