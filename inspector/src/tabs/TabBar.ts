@@ -37,6 +37,8 @@ module INSPECTOR {
             }
             this._tabs.push(new MaterialTab(this, this._inspector));
 
+            this._tabs.push(new CameraTab(this, this._inspector));
+
             this._toolBar = new Toolbar(this._inspector);
 
             this._build();
