@@ -63,6 +63,7 @@ module INSPECTOR {
         'ArcRotateCamera' : {
             type: BABYLON.ArcRotateCamera,
             properties : [
+                'position',
                 'alpha', 
                 'beta', 
                 'radius',
@@ -80,6 +81,22 @@ module INSPECTOR {
                 'pinchPrecision',
                 'wheelPrecision',
                 'allowUpsideDown',
+                'checkCollisions'
+            ]  
+        },
+
+        'FreeCamera' : {
+            type: BABYLON.FreeCamera,
+            properties : [
+                'position',
+                'ellipsoid',
+                'applyGravity',
+                'angularSensibility',
+                'keysUp',
+                'keysDown',
+                'keysLeft',
+                'keysRight',
+                'onCollide',
                 'checkCollisions'
             ]  
         },
