@@ -44,6 +44,7 @@
         }
 
         public reset(): void {
+            this.data.length = 0;
             this.length = 0;
             this._duplicateId++;
         }
