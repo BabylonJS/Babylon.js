@@ -2316,6 +2316,9 @@
          * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
          */
         public set scale(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scale to less or equal to 0");
+            }
             this._scale.x = this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2671,6 +2674,9 @@
          * Scale applied on the X axis of the primitive
          */
         public set scaleX(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scaleX to less or equal to 0");
+            }
             this._scale.x = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2686,6 +2692,9 @@
          * Scale applied on the Y axis of the primitive
          */
         public set scaleY(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scaleY to less or equal to 0");
+            }
             this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2994,7 +3003,9 @@
                     this._boundingInfo.unionToRef(contentBI, this._boundingInfo);
                 }
 
-                this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                if (sizedByContent || !this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                    this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                }
             } else {
                 C2DLogging.setPostMessage(() => "cache hit");
             }
@@ -3032,8 +3043,20 @@
                         C2DLogging.setPostMessage(() => "re entrance detected, boundingInfo returned");
                         return this.boundingInfo;
                     }
+
+                    if (this._isFlagSet(SmartPropertyPrim.flagPositioningDirty)) {
+                        C2DLogging.setPostMessage(() => "couldn't compute positioning, boundingInfo returned");
+                        return this.boundingInfo;
+                    }
                 }
 
+                if (!usePositioning) {
+                    let bi = this.boundingInfo;
+                    if (!this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
+                        this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                    }
+                    return bi;
+                }
                 this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             } else {
                 C2DLogging.setPostMessage(() => "cache hit");
@@ -4069,6 +4092,9 @@
                 let transformedBSize = Prim2DBase._size3;
                 let bSize = Prim2DBase._size4;
                 let bi = this.boundingInfo;
+                if (this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    success = false;
+                }
                 let tbi = Prim2DBase._tbi;
                 bi.transformToRef(Matrix2D.Rotation(this.rotation), tbi);
                 tbi.sizeToRef(transformedBSize);
