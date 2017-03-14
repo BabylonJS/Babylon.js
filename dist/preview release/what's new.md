@@ -76,7 +76,7 @@
  - `getPhysicsRestitution` has been removed. Use `mesh.physicsImpostor.getParam("restitution")` instead
  - `updatePhysicsBodyPosition` has been removed. Changes are synchronized automatically now
 - Mesh:
- - `updateVerticesDataDirectly` has been removed. Use `mesh.geometry.updateVerticesDataDirectly()` instead
+ - `updateVerticesDataDirectly` has been removed. Use `mesh.updateVerticesData()` instead
 - SsaoRenderingPipeline:
  - `getBlurHPostProcess` has been removed. Blur post-process is no more required
  - `getBlurVPostProcess` has been removed. Blur post-process is no more required
