@@ -190,6 +190,7 @@
         limitDeviceRatio?: number;
         autoEnableWebVR?: boolean;
         disableWebGL2Support?: boolean;
+        audioEngine?: boolean;
     }
 
     /**
@@ -550,6 +551,10 @@
                 options.preserveDrawingBuffer = false;
             }
 
+            if (options.audioEngine === undefined) {
+                options.audioEngine = true;
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -751,7 +756,7 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            if (AudioEngine && !Engine.audioEngine) {
+            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
 
