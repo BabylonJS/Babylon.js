@@ -251,14 +251,14 @@
         }
 
         public dispose(camera?: Camera): void {
-            camera = camera || this._camera;
+            camera = camera || this._camera;            
 
             if (this._textures.length > 0) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._engine._releaseTexture(this._textures.data[i]);
                 }
-                this._textures.reset();
             }
+            this._textures.dispose();
 
             if (!camera) {
                 return;
