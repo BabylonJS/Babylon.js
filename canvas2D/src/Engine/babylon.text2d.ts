@@ -368,6 +368,10 @@
             if (!this.owner || !this._text) {
                 return false;
             }
+            let asize = this.actualSize;
+            if (asize.width===0 && asize.height===0) {
+                return false;
+            }
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
             return true;
         }
