@@ -340,6 +340,12 @@
                     "../../materialsLibrary/src/sky/sky.fragment.fx"
                 ],
                 "output": "babylon.skyMaterial.js"
+            },  
+            {
+                "files": [
+                    "../../materialsLibrary/src/Custom/Babylon.CustonMaterial.ts"
+                ], 
+                "output": "Babylon.CustomMaterial.js"
             },
             {
                 "files": [
