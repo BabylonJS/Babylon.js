@@ -62,16 +62,17 @@
         private static _OnRightPickTrigger = 3;
         private static _OnCenterPickTrigger = 4;
         private static _OnPickDownTrigger = 5;
-        private static _OnPickUpTrigger = 6;
-        private static _OnLongPressTrigger = 7;
-        private static _OnPointerOverTrigger = 8;
-        private static _OnPointerOutTrigger = 9;
-        private static _OnEveryFrameTrigger = 10;
-        private static _OnIntersectionEnterTrigger = 11;
-        private static _OnIntersectionExitTrigger = 12;
-        private static _OnKeyDownTrigger = 13;
-        private static _OnKeyUpTrigger = 14;
-        private static _OnPickOutTrigger = 15;
+        private static _OnDoublePickTrigger = 6;
+        private static _OnPickUpTrigger = 7;
+        private static _OnLongPressTrigger = 8;
+        private static _OnPointerOverTrigger = 9;
+        private static _OnPointerOutTrigger = 10;
+        private static _OnEveryFrameTrigger = 11;
+        private static _OnIntersectionEnterTrigger = 12;
+        private static _OnIntersectionExitTrigger = 13;
+        private static _OnKeyDownTrigger = 14;
+        private static _OnKeyUpTrigger = 15;
+        private static _OnPickOutTrigger = 16;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -95,6 +96,10 @@
 
         public static get OnPickDownTrigger(): number {
             return ActionManager._OnPickDownTrigger;
+        }
+
+        public static get OnDoublePickTrigger(): number {
+            return ActionManager._OnDoublePickTrigger;
         }
 
         public static get OnPickUpTrigger(): number {
@@ -138,9 +143,8 @@
             return ActionManager._OnKeyUpTrigger;
         }
 
-        public static DragMovementThreshold = 10; // in pixels
-        public static LongPressDelay = 500; // in milliseconds
-        
+        public static Triggers = {};
+
         // Members
         public actions = new Array<Action>();
 
@@ -157,6 +161,14 @@
         // Methods
         public dispose(): void {
             var index = this._scene._actionManagers.indexOf(this);
+
+            for (var i = 0; i < this.actions.length; i++) {
+                var action = this.actions[i];
+                ActionManager.Triggers[action.trigger]--;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger]
+                }
+            }
 
             if (index > -1) {
                 this._scene._actionManagers.splice(index, 1);
@@ -233,6 +245,39 @@
             return false;
         }
 
+        public static get HasTriggers(): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static get HasPickTriggers(): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    let t_int = parseInt(t);
+                    if (t_int >= ActionManager._OnPickTrigger && t_int <= ActionManager._OnPickUpTrigger) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static HasSpecificTrigger(trigger: number): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    let t_int = parseInt(t);
+                    if (t_int === trigger) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         /**
          * Registers an action to this action manager
          * @param {BABYLON.Action} action - the action to be registered
@@ -247,6 +292,13 @@
             }
 
             this.actions.push(action);
+
+          if(ActionManager.Triggers[action.trigger]) {
+              ActionManager.Triggers[action.trigger]++;
+            }
+            else{
+              ActionManager.Triggers[action.trigger] = 1;
+            }
 
             action._actionManager = this;
             action._prepare();
