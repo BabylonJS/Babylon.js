@@ -18,7 +18,6 @@ module INSPECTOR {
 
         protected action() {
             super.action();
-            //
             this._gotoPOV();
         }
 
