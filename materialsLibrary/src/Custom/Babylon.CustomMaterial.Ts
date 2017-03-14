@@ -1,22 +1,22 @@
 module BABYLON {
 
    interface ICustomMaterialBuilder {
-         (name: string ,FragVertexMainParam: string , FragParam:string ,VertexParam:string ): string;
-   }
- 
+         (name: string ,mainPart: string , diffusePart:string ,vertexPositionPart:string ): string;
+   } 
  
     class CustomMaterial extends StandardMaterial  {
         
         public builder: ICustomMaterialBuilder;
+        private _mainPart = 'void main(void) {';
+        private _diffusePart = 'vec3 diffuseColor = vDiffuseColor.rgb;';
+        private _vertexPositionPart = 'gl_Position = viewProjection * finalWorld * vec4(position, 1.0);';
         
         constructor (name: string, builder:ICustomMaterialBuilder, scene: Scene) {
-            super(name, scene); 
-            
+            super(name, scene);  
             this.builder = builder;             
-        }
-        
-        
-         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        } 
+
+        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -409,6 +409,15 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 
                 var shaderName = "default";
+               
+                if (this.builder) {
+ 
+                     shaderName = this.builder(
+                         shaderName, 
+                         this._mainPart,
+                         this._diffusePart, 
+                         this._vertexPositionPart ); 
+               }
 
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
