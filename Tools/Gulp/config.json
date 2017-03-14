@@ -343,9 +343,9 @@
             },  
             {
                 "files": [
-                    "../../materialsLibrary/src/Custom/Babylon.CustonMaterial.ts"
+                    "../../materialsLibrary/src/Custom/Babylon.CustomMaterial.ts"
                 ], 
-                "output": "Babylon.CustomMaterial.js"
+                "output": "babylon.customMaterial.js"
             },
             {
                 "files": [
