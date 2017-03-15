@@ -1,89 +1,87 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>Local Development</title>
-	
-    <script src="https://babylonjs.azurewebsites.net/cannon.js"></script>
-    <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
-	<script src="../assets/refs/dat.gui.min.js"></script>
-	<script src="../tools/DevLoader/BabylonLoader.js"></script>
-
-	<style>
-		html, body {
-			width: 100%;
-			height: 100%;
-			padding: 0;
-			margin: 0;
-			overflow: hidden;
-		}
-
-		#renderCanvas {
-			width: 100%;
-			height: 100%;
-		}
-
-		#fps {
-			position: absolute;
-			background-color: black;
-			border: 2px solid red;
-			text-align: center;
-			font-size: 16px;
-			color: white;
-			top: 15px;
-			left: 10px;
-			width: 60px;
-			height: 20px;
-		}
-	</style>
+    <title>Local Development</title>
+    
+    <script src="https://babylonjs.azurewebsites.net/babylon.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+ 
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
-	<div id="fps">0</div>
-	<canvas id="renderCanvas"></canvas>
-	
-	<script>
-		var canvas = document.getElementById("renderCanvas");
-		var divFps = document.getElementById("fps");
+    <canvas id="renderCanvas"></canvas>
+    
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true, { stencil: false, audioEngine: false });   
+		engine.preventCacheWipeBetweenFrames = true;
+		BABYLON.PerfCounter.Enabled = false;
+ 
+        BABYLON.SceneLoader.ShowLoadingScreen = false;              
+ 
+        BABYLON.SceneLoader.Load("./", "cortana.babylon", engine, function(scene) {
+ 
+            // Replace camera by a arcRotate to be able to rotate around Cortana
+            var newCamera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
+        //    newCamera.attachControl(canvas, false); // Attach mouse control to be able to move around
+            newCamera.setPosition(new BABYLON.Vector3(0, 2, -4));
+ 
+            scene.activeCamera = newCamera;
+            
+            // Update materials (they are pretty good actually only alpha is missing)
+            for (var index = 0; index < scene.materials.length; index++) {
+                scene.materials[index].diffuseTexture.hasAlpha = true;
+                scene.materials[index].useAlphaFromDiffuseTexture = true;
+                scene.materials[index].alpha = 0.5;
 
-		// Global to simulate PG.
-		var engine = null;
+                // Freezing materials
+                scene.materials[index].freeze();
+            }
+ 
+            var mesh = scene.getMeshByName("Inner1");
+            mesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
+            mesh = scene.getMeshByName("Inner2");
+            mesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
+            mesh = scene.getMeshByName("Inner3");
+            mesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
 
-		// Allow querystring to navigate easily in debug in local samples.
-		var indexjs = 'src/index';
-		var sampleSearch = /sample=([0-9]+)/i;
-		var matches = null;
-		if ((matches = sampleSearch.exec(window.location)) !== null) {			
-			indexjs += '.';
-			indexjs += matches[1];
-		}
-		indexjs += '.js';
+            for (var index = 0; index < scene.meshes.length; index++) {
+                // Avoid frustum clipping. No needed here as objects are always visible
+                scene.meshes[index].alwaysSelectAsActiveMesh = true;
+            }
+ 
+            // Find root object
+            var innerSphere = scene.getMeshByName("InnerSphereHolder");
+            var outerSphere = scene.getMeshByName("OuterSphereHolder");
 
-		// Load the scripts + map file to allow vscode debug.
-		BABYLONDEVTOOLS.Loader
-			.require(indexjs)
-			.load(function() {
-				if (BABYLON.Engine.isSupported()) {
-					engine = new BABYLON.Engine(canvas, true, { stencil: true });					
-					BABYLONDEVTOOLS.Loader.debugShortcut(engine);			
-
-					// call the scene creation from the js.
-					var scene = createScene();
-
-					// Register a render loop to repeatedly render the scene
-					engine.runRenderLoop(function () {
-						scene.render();
-						divFps.innerHTML = engine.getFps().toFixed() + " fps";
-					});
-
-					// Resize
-					window.addEventListener("resize", function () {
-						engine.resize();
-					});
-					
-				}
-				else {
-					alert('BabylonJS is not supported.')
-				}
-			});
-	</script>
+            // Set clear color to black (it is white by default)
+            scene.clearColor = BABYLON.Color3.Black();
+        
+            // Register a render loop to repeatedly render the scene
+            engine.runRenderLoop(function () {
+                scene.render();
+ 
+                // Do a bit of self-rotation
+                innerSphere.rotation.y += 0.01;
+                outerSphere.rotation.y -= 0.01;
+            });
+        });
+ 
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });                 
+    </script>
 </body>
 </html>
