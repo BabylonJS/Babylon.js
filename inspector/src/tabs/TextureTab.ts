@@ -80,8 +80,11 @@ module INSPECTOR {
             let texture = item.adapter.object;
 
             let img = Helpers.CreateElement('img', '', this._imagePanel) as HTMLImageElement;
-            // If an url is present, the texture is an image
-            if (texture.url) {
+            if (texture instanceof BABYLON.RenderTargetTexture) {
+                // RenderTarget textures
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, (data) => img.src = data);
+            } else if (texture.url) {
+                // If an url is present, the texture is an image
                 img.src = texture.url;
             } else if (texture['_canvas']) {
                 // Dynamic texture

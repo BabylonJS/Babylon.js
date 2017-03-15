@@ -26,80 +26,160 @@ var Test = (function () {
     };
     Test.prototype._initScene = function () {
         var scene = new BABYLON.Scene(this.engine);
-        var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 4, Math.PI / 2.5, 200, BABYLON.Vector3.Zero(), scene);
-        camera.attachControl(this.engine.getRenderingCanvas(), true);
-        camera.minZ = 0.1;
-        // Lights
-        var light0 = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(0, 10, 0), scene);
-        var light1 = new BABYLON.PointLight("Omni1", new BABYLON.Vector3(0, -10, 0), scene);
-        var light2 = new BABYLON.PointLight("Omni2", new BABYLON.Vector3(10, 0, 0), scene);
-        var light3 = new BABYLON.DirectionalLight("Dir0", new BABYLON.Vector3(1, -1, 0), scene);
-        var material = new BABYLON.StandardMaterial("kosh", scene);
-        var sphere = BABYLON.Mesh.CreateSphere("Sphere", 16, 3, scene);
-        // Creating light sphere
-        var lightSphere0 = BABYLON.Mesh.CreateSphere("Sphere0", 16, 0.5, scene);
-        var lightSphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 16, 0.5, scene);
-        var lightSphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 16, 0.5, scene);
-        lightSphere0.material = new BABYLON.StandardMaterial("red", scene);
-        lightSphere0.material.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere0.material.specularColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere0.material.emissiveColor = new BABYLON.Color3(1, 0, 0);
-        lightSphere1.material = new BABYLON.StandardMaterial("green", scene);
-        lightSphere1.material.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere1.material.specularColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere1.material.emissiveColor = new BABYLON.Color3(0, 1, 0);
-        lightSphere2.material = new BABYLON.StandardMaterial("blue", scene);
-        lightSphere2.material.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere2.material.specularColor = new BABYLON.Color3(0, 0, 0);
-        lightSphere2.material.emissiveColor = new BABYLON.Color3(0, 0, 1);
-        // Sphere material
-        material.diffuseColor = new BABYLON.Color3(1, 1, 1);
-        sphere.material = material;
-        // Lights colors
-        light0.diffuse = new BABYLON.Color3(1, 0, 0);
-        light0.specular = new BABYLON.Color3(1, 0, 0);
-        light1.diffuse = new BABYLON.Color3(0, 1, 0);
-        light1.specular = new BABYLON.Color3(0, 1, 0);
-        light2.diffuse = new BABYLON.Color3(0, 0, 1);
-        light2.specular = new BABYLON.Color3(0, 0, 1);
-        light3.diffuse = new BABYLON.Color3(1, 1, 1);
-        light3.specular = new BABYLON.Color3(1, 1, 1);
-        BABYLON.Effect.ShadersStore["customVertexShader"] = `precision highp float;
-        attribute vec3 position;
-        attribute vec2 uv;
-        uniform mat4 worldViewProjection;
-        varying vec2 vUV;
-        varying vec3 vPos;
-        void main(){vec4 p = vec4( position, 1. );
-            gl_Position = worldViewProjection * vec4(position, 1.0);
-            vUV = uv;
-        }`;
-        BABYLON.Effect.ShadersStore["customFragmentShader"] = 'precision highp float;varying vec3 vPos;uniform vec3 color;void main(){gl_FragColor=vec4(mix(color,vPos,.05),1.);}';
-        var shaderMaterial = new BABYLON.ShaderMaterial("shader", scene, {
-            vertex: "custom",
-            fragment: "custom",
-        }, {
-                attributes: ["position", "normal", "uv"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
-            });
-        sphere.material = shaderMaterial;
-        // Animations
-        var alpha = 0;
-        scene.beforeRender = function () {
-            light0.position = new BABYLON.Vector3(10 * Math.sin(alpha), 0, 10 * Math.cos(alpha));
-            light1.position = new BABYLON.Vector3(10 * Math.sin(alpha), 0, -10 * Math.cos(alpha));
-            light2.position = new BABYLON.Vector3(10 * Math.cos(alpha), 0, 10 * Math.sin(alpha));
-            lightSphere0.position = light0.position;
-            lightSphere1.position = light1.position;
-            lightSphere2.position = light2.position;
-            alpha += 0.01;
-        };
+        var canvas = scene.getEngine().getRenderingCanvas();
+        var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 
-        // Create texture panel
-        let panel = BABYLON.Mesh.CreatePlane('plane', 10, scene);
-        let tex = new BABYLON.StandardMaterial('panelMat', scene);
-        tex.diffuseTexture = new BABYLON.Texture('/assets/textures/amiga.jpg', scene);
-        panel.material = tex;
+        var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 1.0, 110, new BABYLON.Vector3(0, -20, 0), scene);
+        camera.attachControl(canvas, true);
+
+        var camera1 = new BABYLON.ArcRotateCamera("Camera1", 1.58, 1.2, 110, BABYLON.Vector3.Zero(), scene);
+        var camera2 = new BABYLON.ArcRotateCamera("Camera2", Math.PI / 3, .8, 40, BABYLON.Vector3.Zero(), scene);
+        var camera3 = new BABYLON.ArcRotateCamera("Camera3", -Math.PI / 5, 1.0, 70, BABYLON.Vector3.Zero(), scene);
+        var camera4 = new BABYLON.ArcRotateCamera("Camera4", -Math.PI / 6, 1.3, 110, BABYLON.Vector3.Zero(), scene);
+
+        camera1.layerMask = 2;
+        camera2.layerMask = 2;
+        camera3.layerMask = 2;
+        camera4.layerMask = 2;
+        /*
+            camera1.parent = camera;
+            camera2.parent = camera;
+            camera3.parent = camera;
+            camera4.parent = camera;
+        */
+
+        var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
+        var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
+        var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 10.0, 9.0, scene);
+        var sphere4 = BABYLON.Mesh.CreateSphere("Sphere4", 10.0, 9.0, scene);
+        var sphere5 = BABYLON.Mesh.CreateSphere("Sphere5", 10.0, 9.0, scene);
+        var sphere6 = BABYLON.Mesh.CreateSphere("Sphere6", 10.0, 9.0, scene);
+
+        sphere1.position.x = 40;
+        sphere2.position.x = 25;
+        sphere3.position.x = 10;
+        sphere4.position.x = -5;
+        sphere5.position.x = -20;
+        sphere6.position.x = -35;
+
+        var rt1 = new BABYLON.RenderTargetTexture("depth", 1024, scene, true, true);
+        scene.customRenderTargets.push(rt1);
+        rt1.activeCamera = camera1;
+        rt1.renderList = scene.meshes;
+
+        var rt2 = new BABYLON.RenderTargetTexture("depth", 1024, scene, true, true);
+        scene.customRenderTargets.push(rt2);
+        rt2.activeCamera = camera2;
+        rt2.renderList = scene.meshes;
+
+        var rt3 = new BABYLON.RenderTargetTexture("depth", 1024, scene, true, true);
+        scene.customRenderTargets.push(rt3);
+        rt3.activeCamera = camera3;
+        rt3.renderList = scene.meshes;
+
+        var rt4 = new BABYLON.RenderTargetTexture("depth", 1024, scene, true, true);
+        scene.customRenderTargets.push(rt4);
+        rt4.activeCamera = camera4;
+        rt4.renderList = scene.meshes;
+
+        var mon1 = BABYLON.Mesh.CreatePlane("plane", 5, scene);
+        mon1.position = new BABYLON.Vector3(-8.8, -7.8, 25)
+        // mon1.showBoundingBox = true;
+        var mon1mat = new BABYLON.StandardMaterial("texturePlane", scene);
+        mon1mat.diffuseTexture = rt1;
+        mon1.material = mon1mat;
+        mon1.parent = camera;
+        mon1.layerMask = 1;
+
+        var mon2 = BABYLON.Mesh.CreatePlane("plane", 5, scene);
+        mon2.position = new BABYLON.Vector3(-2.9, -7.8, 25)
+        // mon2.showBoundingBox = true;
+        var mon2mat = new BABYLON.StandardMaterial("texturePlane", scene);
+        mon2mat.diffuseTexture = rt2;
+        mon2.material = mon2mat;
+        mon2.parent = camera;
+        mon2.layerMask = 1;
+
+        var mon3 = BABYLON.Mesh.CreatePlane("plane", 5, scene);
+        mon3.position = new BABYLON.Vector3(2.9, -7.8, 25)
+        // mon3.showBoundingBox = true;
+        var mon3mat = new BABYLON.StandardMaterial("texturePlane", scene);
+        mon3mat.diffuseTexture = rt3;
+        mon3.material = mon3mat;
+        mon3.parent = camera;
+        mon3.layerMask = 1;
+
+
+        var mon4 = BABYLON.Mesh.CreatePlane("plane", 5, scene);
+        mon4.position = new BABYLON.Vector3(8.8, -7.8, 25)
+        // mon4.showBoundingBox = true;
+        var mon4mat = new BABYLON.StandardMaterial("texturePlane", scene);
+        mon4mat.diffuseTexture = rt4;
+        mon4.material = mon4mat;
+        mon4.parent = camera;
+        mon4.layerMask = 1;
+
+
+        var butback = BABYLON.MeshBuilder.CreatePlane("plane", { width: 25, height: 6 }, scene);
+        butback.position = new BABYLON.Vector3(0, -8.2, 26)
+        // butback.showBoundingBox = true;
+        var butbackmat = new BABYLON.StandardMaterial("texturePlane", scene);
+        butbackmat.diffuseColor = BABYLON.Color3.Black();
+        butback.material = butbackmat;
+        butback.parent = camera;
+        butback.layerMask = 1;
+
+        var plane = BABYLON.Mesh.CreatePlane("plane", 120, scene);
+        plane.position.y = -5;
+        plane.rotation.x = Math.PI / 2;
+
+        var materialSphere1 = new BABYLON.StandardMaterial("texture1", scene);
+        materialSphere1.wireframe = true;
+
+        //Creation of a red material with alpha
+        var materialSphere2 = new BABYLON.StandardMaterial("texture2", scene);
+        materialSphere2.diffuseColor = new BABYLON.Color3(1, 0, 0); //Red
+        materialSphere2.alpha = 0.3;
+
+        //Creation of a material with an image texture
+        var materialSphere3 = new BABYLON.StandardMaterial("texture3", scene);
+        materialSphere3.diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene);
+
+        //Creation of a material with translated texture
+        var materialSphere4 = new BABYLON.StandardMaterial("texture4", scene);
+        materialSphere4.diffuseTexture = new BABYLON.Texture("/assets/textures/floor.png", scene);
+        materialSphere4.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+        materialSphere4.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        //Creation of a material with an alpha texture
+        var materialSphere5 = new BABYLON.StandardMaterial("texture5", scene);
+        materialSphere5.diffuseTexture = new BABYLON.Texture("/assets/textures/rock.png", scene);
+        materialSphere5.diffuseTexture.hasAlpha = true;//Has an alpha
+
+        //Creation of a material and show all the faces
+        var materialSphere6 = new BABYLON.StandardMaterial("texture6", scene);
+        materialSphere6.diffuseTexture = new BABYLON.Texture("/assets/textures/grass.png", scene);
+        materialSphere6.diffuseTexture.hasAlpha = true;//Have an alpha
+        materialSphere6.backFaceCulling = false;//Show all the faces of the element
+
+        //Creation of a repeated textured material
+        var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
+        materialPlane.diffuseTexture = new BABYLON.Texture("/assets/textures/mixMap.png", scene);
+        materialPlane.diffuseTexture.uScale = 5.0;
+        materialPlane.diffuseTexture.vScale = 5.0;
+        materialPlane.backFaceCulling = false;
+
+        //Apply the materials to meshes
+        sphere1.material = materialSphere1;
+        sphere2.material = materialSphere2;
+
+        sphere3.material = materialSphere3;
+        sphere4.material = materialSphere4;
+
+        sphere5.material = materialSphere5;
+        sphere6.material = materialSphere6;
+
+        plane.material = materialPlane;
 
 
         this.scene = scene;
