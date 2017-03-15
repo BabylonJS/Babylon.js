@@ -620,7 +620,7 @@
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[0]._updateCameraRotationMatrix = WebVRFreeCamera.prototype._updateWebVRCameraRotationMatrix;
 
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
@@ -631,7 +631,7 @@
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[1]._updateCameraRotationMatrix = WebVRFreeCamera.prototype._updateWebVRCameraRotationMatrix;
                     }
                     break;
 
@@ -649,8 +649,9 @@
         }
 
         protected _updateCameraRotationMatrix() {
-            // only here for webvr
+            //Here for WebVR
         }
+
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
          * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
