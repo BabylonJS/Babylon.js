@@ -94,6 +94,10 @@ declare module INSPECTOR {
             type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
         };
+        'FreeCamera': {
+            type: typeof BABYLON.FreeCamera;
+            properties: string[];
+        };
         'Scene': {
             type: typeof BABYLON.Scene;
             properties: string[];
@@ -265,6 +269,20 @@ declare module INSPECTOR {
          * Should be called only one time as it will fill this._axis
          */
         private _drawAxis();
+    }
+}
+
+declare module INSPECTOR {
+    class CameraAdapter extends Adapter implements ICameraPOV {
+        constructor(obj: BABYLON.Camera);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPOV(): void;
     }
 }
 
@@ -750,6 +768,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class CameraTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
@@ -1030,5 +1055,20 @@ declare module INSPECTOR {
         private _tooltip;
         constructor(obj: IToolInfo);
         protected action(): void;
+    }
+}
+
+declare module INSPECTOR {
+    interface ICameraPOV {
+        setPOV: () => void;
+    }
+    /**
+     *
+     */
+    class CameraPOV extends AbstractTreeTool {
+        private cameraPOV;
+        constructor(camera: ICameraPOV);
+        protected action(): void;
+        private _gotoPOV();
     }
 }

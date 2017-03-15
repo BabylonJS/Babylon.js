@@ -29,6 +29,10 @@ var Test = (function () {
         var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 4, Math.PI / 2.5, 200, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(this.engine.getRenderingCanvas(), true);
         camera.minZ = 0.1;
+        var camera2 = new BABYLON.FreeCamera("Camera2", new BABYLON.Vector3(0,0,0), scene);
+        camera2.attachControl(this.engine.getRenderingCanvas(), true);
+        camera2.keysDown = '155';
+        camera2.minZ = 0.1;
         // Lights
         var light0 = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(0, 10, 0), scene);
         var light1 = new BABYLON.PointLight("Omni1", new BABYLON.Vector3(0, -10, 0), scene);

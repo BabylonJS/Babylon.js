@@ -336,6 +336,7 @@ var INSPECTOR;
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
+                'position',
                 'alpha',
                 'beta',
                 'radius',
@@ -351,6 +352,21 @@ var INSPECTOR;
                 'pinchPrecision',
                 'wheelPrecision',
                 'allowUpsideDown',
+                'checkCollisions'
+            ]
+        },
+        'FreeCamera': {
+            type: BABYLON.FreeCamera,
+            properties: [
+                'position',
+                'ellipsoid',
+                'applyGravity',
+                'angularSensibility',
+                'keysUp',
+                'keysDown',
+                'keysLeft',
+                'keysRight',
+                'onCollide',
                 'checkCollisions'
             ]
         },
@@ -916,6 +932,64 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=MeshAdapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var CameraAdapter = (function (_super) {
+        __extends(CameraAdapter, _super);
+        function CameraAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        CameraAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        CameraAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        CameraAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            var camToDisplay = [];
+            // The if is there to work with the min version of babylon
+            if (this._obj instanceof BABYLON.ArcRotateCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['ArcRotateCamera'].properties;
+            }
+            else if (this._obj instanceof BABYLON.FreeCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['FreeCamera'].properties;
+            }
+            for (var _i = 0, camToDisplay_1 = camToDisplay; _i < camToDisplay_1.length; _i++) {
+                var dirty = camToDisplay_1[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        CameraAdapter.prototype.getTools = function () {
+            var tools = [];
+            // tools.push(new Checkbox(this));
+            tools.push(new INSPECTOR.CameraPOV(this._obj));
+            return tools;
+        };
+        CameraAdapter.prototype.setPOV = function () {
+            this._obj.getScene().activeCamera = this._obj;
+        };
+        return CameraAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.CameraAdapter = CameraAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=CameraAdapter.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1736,8 +1810,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.TextureElement = TextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=TextureElement.js.map
 
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -3079,6 +3151,34 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var INSPECTOR;
 (function (INSPECTOR) {
+    var CameraTab = (function (_super) {
+        __extends(CameraTab, _super);
+        function CameraTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Camera', inspector) || this;
+        }
+        /* Overrides super */
+        CameraTab.prototype._getTree = function () {
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.cameras; _i < _a.length; _i++) {
+                var camera = _a[_i];
+                arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.CameraAdapter(camera)));
+            }
+            return arr;
+        };
+        return CameraTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.CameraTab = CameraTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
@@ -3106,6 +3206,7 @@ var INSPECTOR;
                 _this._tabs.push(new INSPECTOR.Canvas2DTab(_this, _this._inspector));
             }
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
             _this._build();
             // Active the first tab
@@ -4009,4 +4110,44 @@ var INSPECTOR;
         return Info;
     }(INSPECTOR.AbstractTreeTool));
     INSPECTOR.Info = Info;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     *
+     */
+    var CameraPOV = (function (_super) {
+        __extends(CameraPOV, _super);
+        function CameraPOV(camera) {
+            var _this = _super.call(this) || this;
+            _this.cameraPOV = camera;
+            _this._elem.classList.add('fa-video-camera');
+            return _this;
+            //let cameraPos = camera.setPOV();
+        }
+        CameraPOV.prototype.action = function () {
+            _super.prototype.action.call(this);
+            //
+            this._gotoPOV();
+        };
+        CameraPOV.prototype._gotoPOV = function () {
+            if (this._on) {
+                // set icon camera
+                this._elem.classList.add('active');
+                this.cameraPOV.setPOV();
+            }
+            else {
+                // set icon camera slash
+                this._elem.classList.remove('active');
+            }
+        };
+        return CameraPOV;
+    }(INSPECTOR.AbstractTreeTool));
+    INSPECTOR.CameraPOV = CameraPOV;
 })(INSPECTOR || (INSPECTOR = {}));
