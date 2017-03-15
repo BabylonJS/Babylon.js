@@ -1131,10 +1131,13 @@
          *   });
          */
         public resize(): void {
-            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+            // We're not resizing the size of the canvas while in VR mode & presenting
+            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
 
-            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+                this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            }
         }
 
         /**
