@@ -7121,6 +7121,9 @@ var BABYLON;
          * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
          */
         PerfCounter.prototype.addCount = function (newCount, fetchResult) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._current += newCount;
             if (fetchResult) {
                 this._fetchResult();
@@ -7130,6 +7133,9 @@ var BABYLON;
          * Start monitoring this performance counter
          */
         PerfCounter.prototype.beginMonitoring = function () {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._startMonitoringTime = Tools.Now;
         };
         /**
@@ -7138,6 +7144,9 @@ var BABYLON;
          */
         PerfCounter.prototype.endMonitoring = function (newFrame) {
             if (newFrame === void 0) { newFrame = true; }
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             if (newFrame) {
                 this.fetchNewFrame();
             }
@@ -7165,6 +7174,7 @@ var BABYLON;
         };
         return PerfCounter;
     }());
+    PerfCounter.Enabled = true;
     BABYLON.PerfCounter = PerfCounter;
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -7849,6 +7859,7 @@ var BABYLON;
             this.isPointerLock = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
+            this.preventCacheWipeBetweenFrames = false;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = true;
             this.scenes = new Array();
@@ -8710,9 +8721,12 @@ var BABYLON;
          *   });
          */
         Engine.prototype.resize = function () {
-            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
-            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            // We're not resizing the size of the canvas while in VR mode & presenting
+            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+                this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            }
         };
         /**
          * force a specific size of the canvas
@@ -9457,6 +9471,9 @@ var BABYLON;
         };
         // Textures
         Engine.prototype.wipeCaches = function () {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
             this._stencilState.reset();
@@ -16128,14 +16145,14 @@ var BABYLON;
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
                         //Left eye
                         this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
+                        this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
-                        //this._rigCameras[0].setCameraRigParameter('eyeParameters', leftEye);
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
@@ -16143,7 +16160,7 @@ var BABYLON;
                         this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
                         //Right eye
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                        //this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
+                        this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
@@ -17690,6 +17707,13 @@ var BABYLON;
             if (needToRotate) {
                 this.rotation.x += this.cameraRotation.x;
                 this.rotation.y += this.cameraRotation.y;
+                //rotate, if quaternion is set and rotation was used
+                if (this.rotationQuaternion) {
+                    var len = this.rotation.length();
+                    if (len) {
+                        BABYLON.Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    }
+                }
                 if (!this.noRotationConstraint) {
                     var limit = (Math.PI / 2) * 0.95;
                     if (this.rotation.x > limit)
@@ -49320,12 +49344,13 @@ var BABYLON;
                 this._webvrViewMatrix.m[12] += parentCamera.position.x;
                 this._webvrViewMatrix.m[13] += parentCamera.position.y;
                 this._webvrViewMatrix.m[14] += parentCamera.position.z;
+                // is rotation offset set? 
+                if (!BABYLON.Quaternion.IsIdentity(this.rotationQuaternion)) {
+                    this._webvrViewMatrix.decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
+                    this.rotationQuaternion.multiplyToRef(BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Quaternion[0]);
+                    BABYLON.Matrix.ComposeToRef(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1], this._webvrViewMatrix);
+                }
                 this._webvrViewMatrix.invert();
-            }
-            // is rotation offset set? 
-            if (!BABYLON.Quaternion.IsIdentity(this.rotationQuaternion)) {
-                this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
-                this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
             this._updateCameraRotationMatrix();
             BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
@@ -51505,11 +51530,11 @@ var BABYLON;
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
             // update this device's offset position from the attached camera, if provided
-            if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
-                //this.position.copyFrom(this._poseControlledCamera.position);
-                //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
-                this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
-            }
+            //if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
+            //this.position.copyFrom(this._poseControlledCamera.position);
+            //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
+            //this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
+            //}
             var pose = this.vrGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
@@ -51527,11 +51552,6 @@ var BABYLON;
                     }
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-                    // scale the position using the scale factor, add the device's position
-                    if (this._poseControlledCamera) {
-                        // this allows total positioning freedom - the device, the camera and the mesh can be individually controlled.
-                        this._calculatedPosition.addInPlace(this._poseControlledCamera.position);
-                    }
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
@@ -51542,20 +51562,27 @@ var BABYLON;
                     // if the camera is set, rotate to the camera's rotation
                     this.rotationQuaternion.multiplyToRef(this.deviceRotationQuaternion, this._calculatedRotation);
                     if (this._poseControlledCamera) {
-                        this._calculatedRotation.multiplyToRef(this._poseControlledCamera.rotationQuaternion, this._calculatedRotation);
+                        BABYLON.Matrix.ScalingToRef(1, 1, 1, BABYLON.Tmp.Matrix[1]);
+                        this._calculatedRotation.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
+                        BABYLON.Matrix.TranslationToRef(this._calculatedPosition.x, this._calculatedPosition.y, this._calculatedPosition.z, BABYLON.Tmp.Matrix[2]);
+                        //Matrix.Identity().multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
+                        BABYLON.Tmp.Matrix[1].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
+                        this._poseControlledCamera.getWorldMatrix().getTranslationToRef(BABYLON.Tmp.Vector3[0]);
+                        BABYLON.Matrix.ComposeToRef(new BABYLON.Vector3(this.deviceScaleFactor, this.deviceScaleFactor, this.deviceScaleFactor), this._poseControlledCamera.rotationQuaternion, BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Matrix[4]);
+                        BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[2], BABYLON.Tmp.Matrix[1]);
+                        BABYLON.Tmp.Matrix[1].multiplyToRef(BABYLON.Tmp.Matrix[4], BABYLON.Tmp.Matrix[2]);
+                        BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], this._calculatedRotation, this._calculatedPosition);
                     }
                 }
             }
         };
         PoseEnabledController.prototype.attachToMesh = function (mesh) {
-            this._mesh = mesh;
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new BABYLON.Quaternion();
             }
         };
         PoseEnabledController.prototype.attachToPoseControlledCamera = function (camera) {
             this._poseControlledCamera = camera;
-            this.deviceScaleFactor = camera.deviceScaleFactor;
         };
         PoseEnabledController.prototype.detachMesh = function () {
             this._mesh = undefined;

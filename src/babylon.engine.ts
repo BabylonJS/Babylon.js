@@ -422,6 +422,7 @@
         public isPointerLock = false;
         public cullBackFaces = true;
         public renderEvenInBackground = true;
+        public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
         public enableOfflineSupport = true;
         public scenes = new Array<Scene>();
@@ -2065,6 +2066,9 @@
 
         // Textures
         public wipeCaches(): void {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
 

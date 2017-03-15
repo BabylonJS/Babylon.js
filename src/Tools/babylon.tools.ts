@@ -1184,6 +1184,8 @@
      * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
      */
     export class PerfCounter {
+        public static Enabled = true;
+
         /**
          * Returns the smallest value ever
          */
@@ -1253,6 +1255,9 @@
          * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
          */
         public addCount(newCount: number, fetchResult: boolean) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._current += newCount;
             if (fetchResult) {
                 this._fetchResult();
@@ -1263,6 +1268,9 @@
          * Start monitoring this performance counter
          */
         public beginMonitoring() {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._startMonitoringTime = Tools.Now;
         }
 
@@ -1271,6 +1279,10 @@
          * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
          */
         public endMonitoring(newFrame: boolean = true) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
+                        
             if (newFrame) {
                 this.fetchNewFrame();
             }
