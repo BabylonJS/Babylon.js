@@ -934,7 +934,7 @@ module BABYLON {
                 var translation = node.translation || [0, 0, 0];
                 var rotation = node.rotation || [0, 0, 0, 1];
                 var scale = node.scale || [1, 1, 1];
-                configureNode(lastNode, Vector3.FromArray(translation), Quaternion.RotationAxis(Vector3.FromArray(rotation).normalize(), rotation[3]), Vector3.FromArray(scale));
+                configureNode(lastNode, Vector3.FromArray(translation), Quaternion.FromArray(rotation), Vector3.FromArray(scale));
             }
 
             lastNode.updateCache(true);
