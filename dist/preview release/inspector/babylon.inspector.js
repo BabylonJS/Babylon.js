@@ -333,6 +333,21 @@ var INSPECTOR;
             ],
             format: function (tex) { return tex.name; }
         },
+        'MapTexture': {
+            type: BABYLON.MapTexture
+        },
+        'RenderTargetTexture': {
+            type: BABYLON.RenderTargetTexture
+        },
+        'DynamicTexture': {
+            type: BABYLON.DynamicTexture
+        },
+        'BaseTexture': {
+            type: BABYLON.BaseTexture
+        },
+        'FontTexture': {
+            type: BABYLON.FontTexture
+        },
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
@@ -360,6 +375,9 @@ var INSPECTOR;
             properties: [
                 'position',
                 'rotation',
+                'rotationQuaternion',
+                'cameraDirection',
+                'cameraRotation',
                 'ellipsoid',
                 'applyGravity',
                 'angularSensibility',
@@ -367,8 +385,19 @@ var INSPECTOR;
                 'keysDown',
                 'keysLeft',
                 'keysRight',
-                'onCollide',
-                'checkCollisions'
+                'checkCollisions',
+                'speed',
+                'lockedTarget',
+                'noRotationConstraint',
+                'fov',
+                'inertia',
+                'minZ', 'maxZ',
+                'layerMask',
+                'mode',
+                'orthoBottom',
+                'orthoTop',
+                'orthoLeft',
+                'orthoRight'
             ]
         },
         'Scene': {
@@ -693,13 +722,8 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         TextureAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Texture'].properties; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            // Not used in this tab
+            return [];
         };
         TextureAdapter.prototype.getTools = function () {
             var tools = [];
