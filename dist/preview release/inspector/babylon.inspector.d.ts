@@ -94,6 +94,10 @@ declare module INSPECTOR {
             type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
         };
+        'FreeCamera': {
+            type: typeof BABYLON.FreeCamera;
+            properties: string[];
+        };
         'Scene': {
             type: typeof BABYLON.Scene;
             properties: string[];
@@ -181,6 +185,33 @@ declare module INSPECTOR {
         abstract getTools(): Array<AbstractTreeTool>;
         /** Should be overriden in subclasses */
         highlight(b: boolean): void;
+    }
+}
+
+declare module INSPECTOR {
+    class CameraAdapter extends Adapter implements ICameraPOV {
+        constructor(obj: BABYLON.Camera);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class TextureAdapter extends Adapter {
+        constructor(obj: BABYLON.BaseTexture);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
     }
 }
 
@@ -596,6 +627,10 @@ declare module INSPECTOR {
         filter(str: string): void;
         /** Dispose properly this tab */
         abstract dispose(): any;
+        /** Select an item in the tree */
+        select(item: TreeItem): void;
+        /** Highlight the given node, and downplay all others */
+        highlightNode(item?: TreeItem): void;
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -635,6 +670,27 @@ declare module INSPECTOR {
         filter(filter: string): void;
         /** Builds the tree panel */
         protected abstract _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class CameraTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class TextureTab extends Tab {
+        private _inspector;
+        /** The panel containing a list of items */
+        protected _treePanel: HTMLElement;
+        protected _treeItems: Array<TreeItem>;
+        private _imagePanel;
+        constructor(tabbar: TabBar, inspector: Inspector);
+        dispose(): void;
+        update(_items?: Array<TreeItem>): void;
+        private _getTree();
     }
 }
 
@@ -909,7 +965,7 @@ declare module INSPECTOR {
         private _tools;
         children: Array<TreeItem>;
         private _lineContent;
-        constructor(tab: PropertyTab, obj: Adapter);
+        constructor(tab: Tab, obj: Adapter);
         /** Returns the item ID == its adapter ID */
         readonly id: string;
         /** Add the given item as a child of this one */
@@ -979,6 +1035,21 @@ declare module INSPECTOR {
         constructor(obj: IToolBoundingBox);
         protected action(): void;
         private _check();
+    }
+}
+
+declare module INSPECTOR {
+    interface ICameraPOV {
+        setPOV: () => void;
+    }
+    /**
+     *
+     */
+    class CameraPOV extends AbstractTreeTool {
+        private cameraPOV;
+        constructor(camera: ICameraPOV);
+        protected action(): void;
+        private _gotoPOV();
     }
 }
 

@@ -336,6 +336,7 @@ var INSPECTOR;
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
+                'position',
                 'alpha',
                 'beta',
                 'radius',
@@ -351,6 +352,21 @@ var INSPECTOR;
                 'pinchPrecision',
                 'wheelPrecision',
                 'allowUpsideDown',
+                'checkCollisions'
+            ]
+        },
+        'FreeCamera': {
+            type: BABYLON.FreeCamera,
+            properties: [
+                'position',
+                'ellipsoid',
+                'applyGravity',
+                'angularSensibility',
+                'keysUp',
+                'keysDown',
+                'keysLeft',
+                'keysRight',
+                'onCollide',
                 'checkCollisions'
             ]
         },
@@ -581,6 +597,110 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=Adapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var CameraAdapter = (function (_super) {
+        __extends(CameraAdapter, _super);
+        function CameraAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        CameraAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        CameraAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        CameraAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            var camToDisplay = [];
+            // The if is there to work with the min version of babylon
+            if (this._obj instanceof BABYLON.ArcRotateCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['ArcRotateCamera'].properties;
+            }
+            else if (this._obj instanceof BABYLON.FreeCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['FreeCamera'].properties;
+            }
+            for (var _i = 0, camToDisplay_1 = camToDisplay; _i < camToDisplay_1.length; _i++) {
+                var dirty = camToDisplay_1[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        CameraAdapter.prototype.getTools = function () {
+            var tools = [];
+            // tools.push(new Checkbox(this));
+            tools.push(new INSPECTOR.CameraPOV(this));
+            return tools;
+        };
+        CameraAdapter.prototype.setPOV = function () {
+            this._obj.getScene().activeCamera = this._obj;
+        };
+        return CameraAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.CameraAdapter = CameraAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=CameraAdapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var TextureAdapter = (function (_super) {
+        __extends(TextureAdapter, _super);
+        function TextureAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        TextureAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        TextureAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        TextureAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Texture'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        TextureAdapter.prototype.getTools = function () {
+            var tools = [];
+            // tools.push(new CameraPOV(this));
+            return tools;
+        };
+        return TextureAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.TextureAdapter = TextureAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=TextureAdapter.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1694,8 +1814,6 @@ var INSPECTOR;
     INSPECTOR.SearchBar = SearchBar;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=SearchBar.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -1736,8 +1854,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.TextureElement = TextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=TextureElement.js.map
 
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -2014,6 +2130,14 @@ var INSPECTOR;
         /** Add this in the propertytab with the searchbar */
         Tab.prototype.filter = function (str) { };
         ;
+        /** Select an item in the tree */
+        Tab.prototype.select = function (item) {
+            // To define in subclasses if needed 
+        };
+        /** Highlight the given node, and downplay all others */
+        Tab.prototype.highlightNode = function (item) {
+            // To define in subclasses if needed
+        };
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -2162,6 +2286,101 @@ var INSPECTOR;
         return PropertyTab;
     }(INSPECTOR.Tab));
     INSPECTOR.PropertyTab = PropertyTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var CameraTab = (function (_super) {
+        __extends(CameraTab, _super);
+        function CameraTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Camera', inspector) || this;
+        }
+        /* Overrides super */
+        CameraTab.prototype._getTree = function () {
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.cameras; _i < _a.length; _i++) {
+                var camera = _a[_i];
+                arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.CameraAdapter(camera)));
+            }
+            return arr;
+        };
+        return CameraTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.CameraTab = CameraTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var TextureTab = (function (_super) {
+        __extends(TextureTab, _super);
+        function TextureTab(tabbar, inspector) {
+            var _this = _super.call(this, tabbar, 'Textures') || this;
+            _this._treeItems = [];
+            _this._inspector = inspector;
+            // Build the properties panel : a div that will contains the tree and the detail panel
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            // Build the treepanel
+            _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
+            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            Split([_this._treePanel, _this._imagePanel], {
+                blockDrag: _this._inspector.popupMode,
+                direction: 'vertical'
+            });
+            _this.update();
+            return _this;
+        }
+        TextureTab.prototype.dispose = function () {
+            // Nothing to dispose
+        };
+        TextureTab.prototype.update = function (_items) {
+            var items;
+            if (_items) {
+                items = _items;
+            }
+            else {
+                // Rebuild the tree
+                this._treeItems = this._getTree();
+                items = this._treeItems;
+            }
+            // Clean the tree
+            INSPECTOR.Helpers.CleanDiv(this._treePanel);
+            INSPECTOR.Helpers.CleanDiv(this._imagePanel);
+            // Sort items alphabetically
+            items.sort(function (item1, item2) {
+                return item1.compareTo(item2);
+            });
+            // Display items
+            for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+                var item = items_1[_i];
+                this._treePanel.appendChild(item.toHtml());
+            }
+        };
+        /* Overrides super */
+        TextureTab.prototype._getTree = function () {
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.textures; _i < _a.length; _i++) {
+                var tex = _a[_i];
+                arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.TextureAdapter(tex)));
+            }
+            return arr;
+        };
+        return TextureTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.TextureTab = TextureTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2633,34 +2852,6 @@ var INSPECTOR;
                 inside = this._beautify(inside, level + 1);
                 return this._beautify(left, level) + '{\n' + inside + '\n' + spaces + '}\n' + this._beautify(right, level);
             }
-            // // Replace bracket with @1 and @2 with correct indentation
-            // let newInside          = "@1\n\t" + inside + "\n@2";
-            // newInside              = newInside.replace(/;\n/g, ";\n\t");
-            // glsl                   = glsl.replace(insideWithBrackets, newInside);
-            // firstBracket       = glsl.indexOf('{');
-            // lastBracket        = glsl.lastIndexOf('}');
-            // }
-            // console.log(glsl);
-            // let regex = /(\{(?:\{??[^\{]*?}))+/gmi;
-            // let tmp = glsl;
-            // let m;
-            // while ((m = regex.exec(tmp)) !== null) {
-            //     // This is necessary to avoid infinite loops with zero-width matches
-            //     if (m.index === regex.lastIndex) {
-            //         regex.lastIndex++;
-            //     }                
-            //     // The result can be accessed through the `m`-variable.
-            //     m.forEach((match, groupIndex) => {
-            //         // Remove the first and the last bracket only
-            //         let matchWithoutBrackets = match.replace(/{/, "").replace(/}/, "");
-            //         // Indent the content inside brackets with tabs
-            //         glsl = glsl.replace(match, `{\n\t${matchWithoutBrackets}\n}\n`);
-            //         // removes the match from tmp
-            //         tmp = tmp.replace(match, "");
-            //         // and continue
-            //     });
-            // }
-            // return 
         };
         return ShaderTab;
     }(INSPECTOR.Tab));
@@ -3094,6 +3285,7 @@ var INSPECTOR;
             /** The list of tabs visible, displayed in the tab bar */
             _this._visibleTabs = [];
             _this._inspector = inspector;
+            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SceneTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
@@ -3106,6 +3298,7 @@ var INSPECTOR;
                 _this._tabs.push(new INSPECTOR.Canvas2DTab(_this, _this._inspector));
             }
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
             _this._build();
             // Active the first tab
@@ -3901,6 +4094,45 @@ var INSPECTOR;
         return BoundingBox;
     }(INSPECTOR.AbstractTreeTool));
     INSPECTOR.BoundingBox = BoundingBox;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     *
+     */
+    var CameraPOV = (function (_super) {
+        __extends(CameraPOV, _super);
+        function CameraPOV(camera) {
+            var _this = _super.call(this) || this;
+            _this.cameraPOV = camera;
+            _this._elem.classList.add('fa-video-camera');
+            return _this;
+        }
+        CameraPOV.prototype.action = function () {
+            _super.prototype.action.call(this);
+            this._gotoPOV();
+        };
+        CameraPOV.prototype._gotoPOV = function () {
+            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-video-camera.active");
+            console.log(actives);
+            for (var i = 0; i < actives.length; i++) {
+                actives[i].classList.remove('active');
+            }
+            //if (this._on) {
+            // set icon camera
+            this._elem.classList.add('active');
+            //}
+            this.cameraPOV.setPOV();
+        };
+        return CameraPOV;
+    }(INSPECTOR.AbstractTreeTool));
+    INSPECTOR.CameraPOV = CameraPOV;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {

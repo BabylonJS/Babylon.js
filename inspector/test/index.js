@@ -5,8 +5,8 @@ var Test = (function () {
     function Test(canvasId) {
         var _this = this;
         var canvas = document.getElementById(canvasId);
-        this.engine = new BABYLON.Engine(canvas, true);					
-		BABYLONDEVTOOLS.Loader.debugShortcut(this.engine);
+        this.engine = new BABYLON.Engine(canvas, true);
+        BABYLONDEVTOOLS.Loader.debugShortcut(this.engine);
         this.scene = null;
         window.addEventListener("resize", function () {
             _this.engine.resize();
@@ -64,15 +64,24 @@ var Test = (function () {
         light2.specular = new BABYLON.Color3(0, 0, 1);
         light3.diffuse = new BABYLON.Color3(1, 1, 1);
         light3.specular = new BABYLON.Color3(1, 1, 1);
-        BABYLON.Effect.ShadersStore["customVertexShader"] = 'precision highp float;attribute vec3 position;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec2 vUV;varying vec3 vPos;void main(){gl_Position=worldViewProjection*vec4(position,1.),vPos=gl_Position.xyz;if(position.x >2.0) {gl_Position.x = 2.0;} else { gl_Position.y = 1.0;}}';
+        BABYLON.Effect.ShadersStore["customVertexShader"] = `precision highp float;
+        attribute vec3 position;
+        attribute vec2 uv;
+        uniform mat4 worldViewProjection;
+        varying vec2 vUV;
+        varying vec3 vPos;
+        void main(){vec4 p = vec4( position, 1. );
+            gl_Position = worldViewProjection * vec4(position, 1.0);
+            vUV = uv;
+        }`;
         BABYLON.Effect.ShadersStore["customFragmentShader"] = 'precision highp float;varying vec3 vPos;uniform vec3 color;void main(){gl_FragColor=vec4(mix(color,vPos,.05),1.);}';
         var shaderMaterial = new BABYLON.ShaderMaterial("shader", scene, {
             vertex: "custom",
             fragment: "custom",
         }, {
-            attributes: ["position", "normal", "uv"],
-            uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
-        });
+                attributes: ["position", "normal", "uv"],
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+            });
         sphere.material = shaderMaterial;
         // Animations
         var alpha = 0;
@@ -85,6 +94,14 @@ var Test = (function () {
             lightSphere2.position = light2.position;
             alpha += 0.01;
         };
+
+        // Create texture panel
+        let panel = BABYLON.Mesh.CreatePlane('plane', 10, scene);
+        let tex = new BABYLON.StandardMaterial('panelMat', scene);
+        tex.diffuseTexture = new BABYLON.Texture('/assets/textures/amiga.jpg', scene);
+        panel.material = tex;
+
+
         this.scene = scene;
     };
     Test.prototype._initGame = function () {
@@ -95,36 +112,46 @@ var Test = (function () {
      */
     Test.prototype._createCanvas = function () {
         // object hierarchy  g1 -> g2 -> rect
-            
-            // when cachingStrategy is 1 or 2 - everything is rendered
-            // when it is 3 - only direct children of g1 are rendered
-            var canvas = new BABYLON.ScreenSpaceCanvas2D(this.scene, 
-                { id: "ScreenCanvas", 
-                cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE });           // 1
-                // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS });      // 2 
-                // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS });           // 3
-            
-            canvas.createCanvasProfileInfoCanvas();
 
-            // parent group            
-            var g1 = new BABYLON.Group2D({parent: canvas, id: "G1",
-                x: 50, y: 50, size: new BABYLON.Size(60, 60)});
+        // when cachingStrategy is 1 or 2 - everything is rendered
+        // when it is 3 - only direct children of g1 are rendered
+        var canvas = new BABYLON.ScreenSpaceCanvas2D(this.scene,
+            {
+                id: "ScreenCanvas",
+                cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE
+            });           // 1
+        // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS });      // 2 
+        // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS });           // 3
 
-            // just to see it    
-            let frame1 = new BABYLON.Rectangle2D({parent: g1, 
-                         x : 0, y: 0,  size: g1.size, border: "#FF0000FF" });
-            
-            // child group
-            let g2 = new BABYLON.Group2D({parent: g1, id: "G2",  
-                        x: 10, y: 10, size: new BABYLON.Size(40, 40)});
+        canvas.createCanvasProfileInfoCanvas();
 
-            // just to see it
-            let frame2 = new BABYLON.Rectangle2D({parent: g2, x : 0, y: 0, size: g2.size, border: "#0000FFFF" }); 
-            
-            let rect =   new BABYLON.Rectangle2D({parent: g2, x : 10, y: 10, size: new BABYLON.Size(20, 20), 
-                                fill: "#00FF00FF" }) ;              
-                      
-            return canvas;
+        // parent group            
+        var g1 = new BABYLON.Group2D({
+            parent: canvas, id: "G1",
+            x: 50, y: 50, size: new BABYLON.Size(60, 60)
+        });
+
+        // just to see it    
+        let frame1 = new BABYLON.Rectangle2D({
+            parent: g1,
+            x: 0, y: 0, size: g1.size, border: "#FF0000FF"
+        });
+
+        // child group
+        let g2 = new BABYLON.Group2D({
+            parent: g1, id: "G2",
+            x: 10, y: 10, size: new BABYLON.Size(40, 40)
+        });
+
+        // just to see it
+        let frame2 = new BABYLON.Rectangle2D({ parent: g2, x: 0, y: 0, size: g2.size, border: "#0000FFFF" });
+
+        let rect = new BABYLON.Rectangle2D({
+            parent: g2, x: 10, y: 10, size: new BABYLON.Size(20, 20),
+            fill: "#00FF00FF"
+        });
+
+        return canvas;
     };
     return Test;
 }());
