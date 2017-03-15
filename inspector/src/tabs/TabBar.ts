@@ -24,11 +24,11 @@ module INSPECTOR {
         constructor(inspector: Inspector) {
             super();
             this._inspector = inspector;
-            this._tabs.push(new TextureTab(this, this._inspector));
             this._tabs.push(new SceneTab(this, this._inspector));
             this._tabs.push(new ConsoleTab(this, this._inspector));
             this._tabs.push(new StatsTab(this, this._inspector));
             this._meshTab = new MeshTab(this, this._inspector);
+            this._tabs.push(new TextureTab(this, this._inspector));
             this._tabs.push(this._meshTab);
             this._tabs.push(new ShaderTab(this, this._inspector));
             this._tabs.push(new LightTab(this, this._inspector));

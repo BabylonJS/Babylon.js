@@ -359,6 +359,7 @@ var INSPECTOR;
             type: BABYLON.FreeCamera,
             properties: [
                 'position',
+                'rotation',
                 'ellipsoid',
                 'applyGravity',
                 'angularSensibility',
@@ -2395,9 +2396,19 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._imagePanel);
             // Get the texture object
             var texture = item.adapter.object;
-            var img = INSPECTOR.Helpers.CreateElement('img', '', this._imagePanel);
-            // If an url is present, the texture is an image
-            if (texture.url) {
+            var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            if (texture instanceof BABYLON.MapTexture) {
+                // instance of Map texture
+                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
+                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), function (data) { return img.src = data; });
+                texture.unbindTexture();
+            }
+            else if (texture instanceof BABYLON.RenderTargetTexture) {
+                // RenderTarget textures
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
+            }
+            else if (texture.url) {
+                // If an url is present, the texture is an image
                 img.src = texture.url;
             }
             else if (texture['_canvas']) {
@@ -3344,11 +3355,11 @@ var INSPECTOR;
             /** The list of tabs visible, displayed in the tab bar */
             _this._visibleTabs = [];
             _this._inspector = inspector;
-            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SceneTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
+            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));

@@ -86,6 +86,8 @@
     height: 100%; }
     .insp-wrapper .tab-panel.searchable {
       height: calc(100% - 30px - 10px); }
+    .insp-wrapper .tab-panel .texture-image {
+      max-height: 400px; }
     .insp-wrapper .tab-panel .scene-actions {
       overflow-y: auto; }
       .insp-wrapper .tab-panel .scene-actions .actions-title {

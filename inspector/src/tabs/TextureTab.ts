@@ -79,15 +79,31 @@ module INSPECTOR {
             // Get the texture object
             let texture = item.adapter.object;
 
-            let img = Helpers.CreateElement('img', '', this._imagePanel) as HTMLImageElement;
-            // If an url is present, the texture is an image
-            if (texture.url) {
+            let img = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+
+            if (texture instanceof BABYLON.MapTexture) {
+                // instance of Map texture
+                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
+                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), (data) => img.src = data);
+                texture.unbindTexture();
+
+            }
+            else if (texture instanceof BABYLON.RenderTargetTexture) {
+                // RenderTarget textures
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, (data) => img.src = data);
+
+            } else if (texture.url) {
+                // If an url is present, the texture is an image
                 img.src = texture.url;
+
             } else if (texture['_canvas']) {
                 // Dynamic texture
                 let base64Image = texture['_canvas'].toDataURL("image/png");
                 img.src = base64Image;
+
             }
+
+
         }
 
         /** Select an item in the tree */
