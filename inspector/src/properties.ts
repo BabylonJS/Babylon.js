@@ -59,6 +59,21 @@ module INSPECTOR {
             ],
             format: (tex: BABYLON.Texture) => { return tex.name }
         },
+        'MapTexture': {
+            type: BABYLON.MapTexture
+        },
+        'RenderTargetTexture': {
+            type: BABYLON.RenderTargetTexture
+        },
+        'DynamicTexture': {
+            type: BABYLON.DynamicTexture
+        },
+        'BaseTexture': {
+            type: BABYLON.BaseTexture
+        },
+        'FontTexture': {
+            type: BABYLON.FontTexture
+        },
 
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
@@ -90,6 +105,10 @@ module INSPECTOR {
             properties: [
                 'position',
                 'rotation',
+                'rotationQuaternion',
+                'cameraDirection',
+                'cameraRotation',
+
                 'ellipsoid',
                 'applyGravity',
                 'angularSensibility',
@@ -97,8 +116,19 @@ module INSPECTOR {
                 'keysDown',
                 'keysLeft',
                 'keysRight',
-                'onCollide',
-                'checkCollisions'
+                'checkCollisions',
+                'speed',
+                'lockedTarget',
+                'noRotationConstraint',
+                'fov',
+                'inertia',
+                'minZ', 'maxZ',
+                'layerMask',
+                'mode',
+                'orthoBottom',
+                'orthoTop',
+                'orthoLeft',
+                'orthoRight'
             ]
         },
 
