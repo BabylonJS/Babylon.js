@@ -181,6 +181,36 @@ var Test = (function () {
 
         plane.material = materialPlane;
 
+        var d = 50;
+        var cubes = new Array();
+        for (var i = 0; i < 360; i += 20) {
+            var r = BABYLON.Tools.ToRadians(i);
+            var b = BABYLON.Mesh.CreateBox("Box #" + i / 20, 5, scene, false);
+            b.position.x = Math.cos(r) * d;
+            b.position.z = Math.sin(r) * d;
+            cubes.push(b);
+        }
+        var canvas = new BABYLON.ScreenSpaceCanvas2D(scene, {
+            id: "ScreenCanvas",
+            cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS
+
+        });
+        i = 0;
+        for (var _i = 0, cubes_1 = cubes; _i < cubes_1.length; _i++) {
+            var cube = cubes_1[_i];
+            new BABYLON.Group2D({
+                parent: canvas, id: "GroupTag #" + i, width: 80, height: 40, trackNode: cube, origin: BABYLON.Vector2.Zero(),
+                children: [
+                    new BABYLON.Rectangle2D({
+                        id: "firstRect", width: 80, height: 26, x: 0, y: 0, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080FF", children: [
+                            new BABYLON.Text2D(cube.name, { marginAlignment: "h: center, v:center", fontName: "bold 12px Arial" })
+                        ]
+                    })
+                ]
+            });
+            ++i;
+        }
+
 
         this.scene = scene;
     };

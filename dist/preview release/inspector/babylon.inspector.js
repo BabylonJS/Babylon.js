@@ -2396,8 +2396,14 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._imagePanel);
             // Get the texture object
             var texture = item.adapter.object;
-            var img = INSPECTOR.Helpers.CreateElement('img', '', this._imagePanel);
-            if (texture instanceof BABYLON.RenderTargetTexture) {
+            var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            if (texture instanceof BABYLON.MapTexture) {
+                // instance of Map texture
+                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
+                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), function (data) { return img.src = data; });
+                texture.unbindTexture();
+            }
+            else if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
                 BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
             }
