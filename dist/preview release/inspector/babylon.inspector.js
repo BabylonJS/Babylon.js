@@ -586,6 +586,16 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Adapter.prototype, "object", {
+            /**
+             * Returns the actual object used for this adapter
+             */
+            get: function () {
+                return this._obj;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** Should be overriden in subclasses */
         Adapter.prototype.highlight = function (b) { };
         ;
@@ -2333,7 +2343,7 @@ var INSPECTOR;
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             // Build the treepanel
             _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
-            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('image-panel', _this._panel);
             Split([_this._treePanel, _this._imagePanel], {
                 blockDrag: _this._inspector.popupMode,
                 direction: 'vertical'
@@ -2377,6 +2387,55 @@ var INSPECTOR;
                 arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.TextureAdapter(tex)));
             }
             return arr;
+        };
+        /** Display the details of the given item */
+        TextureTab.prototype.displayDetails = function (item) {
+            // Remove active state on all items
+            this.activateNode(item);
+            INSPECTOR.Helpers.CleanDiv(this._imagePanel);
+            // Get the texture object
+            var texture = item.adapter.object;
+            var img = INSPECTOR.Helpers.CreateElement('img', '', this._imagePanel);
+            // If an url is present, the texture is an image
+            if (texture.url) {
+                img.src = texture.url;
+            }
+            else if (texture['_canvas']) {
+                // Dynamic texture
+                var base64Image = texture['_canvas'].toDataURL("image/png");
+                img.src = base64Image;
+            }
+        };
+        /** Select an item in the tree */
+        TextureTab.prototype.select = function (item) {
+            // Remove the node highlight
+            this.highlightNode();
+            // Active the node
+            this.activateNode(item);
+            // Display its details
+            this.displayDetails(item);
+        };
+        /** Set the given item as active in the tree */
+        TextureTab.prototype.activateNode = function (item) {
+            if (this._treeItems) {
+                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    node.active(false);
+                }
+            }
+            item.active(true);
+        };
+        /** Highlight the given node, and downplay all others */
+        TextureTab.prototype.highlightNode = function (item) {
+            if (this._treeItems) {
+                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    node.highlight(false);
+                }
+            }
+            if (item) {
+                item.highlight(true);
+            }
         };
         return TextureTab;
     }(INSPECTOR.Tab));
@@ -3882,6 +3941,16 @@ var INSPECTOR;
             this.children.push(child);
             this.update();
         };
+        Object.defineProperty(TreeItem.prototype, "adapter", {
+            /**
+             * Returns the original adapter
+             */
+            get: function () {
+                return this._adapter;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Function used to compare this item to another tree item.
          * Returns the alphabetical sort of the adapter ID

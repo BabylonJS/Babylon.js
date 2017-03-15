@@ -181,6 +181,10 @@ declare module INSPECTOR {
         correspondsTo(obj: any): boolean;
         /** Returns the adapter unique name */
         readonly name: string;
+        /**
+         * Returns the actual object used for this adapter
+         */
+        readonly object: any;
         /** Returns the list of tools available for this adapter */
         abstract getTools(): Array<AbstractTreeTool>;
         /** Should be overriden in subclasses */
@@ -691,6 +695,14 @@ declare module INSPECTOR {
         dispose(): void;
         update(_items?: Array<TreeItem>): void;
         private _getTree();
+        /** Display the details of the given item */
+        displayDetails(item: TreeItem): void;
+        /** Select an item in the tree */
+        select(item: TreeItem): void;
+        /** Set the given item as active in the tree */
+        activateNode(item: TreeItem): void;
+        /** Highlight the given node, and downplay all others */
+        highlightNode(item?: TreeItem): void;
     }
 }
 
@@ -970,6 +982,10 @@ declare module INSPECTOR {
         readonly id: string;
         /** Add the given item as a child of this one */
         add(child: TreeItem): void;
+        /**
+         * Returns the original adapter
+         */
+        readonly adapter: Adapter;
         /**
          * Function used to compare this item to another tree item.
          * Returns the alphabetical sort of the adapter ID
