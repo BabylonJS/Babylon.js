@@ -245,6 +245,10 @@
             return false;
         }
 
+        /**
+         * Does exist one action manager with at least one trigger 
+         * @return {boolean} whether or not it exists one action manager with one trigger
+        **/
         public static get HasTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
@@ -254,6 +258,10 @@
             return false;
         }
 
+        /**
+         * Does exist one action manager with at least one pick trigger 
+         * @return {boolean} whether or not it exists one action manager with one pick trigger
+        **/
         public static get HasPickTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
@@ -266,6 +274,11 @@
             return false;
         }
 
+        /**
+         * Does exist one action manager that handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled by at least one action manager
+        **/
         public static HasSpecificTrigger(trigger: number): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {

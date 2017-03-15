@@ -155,6 +155,10 @@
             return result;
         }
 
+        /**
+         * Does this observable has observers registered with pick mask
+         * @return {boolean} whether or not it has observers registered with pick mask
+        **/
         public hasPickMasks(): boolean {
             for (var obs of this._observers) {
                 if (obs.mask && (obs.mask === PointerEventTypes.POINTERPICK// ||
@@ -167,6 +171,11 @@
             return false;
         }
 
+        /**
+         * Does this observable handles observer registered with a given mask
+         * @param {number} trigger - the mask to be tested
+         * @return {boolean} whether or not one observer registered with the given mask is handeled 
+        **/
         public hasSpecificMask(mask: number = -1): boolean {
             for (var obs of this._observers) {
                 if (obs.mask & mask && obs.mask === mask) {

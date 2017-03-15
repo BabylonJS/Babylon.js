@@ -384,7 +384,7 @@
         private _previousPickResult = null;
         private _isButtonPressed = false;
         private _doubleClickOccured = false;
-        public exclusiveDoubleClickMode = false;
+        public exclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
 
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
