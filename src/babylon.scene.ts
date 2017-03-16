@@ -972,31 +972,6 @@
                     }
                     clickInfo.ignore = true;
                     cb(clickInfo, this._currentPickResult);
-
-                    /*
-                    let checkLongPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERLONGPRESS) ||
-                    obs2.hasSpecificMask(PointerEventTypes.POINTERLONGPRESS);
-                    if (!checkLongPicking){
-                        act = this._initActionManager(act);
-                        if (act)
-                        checkLongPicking = act.hasSpecificTrigger(ActionManager.OnLongPressTrigger);
-                    }
-                    if (checkLongPicking) {
-                        window.setTimeout((function () {
-                            if (this._startingPointerTime !== 0 &&
-                                new Date().getTime() - this._startingPointerTime           > Scene.LongPressDelay &&
-                                Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold
-                            ) {
-                                //this._startingPointerTime = 0;
-                                //let type = PointerEventTypes.POINTERLONGPRESS;
-                                //let pi = new PointerInfo(type, evt, pickResult);
-                                //this.onPointerObservable.notifyObservers(pi, type);
-                                this.getEngine().getRenderingCanvas().dispatchEvent(new Event("longpress"));
-                            }
-                        }).bind(this), Scene.LongPressDelay);
-                    }
-                    */
             };
 
             var spritePredicate = (sprite: Sprite): boolean => {
@@ -1243,7 +1218,7 @@
                         pickResult = this._currentPickResult;
                     }
 
-                    if (pickResult.pickedMesh) {
+                    if (pickResult && pickResult.pickedMesh) {
                         this._pickedUpMesh = pickResult.pickedMesh;
                         if (this._pickedDownMesh === this._pickedUpMesh) {
                             if (this.onPointerPick) {
@@ -1262,13 +1237,16 @@
                             if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
-                            if (this._pickedDownMesh !== this._pickedUpMesh) {
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
                             if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
                         }
+                    }
+                    if (this._pickedDownMesh &&
+                        this._pickedDownMesh.actionManager && 
+                        this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
+                        this._pickedDownMesh !== this._pickedUpMesh) {
+                        this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
                     }
 
                     if (this.onPointerUp) {
