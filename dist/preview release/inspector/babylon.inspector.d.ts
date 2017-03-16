@@ -18,11 +18,13 @@ declare module INSPECTOR {
         private _popupMode;
         /** The original canvas style, before applying the inspector*/
         private _canvasStyle;
+        private _initialTab;
+        private _parentElement;
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean);
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement);
         /**
          * If the given element has a position 'asbolute' or 'relative',
          * returns the first parent of the given element that has a position 'relative' or 'absolute'.
@@ -89,6 +91,21 @@ declare module INSPECTOR {
             type: typeof BABYLON.Texture;
             properties: string[];
             format: (tex: BABYLON.Texture) => string;
+        };
+        'MapTexture': {
+            type: typeof BABYLON.MapTexture;
+        };
+        'RenderTargetTexture': {
+            type: typeof BABYLON.RenderTargetTexture;
+        };
+        'DynamicTexture': {
+            type: typeof BABYLON.DynamicTexture;
+        };
+        'BaseTexture': {
+            type: typeof BABYLON.BaseTexture;
+        };
+        'FontTexture': {
+            type: typeof BABYLON.FontTexture;
         };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
@@ -837,7 +854,7 @@ declare module INSPECTOR {
         private _invisibleTabs;
         /** The list of tabs visible, displayed in the tab bar */
         private _visibleTabs;
-        constructor(inspector: Inspector);
+        constructor(inspector: Inspector, initialTab?: number);
         update(): void;
         protected _build(): void;
         /**

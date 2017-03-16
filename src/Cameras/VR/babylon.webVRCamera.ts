@@ -230,7 +230,7 @@ module BABYLON {
             return this._webvrViewMatrix;
         }
 
-        protected _updateCameraRotationMatrix() {
+        public _updateWebVRCameraRotationMatrix() {
             this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
         }
 

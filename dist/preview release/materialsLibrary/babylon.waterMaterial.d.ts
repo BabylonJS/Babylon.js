@@ -1,5 +1,4 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-/// <reference path="../simple/babylon.simpleMaterial.d.ts" />
 declare module BABYLON {
     class WaterMaterial extends Material {
         renderTargetSize: Vector2;
