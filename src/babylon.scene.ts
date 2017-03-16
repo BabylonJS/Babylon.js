@@ -870,7 +870,9 @@
                     this._currentPickResult = null;
                     let act;
 
-                    let checkPicking = obs1.hasPickMasks() || obs2.hasPickMasks();
+                    let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
+                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
+                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
                     if (!checkPicking && ActionManager.HasPickTriggers) {
                         act = this._initActionManager(act, clickInfo);
                         if (act)
