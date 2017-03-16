@@ -154,6 +154,20 @@
 
             return result;
         }
+
+        /**
+         * Does this observable handles observer registered with a given mask
+         * @param {number} trigger - the mask to be tested
+         * @return {boolean} whether or not one observer registered with the given mask is handeled 
+        **/
+        public hasSpecificMask(mask: number = -1): boolean {
+            for (var obs of this._observers) {
+                if (obs.mask & mask && obs.mask === mask) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 }

@@ -41,6 +41,8 @@ module BABYLON {
         private _mesh: AbstractMesh; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
 
+        private _leftHandSystemQuaternion: Quaternion = new Quaternion();
+
         constructor(public vrGamepad) {
             super(vrGamepad.id, vrGamepad.index, vrGamepad);
             this.type = Gamepad.POSE_ENABLED;
@@ -52,6 +54,7 @@ module BABYLON {
 
             this._calculatedPosition = Vector3.Zero();
             this._calculatedRotation = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(Math.PI, 0, 0, this._leftHandSystemQuaternion);
         }
 
         public update() {
@@ -91,15 +94,19 @@ module BABYLON {
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
-                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.deviceRotationQuaternion.z *= -1;
-                        this.deviceRotationQuaternion.w *= -1;
+                    if (this._mesh) {
+                        if (this._mesh.getScene().useRightHandedSystem) {
+                            this.deviceRotationQuaternion.z *= -1;
+                            this.deviceRotationQuaternion.w *= -1;
+                        } else {
+                            this.deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this.deviceRotationQuaternion);
+                        }
                     }
 
                     // if the camera is set, rotate to the camera's rotation
-                    this.rotationQuaternion.multiplyToRef(this.deviceRotationQuaternion, this._calculatedRotation);
-                    if (this._poseControlledCamera) {
+                    this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
 
+                    /*if (this._poseControlledCamera) {
                         Matrix.ScalingToRef(1, 1, 1, Tmp.Matrix[1]);
                         this._calculatedRotation.toRotationMatrix(Tmp.Matrix[0]);
                         Matrix.TranslationToRef(this._calculatedPosition.x, this._calculatedPosition.y, this._calculatedPosition.z, Tmp.Matrix[2]);
@@ -115,13 +122,20 @@ module BABYLON {
                         Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[4], Tmp.Matrix[2]);
                         Tmp.Matrix[2].decompose(Tmp.Vector3[0], this._calculatedRotation, this._calculatedPosition);
 
-                    }
+                    }*/
                 }
             }
         }
 
 
         public attachToMesh(mesh: AbstractMesh) {
+            if (this._mesh) {
+                this._mesh.parent = undefined;
+            }
+            this._mesh = mesh;
+            if (this._poseControlledCamera) {
+                this._mesh.parent = this._poseControlledCamera;
+            }
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
@@ -129,6 +143,9 @@ module BABYLON {
 
         public attachToPoseControlledCamera(camera: TargetCamera) {
             this._poseControlledCamera = camera;
+            if (this._mesh) {
+                this._mesh.parent = this._poseControlledCamera;
+            }
         }
 
         public detachMesh() {

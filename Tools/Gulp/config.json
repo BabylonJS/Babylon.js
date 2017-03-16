@@ -243,6 +243,16 @@
         "libraries": [
             {
                 "files": [
+                    "../../materialsLibrary/src/shadowOnly/babylon.shadowOnlyMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/shadowOnly/shadowOnly.vertex.fx",
+                    "../../materialsLibrary/src/shadowOnly/shadowOnly.fragment.fx"
+                ],
+                "output": "babylon.shadowOnlyMaterial.js"
+            },            
+            {
+                "files": [
                     "../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"
                 ],
                 "shaderFiles": [
