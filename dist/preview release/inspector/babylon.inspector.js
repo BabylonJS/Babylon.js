@@ -5,10 +5,16 @@ var INSPECTOR;
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, popup) {
+        function Inspector(scene, popup, initialTab, parentElement) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
+            //get Tabbar initialTab
+            this._initialTab = initialTab;
+            console.log(initialTab);
+            //get parentElement of our Inspector
+            this._parentElement = parentElement;
+            console.log(this._parentElement);
             // get canvas parent only if needed.
             this._scene = scene;
             // Save HTML document and window
@@ -88,22 +94,40 @@ var INSPECTOR;
                 canvas.style.marginTop = "0";
                 canvas.style.marginRight = "0";
                 // Replace canvas with the wrapper...
+                // if (this._parentElement) {
+                //     canvasParent.replaceChild(this._parentElement, canvas);
+                //     this._parentElement.appendChild(canvas);
+                // }
+                // else {
                 canvasParent.replaceChild(this._c2diwrapper, canvas);
                 // ... and add canvas to the wrapper
                 this._c2diwrapper.appendChild(canvas);
-                // add inspector     
-                var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                // }
+                // add inspector
+                var inspector = void 0;
+                if (this._parentElement) {
+                    this._c2diwrapper.appendChild(this._parentElement);
+                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._parentElement);
+                    inspector.style.width = '100%';
+                    inspector.style.height = '100%';
+                }
+                else {
+                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                }
+                console.log(inspector);
                 // Add split bar
-                Split([canvas, inspector], {
-                    direction: 'horizontal',
-                    sizes: [75, 25],
-                    onDrag: function () {
-                        INSPECTOR.Helpers.SEND_EVENT('resize');
-                        if (_this._tabbar) {
-                            _this._tabbar.updateWidth();
+                if (!this._parentElement) {
+                    Split([canvas, inspector], {
+                        direction: 'horizontal',
+                        sizes: [75, 25],
+                        onDrag: function () {
+                            INSPECTOR.Helpers.SEND_EVENT('resize');
+                            if (_this._tabbar) {
+                                _this._tabbar.updateWidth();
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 // Build the inspector
                 this._buildInspector(inspector);
                 // Send resize event to the window
@@ -151,7 +175,7 @@ var INSPECTOR;
         /** Build the inspector panel in the given HTML element */
         Inspector.prototype._buildInspector = function (parent) {
             // tabbar
-            this._tabbar = new INSPECTOR.TabBar(this);
+            this._tabbar = new INSPECTOR.TabBar(this, this._initialTab);
             // Top panel
             this._topPanel = INSPECTOR.Helpers.CreateDiv('top-panel', parent);
             // Add tabbar
@@ -3370,7 +3394,7 @@ var INSPECTOR;
      */
     var TabBar = (function (_super) {
         __extends(TabBar, _super);
-        function TabBar(inspector) {
+        function TabBar(inspector, initialTab) {
             var _this = _super.call(this) || this;
             // The list of available tabs
             _this._tabs = [];
@@ -3383,7 +3407,6 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
-            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
@@ -3395,8 +3418,12 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
             _this._build();
-            // Active the first tab
-            _this._tabs[0].active(true);
+            //Check initialTab is defined and between tabs bounds
+            if (!initialTab || initialTab < 0 || initialTab >= _this._tabs.length) {
+                initialTab = 0;
+                console.warn('');
+            }
+            _this._tabs[initialTab].active(true);
             // set all tab as visible
             for (var _i = 0, _a = _this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
@@ -3410,9 +3437,12 @@ var INSPECTOR;
             var _this = this;
             this._div.className = 'tabbar';
             this._div.appendChild(this._toolBar.toHtml());
+            var i = 1;
             for (var _i = 0, _a = this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
                 this._div.appendChild(tab.toHtml());
+                tab.toHtml().id = 'tab' + i;
+                i++;
             }
             this._moreTabsIcon = INSPECTOR.Helpers.CreateElement('i', 'fa fa-angle-double-right more-tabs');
             this._moreTabsPanel = INSPECTOR.Helpers.CreateDiv('more-tabs-panel');
