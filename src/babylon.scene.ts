@@ -370,6 +370,7 @@
         public static DragMovementThreshold = 10; // in pixels
         public static LongPressDelay = 500; // in milliseconds
         public static DoubleClickDelay = 300; // in milliseconds
+        public static ExclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
 
         private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
         private _initActionManager: (act: ActionManager, clickInfo: ClickInfo) => ActionManager;
@@ -384,7 +385,6 @@
         private _previousPickResult = null;
         private _isButtonPressed = false;
         private _doubleClickOccured = false;
-        public exclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
 
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
@@ -884,7 +884,7 @@
                                               Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
 
                         if (!clickInfo.hasSwiped) {
-                            let checkSingleClickImmediately = !this.exclusiveDoubleClickMode;
+                            let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
 
                             if (!checkSingleClickImmediately) {
                                 checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
@@ -933,7 +933,7 @@
                                         this._doubleClickOccured = true;
                                         clickInfo.doubleClick = true;
                                         clickInfo.ignore = false;
-                                        if (this.exclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
+                                        if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
                                             this._previousDelayedSimpleClickTimeout.clearTimeout();
                                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
                                         cb(clickInfo, this._currentPickResult);
@@ -946,7 +946,7 @@
                                         this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                         this._previousButtonPressed = btn;
                                         this._previousHasSwiped = clickInfo.hasSwiped;
-                                        if (this.exclusiveDoubleClickMode){
+                                        if (Scene.ExclusiveDoubleClickMode){
                                             if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
                                                 this._previousDelayedSimpleClickTimeout.clearTimeout();
                                             }
