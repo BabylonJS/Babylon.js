@@ -31,9 +31,10 @@ module BABYLON {
     }
 
     export interface WebVROptions {
-        trackPosition?: boolean; //update the camera's position
+        trackPosition?: boolean; //for the sake of your users - set it to true.
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
+        controllerMeshes?: boolean; // should the native controller meshes be initialized
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -58,8 +59,21 @@ module BABYLON {
         public controllers: Array<WebVRController> = [];
         public onControllersAttached: (controllers: Array<WebVRController>) => void;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
+        constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
+
+            //legacy support - the compensation boolean was removed.
+            if (arguments.length === 5) {
+                this.webVROptions = arguments[4];
+            }
+
+            // default webVR options
+            if (this.webVROptions.trackPosition == undefined) {
+                this.webVROptions.trackPosition = true;
+            }
+            if (this.webVROptions.controllerMeshes == undefined) {
+                this.webVROptions.controllerMeshes = true;
+            }
 
             this.rotationQuaternion = new Quaternion();
             this.deviceRotationQuaternion = new Quaternion();
@@ -255,6 +269,9 @@ module BABYLON {
             new BABYLON.Gamepads((gp) => {
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gp;
+                    if (this.webVROptions.controllerMeshes) {
+                        webVrController.initControllerMesh(this.getScene());
+                    }
                     webVrController.attachToPoseControlledCamera(this);
 
                     // since this is async - sanity check. Is the controller already stored?
