@@ -38,7 +38,7 @@ module BABYLON {
 
         public rawPose: DevicePose; //GamepadPose;
 
-        private _mesh: AbstractMesh; // a node that will be attached to this Gamepad
+        public _mesh: AbstractMesh; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
@@ -166,7 +166,6 @@ module BABYLON {
 
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
-
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
         public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
@@ -205,6 +204,8 @@ module BABYLON {
         }
 
         protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges);
+
+        public abstract initControllerMesh(scene: Scene)
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
             if (!currentState) {
@@ -254,6 +255,27 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.OCULUS;
         }
+
+        public initControllerMesh(scene: Scene) {
+
+            let meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
+            SceneLoader.ImportMesh("", "http://cdn.babylonjs.com/models/", meshName, scene, (newMeshes) => {
+                /*
+                Parent Mesh name: oculus_touch_left
+                - body
+                - trigger
+                - thumbstick
+                - grip
+                - button_y 
+                - button_x
+                - button_enter
+                */
+
+                var mesh = newMeshes[7];
+                this.attachToMesh(mesh);
+            });
+        }
+
 
         // helper getters for left and right hand.
         public get onAButtonStateChangedObservable() {
@@ -329,6 +351,26 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
         }
+
+        public initControllerMesh(scene: Scene) {
+            SceneLoader.ImportMesh("", "http://cdn.babylonjs.com/models/", "ViveWand.babylon", scene, (newMeshes) => {
+                /*
+                Parent Mesh name: ViveWand
+                - body
+                - r_gripper
+                - l_gripper
+                - menu_button
+                - system_button
+                - trackpad
+                - trigger
+                - LED
+                */
+
+                var mesh = newMeshes[1];
+                this.attachToMesh(mesh);
+            });
+        }
+
 
         public get onLeftButtonStateChangedObservable() {
             return this.onMainButtonStateChangedObservable;
