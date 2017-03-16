@@ -52,6 +52,9 @@
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
 - New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
 - Scene.stopAnimation has now an optional second parameter, the name of the animation to kill. Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
+- Added POINTERTAP and POINTERDOUBLETAP PointerEventTypes to register new Observer mask ([yuccai](https://github.com/yuccai))
+- Added OnDoublePickTrigger for ActionManager ([yuccai](https://github.com/yuccai))
+- Added Scene.DoubleClickDelay to set the timing within a double click event like PointerEventTypes.POINTERDOUBLETAP or ActionManager.OnDoublePickTrigger has to be processed([yuccai](https://github.com/yuccai))
 
 ### Bug fixes
 - Fixed issue with SkeletonViewer not displaying correctly with meshes that have a PoseMatrix ([abow](https://github.com/abow))
@@ -88,4 +91,5 @@
  - Canvas2D: ([nockawa](https://github.com/nockawa))
   - `WorldSpaceCanvas2D`:
 	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
+- ActionManager.LongPressDelay and ActionManager.DragMovementThreshold are now respectively Scene.LongPressDelay and Scene.DragMovementThreshold ([yuccai](https://github.com/yuccai))
 
