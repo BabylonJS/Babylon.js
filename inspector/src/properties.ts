@@ -75,6 +75,24 @@ module INSPECTOR {
             type: BABYLON.FontTexture
         },
 
+        'Sound': {
+            type: BABYLON.Sound,
+            properties: [
+                'name',
+                'autoplay',
+                'loop',
+                'useCustomAttenuation',
+                'soundTrackId',
+                'spatialSound',
+                'refDistance',
+                'rolloffFactor',
+                'maxDistance',
+                'distanceModel',
+                'isPlaying',
+                'isPaused'
+            ]
+        },
+
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
