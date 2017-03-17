@@ -20606,6 +20606,9 @@ var BABYLON;
             }
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
+                if (!mesh.isEnabled()) {
+                    continue;
+                }
                 if (!mesh.isReady()) {
                     return false;
                 }
