@@ -28508,11 +28508,18 @@ var BABYLON;
         };
         VideoTexture.CreateFromWebCam = function (scene, onReady, constraints) {
             var video = document.createElement("video");
+            var constraintsDeviceId;
+            if (constraints && constraints.deviceId) {
+                constraintsDeviceId = {
+                    exact: constraints.deviceId
+                };
+            }
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
             window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
             if (navigator.getUserMedia) {
                 navigator.getUserMedia({
                     video: {
+                        deviceId: constraintsDeviceId,
                         width: {
                             min: (constraints && constraints.minWidth) || 256,
                             max: (constraints && constraints.maxWidth) || 640
@@ -31274,7 +31281,11 @@ var BABYLON;
                 }
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                     importMeshFromData(data);
-                }, progressCallBack, database, useArrayBuffer);
+                }, progressCallBack, database, useArrayBuffer, function () {
+                    if (onerror) {
+                        onerror(scene, 'Unable to load file ' + rootUrl + sceneFilename);
+                    }
+                });
             };
             if (scene.getEngine().enableOfflineSupport && !directLoad) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
@@ -49580,8 +49591,7 @@ var BABYLON;
 (function (BABYLON) {
     var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
-        function WebVRFreeCamera(name, position, scene, compensateDistortion, webVROptions) {
-            if (compensateDistortion === void 0) { compensateDistortion = false; }
+        function WebVRFreeCamera(name, position, scene, webVROptions) {
             if (webVROptions === void 0) { webVROptions = {}; }
             var _this = _super.call(this, name, position, scene) || this;
             _this.webVROptions = webVROptions;
@@ -49593,6 +49603,17 @@ var BABYLON;
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
+            //legacy support - the compensation boolean was removed.
+            if (arguments.length === 5) {
+                _this.webVROptions = arguments[4];
+            }
+            // default webVR options
+            if (_this.webVROptions.trackPosition == undefined) {
+                _this.webVROptions.trackPosition = true;
+            }
+            if (_this.webVROptions.controllerMeshes == undefined) {
+                _this.webVROptions.controllerMeshes = true;
+            }
             _this.rotationQuaternion = new BABYLON.Quaternion();
             _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             if (_this.webVROptions && _this.webVROptions.positionScale) {
@@ -49763,6 +49784,9 @@ var BABYLON;
             new BABYLON.Gamepads(function (gp) {
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gp;
+                    if (_this.webVROptions.controllerMeshes) {
+                        webVrController.initControllerMesh(_this.getScene());
+                    }
                     webVrController.attachToPoseControlledCamera(_this);
                     // since this is async - sanity check. Is the controller already stored?
                     if (_this.controllers.indexOf(webVrController) === -1) {
@@ -52050,6 +52074,24 @@ var BABYLON;
             _this.controllerType = PoseEnabledControllerType.OCULUS;
             return _this;
         }
+        OculusTouchController.prototype.initControllerMesh = function (scene) {
+            var _this = this;
+            var meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
+            BABYLON.SceneLoader.ImportMesh("", "http://cdn.babylonjs.com/models/", meshName, scene, function (newMeshes) {
+                /*
+                Parent Mesh name: oculus_touch_left
+                - body
+                - trigger
+                - thumbstick
+                - grip
+                - button_y
+                - button_x
+                - button_enter
+                */
+                var mesh = newMeshes[7];
+                _this.attachToMesh(mesh);
+            });
+        };
         Object.defineProperty(OculusTouchController.prototype, "onAButtonStateChangedObservable", {
             // helper getters for left and right hand.
             get: function () {
@@ -52140,6 +52182,24 @@ var BABYLON;
             _this.controllerType = PoseEnabledControllerType.VIVE;
             return _this;
         }
+        ViveController.prototype.initControllerMesh = function (scene) {
+            var _this = this;
+            BABYLON.SceneLoader.ImportMesh("", "http://cdn.babylonjs.com/models/", "ViveWand.babylon", scene, function (newMeshes) {
+                /*
+                Parent Mesh name: ViveWand
+                - body
+                - r_gripper
+                - l_gripper
+                - menu_button
+                - system_button
+                - trackpad
+                - trigger
+                - LED
+                */
+                var mesh = newMeshes[1];
+                _this.attachToMesh(mesh);
+            });
+        };
         Object.defineProperty(ViveController.prototype, "onLeftButtonStateChangedObservable", {
             get: function () {
                 return this.onMainButtonStateChangedObservable;
