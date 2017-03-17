@@ -468,7 +468,7 @@
         /**
          * Creates the vertexData of the Ribbon.  
          */
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
@@ -477,6 +477,8 @@
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var customUV = options.uvs;
+            var customColors = options.colors;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -507,7 +509,7 @@
 
             // positions and horizontal distances (u)
             var idc: number = 0;
-            var closePathCorr: number = (closePath) ? 1 : 0;
+            var closePathCorr: number = (closePath) ? 1 : 0;    // the final index will be +1 if closePath
             var path: Vector3[];
             var l: number;
             minlg = pathArray[0].length;
@@ -532,7 +534,7 @@
                     j++;
                 }
 
-                if (closePath) {
+                if (closePath) {        // an extra hidden vertex is added in the "positions" array
                     j--;
                     positions.push(path[0].x, path[0].y, path[0].z);
                     vectlg = path[j].subtract(path[0]).length();
@@ -586,14 +588,21 @@
             // uvs
             var u: number;
             var v: number;
-            for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
-                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
-                    if (invertUV) {
-                        uvs.push(v, u);
-                    } else {
-                        uvs.push(u, v);
+            if (customUV) {
+                for (p = 0; p < customUV.length; p++) {
+                    uvs.push(customUV[p].x, customUV[p].y);
+                }
+            }
+            else {
+                for (p = 0; p < pathArray.length; p++) {
+                    for (i = 0; i < minlg + closePathCorr; i++) {
+                        u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                        v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                        if (invertUV) {
+                            uvs.push(v, u);
+                        } else {
+                            uvs.push(u, v);
+                        }
                     }
                 }
             }
@@ -633,7 +642,7 @@
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
 
-            if (closePath) {
+            if (closePath) {        // update both the first and last vertex normals to their average value
                 var indexFirst: number = 0;
                 var indexLast: number = 0;
                 for (p = 0; p < pathArray.length; p++) {
@@ -656,6 +665,17 @@
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
+            // Colors
+            if (customColors) {
+                var colors = new Float32Array(customColors.length * 4);
+                for (var c = 0; c < customColors.length; c++) {
+                    colors[c * 4] = customColors[c].r;
+                    colors[c * 4 + 1] = customColors[c].g;
+                    colors[c * 4 + 2] = customColors[c].b;
+                    colors[c * 4 + 3] = customColors[c].a;
+                }
+            }
+
             // Result
             var vertexData = new VertexData();
 
@@ -663,6 +683,9 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (customColors) {
+                vertexData.set(colors, VertexBuffer.ColorKind);
+            }
 
             if (closePath) {
                 (<any>vertexData)._idx = idx;
