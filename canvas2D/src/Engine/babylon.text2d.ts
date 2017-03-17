@@ -765,7 +765,7 @@
                     offsetX += (contentAreaWidth - maxLineLen) * .5;
                 }
 
-                offset.x += offsetX;
+                offset.x += Math.floor(offsetX);
 
                 offset.y += contentAreaHeight + textHeight - lh;
                 offset.y += this.padding.bottomPixels;
@@ -796,13 +796,17 @@
                         if(char !== "\t" && !this._isWhiteSpaceCharVert(char)){ 
                             //make sure space char gets processed here or overlapping can occur when text is set
                             let ci = texture.getChar(char);
-                            this.updateInstanceDataPart(d, new Vector2(offset.x + ci.xOffset, offset.y +ci.yOffset));
+                            let partOffset = new Vector2(offset.x + ci.xOffset, offset.y + ci.yOffset);
+                            this.updateInstanceDataPart(d, partOffset);
                             d.topLeftUV = ci.topLeftUV;
                             let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                             d.sizeUV = suv;
                             d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
                             d.color = this.defaultFontColor;
                             d.superSampleFactor = superSampleFactor;
+
+                            //console.log(`Char: ${char}, Offset: ${partOffset}`);
+
                             ++d.curElement;
                         }
 

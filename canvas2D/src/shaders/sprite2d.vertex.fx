@@ -1,4 +1,4 @@
-﻿based on if Instanced Array are supported or not, declare the field either as attribute or uniform
+﻿//based on if Instanced Array are supported or not, declare the field either as attribute or uniform
 #ifdef Instanced
 #define att attribute
 #else
@@ -77,13 +77,15 @@ void main(void) {
 		vUV.y = 1.0 - vUV.y;
 	}
 
+	//vUV.x += 0.5 / textureSize.x;
+
 	vec4 pos;
-	if (alignToPixel == 1.0)
-	{
-		pos.xy = floor(pos2.xy * sizeUV * textureSize);
-	} else {
+	//if (alignToPixel == 1.0)
+	//{
+	//	pos.xy = floor(pos2.xy * sizeUV * textureSize);
+	//} else {
 		pos.xy = pos2.xy * sizeUV * textureSize;
-	}
+	//}
 
 #ifdef Scale9
 	if (invertY == 1.0) {
@@ -111,9 +113,9 @@ void main(void) {
 		float irw = 2.0 / rw;
 		float irh = 2.0 / rh;
 
-		x = floor((x / irw) + 0.5) * irw;
-		y = floor((y / irh) + 0.5) * irh;
+		x = (floor((x / irw)) * irw) + irw / 2.0;
+		y = (floor((y / irh)) * irh) + irh / 2.0;
 	}
 
-	gl_Position = vec4(x, y, zBias.x, 1);
+	gl_Position = vec4(x, y, zBias.x, 1.0);
 }	
