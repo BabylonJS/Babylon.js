@@ -87,7 +87,7 @@
             trackNode               ?: Node,
             trackNodeOffset         ?: Vector3,
             opacity                 ?: number,
-            zOrder                  ?: number, 
+            zOrder                  ?: number,
             origin                  ?: Vector2,
             size                    ?: Size,
             width                   ?: number,
@@ -135,7 +135,7 @@
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             let rd = this._renderableData;
             if (rd) {
-                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;                
+                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;
             }
             this.size = size;
             this._viewportPosition = Vector2.Zero();
@@ -401,7 +401,9 @@
                 // If it's a force refresh, prepare all the children
                 if (context.forceRefreshPrimitive) {
                     for (let p of this._children) {
-                        p._prepareRender(context);
+                        if (!p.isDisposed) {
+                            p._prepareRender(context);
+                        }
                     }
                 } else {
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
@@ -842,8 +844,8 @@
                 if ((size.width < Group2D._s.width) || (size.height < Group2D._s.height)) {
                     // For Screen space: over-provisioning of 7% more to avoid frequent resizing for few pixels...
                     // For World space: no over-provisioning
-                    let overprovisioning = this.owner.isScreenSpace ? 1.07 : 1; 
-                    curWidth  = Math.floor(Group2D._s.width  * overprovisioning);    
+                    let overprovisioning = this.owner.isScreenSpace ? 1.07 : 1;
+                    curWidth  = Math.floor(Group2D._s.width  * overprovisioning);
                     curHeight = Math.floor(Group2D._s.height * overprovisioning);
                     //console.log(`[${this._globalTransformProcessStep}] Resize group ${this.id}, width: ${curWidth}, height: ${curHeight}`);
                     rd._cacheTexture.freeRect(rd._cacheNode);
