@@ -831,13 +831,13 @@
 
                             if (ii.isPrimIntersected(prim) !== null) {
                                 if (prim.actionManager) {
-                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > ActionManager.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < ActionManager.DragMovementThreshold)) {
+                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > Scene.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < Scene.DragMovementThreshold)) {
                                         this._pickStartingTime = 0;
                                         prim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
-                        }, ActionManager.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -852,7 +852,7 @@
                     prim.actionManager.processTrigger(ActionManager.OnPickUpTrigger, actionEvent);
 
                     // OnPickTrigger
-                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < ActionManager.DragMovementThreshold) {
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < Scene.DragMovementThreshold) {
                         prim.actionManager.processTrigger(ActionManager.OnPickTrigger, actionEvent);
                     }
                 }
