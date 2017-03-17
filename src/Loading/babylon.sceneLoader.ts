@@ -209,7 +209,11 @@
 
                 Tools.LoadFile(rootUrl + sceneFilename, data => {
                     importMeshFromData(data);
-                }, progressCallBack, database, useArrayBuffer);
+                }, progressCallBack, database, useArrayBuffer, () => {
+                    if (onerror) {
+                        onerror(scene, 'Unable to load file ' + rootUrl + sceneFilename)
+                    }
+                });
             };
 
             if (scene.getEngine().enableOfflineSupport && !directLoad) {

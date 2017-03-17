@@ -53,7 +53,7 @@
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
          * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
@@ -126,10 +126,12 @@
 
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
 
-            this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
-            this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
-            if (this._trackedNode && this.owner) {
-                this.owner._registerTrackedNode(this);
+            if (!(this instanceof WorldSpaceCanvas2D)) {
+                this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+                this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
+                if (this._trackedNode && this.owner) {
+                    this.owner._registerTrackedNode(this);
+                }
             }
 
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
@@ -355,9 +357,12 @@
 
             let s = this.actualSize;
             let a = this.actualScale;
+            let ss = this.owner._canvasLevelScale;
             let hwsl = 1/this.owner.engine.getHardwareScalingLevel();
-            let sw = Math.ceil(s.width * a.x * hwsl);
-            let sh = Math.ceil(s.height * a.y * hwsl);
+            //let sw = Math.ceil(s.width * a.x * ss.x/* * hwsl*/);
+            //let sh = Math.ceil(s.height * a.y *ss.y/* *  hwsl*/);
+            let sw = s.width * a.x * ss.x;
+            let sh = s.height * a.y *ss.y;
 
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
@@ -801,6 +806,8 @@
 
         private static _uV = new Vector2(1, 1);
         private static _s = Size.Zero();
+        private static _v1 = Vector2.Zero();
+        private static _s2 = Size.Zero();
         private _bindCacheTarget() {
             let curWidth: number;
             let curHeight: number;
@@ -811,11 +818,11 @@
             let isCanvas = this.parent == null;
             let scale: Vector2;
             if (noResizeScale) {
-                scale = isCanvas ? Group2D._uV: this.parent.actualScale;
+                scale = isCanvas ? Group2D._uV: this.parent.actualScale.multiply(this.owner._canvasLevelScale);
             } else {
-                scale = this.actualScale;
+                scale = this.actualScale.multiply(this.owner._canvasLevelScale);
             }
-
+            let actualSize = this.actualSize;
             if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
                 if(this.owner.designSize || this.owner.fitRenderingDevice){
                     Group2D._s.width = this.owner.engine.getRenderWidth();
@@ -825,14 +832,15 @@
                     Group2D._s.copyFrom(this.owner.size);
                 }
             } else {
-                Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
-                Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+                Group2D._s.width  = Math.ceil(actualSize.width  * scale.x * rs);
+                Group2D._s.height = Math.ceil(actualSize.height * scale.y * rs);
             }
 
             let sizeChanged = !Group2D._s.equals(rd._cacheSize);
 
             if (rd._cacheNode) {
-                let size = rd._cacheNode.contentSize;
+                let size = Group2D._s;
+                rd._cacheNode.getInnerSizeToRef(size);
 
                 // Check if we have to deallocate because the size is too small
                 if ((size.width < Group2D._s.width) || (size.height < Group2D._s.height)) {
@@ -857,6 +865,12 @@
                 }
                 rd._cacheRenderSprite = res.sprite;
                 sizeChanged = true;
+            } else if (sizeChanged) {
+                let sprite = rd._cacheRenderSprite;
+                if (sprite) {
+                    sprite.size = actualSize;
+                    sprite.spriteSize = new Size(actualSize.width * scale.x * rs, actualSize.height * scale.y * rs);
+                }
             }
 
             if (sizeChanged) {
@@ -869,8 +883,9 @@
                 this._setFlags(SmartPropertyPrim.flagWorldCacheChanged);
             }
 
-            let n = rd._cacheNode;
-            rd._cacheTexture.bindTextureForPosSize(n.pos, Group2D._s, true);
+            let pos = Group2D._v1;
+            rd._cacheNode.getInnerPosToRef(pos);
+            rd._cacheTexture.bindTextureForPosSize(pos, Group2D._s, true);
         }
 
         private _unbindCacheTarget() {
@@ -922,6 +937,11 @@
                 case Group2D.actualSizeProperty.id:
                     cachedSprite.size = this.actualSize.clone();
                     break;
+                case Group2D.xProperty.id:
+                    cachedSprite.x = this.x;
+                    break;
+                case Group2D.yProperty.id:
+                    cachedSprite.y = this.y;
             }
         }
 

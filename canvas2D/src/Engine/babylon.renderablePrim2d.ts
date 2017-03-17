@@ -951,10 +951,14 @@
             let trn = RenderablePrim2D._t;
             let rot = t.decompose(scl, trn);
             let pas = this.actualScale;
-            let canvasScale = this.owner._canvasLevelScale;
+            //let cachedGroup = (this.getExternalData<Group2D>("__cachedGroup__") !== null);
+            let canvasScale = /*cachedGroup ? RenderablePrim2D._iV2 :  */this.owner._canvasLevelScale;
             scl.x = pas.x * canvasScale.x * this._postScale.x;
             scl.y = pas.y * canvasScale.y * this._postScale.y;
+            trn.multiplyInPlace(canvasScale);
             t = Matrix2D.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV2, rot, trn);
+
+            //console.log(`Update Instance Data Part: ${this.id}`);
 
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;

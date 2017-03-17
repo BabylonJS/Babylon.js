@@ -2496,7 +2496,7 @@ declare module BABYLON {
         private static _t2;
         private static _v0;
         private static _v30;
-        private static _iv3;
+        private static _iv2;
         private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
@@ -2850,7 +2850,6 @@ declare module BABYLON {
             borderThickness?: number;
         });
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected applyActualScaleOnTransform(): boolean;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _updateTransparencyStatus();
         protected _mustUpdateInstance(): boolean;
@@ -2917,7 +2916,7 @@ declare module BABYLON {
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
          * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
@@ -3040,6 +3039,8 @@ declare module BABYLON {
         protected _setRenderingScale(scale: number): void;
         private static _uV;
         private static _s;
+        private static _v1;
+        private static _s2;
         private _bindCacheTarget();
         private _unbindCacheTarget();
         protected _spreadActualScaleDirty(): void;
@@ -4502,7 +4503,7 @@ declare module BABYLON {
         private _designSize;
         private _designUseHorizAxis;
         _primitiveCollisionManager: PrimitiveCollisionManagerBase;
-        _canvasLevelScale: Vector3;
+        _canvasLevelScale: Vector2;
         _renderingSize: Size;
         private _curHWScale;
         private _drawCallsOpaqueCounter;
@@ -4521,6 +4522,7 @@ declare module BABYLON {
         private _profilingCanvas;
         private _profileInfoText;
         private static _v;
+        private static _cv1;
         private static _m;
         private static _mI;
         private static tS;

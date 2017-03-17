@@ -5,10 +5,14 @@ var INSPECTOR;
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, popup) {
+        function Inspector(scene, popup, initialTab, parentElement) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
+            //get Tabbar initialTab
+            this._initialTab = initialTab;
+            //get parentElement of our Inspector
+            this._parentElement = parentElement;
             // get canvas parent only if needed.
             this._scene = scene;
             // Save HTML document and window
@@ -88,22 +92,40 @@ var INSPECTOR;
                 canvas.style.marginTop = "0";
                 canvas.style.marginRight = "0";
                 // Replace canvas with the wrapper...
+                // if (this._parentElement) {
+                //     canvasParent.replaceChild(this._parentElement, canvas);
+                //     this._parentElement.appendChild(canvas);
+                // }
+                // else {
                 canvasParent.replaceChild(this._c2diwrapper, canvas);
                 // ... and add canvas to the wrapper
                 this._c2diwrapper.appendChild(canvas);
-                // add inspector     
-                var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                // }
+                // add inspector
+                var inspector = void 0;
+                if (this._parentElement) {
+                    this._c2diwrapper.appendChild(this._parentElement);
+                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._parentElement);
+                    inspector.style.width = '100%';
+                    inspector.style.height = '100%';
+                }
+                else {
+                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                }
+                console.log(inspector);
                 // Add split bar
-                Split([canvas, inspector], {
-                    direction: 'horizontal',
-                    sizes: [75, 25],
-                    onDrag: function () {
-                        INSPECTOR.Helpers.SEND_EVENT('resize');
-                        if (_this._tabbar) {
-                            _this._tabbar.updateWidth();
+                if (!this._parentElement) {
+                    Split([canvas, inspector], {
+                        direction: 'horizontal',
+                        sizes: [75, 25],
+                        onDrag: function () {
+                            INSPECTOR.Helpers.SEND_EVENT('resize');
+                            if (_this._tabbar) {
+                                _this._tabbar.updateWidth();
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 // Build the inspector
                 this._buildInspector(inspector);
                 // Send resize event to the window
@@ -151,7 +173,7 @@ var INSPECTOR;
         /** Build the inspector panel in the given HTML element */
         Inspector.prototype._buildInspector = function (parent) {
             // tabbar
-            this._tabbar = new INSPECTOR.TabBar(this);
+            this._tabbar = new INSPECTOR.TabBar(this, this._initialTab);
             // Top panel
             this._topPanel = INSPECTOR.Helpers.CreateDiv('top-panel', parent);
             // Add tabbar
@@ -333,9 +355,42 @@ var INSPECTOR;
             ],
             format: function (tex) { return tex.name; }
         },
+        'MapTexture': {
+            type: BABYLON.MapTexture
+        },
+        'RenderTargetTexture': {
+            type: BABYLON.RenderTargetTexture
+        },
+        'DynamicTexture': {
+            type: BABYLON.DynamicTexture
+        },
+        'BaseTexture': {
+            type: BABYLON.BaseTexture
+        },
+        'FontTexture': {
+            type: BABYLON.FontTexture
+        },
+        'Sound': {
+            type: BABYLON.Sound,
+            properties: [
+                'name',
+                'autoplay',
+                'loop',
+                'useCustomAttenuation',
+                'soundTrackId',
+                'spatialSound',
+                'refDistance',
+                'rolloffFactor',
+                'maxDistance',
+                'distanceModel',
+                'isPlaying',
+                'isPaused'
+            ]
+        },
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
+                'position',
                 'alpha',
                 'beta',
                 'radius',
@@ -352,6 +407,36 @@ var INSPECTOR;
                 'wheelPrecision',
                 'allowUpsideDown',
                 'checkCollisions'
+            ]
+        },
+        'FreeCamera': {
+            type: BABYLON.FreeCamera,
+            properties: [
+                'position',
+                'rotation',
+                'rotationQuaternion',
+                'cameraDirection',
+                'cameraRotation',
+                'ellipsoid',
+                'applyGravity',
+                'angularSensibility',
+                'keysUp',
+                'keysDown',
+                'keysLeft',
+                'keysRight',
+                'checkCollisions',
+                'speed',
+                'lockedTarget',
+                'noRotationConstraint',
+                'fov',
+                'inertia',
+                'minZ', 'maxZ',
+                'layerMask',
+                'mode',
+                'orthoBottom',
+                'orthoTop',
+                'orthoLeft',
+                'orthoRight'
             ]
         },
         'Scene': {
@@ -570,6 +655,16 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Adapter.prototype, "object", {
+            /**
+             * Returns the actual object used for this adapter
+             */
+            get: function () {
+                return this._obj;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** Should be overriden in subclasses */
         Adapter.prototype.highlight = function (b) { };
         ;
@@ -581,6 +676,160 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=Adapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var CameraAdapter = (function (_super) {
+        __extends(CameraAdapter, _super);
+        function CameraAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        CameraAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        CameraAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        CameraAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            var camToDisplay = [];
+            // The if is there to work with the min version of babylon
+            if (this._obj instanceof BABYLON.ArcRotateCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['ArcRotateCamera'].properties;
+            }
+            else if (this._obj instanceof BABYLON.FreeCamera) {
+                camToDisplay = INSPECTOR.PROPERTIES['FreeCamera'].properties;
+            }
+            for (var _i = 0, camToDisplay_1 = camToDisplay; _i < camToDisplay_1.length; _i++) {
+                var dirty = camToDisplay_1[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        CameraAdapter.prototype.getTools = function () {
+            var tools = [];
+            // tools.push(new Checkbox(this));
+            tools.push(new INSPECTOR.CameraPOV(this));
+            return tools;
+        };
+        CameraAdapter.prototype.setPOV = function () {
+            this._obj.getScene().activeCamera = this._obj;
+        };
+        return CameraAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.CameraAdapter = CameraAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=CameraAdapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var SoundAdapter = (function (_super) {
+        __extends(SoundAdapter, _super);
+        function SoundAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        SoundAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        SoundAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        SoundAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            var camToDisplay = [];
+            // The if is there to work with the min version of babylon
+            var soundProperties = INSPECTOR.PROPERTIES['Sound'].properties;
+            for (var _i = 0, soundProperties_1 = soundProperties; _i < soundProperties_1.length; _i++) {
+                var dirty = soundProperties_1[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        SoundAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.SoundInteractions(this));
+            return tools;
+        };
+        SoundAdapter.prototype.setPlaying = function (callback) {
+            this._obj.play();
+            this._obj.onended = function () {
+                callback();
+            };
+        };
+        return SoundAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.SoundAdapter = SoundAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=SoundAdapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var TextureAdapter = (function (_super) {
+        __extends(TextureAdapter, _super);
+        function TextureAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        TextureAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        TextureAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        TextureAdapter.prototype.getProperties = function () {
+            // Not used in this tab
+            return [];
+        };
+        TextureAdapter.prototype.getTools = function () {
+            var tools = [];
+            // tools.push(new CameraPOV(this));
+            return tools;
+        };
+        return TextureAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.TextureAdapter = TextureAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=TextureAdapter.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1650,8 +1899,6 @@ var INSPECTOR;
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=HDRCubeTextureElement.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -1694,8 +1941,6 @@ var INSPECTOR;
     INSPECTOR.SearchBar = SearchBar;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=SearchBar.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -1736,8 +1981,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.TextureElement = TextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=TextureElement.js.map
 
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -2014,6 +2257,14 @@ var INSPECTOR;
         /** Add this in the propertytab with the searchbar */
         Tab.prototype.filter = function (str) { };
         ;
+        /** Select an item in the tree */
+        Tab.prototype.select = function (item) {
+            // To define in subclasses if needed 
+        };
+        /** Highlight the given node, and downplay all others */
+        Tab.prototype.highlightNode = function (item) {
+            // To define in subclasses if needed
+        };
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -2162,6 +2413,192 @@ var INSPECTOR;
         return PropertyTab;
     }(INSPECTOR.Tab));
     INSPECTOR.PropertyTab = PropertyTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var CameraTab = (function (_super) {
+        __extends(CameraTab, _super);
+        function CameraTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Camera', inspector) || this;
+        }
+        /* Overrides super */
+        CameraTab.prototype._getTree = function () {
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.cameras; _i < _a.length; _i++) {
+                var camera = _a[_i];
+                arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.CameraAdapter(camera)));
+            }
+            return arr;
+        };
+        return CameraTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.CameraTab = CameraTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var SoundTab = (function (_super) {
+        __extends(SoundTab, _super);
+        function SoundTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Sound', inspector) || this;
+        }
+        /* Overrides super */
+        SoundTab.prototype._getTree = function () {
+            var _this = this;
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.soundTracks; _i < _a.length; _i++) {
+                var sounds = _a[_i];
+                var sound = sounds.soundCollection;
+                sound.forEach(function (element) {
+                    arr.push(new INSPECTOR.TreeItem(_this, new INSPECTOR.SoundAdapter(element)));
+                });
+            }
+            return arr;
+        };
+        return SoundTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.SoundTab = SoundTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var TextureTab = (function (_super) {
+        __extends(TextureTab, _super);
+        function TextureTab(tabbar, inspector) {
+            var _this = _super.call(this, tabbar, 'Textures') || this;
+            _this._treeItems = [];
+            _this._inspector = inspector;
+            // Build the properties panel : a div that will contains the tree and the detail panel
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            // Build the treepanel
+            _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
+            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('image-panel', _this._panel);
+            Split([_this._treePanel, _this._imagePanel], {
+                blockDrag: _this._inspector.popupMode,
+                direction: 'vertical'
+            });
+            _this.update();
+            return _this;
+        }
+        TextureTab.prototype.dispose = function () {
+            // Nothing to dispose
+        };
+        TextureTab.prototype.update = function (_items) {
+            var items;
+            if (_items) {
+                items = _items;
+            }
+            else {
+                // Rebuild the tree
+                this._treeItems = this._getTree();
+                items = this._treeItems;
+            }
+            // Clean the tree
+            INSPECTOR.Helpers.CleanDiv(this._treePanel);
+            INSPECTOR.Helpers.CleanDiv(this._imagePanel);
+            // Sort items alphabetically
+            items.sort(function (item1, item2) {
+                return item1.compareTo(item2);
+            });
+            // Display items
+            for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+                var item = items_1[_i];
+                this._treePanel.appendChild(item.toHtml());
+            }
+        };
+        /* Overrides super */
+        TextureTab.prototype._getTree = function () {
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.textures; _i < _a.length; _i++) {
+                var tex = _a[_i];
+                arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.TextureAdapter(tex)));
+            }
+            return arr;
+        };
+        /** Display the details of the given item */
+        TextureTab.prototype.displayDetails = function (item) {
+            // Remove active state on all items
+            this.activateNode(item);
+            INSPECTOR.Helpers.CleanDiv(this._imagePanel);
+            // Get the texture object
+            var texture = item.adapter.object;
+            var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            if (texture instanceof BABYLON.MapTexture) {
+                // instance of Map texture
+                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
+                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), function (data) { return img.src = data; });
+                texture.unbindTexture();
+            }
+            else if (texture instanceof BABYLON.RenderTargetTexture) {
+                // RenderTarget textures
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
+            }
+            else if (texture.url) {
+                // If an url is present, the texture is an image
+                img.src = texture.url;
+            }
+            else if (texture['_canvas']) {
+                // Dynamic texture
+                var base64Image = texture['_canvas'].toDataURL("image/png");
+                img.src = base64Image;
+            }
+        };
+        /** Select an item in the tree */
+        TextureTab.prototype.select = function (item) {
+            // Remove the node highlight
+            this.highlightNode();
+            // Active the node
+            this.activateNode(item);
+            // Display its details
+            this.displayDetails(item);
+        };
+        /** Set the given item as active in the tree */
+        TextureTab.prototype.activateNode = function (item) {
+            if (this._treeItems) {
+                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    node.active(false);
+                }
+            }
+            item.active(true);
+        };
+        /** Highlight the given node, and downplay all others */
+        TextureTab.prototype.highlightNode = function (item) {
+            if (this._treeItems) {
+                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    node.highlight(false);
+                }
+            }
+            if (item) {
+                item.highlight(true);
+            }
+        };
+        return TextureTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.TextureTab = TextureTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2633,34 +3070,6 @@ var INSPECTOR;
                 inside = this._beautify(inside, level + 1);
                 return this._beautify(left, level) + '{\n' + inside + '\n' + spaces + '}\n' + this._beautify(right, level);
             }
-            // // Replace bracket with @1 and @2 with correct indentation
-            // let newInside          = "@1\n\t" + inside + "\n@2";
-            // newInside              = newInside.replace(/;\n/g, ";\n\t");
-            // glsl                   = glsl.replace(insideWithBrackets, newInside);
-            // firstBracket       = glsl.indexOf('{');
-            // lastBracket        = glsl.lastIndexOf('}');
-            // }
-            // console.log(glsl);
-            // let regex = /(\{(?:\{??[^\{]*?}))+/gmi;
-            // let tmp = glsl;
-            // let m;
-            // while ((m = regex.exec(tmp)) !== null) {
-            //     // This is necessary to avoid infinite loops with zero-width matches
-            //     if (m.index === regex.lastIndex) {
-            //         regex.lastIndex++;
-            //     }                
-            //     // The result can be accessed through the `m`-variable.
-            //     m.forEach((match, groupIndex) => {
-            //         // Remove the first and the last bracket only
-            //         let matchWithoutBrackets = match.replace(/{/, "").replace(/}/, "");
-            //         // Indent the content inside brackets with tabs
-            //         glsl = glsl.replace(match, `{\n\t${matchWithoutBrackets}\n}\n`);
-            //         // removes the match from tmp
-            //         tmp = tmp.replace(match, "");
-            //         // and continue
-            //     });
-            // }
-            // return 
         };
         return ShaderTab;
     }(INSPECTOR.Tab));
@@ -3085,7 +3494,7 @@ var INSPECTOR;
      */
     var TabBar = (function (_super) {
         __extends(TabBar, _super);
-        function TabBar(inspector) {
+        function TabBar(inspector, initialTab) {
             var _this = _super.call(this) || this;
             // The list of available tabs
             _this._tabs = [];
@@ -3098,6 +3507,7 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
+            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
@@ -3106,10 +3516,16 @@ var INSPECTOR;
                 _this._tabs.push(new INSPECTOR.Canvas2DTab(_this, _this._inspector));
             }
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
             _this._build();
-            // Active the first tab
-            _this._tabs[0].active(true);
+            //Check initialTab is defined and between tabs bounds
+            if (!initialTab || initialTab < 0 || initialTab >= _this._tabs.length) {
+                initialTab = 0;
+                console.warn('');
+            }
+            _this._tabs[initialTab].active(true);
             // set all tab as visible
             for (var _i = 0, _a = _this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
@@ -3689,6 +4105,16 @@ var INSPECTOR;
             this.children.push(child);
             this.update();
         };
+        Object.defineProperty(TreeItem.prototype, "adapter", {
+            /**
+             * Returns the original adapter
+             */
+            get: function () {
+                return this._adapter;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Function used to compare this item to another tree item.
          * Returns the alphabetical sort of the adapter ID
@@ -3901,6 +4327,88 @@ var INSPECTOR;
         return BoundingBox;
     }(INSPECTOR.AbstractTreeTool));
     INSPECTOR.BoundingBox = BoundingBox;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     *
+     */
+    var CameraPOV = (function (_super) {
+        __extends(CameraPOV, _super);
+        function CameraPOV(camera) {
+            var _this = _super.call(this) || this;
+            _this.cameraPOV = camera;
+            _this._elem.classList.add('fa-video-camera');
+            return _this;
+        }
+        CameraPOV.prototype.action = function () {
+            _super.prototype.action.call(this);
+            this._gotoPOV();
+        };
+        CameraPOV.prototype._gotoPOV = function () {
+            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-video-camera.active");
+            console.log(actives);
+            for (var i = 0; i < actives.length; i++) {
+                actives[i].classList.remove('active');
+            }
+            //if (this._on) {
+            // set icon camera
+            this._elem.classList.add('active');
+            //}
+            this.cameraPOV.setPOV();
+        };
+        return CameraPOV;
+    }(INSPECTOR.AbstractTreeTool));
+    INSPECTOR.CameraPOV = CameraPOV;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     *
+     */
+    var SoundInteractions = (function (_super) {
+        __extends(SoundInteractions, _super);
+        function SoundInteractions(playSound) {
+            var _this = _super.call(this) || this;
+            _this.playSound = playSound;
+            _this.b = false;
+            _this._elem.classList.add('fa-play');
+            return _this;
+        }
+        SoundInteractions.prototype.action = function () {
+            _super.prototype.action.call(this);
+            this._playSound();
+        };
+        SoundInteractions.prototype._playSound = function () {
+            var _this = this;
+            if (this._elem.classList.contains('fa-play')) {
+                this._elem.classList.remove('fa-play');
+                this._elem.classList.add('fa-pause');
+            }
+            else {
+                this._elem.classList.remove('fa-pause');
+                this._elem.classList.add('fa-play');
+            }
+            this.playSound.setPlaying(function () {
+                _this._elem.classList.remove('fa-pause');
+                _this._elem.classList.add('fa-play');
+            });
+        };
+        return SoundInteractions;
+    }(INSPECTOR.AbstractTreeTool));
+    INSPECTOR.SoundInteractions = SoundInteractions;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {

@@ -856,7 +856,7 @@ var BABYLON;
                 var translation = node.translation || [0, 0, 0];
                 var rotation = node.rotation || [0, 0, 0, 1];
                 var scale = node.scale || [1, 1, 1];
-                configureNode(lastNode, BABYLON.Vector3.FromArray(translation), BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray(rotation).normalize(), rotation[3]), BABYLON.Vector3.FromArray(scale));
+                configureNode(lastNode, BABYLON.Vector3.FromArray(translation), BABYLON.Quaternion.FromArray(rotation), BABYLON.Vector3.FromArray(scale));
             }
             lastNode.updateCache(true);
             node.babylonNode = lastNode;

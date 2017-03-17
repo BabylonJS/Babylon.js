@@ -85,17 +85,25 @@
                 minWidth: number, 
                 maxWidth: number, 
                 minHeight: number, 
-                maxHeight: number
+                maxHeight: number,
+                deviceId: string
             }): void {
             var video = document.createElement("video");
+            var constraintsDeviceId;
+            if (constraints && constraints.deviceId){
+                constraintsDeviceId = { 
+                    exact: constraints.deviceId                     
+                }
+            }
 
 		    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 		    window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
 
 		    if (navigator.getUserMedia) {
-			    navigator.getUserMedia({ 
+			    navigator.getUserMedia({                     
                     video: {
+                        deviceId: constraintsDeviceId,
                         width: {
                             min: (constraints && constraints.minWidth) || 256,
                             max: (constraints && constraints.maxWidth) || 640

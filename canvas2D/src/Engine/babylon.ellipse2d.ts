@@ -427,18 +427,18 @@
                 return false;
             }
 
-            let s = Ellipse2D._riv0;
-            this.getActualGlobalScaleToRef(s);
+            //let s = Ellipse2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
 
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.subdivisions);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.subdivisions);
             }
             return true;
         }

@@ -5,6 +5,9 @@ attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
 #endif
+#ifdef TANGENT
+attribute vec4 tangent;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -80,6 +83,7 @@ varying vec4 vColor;
 #endif
 
 
+#include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
@@ -199,6 +203,9 @@ void main(void) {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
+
+    // TBN
+#include<bumpVertex>
 
     // Clip plane
 #include<clipPlaneVertex>
