@@ -4929,6 +4929,21 @@ var BABYLON;
             result._observers = this._observers.slice(0);
             return result;
         };
+        /**
+         * Does this observable handles observer registered with a given mask
+         * @param {number} trigger - the mask to be tested
+         * @return {boolean} whether or not one observer registered with the given mask is handeled
+        **/
+        Observable.prototype.hasSpecificMask = function (mask) {
+            if (mask === void 0) { mask = -1; }
+            for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
+                var obs = _a[_i];
+                if (obs.mask & mask && obs.mask === mask) {
+                    return true;
+                }
+            }
+            return false;
+        };
         return Observable;
     }());
     BABYLON.Observable = Observable;
@@ -5757,6 +5772,10 @@ var BABYLON;
         SmartArray.prototype.reset = function () {
             this.length = 0;
             this._duplicateId++;
+        };
+        SmartArray.prototype.dispose = function () {
+            this.reset();
+            this.data.length = 0;
         };
         SmartArray.prototype.concat = function (array) {
             if (array.length === 0) {
@@ -6601,8 +6620,9 @@ var BABYLON;
             renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
-        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType) {
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples) {
             if (mimeType === void 0) { mimeType = "image/png"; }
+            if (samples === void 0) { samples = 1; }
             var width;
             var height;
             //If a precision value is specified
@@ -6642,6 +6662,7 @@ var BABYLON;
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
+            texture.samples = samples;
             texture.onAfterRenderObservable.add(function () {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
             });
@@ -7115,6 +7136,9 @@ var BABYLON;
          * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
          */
         PerfCounter.prototype.addCount = function (newCount, fetchResult) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._current += newCount;
             if (fetchResult) {
                 this._fetchResult();
@@ -7124,6 +7148,9 @@ var BABYLON;
          * Start monitoring this performance counter
          */
         PerfCounter.prototype.beginMonitoring = function () {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._startMonitoringTime = Tools.Now;
         };
         /**
@@ -7132,6 +7159,9 @@ var BABYLON;
          */
         PerfCounter.prototype.endMonitoring = function (newFrame) {
             if (newFrame === void 0) { newFrame = true; }
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             if (newFrame) {
                 this.fetchNewFrame();
             }
@@ -7159,6 +7189,7 @@ var BABYLON;
         };
         return PerfCounter;
     }());
+    PerfCounter.Enabled = true;
     BABYLON.PerfCounter = PerfCounter;
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -7843,6 +7874,7 @@ var BABYLON;
             this.isPointerLock = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
+            this.preventCacheWipeBetweenFrames = false;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = true;
             this.scenes = new Array();
@@ -7905,6 +7937,9 @@ var BABYLON;
             }
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
+            }
+            if (options.audioEngine === undefined) {
+                options.audioEngine = true;
             }
             // GL
             if (!options.disableWebGL2Support) {
@@ -8089,7 +8124,7 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-            if (BABYLON.AudioEngine && !Engine.audioEngine) {
+            if (options.audioEngine && BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
             }
             //default loading screen
@@ -8701,9 +8736,12 @@ var BABYLON;
          *   });
          */
         Engine.prototype.resize = function () {
-            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
-            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            // We're not resizing the size of the canvas while in VR mode & presenting
+            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+                this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            }
         };
         /**
          * force a specific size of the canvas
@@ -9448,6 +9486,9 @@ var BABYLON;
         };
         // Textures
         Engine.prototype.wipeCaches = function () {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
             this._stencilState.reset();
@@ -10916,6 +10957,12 @@ var BABYLON;
                 return ((!predicate || predicate(node)) && (node instanceof BABYLON.AbstractMesh));
             });
             return results;
+        };
+        /**
+         * Get all direct children of this node.
+        */
+        Node.prototype.getChildren = function (predicate) {
+            return this.getDescendants(true, predicate);
         };
         Node.prototype._setReady = function (state) {
             if (state === this._isReady) {
@@ -12801,11 +12848,6 @@ var BABYLON;
             // Composing transformations
             this._pivotMatrix.multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[4]);
             BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
-            // Mesh referal
-            var completeMeshReferalMatrix = BABYLON.Tmp.Matrix[6];
-            if (this._meshToBoneReferal && this.parent && this.parent.getWorldMatrix) {
-                this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), completeMeshReferalMatrix);
-            }
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
@@ -12813,7 +12855,8 @@ var BABYLON;
                     var currentPosition = BABYLON.Tmp.Vector3[3];
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._meshToBoneReferal) {
-                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
+                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, BABYLON.Tmp.Matrix[6], currentPosition);
                         }
                         else {
                             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
@@ -12850,7 +12893,8 @@ var BABYLON;
                 this._markSyncedWithParent();
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
-                        BABYLON.Tmp.Matrix[5].copyFrom(completeMeshReferalMatrix);
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        BABYLON.Tmp.Matrix[5].copyFrom(BABYLON.Tmp.Matrix[6]);
                     }
                     else {
                         BABYLON.Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
@@ -12862,7 +12906,8 @@ var BABYLON;
                 }
                 else {
                     if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(completeMeshReferalMatrix, this._worldMatrix);
+                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        BABYLON.Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                     }
                     else {
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
@@ -16115,29 +16160,29 @@ var BABYLON;
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
                         //Left eye
                         this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
+                        this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
-                        //this._rigCameras[0].setCameraRigParameter('eyeParameters', leftEye);
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
                         //Right eye
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                        //this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
+                        this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
                     }
                     break;
             }
@@ -16151,7 +16196,10 @@ var BABYLON;
             return this._projectionMatrix;
         };
         Camera.prototype._updateCameraRotationMatrix = function () {
-            // only here for webvr
+            //Here for WebVR
+        };
+        Camera.prototype._updateWebVRCameraRotationMatrix = function () {
+            //Here for WebVR
         };
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
@@ -17677,6 +17725,13 @@ var BABYLON;
             if (needToRotate) {
                 this.rotation.x += this.cameraRotation.x;
                 this.rotation.y += this.cameraRotation.y;
+                //rotate, if quaternion is set and rotation was used
+                if (this.rotationQuaternion) {
+                    var len = this.rotation.length();
+                    if (len) {
+                        BABYLON.Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    }
+                }
                 if (!this.noRotationConstraint) {
                     var limit = (Math.PI / 2) * 0.95;
                     if (this.rotation.x > limit)
@@ -18942,6 +18997,15 @@ var BABYLON;
                 }
             }
         };
+        RenderingManager.prototype.dispose = function () {
+            for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+                var renderingGroup = this._renderingGroups[index];
+                if (renderingGroup) {
+                    renderingGroup.dispose();
+                }
+            }
+            this._renderingGroups.length = 0;
+        };
         RenderingManager.prototype._prepareRenderingGroup = function (renderingGroupId) {
             if (!this._renderingGroups[renderingGroupId]) {
                 this._renderingGroups[renderingGroupId] = new BABYLON.RenderingGroup(renderingGroupId, this._scene, this._customOpaqueSortCompareFn[renderingGroupId], this._customAlphaTestSortCompareFn[renderingGroupId], this._customTransparentSortCompareFn[renderingGroupId]);
@@ -19250,6 +19314,13 @@ var BABYLON;
             this._particleSystems.reset();
             this._spriteManagers.reset();
         };
+        RenderingGroup.prototype.dispose = function () {
+            this._opaqueSubMeshes.dispose();
+            this._transparentSubMeshes.dispose();
+            this._alphaTestSubMeshes.dispose();
+            this._particleSystems.dispose();
+            this._spriteManagers.dispose();
+        };
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch
@@ -19321,6 +19392,55 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var ClickInfo = (function () {
+        function ClickInfo() {
+            this._singleClick = false;
+            this._doubleClick = false;
+            this._hasSwiped = false;
+            this._ignore = false;
+        }
+        Object.defineProperty(ClickInfo.prototype, "singleClick", {
+            get: function () {
+                return this._singleClick;
+            },
+            set: function (b) {
+                this._singleClick = b;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ClickInfo.prototype, "doubleClick", {
+            get: function () {
+                return this._doubleClick;
+            },
+            set: function (b) {
+                this._doubleClick = b;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ClickInfo.prototype, "hasSwiped", {
+            get: function () {
+                return this._hasSwiped;
+            },
+            set: function (b) {
+                this._hasSwiped = b;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ClickInfo.prototype, "ignore", {
+            get: function () {
+                return this._ignore;
+            },
+            set: function (b) {
+                this._ignore = b;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ClickInfo;
+    }());
     var PointerEventTypes = (function () {
         function PointerEventTypes() {
         }
@@ -19359,6 +19479,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PointerEventTypes, "POINTERTAP", {
+            get: function () {
+                return PointerEventTypes._POINTERTAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERDOUBLETAP", {
+            get: function () {
+                return PointerEventTypes._POINTERDOUBLETAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return PointerEventTypes;
     }());
     PointerEventTypes._POINTERDOWN = 0x01;
@@ -19366,6 +19500,8 @@ var BABYLON;
     PointerEventTypes._POINTERMOVE = 0x04;
     PointerEventTypes._POINTERWHEEL = 0x08;
     PointerEventTypes._POINTERPICK = 0x10;
+    PointerEventTypes._POINTERTAP = 0x20;
+    PointerEventTypes._POINTERDOUBLETAP = 0x40;
     BABYLON.PointerEventTypes = PointerEventTypes;
     var PointerInfoBase = (function () {
         function PointerInfoBase(type, event) {
@@ -19544,9 +19680,17 @@ var BABYLON;
              * Observable event triggered each time an input event is received from the rendering canvas
              */
             this.onPointerObservable = new BABYLON.Observable();
+            this._meshPickProceed = false;
+            this._previousHasSwiped = false;
+            this._currentPickResult = null;
+            this._previousPickResult = null;
+            this._isButtonPressed = false;
+            this._doubleClickOccured = false;
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
             this._startingPointerPosition = new BABYLON.Vector2(0, 0);
+            this._previousStartingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
+            this._previousStartingPointerTime = 0;
             // Fog
             /**
             * is fog enabled on this scene.
@@ -19998,6 +20142,123 @@ var BABYLON;
             if (attachUp === void 0) { attachUp = true; }
             if (attachDown === void 0) { attachDown = true; }
             if (attachMove === void 0) { attachMove = true; }
+            this._initActionManager = function (act, clickInfo) {
+                if (!_this._meshPickProceed) {
+                    var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
+                    _this._currentPickResult = pickResult;
+                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    _this._meshPickProceed = true;
+                }
+                return act;
+            };
+            this._delayedSimpleClick = function (btn, clickInfo, cb) {
+                // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
+                if ((new Date().getTime() - _this._previousStartingPointerTime > Scene.DoubleClickDelay && !_this._doubleClickOccured) ||
+                    btn !== _this._previousButtonPressed) {
+                    _this._doubleClickOccured = false;
+                    clickInfo.singleClick = true;
+                    clickInfo.ignore = false;
+                    cb(clickInfo, _this._currentPickResult);
+                }
+            };
+            this._initClickEvent = function (obs1, obs2, evt, cb) {
+                var clickInfo = new ClickInfo();
+                _this._currentPickResult = null;
+                var act;
+                var checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
+                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
+                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                if (!checkPicking && BABYLON.ActionManager.HasPickTriggers) {
+                    act = _this._initActionManager(act, clickInfo);
+                    if (act)
+                        checkPicking = act.hasPickTriggers;
+                }
+                if (checkPicking) {
+                    var btn = evt.button;
+                    clickInfo.hasSwiped = Math.abs(_this._startingPointerPosition.x - _this._pointerX) > Scene.DragMovementThreshold ||
+                        Math.abs(_this._startingPointerPosition.y - _this._pointerY) > Scene.DragMovementThreshold;
+                    if (!clickInfo.hasSwiped) {
+                        var checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
+                        if (!checkSingleClickImmediately) {
+                            checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
+                                !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                            if (checkSingleClickImmediately && !BABYLON.ActionManager.HasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
+                                act = _this._initActionManager(act, clickInfo);
+                                if (act)
+                                    checkSingleClickImmediately = !act.hasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger);
+                            }
+                        }
+                        if (checkSingleClickImmediately) {
+                            // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
+                            if (new Date().getTime() - _this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                                btn !== _this._previousButtonPressed) {
+                                clickInfo.singleClick = true;
+                                cb(clickInfo, _this._currentPickResult);
+                            }
+                        }
+                        else {
+                            // wait that no double click has been raised during the double click delay
+                            _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
+                            _this._delayedSimpleClickTimeout = window.setTimeout(_this._delayedSimpleClick.bind(_this, btn, clickInfo, cb), Scene.DoubleClickDelay);
+                        }
+                        var checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
+                            obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                        if (!checkDoubleClick && BABYLON.ActionManager.HasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
+                            act = _this._initActionManager(act, clickInfo);
+                            if (act)
+                                checkDoubleClick = act.hasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger);
+                        }
+                        if (checkDoubleClick) {
+                            // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
+                            if (btn === _this._previousButtonPressed &&
+                                new Date().getTime() - _this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                                !_this._doubleClickOccured) {
+                                // pointer has not moved for 2 clicks, it's a double click
+                                if (!clickInfo.hasSwiped &&
+                                    Math.abs(_this._previousStartingPointerPosition.x - _this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
+                                    Math.abs(_this._previousStartingPointerPosition.y - _this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
+                                    _this._previousStartingPointerTime = 0;
+                                    _this._doubleClickOccured = true;
+                                    clickInfo.doubleClick = true;
+                                    clickInfo.ignore = false;
+                                    if (Scene.ExclusiveDoubleClickMode && _this._previousDelayedSimpleClickTimeout && _this._previousDelayedSimpleClickTimeout.clearTimeout)
+                                        _this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                    _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
+                                    cb(clickInfo, _this._currentPickResult);
+                                }
+                                else {
+                                    _this._doubleClickOccured = false;
+                                    _this._previousStartingPointerTime = _this._startingPointerTime;
+                                    _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
+                                    _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
+                                    _this._previousButtonPressed = btn;
+                                    _this._previousHasSwiped = clickInfo.hasSwiped;
+                                    if (Scene.ExclusiveDoubleClickMode) {
+                                        if (_this._previousDelayedSimpleClickTimeout && _this._previousDelayedSimpleClickTimeout.clearTimeout) {
+                                            _this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        }
+                                        _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
+                                        cb(clickInfo, _this._previousPickResult);
+                                    }
+                                    else {
+                                        cb(clickInfo, _this._currentPickResult);
+                                    }
+                                }
+                            }
+                            else {
+                                _this._doubleClickOccured = false;
+                                _this._previousStartingPointerTime = _this._startingPointerTime;
+                                _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
+                                _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
+                                _this._previousButtonPressed = btn;
+                                _this._previousHasSwiped = clickInfo.hasSwiped;
+                            }
+                        }
+                    }
+                }
+                clickInfo.ignore = true;
+                cb(clickInfo, _this._currentPickResult);
+            };
             var spritePredicate = function (sprite) {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
@@ -20065,6 +20326,9 @@ var BABYLON;
                 }
             };
             this._onPointerDown = function (evt) {
+                _this._isButtonPressed = true;
+                _this._pickedDownMesh = null;
+                _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
                 // PreObservable support
                 if (_this.onPrePointerObservable.hasObservers()) {
@@ -20091,36 +20355,36 @@ var BABYLON;
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     _this._pickedDownMesh = pickResult.pickedMesh;
-                    if (pickResult.pickedMesh.actionManager) {
-                        if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
+                    var actionManager = pickResult.pickedMesh.actionManager;
+                    if (actionManager) {
+                        if (actionManager.hasPickTriggers) {
+                            actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             switch (evt.button) {
                                 case 0:
-                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                                 case 1:
-                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                                 case 2:
-                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                             }
-                            if (pickResult.pickedMesh.actionManager) {
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
                         }
-                        if (pickResult.pickedMesh.actionManager && pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
-                            var that = _this;
-                            window.setTimeout(function () {
-                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger); }, false, that.cameraToUseForPointers);
+                        if (actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
+                            window.setTimeout((function () {
+                                var _this = this;
+                                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
                                 if (pickResult.hit && pickResult.pickedMesh) {
-                                    if (pickResult.pickedMesh.actionManager) {
-                                        if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < BABYLON.ActionManager.DragMovementThreshold)) {
-                                            that._startingPointerTime = 0;
-                                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                        }
+                                    if (this._isButtonPressed &&
+                                        ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                        (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
+                                            Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                        this._startingPointerTime = 0;
+                                        actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     }
                                 }
-                            }, BABYLON.ActionManager.LongPressDelay);
+                            }).bind(_this), Scene.LongPressDelay);
                         }
                     }
                 }
@@ -20158,75 +20422,130 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
+                _this._isButtonPressed = false;
+                _this._pickedUpMesh = null;
+                _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
-                // PreObservable support
-                if (_this.onPrePointerObservable.hasObservers()) {
-                    var type = PointerEventTypes.POINTERUP;
-                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
-                    _this.onPrePointerObservable.notifyObservers(pi, type);
-                    if (pi.skipOnPointerObservable) {
-                        return;
-                    }
-                }
-                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
-                    return;
-                }
-                if (!_this.pointerUpPredicate) {
-                    _this.pointerUpPredicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
-                    };
-                }
-                // Meshes
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerUpPredicate, false, _this.cameraToUseForPointers);
-                if (pickResult.hit && pickResult.pickedMesh) {
-                    if (_this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
-                        if (_this.onPointerPick) {
-                            _this.onPointerPick(evt, pickResult);
-                        }
-                        if (_this.onPointerObservable.hasObservers()) {
-                            var type = PointerEventTypes.POINTERPICK;
-                            var pi = new PointerInfo(type, evt, pickResult);
-                            _this.onPointerObservable.notifyObservers(pi, type);
-                        }
-                    }
-                    if (pickResult.pickedMesh.actionManager) {
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                        if (pickResult.pickedMesh.actionManager) {
-                            if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
-                        }
-                    }
-                }
-                if (_this._pickedDownMesh && _this._pickedDownMesh.actionManager && _this._pickedDownMesh !== pickResult.pickedMesh) {
-                    _this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(_this._pickedDownMesh, evt));
-                }
-                if (_this.onPointerUp) {
-                    _this.onPointerUp(evt, pickResult);
-                }
-                if (_this.onPointerObservable.hasObservers()) {
-                    var type = PointerEventTypes.POINTERUP;
-                    var pi = new PointerInfo(type, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi, type);
-                }
-                _this._startingPointerTime = 0;
-                // Sprites
-                if (_this.spriteManagers.length > 0) {
-                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
-                    if (pickResult.hit && pickResult.pickedSprite) {
-                        if (pickResult.pickedSprite.actionManager) {
-                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
-                            if (pickResult.pickedSprite.actionManager) {
-                                if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
-                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                _this._initClickEvent(_this.onPrePointerObservable, _this.onPointerObservable, evt, (function (clickInfo, pickResult) {
+                    // PreObservable support
+                    if (this.onPrePointerObservable.hasObservers()) {
+                        if (!clickInfo.ignore) {
+                            if (!clickInfo.hasSwiped) {
+                                if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                                    var type = PointerEventTypes.POINTERTAP;
+                                    var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    if (pi.skipOnPointerObservable) {
+                                        return;
+                                    }
+                                }
+                                if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                                    var type = PointerEventTypes.POINTERDOUBLETAP;
+                                    var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    if (pi.skipOnPointerObservable) {
+                                        return;
+                                    }
                                 }
                             }
                         }
+                        else {
+                            var type = PointerEventTypes.POINTERUP;
+                            var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                            this.onPrePointerObservable.notifyObservers(pi, type);
+                            if (pi.skipOnPointerObservable) {
+                                return;
+                            }
+                        }
                     }
-                    if (_this._pickedDownSprite && _this._pickedDownSprite.actionManager && _this._pickedDownSprite !== pickResult.pickedSprite) {
-                        _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
+                    if (!this.cameraToUseForPointers && !this.activeCamera) {
+                        return;
                     }
-                }
+                    if (!this.pointerUpPredicate) {
+                        this.pointerUpPredicate = function (mesh) {
+                            return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        };
+                    }
+                    // Meshes
+                    if (!this._meshPickProceed && BABYLON.ActionManager.HasTriggers) {
+                        this._initActionManager(null, clickInfo);
+                    }
+                    if (!pickResult) {
+                        pickResult = this._currentPickResult;
+                    }
+                    if (pickResult && pickResult.pickedMesh) {
+                        this._pickedUpMesh = pickResult.pickedMesh;
+                        if (this._pickedDownMesh === this._pickedUpMesh) {
+                            if (this.onPointerPick) {
+                                this.onPointerPick(evt, pickResult);
+                            }
+                            if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
+                                var type = PointerEventTypes.POINTERPICK;
+                                var pi = new PointerInfo(type, evt, pickResult);
+                                this.onPointerObservable.notifyObservers(pi, type);
+                            }
+                        }
+                        if (pickResult.pickedMesh.actionManager) {
+                            if (clickInfo.ignore) {
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                            if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                            if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnDoublePickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                        }
+                    }
+                    if (this._pickedDownMesh &&
+                        this._pickedDownMesh.actionManager &&
+                        this._pickedDownMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickOutTrigger) &&
+                        this._pickedDownMesh !== this._pickedUpMesh) {
+                        this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                    }
+                    if (this.onPointerUp) {
+                        this.onPointerUp(evt, pickResult);
+                    }
+                    if (this.onPointerObservable.hasObservers()) {
+                        if (!clickInfo.ignore) {
+                            if (!clickInfo.hasSwiped) {
+                                if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                                    var type = PointerEventTypes.POINTERTAP;
+                                    var pi = new PointerInfo(type, evt, pickResult);
+                                    this.onPointerObservable.notifyObservers(pi, type);
+                                }
+                                if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                                    var type = PointerEventTypes.POINTERDOUBLETAP;
+                                    var pi = new PointerInfo(type, evt, pickResult);
+                                    this.onPointerObservable.notifyObservers(pi, type);
+                                }
+                            }
+                        }
+                        else {
+                            var type = PointerEventTypes.POINTERUP;
+                            var pi = new PointerInfo(type, evt, pickResult);
+                            this.onPointerObservable.notifyObservers(pi, type);
+                        }
+                    }
+                    // Sprites
+                    if (this.spriteManagers.length > 0) {
+                        pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
+                        if (pickResult.hit && pickResult.pickedSprite) {
+                            if (pickResult.pickedSprite.actionManager) {
+                                pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                if (pickResult.pickedSprite.actionManager) {
+                                    if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
+                                        pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    }
+                                }
+                            }
+                        }
+                        if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== pickResult.pickedSprite) {
+                            this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                        }
+                    }
+                    this._previousPickResult = this._currentPickResult;
+                }).bind(_this));
             };
             this._onKeyDown = function (evt) {
                 if (_this.actionManager) {
@@ -21591,6 +21910,21 @@ var BABYLON;
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
+            // Smart arrays            
+            if (this.activeCamera) {
+                this.activeCamera._activeMeshes.dispose();
+                this.activeCamera = null;
+            }
+            this._activeMeshes.dispose();
+            this._renderingManager.dispose();
+            this._processedMaterials.dispose();
+            this._activeParticleSystems.dispose();
+            this._activeSkeletons.dispose();
+            this._softwareSkinnedMeshes.dispose();
+            this._boundingBoxRenderer.dispose();
+            this._edgesRenderers.dispose();
+            this._meshesForIntersections.dispose();
+            this._toBeDisposed.dispose();
             // Debug layer
             if (this._debugLayer) {
                 this._debugLayer.hide();
@@ -22006,6 +22340,10 @@ var BABYLON;
     Scene._FOGMODE_LINEAR = 3;
     Scene.MinDeltaTime = 1.0;
     Scene.MaxDeltaTime = 1000.0;
+    Scene.DragMovementThreshold = 10; // in pixels
+    Scene.LongPressDelay = 500; // in milliseconds
+    Scene.DoubleClickDelay = 300; // in milliseconds
+    Scene.ExclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
 
@@ -25552,6 +25890,11 @@ var BABYLON;
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The parameter `uvs` is an optional flat array of `Vector4` to update/set each ribbon vertex with its own custom UV values instead of the computed ones.
+         * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values.
+         * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that
+         * if you set `closePath` to `true`, there's one extra vertex per path in the geometry.
+         * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateRibbon = function (name, options, scene) {
@@ -25616,6 +25959,24 @@ var BABYLON;
                 instance._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (options.colors) {
+                    var colors = instance.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                    for (var c = 0; c < options.colors.length; c++) {
+                        colors[c * 4] = options.colors[c].r;
+                        colors[c * 4 + 1] = options.colors[c].g;
+                        colors[c * 4 + 2] = options.colors[c].b;
+                        colors[c * 4 + 3] = options.colors[c].a;
+                    }
+                    instance.updateVerticesData(BABYLON.VertexBuffer.ColorKind, colors, false, false);
+                }
+                if (options.uvs) {
+                    var uvs = instance.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                    for (var i = 0; i < options.uvs.length; i++) {
+                        uvs[i * 2] = options.uvs[i].x;
+                        uvs[i * 2 + 1] = options.uvs[i].y;
+                    }
+                    instance.updateVerticesData(BABYLON.VertexBuffer.UVKind, uvs, false, false);
+                }
                 if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
@@ -28032,9 +28393,14 @@ var BABYLON;
                 this._context.fillRect(0, 0, size.width, size.height);
             }
             this._context.font = font;
-            if (x === null) {
+            if (x === null || x === undefined) {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
+            }
+            if (y === null || y === undefined) {
+                var fontSize = parseInt((font.replace(/\D/g, '')));
+                ;
+                y = (size.height / 2) + (fontSize / 3.65);
             }
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
@@ -30499,6 +30865,7 @@ var BABYLON;
                     this.cameraColorGradingTexture.dispose();
                 }
             }
+            this._renderTargets.dispose();
             _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         StandardMaterial.prototype.clone = function (name) {
@@ -34922,13 +35289,13 @@ var BABYLON;
                 checkPitch = true;
             }
             if (checkYaw || checkPitch) {
-                var _tmpMat3 = BoneLookController._tmpMats[2];
-                var _tmpMat3Inv = BoneLookController._tmpMats[3];
+                var spaceMat = BoneLookController._tmpMats[2];
+                var spaceMatInv = BoneLookController._tmpMats[3];
                 if (this.upAxisSpace == BABYLON.Space.BONE && upAxis.y == 1) {
-                    parentBone.getRotationMatrixToRef(BABYLON.Space.WORLD, this.mesh, _tmpMat3);
+                    parentBone.getRotationMatrixToRef(BABYLON.Space.WORLD, this.mesh, spaceMat);
                 }
                 else if (this.upAxisSpace == BABYLON.Space.LOCAL && upAxis.y == 1 && !parentBone) {
-                    _tmpMat3.copyFrom(mesh.getWorldMatrix());
+                    spaceMat.copyFrom(mesh.getWorldMatrix());
                 }
                 else {
                     var forwardAxis = BoneLookController._tmpVecs[2];
@@ -34945,13 +35312,14 @@ var BABYLON;
                     var rightAxis = BABYLON.Vector3.Cross(upAxis, forwardAxis);
                     rightAxis.normalize();
                     var forwardAxis = BABYLON.Vector3.Cross(rightAxis, upAxis);
-                    BABYLON.Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, _tmpMat3);
+                    BABYLON.Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
                 }
-                _tmpMat3.invertToRef(_tmpMat3Inv);
+                spaceMat.invertToRef(spaceMatInv);
                 var xzlen;
                 if (checkPitch) {
                     var localTarget = BoneLookController._tmpVecs[3];
-                    BABYLON.Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
                     var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     var pitch = Math.atan2(localTarget.y, xzlen);
                     var newPitch = pitch;
@@ -34964,14 +35332,15 @@ var BABYLON;
                         newPitch = this._minPitch;
                     }
                     if (pitch != newPitch) {
-                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
                 }
                 if (checkYaw) {
                     var localTarget = BoneLookController._tmpVecs[4];
-                    BABYLON.Vector3.TransformCoordinatesToRef(target.subtract(bonePos), _tmpMat3Inv, localTarget);
+                    target.subtractToRef(bonePos, localTarget);
+                    BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
                     var yaw = Math.atan2(localTarget.x, localTarget.z);
                     var newYaw = yaw;
                     if (yaw > this._maxYaw || yaw < this._minYaw) {
@@ -35004,27 +35373,27 @@ var BABYLON;
                         }
                     }
                     if (this._slerping && this._yawRange > Math.PI) {
-                        //are we going to be crossing into the min/max region
-                        var _tmpVec8 = BoneLookController._tmpVecs[8];
-                        _tmpVec8.copyFrom(BABYLON.Axis.Z);
+                        //are we going to be crossing into the min/max region?
+                        var boneFwd = BoneLookController._tmpVecs[8];
+                        boneFwd.copyFrom(BABYLON.Axis.Z);
                         if (this._transformYawPitch) {
-                            BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, this._transformYawPitchInv, _tmpVec8);
+                            BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                         }
                         var boneRotMat = BABYLON.BoneLookController._tmpMats[4];
                         this._boneQuat.toRotationMatrix(boneRotMat);
                         this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, boneRotMat, _tmpVec8);
-                        BABYLON.Vector3.TransformCoordinatesToRef(_tmpVec8, _tmpMat3Inv, _tmpVec8);
-                        var boneYaw = Math.atan2(_tmpVec8.x, _tmpVec8.z);
-                        var ang1 = this._getAngleBetween(boneYaw, yaw);
-                        var ang2 = this._getAngleBetween(boneYaw, this._midYawConstraint);
-                        if (ang1 > ang2) {
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
+                        BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, spaceMatInv, boneFwd);
+                        var boneYaw = Math.atan2(boneFwd.x, boneFwd.z);
+                        var angBtwTar = this._getAngleBetween(boneYaw, yaw);
+                        var angBtwMidYaw = this._getAngleBetween(boneYaw, this._midYawConstraint);
+                        if (angBtwTar > angBtwMidYaw) {
                             if (xzlen == null) {
                                 xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                             }
-                            var ang3 = this._getAngleBetween(boneYaw, this._maxYaw);
-                            var ang4 = this._getAngleBetween(boneYaw, this._minYaw);
-                            if (ang4 < ang3) {
+                            var angBtwMax = this._getAngleBetween(boneYaw, this._maxYaw);
+                            var angBtwMin = this._getAngleBetween(boneYaw, this._minYaw);
+                            if (angBtwMin < angBtwMax) {
                                 newYaw = boneYaw + Math.PI * .75;
                                 localTarget.z = Math.cos(newYaw) * xzlen;
                                 localTarget.x = Math.sin(newYaw) * xzlen;
@@ -35037,7 +35406,7 @@ var BABYLON;
                         }
                     }
                     if (yaw != newYaw) {
-                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, _tmpMat3, localTarget);
+                        BABYLON.Vector3.TransformCoordinatesToRef(localTarget, spaceMat, localTarget);
                         localTarget.addInPlace(bonePos);
                         target = localTarget;
                     }
@@ -35735,8 +36104,8 @@ var BABYLON;
                 for (var i = 0; i < this._textures.length; i++) {
                     this._engine._releaseTexture(this._textures.data[i]);
                 }
-                this._textures.reset();
             }
+            this._textures.dispose();
             if (!camera) {
                 return;
             }
@@ -36960,6 +37329,8 @@ var BABYLON;
             var offset = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var customUV = options.uvs;
+            var customColors = options.colors;
             var positions = [];
             var indices = [];
             var normals = [];
@@ -36986,7 +37357,7 @@ var BABYLON;
             }
             // positions and horizontal distances (u)
             var idc = 0;
-            var closePathCorr = (closePath) ? 1 : 0;
+            var closePathCorr = (closePath) ? 1 : 0; // the final index will be +1 if closePath
             var path;
             var l;
             minlg = pathArray[0].length;
@@ -37059,15 +37430,22 @@ var BABYLON;
             // uvs
             var u;
             var v;
-            for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
-                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
-                    if (invertUV) {
-                        uvs.push(v, u);
-                    }
-                    else {
-                        uvs.push(u, v);
+            if (customUV) {
+                for (p = 0; p < customUV.length; p++) {
+                    uvs.push(customUV[p].x, customUV[p].y);
+                }
+            }
+            else {
+                for (p = 0; p < pathArray.length; p++) {
+                    for (i = 0; i < minlg + closePathCorr; i++) {
+                        u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                        v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                        if (invertUV) {
+                            uvs.push(v, u);
+                        }
+                        else {
+                            uvs.push(u, v);
+                        }
                     }
                 }
             }
@@ -37123,12 +37501,25 @@ var BABYLON;
             }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            // Colors
+            if (customColors) {
+                var colors = new Float32Array(customColors.length * 4);
+                for (var c = 0; c < customColors.length; c++) {
+                    colors[c * 4] = customColors[c].r;
+                    colors[c * 4 + 1] = customColors[c].g;
+                    colors[c * 4 + 2] = customColors[c].b;
+                    colors[c * 4 + 3] = customColors[c].a;
+                }
+            }
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (customColors) {
+                vertexData.set(colors, BABYLON.VertexBuffer.ColorKind);
+            }
             if (closePath) {
                 vertexData._idx = idx;
             }
@@ -39295,6 +39686,7 @@ var BABYLON;
             if (!this._colorShader) {
                 return;
             }
+            this.renderList.dispose();
             this._colorShader.dispose();
             var buffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
             if (buffer) {
@@ -39716,6 +40108,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnDoublePickTrigger", {
+            get: function () {
+                return ActionManager._OnDoublePickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ActionManager, "OnPickUpTrigger", {
             get: function () {
                 return ActionManager._OnPickUpTrigger;
@@ -39790,6 +40189,13 @@ var BABYLON;
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
+            for (var i = 0; i < this.actions.length; i++) {
+                var action = this.actions[i];
+                ActionManager.Triggers[action.trigger]--;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger];
+                }
+            }
             if (index > -1) {
                 this._scene._actionManagers.splice(index, 1);
             }
@@ -39859,6 +40265,57 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "HasTriggers", {
+            /**
+             * Does exist one action manager with at least one trigger
+             * @return {boolean} whether or not it exists one action manager with one trigger
+            **/
+            get: function () {
+                for (var t in ActionManager.Triggers) {
+                    if (ActionManager.Triggers.hasOwnProperty(t)) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "HasPickTriggers", {
+            /**
+             * Does exist one action manager with at least one pick trigger
+             * @return {boolean} whether or not it exists one action manager with one pick trigger
+            **/
+            get: function () {
+                for (var t in ActionManager.Triggers) {
+                    if (ActionManager.Triggers.hasOwnProperty(t)) {
+                        var t_int = parseInt(t);
+                        if (t_int >= ActionManager._OnPickTrigger && t_int <= ActionManager._OnPickUpTrigger) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Does exist one action manager that handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled by at least one action manager
+        **/
+        ActionManager.HasSpecificTrigger = function (trigger) {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    var t_int = parseInt(t);
+                    if (t_int === trigger) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
         /**
          * Registers an action to this action manager
          * @param {BABYLON.Action} action - the action to be registered
@@ -39872,6 +40329,12 @@ var BABYLON;
                 }
             }
             this.actions.push(action);
+            if (ActionManager.Triggers[action.trigger]) {
+                ActionManager.Triggers[action.trigger]++;
+            }
+            else {
+                ActionManager.Triggers[action.trigger] = 1;
+            }
             action._actionManager = this;
             action._prepare();
             return action;
@@ -40130,18 +40593,18 @@ var BABYLON;
     ActionManager._OnRightPickTrigger = 3;
     ActionManager._OnCenterPickTrigger = 4;
     ActionManager._OnPickDownTrigger = 5;
-    ActionManager._OnPickUpTrigger = 6;
-    ActionManager._OnLongPressTrigger = 7;
-    ActionManager._OnPointerOverTrigger = 8;
-    ActionManager._OnPointerOutTrigger = 9;
-    ActionManager._OnEveryFrameTrigger = 10;
-    ActionManager._OnIntersectionEnterTrigger = 11;
-    ActionManager._OnIntersectionExitTrigger = 12;
-    ActionManager._OnKeyDownTrigger = 13;
-    ActionManager._OnKeyUpTrigger = 14;
-    ActionManager._OnPickOutTrigger = 15;
-    ActionManager.DragMovementThreshold = 10; // in pixels
-    ActionManager.LongPressDelay = 500; // in milliseconds
+    ActionManager._OnDoublePickTrigger = 6;
+    ActionManager._OnPickUpTrigger = 7;
+    ActionManager._OnLongPressTrigger = 8;
+    ActionManager._OnPointerOverTrigger = 9;
+    ActionManager._OnPointerOutTrigger = 10;
+    ActionManager._OnEveryFrameTrigger = 11;
+    ActionManager._OnIntersectionEnterTrigger = 12;
+    ActionManager._OnIntersectionExitTrigger = 13;
+    ActionManager._OnKeyDownTrigger = 14;
+    ActionManager._OnKeyUpTrigger = 15;
+    ActionManager._OnPickOutTrigger = 16;
+    ActionManager.Triggers = {};
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));
 
@@ -43983,9 +44446,9 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     /**
-  * This class describe a rectangle that were added to the map.
-  * You have access to its coordinates either in pixel or normalized (UV)
-  */
+     * This class describe a rectangle that were added to the map.
+     * You have access to its coordinates either in pixel or normalized (UV)
+     */
     var PackedRect = (function () {
         function PackedRect(root, parent, pos, size) {
             this._pos = pos;
@@ -44018,27 +44481,50 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Retrieve the inner position (considering the margin) and stores it into the res object
+         * @param res must be a valid Vector2 that will contain the inner position after this call
+         */
+        PackedRect.prototype.getInnerPosToRef = function (res) {
+            var m = this._root._margin;
+            res.x = this._pos.x + m;
+            res.y = this._pos.y + m;
+        };
+        /**
+         * Retrieve the inner size (considering the margin) and stores it into the res object
+         * @param res must be a valid Size that will contain the inner size after this call
+         */
+        PackedRect.prototype.getInnerSizeToRef = function (res) {
+            var m = this._root._margin;
+            res.width = this._contentSize.width - (m * 2);
+            res.height = this._contentSize.height - (m * 2);
+        };
         Object.defineProperty(PackedRect.prototype, "UVs", {
             /**
              * Compute the UV of the top/left, top/right, bottom/right, bottom/left points of the rectangle this node handles into the map
              * @returns And array of 4 Vector2, containing UV coordinates for the four corners of the Rectangle into the map
              */
             get: function () {
-                return this.getUVsForCustomSize(this._root._size);
+                if (!this._contentSize) {
+                    throw new Error("Can't compute UVs for this object because it's nor allocated");
+                }
+                return this.getUVsForCustomSize(this._contentSize);
             },
             enumerable: true,
             configurable: true
         });
         /**
-         * You may have allocated the PackedRect using over-provisioning (you allocated more than you need in order to prevent frequent deallocations/reallocations) and then using only a part of the PackRect.
+         * You may have allocated the PackedRect using over-provisioning (you allocated more than you need in order to prevent frequent deallocations/reallocations)
+         * and then using only a part of the PackRect.
          * This method will return the UVs for this part by given the custom size of what you really use
          * @param customSize must be less/equal to the allocated size, UV will be compute from this
          */
         PackedRect.prototype.getUVsForCustomSize = function (customSize) {
             var mainWidth = this._root._size.width;
             var mainHeight = this._root._size.height;
-            var topLeft = new BABYLON.Vector2(this._pos.x / mainWidth, this._pos.y / mainHeight);
-            var rightBottom = new BABYLON.Vector2((this._pos.x + customSize.width - 1) / mainWidth, (this._pos.y + customSize.height - 1) / mainHeight);
+            var margin = this._root._margin;
+            var topLeft = new BABYLON.Vector2((this._pos.x + margin) / mainWidth, (this._pos.y + margin) / mainHeight);
+            var rightBottom = new BABYLON.Vector2((this._pos.x + customSize.width + margin - 1) / mainWidth, (this._pos.y + customSize.height + margin - 1) / mainHeight);
             var uvs = new Array();
             uvs.push(topLeft);
             uvs.push(new BABYLON.Vector2(rightBottom.x, topLeft.y));
@@ -44076,6 +44562,7 @@ var BABYLON;
         };
         PackedRect.prototype.findNode = function (size) {
             var resNode = null;
+            var margin = this._root._margin * 2;
             // If this node is used, recurse to each of his subNodes to find an available one in its branch
             if (this.isUsed) {
                 if (this._leftNode) {
@@ -44089,33 +44576,38 @@ var BABYLON;
                 }
             }
             else if (this._initialSize) {
-                if ((size.width <= this._initialSize.width) && (size.height <= this._initialSize.height)) {
+                if (((size.width + margin) <= this._initialSize.width) && ((size.height + margin) <= this._initialSize.height)) {
                     resNode = this;
                 }
                 else {
                     return null;
                 }
             }
-            else if ((size.width <= this._size.width) && (size.height <= this._size.height)) {
+            else if (((size.width + margin) <= this._size.width) && ((size.height + margin) <= this._size.height)) {
                 resNode = this;
             }
             return resNode;
         };
         PackedRect.prototype.splitNode = function (contentSize) {
+            var cs = PackedRect.TpsSize;
+            var margin = this._root._margin * 2;
+            cs.copyFrom(contentSize);
+            cs.width += margin;
+            cs.height += margin;
             // If there's no contentSize but an initialSize it means this node were previously allocated, but freed, we need to create a _leftNode as subNode and use to allocate the space we need (and this node will have a right/bottom subNode for the space left as this._initialSize may be greater than contentSize)
             if (!this._contentSize && this._initialSize) {
-                this._contentSize = contentSize.clone();
+                this._contentSize = cs.clone();
                 this._leftNode = new PackedRect(this._root, this, new BABYLON.Vector2(this._pos.x, this._pos.y), new BABYLON.Size(this._initialSize.width, this._initialSize.height));
                 return this._leftNode.splitNode(contentSize);
             }
             else {
-                this._contentSize = contentSize.clone();
-                this._initialSize = contentSize.clone();
-                if (contentSize.width !== this._size.width) {
-                    this._rightNode = new PackedRect(this._root, this, new BABYLON.Vector2(this._pos.x + contentSize.width, this._pos.y), new BABYLON.Size(this._size.width - contentSize.width, contentSize.height));
+                this._contentSize = cs.clone();
+                this._initialSize = cs.clone();
+                if (cs.width !== this._size.width) {
+                    this._rightNode = new PackedRect(this._root, this, new BABYLON.Vector2(this._pos.x + cs.width, this._pos.y), new BABYLON.Size(this._size.width - cs.width, cs.height));
                 }
-                if (contentSize.height !== this._size.height) {
-                    this._bottomNode = new PackedRect(this._root, this, new BABYLON.Vector2(this._pos.x, this._pos.y + contentSize.height), new BABYLON.Size(this._size.width, this._size.height - contentSize.height));
+                if (cs.height !== this._size.height) {
+                    this._bottomNode = new PackedRect(this._root, this, new BABYLON.Vector2(this._pos.x, this._pos.y + cs.height), new BABYLON.Size(this._size.width, this._size.height - cs.height));
                 }
                 return this;
             }
@@ -44143,11 +44635,14 @@ var BABYLON;
         PackedRect.prototype.evalFreeSize = function (size) {
             var levelSize = 0;
             if (!this.isUsed) {
-                if (this._initialSize) {
-                    levelSize = this._initialSize.surface;
+                var margin = this._root._margin;
+                var is = this._initialSize;
+                if (is) {
+                    levelSize = is.surface - (is.width * margin) - (is.height * margin);
                 }
                 else {
-                    levelSize = this._size.surface;
+                    var size_1 = this._size;
+                    levelSize = size_1.surface - (size_1.width * margin) - (size_1.height * margin);
                 }
             }
             if (this._rightNode) {
@@ -44160,20 +44655,26 @@ var BABYLON;
         };
         return PackedRect;
     }());
+    PackedRect.TpsSize = BABYLON.Size.Zero();
     BABYLON.PackedRect = PackedRect;
     /**
      * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimally as possible.
      * This class is typically used to build lightmaps, sprite map or to pack several little textures into a big one.
      * Note that this class allows allocated Rectangles to be freed: that is the map is dynamically maintained so you can add/remove rectangle based on their life-cycle.
+     * In case you need a margin around the allocated rect, specify the amount in the margin argument during construction.
+     * In such case you will have to rely on innerPositionToRef and innerSizeToRef calls to get the proper size
      */
     var RectPackingMap = (function (_super) {
         __extends(RectPackingMap, _super);
         /**
          * Create an instance of the object with a dimension using the given size
          * @param size The dimension of the rectangle that will contain all the sub ones.
+         * @param margin The margin (empty space) created (in pixels) around the allocated Rectangles
          */
-        function RectPackingMap(size) {
+        function RectPackingMap(size, margin) {
+            if (margin === void 0) { margin = 0; }
             var _this = _super.call(this, null, null, BABYLON.Vector2.Zero(), size) || this;
+            _this._margin = margin;
             _this._root = _this;
             return _this;
         }
@@ -44539,16 +45040,17 @@ var BABYLON;
 (function (BABYLON) {
     var MapTexture = (function (_super) {
         __extends(MapTexture, _super);
-        function MapTexture(name, scene, size, samplingMode, useMipMap) {
+        function MapTexture(name, scene, size, samplingMode, useMipMap, margin) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (useMipMap === void 0) { useMipMap = false; }
+            if (margin === void 0) { margin = 0; }
             var _this = _super.call(this, null, scene, !useMipMap, false, samplingMode) || this;
             _this.name = name;
             _this._size = size;
             _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             // Create the rectPackMap that will allocate portion of the texture
-            _this._rectPackingMap = new BABYLON.RectPackingMap(new BABYLON.Size(size.width, size.height));
+            _this._rectPackingMap = new BABYLON.RectPackingMap(new BABYLON.Size(size.width, size.height), margin);
             // Create the texture that will store the content
             _this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: !_this.noMipmap, type: BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT });
             return _this;
@@ -49222,12 +49724,13 @@ var BABYLON;
                 this._webvrViewMatrix.m[12] += parentCamera.position.x;
                 this._webvrViewMatrix.m[13] += parentCamera.position.y;
                 this._webvrViewMatrix.m[14] += parentCamera.position.z;
+                // is rotation offset set? 
+                if (!BABYLON.Quaternion.IsIdentity(this.rotationQuaternion)) {
+                    this._webvrViewMatrix.decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
+                    this.rotationQuaternion.multiplyToRef(BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Quaternion[0]);
+                    BABYLON.Matrix.ComposeToRef(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1], this._webvrViewMatrix);
+                }
                 this._webvrViewMatrix.invert();
-            }
-            // is rotation offset set? 
-            if (!BABYLON.Quaternion.IsIdentity(this.rotationQuaternion)) {
-                this.rotationQuaternion.toRotationMatrix(this._tempMatrix);
-                this._tempMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             }
             this._updateCameraRotationMatrix();
             BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
@@ -49237,7 +49740,7 @@ var BABYLON;
             this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
         };
-        WebVRFreeCamera.prototype._updateCameraRotationMatrix = function () {
+        WebVRFreeCamera.prototype._updateWebVRCameraRotationMatrix = function () {
             this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
         };
         WebVRFreeCamera.prototype._isSynchronizedViewMatrix = function () {
@@ -51394,6 +51897,7 @@ var BABYLON;
             var _this = _super.call(this, vrGamepad.id, vrGamepad.index, vrGamepad) || this;
             _this.vrGamepad = vrGamepad;
             _this.deviceScaleFactor = 1;
+            _this._leftHandSystemQuaternion = new BABYLON.Quaternion();
             _this.type = BABYLON.Gamepad.POSE_ENABLED;
             _this.controllerType = PoseEnabledControllerType.GENERIC;
             _this.position = BABYLON.Vector3.Zero();
@@ -51402,16 +51906,17 @@ var BABYLON;
             _this.deviceRotationQuaternion = new BABYLON.Quaternion();
             _this._calculatedPosition = BABYLON.Vector3.Zero();
             _this._calculatedRotation = new BABYLON.Quaternion();
+            BABYLON.Quaternion.RotationYawPitchRollToRef(Math.PI, 0, 0, _this._leftHandSystemQuaternion);
             return _this;
         }
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
             // update this device's offset position from the attached camera, if provided
-            if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
-                //this.position.copyFrom(this._poseControlledCamera.position);
-                //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
-                this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
-            }
+            //if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
+            //this.position.copyFrom(this._poseControlledCamera.position);
+            //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
+            //this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
+            //}
             var pose = this.vrGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
@@ -51429,35 +51934,40 @@ var BABYLON;
                     }
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-                    // scale the position using the scale factor, add the device's position
-                    if (this._poseControlledCamera) {
-                        // this allows total positioning freedom - the device, the camera and the mesh can be individually controlled.
-                        this._calculatedPosition.addInPlace(this._poseControlledCamera.position);
-                    }
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
-                    if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.deviceRotationQuaternion.z *= -1;
-                        this.deviceRotationQuaternion.w *= -1;
+                    if (this._mesh) {
+                        if (this._mesh.getScene().useRightHandedSystem) {
+                            this.deviceRotationQuaternion.z *= -1;
+                            this.deviceRotationQuaternion.w *= -1;
+                        }
+                        else {
+                            this.deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this.deviceRotationQuaternion);
+                        }
                     }
                     // if the camera is set, rotate to the camera's rotation
-                    this.rotationQuaternion.multiplyToRef(this.deviceRotationQuaternion, this._calculatedRotation);
-                    if (this._poseControlledCamera) {
-                        this._calculatedRotation.multiplyToRef(this._poseControlledCamera.rotationQuaternion, this._calculatedRotation);
-                    }
+                    this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
                 }
             }
         };
         PoseEnabledController.prototype.attachToMesh = function (mesh) {
+            if (this._mesh) {
+                this._mesh.parent = undefined;
+            }
             this._mesh = mesh;
+            if (this._poseControlledCamera) {
+                this._mesh.parent = this._poseControlledCamera;
+            }
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new BABYLON.Quaternion();
             }
         };
         PoseEnabledController.prototype.attachToPoseControlledCamera = function (camera) {
             this._poseControlledCamera = camera;
-            this.deviceScaleFactor = camera.deviceScaleFactor;
+            if (this._mesh) {
+                this._mesh.parent = this._poseControlledCamera;
+            }
         };
         PoseEnabledController.prototype.detachMesh = function () {
             this._mesh = undefined;
@@ -59017,6 +59527,7 @@ var BABYLON;
                     this.cameraColorGradingTexture.dispose();
                 }
             }
+            this._renderTargets.dispose();
             _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         PBRMaterial.prototype.clone = function (name) {
@@ -59251,9 +59762,13 @@ var BABYLON;
             this._scene = scene;
         }
         /** Creates the inspector window. */
-        DebugLayer.prototype._createInspector = function (popup) {
+        DebugLayer.prototype._createInspector = function (config) {
+            if (config === void 0) { config = {}; }
+            var popup = config.popup || false;
+            var initialTab = config.initialTab || 0;
+            var parentElement = config.parentElement || null;
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene, popup);
+                this._inspector = new INSPECTOR.Inspector(this._scene, popup, initialTab, parentElement);
             } // else nothing to do,; instance is already existing
         };
         DebugLayer.prototype.isVisible = function () {
@@ -59268,14 +59783,15 @@ var BABYLON;
                 this._inspector = null;
             }
         };
-        DebugLayer.prototype.show = function (popup) {
+        DebugLayer.prototype.show = function (config) {
+            if (config === void 0) { config = {}; }
             if (typeof INSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
-                BABYLON.Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, popup));
+                BABYLON.Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
             }
             else {
                 // Otherwise creates the inspector
-                this._createInspector(popup);
+                this._createInspector(config);
             }
         };
         return DebugLayer;

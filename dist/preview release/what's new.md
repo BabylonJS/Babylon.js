@@ -4,12 +4,12 @@
 
 ### Major updates
  - WebGL2 context support. WebGL2 is now used instead of WebGL 1 when available. [More info here](http://doc.babylonjs.com/overviews/webgl2) ([deltakosh](https://github.com/deltakosh))
+ - Complete WebVR 1.1 support including controllers for HTC Vive and Occulus. [More info here](http://doc.babylonjs.com/overviews/webvr_camera) ([raanan](https://github.com/raananw))
  - Support for [Vertex Array Objects](https://www.opengl.org/registry/specs/ARB/vertex_array_object.txt) ([deltakosh](https://github.com/deltakosh))
  - Support for multisample render targets. [Demo](http://www.babylonjs-playground.com/#12MKMN) ([deltakosh](https://github.com/deltakosh))
  - New Unity 5 Editor Toolkit. Complete pipeline integration [Doc](TODO) - ([MackeyK24](https://github.com/MackeyK24))
  - New DebugLayer. [Doc](TODO) - ([temechon](https://github.com/temechon))
  - New `VideoTexture.CreateFromWebCam` to generate video texture using WebRTC. [Demo](https://www.babylonjs-playground.com#1R77YT#2) - (Sebastien Vandenberghe)(https://github.com/sebavanmicrosoft) / ([deltakosh](https://github.com/deltakosh))
- - New `HolographicCamera` to support rendering on Windows Holographic. - ([sebavan](https://github.com/sebavan))
  - New Facet Data feature ([jerome](https://github.com/jbousquie))
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
@@ -35,7 +35,10 @@
 - Improved the internal code of `Vector3.RotationFromAxisToRef()` ([jerome](https://github.com/jbousquie), thanks to [abow](https://github.com/abow))  
 - GroundMeshes are now serialized correctly ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.markVerticesDataAsUpdatable()` to allow a specific vertexbuffer to become updatable ([deltakosh](https://github.com/deltakosh)) 
-
+- Added `POINTERTAP` and `POINTERDOUBLETAP` PointerEventTypes to register new Observer mask. (Demo here)[http://www.babylonjs-playground.com/?30] ([yuccai](https://github.com/yuccai))
+- Added OnDoublePickTrigger for ActionManager ([yuccai](https://github.com/yuccai))
+- Added Scene.DoubleClickDelay to set the timing within a double click event like PointerEventTypes.POINTERDOUBLETAP or ActionManager.OnDoublePickTrigger has to be processed ([yuccai](https://github.com/yuccai))
+- New material: ShadowOnlyMaterial to display shadows on transparent surfaces ([deltakosh](https://github.com/deltakosh)) 
  
 ### Bug fixes
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 
@@ -45,7 +48,7 @@
 - Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 
 ### API Documentation
-- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
+`- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  
@@ -61,6 +64,31 @@
 - File `spotLight.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `shadowGenerator.ts` documented ([jerome](https://github.com/jbousquie))  
 
+### Breaking changes
+- WebVRCamera:
+  - `requestVRFullscreen` has been removed. Call `attachControl()` inside a user-interaction callback to start sending frames to the VR display
+  - `setPositionOffset` has been used to change the position offset. it is now done using `camera.position`
+- Ray :
+  - `show` has been removed. Use new `RayHelper.show()` instead
+  - `hide` has been removed. Use new `RayHelper.hide()` instead
+- AbstractMesh:
+  - `onPhysicsCollide` has been removed. Use `mesh.physicsImpostor.registerOnPhysicsCollide()` instead
+  - `setPhysicsState` has been removed. Use `new PhysicsImpostor()` instead
+  - `getPhysicsMass` has been removed. Use `mesh.physicsImpostor.getParam("mass")` instead
+  - `getPhysicsFriction` has been removed. Use `mesh.physicsImpostor.getParam("friction")` instead
+  - `getPhysicsRestitution` has been removed. Use `mesh.physicsImpostor.getParam("restitution")` instead
+  - `updatePhysicsBodyPosition` has been removed. Changes are synchronized automatically now
+- Mesh:
+  - `updateVerticesDataDirectly` has been removed. Use `mesh.updateVerticesData()` instead
+- SsaoRenderingPipeline:
+  - `getBlurHPostProcess` has been removed. Blur post-process is no more required
+  - `getBlurVPostProcess` has been removed. Blur post-process is no more required
+- Scene:
+  - `setGravity` has been removed. Use `scene.getPhysicsEngine().setGravity()` instead
+  - `createCompoundImpostor` has been removed. Use PhysicsImpostor parent/child instead
+- ActionManager:
+  - `LongPressDelay` and `DragMovementThreshold` are now respectively Scene.LongPressDelay and Scene.DragMovementThreshold
+ 
 ## Canvas2D
 
 ### Major Updates

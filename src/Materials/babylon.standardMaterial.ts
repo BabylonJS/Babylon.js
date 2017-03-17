@@ -987,6 +987,8 @@
                 }
             }
 
+            this._renderTargets.dispose();
+
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
 

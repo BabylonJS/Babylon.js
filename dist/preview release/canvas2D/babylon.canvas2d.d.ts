@@ -2191,10 +2191,16 @@ declare module BABYLON {
         /**
          * Shortcut to actualPosition.x
          */
+        /**
+         * DO NOT INVOKE for internal purpose only
+         */
         actualX: number;
         /**
          * Shortcut to actualPosition.y
          */
+        /**
+        * DO NOT INVOKE for internal purpose only
+        */
         actualY: number;
         /**
          * Position of the primitive, relative to its parent.
@@ -2254,12 +2260,28 @@ declare module BABYLON {
         readonly isManualZOrder: boolean;
         margin: PrimitiveThickness;
         /**
+         * Set the margin from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        setMargin(value: string): void;
+        /**
          * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
          */
         readonly _hasMargin: boolean;
         padding: PrimitiveThickness;
+        /**
+         * Set the padding from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.         */
+        setPadding(value: string): void;
         private readonly _hasPadding;
         marginAlignment: PrimitiveAlignment;
+        /**
+         * Set the margin's horizontal and or vertical alignments from a string value.
+         * @param value can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
+        setMarginalignment(value: string): void;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
@@ -2465,7 +2487,7 @@ declare module BABYLON {
         protected updateCachedStatesOf(list: Prim2DBase[], recurse: boolean): void;
         private _parentLayoutDirty();
         protected _setLayoutDirty(): void;
-        private _checkPositionChange();
+        private _checkUseMargin();
         protected _positioningDirty(): void;
         protected _spreadActualOpacityChanged(): void;
         private _changeLayoutEngine(engine);
@@ -2895,7 +2917,7 @@ declare module BABYLON {
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
          * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
