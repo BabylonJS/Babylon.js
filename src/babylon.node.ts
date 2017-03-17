@@ -277,6 +277,13 @@ module BABYLON {
             return results;
         }
 
+        /**
+         * Get all direct children of this node.
+        */
+        public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            return this.getDescendants(true, predicate);
+        }
+
         public _setReady(state: boolean): void {
             if (state === this._isReady) {
                 return;

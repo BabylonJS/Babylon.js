@@ -177,6 +177,14 @@ module BABYLON {
                 this.rotation.x += this.cameraRotation.x;
                 this.rotation.y += this.cameraRotation.y;
 
+                //rotate, if quaternion is set and rotation was used
+                if (this.rotationQuaternion) {
+                    var len = this.rotation.length();
+                    if (len) {
+                        Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    }
+                }
+
 
                 if (!this.noRotationConstraint) {
                     var limit = (Math.PI / 2) * 0.95;
