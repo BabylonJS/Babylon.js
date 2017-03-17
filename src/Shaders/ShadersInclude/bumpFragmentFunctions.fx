@@ -2,6 +2,9 @@
 	varying vec2 vBumpUV;
 	uniform vec3 vBumpInfos;
 	uniform sampler2D bumpSampler;
+#if defined(TANGENT) && defined(NORMAL) 
+	varying mat3 vTBN;
+#endif
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)

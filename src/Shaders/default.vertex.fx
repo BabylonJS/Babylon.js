@@ -3,6 +3,9 @@ attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
 #endif
+#ifdef TANGENT
+attribute vec4 tangent;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -74,6 +77,8 @@ varying vec3 vNormalW;
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
 #endif
+
+#include<bumpVertexDeclaration>
 
 #include<clipPlaneVertexDeclaration>
 
@@ -196,6 +201,7 @@ void main(void) {
 	}
 #endif
 
+#include<bumpVertex>
 #include<clipPlaneVertex>
 #include<fogVertex>
 #include<shadowsVertex>[0..maxSimultaneousLights]
