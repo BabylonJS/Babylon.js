@@ -14,8 +14,9 @@
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
-
+ 
 ### Updates
+- Improved FXAA (based on nVidia's implementation) ([deltakosh](https://github.com/deltakosh))
 - Added `Light.customProjectionMatrixBuilder` to allow developers to define their own projection matrix for shadows ([deltakosh](https://github.com/deltakosh))
 - Added `set()` function to all basic types ([deltakosh](https://github.com/deltakosh))
 - Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
