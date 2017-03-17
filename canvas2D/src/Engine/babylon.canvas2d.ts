@@ -156,7 +156,7 @@
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
             this._curHWScale = 0;
-            this._canvasLevelScale = new Vector3(1, 1, 1);
+            this._canvasLevelScale = new Vector2(1, 1);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!this._trackedGroups) {
@@ -359,9 +359,7 @@
                     if (this.isVisible === false) {
                         return;
                     }
-                    let hs = 1 / this.engine.getHardwareScalingLevel();
-                    let localPos = e.localPosition.multiplyByFloats(hs, hs);
-                    this._handlePointerEventForInteraction(e, localPos, s);
+                    this._handlePointerEventForInteraction(e, e.localPosition, s);
                 });
             }
 
@@ -555,7 +553,7 @@
         }
 
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
-            let s = this.scale;
+            let s = this._canvasLevelScale.multiplyByFloats(this.scaleX, this.scaleY);
             let pii = this._primPointerInfo;
             pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
@@ -570,17 +568,20 @@
 
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
-                var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                let renderWidth = engine.getRenderWidth();
+                let renderHeight = engine.getRenderHeight();
+//                console.log(`Render Width: ${renderWidth} Height: ${renderHeight}, localX: ${localPosition.x}, localY: ${localPosition.y}`);
+                var viewport = cameraViewport.toGlobal(renderWidth, renderHeight);
 
                 // Moving coordinates to local viewport world
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
 
-                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s;
-                pii.canvasPointerPos.y = (engine.getRenderHeight() - y - this.actualPosition.y) / s;
+                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s.x;
+                pii.canvasPointerPos.y = (renderHeight - y - this.actualPosition.y) / s.y;
             } else {
-                pii.canvasPointerPos.x = localPosition.x / s;
-                pii.canvasPointerPos.y = localPosition.y / s;
+                pii.canvasPointerPos.x = localPosition.x / s.x;
+                pii.canvasPointerPos.y = localPosition.y / s.x;
             }
             //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
@@ -830,13 +831,13 @@
 
                             if (ii.isPrimIntersected(prim) !== null) {
                                 if (prim.actionManager) {
-                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > ActionManager.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < ActionManager.DragMovementThreshold)) {
+                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > Scene.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < Scene.DragMovementThreshold)) {
                                         this._pickStartingTime = 0;
                                         prim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
-                        }, ActionManager.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -851,7 +852,7 @@
                     prim.actionManager.processTrigger(ActionManager.OnPickUpTrigger, actionEvent);
 
                     // OnPickTrigger
-                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < ActionManager.DragMovementThreshold) {
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < Scene.DragMovementThreshold) {
                         prim.actionManager.processTrigger(ActionManager.OnPickTrigger, actionEvent);
                     }
                 }
@@ -1320,7 +1321,7 @@
         private _designUseHorizAxis: boolean;
         public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
-        public _canvasLevelScale: Vector3;
+        public _canvasLevelScale: Vector2;
         public  _renderingSize: Size;
         private _curHWScale;
 
@@ -1342,6 +1343,7 @@
         private _profileInfoText: Text2D;
 
         private static _v = Vector3.Zero(); // Must stay zero
+        private static _cv1 = Vector2.Zero(); // Must stay zero
         private static _m = Matrix.Identity();
         private static _mI = Matrix.Identity(); // Must stay identity
         private static tS = Vector3.Zero();
@@ -1383,8 +1385,8 @@
                 group.levelVisible = proj.z >= 0 && proj.z < 1.0;
 
                 let s = this.scale;
-                group.x = Math.round(proj.x/s);
-                group.y = Math.round((rh - proj.y)/s);
+                group.x = Math.round(proj.x / s);
+                group.y = Math.round((rh - proj.y) / s);
             }
 
             // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
@@ -1481,7 +1483,7 @@
                 this._setRenderingScale(scale);
             }
         }
-        private static _pCLS = Vector3.Zero();
+        private static _pCLS = Vector2.Zero();
 
         private _updateCanvasState(forceRecompute: boolean) {
             // Check if the update has already been made for this render Frame
@@ -1519,10 +1521,10 @@
                     scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+                this._canvasLevelScale.copyFromFloats(scale, scale);
             } else {
                 let ratio = 1 / this._curHWScale;
-                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
+                this._canvasLevelScale.copyFromFloats(ratio, ratio);
             }
 
             if (!prevCLS.equals(this._canvasLevelScale)) {
@@ -1627,18 +1629,19 @@
             let isCanvas = parent == null;
             let scale: Vector2;
             if (noResizeScale) {
-                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale;
+                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale.multiply(this._canvasLevelScale);
             } else {
-                scale = group.actualScale;
+                scale = group.actualScale.multiply(this._canvasLevelScale);
             }
 
             // Determine size
             let size = group.actualSize;
-            size = new Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
-            let originalSize = size.clone();
+            let scaledSize = new Size(size.width * scale.x, size.height * scale.y);
+            let roundedScaledSize = new Size(Math.ceil(scaledSize.width), Math.ceil(scaledSize.height));
+            let originalSize = scaledSize.clone();
             if (minSize) {
-                size.width = Math.max(minSize.width, size.width);
-                size.height = Math.max(minSize.height, size.height);
+                roundedScaledSize.width = Math.max(minSize.width, roundedScaledSize.width);
+                roundedScaledSize.height = Math.max(minSize.height, roundedScaledSize.height);
             }
 
             let mapArray = this._groupCacheMaps.getOrAddWithFactory(key, () => new Array<MapTexture>());
@@ -1648,7 +1651,7 @@
             var map: MapTexture;
             for (var _map of mapArray) {
                 map = _map;
-                let node = map.allocateRect(size);
+                let node = map.allocateRect(roundedScaledSize);
                 if (node) {
                     res = { node: node, texture: map }
                     break;
@@ -1660,18 +1663,24 @@
                 let mapSize = new Size(Canvas2D._groupTextureCacheSize, Canvas2D._groupTextureCacheSize);
 
                 // Check if the predefined size would fit, other create a custom size using the nearest bigger power of 2
-                if (size.width > mapSize.width || size.height > mapSize.height) {
-                    mapSize.width = Math.pow(2, Math.ceil(Math.log(size.width) / Math.log(2)));
-                    mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
+                if (roundedScaledSize.width > mapSize.width || roundedScaledSize.height > mapSize.height) {
+                    mapSize.width = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.width) / Math.log(2)));
+                    mapSize.height = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.height) / Math.log(2)));
                 }
 
                 let id = `groupsMapChache${this._mapCounter++}forCanvas${this.id}`;
-                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap, 2);
                 map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
 
-                let node = map.allocateRect(size);
+                //let debug = false;
+
+                //if (debug) {
+                //    let sprite = new Sprite2D(map, { parent: this, x: 10, y: 10, id: "__cachedSpriteOfGroup__Debug", alignToPixel: true });
+                //}
+
+                let node = map.allocateRect(roundedScaledSize);
                 res = { node: node, texture: map }
             }
 
@@ -1679,6 +1688,8 @@
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
             if (group !== <any>this || this._isScreenSpace) {
                 let node: PackedRect = res.node;
+                let pos = Canvas2D._cv1;
+                node.getInnerPosToRef(pos);
 
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
 
@@ -1688,14 +1699,14 @@
                         this._cachedCanvasGroup.dispose();
                     }
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, size: size, alignToPixel: true, spriteLocation: pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.x, y: group.y, spriteSize: originalSize, size: size, spriteLocation: pos, alignToPixel: true, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {

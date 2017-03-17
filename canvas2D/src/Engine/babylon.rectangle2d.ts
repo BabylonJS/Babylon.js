@@ -593,18 +593,18 @@
                 return false;
             }
 
-            let s = Rectangle2D._riv0;
-            this.getActualGlobalScaleToRef(s);
+            //let s = Rectangle2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
 
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Rectangle2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.roundRadius || 0);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Rectangle2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.roundRadius || 0);
             }
             return true;
         }
