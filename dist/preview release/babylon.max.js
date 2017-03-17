@@ -11922,6 +11922,11 @@ var BABYLON;
         function RayHelper(ray) {
             this.ray = ray;
         }
+        RayHelper.CreateAndShow = function (ray, scene, color) {
+            var helper = new RayHelper(ray);
+            helper.show(scene, color);
+            return helper;
+        };
         RayHelper.prototype.show = function (scene, color) {
             if (!this._renderFunction) {
                 var ray = this.ray;
