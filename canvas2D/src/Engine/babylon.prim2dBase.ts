@@ -2316,6 +2316,9 @@
          * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
          */
         public set scale(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scale to less or equal to 0");
+            }
             this._scale.x = this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2671,6 +2674,9 @@
          * Scale applied on the X axis of the primitive
          */
         public set scaleX(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scaleX to less or equal to 0");
+            }
             this._scale.x = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2686,6 +2692,9 @@
          * Scale applied on the Y axis of the primitive
          */
         public set scaleY(value: number) {
+            if (value <= 0) {
+                throw new Error("You can't set the scaleY to less or equal to 0");
+            }
             this._scale.y = value;
             this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
             this._spreadActualScaleDirty();
@@ -2737,7 +2746,7 @@
          */
         public getActualGlobalScaleToRef(res: Vector2) {
             let as = this.actualScale;
-            let cls = this.owner._canvasLevelScale || Canvas2D._iv3;
+            let cls = this.owner._canvasLevelScale || Prim2DBase._iv2;
             res.x = as.x * cls.x;
             res.y = as.y * cls.y;
         }
@@ -2994,7 +3003,9 @@
                     this._boundingInfo.unionToRef(contentBI, this._boundingInfo);
                 }
 
-                this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                if (sizedByContent || !this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                    this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                }
             } else {
                 C2DLogging.setPostMessage(() => "cache hit");
             }
@@ -3016,7 +3027,9 @@
                 }
 
                 if (this._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
-                    this.owner.addUpdateLayoutCounter(1);
+                    if (this._owner) {
+                        this._owner.addUpdateLayoutCounter(1);
+                    }
                     this._layoutEngine.updateLayout(this);
 
                     this._clearFlags(SmartPropertyPrim.flagLayoutDirty);
@@ -3032,8 +3045,20 @@
                         C2DLogging.setPostMessage(() => "re entrance detected, boundingInfo returned");
                         return this.boundingInfo;
                     }
+
+                    if (this._isFlagSet(SmartPropertyPrim.flagPositioningDirty)) {
+                        C2DLogging.setPostMessage(() => "couldn't compute positioning, boundingInfo returned");
+                        return this.boundingInfo;
+                    }
                 }
 
+                if (!usePositioning) {
+                    let bi = this.boundingInfo;
+                    if (!this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
+                        this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                    }
+                    return bi;
+                }
                 this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             } else {
                 C2DLogging.setPostMessage(() => "cache hit");
@@ -3436,6 +3461,9 @@
                 try {
                     Prim2DBase._bypassGroup2DExclusion = true;
                     let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                    if (!ownerGroup) {
+                        return false;
+                    }
                     return ownerGroup.intersect(intersectInfo);
                 } finally  {
                     Prim2DBase._bypassGroup2DExclusion = false;
@@ -3801,9 +3829,9 @@
         private static _t0: Matrix2D = new Matrix2D();
         private static _t1: Matrix2D = new Matrix2D();
         private static _t2: Matrix2D = new Matrix2D();
-        private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
+        private static _v0: Vector2 = Vector2.Zero();    // Must stay with the value 0,0
         private static _v30: Vector3 = Vector3.Zero();   // Must stay with the value 0,0,0
-        private static _iv3: Vector3 = new Vector3(1,1,1); // Must stay identity vector
+        private static _iv2: Vector2 = new Vector2(1,1); // Must stay identity vector
         private static _ts0 = Size.Zero();
 
         private _updateLocalTransform(): boolean {
@@ -3823,12 +3851,12 @@
                 var local: Matrix2D;
                 let pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase._v0);
                 let postScale = this._postScale;
-                let canvasScale = Prim2DBase._iv3;
-                let hasCanvasScale = false;
-                if (this._parent instanceof Canvas2D) {
-                    hasCanvasScale = true;
-                    canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv3;
-                }
+                let canvasScale = Prim2DBase._iv2;
+                //let hasCanvasScale = false;
+                //if (this._parent instanceof Canvas2D) {
+                //    hasCanvasScale = true;
+                //    canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv2;
+                //}
                 let globalScale = this._scale.multiplyByFloats(/*postScale.x**/canvasScale.x, /*postScale.y**/canvasScale.y);
 
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
@@ -3862,10 +3890,10 @@
                     Matrix2D.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, t0);
                     t2.multiplyToRef(t0, this._localTransform);
 
-                    if (hasCanvasScale) {
-                        Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase._t1);
-                        this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
-                    }
+                    //if (hasCanvasScale) {
+                    //    Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase._t1);
+                    //    this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
+                    //}
 
                     this._localLayoutTransform = Matrix2D.Compose(globalScale, rot, pos);
                 }
@@ -4069,6 +4097,9 @@
                 let transformedBSize = Prim2DBase._size3;
                 let bSize = Prim2DBase._size4;
                 let bi = this.boundingInfo;
+                if (this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    success = false;
+                }
                 let tbi = Prim2DBase._tbi;
                 bi.transformToRef(Matrix2D.Rotation(this.rotation), tbi);
                 tbi.sizeToRef(transformedBSize);

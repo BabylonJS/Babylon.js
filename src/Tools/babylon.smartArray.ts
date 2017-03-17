@@ -48,6 +48,11 @@
             this._duplicateId++;
         }
 
+        public dispose(): void {
+            this.reset();
+            this.data.length = 0;
+        }
+
         public concat(array: any): void {
             if (array.length === 0) {
                 return;

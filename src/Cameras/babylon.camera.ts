@@ -599,38 +599,39 @@
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
-   
-                   if (metrics.compensateDistortion) {
+
+                    if (metrics.compensateDistortion) {
                         this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
                         this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
                     }
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
 
                         //Left eye
                         this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
+                        this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
-                        //this._rigCameras[0].setCameraRigParameter('eyeParameters', leftEye);
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
+
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-                        //this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
+                        this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateCameraRotationMatrix;
+                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
                     }
                     break;
 
@@ -646,10 +647,15 @@
             this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
         }
-        
+
         protected _updateCameraRotationMatrix() {
-           // only here for webvr
+            //Here for WebVR
         }
+
+        protected _updateWebVRCameraRotationMatrix() {
+            //Here for WebVR
+        }
+
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
          * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.

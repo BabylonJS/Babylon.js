@@ -190,6 +190,7 @@
         limitDeviceRatio?: number;
         autoEnableWebVR?: boolean;
         disableWebGL2Support?: boolean;
+        audioEngine?: boolean;
     }
 
     /**
@@ -421,6 +422,7 @@
         public isPointerLock = false;
         public cullBackFaces = true;
         public renderEvenInBackground = true;
+        public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
         public enableOfflineSupport = true;
         public scenes = new Array<Scene>();
@@ -548,6 +550,10 @@
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
+            }
+
+            if (options.audioEngine === undefined) {
+                options.audioEngine = true;
             }
 
             // GL
@@ -751,7 +757,7 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            if (AudioEngine && !Engine.audioEngine) {
+            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
 
@@ -1126,10 +1132,13 @@
          *   });
          */
         public resize(): void {
-            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+            // We're not resizing the size of the canvas while in VR mode & presenting
+            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
 
-            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+                this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            }
         }
 
         /**
@@ -2057,6 +2066,9 @@
 
         // Textures
         public wipeCaches(): void {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
 

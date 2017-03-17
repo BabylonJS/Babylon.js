@@ -4,30 +4,31 @@ module INSPECTOR {
      * The default active tab is the first one of the list.
      */
     export class TabBar extends BasicElement {
-        
+
         // The list of available tabs
-        private _tabs         : Array<Tab> = [];
-        private _inspector    : Inspector;
+        private _tabs: Array<Tab> = [];
+        private _inspector: Inspector;
         /** The tab displaying all meshes */
-        private _meshTab      : MeshTab;
+        private _meshTab: MeshTab;
         /** The toolbar */
-        private _toolBar      : Toolbar;
+        private _toolBar: Toolbar;
         /** The icon displayed at the end of the toolbar displaying a combo box of tabs not displayed */
-        private _moreTabsIcon : HTMLElement;
+        private _moreTabsIcon: HTMLElement;
         /** The panel displayed when the 'more-tab' icon is selected */
         private _moreTabsPanel: HTMLElement;
         /** The list of tab displayed by clicking on the remainingIcon */
         private _invisibleTabs: Array<Tab> = [];
         /** The list of tabs visible, displayed in the tab bar */
-        private _visibleTabs  : Array<Tab> = [];
-                
-        constructor(inspector:Inspector) {
+        private _visibleTabs: Array<Tab> = [];
+
+        constructor(inspector: Inspector, initialTab?: number) {
             super();
             this._inspector = inspector;
             this._tabs.push(new SceneTab(this, this._inspector));
             this._tabs.push(new ConsoleTab(this, this._inspector));
             this._tabs.push(new StatsTab(this, this._inspector));
-            this._meshTab = new MeshTab(this, this._inspector); 
+            this._meshTab = new MeshTab(this, this._inspector);
+            this._tabs.push(new TextureTab(this, this._inspector));
             this._tabs.push(this._meshTab);
             this._tabs.push(new ShaderTab(this, this._inspector));
             this._tabs.push(new LightTab(this, this._inspector));
@@ -37,24 +38,33 @@ module INSPECTOR {
             }
             this._tabs.push(new MaterialTab(this, this._inspector));
 
+            this._tabs.push(new CameraTab(this, this._inspector));
+            this._tabs.push(new SoundTab(this, this._inspector));
+
             this._toolBar = new Toolbar(this._inspector);
 
             this._build();
-            // Active the first tab
-            this._tabs[0].active(true); 
+
+            //Check initialTab is defined and between tabs bounds
+            if (!initialTab || initialTab < 0 || initialTab >= this._tabs.length) {
+                initialTab = 0;
+                console.warn('');
+            }
+
+            this._tabs[initialTab].active(true);
 
             // set all tab as visible
             for (let tab of this._tabs) {
                 this._visibleTabs.push(tab);
             }
         }
-        
+
         // No update
-        public update() {}
-        
-        protected _build() {            
+        public update() { }
+
+        protected _build() {
             this._div.className = 'tabbar';
-            
+
             this._div.appendChild(this._toolBar.toHtml());
             for (let tab of this._tabs) {
                 this._div.appendChild(tab.toHtml());
@@ -62,7 +72,7 @@ module INSPECTOR {
 
 
             this._moreTabsIcon = Helpers.CreateElement('i', 'fa fa-angle-double-right more-tabs');
-         
+
             this._moreTabsPanel = Helpers.CreateDiv('more-tabs-panel');
 
             this._moreTabsIcon.addEventListener('click', () => {
@@ -72,7 +82,7 @@ module INSPECTOR {
                 } else {
                     // Attach more-tabs-panel if not attached yet
                     let topPanel = this._div.parentNode as HTMLElement;
-                    if (! topPanel.contains(this._moreTabsPanel)) {
+                    if (!topPanel.contains(this._moreTabsPanel)) {
                         topPanel.appendChild(this._moreTabsPanel);
                     }
                     // Clean the 'more-tabs-panel'
@@ -80,7 +90,7 @@ module INSPECTOR {
                     // Add each invisible tabs to this panel
                     for (let tab of this._invisibleTabs) {
                         this._addInvisibleTabToPanel(tab);
-                    }        
+                    }
                     // And display it
                     this._moreTabsPanel.style.display = 'flex';
                 }
@@ -91,7 +101,7 @@ module INSPECTOR {
          * Add a tab to the 'more-tabs' panel, displayed by clicking on the 
          * 'more-tabs' icon
          */
-        private _addInvisibleTabToPanel(tab:Tab) {
+        private _addInvisibleTabToPanel(tab: Tab) {
             let div = Helpers.CreateDiv('invisible-tab', this._moreTabsPanel);
             div.textContent = tab.name;
             div.addEventListener('click', () => {
@@ -99,9 +109,9 @@ module INSPECTOR {
                 this.switchTab(tab);
             });
         }
-        
+
         /** Dispose the current tab, set the given tab as active, and refresh the treeview */
-        public switchTab(tab:Tab) {
+        public switchTab(tab: Tab) {
             // Dispose the active tab
             this.getActiveTab().dispose();
 
@@ -111,24 +121,24 @@ module INSPECTOR {
             }
             // activate the given tab
             tab.active(true);
-            
+
             // Refresh the inspector
             this._inspector.refresh();
         }
-        
+
         /** Display the mesh tab.
          * If a parameter is given, the given mesh details are displayed
          */
-        public switchMeshTab(mesh?:BABYLON.AbstractMesh) {
+        public switchMeshTab(mesh?: BABYLON.AbstractMesh) {
             this.switchTab(this._meshTab);
             if (mesh) {
                 let item = this._meshTab.getItemFor(mesh);
                 this._meshTab.select(item);
             }
         }
-        
+
         /** Returns the active tab */
-        public getActiveTab() : Tab {
+        public getActiveTab(): Tab {
             for (let tab of this._tabs) {
                 if (tab.isActive()) {
                     return tab;
@@ -136,7 +146,7 @@ module INSPECTOR {
             }
         }
 
-        public get inspector() : Inspector {
+        public get inspector(): Inspector {
             return this._inspector;
         }
 
@@ -144,7 +154,7 @@ module INSPECTOR {
          * Returns the total width in pixel of the tabbar, 
          * that corresponds to the sum of the width of each visible tab + toolbar width
         */
-        public getPixelWidth() : number {
+        public getPixelWidth(): number {
             let sum = 0;
             for (let tab of this._visibleTabs) {
                 sum += tab.getPixelWidth();
@@ -162,7 +172,7 @@ module INSPECTOR {
         public updateWidth() {
             let parentSize = this._div.parentElement.clientWidth;
             let lastTabWidth = 75;
-            let currentSize = this.getPixelWidth(); 
+            let currentSize = this.getPixelWidth();
 
             // Check if a tab should be removed : if the tab bar width is greater than
             // its parent width
@@ -173,7 +183,7 @@ module INSPECTOR {
                 this._invisibleTabs.push(tab);
                 // and removes it from the DOM
                 this._div.removeChild(tab.toHtml());
-                currentSize = this.getPixelWidth() + lastTabWidth;                
+                currentSize = this.getPixelWidth() + lastTabWidth;
             }
 
             // Check if a tab can be added to the tab bar : if the tab bar width
@@ -184,15 +194,15 @@ module INSPECTOR {
                     this._div.appendChild(lastTab.toHtml());
                     this._visibleTabs.push(lastTab);
                     // Update more-tab icon in last position if needed
-                     if (this._div.contains(this._moreTabsIcon)) {
+                    if (this._div.contains(this._moreTabsIcon)) {
                         this._div.removeChild(this._moreTabsIcon);
-                     }
+                    }
                 }
             }
             if (this._invisibleTabs.length > 0 && !this._div.contains(this._moreTabsIcon)) {
                 this._div.appendChild(this._moreTabsIcon);
             }
         }
-        
+
     }
 }
