@@ -11,10 +11,8 @@ var INSPECTOR;
             this._popupMode = false;
             //get Tabbar initialTab
             this._initialTab = initialTab;
-            console.log(initialTab);
             //get parentElement of our Inspector
             this._parentElement = parentElement;
-            console.log(this._parentElement);
             // get canvas parent only if needed.
             this._scene = scene;
             // Save HTML document and window
@@ -372,6 +370,23 @@ var INSPECTOR;
         'FontTexture': {
             type: BABYLON.FontTexture
         },
+        'Sound': {
+            type: BABYLON.Sound,
+            properties: [
+                'name',
+                'autoplay',
+                'loop',
+                'useCustomAttenuation',
+                'soundTrackId',
+                'spatialSound',
+                'refDistance',
+                'rolloffFactor',
+                'maxDistance',
+                'distanceModel',
+                'isPlaying',
+                'isPaused'
+            ]
+        },
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
@@ -719,6 +734,61 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=CameraAdapter.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var SoundAdapter = (function (_super) {
+        __extends(SoundAdapter, _super);
+        function SoundAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        SoundAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        SoundAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        SoundAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            var camToDisplay = [];
+            // The if is there to work with the min version of babylon
+            var soundProperties = INSPECTOR.PROPERTIES['Sound'].properties;
+            for (var _i = 0, soundProperties_1 = soundProperties; _i < soundProperties_1.length; _i++) {
+                var dirty = soundProperties_1[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        SoundAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.SoundInteractions(this));
+            return tools;
+        };
+        SoundAdapter.prototype.setPlaying = function (callback) {
+            this._obj.play();
+            this._obj.onended = function () {
+                callback();
+            };
+        };
+        return SoundAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.SoundAdapter = SoundAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=SoundAdapter.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1829,8 +1899,6 @@ var INSPECTOR;
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=HDRCubeTextureElement.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2373,6 +2441,38 @@ var INSPECTOR;
         return CameraTab;
     }(INSPECTOR.PropertyTab));
     INSPECTOR.CameraTab = CameraTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    var SoundTab = (function (_super) {
+        __extends(SoundTab, _super);
+        function SoundTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Sound', inspector) || this;
+        }
+        /* Overrides super */
+        SoundTab.prototype._getTree = function () {
+            var _this = this;
+            var arr = [];
+            // get all cameras from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.soundTracks; _i < _a.length; _i++) {
+                var sounds = _a[_i];
+                var sound = sounds.soundCollection;
+                sound.forEach(function (element) {
+                    arr.push(new INSPECTOR.TreeItem(_this, new INSPECTOR.SoundAdapter(element)));
+                });
+            }
+            return arr;
+        };
+        return SoundTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.SoundTab = SoundTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3407,6 +3507,7 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
+            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
@@ -3416,6 +3517,7 @@ var INSPECTOR;
             }
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
             _this._build();
             //Check initialTab is defined and between tabs bounds
@@ -3437,12 +3539,9 @@ var INSPECTOR;
             var _this = this;
             this._div.className = 'tabbar';
             this._div.appendChild(this._toolBar.toHtml());
-            var i = 1;
             for (var _i = 0, _a = this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
                 this._div.appendChild(tab.toHtml());
-                tab.toHtml().id = 'tab' + i;
-                i++;
             }
             this._moreTabsIcon = INSPECTOR.Helpers.CreateElement('i', 'fa fa-angle-double-right more-tabs');
             this._moreTabsPanel = INSPECTOR.Helpers.CreateDiv('more-tabs-panel');
@@ -4267,6 +4366,49 @@ var INSPECTOR;
         return CameraPOV;
     }(INSPECTOR.AbstractTreeTool));
     INSPECTOR.CameraPOV = CameraPOV;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     *
+     */
+    var SoundInteractions = (function (_super) {
+        __extends(SoundInteractions, _super);
+        function SoundInteractions(playSound) {
+            var _this = _super.call(this) || this;
+            _this.playSound = playSound;
+            _this.b = false;
+            _this._elem.classList.add('fa-play');
+            return _this;
+        }
+        SoundInteractions.prototype.action = function () {
+            _super.prototype.action.call(this);
+            this._playSound();
+        };
+        SoundInteractions.prototype._playSound = function () {
+            var _this = this;
+            if (this._elem.classList.contains('fa-play')) {
+                this._elem.classList.remove('fa-play');
+                this._elem.classList.add('fa-pause');
+            }
+            else {
+                this._elem.classList.remove('fa-pause');
+                this._elem.classList.add('fa-play');
+            }
+            this.playSound.setPlaying(function () {
+                _this._elem.classList.remove('fa-pause');
+                _this._elem.classList.add('fa-play');
+            });
+        };
+        return SoundInteractions;
+    }(INSPECTOR.AbstractTreeTool));
+    INSPECTOR.SoundInteractions = SoundInteractions;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {

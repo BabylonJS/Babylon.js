@@ -107,6 +107,10 @@ declare module INSPECTOR {
         'FontTexture': {
             type: typeof BABYLON.FontTexture;
         };
+        'Sound': {
+            type: typeof BABYLON.Sound;
+            properties: string[];
+        };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
@@ -220,6 +224,20 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class SoundAdapter extends Adapter implements ISoundInteractions {
+        constructor(obj: BABYLON.Sound);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPlaying(callback: Function): void;
     }
 }
 
@@ -702,6 +720,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class SoundTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
     class TextureTab extends Tab {
         private _inspector;
         /** The panel containing a list of items */
@@ -1083,6 +1108,22 @@ declare module INSPECTOR {
         constructor(camera: ICameraPOV);
         protected action(): void;
         private _gotoPOV();
+    }
+}
+
+declare module INSPECTOR {
+    interface ISoundInteractions {
+        setPlaying: (callback: Function) => void;
+    }
+    /**
+     *
+     */
+    class SoundInteractions extends AbstractTreeTool {
+        private playSound;
+        private b;
+        constructor(playSound: ISoundInteractions);
+        protected action(): void;
+        private _playSound();
     }
 }
 
