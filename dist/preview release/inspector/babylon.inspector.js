@@ -11,10 +11,8 @@ var INSPECTOR;
             this._popupMode = false;
             //get Tabbar initialTab
             this._initialTab = initialTab;
-            console.log(initialTab);
             //get parentElement of our Inspector
             this._parentElement = parentElement;
-            console.log(this._parentElement);
             // get canvas parent only if needed.
             this._scene = scene;
             // Save HTML document and window
@@ -3407,6 +3405,7 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
+            _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
@@ -3437,12 +3436,9 @@ var INSPECTOR;
             var _this = this;
             this._div.className = 'tabbar';
             this._div.appendChild(this._toolBar.toHtml());
-            var i = 1;
             for (var _i = 0, _a = this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
                 this._div.appendChild(tab.toHtml());
-                tab.toHtml().id = 'tab' + i;
-                i++;
             }
             this._moreTabsIcon = INSPECTOR.Helpers.CreateElement('i', 'fa fa-angle-double-right more-tabs');
             this._moreTabsPanel = INSPECTOR.Helpers.CreateDiv('more-tabs-panel');
