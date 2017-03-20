@@ -44,8 +44,13 @@ module INSPECTOR {
             return tools;
         }
 
-        public setPlaying(callback:Function) {
-            (this._obj as BABYLON.Sound).play();
+        public setPlaying(callback: Function) {
+            if ((this._obj as BABYLON.Sound).isPlaying) {
+                (this._obj as BABYLON.Sound).pause();
+            }
+            else {
+                (this._obj as BABYLON.Sound).play();
+            }
             (this._obj as BABYLON.Sound).onended = () => {
                 callback();
             }
