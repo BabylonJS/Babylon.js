@@ -16,6 +16,7 @@
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Improved FXAA post-process ([deltakosh](https://github.com/deltakosh))
 - Added `Light.customProjectionMatrixBuilder` to allow developers to define their own projection matrix for shadows ([deltakosh](https://github.com/deltakosh))
 - Added `set()` function to all basic types ([deltakosh](https://github.com/deltakosh))
 - Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
@@ -38,7 +39,7 @@
 - Added `POINTERTAP` and `POINTERDOUBLETAP` PointerEventTypes to register new Observer mask. (Demo here)[http://www.babylonjs-playground.com/?30] ([yuccai](https://github.com/yuccai))
 - Added OnDoublePickTrigger for ActionManager ([yuccai](https://github.com/yuccai))
 - Added Scene.DoubleClickDelay to set the timing within a double click event like PointerEventTypes.POINTERDOUBLETAP or ActionManager.OnDoublePickTrigger has to be processed ([yuccai](https://github.com/yuccai))
-- New material: ShadowOnlyMaterial to display shadows on transparent surfaces ([deltakosh](https://github.com/deltakosh)) 
+- New material: `ShadowOnlyMaterial` to display shadows on transparent surfaces ([deltakosh](https://github.com/deltakosh)) 
 - Added `VertexBuffer.TangentKind` to specify tangents in place of shader-calculated tangents ([dewadswo](https://github.com/dewadswo), [bghgary](https://github.com/bghgary))
  
 ### Bug fixes
