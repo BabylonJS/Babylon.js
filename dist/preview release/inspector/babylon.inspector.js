@@ -778,7 +778,12 @@ var INSPECTOR;
             return tools;
         };
         SoundAdapter.prototype.setPlaying = function (callback) {
-            this._obj.play();
+            if (this._obj.isPlaying) {
+                this._obj.pause();
+            }
+            else {
+                this._obj.play();
+            }
             this._obj.onended = function () {
                 callback();
             };

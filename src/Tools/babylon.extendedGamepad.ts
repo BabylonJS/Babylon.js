@@ -345,7 +345,7 @@ module BABYLON {
     }
 
     export class ViveController extends WebVRController {
-
+        private _defaultModel: BABYLON.AbstractMesh;
 
         constructor(vrGamepad) {
             super(vrGamepad);
@@ -365,9 +365,8 @@ module BABYLON {
                 - trigger
                 - LED
                 */
-
-                var mesh = newMeshes[1];
-                this.attachToMesh(mesh);
+                this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
             });
         }
 
@@ -398,12 +397,23 @@ module BABYLON {
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 1: // index trigger
+                    if (this._defaultModel) {
+                        (<AbstractMesh>(this._defaultModel.getChildren()[6])).rotation.x = -notifyObject.value * 0.15;
+                    }
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // left AND right button
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
+                    if (this._defaultModel) {
+                        if (notifyObject.value === 1) {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
+                        }
+                        else {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
+                        }
+                    }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
             }

@@ -160,7 +160,6 @@ module INSPECTOR {
                 else {
                     inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
                 }
-                console.log(inspector);
 
                 // Add split bar
                 if (!this._parentElement) {
