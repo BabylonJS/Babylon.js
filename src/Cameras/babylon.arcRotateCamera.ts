@@ -415,7 +415,7 @@ module BABYLON {
             }
             
             if (toBoundingCenter && (<any>target).getBoundingInfo){
-                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.center.clone();
+                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
             }else{
                 this._targetBoundingCenter = null;
             }
