@@ -36693,7 +36693,7 @@ var BABYLON;
         PhysicsImpostor.prototype.getObjectExtendSize = function () {
             if (this.object.getBoundingInfo) {
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSize.scale(2).multiply(this.object.scaling);
+                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2).multiply(this.object.scaling);
             }
             else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
@@ -36701,7 +36701,7 @@ var BABYLON;
         };
         PhysicsImpostor.prototype.getObjectCenter = function () {
             if (this.object.getBoundingInfo) {
-                return this.object.getBoundingInfo().boundingBox.center;
+                return this.object.getBoundingInfo().boundingBox.centerWorld;
             }
             else {
                 return this.object.position;
