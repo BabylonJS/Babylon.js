@@ -11388,6 +11388,8 @@ var BABYLON;
             }
             this.minimumWorld = BABYLON.Vector3.Zero();
             this.maximumWorld = BABYLON.Vector3.Zero();
+            this.centerWorld = BABYLON.Vector3.Zero();
+            this.extendSizeWorld = BABYLON.Vector3.Zero();
             this._update(BABYLON.Matrix.Identity());
         }
         // Methods
@@ -11417,9 +11419,12 @@ var BABYLON;
                 if (v.z > this.maximumWorld.z)
                     this.maximumWorld.z = v.z;
             }
+            // Extend
+            this.maximumWorld.subtractToRef(this.minimumWorld, this.extendSizeWorld);
+            this.extendSizeWorld.scaleInPlace(0.5);
             // OBB
-            this.maximumWorld.addToRef(this.minimumWorld, this.center);
-            this.center.scaleInPlace(0.5);
+            this.maximumWorld.addToRef(this.minimumWorld, this.centerWorld);
+            this.centerWorld.scaleInPlace(0.5);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 0, this.directions[0]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 4, this.directions[1]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 8, this.directions[2]);
@@ -11504,7 +11509,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var computeBoxExtents = function (axis, box) {
-        var p = BABYLON.Vector3.Dot(box.center, axis);
+        var p = BABYLON.Vector3.Dot(box.centerWorld, axis);
         var r0 = Math.abs(BABYLON.Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
         var r1 = Math.abs(BABYLON.Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;
         var r2 = Math.abs(BABYLON.Vector3.Dot(box.directions[2], axis)) * box.extendSize.z;
@@ -18728,7 +18733,7 @@ var BABYLON;
                 return;
             }
             if (toBoundingCenter && target.getBoundingInfo) {
-                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.center.clone();
+                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.centerWorld.clone();
             }
             else {
                 this._targetBoundingCenter = null;

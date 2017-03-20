@@ -16,6 +16,7 @@
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Introduced `boundingBox.centerWorld` and `boundingBox.extendSizeWorld` ([deltakosh](https://github.com/deltakosh))
 - Improved FXAA post-process ([deltakosh](https://github.com/deltakosh))
 - Added `Light.customProjectionMatrixBuilder` to allow developers to define their own projection matrix for shadows ([deltakosh](https://github.com/deltakosh))
 - Added `set()` function to all basic types ([deltakosh](https://github.com/deltakosh))
