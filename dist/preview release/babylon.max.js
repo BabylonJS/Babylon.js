@@ -11388,6 +11388,8 @@ var BABYLON;
             }
             this.minimumWorld = BABYLON.Vector3.Zero();
             this.maximumWorld = BABYLON.Vector3.Zero();
+            this.centerWorld = BABYLON.Vector3.Zero();
+            this.extendSizeWorld = BABYLON.Vector3.Zero();
             this._update(BABYLON.Matrix.Identity());
         }
         // Methods
@@ -11417,9 +11419,12 @@ var BABYLON;
                 if (v.z > this.maximumWorld.z)
                     this.maximumWorld.z = v.z;
             }
+            // Extend
+            this.maximumWorld.subtractToRef(this.minimumWorld, this.extendSizeWorld);
+            this.extendSizeWorld.scaleInPlace(0.5);
             // OBB
-            this.maximumWorld.addToRef(this.minimumWorld, this.center);
-            this.center.scaleInPlace(0.5);
+            this.maximumWorld.addToRef(this.minimumWorld, this.centerWorld);
+            this.centerWorld.scaleInPlace(0.5);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 0, this.directions[0]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 4, this.directions[1]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 8, this.directions[2]);
@@ -11504,7 +11509,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var computeBoxExtents = function (axis, box) {
-        var p = BABYLON.Vector3.Dot(box.center, axis);
+        var p = BABYLON.Vector3.Dot(box.centerWorld, axis);
         var r0 = Math.abs(BABYLON.Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
         var r1 = Math.abs(BABYLON.Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;
         var r2 = Math.abs(BABYLON.Vector3.Dot(box.directions[2], axis)) * box.extendSize.z;
@@ -18728,7 +18733,7 @@ var BABYLON;
                 return;
             }
             if (toBoundingCenter && target.getBoundingInfo) {
-                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.center.clone();
+                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.centerWorld.clone();
             }
             else {
                 this._targetBoundingCenter = null;
@@ -22891,7 +22896,7 @@ var BABYLON;
         InstancedMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             var result = this._sourceMesh.createInstance(name);
             // Deep copy
-            BABYLON.Tools.DeepCopy(this, result, ["name", "subMeshes"], []);
+            BABYLON.Tools.DeepCopy(this, result, ["name", "subMeshes", "uniqueId"], []);
             // Bounding info
             this.refreshBoundingInfo();
             // Parent
@@ -22997,7 +23002,7 @@ var BABYLON;
                     source._geometry.applyToMesh(_this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
                 // Parent
                 _this.parent = source.parent;
                 // Pivot
@@ -33922,7 +33927,7 @@ var BABYLON;
     var CircleEase = (function (_super) {
         __extends(CircleEase, _super);
         function CircleEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         CircleEase.prototype.easeInCore = function (gradient) {
             gradient = Math.max(0, Math.min(1, gradient));
@@ -33982,7 +33987,7 @@ var BABYLON;
     var CubicEase = (function (_super) {
         __extends(CubicEase, _super);
         function CubicEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         CubicEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient);
@@ -34050,7 +34055,7 @@ var BABYLON;
     var QuadraticEase = (function (_super) {
         __extends(QuadraticEase, _super);
         function QuadraticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuadraticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient);
@@ -34061,7 +34066,7 @@ var BABYLON;
     var QuarticEase = (function (_super) {
         __extends(QuarticEase, _super);
         function QuarticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuarticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient);
@@ -34072,7 +34077,7 @@ var BABYLON;
     var QuinticEase = (function (_super) {
         __extends(QuinticEase, _super);
         function QuinticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuinticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient * gradient);
@@ -34083,7 +34088,7 @@ var BABYLON;
     var SineEase = (function (_super) {
         __extends(SineEase, _super);
         function SineEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         SineEase.prototype.easeInCore = function (gradient) {
             return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
@@ -34939,14 +34944,6 @@ var BABYLON;
             this._bone1Mat = BABYLON.Matrix.Identity();
             this._bone2Ang = Math.PI;
             this._maxAngle = Math.PI;
-            this._tmpVec1 = BABYLON.Vector3.Zero();
-            this._tmpVec2 = BABYLON.Vector3.Zero();
-            this._tmpVec3 = BABYLON.Vector3.Zero();
-            this._tmpVec4 = BABYLON.Vector3.Zero();
-            this._tmpVec5 = BABYLON.Vector3.Zero();
-            this._tmpMat1 = BABYLON.Matrix.Identity();
-            this._tmpMat2 = BABYLON.Matrix.Identity();
-            this._tmpQuat1 = BABYLON.Quaternion.Identity();
             this._rightHandedSystem = false;
             this._bendAxis = BABYLON.Vector3.Right();
             this._slerping = false;
@@ -35039,8 +35036,8 @@ var BABYLON;
             var bone1 = this._bone1;
             var target = this.targetPosition;
             var poleTarget = this.poleTargetPosition;
-            var mat1 = this._tmpMat1;
-            var mat2 = this._tmpMat2;
+            var mat1 = BoneIKController._tmpMats[0];
+            var mat2 = BoneIKController._tmpMats[1];
             if (this.targetMesh) {
                 target.copyFrom(this.targetMesh.getAbsolutePosition());
             }
@@ -35050,11 +35047,12 @@ var BABYLON;
             else if (this.poleTargetMesh) {
                 BABYLON.Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
             }
-            var bonePos = this._tmpVec1;
-            var zaxis = this._tmpVec2;
-            var xaxis = this._tmpVec3;
-            var yaxis = this._tmpVec4;
-            var upAxis = this._tmpVec5;
+            var bonePos = BoneIKController._tmpVecs[0];
+            var zaxis = BoneIKController._tmpVecs[1];
+            var xaxis = BoneIKController._tmpVecs[2];
+            var yaxis = BoneIKController._tmpVecs[3];
+            var upAxis = BoneIKController._tmpVecs[4];
+            var _tmpQuat = BoneIKController._tmpQuat;
             bone1.getAbsolutePositionToRef(this.mesh, bonePos);
             poleTarget.subtractToRef(bonePos, upAxis);
             if (upAxis.x == 0 && upAxis.y == 0 && upAxis.z == 0) {
@@ -35100,9 +35098,10 @@ var BABYLON;
                 mat2.multiplyToRef(mat1, mat1);
             }
             else {
-                this._tmpVec1.copyFrom(this._bendAxis);
-                this._tmpVec1.x *= -1;
-                BABYLON.Matrix.RotationAxisToRef(this._tmpVec1, -angB, mat2);
+                var _tmpVec = BoneIKController._tmpVecs[5];
+                _tmpVec.copyFrom(this._bendAxis);
+                _tmpVec.x *= -1;
+                BABYLON.Matrix.RotationAxisToRef(_tmpVec, -angB, mat2);
                 mat2.multiplyToRef(mat1, mat1);
             }
             if (this.poleAngle) {
@@ -35113,8 +35112,8 @@ var BABYLON;
                 if (!this._slerping) {
                     BABYLON.Quaternion.FromRotationMatrixToRef(this._bone1Mat, this._bone1Quat);
                 }
-                BABYLON.Quaternion.FromRotationMatrixToRef(mat1, this._tmpQuat1);
-                BABYLON.Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpAmount, this._bone1Quat);
+                BABYLON.Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
+                BABYLON.Quaternion.SlerpToRef(this._bone1Quat, _tmpQuat, this.slerpAmount, this._bone1Quat);
                 angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
                 this._bone1.setRotationQuaternion(this._bone1Quat, BABYLON.Space.WORLD, this.mesh);
                 this._slerping = true;
@@ -35129,6 +35128,9 @@ var BABYLON;
         };
         return BoneIKController;
     }());
+    BoneIKController._tmpVecs = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+    BoneIKController._tmpQuat = BABYLON.Quaternion.Identity();
+    BoneIKController._tmpMats = [BABYLON.Matrix.Identity(), BABYLON.Matrix.Identity()];
     BABYLON.BoneIKController = BoneIKController;
 })(BABYLON || (BABYLON = {}));
 
@@ -36691,7 +36693,7 @@ var BABYLON;
         PhysicsImpostor.prototype.getObjectExtendSize = function () {
             if (this.object.getBoundingInfo) {
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSize.scale(2).multiply(this.object.scaling);
+                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2).multiply(this.object.scaling);
             }
             else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
@@ -36699,7 +36701,7 @@ var BABYLON;
         };
         PhysicsImpostor.prototype.getObjectCenter = function () {
             if (this.object.getBoundingInfo) {
-                return this.object.getBoundingInfo().boundingBox.center;
+                return this.object.getBoundingInfo().boundingBox.centerWorld;
             }
             else {
                 return this.object.position;
@@ -49970,7 +49972,7 @@ var BABYLON;
     var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
@@ -49983,7 +49985,7 @@ var BABYLON;
     var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
@@ -49996,7 +49998,7 @@ var BABYLON;
     var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
@@ -50009,7 +50011,7 @@ var BABYLON;
     var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
@@ -50022,7 +50024,7 @@ var BABYLON;
     var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
@@ -50035,7 +50037,7 @@ var BABYLON;
     var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this._canBeMerged = function (abstractMesh) {
                 if (!(abstractMesh instanceof BABYLON.Mesh)) {
                     return false;
@@ -50939,7 +50941,7 @@ var BABYLON;
     var FxaaPostProcess = (function (_super) {
         __extends(FxaaPostProcess, _super);
         function FxaaPostProcess(name, options, camera, samplingMode, engine, reusable) {
-            var _this = _super.call(this, name, "fxaa", ["texelSize"], null, options, camera, samplingMode, engine, reusable) || this;
+            var _this = _super.call(this, name, "fxaa", ["texelSize"], null, options, camera, samplingMode || BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, reusable) || this;
             _this.onSizeChangedObservable.add(function () {
                 _this.texelWidth = 1.0 / _this.width;
                 _this.texelHeight = 1.0 / _this.height;
@@ -52288,8 +52290,8 @@ var BABYLON;
                 - trigger
                 - LED
                 */
-                var mesh = newMeshes[1];
-                _this.attachToMesh(mesh);
+                _this._defaultModel = newMeshes[1];
+                _this.attachToMesh(_this._defaultModel);
             });
         };
         Object.defineProperty(ViveController.prototype, "onLeftButtonStateChangedObservable", {
@@ -52327,12 +52329,23 @@ var BABYLON;
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 1:
+                    if (this._defaultModel) {
+                        (this._defaultModel.getChildren()[6]).rotation.x = -notifyObject.value * 0.15;
+                    }
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
+                    if (this._defaultModel) {
+                        if (notifyObject.value === 1) {
+                            (this._defaultModel.getChildren()[2]).position.y = -0.001;
+                        }
+                        else {
+                            (this._defaultModel.getChildren()[2]).position.y = 0;
+                        }
+                    }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
             }
@@ -57090,7 +57103,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
@@ -60362,12 +60375,6 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], StandardRenderingPipeline.prototype, "depthOfFieldBlurWidth", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], StandardRenderingPipeline.prototype, "DepthOfFieldEnabled", null);
-    __decorate([
-        BABYLON.serialize()
-    ], StandardRenderingPipeline.prototype, "LensFlareEnabled", null);
     BABYLON.StandardRenderingPipeline = StandardRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
 
