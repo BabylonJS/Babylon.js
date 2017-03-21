@@ -112,7 +112,6 @@ var INSPECTOR;
                 else {
                     inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
                 }
-                console.log(inspector);
                 // Add split bar
                 if (!this._parentElement) {
                     Split([canvas, inspector], {
@@ -2458,7 +2457,7 @@ var INSPECTOR;
     var SoundTab = (function (_super) {
         __extends(SoundTab, _super);
         function SoundTab(tabbar, inspector) {
-            return _super.call(this, tabbar, 'Sound', inspector) || this;
+            return _super.call(this, tabbar, 'Audio', inspector) || this;
         }
         /* Overrides super */
         SoundTab.prototype._getTree = function () {
