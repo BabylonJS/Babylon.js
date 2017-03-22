@@ -10,6 +10,7 @@
         private static _FILTER_VARIANCESHADOWMAP = 1;
         private static _FILTER_POISSONSAMPLING = 2;
         private static _FILTER_BLURVARIANCESHADOWMAP = 3;
+        private static _FILTER_EXPONENTIALSHADOWMAP = 4;
 
         // Static
         public static get FILTER_NONE(): number {
@@ -26,6 +27,10 @@
 
         public static get FILTER_BLURVARIANCESHADOWMAP(): number {
             return ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP;
+        }
+
+        public static get FILTER_EXPONENTIALSHADOWMAP(): number {
+            return ShadowGenerator._FILTER_EXPONENTIALSHADOWMAP;
         }
 
         // Members
@@ -108,6 +113,13 @@
         }
         public set useBlurVarianceShadowMap(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
+        }
+
+        public get useExponentialShadowMap(): boolean {
+            return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
+        }
+        public set useExponentialShadowMap(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
         private _light: IShadowLight;

@@ -556,6 +556,10 @@
                 options.audioEngine = true;
             }
 
+            if (options.stencil === undefined) {
+                options.stencil = true;
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
