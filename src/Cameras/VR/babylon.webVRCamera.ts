@@ -52,7 +52,7 @@ module BABYLON {
 
         private _positionOffset: Vector3 = Vector3.Zero();
 
-        protected _decedents: Array<Node> = [];
+        protected _descendants: Array<Node> = [];
 
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion;
@@ -142,13 +142,13 @@ module BABYLON {
              */
             scene.onBeforeCameraRenderObservable.add((camera) => {
                 if (camera.parent === this && this.rigParenting) {
-                    this._decedents = this.getDescendants(true, (n) => {
+                    this._descendants = this.getDescendants(true, (n) => {
                         // don't take the cameras or the controllers!
                         let isController = this.controllers.some(controller => { return controller._mesh === n });
                         let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1
                         return !isController && !isRigCamera;
                     });
-                    this._decedents.forEach(node => {
+                    this._descendants.forEach(node => {
                         node.parent = camera;
                     });
                 }
@@ -156,7 +156,7 @@ module BABYLON {
 
             scene.onAfterCameraRenderObservable.add((camera) => {
                 if (camera.parent === this && this.rigParenting) {
-                    this._decedents.forEach(node => {
+                    this._descendants.forEach(node => {
                         node.parent = this;
                     });
                 }
