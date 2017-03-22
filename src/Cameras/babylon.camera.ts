@@ -286,6 +286,11 @@
         public update(): void {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
+            } else if (this._cameraRigParams['parentCamera']) {
+                //WebVR parenting solved. See WebVRFreeCamera's _updateRigCameras function
+                this._cameraRigParams['parentCamera']._decedents.forEach(d => {
+                    d.parent = this;
+                });
             }
             this._checkInputs();
         }
@@ -618,9 +623,8 @@
                         this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[0].parent = this;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
-                        this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
 
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
@@ -629,9 +633,8 @@
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
-                        this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
                     }
                     break;
 
