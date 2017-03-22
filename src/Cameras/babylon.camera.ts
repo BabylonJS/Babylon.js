@@ -286,11 +286,6 @@
         public update(): void {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
-            } else if (this._cameraRigParams['parentCamera']) {
-                //WebVR parenting solved. See WebVRFreeCamera's _updateRigCameras function
-                this._cameraRigParams['parentCamera']._decedents.forEach(d => {
-                    d.parent = this;
-                });
             }
             this._checkInputs();
         }
@@ -628,6 +623,7 @@
 
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                        this._rigCameras[0].setCameraRigParameter("left", false);
                         this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);

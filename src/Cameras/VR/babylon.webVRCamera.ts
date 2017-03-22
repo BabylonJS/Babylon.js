@@ -52,12 +52,16 @@ module BABYLON {
 
         private _positionOffset: Vector3 = Vector3.Zero();
 
+        protected _decedents: Array<Node> = [];
+
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion;
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
         public onControllersAttached: (controllers: Array<WebVRController>) => void;
+
+        public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
@@ -124,6 +128,39 @@ module BABYLON {
 
             // try to attach the controllers, if found.
             this.initControllers();
+
+            /**
+             * The idea behind the following lines:
+             * objects that have the camera as parent should actually have the rig cameras as a parent.
+             * BUT, each of those cameras has a different view matrix, which means that if we set the parent to the first rig camera,
+             * the second will not show it correctly.
+             * 
+             * To solve this - each object that has the camera as parent will be added to a protected array.
+             * When the rig camera renders, it will take this array and set all of those to be its children.
+             * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
+             * Amazing!
+             */
+            scene.onBeforeCameraRenderObservable.add((camera) => {
+                if (camera.parent === this && this.rigParenting) {
+                    this._decedents = this.getDescendants(true, (n) => {
+                        // don't take the cameras or the controllers!
+                        let isController = this.controllers.some(controller => { return controller._mesh === n });
+                        let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1
+                        return !isController && !isRigCamera;
+                    });
+                    this._decedents.forEach(node => {
+                        node.parent = camera;
+                    });
+                }
+            });
+
+            scene.onAfterCameraRenderObservable.add((camera) => {
+                if (camera.parent === this && this.rigParenting) {
+                    this._decedents.forEach(node => {
+                        node.parent = this;
+                    });
+                }
+            });
         }
 
         public _checkInputs(): void {
@@ -193,28 +230,7 @@ module BABYLON {
             this._vrDevice.resetPose();
         }
 
-        protected _decedents: Array<Node> = [];
-
         public _updateRigCameras() {
-            /**
-             * The idea behind the following lines:
-             * objects that have the camera as parent should actually have the rig cameras as a parent.
-             * BUT, each of those cameras has a different view matrix, which means that if we set the parent to the first rig camera,
-             * the second will not show it correctly.
-             * 
-             * To solve this - each object that has the camera as parent will be added to a protected array.
-             * When the rig camera renders, it will take this array and set all of those to be its children.
-             * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
-             * Amazing!
-             */
-            let dec = this.getDescendants(true, (n) => {
-                return this._rigCameras.indexOf(<Camera>n) === -1
-            });
-            dec.forEach(d => {
-                if (this._decedents.indexOf(d) === -1) {
-                    this._decedents.push(d);
-                }
-            });
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
             camLeft.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
@@ -231,12 +247,13 @@ module BABYLON {
         protected _getWebVRViewMatrix(): Matrix {
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
 
+            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
+
             if (!this.getScene().useRightHandedSystem) {
-                [2, 6, 8, 9, 14].forEach(function (num) {
-                    viewArray[num] *= -1;
+                [2, 6, 8, 9, 14].forEach((num) => {
+                    this._webvrViewMatrix.m[num] *= -1;
                 });
             }
-            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
