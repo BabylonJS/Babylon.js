@@ -17084,7 +17084,7 @@ var BABYLON;
             this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
-            if (this.gamepad) {
+            if (this.gamepad && this.gamepad.leftStick) {
                 var camera = this.camera;
                 var LSValues = this.gamepad.leftStick;
                 var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
@@ -49908,14 +49908,15 @@ var BABYLON;
             return this._webvrViewMatrix;
         };
         WebVRFreeCamera.prototype._getWebVRProjectionMatrix = function () {
+            var _this = this;
             var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             //babylon compatible matrix
             if (!this.getScene().useRightHandedSystem) {
                 [8, 9, 10, 11].forEach(function (num) {
-                    projectionArray[num] *= -1;
+                    _this._projectionMatrix.m[num] *= -1;
                 });
             }
-            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
         };
         WebVRFreeCamera.prototype.initControllers = function () {
