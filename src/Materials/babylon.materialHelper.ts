@@ -90,14 +90,20 @@
                             }
 
                             defines["SHADOWVSM" + lightIndex] = true;
-                        }
-
-                        if (shadowGenerator.usePoissonSampling) {
+                        } 
+                        else if (shadowGenerator.usePoissonSampling) {
                             if (defines["SHADOWPCF" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
 
                             defines["SHADOWPCF" + lightIndex] = true;
+                        } 
+                        else if (shadowGenerator.useExponentialShadowMap) {
+                            if (defines["SHADOWESM" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
+
+                            defines["SHADOWESM" + lightIndex] = true;
                         }
 
                         needShadows = true;
@@ -186,6 +192,10 @@
 
                 if (defines["SHADOWVSM" + lightIndex]) {
                     fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                }
+
+                if (defines["SHADOWESM" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
                 }
             }
         }

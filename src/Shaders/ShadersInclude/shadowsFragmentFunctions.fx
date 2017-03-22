@@ -173,4 +173,9 @@
 
 		return min(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness);
 	}
+
+	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias, float darkness)
+	{
+		return 1.0;
+	}
 #endif
