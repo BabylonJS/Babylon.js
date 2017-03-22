@@ -281,13 +281,14 @@ module BABYLON {
 
         protected _getWebVRProjectionMatrix(): Matrix {
             var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
+
             //babylon compatible matrix
             if (!this.getScene().useRightHandedSystem) {
-                [8, 9, 10, 11].forEach(function (num) {
-                    projectionArray[num] *= -1;
+                [8, 9, 10, 11].forEach((num) => {
+                    this._projectionMatrix.m[num] *= -1;
                 });
             }
-            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
         }
 
