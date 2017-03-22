@@ -362,6 +362,12 @@
                     "../../materialsLibrary/src/grid/legacygrid.fragment.fx"
                 ],
                 "output": "babylon.gridMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
+                ], 
+                "output": "babylon.customMaterial.js"
             }
         ],
         "build": {
