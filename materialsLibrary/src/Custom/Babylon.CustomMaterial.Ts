@@ -4,7 +4,7 @@ module BABYLON {
          (name: string ,mainPart: string , diffusePart:string ,vertexPositionPart:string ): string;
    } 
  
-    class CustomMaterial extends StandardMaterial  {
+    class CustomMaterial extends BABYLON.StandardMaterial  {
         
         public builder: ICustomMaterialBuilder;
         private _mainPart = 'void main(void) {';
