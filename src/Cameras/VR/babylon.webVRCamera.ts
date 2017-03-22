@@ -193,6 +193,37 @@ module BABYLON {
             this._vrDevice.resetPose();
         }
 
+        protected _decedents: Array<Node> = [];
+
+        public _updateRigCameras() {
+            /**
+             * The idea behind the following lines:
+             * objects that have the camera as parent should actually have the rig cameras as a parent.
+             * BUT, each of those cameras has a different view matrix, which means that if we set the parent to the first rig camera,
+             * the second will not show it correctly.
+             * 
+             * To solve this - each object that has the camera as parent will be added to a protected array.
+             * When the rig camera renders, it will take this array and set all of those to be its children.
+             * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
+             * Amazing!
+             */
+            let dec = this.getDescendants(true, (n) => {
+                return this._rigCameras.indexOf(<Camera>n) === -1
+            });
+            dec.forEach(d => {
+                if (this._decedents.indexOf(d) === -1) {
+                    this._decedents.push(d);
+                }
+            });
+            var camLeft = <TargetCamera>this._rigCameras[0];
+            var camRight = <TargetCamera>this._rigCameras[1];
+            camLeft.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+            camRight.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+
+            camLeft.position.copyFrom(this.devicePosition);
+            camRight.position.copyFrom(this.devicePosition);
+        }
+
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -210,7 +241,7 @@ module BABYLON {
             let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
             // should the view matrix be updated with scale and position offset?
-            if (parentCamera.position.lengthSquared() || parentCamera.deviceScaleFactor !== 1) {
+            if (parentCamera.deviceScaleFactor !== 1) {
                 this._webvrViewMatrix.invert();
                 // scale the position, if set
                 if (parentCamera.deviceScaleFactor) {
@@ -218,38 +249,17 @@ module BABYLON {
                     this._webvrViewMatrix.m[13] *= parentCamera.deviceScaleFactor;
                     this._webvrViewMatrix.m[14] *= parentCamera.deviceScaleFactor;
                 }
-                // change the position (for "teleporting");
-                this._webvrViewMatrix.m[12] += parentCamera.position.x;
-                this._webvrViewMatrix.m[13] += parentCamera.position.y;
-                this._webvrViewMatrix.m[14] += parentCamera.position.z;
-
-                // is rotation offset set? 
-                if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
-                    this._webvrViewMatrix.decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
-                    this.rotationQuaternion.multiplyToRef(Tmp.Quaternion[0], Tmp.Quaternion[0]);
-                    Matrix.ComposeToRef(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1], this._webvrViewMatrix);
-                }
 
                 this._webvrViewMatrix.invert();
             }
 
-            this._updateCameraRotationMatrix();
+            // update the camera rotation matrix
+            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
             Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
-            // Computing target for getTarget()
-            this._positionOffset = this._positionOffset || Vector3.Zero();
-            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
-            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
-
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
-        }
-
-        public _updateWebVRCameraRotationMatrix() {
-            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
-        }
-
-        public _isSynchronizedViewMatrix() {
-            return false;
         }
 
         protected _getWebVRProjectionMatrix(): Matrix {
