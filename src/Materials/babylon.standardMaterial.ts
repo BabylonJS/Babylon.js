@@ -1,4 +1,10 @@
 ﻿module BABYLON {
+    
+    interface ICustomMaterialBuilder {
+        (name: string ,FragVertexMainParam: string , FragParam:string ,VertexParam:string ): string;
+     }
+
+         
     class StandardMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
@@ -66,6 +72,9 @@
     }
 
     export class StandardMaterial extends Material {
+        
+        public customMaterialBuilder: ICustomMaterialBuilder;
+        
         @serializeAsTexture()
         public diffuseTexture: BaseTexture;
 
@@ -209,9 +218,10 @@
 
         private _useLogarithmicDepth: boolean;
 
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Scene, customMaterial  : ICustomMaterialBuilder) {
             super(name, scene);
-
+            
+            this.customMaterialBuilder = customMaterial;
             this._cachedDefines.BonesPerMesh = -1;
 
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
@@ -675,6 +685,17 @@
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 
                 var shaderName = "default";
+                
+                // for test make Custom Shader Use From StandardMaterial
+                if (this.customMaterialBuilder) {
+
+                    shaderName = this.customMaterialBuilder(
+                        shaderName, 
+                        'void main(void) {' /* used in Fragment and Vertex Shader Most Replaced by new content and have this part again */,
+                        'vec3 diffuseColor = vDiffuseColor.rgb;' /* manage diffuseColor in new Way */,
+                        'gl_Position = viewProjection * finalWorld * vec4(position, 1.0);' /* manage vertex position in new Way*/
+                        ); 
+                }
 
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
