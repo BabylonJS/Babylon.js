@@ -51,7 +51,7 @@ void main(void)
 #endif
 
 #ifdef ESM
-	const float shadowStrength = 250.0;
+	const float shadowStrength = 50.0;
 	depth = exp(-shadowStrength * depth);
 #endif
 

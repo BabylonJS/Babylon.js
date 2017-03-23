@@ -81,7 +81,7 @@
 
             this._filter = value;
 
-            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling) {
+            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling || this.useExponentialShadowMap) {
                 this._shadowMap.anisotropicFilteringLevel = 16;
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             } else {
@@ -179,7 +179,7 @@
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
-            this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+            this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
@@ -187,7 +187,7 @@
             });
 
             this._shadowMap.onAfterUnbindObservable.add(() => {
-                if (!this.useBlurVarianceShadowMap) {
+                if (!this.useBlurVarianceShadowMap && !this.useExponentialShadowMap) {
                     return;
                 }
 
@@ -530,16 +530,19 @@
                 shadowGenerator.useVarianceShadowMap = true;
             } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurVarianceShadowMap = true;
-
-                if (parsedShadowGenerator.blurScale) {
-                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
-                }
-
-                if (parsedShadowGenerator.blurBoxOffset) {
-                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
-                }
+            }
+            else if (parsedShadowGenerator.useExponentialShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
             }
 
+            if (parsedShadowGenerator.blurScale) {
+                shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+            }
+
+            if (parsedShadowGenerator.blurBoxOffset) {
+                shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+            }
+                
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
