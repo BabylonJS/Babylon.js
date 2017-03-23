@@ -337,6 +337,9 @@ module BABYLON {
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // secondary trigger
+                    if (this._defaultModel) {
+                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = notifyObject.value * 0.0035;
+                    }
                     this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
