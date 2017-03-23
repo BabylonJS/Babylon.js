@@ -11,7 +11,7 @@
 		#else
 			uniform samplerCube shadowSampler{X};
 		#endif
-		uniform vec3 shadowsInfo{X};
+		uniform vec2 shadowsInfo{X};
 	#endif
 	#ifdef SPOTLIGHT{X}
 		uniform vec4 vLightDirection{X};

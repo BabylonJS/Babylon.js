@@ -195,7 +195,7 @@
                     this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType);
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
-                    this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+                    this._shadowMap2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
 
                     this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                     this._downSamplePostprocess.onApplyObservable.add(effect => {
@@ -230,6 +230,8 @@
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
                     var material = subMesh.getMaterial();
+
+                    this._effect.setFloat("bias", this.bias);
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
                     this._effect.setVector3("lightPosition", this.getLight().position);
@@ -364,7 +366,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "bias"],
                     ["diffuseSampler"], join);
             }
 
