@@ -17,22 +17,22 @@
     #endif
 	#ifdef SHADOW{X}
 		#ifdef SHADOWESM{X}
-			shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.z, shadowsInfo{X}.x);
+			shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
 		#else	
 			#ifdef SHADOWVSM{X}
-				shadow = computeShadowWithVSM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.z, shadowsInfo{X}.x);
+				shadow = computeShadowWithVSM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
 			#else
 			#ifdef SHADOWPCF{X}
 				#if defined(POINTLIGHT{X})
-					shadow = computeShadowWithPCFCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+					shadow = computeShadowWithPCFCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.x);
 				#else
-					shadow = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+					shadow = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.x);
 				#endif
 			#else
 				#if defined(POINTLIGHT{X})
-					shadow = computeShadowCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+					shadow = computeShadowCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x);
 				#else
-					shadow = computeShadow(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+					shadow = computeShadow(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
 				#endif
 			#endif
 		#endif
