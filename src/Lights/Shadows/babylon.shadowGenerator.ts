@@ -305,6 +305,8 @@
 
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
+            } else if (this.useExponentialShadowMap) {
+                defines.push("#define ESM");
             }
 
             if (this.getLight().needCube()) {

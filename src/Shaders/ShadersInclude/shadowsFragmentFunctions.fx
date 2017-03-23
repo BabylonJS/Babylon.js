@@ -176,6 +176,33 @@
 
 	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias, float darkness)
 	{
-		return 1.0;
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		vec3 depth = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = depth.xy;
+		float shadowPixelDepth = depth.z;
+
+		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+		{
+			return 1.0;
+		}
+	
+		#ifndef SHADOWFULLFLOAT
+			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+		#else
+			float shadowMapSample = texture2D(shadowSampler, uv).x;
+		#endif
+
+		const float shadowStrength = 250.0;
+	//	const float exponentLimit = 87.0; //this prevents float overflow in the exp, should be ~< ln(MAX_FLOAT)
+	//	float delta = shadowStrength * (shadowMapSample - shadowPixelDepth); // note: farclip - nearclip?
+	//	float esm = exp(clamp(delta, -exponentLimit, 0.0));
+		float esm = clamp(exp(shadowStrength * shadowPixelDepth) * shadowMapSample, 0., 1.);
+
+		// Apply fade out at frustum edge
+		const float fadeDistance = 0.07;
+		vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
+		float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
+
+		return mix(1.0, esm, mask) + darkness;
 	}
 #endif
