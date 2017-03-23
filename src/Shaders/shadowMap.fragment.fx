@@ -47,7 +47,12 @@ void main(void)
 	depth = clamp(depth, 0., 1.0);
 #else
 	float depth = vPosition.z / vPosition.w;
-	depth = depth * 0.5 + 0.5;
+	depth = depth * 0.5 + 0.5;	
+#endif
+
+#ifdef ESM
+	const float shadowStrength = 250.0;
+	depth = exp(-shadowStrength * depth);
 #endif
 
 #ifdef VSM
