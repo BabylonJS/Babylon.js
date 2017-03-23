@@ -16240,7 +16240,6 @@ var BABYLON;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         //Right eye
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                        this._rigCameras[0].setCameraRigParameter("left", false);
                         this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
                         this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
@@ -33948,7 +33947,7 @@ var BABYLON;
     var CircleEase = (function (_super) {
         __extends(CircleEase, _super);
         function CircleEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         CircleEase.prototype.easeInCore = function (gradient) {
             gradient = Math.max(0, Math.min(1, gradient));
@@ -34008,7 +34007,7 @@ var BABYLON;
     var CubicEase = (function (_super) {
         __extends(CubicEase, _super);
         function CubicEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         CubicEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient);
@@ -34076,7 +34075,7 @@ var BABYLON;
     var QuadraticEase = (function (_super) {
         __extends(QuadraticEase, _super);
         function QuadraticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuadraticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient);
@@ -34087,7 +34086,7 @@ var BABYLON;
     var QuarticEase = (function (_super) {
         __extends(QuarticEase, _super);
         function QuarticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuarticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient);
@@ -34098,7 +34097,7 @@ var BABYLON;
     var QuinticEase = (function (_super) {
         __extends(QuinticEase, _super);
         function QuinticEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         QuinticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient * gradient);
@@ -34109,7 +34108,7 @@ var BABYLON;
     var SineEase = (function (_super) {
         __extends(SineEase, _super);
         function SineEase() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         SineEase.prototype.easeInCore = function (gradient) {
             return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
@@ -50019,7 +50018,7 @@ var BABYLON;
     var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
@@ -50032,7 +50031,7 @@ var BABYLON;
     var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
@@ -50045,7 +50044,7 @@ var BABYLON;
     var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
@@ -50058,7 +50057,7 @@ var BABYLON;
     var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
@@ -50071,7 +50070,7 @@ var BABYLON;
     var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
@@ -50084,7 +50083,7 @@ var BABYLON;
     var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this._canBeMerged = function (abstractMesh) {
                 if (!(abstractMesh instanceof BABYLON.Mesh)) {
                     return false;
@@ -57188,7 +57187,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
@@ -60460,6 +60459,12 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], StandardRenderingPipeline.prototype, "depthOfFieldBlurWidth", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], StandardRenderingPipeline.prototype, "DepthOfFieldEnabled", null);
+    __decorate([
+        BABYLON.serialize()
+    ], StandardRenderingPipeline.prototype, "LensFlareEnabled", null);
     BABYLON.StandardRenderingPipeline = StandardRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
 
