@@ -135,7 +135,7 @@
             }
         }
 
-        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {            
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -162,6 +162,13 @@
                     var meshes = [];
                     var particleSystems = [];
                     var skeletons = [];
+
+                    if (scene.isDisposed) {
+                        if (onerror) {
+                            onerror(scene, 'Scene was disposed before being able to load ' + rootUrl + sceneFilename);
+                        }
+                        return;
+                    }
 
                     try {
                         if ((<any>plugin).importMesh) {
