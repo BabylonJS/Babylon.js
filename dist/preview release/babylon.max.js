@@ -7827,6 +7827,9 @@ var BABYLON;
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
+        if (!engine) {
+            return;
+        }
         var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
         engine._bindTextureDirectly(gl.TEXTURE_2D, texture);
@@ -21697,6 +21700,9 @@ var BABYLON;
             }
         };
         Scene.prototype.render = function () {
+            if (this.isDisposed) {
+                return;
+            }
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -22058,7 +22064,15 @@ var BABYLON;
                 this._engine.scenes.splice(index, 1);
             }
             this._engine.wipeCaches();
+            this._engine = null;
         };
+        Object.defineProperty(Scene.prototype, "isDisposed", {
+            get: function () {
+                return !this._engine;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Release sounds & sounds tracks
         Scene.prototype.disposeSounds = function () {
             this.mainSoundTrack.dispose();
@@ -31320,6 +31334,12 @@ var BABYLON;
                     var meshes = [];
                     var particleSystems = [];
                     var skeletons = [];
+                    if (scene.isDisposed) {
+                        if (onerror) {
+                            onerror(scene, 'Scene was disposed before being able to load ' + rootUrl + sceneFilename);
+                        }
+                        return;
+                    }
                     try {
                         if (plugin.importMesh) {
                             var syncedPlugin = plugin;
@@ -57190,7 +57210,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
