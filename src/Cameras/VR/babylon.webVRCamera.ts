@@ -35,6 +35,7 @@ module BABYLON {
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
         controllerMeshes?: boolean; // should the native controller meshes be initialized
+        defaultLightningOnControllers?: boolean; // creating a default HemiLight only on controllers
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -63,6 +64,8 @@ module BABYLON {
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
+        private _lightOnControllers: BABYLON.HemisphericLight;
+
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
@@ -77,6 +80,9 @@ module BABYLON {
             }
             if (this.webVROptions.controllerMeshes == undefined) {
                 this.webVROptions.controllerMeshes = true;
+            }
+            if (this.webVROptions.defaultLightningOnControllers == undefined) {
+                this.webVROptions.defaultLightningOnControllers = true;
             }
 
             this.rotationQuaternion = new Quaternion();
@@ -298,7 +304,16 @@ module BABYLON {
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gp;
                     if (this.webVROptions.controllerMeshes) {
-                        webVrController.initControllerMesh(this.getScene());
+                        webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                            if (this.webVROptions.defaultLightningOnControllers) {
+                                if (!this._lightOnControllers) {
+                                    this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
+                                }
+                                loadedMesh.getChildren().forEach((mesh) => {
+                                    this._lightOnControllers.includedOnlyMeshes.push(<AbstractMesh>mesh);
+                                });
+                            }
+                        });
                     }
                     webVrController.attachToPoseControlledCamera(this);
 

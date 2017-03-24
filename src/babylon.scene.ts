@@ -1211,7 +1211,7 @@
                     }
 
                     // Meshes
-                    if (!this._meshPickProceed && ActionManager.HasTriggers) {
+                    if (!this._meshPickProceed && (ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
