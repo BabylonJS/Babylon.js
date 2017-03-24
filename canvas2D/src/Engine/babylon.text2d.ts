@@ -150,6 +150,7 @@
         public static fontSuperSampleProperty: Prim2DPropInfo;
         public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
         public static textureIsPremulAlphaProperty: Prim2DPropInfo;
+        public static fontTextureProperty: Prim2DPropInfo;
 
         /**
          * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
@@ -333,6 +334,7 @@
             }
         }
 
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, pi => Text2D.fontTextureProperty = pi)
         public get fontTexture(): BaseFontTexture {
             if (this._fontTexture) {
                 return this._fontTexture;
