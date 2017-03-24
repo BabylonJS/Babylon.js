@@ -7,30 +7,25 @@
  
     export class ShadowGenerator implements IShadowGenerator {
         private static _FILTER_NONE = 0;
-        private static _FILTER_VARIANCESHADOWMAP = 1;
+        private static _FILTER_EXPONENTIALSHADOWMAP = 1;
         private static _FILTER_POISSONSAMPLING = 2;
-        private static _FILTER_BLURVARIANCESHADOWMAP = 3;
-        private static _FILTER_EXPONENTIALSHADOWMAP = 4;
+        private static _FILTER_BLUREXPONENTIALSHADOWMAP = 3;
 
         // Static
         public static get FILTER_NONE(): number {
             return ShadowGenerator._FILTER_NONE;
         }
 
-        public static get FILTER_VARIANCESHADOWMAP(): number {
-            return ShadowGenerator._FILTER_VARIANCESHADOWMAP;
-        }
-
         public static get FILTER_POISSONSAMPLING(): number {
             return ShadowGenerator._FILTER_POISSONSAMPLING;
         }
 
-        public static get FILTER_BLURVARIANCESHADOWMAP(): number {
-            return ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP;
-        }
-
         public static get FILTER_EXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_EXPONENTIALSHADOWMAP;
+        }
+
+        public static get FILTER_BLUREXPONENTIALSHADOWMAP(): number {
+            return ShadowGenerator._FILTER_BLUREXPONENTIALSHADOWMAP;
         }
 
         // Members
@@ -64,7 +59,16 @@
                 this._boxBlurPostprocess.dispose();
             }
 
-            this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
+            var textureType: number;
+            var caps = this._scene.getEngine().getCaps();
+            if (this._useFullFloat) {
+                textureType = Engine.TEXTURETYPE_FLOAT;
+            }
+            else {
+                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
+
+            this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value, textureType);
             this._boxBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
             });
@@ -81,7 +85,7 @@
 
             this._filter = value;
 
-            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling || this.useExponentialShadowMap) {
+            if (this.usePoissonSampling || this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 this._shadowMap.anisotropicFilteringLevel = 16;
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             } else {
@@ -91,28 +95,12 @@
         }
 
         public get useVarianceShadowMap(): boolean {
-            return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
+            Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
+            return this.useExponentialShadowMap;
         }
         public set useVarianceShadowMap(value: boolean) {
-            this.filter = (value ? ShadowGenerator.FILTER_VARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
-        }
-
-        public get usePoissonSampling(): boolean {
-            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING ||
-                (!this._light.supportsVSM() && (
-                    this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
-                    this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP
-                ));
-        }
-        public set usePoissonSampling(value: boolean) {
-            this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
-        }
-
-        public get useBlurVarianceShadowMap(): boolean {
-            return this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP && this._light.supportsVSM();
-        }
-        public set useBlurVarianceShadowMap(value: boolean) {
-            this.filter = (value ? ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
+            Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
+            this.useExponentialShadowMap = value;
         }
 
         public get useExponentialShadowMap(): boolean {
@@ -120,6 +108,30 @@
         }
         public set useExponentialShadowMap(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        }
+
+        public get usePoissonSampling(): boolean {
+            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+        }
+
+        public set usePoissonSampling(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
+        }
+
+        public get useBlurVarianceShadowMap(): boolean {
+            Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
+            return this.useBlurExponentialShadowMap;
+        }
+        public set useBlurVarianceShadowMap(value: boolean) {
+            Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
+            this.useBlurExponentialShadowMap = value;
+        }
+
+        public get useBlurExponentialShadowMap(): boolean {
+            return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
+        }
+        public set useBlurExponentialShadowMap(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
         private _light: IShadowLight;
@@ -187,7 +199,7 @@
             });
 
             this._shadowMap.onAfterUnbindObservable.add(() => {
-                if (!this.useBlurVarianceShadowMap && !this.useExponentialShadowMap) {
+                if (!this.useBlurExponentialShadowMap) {
                     return;
                 }
 
@@ -197,7 +209,7 @@
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
 
-                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
                     this._downSamplePostprocess.onApplyObservable.add(effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
                     });
@@ -288,7 +300,7 @@
             };
 
             this._shadowMap.onClearObservable.add((engine: Engine) => {
-                if (this.useBlurVarianceShadowMap || this.useVarianceShadowMap) {
+                if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                     engine.clear(new Color4(0, 0, 0, 0), true, true, true);
                 } else {
                     engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
@@ -305,9 +317,7 @@
                 defines.push("#define FULLFLOAT");
             }
 
-            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
-                defines.push("#define VSM");
-            } else if (this.useExponentialShadowMap) {
+            if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 defines.push("#define ESM");
             }
 
@@ -497,7 +507,8 @@
 
             serializationObject.lightId = this._light.id;
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
-            serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
+            serializationObject.useExponentialShadowMap = this.useExponentialShadowMap;
+            serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
             serializationObject.darkness = this.getDarkness();
@@ -528,13 +539,12 @@
 
             if (parsedShadowGenerator.usePoissonSampling) {
                 shadowGenerator.usePoissonSampling = true;
-            } else if (parsedShadowGenerator.useVarianceShadowMap) {
-                shadowGenerator.useVarianceShadowMap = true;
-            } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
-                shadowGenerator.useBlurVarianceShadowMap = true;
             }
             else if (parsedShadowGenerator.useExponentialShadowMap) {
                 shadowGenerator.useExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
             }
 
             if (parsedShadowGenerator.blurScale) {

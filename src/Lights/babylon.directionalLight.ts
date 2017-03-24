@@ -112,7 +112,7 @@ module BABYLON {
 
                 Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
                     this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                    -activeCamera.maxZ, activeCamera.maxZ, matrix);
+                    activeCamera.minZ, activeCamera.maxZ, matrix);
             }
             return this;
         }

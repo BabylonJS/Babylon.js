@@ -84,21 +84,14 @@
 
                         defines["SHADOWS"] = true;
 
-                        if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                            if (defines["SHADOWVSM" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
-
-                            defines["SHADOWVSM" + lightIndex] = true;
-                        } 
-                        else if (shadowGenerator.usePoissonSampling) {
+                        if (shadowGenerator.usePoissonSampling) {
                             if (defines["SHADOWPCF" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
 
                             defines["SHADOWPCF" + lightIndex] = true;
                         } 
-                        else if (shadowGenerator.useExponentialShadowMap) {
+                        else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
                             if (defines["SHADOWESM" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
