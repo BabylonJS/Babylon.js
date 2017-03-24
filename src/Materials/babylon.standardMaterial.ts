@@ -54,6 +54,7 @@ module BABYLON {
         public REFLECTIONOVERALPHA = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
+        public TWOSIDEDLIGHTING = false;
         public SHADOWFULLFLOAT = false;
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
@@ -181,6 +182,12 @@ module BABYLON {
          */
         @serialize()
         public invertNormalMapY = false;
+
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        @serialize()
+        public twoSidedLighting = false;
 
         /**
          * Color Grading 2D Lookup Texture.
@@ -460,6 +467,10 @@ module BABYLON {
                     } else {
                         this._defines.CAMERACOLORGRADING = true;
                     }
+                }
+
+                if (!this.backFaceCulling && this.twoSidedLighting) {
+                    this._defines.TWOSIDEDLIGHTING = true;
                 }
             }
 

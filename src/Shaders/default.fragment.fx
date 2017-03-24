@@ -178,6 +178,10 @@ void main(void) {
 
 #include<bumpFragment>
 
+#ifdef TWOSIDEDLIGHTING
+	normalW = gl_FrontFacing ? normalW : -normalW;
+#endif
+
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
