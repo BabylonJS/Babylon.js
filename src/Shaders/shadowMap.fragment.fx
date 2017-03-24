@@ -9,15 +9,6 @@ vec4 pack(float depth)
 
 	return res;
 }
-
-// Thanks to http://devmaster.net/
-vec2 packHalf(float depth) 
-{ 
-	const vec2 bitOffset = vec2(1.0 / 255., 0.);
-	vec2 color = vec2(depth, fract(depth * 255.));
-
-	return color - (color.yy * bitOffset);
-}
 #endif
 
 varying vec4 vPosition;
@@ -55,7 +46,7 @@ void main(void)
 	depth += bias;
 
 #ifdef ESM
-	const float shadowStrength = 5.0;
+	const float shadowStrength = 30.0;
 	depth = exp(shadowStrength * depth);
 #endif
 

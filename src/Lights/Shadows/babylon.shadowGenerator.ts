@@ -305,7 +305,11 @@
 
             this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-                    engine.clear(new Color4(0, 0, 0, 0), true, true, true);
+                    if (this._useFullFloat) {
+                        engine.clear(new Color4(0, 0, 0, 0), true, true, true);
+                    } else {
+                        engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+                    }
                 } else {
                     engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
                 }

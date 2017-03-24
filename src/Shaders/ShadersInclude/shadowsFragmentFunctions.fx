@@ -148,14 +148,6 @@
 		return  min(1.0, visibility + darkness);
 	}
 
-	#ifndef SHADOWFULLFLOAT
-		// Thanks to http://devmaster.net/
-		float unpackHalf(vec2 color)
-		{
-			return color.x + (color.y / 255.0);
-		}
-	#endif
-
 	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
@@ -168,21 +160,21 @@
 			return 1.0;
 		}
 	
+		const float shadowStrength = 30.;
 		#ifndef SHADOWFULLFLOAT
 			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+			float esm = clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
 		#else
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
+			float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
 		#endif
 
-		const float shadowStrength = 5.;
-		float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
-
 		// Apply fade out at frustum edge
-		const float fadeDistance = 0.07;
-		vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
-		float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
+		// const float fadeDistance = 0.07;
+		// vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
+		// float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
 
-		return mix(1.0, esm, mask);
+		// return mix(1.0, esm, mask);
 
 		return esm;
 	}
