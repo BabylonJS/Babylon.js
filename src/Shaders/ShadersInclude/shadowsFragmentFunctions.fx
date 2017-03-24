@@ -136,48 +136,12 @@
 		}
 	#endif
 
-	float linstep(float low, float high, float v) {
-		return clamp((v - low) / (high - low), 0.0, 1.0);
-	}
-
-	float ChebychevInequality(vec2 moments, float compare)
-	{
-		float p = smoothstep(compare, compare, moments.x);
-		float variance = max(moments.y - moments.x * moments.x, 0.02);
-		float d = compare - moments.x;
-		float p_max = linstep(0.2, 1.0, variance / (variance + d * d));
-
-		return clamp(max(p, p_max), 0.0, 1.0);
-	}
-
-	float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
-	{
-		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-		depth = 0.5 * depth + vec3(0.5);
-		vec2 uv = depth.xy;
-
-		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0 || depth.z >= 1.0)
-		{
-			return 1.0;
-		}
-
-		vec4 texel = texture2D(shadowSampler, uv);
-
-		#ifndef SHADOWFULLFLOAT
-			vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-		#else
-			vec2 moments = texel.xy;
-		#endif
-
-		return min(1.0, 1.0 - ChebychevInequality(moments, depth.z) + darkness);
-	}
-
 	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
 		vec3 depth = 0.5 * clipSpace + vec3(0.5);
 		vec2 uv = depth.xy;
-		float shadowPixelDepth = clipSpace.z;
+		float shadowPixelDepth = depth.z;
 
 		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 		{
@@ -190,8 +154,8 @@
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
 		#endif
 
-		const float shadowStrength = 50.0;
-		float esm = clamp(exp(shadowStrength * shadowPixelDepth) * shadowMapSample + darkness, 0., 1.);
+		const float shadowStrength = 5.;
+		float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample, 0., 1.);
 
 		// Apply fade out at frustum edge
 		const float fadeDistance = 0.07;
@@ -199,5 +163,7 @@
 		float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
 
 		return mix(1.0, esm, mask);
+
+		return esm;
 	}
 #endif

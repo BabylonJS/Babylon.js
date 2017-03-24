@@ -55,24 +55,13 @@ void main(void)
 	depth += bias;
 
 #ifdef ESM
-	const float shadowStrength = 50.0;
-	depth = exp(-shadowStrength * depth);
+	const float shadowStrength = 5.0;
+	depth = exp(shadowStrength * depth);
 #endif
 
-#ifdef VSM
-	float moment1 = depth;
-	float moment2 = moment1 * moment1;
-
-	#ifndef FULLFLOAT
-		gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
-	#else
-		gl_FragColor = vec4(moment1, moment2, 1.0, 1.0);
-	#endif
+#ifndef FULLFLOAT
+	gl_FragColor = pack(depth);
 #else
-	#ifndef FULLFLOAT
-		gl_FragColor = pack(depth);
-	#else
-		gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
-	#endif
+	gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
 #endif
 }
