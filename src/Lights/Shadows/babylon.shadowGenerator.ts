@@ -130,8 +130,12 @@
         public get useBlurExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
         }
-        public set useBlurExponentialShadowMap(value: boolean) {
-            this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        public set useBlurExponentialShadowMap(value: boolean) {            
+            if (this._light.needCube() && value) {
+                this.useExponentialShadowMap = true; // Blurring the cubemap is going to be too expensive. Reverting to unblurred version
+            } else {
+                this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+            }
         }
 
         private _light: IShadowLight;

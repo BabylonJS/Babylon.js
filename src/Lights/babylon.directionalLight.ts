@@ -120,12 +120,6 @@ module BABYLON {
         /**
          * Boolean : true by default.  
          */
-        public supportsVSM(): boolean {
-            return true;
-        }
-        /**
-         * Boolean : true by default.  
-         */
         public needRefreshPerFrame(): boolean {
             return true;
         }

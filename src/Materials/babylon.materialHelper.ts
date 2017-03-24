@@ -183,10 +183,6 @@
                     fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
                 }
 
-                if (defines["SHADOWVSM" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                }
-
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
                 }

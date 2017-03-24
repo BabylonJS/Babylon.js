@@ -68,6 +68,26 @@
 		return  min(1.0, visibility + darkness);
 	}
 
+	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness)
+	{
+		vec3 directionToLight = vPositionW - lightPosition;
+		float depth = length(directionToLight);
+		depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		float shadowPixelDepth = clamp(depth, 0., 1.0);
+
+		directionToLight = normalize(directionToLight);
+		directionToLight.y = -directionToLight.y;
+		
+		#ifndef SHADOWFULLFLOAT
+			float shadowMapSample = unpack(textureCube(shadowSampler, directionToLight));
+		#else
+			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
+		#endif
+
+		const float shadowStrength = 30.;
+		return 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
+	}
+
 	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 	{
 		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
@@ -155,7 +175,7 @@
 		#endif
 
 		const float shadowStrength = 5.;
-		float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample, 0., 1.);
+		float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
 
 		// Apply fade out at frustum edge
 		const float fadeDistance = 0.07;

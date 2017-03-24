@@ -69,12 +69,6 @@
             return false;
         }
         /**
-         * Boolean : true by default.  
-         */
-        public supportsVSM(): boolean {
-            return true;
-        }
-        /**
          * Boolean : false by default.  
          */
         public needRefreshPerFrame(): boolean {
