@@ -13,7 +13,6 @@
         customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
 
-        supportsVSM(): boolean;
         needRefreshPerFrame(): boolean;
         needCube(): boolean;
 

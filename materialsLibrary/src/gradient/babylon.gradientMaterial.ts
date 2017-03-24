@@ -34,10 +34,10 @@ module BABYLON {
         public SHADOW2 = false;
         public SHADOW3 = false;
         public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
+        public SHADOWESM0 = false;
+        public SHADOWESM1 = false;
+        public SHADOWESM2 = false;
+        public SHADOWESM3 = false;
         public SHADOWPCF0 = false;
         public SHADOWPCF1 = false;
         public SHADOWPCF2 = false;
