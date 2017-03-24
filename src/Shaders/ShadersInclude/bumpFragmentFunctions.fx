@@ -9,6 +9,9 @@
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 	{
+		// flip the uv for the backface
+		uv = gl_FrontFacing ? uv : -uv;
+
 		// get edge vectors of the pixel triangle
 		vec3 dp1 = dFdx(p);
 		vec3 dp2 = dFdy(p);
@@ -26,7 +29,7 @@
 		return mat3(tangent * invmax, binormal * invmax, normal);
 	}
 
-	vec3 perturbNormal(vec3 viewDir, mat3 cotangentFrame, vec2 uv)
+	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
 

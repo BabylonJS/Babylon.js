@@ -4,7 +4,7 @@
 	#if defined(TANGENT) && defined(NORMAL)
 		mat3 TBN = vTBN;
 	#else
-		mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, vBumpUV);
+		mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, vPositionW, vBumpUV);
 	#endif
 #endif
 
@@ -19,5 +19,5 @@
 #endif
 
 #ifdef BUMP
-	normalW = perturbNormal(viewDirectionW, TBN, vBumpUV + uvOffset);
+	normalW = perturbNormal(TBN, vBumpUV + uvOffset);
 #endif

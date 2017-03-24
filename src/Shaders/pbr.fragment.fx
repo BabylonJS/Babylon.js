@@ -185,13 +185,17 @@ void main(void) {
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Bump
-	#ifdef NORMAL
-		vec3 normalW = normalize(vNormalW);
-	#else
-		vec3 normalW = vec3(1.0, 1.0, 1.0);
-	#endif
+#ifdef NORMAL
+	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
 
-	#include<bumpFragment>
+#include<bumpFragment>
+
+#ifdef TWOSIDEDLIGHTING
+	normalW = gl_FrontFacing ? normalW : -normalW;
+#endif
 
 	// Albedo
 	vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
