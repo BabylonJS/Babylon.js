@@ -570,9 +570,12 @@ module BABYLON {
                     tempVertexData.matricesWeights = new Float32Array(buffer.length);
                     (<Float32Array>tempVertexData.matricesWeights).set(buffer);
                 }
-                else if (semantic === "COLOR") {
+                else if (semantic === "COLOR_0") {
                     tempVertexData.colors = new Float32Array(buffer.length);
                     (<Float32Array>tempVertexData.colors).set(buffer);
+                }
+                else {
+                    Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
                 }
             }
 
@@ -981,21 +984,23 @@ module BABYLON {
         }
 
         public static LoadAlphaProperties(runtime: IGLTFRuntime, material: IGLTFMaterial): void {
-            if (material.alphaMode) {
-                material.babylonMaterial.albedoTexture.hasAlpha = true;
-
-                switch (material.alphaMode) {
-                    case "MASK":
-                        material.babylonMaterial.useAlphaFromAlbedoTexture = false;
-                        material.babylonMaterial.alphaMode = Engine.ALPHA_DISABLE;
-                        break;
-                    case "BLEND":
-                        material.babylonMaterial.useAlphaFromAlbedoTexture = true;
-                        material.babylonMaterial.alphaMode = Engine.ALPHA_COMBINE;
-                        break;
-                    default:
-                        Tools.Error("Invalid alpha mode '" + material.alphaMode + "'");
-                }
+            var alphaMode = material.alphaMode || "OPAQUE";
+            switch (alphaMode) {
+                case "OPAQUE":
+                    // default is opaque
+                    break;
+                case "MASK":
+                    material.babylonMaterial.albedoTexture.hasAlpha = true;
+                    material.babylonMaterial.useAlphaFromAlbedoTexture = false;
+                    material.babylonMaterial.alphaMode = Engine.ALPHA_DISABLE;
+                    break;
+                case "BLEND":
+                    material.babylonMaterial.albedoTexture.hasAlpha = true;
+                    material.babylonMaterial.useAlphaFromAlbedoTexture = true;
+                    material.babylonMaterial.alphaMode = Engine.ALPHA_COMBINE;
+                    break;
+                default:
+                    Tools.Error("Invalid alpha mode '" + material.alphaMode + "'");
             }
         }
 
