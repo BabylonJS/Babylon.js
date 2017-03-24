@@ -451,28 +451,19 @@
                 gii = part.groupInstanceInfo;
                 part.groupInstanceInfo = null;
             }
-            if (gii && !gii.isDisposed) {
-                let usedCount = 0;
+
+            if (gii) {
                 if (gii.hasOpaqueData) {
-                    let od = gii.opaqueData[0];
-                    usedCount += od._partData.usedElementCount;
                     gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
-                    let atd = gii.alphaTestData[0];
-                    usedCount += atd._partData.usedElementCount;
                     gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
-                    let td = gii.transparentData[0];
-                    usedCount += td._partData.usedElementCount;
                     gii.transparentDirty = true;
                 }
 
-                if (usedCount === 0 && gii.modelRenderCache!=null) {
-                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
-                    gii.dispose();
-                }
+                gii.dispose();
 
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
@@ -480,6 +471,7 @@
                 }
 
             }
+
             this._instanceDataParts = null;
         }
 
@@ -596,6 +588,9 @@
                 part.renderMode = rm;
                 part.groupInstanceInfo = gii;
             }
+
+            // Increment the primitive count as one more primitive is using this GroupInstanceInfo
+            gii.incPrimCount();
 
             return gii;
         }
