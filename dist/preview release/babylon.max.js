@@ -52268,8 +52268,6 @@ var BABYLON;
                 - button_enter
                 */
                 _this._defaultModel = newMeshes[1];
-                _this._hlButtonA = new BABYLON.HighlightLayer("hlButtonA", scene);
-                _this._hlButtonB = new BABYLON.HighlightLayer("hlButtonB", scene);
                 if (meshLoaded) {
                     meshLoaded(_this._defaultModel);
                 }
@@ -52361,12 +52359,6 @@ var BABYLON;
                         else {
                             (this._defaultModel.getChildren()[1]).position.y = 0;
                         }
-                        if (notifyObject.touched) {
-                            this._hlButtonA.addMesh(this._defaultModel.getChildren()[1], BABYLON.Color3.White());
-                        }
-                        else {
-                            this._hlButtonA.removeMesh(this._defaultModel.getChildren()[1]);
-                        }
                     }
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
@@ -52377,12 +52369,6 @@ var BABYLON;
                         }
                         else {
                             (this._defaultModel.getChildren()[2]).position.y = 0;
-                        }
-                        if (notifyObject.touched) {
-                            this._hlButtonB.addMesh(this._defaultModel.getChildren()[2], BABYLON.Color3.White());
-                        }
-                        else {
-                            this._hlButtonB.removeMesh(this._defaultModel.getChildren()[2]);
                         }
                     }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
@@ -52417,7 +52403,6 @@ var BABYLON;
                 - LED
                 */
                 _this._defaultModel = newMeshes[1];
-                _this._hlButtonMenu = new BABYLON.HighlightLayer("hlButtonMenu", scene);
                 if (meshLoaded) {
                     meshLoaded(_this._defaultModel);
                 }
@@ -52471,11 +52456,9 @@ var BABYLON;
                     if (this._defaultModel) {
                         if (notifyObject.pressed) {
                             (this._defaultModel.getChildren()[2]).position.y = -0.001;
-                            this._hlButtonMenu.addMesh(this._defaultModel.getChildren()[2], BABYLON.Color3.White());
                         }
                         else {
                             (this._defaultModel.getChildren()[2]).position.y = 0;
-                            this._hlButtonMenu.removeMesh(this._defaultModel.getChildren()[2]);
                         }
                     }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);

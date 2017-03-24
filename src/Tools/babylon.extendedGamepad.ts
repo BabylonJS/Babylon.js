@@ -247,8 +247,6 @@ module BABYLON {
 
     export class OculusTouchController extends WebVRController {
         private _defaultModel: BABYLON.AbstractMesh;
-        private _hlButtonA: BABYLON.HighlightLayer;
-        private _hlButtonB: BABYLON.HighlightLayer;
 
         public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
@@ -274,8 +272,6 @@ module BABYLON {
                 */
 
                 this._defaultModel = newMeshes[1];
-                this._hlButtonA = new BABYLON.HighlightLayer("hlButtonA", scene);
-                this._hlButtonB = new BABYLON.HighlightLayer("hlButtonB", scene);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
@@ -353,12 +349,6 @@ module BABYLON {
                         else {
                             (<AbstractMesh>(this._defaultModel.getChildren()[1])).position.y = 0;
                         }
-                        if (notifyObject.touched) {
-                            this._hlButtonA.addMesh((<Mesh>this._defaultModel.getChildren()[1]), BABYLON.Color3.White());
-                        }
-                        else {
-                            this._hlButtonA.removeMesh((<Mesh>this._defaultModel.getChildren()[1]));
-                        }
                     }
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
@@ -369,12 +359,6 @@ module BABYLON {
                         }
                         else {
                             (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
-                        }
-                        if (notifyObject.touched) {
-                            this._hlButtonB.addMesh((<Mesh>this._defaultModel.getChildren()[2]), BABYLON.Color3.White());
-                        }
-                        else {
-                            this._hlButtonB.removeMesh((<Mesh>this._defaultModel.getChildren()[2]));
                         }
                     }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
@@ -389,7 +373,6 @@ module BABYLON {
 
     export class ViveController extends WebVRController {
         private _defaultModel: BABYLON.AbstractMesh;
-        private _hlButtonMenu: BABYLON.HighlightLayer;
 
         constructor(vrGamepad) {
             super(vrGamepad);
@@ -410,7 +393,6 @@ module BABYLON {
                 - LED
                 */
                 this._defaultModel = newMeshes[1];
-                this._hlButtonMenu = new BABYLON.HighlightLayer("hlButtonMenu", scene);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
@@ -457,11 +439,9 @@ module BABYLON {
                     if (this._defaultModel) {
                         if (notifyObject.pressed) {
                             (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
-                             this._hlButtonMenu.addMesh((<Mesh>this._defaultModel.getChildren()[2]), BABYLON.Color3.White());
                         }
                         else {
                             (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
-                            this._hlButtonMenu.removeMesh((<Mesh>this._defaultModel.getChildren()[2]));
                         }
                     }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
