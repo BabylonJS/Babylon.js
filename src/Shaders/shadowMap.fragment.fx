@@ -32,6 +32,8 @@ uniform vec3 lightPosition;
 uniform vec2 depthValues;
 #endif
 
+uniform float bias;
+
 void main(void)
 {
 #ifdef ALPHATEST
@@ -47,7 +49,14 @@ void main(void)
 	depth = clamp(depth, 0., 1.0);
 #else
 	float depth = vPosition.z / vPosition.w;
-	depth = depth * 0.5 + 0.5;
+	depth = depth * 0.5 + 0.5;	
+#endif
+
+	depth += bias;
+
+#ifdef ESM
+	const float shadowStrength = 50.0;
+	depth = exp(-shadowStrength * depth);
 #endif
 
 #ifdef VSM

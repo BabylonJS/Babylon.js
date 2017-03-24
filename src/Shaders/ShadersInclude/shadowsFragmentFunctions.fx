@@ -9,7 +9,7 @@
 
 	uniform vec2 depthValues;
 
-	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float bias)
+	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
@@ -20,9 +20,9 @@
 		directionToLight.y = -directionToLight.y;
 		
 		#ifndef SHADOWFULLFLOAT
-			float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
+			float shadow = unpack(textureCube(shadowSampler, directionToLight));
 		#else
-			float shadow = textureCube(shadowSampler, directionToLight).x + bias;
+			float shadow = textureCube(shadowSampler, directionToLight).x;
 		#endif
 
 		if (depth > shadow)
@@ -32,7 +32,7 @@
 		return 1.0;
 	}
 
-	float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
+	float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
@@ -52,24 +52,23 @@
 		poissonDisk[3] = vec3(1.0, -1.0, 1.0);
 
 		// Poisson Sampling
-		float biasedDepth = depth - bias;
 
 		#ifndef SHADOWFULLFLOAT
-			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
+			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) visibility -= 0.25;
+			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) visibility -= 0.25;
+			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) visibility -= 0.25;
+			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < depth) visibility -= 0.25;
 		#else
-			if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < biasedDepth) visibility -= 0.25;
+			if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < depth) visibility -= 0.25;
+			if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < depth) visibility -= 0.25;
+			if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < depth) visibility -= 0.25;
+			if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) visibility -= 0.25;
 		#endif
 
 		return  min(1.0, visibility + darkness);
 	}
 
-	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float bias)
+	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 	{
 		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 		depth = 0.5 * depth + vec3(0.5);
@@ -81,9 +80,9 @@
 		}
 
 		#ifndef SHADOWFULLFLOAT
-			float shadow = unpack(texture2D(shadowSampler, uv)) + bias;
+			float shadow = unpack(texture2D(shadowSampler, uv));
 		#else
-			float shadow = texture2D(shadowSampler, uv).x + bias;
+			float shadow = texture2D(shadowSampler, uv).x;
 		#endif
 
 		if (depth.z > shadow)
@@ -93,7 +92,7 @@
 		return 1.;
 	}
 
-	float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float bias, float darkness)
+	float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float darkness)
 	{
 		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 		depth = 0.5 * depth + vec3(0.5);
@@ -113,18 +112,17 @@
 		poissonDisk[3] = vec2(0.34495938, 0.29387760);
 
 		// Poisson Sampling
-		float biasedDepth = depth.z - bias;
 
 		#ifndef SHADOWFULLFLOAT
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < depth.z) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < depth.z) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < depth.z) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < depth.z) visibility -= 0.25;
 		#else
-			if (texture2D(shadowSampler, uv + poissonDisk[0] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[1] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < biasedDepth) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < biasedDepth) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[0] * mapSize).x < depth.z) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[1] * mapSize).x < depth.z) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < depth.z) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < depth.z) visibility -= 0.25;
 		#endif
 
 		return  min(1.0, visibility + darkness);
@@ -142,9 +140,9 @@
 		return clamp((v - low) / (high - low), 0.0, 1.0);
 	}
 
-	float ChebychevInequality(vec2 moments, float compare, float bias)
+	float ChebychevInequality(vec2 moments, float compare)
 	{
-		float p = smoothstep(compare - bias, compare, moments.x);
+		float p = smoothstep(compare, compare, moments.x);
 		float variance = max(moments.y - moments.x * moments.x, 0.02);
 		float d = compare - moments.x;
 		float p_max = linstep(0.2, 1.0, variance / (variance + d * d));
@@ -152,7 +150,7 @@
 		return clamp(max(p, p_max), 0.0, 1.0);
 	}
 
-	float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias, float darkness)
+	float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 	{
 		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 		depth = 0.5 * depth + vec3(0.5);
@@ -171,6 +169,35 @@
 			vec2 moments = texel.xy;
 		#endif
 
-		return min(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness);
+		return min(1.0, 1.0 - ChebychevInequality(moments, depth.z) + darkness);
+	}
+
+	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
+	{
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		vec3 depth = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = depth.xy;
+		float shadowPixelDepth = clipSpace.z;
+
+		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+		{
+			return 1.0;
+		}
+	
+		#ifndef SHADOWFULLFLOAT
+			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+		#else
+			float shadowMapSample = texture2D(shadowSampler, uv).x;
+		#endif
+
+		const float shadowStrength = 50.0;
+		float esm = clamp(exp(shadowStrength * shadowPixelDepth) * shadowMapSample + darkness, 0., 1.);
+
+		// Apply fade out at frustum edge
+		const float fadeDistance = 0.07;
+		vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
+		float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
+
+		return mix(1.0, esm, mask);
 	}
 #endif

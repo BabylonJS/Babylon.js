@@ -38,7 +38,7 @@ module BABYLON {
 
         public rawPose: DevicePose; //GamepadPose;
 
-        private _mesh: AbstractMesh; // a node that will be attached to this Gamepad
+        public _mesh: AbstractMesh; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
@@ -166,7 +166,6 @@ module BABYLON {
 
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
-
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
         public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
@@ -205,6 +204,8 @@ module BABYLON {
         }
 
         protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges);
+
+        public abstract initControllerMesh(scene: Scene)
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
             if (!currentState) {
@@ -245,6 +246,9 @@ module BABYLON {
     }
 
     export class OculusTouchController extends WebVRController {
+        private _defaultModel: BABYLON.AbstractMesh;
+        private _hlButtonA: BABYLON.HighlightLayer;
+        private _hlButtonB: BABYLON.HighlightLayer;
 
         public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
@@ -254,6 +258,28 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.OCULUS;
         }
+
+        public initControllerMesh(scene: Scene) {
+            let meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
+            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", meshName, scene, (newMeshes) => {
+                /*
+                Parent Mesh name: oculus_touch_left
+                - body
+                - trigger
+                - thumbstick
+                - grip
+                - button_y 
+                - button_x
+                - button_enter
+                */
+
+                this._defaultModel = newMeshes[1];
+                this._hlButtonA = new BABYLON.HighlightLayer("hlButtonA", scene);
+                this._hlButtonB = new BABYLON.HighlightLayer("hlButtonB", scene);
+                this.attachToMesh(this._defaultModel);
+            });
+        }
+
 
         // helper getters for left and right hand.
         public get onAButtonStateChangedObservable() {
@@ -303,15 +329,51 @@ module BABYLON {
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 1: // index trigger
+                    if (this._defaultModel) {
+                        (<AbstractMesh>(this._defaultModel.getChildren()[3])).rotation.x = -notifyObject.value * 0.20;
+                        (<AbstractMesh>(this._defaultModel.getChildren()[3])).position.y = -notifyObject.value * 0.005;
+                        (<AbstractMesh>(this._defaultModel.getChildren()[3])).position.z = -notifyObject.value * 0.005;
+                    }
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // secondary trigger
+                    if (this._defaultModel) {
+                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = notifyObject.value * 0.0035;
+                    }
                     this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
+                    if (this._defaultModel) {
+                        if (notifyObject.pressed) {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[1])).position.y = -0.001;
+                        }
+                        else {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[1])).position.y = 0;
+                        }
+                        if (notifyObject.touched) {
+                            this._hlButtonA.addMesh((<Mesh>this._defaultModel.getChildren()[1]), BABYLON.Color3.White());
+                        }
+                        else {
+                            this._hlButtonA.removeMesh((<Mesh>this._defaultModel.getChildren()[1]));
+                        }
+                    }
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 4:
+                    if (this._defaultModel) {
+                        if (notifyObject.pressed) {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
+                        }
+                        else {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
+                        }
+                        if (notifyObject.touched) {
+                            this._hlButtonB.addMesh((<Mesh>this._defaultModel.getChildren()[2]), BABYLON.Color3.White());
+                        }
+                        else {
+                            this._hlButtonB.removeMesh((<Mesh>this._defaultModel.getChildren()[2]));
+                        }
+                    }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 5:
@@ -323,12 +385,33 @@ module BABYLON {
     }
 
     export class ViveController extends WebVRController {
-
+        private _defaultModel: BABYLON.AbstractMesh;
+        private _hlButtonMenu: BABYLON.HighlightLayer;
 
         constructor(vrGamepad) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
         }
+
+        public initControllerMesh(scene: Scene) {
+            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "ViveWand.babylon", scene, (newMeshes) => {
+                /*
+                Parent Mesh name: ViveWand
+                - body
+                - r_gripper
+                - l_gripper
+                - menu_button
+                - system_button
+                - trackpad
+                - trigger
+                - LED
+                */
+                this._defaultModel = newMeshes[1];
+                this._hlButtonMenu = new BABYLON.HighlightLayer("hlButtonMenu", scene);
+                this.attachToMesh(this._defaultModel);
+            });
+        }
+
 
         public get onLeftButtonStateChangedObservable() {
             return this.onMainButtonStateChangedObservable;
@@ -356,12 +439,25 @@ module BABYLON {
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 1: // index trigger
+                    if (this._defaultModel) {
+                        (<AbstractMesh>(this._defaultModel.getChildren()[6])).rotation.x = -notifyObject.value * 0.15;
+                    }
                     this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 2:  // left AND right button
                     this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
                 case 3:
+                    if (this._defaultModel) {
+                        if (notifyObject.pressed) {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
+                             this._hlButtonMenu.addMesh((<Mesh>this._defaultModel.getChildren()[2]), BABYLON.Color3.White());
+                        }
+                        else {
+                            (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
+                            this._hlButtonMenu.removeMesh((<Mesh>this._defaultModel.getChildren()[2]));
+                        }
+                    }
                     this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
                     return;
             }

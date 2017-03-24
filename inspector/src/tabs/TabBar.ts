@@ -21,7 +21,7 @@ module INSPECTOR {
         /** The list of tabs visible, displayed in the tab bar */
         private _visibleTabs: Array<Tab> = [];
 
-        constructor(inspector: Inspector) {
+        constructor(inspector: Inspector, initialTab?: number) {
             super();
             this._inspector = inspector;
             this._tabs.push(new SceneTab(this, this._inspector));
@@ -39,12 +39,19 @@ module INSPECTOR {
             this._tabs.push(new MaterialTab(this, this._inspector));
 
             this._tabs.push(new CameraTab(this, this._inspector));
+            this._tabs.push(new SoundTab(this, this._inspector));
 
             this._toolBar = new Toolbar(this._inspector);
 
             this._build();
-            // Active the first tab
-            this._tabs[0].active(true);
+
+            //Check initialTab is defined and between tabs bounds
+            if (!initialTab || initialTab < 0 || initialTab >= this._tabs.length) {
+                initialTab = 0;
+                console.warn('');
+            }
+
+            this._tabs[initialTab].active(true);
 
             // set all tab as visible
             for (let tab of this._tabs) {

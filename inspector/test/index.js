@@ -16,7 +16,7 @@ var Test = (function () {
     Test.prototype._run = function () {
         var _this = this;
         this._initScene();
-        this.scene.debugLayer.show();
+        this.scene.debugLayer.show({ popup: false, initialTab: 4 });
         this.scene.executeWhenReady(function () {
             _this._initGame();
             _this.engine.runRenderLoop(function () {
@@ -47,6 +47,16 @@ var Test = (function () {
             camera3.parent = camera;
             camera4.parent = camera;
         */
+
+        //Sounds
+        var jump = new BABYLON.Sound("Jump", "/assets/sounds/jump.wav", scene);
+        var explosion = new BABYLON.Sound("Explosion", "/assets/sounds/explosion.wav", scene);
+        jump.setVolume(0.1);
+        window.addEventListener("keydown", function (evt) {
+            if (evt.keyCode === 32) {
+                jump.play();
+            }
+        });
 
         var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
         var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
@@ -180,6 +190,8 @@ var Test = (function () {
         sphere6.material = materialSphere6;
 
         plane.material = materialPlane;
+
+
 
         var d = 50;
         var cubes = new Array();
