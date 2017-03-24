@@ -3862,6 +3862,7 @@ declare module BABYLON {
         static fontSuperSampleProperty: Prim2DPropInfo;
         static fontSignedDistanceFieldProperty: Prim2DPropInfo;
         static textureIsPremulAlphaProperty: Prim2DPropInfo;
+        static fontTextureProperty: Prim2DPropInfo;
         /**
          * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
          */
