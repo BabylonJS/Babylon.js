@@ -18,11 +18,13 @@ declare module INSPECTOR {
         private _popupMode;
         /** The original canvas style, before applying the inspector*/
         private _canvasStyle;
+        private _initialTab;
+        private _parentElement;
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean);
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement);
         /**
          * If the given element has a position 'asbolute' or 'relative',
          * returns the first parent of the given element that has a position 'relative' or 'absolute'.
@@ -104,6 +106,10 @@ declare module INSPECTOR {
         };
         'FontTexture': {
             type: typeof BABYLON.FontTexture;
+        };
+        'Sound': {
+            type: typeof BABYLON.Sound;
+            properties: string[];
         };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
@@ -218,6 +224,20 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class SoundAdapter extends Adapter implements ISoundInteractions {
+        constructor(obj: BABYLON.Sound);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPlaying(callback: Function): void;
     }
 }
 
@@ -700,6 +720,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class SoundTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
     class TextureTab extends Tab {
         private _inspector;
         /** The panel containing a list of items */
@@ -852,7 +879,7 @@ declare module INSPECTOR {
         private _invisibleTabs;
         /** The list of tabs visible, displayed in the tab bar */
         private _visibleTabs;
-        constructor(inspector: Inspector);
+        constructor(inspector: Inspector, initialTab?: number);
         update(): void;
         protected _build(): void;
         /**
@@ -1081,6 +1108,22 @@ declare module INSPECTOR {
         constructor(camera: ICameraPOV);
         protected action(): void;
         private _gotoPOV();
+    }
+}
+
+declare module INSPECTOR {
+    interface ISoundInteractions {
+        setPlaying: (callback: Function) => void;
+    }
+    /**
+     *
+     */
+    class SoundInteractions extends AbstractTreeTool {
+        private playSound;
+        private b;
+        constructor(playSound: ISoundInteractions);
+        protected action(): void;
+        private _playSound();
     }
 }
 

@@ -16,6 +16,8 @@
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Introduced `boundingBox.centerWorld` and `boundingBox.extendSizeWorld` ([deltakosh](https://github.com/deltakosh))
+- Improved FXAA post-process ([deltakosh](https://github.com/deltakosh))
 - Added `Light.customProjectionMatrixBuilder` to allow developers to define their own projection matrix for shadows ([deltakosh](https://github.com/deltakosh))
 - Added `set()` function to all basic types ([deltakosh](https://github.com/deltakosh))
 - Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
@@ -30,12 +32,17 @@
 - `GroundMesh`, `facetData` and `SolidParticleSystem` improvement in normal computations ([jerome](https://github.com/jbousquie))   
 - Added `AbstractMesh.addRotation()` ([jerome](https://github.com/jbousquie))  
 - Added `Quaternion.RotationQuaternionFromAxis()` and `Quaternion.RotationQuaternionFromAxisToRef()` ([jerome](https://github.com/jbousquie), thanks to [abow](https://github.com/abow))   
+- Added parameters `uvs` and `colors` to `MeshBuilder.CreateRibbon()` ([jerome](https://github.com/jbousquie))  
 - Added `Curve3.CreateCatmullRomSpline()` ([jerome](https://github.com/jbousquie) and [BitOfGold](https://github.com/BitOfGold))  
 - Added the optional parameter`colorFilter` to `CreateGroundFromHeightMap()` ([jerome](https://github.com/jbousquie))  
 - Improved the internal code of `Vector3.RotationFromAxisToRef()` ([jerome](https://github.com/jbousquie), thanks to [abow](https://github.com/abow))  
 - GroundMeshes are now serialized correctly ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.markVerticesDataAsUpdatable()` to allow a specific vertexbuffer to become updatable ([deltakosh](https://github.com/deltakosh)) 
-
+- Added `POINTERTAP` and `POINTERDOUBLETAP` PointerEventTypes to register new Observer mask. (Demo here)[http://www.babylonjs-playground.com/?30] ([yuccai](https://github.com/yuccai))
+- Added OnDoublePickTrigger for ActionManager ([yuccai](https://github.com/yuccai))
+- Added Scene.DoubleClickDelay to set the timing within a double click event like PointerEventTypes.POINTERDOUBLETAP or ActionManager.OnDoublePickTrigger has to be processed ([yuccai](https://github.com/yuccai))
+- New material: `ShadowOnlyMaterial` to display shadows on transparent surfaces ([deltakosh](https://github.com/deltakosh)) 
+- Added `VertexBuffer.TangentKind` to specify tangents in place of shader-calculated tangents ([dewadswo](https://github.com/dewadswo), [bghgary](https://github.com/bghgary))
  
 ### Bug fixes
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 
@@ -83,6 +90,8 @@
 - Scene:
   - `setGravity` has been removed. Use `scene.getPhysicsEngine().setGravity()` instead
   - `createCompoundImpostor` has been removed. Use PhysicsImpostor parent/child instead
+- ActionManager:
+  - `LongPressDelay` and `DragMovementThreshold` are now respectively Scene.LongPressDelay and Scene.DragMovementThreshold
  
 ## Canvas2D
 

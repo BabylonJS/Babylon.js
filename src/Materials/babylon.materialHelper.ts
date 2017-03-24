@@ -90,14 +90,20 @@
                             }
 
                             defines["SHADOWVSM" + lightIndex] = true;
-                        }
-
-                        if (shadowGenerator.usePoissonSampling) {
+                        } 
+                        else if (shadowGenerator.usePoissonSampling) {
                             if (defines["SHADOWPCF" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
 
                             defines["SHADOWPCF" + lightIndex] = true;
+                        } 
+                        else if (shadowGenerator.useExponentialShadowMap) {
+                            if (defines["SHADOWESM" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
+
+                            defines["SHADOWESM" + lightIndex] = true;
                         }
 
                         needShadows = true;
@@ -187,6 +193,10 @@
                 if (defines["SHADOWVSM" + lightIndex]) {
                     fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
                 }
+
+                if (defines["SHADOWESM" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
+                }
             }
         }
 
@@ -225,7 +235,7 @@
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
+                effect.setFloat2("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width);
             }
 
             return depthValuesAlreadySet;

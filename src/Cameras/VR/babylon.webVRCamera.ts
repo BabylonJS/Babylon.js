@@ -31,9 +31,10 @@ module BABYLON {
     }
 
     export interface WebVROptions {
-        trackPosition?: boolean; //update the camera's position
+        trackPosition?: boolean; //for the sake of your users - set it to true.
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
+        controllerMeshes?: boolean; // should the native controller meshes be initialized
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -51,6 +52,8 @@ module BABYLON {
 
         private _positionOffset: Vector3 = Vector3.Zero();
 
+        protected _descendants: Array<Node> = [];
+
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion;
         public deviceScaleFactor: number = 1;
@@ -58,8 +61,23 @@ module BABYLON {
         public controllers: Array<WebVRController> = [];
         public onControllersAttached: (controllers: Array<WebVRController>) => void;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
+        public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
+
+        constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
+
+            //legacy support - the compensation boolean was removed.
+            if (arguments.length === 5) {
+                this.webVROptions = arguments[4];
+            }
+
+            // default webVR options
+            if (this.webVROptions.trackPosition == undefined) {
+                this.webVROptions.trackPosition = true;
+            }
+            if (this.webVROptions.controllerMeshes == undefined) {
+                this.webVROptions.controllerMeshes = true;
+            }
 
             this.rotationQuaternion = new Quaternion();
             this.deviceRotationQuaternion = new Quaternion();
@@ -110,6 +128,39 @@ module BABYLON {
 
             // try to attach the controllers, if found.
             this.initControllers();
+
+            /**
+             * The idea behind the following lines:
+             * objects that have the camera as parent should actually have the rig cameras as a parent.
+             * BUT, each of those cameras has a different view matrix, which means that if we set the parent to the first rig camera,
+             * the second will not show it correctly.
+             * 
+             * To solve this - each object that has the camera as parent will be added to a protected array.
+             * When the rig camera renders, it will take this array and set all of those to be its children.
+             * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
+             * Amazing!
+             */
+            scene.onBeforeCameraRenderObservable.add((camera) => {
+                if (camera.parent === this && this.rigParenting) {
+                    this._descendants = this.getDescendants(true, (n) => {
+                        // don't take the cameras or the controllers!
+                        let isController = this.controllers.some(controller => { return controller._mesh === n });
+                        let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1
+                        return !isController && !isRigCamera;
+                    });
+                    this._descendants.forEach(node => {
+                        node.parent = camera;
+                    });
+                }
+            });
+
+            scene.onAfterCameraRenderObservable.add((camera) => {
+                if (camera.parent === this && this.rigParenting) {
+                    this._descendants.forEach(node => {
+                        node.parent = this;
+                    });
+                }
+            });
         }
 
         public _checkInputs(): void {
@@ -179,6 +230,16 @@ module BABYLON {
             this._vrDevice.resetPose();
         }
 
+        public _updateRigCameras() {
+            var camLeft = <TargetCamera>this._rigCameras[0];
+            var camRight = <TargetCamera>this._rigCameras[1];
+            camLeft.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+            camRight.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+
+            camLeft.position.copyFrom(this.devicePosition);
+            camRight.position.copyFrom(this.devicePosition);
+        }
+
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -186,17 +247,18 @@ module BABYLON {
         protected _getWebVRViewMatrix(): Matrix {
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
 
+            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
+
             if (!this.getScene().useRightHandedSystem) {
-                [2, 6, 8, 9, 14].forEach(function (num) {
-                    viewArray[num] *= -1;
+                [2, 6, 8, 9, 14].forEach((num) => {
+                    this._webvrViewMatrix.m[num] *= -1;
                 });
             }
-            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
             // should the view matrix be updated with scale and position offset?
-            if (parentCamera.position.lengthSquared() || parentCamera.deviceScaleFactor !== 1) {
+            if (parentCamera.deviceScaleFactor !== 1) {
                 this._webvrViewMatrix.invert();
                 // scale the position, if set
                 if (parentCamera.deviceScaleFactor) {
@@ -204,49 +266,29 @@ module BABYLON {
                     this._webvrViewMatrix.m[13] *= parentCamera.deviceScaleFactor;
                     this._webvrViewMatrix.m[14] *= parentCamera.deviceScaleFactor;
                 }
-                // change the position (for "teleporting");
-                this._webvrViewMatrix.m[12] += parentCamera.position.x;
-                this._webvrViewMatrix.m[13] += parentCamera.position.y;
-                this._webvrViewMatrix.m[14] += parentCamera.position.z;
-
-                // is rotation offset set? 
-                if (!Quaternion.IsIdentity(this.rotationQuaternion)) {
-                    this._webvrViewMatrix.decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
-                    this.rotationQuaternion.multiplyToRef(Tmp.Quaternion[0], Tmp.Quaternion[0]);
-                    Matrix.ComposeToRef(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1], this._webvrViewMatrix);
-                }
 
                 this._webvrViewMatrix.invert();
             }
 
-            this._updateCameraRotationMatrix();
+            // update the camera rotation matrix
+            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
             Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
-            // Computing target for getTarget()
-            this._positionOffset = this._positionOffset || Vector3.Zero();
-            this._webvrViewMatrix.getTranslationToRef(this._positionOffset);
-            this._positionOffset.addToRef(this._transformedReferencePoint, this._currentTarget);
-
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
-        }
-
-        public _updateWebVRCameraRotationMatrix() {
-            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
-        }
-
-        public _isSynchronizedViewMatrix() {
-            return false;
         }
 
         protected _getWebVRProjectionMatrix(): Matrix {
             var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
+
             //babylon compatible matrix
             if (!this.getScene().useRightHandedSystem) {
-                [8, 9, 10, 11].forEach(function (num) {
-                    projectionArray[num] *= -1;
+                [8, 9, 10, 11].forEach((num) => {
+                    this._projectionMatrix.m[num] *= -1;
                 });
             }
-            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
         }
 
@@ -255,6 +297,9 @@ module BABYLON {
             new BABYLON.Gamepads((gp) => {
                 if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gp;
+                    if (this.webVROptions.controllerMeshes) {
+                        webVrController.initControllerMesh(this.getScene());
+                    }
                     webVrController.attachToPoseControlledCamera(this);
 
                     // since this is async - sanity check. Is the controller already stored?

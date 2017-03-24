@@ -13,6 +13,14 @@ module BABYLON {
         private _meshSpaceDirection: Vector3;
         private _meshSpaceOrigin: Vector3;
 
+        public static CreateAndShow(ray: Ray, scene: Scene, color:Color3): RayHelper {
+            var helper = new RayHelper(ray);
+
+            helper.show(scene, color);
+
+            return helper;
+        }
+
         constructor(ray:Ray) {
             this.ray = ray;
         }

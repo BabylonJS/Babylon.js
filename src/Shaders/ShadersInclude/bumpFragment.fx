@@ -1,7 +1,11 @@
 ﻿vec2 uvOffset = vec2(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX)
-	mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, vBumpUV);
+	#if defined(TANGENT) && defined(NORMAL)
+		mat3 TBN = vTBN;
+	#else
+		mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, vBumpUV);
+	#endif
 #endif
 
 #ifdef PARALLAX

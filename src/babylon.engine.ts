@@ -46,6 +46,9 @@
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
+        if (!engine) {
+            return;
+        }
         var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
 
@@ -422,6 +425,7 @@
         public isPointerLock = false;
         public cullBackFaces = true;
         public renderEvenInBackground = true;
+        public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
         public enableOfflineSupport = true;
         public scenes = new Array<Scene>();
@@ -553,6 +557,10 @@
 
             if (options.audioEngine === undefined) {
                 options.audioEngine = true;
+            }
+
+            if (options.stencil === undefined) {
+                options.stencil = true;
             }
 
             // GL
@@ -2065,6 +2073,9 @@
 
         // Textures
         public wipeCaches(): void {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
 
