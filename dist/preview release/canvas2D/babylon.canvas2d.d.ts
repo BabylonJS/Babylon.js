@@ -2621,6 +2621,7 @@ declare module BABYLON {
     }
     class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
+        incPrimCount(): void;
         dispose(): boolean;
         readonly isDisposed: boolean;
         private _isDisposed;
@@ -2641,6 +2642,7 @@ declare module BABYLON {
         readonly usedShaderCategories: string[];
         readonly strides: number[];
         private _partCount;
+        private _primCount;
         private _strides;
         private _usedShaderCategories;
         private _opaqueData;

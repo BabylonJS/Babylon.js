@@ -9862,6 +9862,7 @@ var BABYLON;
     var GroupInstanceInfo = (function () {
         function GroupInstanceInfo(owner, mrc, partCount) {
             this._partCount = partCount;
+            this._primCount = 0;
             this.owner = owner;
             this.modelRenderCache = mrc;
             this.modelRenderCache.addRef();
@@ -9873,10 +9874,21 @@ var BABYLON;
             this._transparentData = null;
             this.opaqueDirty = this.alphaTestDirty = this.transparentDirty = this.transparentOrderDirty = false;
         }
+        GroupInstanceInfo.prototype.incPrimCount = function () {
+            ++this._primCount;
+        };
         GroupInstanceInfo.prototype.dispose = function () {
             if (this._isDisposed) {
                 return false;
             }
+            // Disposed is called when a primitive instance is disposed, so we decrement the counter
+            --this._primCount;
+            // If the counter is still greater than 0 there's still other primitives using this GII
+            if (this._primCount > 0) {
+                return false;
+            }
+            // We're going to dispose this GII, first remove it from the dictionary
+            this.owner._renderableData._renderGroupInstancesInfo.remove(this.modelRenderCache.modelKey);
             if (this.modelRenderCache) {
                 this.modelRenderCache.dispose();
                 this.modelRenderCache = null;
@@ -10609,27 +10621,17 @@ var BABYLON;
                 gii = part.groupInstanceInfo;
                 part.groupInstanceInfo = null;
             }
-            if (gii && !gii.isDisposed) {
-                var usedCount = 0;
+            if (gii) {
                 if (gii.hasOpaqueData) {
-                    var od = gii.opaqueData[0];
-                    usedCount += od._partData.usedElementCount;
                     gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
-                    var atd = gii.alphaTestData[0];
-                    usedCount += atd._partData.usedElementCount;
                     gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
-                    var td = gii.transparentData[0];
-                    usedCount += td._partData.usedElementCount;
                     gii.transparentDirty = true;
                 }
-                if (usedCount === 0 && gii.modelRenderCache != null) {
-                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
-                    gii.dispose();
-                }
+                gii.dispose();
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
                     this._modelRenderCache = null;
@@ -10734,6 +10736,8 @@ var BABYLON;
                 part.renderMode = rm;
                 part.groupInstanceInfo = gii;
             }
+            // Increment the primitive count as one more primitive is using this GroupInstanceInfo
+            gii.incPrimCount();
             return gii;
         };
         RenderablePrim2D.prototype._setupModelRenderCache = function (parts) {
