@@ -21,7 +21,7 @@
 			#if defined(POINTLIGHT{X})
 				notShadowLevel = computeShadowWithESMCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
 			#else
-				notShadowLevel = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z;
+				notShadowLevel = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
 			#endif
         #else
             #ifdef SHADOWPCF{X}
