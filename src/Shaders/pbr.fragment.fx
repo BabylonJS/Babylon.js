@@ -157,7 +157,7 @@ uniform mat4 reflectionMatrix;
 #endif
 
 // PBR
-#include<pbrShadowFunctions>
+#include<shadowsFragmentFunctions>
 #include<pbrFunctions>
 
 #ifdef CAMERACOLORGRADING
