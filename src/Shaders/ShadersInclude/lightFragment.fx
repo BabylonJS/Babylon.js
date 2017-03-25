@@ -18,9 +18,9 @@
 	#ifdef SHADOW{X}
 		#ifdef SHADOWESM{X}
 			#if defined(POINTLIGHT{X})
-				shadow = computeShadowWithESMCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x);
+				shadow = computeShadowWithESMCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
 			#else
-				shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
+				shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
 			#endif
 		#else	
 			#ifdef SHADOWPCF{X}
