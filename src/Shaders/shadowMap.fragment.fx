@@ -46,8 +46,8 @@ void main(void)
 	depth += bias;
 
 #ifdef ESM
-	const float shadowStrength = 30.0;
-	depth = exp(shadowStrength * depth);
+	const float shadowStrength = 80.0;
+	depth = exp(-shadowStrength * depth);
 #endif
 
 #ifndef FULLFLOAT
