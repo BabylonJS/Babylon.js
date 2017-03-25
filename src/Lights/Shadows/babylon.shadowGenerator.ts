@@ -34,6 +34,7 @@
         private _blurBoxOffset = 0;
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
+        private _depthScale = 1;
 
         public forceBackFacesOnly = false;
 
@@ -44,6 +45,7 @@
         public set bias(bias: number) {
             this._bias = bias;
         }
+
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
@@ -72,6 +74,14 @@
             this._boxBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
             });
+        }
+
+        public get depthScale(): number {
+            return this._depthScale;
+        }
+
+        public set depthScale(value: number) {
+            this._depthScale = value;
         }
 
         public get filter(): number {
@@ -247,7 +257,7 @@
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
                     var material = subMesh.getMaterial();
 
-                    this._effect.setFloat("bias", this.bias);
+                    this._effect.setFloat2("biasAndScale", this.bias, this.depthScale);
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
                     this._effect.setVector3("lightPosition", this.getLight().position);
@@ -380,7 +390,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "bias"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"],
                     ["diffuseSampler"], join);
             }
 

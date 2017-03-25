@@ -23,7 +23,7 @@ uniform vec3 lightPosition;
 uniform vec2 depthValues;
 #endif
 
-uniform float bias;
+uniform vec2 biasAndScale;
 
 void main(void)
 {
@@ -43,10 +43,10 @@ void main(void)
 	depth = depth * 0.5 + 0.5;	
 #endif
 
-	depth += bias;
+	depth += biasAndScale.x;
 
 #ifdef ESM
-	const float shadowStrength = 80.0;
+	float shadowStrength = 30.0 * biasAndScale.y;
 	depth = exp(-shadowStrength * depth);
 #endif
 
