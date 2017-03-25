@@ -17,20 +17,24 @@
     #endif
     
     #ifdef SHADOW{X}
-        #ifdef SHADOWVSM{X}
-            notShadowLevel = computeShadowWithVSM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.z, shadowsInfo{X}.x);
+        #ifdef SHADOWESM{X}
+			#if defined(POINTLIGHT{X})
+				notShadowLevel = computeShadowWithESMCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x);
+			#else
+				notShadowLevel = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
+			#endif
         #else
             #ifdef SHADOWPCF{X}
                 #if defined(POINTLIGHT{X})
-                    notShadowLevel = computeShadowWithPCFCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+                    notShadowLevel = computeShadowWithPCFCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.x);
                 #else
-                    notShadowLevel = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+                    notShadowLevel = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.x);
                 #endif
             #else
                 #if defined(POINTLIGHT{X})
-                    notShadowLevel = computeShadowCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+                    notShadowLevel = computeShadowCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x);
                 #else
-                    notShadowLevel = computeShadow(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+                    notShadowLevel = computeShadow(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x);
                 #endif
             #endif
         #endif
