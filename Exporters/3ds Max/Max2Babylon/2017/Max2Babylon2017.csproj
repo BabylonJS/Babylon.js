@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files\Autodesk\3ds Max 2017\bin\assemblies\</OutputPath>
+    <OutputPath>c:\Program Files\Autodesk\3ds Max 2017\bin\assemblies\</OutputPath>
     <DefineConstants>TRACE;DEBUG;MAX2017</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
