@@ -82,6 +82,7 @@
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
+        private _uniformBuffer: WebGLBuffer;
         private _samplers: string[];
         private _isReady = false;
         private _compilationError = "";
@@ -410,8 +411,10 @@
                 var engine = this._engine;
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
+                this.bindUniformBlock();
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                this._uniformBuffer = engine.createUniformBuffer(this.formatUniforms());
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
                 var index: number;
@@ -574,6 +577,25 @@
             }
 
             return changed;
+        }
+
+
+        public formatUniforms(): Float32Array {
+            return new Float32Array(4);
+        };
+
+        public setUniformBuffer(materialFormatted: Float32Array): Effect {
+            this._engine.setUniformBuffer(this._uniformBuffer, materialFormatted);
+
+            return this;
+        };
+
+        public bindUniformBuffer(): void {
+            this._engine.bindUniformBufferBase(this._uniformBuffer, 0);
+        }
+
+        public bindUniformBlock(): void {
+            this._engine.bindUniformBlock(this._program);
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {

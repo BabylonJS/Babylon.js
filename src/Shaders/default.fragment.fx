@@ -1,4 +1,14 @@
-﻿#ifdef BUMP
+﻿struct Material
+{
+  	vec4 diffuse;
+};
+
+uniform PerPass {
+	Material material;
+}  u_PerPass;
+
+
+#ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -164,10 +174,10 @@ void main(void) {
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
-	vec3 diffuseColor = vDiffuseColor.rgb;
+	vec3 diffuseColor = u_PerPass.material.diffuse.rgb;
 
 	// Alpha
-	float alpha = vDiffuseColor.a;
+	float alpha = u_PerPass.material.diffuse.a;
 
 	// Bump
 #ifdef NORMAL

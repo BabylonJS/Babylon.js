@@ -873,6 +873,11 @@
                 // Diffuse
                 this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
+                // ADDED
+                this._effect.setUniformBuffer(new Float32Array([this.diffuseColor.r, this.diffuseColor.g, this.diffuseColor
+                    .b].concat(this.alpha * mesh.visibility)));
+                this._effect.bindUniformBuffer();
+
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
