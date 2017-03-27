@@ -64,6 +64,13 @@ module BABYLON {
         }
 
         /**
+         * Return the depth scale used for the shadow map.
+         */
+        public getDepthScale(): number {
+            return 30.0;
+        }
+
+        /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.  
          * Returns the DirectionalLight.  
          */

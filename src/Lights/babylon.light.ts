@@ -13,7 +13,7 @@
 
         customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        
+        getDepthScale(): number;
 
         needRefreshPerFrame(): boolean;
         needCube(): boolean;
