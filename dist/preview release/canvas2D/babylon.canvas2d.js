@@ -6799,8 +6799,8 @@ var BABYLON;
                                 this._computePixels(2, sourceArea, true);
                                 rightPixels = this.rightPixels;
                             }
-                            var center = ((sourceArea.width - (leftPixels + rightPixels)) - (width * sx)) / 2;
-                            dstOffset.x = leftPixels + center;
+                            var center = ((sourceArea.width - (width * sx)) / 2);
+                            dstOffset.x = center + (leftPixels - rightPixels);
                             if (computeLayoutArea) {
                                 dstArea.width = (width * isx) + (this.leftPixels + this.rightPixels) * isx;
                             }
@@ -6888,8 +6888,8 @@ var BABYLON;
                                 this._computePixels(0, sourceArea, true);
                                 topPixels = this.topPixels;
                             }
-                            var center = ((sourceArea.height - (bottomPixels + topPixels)) - (height * sy)) / 2;
-                            dstOffset.y = bottomPixels + center;
+                            var center = ((sourceArea.height - (height * sy)) / 2);
+                            dstOffset.y = center + (bottomPixels - topPixels);
                             if (computeLayoutArea) {
                                 dstArea.height = (height * isy) + (bottomPixels + topPixels) * isy;
                             }
