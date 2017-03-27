@@ -867,6 +867,15 @@
                     this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
+
+                var cameraPos = [];
+                if (scene._mirroredCameraPosition) {
+                    scene._mirroredCameraPosition.toArray(cameraPos);
+                } else {
+                    scene.activeCamera.position.toArray(cameraPos);
+                }
+
+                this._effect.setUniformBufferScene(new Float32Array(cameraPos.concat(0.0)));
             }
 
             if (scene.getCachedMaterial() !== this || !this.isFrozen) {
@@ -874,9 +883,10 @@
                 this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
                 // ADDED
-                this._effect.setUniformBuffer(new Float32Array([this.diffuseColor.r, this.diffuseColor.g, this.diffuseColor
-                    .b].concat(this.alpha * mesh.visibility)));
-                this._effect.bindUniformBuffer();
+                this._effect.setUniformBufferPass(new Float32Array([
+                    this.diffuseColor.r, this.diffuseColor.g, this.diffuseColor.b, this.alpha * mesh.visibility,
+                    this._globalAmbientColor.r, this._globalAmbientColor.g, this._globalAmbientColor.b, 0.0]));
+                this._effect.bindUniformBuffers();
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {

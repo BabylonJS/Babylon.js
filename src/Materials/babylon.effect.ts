@@ -82,7 +82,8 @@
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
-        private _uniformBuffer: WebGLBuffer;
+        private _uniformBufferPerPass: WebGLBuffer;
+        private _uniformBufferPerScene: WebGLBuffer;
         private _samplers: string[];
         private _isReady = false;
         private _compilationError = "";
@@ -414,7 +415,9 @@
                 this.bindUniformBlock();
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
-                this._uniformBuffer = engine.createUniformBuffer(this.formatUniforms());
+                this._uniformBufferPerPass = engine.createUniformBuffer(this.formatUniforms(8));
+                this._uniformBufferPerScene = engine.createUniformBuffer(this.formatUniforms(4));
+
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
                 var index: number;
@@ -580,18 +583,25 @@
         }
 
 
-        public formatUniforms(): Float32Array {
-            return new Float32Array(4);
+        public formatUniforms(length: number): Float32Array {
+            return new Float32Array(length);
         };
 
-        public setUniformBuffer(materialFormatted: Float32Array): Effect {
-            this._engine.setUniformBuffer(this._uniformBuffer, materialFormatted);
+        public setUniformBufferScene(cameraPositionFormatted: Float32Array): Effect {
+            this._engine.setUniformBuffer(this._uniformBufferPerScene, cameraPositionFormatted);
+
+            return this;
+        }
+
+        public setUniformBufferPass(materialFormatted: Float32Array): Effect {
+            this._engine.setUniformBuffer(this._uniformBufferPerPass, materialFormatted);
 
             return this;
         };
 
-        public bindUniformBuffer(): void {
-            this._engine.bindUniformBufferBase(this._uniformBuffer, 0);
+        public bindUniformBuffers(): void {
+            this._engine.bindUniformBufferBase(this._uniformBufferPerPass, 0);
+            this._engine.bindUniformBufferBase(this._uniformBufferPerScene, 1);
         }
 
         public bindUniformBlock(): void {
