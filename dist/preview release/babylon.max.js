@@ -14206,6 +14206,12 @@ var BABYLON;
             return BABYLON.Vector3.Zero();
         };
         /**
+         * Return the depth scale used for the shadow map.
+         */
+        PointLight.prototype.getDepthScale = function () {
+            return 30.0;
+        };
+        /**
          * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
          * - fov = PI / 2
          * - aspect ratio : 1.0
@@ -14290,6 +14296,12 @@ var BABYLON;
          */
         SpotLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
+        };
+        /**
+         * Return the depth scale used for the shadow map.
+         */
+        SpotLight.prototype.getDepthScale = function () {
+            return 30.0;
         };
         /**
          * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
@@ -14538,6 +14550,12 @@ var BABYLON;
             return this.direction;
         };
         /**
+         * Return the depth scale used for the shadow map.
+         */
+        DirectionalLight.prototype.getDepthScale = function () {
+            return 30.0;
+        };
+        /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
          * Returns the DirectionalLight.
          */
@@ -14688,7 +14706,6 @@ var BABYLON;
             this._blurBoxOffset = 0;
             this._bias = 0.00005;
             this._lightDirection = BABYLON.Vector3.Zero();
-            this._depthScale = 30.0;
             this.forceBackFacesOnly = false;
             this._darkness = 0;
             this._transparencyShadow = false;
@@ -14881,7 +14898,7 @@ var BABYLON;
         });
         Object.defineProperty(ShadowGenerator.prototype, "depthScale", {
             get: function () {
-                return this._depthScale;
+                return this._depthScale !== undefined ? this._depthScale : this._light.getDepthScale();
             },
             set: function (value) {
                 this._depthScale = value;
@@ -15168,6 +15185,12 @@ var BABYLON;
                 shadowGenerator.useExponentialShadowMap = true;
             }
             else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
             }
             if (parsedShadowGenerator.blurScale) {
