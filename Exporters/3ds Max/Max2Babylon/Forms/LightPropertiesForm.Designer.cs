@@ -347,8 +347,8 @@
             this.cbCameraType.Items.AddRange(new object[] {
             "Hard shadows",
             "Poisson Sampling",
-            "Variance",
-            "Blurred Variance"});
+            "ESM",
+            "Blurred ESM"});
             this.cbCameraType.Location = new System.Drawing.Point(21, 108);
             this.cbCameraType.Name = "cbCameraType";
             this.cbCameraType.Size = new System.Drawing.Size(289, 21);
