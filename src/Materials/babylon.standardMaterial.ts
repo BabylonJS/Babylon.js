@@ -47,6 +47,7 @@ module BABYLON {
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public REFRACTION = false;
@@ -387,6 +388,9 @@ module BABYLON {
                                 break;
                             case Texture.FIXED_EQUIRECTANGULAR_MODE:
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                                this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
                         }
                     }
