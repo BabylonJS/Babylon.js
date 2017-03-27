@@ -42,7 +42,9 @@
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
-        public REFLECTIONMAP_EQUIRECTANGULAR = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR = false;        
+        public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public CAMERATONEMAP = false;
@@ -739,6 +741,12 @@
                             case Texture.EQUIRECTANGULAR_MODE:
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                 break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                                this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                                break;                                
                         }
 
                         if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {

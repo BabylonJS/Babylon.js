@@ -109,6 +109,13 @@
 
             return Vector3.Zero();
         }
+        
+        /**
+         * Return the depth scale used for the shadow map.
+         */
+        public getDepthScale(): number {
+            return 30.0;
+        }
 
         /**
          * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings : 

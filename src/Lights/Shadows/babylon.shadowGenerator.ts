@@ -34,7 +34,7 @@
         private _blurBoxOffset = 0;
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
-        private _depthScale = 30.0;
+        private _depthScale: number;
 
         public forceBackFacesOnly = false;
 
@@ -77,7 +77,7 @@
         }
 
         public get depthScale(): number {
-            return this._depthScale;
+            return this._depthScale !== undefined ? this._depthScale : this._light.getDepthScale();
         }
 
         public set depthScale(value: number) {
@@ -558,6 +558,13 @@
                 shadowGenerator.useExponentialShadowMap = true;
             }
             else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
+            }            
+            // Backward compat
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
             }
 
