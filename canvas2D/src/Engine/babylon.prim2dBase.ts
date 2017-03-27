@@ -2037,7 +2037,7 @@
             //    return;
             //}
             if (this._checkUseMargin()) {
-                switch (this._marginAlignment.horizontal) {
+                switch (this.marginAlignment.horizontal) {
                     case PrimitiveAlignment.AlignLeft:
                     case PrimitiveAlignment.AlignStretch:
                     case PrimitiveAlignment.AlignCenter:
@@ -2047,7 +2047,7 @@
                         this.margin.rightPixels = value.x;
                         break;
                     }
-                switch (this._marginAlignment.vertical) {
+                switch (this.marginAlignment.vertical) {
                     case PrimitiveAlignment.AlignBottom:
                     case PrimitiveAlignment.AlignStretch:
                     case PrimitiveAlignment.AlignCenter:
@@ -2093,7 +2093,7 @@
                 throw new Error(`Can't set a null x in primitive ${this.id}, only the position can be turned to null`);
             }
             if (this._checkUseMargin()) {
-                switch (this._marginAlignment.horizontal) {
+                switch (this.marginAlignment.horizontal) {
                     case PrimitiveAlignment.AlignLeft:
                     case PrimitiveAlignment.AlignStretch:
                     case PrimitiveAlignment.AlignCenter:
@@ -2140,7 +2140,7 @@
                 throw new Error(`Can't set a null y in primitive ${this.id}, only the position can be turned to null`);
             }
             if (this._checkUseMargin()) {
-                switch (this._marginAlignment.vertical) {
+                switch (this.marginAlignment.vertical) {
                     case PrimitiveAlignment.AlignBottom:
                     case PrimitiveAlignment.AlignStretch:
                     case PrimitiveAlignment.AlignCenter:
