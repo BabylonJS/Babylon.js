@@ -5,6 +5,11 @@
 
         @serializeAsVector3()
         public position: Vector3;
+
+        @serialize()
+        public shadowMinZ: number;
+        @serialize()
+        public shadowMaxZ: number;
         
         public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
 
@@ -117,7 +122,8 @@
                 this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
             } else {
                 var activeCamera = this.getScene().activeCamera;
-                Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+                Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, 
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
             }
             return this;
         }

@@ -5,13 +5,15 @@
         position: Vector3;
         transformedPosition: Vector3;
         name: string;
+        shadowMinZ: number;
+        shadowMaxZ: number;
 
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
-
         customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        
 
         needRefreshPerFrame(): boolean;
         needCube(): boolean;

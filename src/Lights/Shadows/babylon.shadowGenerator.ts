@@ -34,7 +34,7 @@
         private _blurBoxOffset = 0;
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
-        private _depthScale = 1;
+        private _depthScale = 30.0;
 
         public forceBackFacesOnly = false;
 

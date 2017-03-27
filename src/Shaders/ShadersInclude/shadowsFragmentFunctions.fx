@@ -181,14 +181,13 @@
 			return 1.0;
 		}
 	
-		float shadowStrength = 30. * depthScale;
 		#ifndef SHADOWFULLFLOAT
 			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
 		#else
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
 		#endif
 		
-		float esm = 1.0 - clamp(exp(shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);		
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);		
 
 		// Apply fade out at frustum edge
 		// const float fadeDistance = 0.07;
