@@ -1,11 +1,22 @@
-﻿struct Material
+﻿layout(std140, column_major) uniform;
+
+struct Camera {
+	vec3 vEyePosition;
+};
+
+struct Material
 {
-  	vec4 diffuse;
+  	vec4 vDiffuseColor;
+  	vec3 vAmbientColor;
 };
 
 uniform PerPass {
 	Material material;
 }  u_PerPass;
+
+uniform PerScene {
+	Camera camera;
+}  u_PerScene;
 
 
 #ifdef BUMP
@@ -19,9 +30,6 @@ uniform PerPass {
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-uniform vec3 vEyePosition;
-uniform vec3 vAmbientColor;
-uniform vec4 vDiffuseColor;
 #ifdef SPECULARTERM
 uniform vec4 vSpecularColor;
 #endif
@@ -170,14 +178,14 @@ uniform vec4 reflectionRightColor;
 void main(void) {
 #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(u_PerScene.camera.vEyePosition - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
-	vec3 diffuseColor = u_PerPass.material.diffuse.rgb;
+	vec3 diffuseColor = u_PerPass.material.vDiffuseColor.rgb;
 
 	// Alpha
-	float alpha = u_PerPass.material.diffuse.a;
+	float alpha = u_PerPass.material.vDiffuseColor.a;
 
 	// Bump
 #ifdef NORMAL
@@ -367,12 +375,12 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + u_PerPass.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
 #ifdef LINKEMISSIVEWITHDIFFUSE
-	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + u_PerPass.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + u_PerPass.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #endif
 #endif
 

@@ -1812,7 +1812,10 @@
 
         public bindUniformBlock(shaderProgram: WebGLProgram): void {
             var uniformPerPassLocation = this._gl.getUniformBlockIndex(shaderProgram, 'PerPass');
+            var uniformPerSceneLocation = this._gl.getUniformBlockIndex(shaderProgram, 'PerScene');
+            
             this._gl.uniformBlockBinding(shaderProgram, uniformPerPassLocation, 0);
+            this._gl.uniformBlockBinding(shaderProgram, uniformPerSceneLocation, 1);
 
         };
 
