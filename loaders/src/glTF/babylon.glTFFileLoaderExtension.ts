@@ -16,7 +16,7 @@ module BABYLON {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        public loadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
+        public loadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
             return false;
         }
 
@@ -72,12 +72,12 @@ module BABYLON {
         // Utilities
         // ---------
 
-        public static LoadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
+        public static LoadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
             GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, () => {
                 setTimeout(() => {
-                    onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(<string>data), scene, rootUrl));
+                    onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(data), scene, rootUrl));
                 });
             });
         }
