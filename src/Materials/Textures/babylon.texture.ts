@@ -68,11 +68,12 @@
         public _samplingMode: number;
         private _buffer: any;
         private _deleteBuffer: boolean;
+        protected _format: number;
         private _delayedOnLoad: () => void;
         private _delayedOnError: () => void;
         private _onLoadObservarble: Observable<boolean>;
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format: number = Engine.TEXTUREFORMAT_RGBA) {
             super(scene);
 
             this.name = url;
@@ -82,6 +83,7 @@
             this._samplingMode = samplingMode;
             this._buffer = buffer;
             this._deleteBuffer = deleteBuffer;
+            this._format = format;
 
             if (!url) {
                 return;
@@ -100,7 +102,7 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, null, this._format);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -128,7 +130,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -263,8 +265,8 @@
         }
 
         // Statics
-        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
-            return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
+        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+            return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
@@ -317,12 +319,12 @@
             return texture;
         }
 
-        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
+        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
                 name = "data:" + name;
             }
 
-            return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer);
+            return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format);
         }
     }
 } 

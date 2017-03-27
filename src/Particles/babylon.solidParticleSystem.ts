@@ -104,6 +104,7 @@
         private _sinYaw: number = 0.0;
         private _cosYaw: number = 0.0;
         private _w: number = 0.0;
+        private _mustUnrotateFixedNormals = false;
         private _minimum: Vector3 = Tmp.Vector3[0];
         private _maximum: Vector3 = Tmp.Vector3[1];
         private _scale: Vector3 = Tmp.Vector3[2];
@@ -113,6 +114,7 @@
         private _particlesIntersect: boolean = false;
         public _bSphereOnly: boolean = false;
         public _bSphereRadiusFactor: number = 1.0;
+
 
         /**
         * Creates a SPS (Solid Particle System) object.
@@ -127,7 +129,7 @@
         */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
             this.name = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._camera = <TargetCamera>scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
             this._particlesIntersect = options ? options.particleIntersection : false;
@@ -161,6 +163,9 @@
             }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
+            if (this._mustUnrotateFixedNormals) {  // the particles could be created already rotated in the mesh with a positionFunction
+                this._unrotateFixedNormals();
+            }
             var vertexData = new VertexData();
             vertexData.set(this._positions32, VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
@@ -276,8 +281,9 @@
                 var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, null, null);
 
                 // add the particle in the SPS
+                var currentPos = this._positions.length;
                 this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
-                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0, bInfo);
+                this._addParticle(idx, currentPos, modelShape, this._shapeCounter, 0, bInfo);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
 
@@ -288,6 +294,36 @@
                 f += size;
             }
             return this;
+        }
+
+        // unrotate the fixed normals in case the mesh was built with pre-rotated particles, ex : use of positionFunction in addShape()
+        private _unrotateFixedNormals() {
+            var index = 0;
+            var idx = 0;
+            for (var p = 0; p < this.particles.length; p++) {
+                this._particle = this.particles[p];
+                this._shape = this._particle._model._shape;
+                if (this._particle.rotationQuaternion) {
+                    this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                } 
+                else {
+                    this._yaw = this._particle.rotation.y;
+                    this._pitch = this._particle.rotation.x;
+                    this._roll = this._particle.rotation.z;
+                    this._quaternionRotationYPR();
+                }
+                this._quaternionToRotationMatrix();
+                this._rotMatrix.invertToRef(this._invertMatrix);
+
+                for (var pt = 0; pt < this._shape.length; pt++) {
+                    idx = index + pt * 3;
+                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, this._normal);
+                    this._fixedNormal32[idx] = this._normal.x;
+                    this._fixedNormal32[idx + 1] = this._normal.y;
+                    this._fixedNormal32[idx + 2] = this._normal.z;
+                }
+                index = idx + 3;
+            } 
         }
 
         //reset copy
@@ -310,7 +346,7 @@
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options): void {
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options): SolidParticle {
             var i;
             var u = 0;
             var c = 0;
@@ -319,6 +355,7 @@
             this._resetCopy();
             if (options && options.positionFunction) {        // call to custom positionFunction
                 options.positionFunction(this._copy, idx, idxInShape);
+                this._mustUnrotateFixedNormals = true;
             }
 
             if (this._copy.rotationQuaternion) {
@@ -371,7 +408,7 @@
                     this._normal.x = meshNor[n];
                     this._normal.y = meshNor[n + 1];
                     this._normal.z = meshNor[n + 2];
-                    Vector3.TransformCoordinatesToRef(this._normal, this._rotMatrix, this._normal);
+                    Vector3.TransformNormalToRef(this._normal, this._rotMatrix, this._normal);
                     normals.push(this._normal.x, this._normal.y, this._normal.z);
                     n += 3;
                 }
@@ -388,6 +425,7 @@
                     this.pickedParticles.push({ idx: idx, faceId: i });
                 }
             }
+            return this._copy;
         }
 
         // returns a shape array from positions array
@@ -410,8 +448,10 @@
         }
 
         // adds a new particle object in the particles array
-        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): void {
-            this.particles.push(new SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo));
+        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): SolidParticle {
+            var sp = new SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo);
+            this.particles.push(sp);
+            return sp;
         }
 
         /**
@@ -442,11 +482,24 @@
             var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
 
             // particles
+            var sp;
+            var currentCopy;
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
+                var currentPos = this._positions.length;
+                currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
-                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i, bbInfo);
+                    sp = this._addParticle(idx, currentPos, modelShape, this._shapeCounter, i, bbInfo);
+                    sp.position.copyFrom(currentCopy.position);
+                    sp.rotation.copyFrom(currentCopy.rotation);
+                    if (currentCopy.rotationQuaternion) {
+                        sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
+                    }
+                    if (currentCopy.color) {
+                        sp.color.copyFrom(currentCopy.color);
+                    }
+                    sp.scaling.copyFrom(currentCopy.scaling);
+                    sp.uvs.copyFrom(currentCopy.uvs);
                 }
                 this._index += shape.length;
                 idx++;
@@ -506,13 +559,15 @@
         }
 
         /**
-        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.  
+        * Returns the SPS.  
         */
-        public rebuildMesh(): void {
+        public rebuildMesh(): SolidParticleSystem {
             for (var p = 0; p < this.particles.length; p++) {
                 this._rebuildParticle(this.particles[p]);
             }
             this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
+            return this;
         }
 
 
@@ -522,9 +577,10 @@
         *  For an animated SPS, it is usually called within the render loop.
         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_   
+        * Returns the SPS.  
         */
-        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
+        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
             if (!this._updatable) {
                 return;
             }
@@ -546,15 +602,17 @@
 
             // if the particles will always face the camera
             if (this.billboard) {
+                this.mesh.computeWorldMatrix(true);
                 // compute the camera position and un-rotate it by the current mesh rotation
                 if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
                     this._quaternionToRotationMatrix();
                     this._rotMatrix.invertToRef(this._invertMatrix);
                     this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
-                    Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                    Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
                     this._cam_axisZ.normalize();
-                    // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
-                    Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
+                    // same for camera up vector extracted from the cam view matrix
+                    var view = this._camera.getViewMatrix(true);
+                    Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
                     Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
                     this._cam_axisY.normalize();
                     this._cam_axisX.normalize();
@@ -574,13 +632,24 @@
                 this._computeBoundingBox = true;
             }
 
+            end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
             if (this._computeBoundingBox) {
-                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
-                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                if (start == 0 && end == this.nbParticles - 1) {        // all the particles are updated, then recompute the BBox from scratch
+                    Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
+                    Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                }
+                else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
+                    this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
+                    this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                }
             }
 
             // particle loop
-            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
+            
+            index = this.particles[start]._pos;
+            var vpos = (index / 3)|0;
+            colorIndex = vpos * 4;
+            uvIndex = vpos * 2;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -767,7 +836,7 @@
                         VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
-                        }
+                        }                       
                     }
                     if (!this.mesh.areNormalsFrozen) {
                         this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
@@ -779,6 +848,7 @@
                 this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
+            return this;
         }
 
         private _quaternionRotationYPR(): void {
@@ -817,7 +887,8 @@
         }
 
         /**
-        * Disposes the SPS
+        * Disposes the SPS.  
+        * Returns nothing.  
         */
         public dispose(): void {
             this.mesh.dispose();
@@ -838,12 +909,14 @@
 
         /**
         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility   
+        * Returns the SPS.  
         */
-        public refreshVisibleSize(): void {
+        public refreshVisibleSize(): SolidParticleSystem {
             if (!this._isVisibilityBoxLocked) {
                 this.mesh.refreshBoundingInfo();
             }
+            return this;
         }
 
         /** 

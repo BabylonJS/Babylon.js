@@ -675,6 +675,7 @@
             } 
         }
 
+        @logProp()
         protected _triggerPropertyChanged(propInfo: Prim2DPropInfo, newValue: any) {
             if (this.isDisposed) {
                 return;
@@ -1103,16 +1104,18 @@
         }
 
         protected _boundingBoxDirty() {
-            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty|SmartPropertyPrim.flagLayoutBoundingInfoDirty);
 
             // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
             if (this instanceof Prim2DBase) {
                 let curprim: Prim2DBase = (<any>this);
                 while (curprim) {
-                    curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                    curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty|SmartPropertyPrim.flagLayoutBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
-                        curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        if (curprim._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+                            curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        }
                     }
 
                     if (curprim instanceof Group2D) {
@@ -1196,6 +1199,7 @@
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
          */
+        @logProp()
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
                 if (this.updateLevelBoundingInfo()) {
@@ -1281,6 +1285,39 @@
             }
         }
 
+        public _getFlagsDebug(flags: number): string {
+            let res = "";
+            if (flags & SmartPropertyPrim.flagNoPartOfLayout)          res += "NoPartOfLayout, ";
+            if (flags & SmartPropertyPrim.flagLevelBoundingInfoDirty)  res += "LevelBoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagModelDirty)              res += "ModelDirty, ";
+            if (flags & SmartPropertyPrim.flagLayoutDirty)             res += "LayoutDirty, ";
+            if (flags & SmartPropertyPrim.flagLevelVisible)            res += "LevelVisible, ";
+            if (flags & SmartPropertyPrim.flagBoundingInfoDirty)       res += "BoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagIsPickable)              res += "IsPickable, ";
+            if (flags & SmartPropertyPrim.flagIsVisible)               res += "IsVisible, ";
+            if (flags & SmartPropertyPrim.flagVisibilityChanged)       res += "VisibilityChanged, ";
+            if (flags & SmartPropertyPrim.flagPositioningDirty)        res += "PositioningDirty, ";
+            if (flags & SmartPropertyPrim.flagTrackedGroup)            res += "TrackedGroup, ";
+            if (flags & SmartPropertyPrim.flagWorldCacheChanged)       res += "WorldCacheChanged, ";
+            if (flags & SmartPropertyPrim.flagChildrenFlatZOrder)      res += "ChildrenFlatZOrder, ";
+            if (flags & SmartPropertyPrim.flagZOrderDirty)             res += "ZOrderDirty, ";
+            if (flags & SmartPropertyPrim.flagActualOpacityDirty)      res += "ActualOpacityDirty, ";
+            if (flags & SmartPropertyPrim.flagPrimInDirtyList)         res += "PrimInDirtyList, ";
+            if (flags & SmartPropertyPrim.flagIsContainer)             res += "IsContainer, ";
+            if (flags & SmartPropertyPrim.flagNeedRefresh)             res += "NeedRefresh, ";
+            if (flags & SmartPropertyPrim.flagActualScaleDirty)        res += "ActualScaleDirty, ";
+            if (flags & SmartPropertyPrim.flagDontInheritParentScale)  res += "DontInheritParentScale, ";
+            if (flags & SmartPropertyPrim.flagGlobalTransformDirty)    res += "GlobalTransformDirty, ";
+            if (flags & SmartPropertyPrim.flagLayoutBoundingInfoDirty) res += "LayoutBoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagCollisionActor)          res += "CollisionActor, ";
+            if (flags & SmartPropertyPrim.flagModelUpdate)             res += "ModelUpdate, ";
+            if (flags & SmartPropertyPrim.flagLocalTransformDirty)     res += "LocalTransformDirty, ";
+            if (flags & SmartPropertyPrim.flagUsePositioning)          res += "UsePositioning, ";
+            if (flags & SmartPropertyPrim.flagComputingPositioning)    res += "ComputingPositioning, ";
+
+            return res.slice(0, res.length - 2);
+        }
+
         public static flagNoPartOfLayout          = 0x0000001;    // set if the primitive's position/size must not be computed by Layout Engine
         public static flagLevelBoundingInfoDirty  = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
         public static flagModelDirty              = 0x0000004;    // set if the model must be changed
@@ -1305,6 +1342,10 @@
         public static flagLayoutBoundingInfoDirty = 0x0200000;    // set if the layout bounding info is dirty
         public static flagCollisionActor          = 0x0400000;    // set if the primitive is part of the collision engine
         public static flagModelUpdate             = 0x0800000;    // set if the primitive's model data is to update
+        public static flagLocalTransformDirty     = 0x1000000;    // set if the local transformation matrix must be recomputed
+        public static flagUsePositioning          = 0x2000000;    // set if the primitive rely on the positioning engine (padding or margin is used)
+        public static flagComputingPositioning    = 0x4000000;    // set if the positioning engine is computing the primitive, used to avoid re entrance
+        public static flagAlignPrimitive          = 0x8000000;    // set if the primitive should be pixel aligned to the render target
 
         private   _uid                : string;
         private   _flags              : number;

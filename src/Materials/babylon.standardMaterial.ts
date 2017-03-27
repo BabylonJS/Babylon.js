@@ -1,5 +1,5 @@
-﻿module BABYLON {
-    class StandardMaterialDefines extends MaterialDefines {
+module BABYLON {
+   export class StandardMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -206,15 +206,15 @@
         @serializeAsColorCurves()
         public cameraColorCurves: ColorCurves = null;
 
-        private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _globalAmbientColor = new Color3(0, 0, 0);
-        private _renderId: number;
+        protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
+        protected _worldViewProjectionMatrix = Matrix.Zero();
+        protected _globalAmbientColor = new Color3(0, 0, 0);
+        protected _renderId: number;
 
-        private _defines = new StandardMaterialDefines();
-        private _cachedDefines = new StandardMaterialDefines();
+        protected _defines = new StandardMaterialDefines();
+        protected _cachedDefines = new StandardMaterialDefines();
 
-        private _useLogarithmicDepth: boolean;
+        protected _useLogarithmicDepth: boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -257,7 +257,7 @@
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         }
 
-        private _shouldUseAlphaFromDiffuseTexture(): boolean {
+        protected _shouldUseAlphaFromDiffuseTexture(): boolean {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         }
 
@@ -266,7 +266,7 @@
         }
 
         // Methods   
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        protected _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (!mesh) {
                 return true;
             }

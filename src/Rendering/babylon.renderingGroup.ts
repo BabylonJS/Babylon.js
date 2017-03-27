@@ -256,6 +256,14 @@
             this._spriteManagers.reset();
         }
 
+        public dispose(): void {
+            this._opaqueSubMeshes.dispose();
+            this._transparentSubMeshes.dispose();
+            this._alphaTestSubMeshes.dispose();
+            this._particleSystems.dispose();
+            this._spriteManagers.dispose();
+        }
+
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch
@@ -311,7 +319,7 @@
             var activeCamera = this._scene.activeCamera;
             this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._spriteManagers.length; id++) {
-                var spriteManager = this._scene.spriteManagers[id];
+                var spriteManager = this._spriteManagers.data[id];
 
                 if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     spriteManager.render();

@@ -6,6 +6,9 @@ namespace BabylonExport.Entities
     public class BabylonAbstractMesh: BabylonIAnimatable
     {
         [DataMember]
+        public string id { get; set; }
+
+        [DataMember]
         public string name { get; set; }
         
         [DataMember]

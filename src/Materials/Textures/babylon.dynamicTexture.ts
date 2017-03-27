@@ -1,11 +1,13 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.texture.ts" />
+
+module BABYLON {
     export class DynamicTexture extends Texture {
         private _generateMipMaps: boolean;
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
 
-        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super(null, scene, !generateMipMaps);
+        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, format: number = Engine.TEXTUREFORMAT_RGBA) {
+            super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
 
             this.name = name;
 
@@ -62,7 +64,7 @@
         }
 
         public update(invertY?: boolean): void {
-            this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
+            this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, undefined, this._format);
         }
 
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
@@ -73,11 +75,15 @@
             }
 
             this._context.font = font;
-            if (x === null) {
+            if (x === null  || x === undefined) {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
             }
-
+            if (y === null || y === undefined) {
+                var fontSize = parseInt((font.replace(/\D/g,'')));;
+                y = (size.height /2) + (fontSize/3.65);
+            }
+            
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
 

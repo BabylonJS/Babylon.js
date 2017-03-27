@@ -23,6 +23,21 @@
         var scripts;
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+
+        var currentVersionElement = document.getElementById("currentVersion");
+
+        if (currentVersionElement) {
+            switch (BABYLON.Engine.Version) {
+                case "2.5":
+                    currentVersionElement.innerHTML = "Version: " + BABYLON.Engine.Version;
+                    break;
+                default:
+                    currentVersionElement.innerHTML = "Version: Latest";
+                    break;
+            }
+        }
+
+
         var loadScript = function (scriptURL, title) {
             var xhr = new XMLHttpRequest();
 
@@ -398,6 +413,18 @@
                                 });
                         });
                 });
+        }
+
+        // Versions
+        setVersion = function (version) {
+            switch (version) {
+                case "2.5":
+                    location.href = "index2_5.html" + location.hash;
+                    break;
+                default:
+                    location.href = "index.html" + location.hash;
+                    break;
+            }
         }
 
         // Fonts

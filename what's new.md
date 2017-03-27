@@ -89,3 +89,4 @@
   - `WorldSpaceCanvas2D`:
 	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
 
+

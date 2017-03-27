@@ -11,6 +11,7 @@ att vec2 zBias;
 
 att vec4 transformX;
 att vec4 transformY;
+att vec3 renderingInfo;
 att float opacity;
 
 att vec2 topLeftUV;
@@ -52,13 +53,27 @@ void main(void) {
 	}
 
 	// Align texture coordinate to texel to enhance rendering quality
-	vUV = (floor(vUV*textureSize) + vec2(0.0, 0.0)) / textureSize;
+//	vUV = (floor(vUV*textureSize) + vec2(0.5, 0.5)) / textureSize;
+	//vUV.x += 0.5 / textureSize.x;
 
 	vColor = color;
 	vColor.a *= opacity;
 	vec4 pos;
-	pos.xy = floor(pos2.xy * superSampleFactor * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
+	pos.xy = pos2.xy * superSampleFactor * sizeUV * textureSize;
 	pos.z = 1.0;
 	pos.w = 1.0;
-	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);
+
+	float x = dot(pos, transformX);
+	float y = dot(pos, transformY);
+	if (renderingInfo.z == 1.0) {
+		float rw = renderingInfo.x;
+		float rh = renderingInfo.y;
+		float irw = 2.0 / rw;
+		float irh = 2.0 / rh;
+
+		x = (floor((x / irw)) * irw) + irw / 2.0;
+		y = (floor((y / irh)) * irh) + irh / 2.0;
+	}
+
+	gl_Position = vec4(x, y, zBias.x, 1.0);
 }

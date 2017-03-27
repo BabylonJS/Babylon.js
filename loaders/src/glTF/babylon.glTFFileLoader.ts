@@ -381,10 +381,6 @@ module BABYLON {
         getNodesToRoot(runtime, newSkeleton, skin, nodesToRoot);
         newSkeleton.bones = [];
 
-        if (nodesToRoot.length === 0) {
-            newSkeleton.needInitialSkinMatrix = true;
-        }
-
         // Joints
         for (var i = 0; i < skin.jointNames.length; i++) {
             var jointNode = getJointNode(runtime, skin.jointNames[i]);
@@ -630,41 +626,38 @@ module BABYLON {
     };
 
     /**
-    * Configure node transformation from position, rotation and scaling
-    */
-    var configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3): void => {
-        if (newNode.position) {
-            newNode.position = position;
-        }
-
-        if (newNode.rotationQuaternion || newNode.rotation) {
-            newNode.rotationQuaternion = rotation;
-        }
-
-        if (newNode.scaling) {
-            newNode.scaling = scaling;
-        }
-    };
-
-    /**
     * Configures node transformation
     */
-    var configureNodeFromGLTFNode = (newNode: Mesh, node: IGLTFNode, parent: Node): void => {
+    var configureNode = (babylonNode: Mesh | TargetCamera, node: IGLTFNode): void => {
+        var position = Vector3.Zero();
+        var rotation = Quaternion.Identity();
+        var scaling = Vector3.Zero();
+
         if (node.matrix) {
-            var position = new Vector3(0, 0, 0);
-            var rotation = new Quaternion();
-            var scaling = new Vector3(0, 0, 0);
             var mat = Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
-
-            configureNode(newNode, position, rotation, scaling);
-            newNode.computeWorldMatrix(true);
         }
         else {
-            configureNode(newNode,
-                Vector3.FromArray(node.translation || [0, 0, 0]),
-                Quaternion.FromArray(node.rotation || [0, 0, 0, 1]),
-                Vector3.FromArray(node.scale || [1, 1, 1]));
+            if (node.translation) {
+                position = Vector3.FromArray(node.translation);
+            }
+
+            if (node.rotation) {
+                rotation = Quaternion.FromArray(node.rotation);
+            }
+
+            if (node.scale) {
+                scaling = Vector3.FromArray(node.scale);
+            }
+        }
+
+        babylonNode.position = position;
+        babylonNode.rotationQuaternion = rotation;
+
+        if (babylonNode instanceof Mesh) {
+            var mesh = <Mesh>babylonNode;
+            mesh.scaling = scaling;
+            mesh.computeWorldMatrix(true);
         }
     };
 
@@ -672,7 +665,7 @@ module BABYLON {
     * Imports a node
     */
     var importNode = (runtime: IGLTFRuntime, node: IGLTFNode, parent: Node): Node => {
-        var babylonNode: Node = null;
+        var babylonNode: Mesh | TargetCamera = null;
 
         if (runtime.importOnlyMeshes && (node.skin !== undefined || node.mesh !== undefined)) {
             if (runtime.importMeshesNames.length > 0 && runtime.importMeshesNames.indexOf(node.name) === -1) {
@@ -754,16 +747,7 @@ module BABYLON {
         }
 
         if (babylonNode !== null) {
-            if (babylonNode instanceof Mesh) {
-                configureNodeFromGLTFNode(babylonNode, node, parent);
-            }
-            else {
-                var translation = node.translation || [0, 0, 0];
-                var rotation = node.rotation || [0, 0, 0, 1];
-                var scale = node.scale || [1, 1, 1];
-                configureNode(babylonNode, Vector3.FromArray(translation), Quaternion.RotationAxis(Vector3.FromArray(rotation).normalize(), rotation[3]), Vector3.FromArray(scale));
-            }
-
+            configureNode(babylonNode, node);
             babylonNode.updateCache(true);
             node.babylonNode = babylonNode;
         }

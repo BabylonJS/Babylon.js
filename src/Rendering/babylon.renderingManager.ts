@@ -127,6 +127,17 @@
             }
         }
 
+        public dispose(): void {
+            for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+                var renderingGroup = this._renderingGroups[index];
+                if (renderingGroup) {
+                    renderingGroup.dispose();
+                }
+            }
+
+            this._renderingGroups.length = 0;
+        }
+
         private _prepareRenderingGroup(renderingGroupId: number): void {
             if (!this._renderingGroups[renderingGroupId]) {
                 this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene,

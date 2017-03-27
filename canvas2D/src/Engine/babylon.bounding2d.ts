@@ -127,6 +127,10 @@
             b._worldAABBDirty = true;
         }
 
+        public toString(): string {
+            return `Center: ${this.center}, Extent: ${this.extent}, Radius: ${this.radius}`;
+        }
+
         /**
          * Duplicate this instance and return a new one
          * @return the duplicated instance
@@ -151,6 +155,13 @@
             this.radius = src.radius;
             this.extent.copyFrom(src.extent);
             this._worldAABBDirty = true;
+        }
+
+        public equals(other: BoundingInfo2D): boolean {
+            if (!other) {
+                return false;
+            }
+            return other.center.equals(this.center) && other.extent.equals(this.extent);
         }
 
         /**
@@ -225,7 +236,7 @@
          * @param matrix the transformation matrix to apply
          * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
          */
-        public transform(matrix: Matrix): BoundingInfo2D {
+        public transform(matrix: Matrix2D): BoundingInfo2D {
             var r = new BoundingInfo2D();
             this.transformToRef(matrix, r);
             return r;
@@ -257,7 +268,7 @@
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
-        public transformToRef(matrix: Matrix, result: BoundingInfo2D) {
+        public transformToRef(matrix: Matrix2D, result: BoundingInfo2D) {
             // Construct a bounding box based on the extent values
             let p = BoundingInfo2D._transform;
             p[0].x = this.center.x + this.extent.x;
@@ -271,12 +282,12 @@
 
             // Transform the four points of the bounding box with the matrix
             for (let i = 0; i < 4; i++) {
-                Vector2.TransformToRef(p[i], matrix, p[i]);
+                matrix.transformPointToRef(p[i], p[i]);
             }
             BoundingInfo2D.CreateFromPointsToRef(p, result);
         }
 
-        private _updateWorldAABB(worldMatrix: Matrix) {
+        private _updateWorldAABB(worldMatrix: Matrix2D) {
             // Construct a bounding box based on the extent values
             let p = BoundingInfo2D._transform;
             p[0].x = this.center.x + this.extent.x;
@@ -290,7 +301,7 @@
 
             // Transform the four points of the bounding box with the matrix
             for (let i = 0; i < 4; i++) {
-                Vector2.TransformToRef(p[i], worldMatrix, p[i]);
+                worldMatrix.transformPointToRef(p[i], p[i]);
             }
 
             this._worldAABB.x = Math.min(Math.min(p[0].x, p[1].x), Math.min(p[2].x, p[3].x));
@@ -299,7 +310,7 @@
             this._worldAABB.w = Math.max(Math.max(p[0].y, p[1].y), Math.max(p[2].y, p[3].y));
         }
 
-        public worldMatrixAccess: () => Matrix;
+        public worldMatrixAccess: () => Matrix2D;
 
         public get worldAABBDirtyObservable(): Observable<BoundingInfo2D> {
             if (!this._worldAABBDirtyObservable) {
