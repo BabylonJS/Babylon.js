@@ -46,8 +46,7 @@ void main(void)
 	depth += biasAndScale.x;
 
 #ifdef ESM
-	float shadowStrength = 30.0 * biasAndScale.y;
-	depth = exp(-shadowStrength * depth);
+	depth = exp(-min(87., biasAndScale.y * depth));
 #endif
 
 #ifndef FULLFLOAT

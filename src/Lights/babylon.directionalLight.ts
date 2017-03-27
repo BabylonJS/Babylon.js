@@ -17,6 +17,11 @@ module BABYLON {
 
         @serialize()
         public autoUpdateExtends = true;
+
+        @serialize()
+        public shadowMinZ: number;
+        @serialize()
+        public shadowMaxZ: number;
         
         public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
 
@@ -57,6 +62,7 @@ module BABYLON {
             this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         }
+
         /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.  
          * Returns the DirectionalLight.  
@@ -112,7 +118,7 @@ module BABYLON {
 
                 Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
                     this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                    activeCamera.minZ, activeCamera.maxZ, matrix);
+                    this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
             }
             return this;
         }
