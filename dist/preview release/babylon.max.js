@@ -45482,6 +45482,12 @@ var BABYLON;
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
+            // Textures
+            for (var name in this._textures) {
+                if (!this._textures[name].isReady()) {
+                    return false;
+                }
+            }
             // Alpha test
             if (engine.getAlphaTesting()) {
                 defines.push("#define ALPHATEST");
