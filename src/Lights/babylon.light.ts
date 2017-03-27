@@ -9,9 +9,10 @@
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
+
+        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
 
-        supportsVSM(): boolean;
         needRefreshPerFrame(): boolean;
         needCube(): boolean;
 
@@ -90,10 +91,11 @@
 
         /**
          * Creates a Light object in the scene.  
+         * Documentation : http://doc.babylonjs.com/tutorials/lights  
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
-            scene.addLight(this);
+            this.getScene().addLight(this);
         }
         /**
          * Returns the string "Light".  

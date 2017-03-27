@@ -125,7 +125,7 @@
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-	        this._collider.collisionMask = this._collisionMask;
+            this._collider.collisionMask = this._collisionMask;
 		
             //no need for clone, as long as gravity is not on.
             var actualVelocity = velocity;
@@ -181,7 +181,7 @@
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
             } else {
-                this.position.addInPlace(this.cameraDirection);
+                super._updatePosition();
             }
         }
 

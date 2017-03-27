@@ -1,5 +1,270 @@
 ﻿module BABYLON {
 
+    /**
+       * A class storing a Matrix2D for 2D transformations
+       * The stored matrix is a 3*3 Matrix2D
+       * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+       * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+       * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
+    export class Matrix2D {
+
+        public static Zero(): Matrix2D {
+            return new Matrix2D();
+        }
+        
+        public static FromValuesToRef(m0: number, m1: number, m2: number, m3: number, m4: number, m5: number, result: Matrix2D) {
+            result.m[0] = m0;   result.m[1] = m1;
+            result.m[2] = m2;   result.m[3] = m3;
+            result.m[4] = m4;   result.m[5] = m5;
+        }
+
+        public static FromMatrix(source: Matrix): Matrix2D {
+            let result = new Matrix2D();
+            Matrix2D.FromMatrixToRef(source, result);
+            return result;
+        }
+
+        public static FromMatrixToRef(source: Matrix, result: Matrix2D) {
+            result.m[0] = source.m[0];    result.m[1] = source.m[1];
+            result.m[2] = source.m[4];    result.m[3] = source.m[5];
+            result.m[4] = source.m[8];    result.m[5] = source.m[9];
+        }
+
+        public static Rotation(angle: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.RotationToRef(angle, result);
+
+            return result;
+        }
+
+        public static RotationToRef(angle: number, result: Matrix2D): void {
+            var s = Math.sin(angle);
+            var c = Math.cos(angle);
+
+            result.m[0] = c;    result.m[1] = s;
+            result.m[2] = -s;   result.m[3] = c;
+            result.m[4] = 0;    result.m[5] = 0;
+        }
+
+        public static Translation(x: number, y: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.TranslationToRef(x, y, result);
+
+            return result;
+        }
+
+        public static TranslationToRef(x: number, y: number, result: Matrix2D): void {
+            result.m[0] = 1;    result.m[1] = 0;
+            result.m[2] = 0;    result.m[3] = 1;
+            result.m[4] = x;    result.m[5] = y;
+        }
+
+        public static Scaling(x: number, y: number): Matrix2D {
+            var result = new Matrix2D();
+
+            Matrix2D.ScalingToRef(x, y, result);
+
+            return result;
+        }
+
+        public static ScalingToRef(x: number, y: number, result: Matrix2D): void {
+            result.m[0] = x;    result.m[1] = 0;
+            result.m[2] = 0;    result.m[3] = y;
+            result.m[4] = 0;    result.m[5] = 0;
+        }
+
+        public m = new Float32Array(6);
+
+        public static Identity(): Matrix2D {
+            let res = new Matrix2D();
+            Matrix2D.IdentityToRef(res);
+            return res;
+        }
+
+        public static IdentityToRef(res: Matrix2D) {
+            res.m[1] = res.m[2] = res.m[4] = res[5] = 0;
+            res.m[0] = res.m[3] = 1;
+        }
+
+        public static FromQuaternion(quaternion: Quaternion): Matrix2D {
+            let result = new Matrix2D();
+            Matrix2D.FromQuaternionToRef(quaternion, result);
+            return result;
+        }
+
+        public static FromQuaternionToRef(quaternion: Quaternion, result: Matrix2D) {
+            var xx = quaternion.x * quaternion.x;
+            var yy = quaternion.y * quaternion.y;
+            var zz = quaternion.z * quaternion.z;
+            var xy = quaternion.x * quaternion.y;
+            var zw = quaternion.z * quaternion.w;
+            //var zx = quaternion.z * quaternion.x;
+            //var yw = quaternion.y * quaternion.w;
+            //var yz = quaternion.y * quaternion.z;
+            //var xw = quaternion.x * quaternion.w;
+
+            result.m[0] = 1.0 - (2.0 * (yy + zz));
+            result.m[1] = 2.0 * (xy + zw);
+            //result.m[2] = 2.0 * (zx - yw);
+            //result.m[3] = 0;
+            result.m[2] = 2.0 * (xy - zw);
+            result.m[3] = 1.0 - (2.0 * (zz + xx));
+            //result.m[6] = 2.0 * (yz + xw);
+            //result.m[7] = 0;
+            //result.m[8] = 2.0 * (zx + yw);
+            //result.m[9] = 2.0 * (yz - xw);
+            //result.m[10] = 1.0 - (2.0 * (yy + xx));
+            //result.m[11] = 0;
+            //result.m[12] = 0;
+            //result.m[13] = 0;
+            //result.m[14] = 0;
+            //result.m[15] = 1.0;
+        }
+
+        public static Compose(scale: Vector2, rotation: number, translation: Vector2): Matrix2D {
+            var result = Matrix2D.Scaling(scale.x, scale.y);
+
+            var rotationMatrix = Matrix2D.Rotation(rotation);
+            result = result.multiply(rotationMatrix);
+
+            result.setTranslation(translation);
+
+            return result;
+        }
+
+        public static Invert(source: Matrix2D): Matrix2D {
+            let result = new Matrix2D();
+            source.invertToRef(result);
+            return result;
+        }
+
+        public clone(): Matrix2D {
+            let result = new Matrix2D();
+            result.copyFrom(this);
+            return result;
+        }
+
+        public copyFrom(other: Matrix2D) {
+            for (let i = 0; i < 6; i++) {
+                this.m[i] = other.m[i];
+            }
+        }
+
+        public getTranslation(): Vector2 {
+            return new Vector2(this.m[4], this.m[5]);
+        }
+
+        public setTranslation(translation: Vector2) {
+            this.m[4] = translation.x;
+            this.m[5] = translation.y;
+        }
+
+        public determinant(): number {
+            return this.m[0] * this.m[3] - this.m[1] * this.m[2];
+        }
+
+        public invertToThis() {
+            this.invertToRef(this);
+        }
+
+        public invert(): Matrix2D {
+            let res = new Matrix2D();
+            this.invertToRef(res);
+            return res;
+        }
+
+        // http://mathworld.wolfram.com/MatrixInverse.html
+        public invertToRef(res: Matrix2D) {
+            let l0 = this.m[0]; let l1 = this.m[1];
+            let l2 = this.m[2]; let l3 = this.m[3];
+            let l4 = this.m[4]; let l5 = this.m[5];
+
+            let det = this.determinant();
+            if (det < (Epsilon * Epsilon)) {
+                throw new Error("Can't invert matrix, near null determinant");
+            }
+
+            let detDiv = 1 / det;
+
+            let det4 = l2 * l5 - l3 * l4;
+            let det5 = l1 * l4 - l0 * l5;
+
+            res.m[0] = l3 * detDiv;     res.m[1] = -l1 * detDiv;
+            res.m[2] = -l2 * detDiv;    res.m[3] = l0 * detDiv;
+            res.m[4] = det4 * detDiv;   res.m[5] = det5 * detDiv;
+        }
+
+        public multiplyToThis(other: Matrix2D) {
+            this.multiplyToRef(other, this);
+        }
+
+        public multiply(other: Matrix2D): Matrix2D {
+            let res = new Matrix2D();
+            this.multiplyToRef(other, res);
+            return res;
+        }
+
+        public multiplyToRef(other: Matrix2D, result: Matrix2D) {
+            let l0 = this.m[0];     let l1 = this.m[1];
+            let l2 = this.m[2];     let l3 = this.m[3];
+            let l4 = this.m[4];     let l5 = this.m[5];
+
+            let r0 = other.m[0];    let r1 = other.m[1];
+            let r2 = other.m[2];    let r3 = other.m[3];
+            let r4 = other.m[4];    let r5 = other.m[5];
+
+            result.m[0] = l0 * r0 + l1 * r2;        result.m[1] = l0 * r1 + l1 * r3;
+            result.m[2] = l2 * r0 + l3 * r2;        result.m[3] = l2 * r1 + l3 * r3;
+            result.m[4] = l4 * r0 + l5 * r2 + r4;   result.m[5] = l4 * r1 + l5 * r3 + r5;
+        }
+
+        public transformFloats(x: number, y: number): Vector2 {
+            let res = Vector2.Zero();
+            this.transformFloatsToRef(x, y, res);
+            return res;
+        }
+
+        public transformFloatsToRef(x: number, y: number, r: Vector2) {
+            r.x = x * this.m[0] + y * this.m[2] + this.m[4];
+            r.y = x * this.m[1] + y * this.m[3] + this.m[5];
+        }
+
+        public transformPoint(p: Vector2): Vector2 {
+            let res = Vector2.Zero();
+            this.transformFloatsToRef(p.x, p.y, res);
+            return res;
+        }
+
+        public transformPointToRef(p: Vector2, r: Vector2) {
+            this.transformFloatsToRef(p.x, p.y, r);
+        }
+
+        private static _decomp: Matrix2D = new Matrix2D();
+
+        public decompose(scale: Vector2, translation: Vector2): number {
+            translation.x = this.m[4];
+            translation.y = this.m[5];
+
+            scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1]);
+            scale.y = Math.sqrt(this.m[2] * this.m[2] + this.m[3] * this.m[3]);
+
+            if (scale.x === 0 || scale.y === 0) {
+                return null;
+            }
+
+            return Math.atan2(-this.m[2] / scale.y, this.m[0] / scale.x);
+        }
+    }
+
+    /**
+     * Stores information about a 2D Triangle.
+     * This class stores the 3 vertices but also the center and radius of the triangle
+     */
     export class Tri2DInfo {
         /**
          * Construct an instance of Tri2DInfo, you can either pass null to a, b and c and the instance will be allocated "clear", or give actual triangle info and the center/radius will be computed
@@ -39,10 +304,13 @@
             this._updateCenterRadius();
         }
 
-        public transformInPlace(transform: Matrix) {
-            Vector2.TransformToRef(this.a, transform, this.a);
-            Vector2.TransformToRef(this.b, transform, this.b);
-            Vector2.TransformToRef(this.c, transform, this.c);
+        public transformInPlace(transform: Matrix2D) {
+            transform.transformPointToRef(this.a, this.a);
+            transform.transformPointToRef(this.b, this.b);
+            transform.transformPointToRef(this.c, this.c);
+            //Vector2.TransformToRef(this.a, transform, this.a);
+            //Vector2.TransformToRef(this.b, transform, this.b);
+            //Vector2.TransformToRef(this.c, transform, this.c);
 
             this._updateCenterRadius();
         }
@@ -64,12 +332,22 @@
         }
     }
 
+    /**
+     * Stores an array of 2D Triangles.
+     * Internally the data is stored as a Float32Array to minimize the memory footprint.
+     * This can use the Tri2DInfo class as proxy for storing/retrieving data.
+     * The array can't grow, it's fixed size.
+     */
     export class Tri2DArray {
         constructor(count: number) {
             this._count = count;
             this._array = new Float32Array(9 * count);
         }
 
+        /**
+         * Clear the content and allocate a new array to store the given count of triangles
+         * @param count The new count of triangles to store
+         */
         public clear(count: number) {
             if (this._count === count) {
                 return;
@@ -79,6 +357,13 @@
             this._array = new Float32Array(9 * count);
         }
 
+        /**
+         * Store a given triangle at the given index
+         * @param index the 0 based index to store the triangle in the array
+         * @param a the A vertex of the triangle
+         * @param b the B vertex of the triangle
+         * @param c the C vertex of the triangle
+         */
         public storeTriangle(index: number, a: Vector2, b: Vector2, c: Vector2) {
             let center = new Vector2((a.x + b.x + c.x) / 3, (a.y + b.y + c.y) / 3);
 
@@ -123,7 +408,13 @@
             tri2dInfo.radius   = this._array[offset + 8];
         }
 
-        public transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix) {
+        /**
+         * Transform the given triangle and store its result in the array
+         * @param index The index to store the result to
+         * @param tri2dInfo The triangle to transform
+         * @param transform The transformation matrix
+         */
+        public transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix2D) {
             if (index >= this._count) {
                 throw new Error(`Can't fetch the triangle at index ${index}, max index is ${this._count - 1}`);
             }
@@ -139,10 +430,19 @@
             tri2dInfo.transformInPlace(transform);
         }
 
+        /**
+         * Get the element count that can be stored in this array
+         * @returns {} 
+         */
         public get count(): number {
             return this._count;
         }
 
+        /**
+         * Check if a given point intersects with at least one of the triangles stored in the array.
+         * If true is returned the point is intersecting with at least one triangle, false if it doesn't intersect with any of them
+         * @param p The point to check
+         */
         public doesContain(p: Vector2): boolean {
             Tri2DArray._checkInitStatics();
             let a = Tri2DArray.tempT[0];
@@ -156,7 +456,14 @@
             return false;
         }
 
-        public static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix): boolean {
+        /**
+         * Make a intersection test between two sets of triangles. The triangles of setB will be transformed to the frame of reference of the setA using the given bToATransform matrix.
+         * If true is returned at least one triangle intersects with another of the other set, otherwise false is returned.
+         * @param setA The first set of triangles
+         * @param setB The second set of triangles
+         * @param bToATransform The transformation matrix to transform the setB triangles into the frame of reference of the setA
+         */
+        public static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix2D): boolean {
             Tri2DArray._checkInitStatics();
 
             let a = Tri2DArray.tempT[0];
@@ -209,6 +516,9 @@
         private static tempT: Tri2DInfo[] = null;
     }
 
+    /**
+     * Some 2D Math helpers functions
+     */
     class Math2D {
 
         static Dot(a: Vector2, b: Vector2): number {

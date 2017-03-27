@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.targetCamera.ts" />
+
+module BABYLON {
     export class FollowCamera extends TargetCamera {
         @serialize()
         public radius: number = 12;

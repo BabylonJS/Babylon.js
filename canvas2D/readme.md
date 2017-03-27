@@ -44,6 +44,10 @@ If you need help, want to give feedback, report a bug or be aware of the latest 
 
 **Important** when you post something you better mentioned me using `@nockawa`, I'm **not** checking the forum everyday but some other users does and ping me if needed, but still: mentioning me is the best way to get my attention.
 
+#### We now use GitHub Issues and Projects
+
+You can take a look at the current GitHub Project for the [V3 here](https://github.com/BabylonJS/Babylon.js/projects/2)
+
 ## Releases
 
 You want to use an existing build, that's simple, you can grab either the latest official release or the latest build of the current developing version.

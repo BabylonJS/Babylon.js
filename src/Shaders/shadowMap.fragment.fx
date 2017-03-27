@@ -9,15 +9,6 @@ vec4 pack(float depth)
 
 	return res;
 }
-
-// Thanks to http://devmaster.net/
-vec2 packHalf(float depth) 
-{ 
-	const vec2 bitOffset = vec2(1.0 / 255., 0.);
-	vec2 color = vec2(depth, fract(depth * 255.));
-
-	return color - (color.yy * bitOffset);
-}
 #endif
 
 varying vec4 vPosition;
@@ -31,6 +22,8 @@ uniform sampler2D diffuseSampler;
 uniform vec3 lightPosition;
 uniform vec2 depthValues;
 #endif
+
+uniform float bias;
 
 void main(void)
 {
@@ -47,23 +40,19 @@ void main(void)
 	depth = clamp(depth, 0., 1.0);
 #else
 	float depth = vPosition.z / vPosition.w;
-	depth = depth * 0.5 + 0.5;
+	depth = depth * 0.5 + 0.5;	
 #endif
 
-#ifdef VSM
-	float moment1 = depth;
-	float moment2 = moment1 * moment1;
+	depth += bias;
 
-	#ifndef FULLFLOAT
-		gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
-	#else
-		gl_FragColor = vec4(moment1, moment2, 1.0, 1.0);
-	#endif
+#ifdef ESM
+	const float shadowStrength = 30.0;
+	depth = exp(shadowStrength * depth);
+#endif
+
+#ifndef FULLFLOAT
+	gl_FragColor = pack(depth);
 #else
-	#ifndef FULLFLOAT
-		gl_FragColor = pack(depth);
-	#else
-		gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
-	#endif
+	gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
 #endif
 }

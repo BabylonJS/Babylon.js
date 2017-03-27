@@ -152,6 +152,9 @@ namespace BabylonExport.Entities
         public bool useRadianceOverAlpha { get; set; }
 
         [DataMember]
+        public bool usePhysicalLightFalloff { get; set; }
+
+        [DataMember]
         public float indexOfRefraction { get; set; }
 
         [DataMember]
@@ -179,6 +182,7 @@ namespace BabylonExport.Entities
             indexOfRefraction = 0.66f;
             useRadianceOverAlpha = true;
             useSpecularOverAlpha = true;
+            usePhysicalLightFalloff = true;
             useEmissiveAsIllumination = false;
 
             // Default Null Metallic Workflow
@@ -204,6 +208,11 @@ namespace BabylonExport.Entities
             overloadedReflectivity = new[] { 0.3f, 0.3f, 0.3f };
             overloadedEmissive = new[] {1f, 1f, 1f };
             overloadedReflection = new[] { 1f, 1f, 1f };
+        }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
         }
     }
 }

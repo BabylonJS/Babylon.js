@@ -99,6 +99,7 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
         private _textureMatrix: Matrix;
+        private _samples = 1;
         protected _renderTargetOptions: {
             generateMipMaps: boolean,
             type: number,
@@ -139,6 +140,18 @@
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
+        }
+
+        public get samples(): number {
+            return this._samples;
+        }
+
+        public set samples(value: number) {
+            if (this._samples === value) {
+                return;
+            }
+            
+            this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
         public resetRefreshCounter(): void {
@@ -288,6 +301,18 @@
                 }
             }
 
+            for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
+                    var particleSystem = scene.particleSystems[particleIndex];
+
+                    if (!particleSystem.isStarted() || !particleSystem.emitter || !particleSystem.emitter.position || !particleSystem.emitter.isEnabled()) {
+                        continue;
+                    }
+
+                    if (currentRenderList.indexOf(particleSystem.emitter) >= 0) {
+                        this._renderingManager.dispatchParticles(particleSystem);
+                    }
+                }
+
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
@@ -345,8 +370,6 @@
                 scene.updateTransformMatrix(true);
             }
 
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
-
             // Dump ?
             if (dumpForDebug) {
                 Tools.DumpFramebuffer(this._size, this._size, engine);
@@ -361,7 +384,11 @@
                     }
                 }
 
-                engine.unBindFramebuffer(this._texture, this.isCube);
+                engine.unBindFramebuffer(this._texture, this.isCube, () => {
+                    this.onAfterRenderObservable.notifyObservers(faceIndex);    
+                });
+            } else {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
             }
         }
 

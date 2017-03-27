@@ -497,9 +497,6 @@ var BABYLON;
         var nodesToRootToAdd = [];
         getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
         newSkeleton.bones = [];
-        if (nodesToRoot.length === 0) {
-            newSkeleton.needInitialSkinMatrix = true;
-        }
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
             var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
@@ -728,11 +725,11 @@ var BABYLON;
             var mat = BABYLON.Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
             configureNode(newNode, position, rotation, scaling);
-            newNode.computeWorldMatrix(true);
         }
         else {
             configureNode(newNode, BABYLON.Vector3.FromArray(node.translation), BABYLON.Quaternion.FromArray(node.rotation), BABYLON.Vector3.FromArray(node.scale));
         }
+        newNode.computeWorldMatrix(true);
     };
     /**
     * Imports a node
@@ -859,7 +856,7 @@ var BABYLON;
                 var translation = node.translation || [0, 0, 0];
                 var rotation = node.rotation || [0, 0, 0, 1];
                 var scale = node.scale || [1, 1, 1];
-                configureNode(lastNode, BABYLON.Vector3.FromArray(translation), BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray(rotation).normalize(), rotation[3]), BABYLON.Vector3.FromArray(scale));
+                configureNode(lastNode, BABYLON.Vector3.FromArray(translation), BABYLON.Quaternion.FromArray(rotation), BABYLON.Vector3.FromArray(scale));
             }
             lastNode.updateCache(true);
             node.babylonNode = lastNode;

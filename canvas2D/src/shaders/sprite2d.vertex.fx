@@ -1,4 +1,4 @@
-﻿// based on if Instanced Array are supported or not, declare the field either as attribute or uniform
+﻿//based on if Instanced Array are supported or not, declare the field either as attribute or uniform
 #ifdef Instanced
 #define att attribute
 #else
@@ -25,6 +25,7 @@ att vec4 scale9;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
+att vec3 renderingInfo;
 att float opacity;
 
 // Uniforms
@@ -76,13 +77,15 @@ void main(void) {
 		vUV.y = 1.0 - vUV.y;
 	}
 
+	//vUV.x += 0.5 / textureSize.x;
+
 	vec4 pos;
-	if (alignToPixel == 1.0)
-	{
-		pos.xy = floor(pos2.xy * sizeUV * textureSize);
-	} else {
+	//if (alignToPixel == 1.0)
+	//{
+	//	pos.xy = floor(pos2.xy * sizeUV * textureSize);
+	//} else {
 		pos.xy = pos2.xy * sizeUV * textureSize;
-	}
+	//}
 
 #ifdef Scale9
 	if (invertY == 1.0) {
@@ -92,7 +95,7 @@ void main(void) {
 	}
 	else {
 		vTopLeftUV = topLeftUV;
-		vBottomRightUV = vec2(topLeftUV.x, topLeftUV.y + sizeUV.y);
+		vBottomRightUV = vec2(topLeftUV.x + sizeUV.x, topLeftUV.y + sizeUV.y);
 		vScale9 = scale9;
 	}
 	vScaleFactor = scaleFactor;
@@ -101,5 +104,18 @@ void main(void) {
 	vOpacity = opacity;
 	pos.z = 1.0;
 	pos.w = 1.0;
-	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);
+
+	float x = dot(pos, transformX);
+	float y = dot(pos, transformY);
+	if (renderingInfo.z == 1.0) {
+		float rw = renderingInfo.x;
+		float rh = renderingInfo.y;
+		float irw = 2.0 / rw;
+		float irh = 2.0 / rh;
+
+		x = (floor((x / irw)) * irw) + irw / 2.0;
+		y = (floor((y / irh)) * irh) + irh / 2.0;
+	}
+
+	gl_Position = vec4(x, y, zBias.x, 1.0);
 }	

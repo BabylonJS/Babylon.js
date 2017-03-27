@@ -170,25 +170,6 @@
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the rectangle size (width/height)
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize = value.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
         /**
          * Get if the rectangle is notRound (returns true) or rounded (returns false).
@@ -307,6 +288,7 @@
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -348,6 +330,7 @@
             scaleX                ?: number,
             scaleY                ?: number,
             dontInheritParentScale?: boolean,
+            alignToPixel          ?: boolean,
             opacity               ?: number,
             zOrder                ?: number, 
             origin                ?: Vector2,
@@ -377,7 +360,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -577,15 +560,19 @@
             }
         }
 
-        protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size) {
+        protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size) {
             // Fall back to default implementation if there's no round Radius
             if (this._notRounded) {
-                super._getActualSizeFromContentToRef(primSize, newPrimSize);
+                super._getActualSizeFromContentToRef(primSize, paddingOffset, newPrimSize);
             } else {
                 let rr = Math.round((this.roundRadius - (this.roundRadius / Math.sqrt(2))) * 1.3);
                 newPrimSize.copyFrom(primSize);
                 newPrimSize.width  += rr * 2;
                 newPrimSize.height += rr * 2;
+                paddingOffset.x += rr;
+                paddingOffset.y += rr;
+                paddingOffset.z += rr;
+                paddingOffset.w += rr;
             }
         }
 
@@ -600,21 +587,24 @@
             return res;
         }
 
+        private static _riv0 = new Vector2(0,0);
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
+
+            //let s = Rectangle2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
+
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Rectangle2DInstanceData>part;
                 let size = this.actualSize;
-                let s = this.actualScale;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.roundRadius || 0);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Rectangle2DInstanceData>part;
                 let size = this.actualSize;
-                let s = this.actualScale;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.roundRadius || 0);
             }
             return true;
         }

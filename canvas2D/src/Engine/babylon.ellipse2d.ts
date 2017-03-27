@@ -168,21 +168,6 @@
         public static acutalSizeProperty: Prim2DPropInfo;
         public static subdivisionsProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.acutalSizeProperty = pi, false, true)
-        /**
-         * Get/Set the size of the ellipse
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            this._actualSize = value;
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Ellipse2D.subdivisionsProperty = pi)
         /**
          * Get/set the number of subdivisions used to draw the ellipsis. Default is 64.
@@ -218,6 +203,7 @@
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -260,6 +246,7 @@
             scaleX                ?: number,
             scaleY                ?: number,
             dontInheritParentScale?: boolean,
+            alignToPixel          ?: boolean,
             opacity               ?: number,
             zOrder                ?: number, 
             origin                ?: Vector2,
@@ -289,7 +276,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -434,21 +421,24 @@
             return res;
         }
 
+        private static _riv0 = new Vector2(0,0);
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
+
+            //let s = Ellipse2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
+
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                let s = this.actualScale;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.subdivisions);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                let s = this.actualScale;
-                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new Vector3(size.width/* * s.x*/, size.height/* * s.y*/, this.subdivisions);
             }
             return true;
         }

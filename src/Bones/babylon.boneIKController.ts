@@ -1,6 +1,10 @@
 module BABYLON {
     export class BoneIKController {
 
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpQuat = Quaternion.Identity();
+        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
+        
         public targetMesh: AbstractMesh;
         public poleTargetMesh: AbstractMesh;
         public poleTargetBone: Bone;
@@ -22,20 +26,13 @@ module BABYLON {
         private _maxAngle = Math.PI;
         private _maxReach: number;
 
-        private _tmpVec1 = Vector3.Zero();
-        private _tmpVec2 = Vector3.Zero();
-        private _tmpVec3 = Vector3.Zero();
-        private _tmpVec4 = Vector3.Zero();
-        private _tmpVec5 = Vector3.Zero();
-        private _tmpMat1 = Matrix.Identity();
-        private _tmpMat2 = Matrix.Identity();
-        private _tmpQuat1 = Quaternion.Identity();
-
         private _rightHandedSystem = false;
 
         private _bendAxis = Vector3.Right();
         private _slerping = false;
 
+        private _adjustRoll = 0;
+        
         get maxAngle(): number {
 
             return this._maxAngle;
@@ -48,18 +45,36 @@ module BABYLON {
 
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number, slerpAmount?:number }){
+        constructor(mesh: AbstractMesh, 
+                    bone: Bone, 
+                    options?: { 
+                        targetMesh?: AbstractMesh, 
+                        poleTargetMesh?: AbstractMesh, 
+                        poleTargetBone?: Bone, 
+                        poleTargetLocalOffset?:Vector3, 
+                        poleAngle?: number, 
+                        bendAxis?: Vector3, 
+                        maxAngle?:number, 
+                        slerpAmount?:number 
+                    }){
 
             this._bone2 = bone;
             this._bone1 = bone.getParent();
             
             this.mesh = mesh;
 
+            var bonePos = bone.getPosition();
+
              if(bone.getAbsoluteTransform().determinant() > 0){
                 this._rightHandedSystem = true;
                 this._bendAxis.x = 0;
                 this._bendAxis.y = 0;
-                this._bendAxis.z = 1;
+                this._bendAxis.z = -1;
+
+                if(bonePos.x > bonePos.y && bonePos.x > bonePos.z){
+                    this._adjustRoll = Math.PI*.5;
+                    this._bendAxis.z = 1;
+                }
             }
 
             if (this._bone1.length) {
@@ -151,14 +166,14 @@ module BABYLON {
 
         }
 
-        public update (): void {
+        public update(): void {
 	
             var bone1 = this._bone1;
             var target = this.targetPosition;
             var poleTarget = this.poleTargetPosition;
 
-            var mat1 = this._tmpMat1;
-            var mat2 = this._tmpMat2;
+            var mat1 = BoneIKController._tmpMats[0];
+            var mat2 = BoneIKController._tmpMats[1];
 
             if(this.targetMesh){
                 target.copyFrom(this.targetMesh.getAbsolutePosition());
@@ -170,11 +185,13 @@ module BABYLON {
                 Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
             }
 
-            var bonePos = this._tmpVec1;
-            var zaxis = this._tmpVec2;
-            var xaxis = this._tmpVec3;
-            var yaxis = this._tmpVec4;
-            var upAxis = this._tmpVec5;
+            var bonePos = BoneIKController._tmpVecs[0];
+            var zaxis = BoneIKController._tmpVecs[1];
+            var xaxis = BoneIKController._tmpVecs[2];
+            var yaxis = BoneIKController._tmpVecs[3];
+            var upAxis = BoneIKController._tmpVecs[4];
+
+            var _tmpQuat = BoneIKController._tmpQuat;
             
             bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
@@ -232,7 +249,7 @@ module BABYLON {
 
             if (this._rightHandedSystem) {
 
-                Matrix.RotationYawPitchRollToRef(0, 0, Math.PI * .5, mat2);
+                Matrix.RotationYawPitchRollToRef(0, 0, this._adjustRoll, mat2);
                 mat2.multiplyToRef(mat1, mat1);
 
                 Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
@@ -240,10 +257,12 @@ module BABYLON {
 
             } else {
 
-                this._tmpVec1.copyFrom(this._bendAxis);
-                this._tmpVec1.x *= -1;
+                var _tmpVec = BoneIKController._tmpVecs[5];
 
-                Matrix.RotationAxisToRef(this._tmpVec1, -angB, mat2);
+                _tmpVec.copyFrom(this._bendAxis);
+                _tmpVec.x *= -1;
+
+                Matrix.RotationAxisToRef(_tmpVec, -angB, mat2);
                 mat2.multiplyToRef(mat1, mat1);
                 
             }
@@ -257,8 +276,8 @@ module BABYLON {
                 if(!this._slerping){
                     Quaternion.FromRotationMatrixToRef(this._bone1Mat, this._bone1Quat);
                 }
-                Quaternion.FromRotationMatrixToRef(mat1, this._tmpQuat1);
-                Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpAmount, this._bone1Quat);
+                Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
+                Quaternion.SlerpToRef(this._bone1Quat, _tmpQuat, this.slerpAmount, this._bone1Quat);
                 angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
                 this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
                 this._slerping = true;

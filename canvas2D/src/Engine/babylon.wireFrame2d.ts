@@ -233,25 +233,6 @@
             this.internalSetSize(value);
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => WireFrame2D.actualSizeProperty = pi, false, true)
-        /**
-         * Get/set the actual size of the sprite to display
-         */
-        public get actualSize(): Size {
-            if (this._actualSize) {
-                return this._actualSize;
-            }
-            return this.size;
-        }
-
-        public set actualSize(value: Size) {
-            if (!this._actualSize) {
-                this._actualSize.clone();
-            } else {
-                this._actualSize.copyFrom(value);
-            }
-        }
-
         protected updateLevelBoundingInfo(): boolean {
             let v = this._computeMinMaxTrans();
             BoundingInfo2D.CreateFromMinMaxToRef(v.x, v.z, v.y, v.w, this._levelBoundingInfo);
@@ -337,7 +318,7 @@
             paddingLeft           ?: number | string,
             paddingRight          ?: number | string,
             paddingBottom         ?: number | string,
-            padding               ?: string,
+            padding               ?: number | string,
         }) {
 
             if (!settings) {
@@ -425,11 +406,6 @@
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
-
-            if (part.id === WireFrame2D.WIREFRAME2D_MAINPARTID) {
-                let d = <WireFrame2DInstanceData>this._instanceDataParts[0];
-                d.properties = new Vector3(this.alignToPixel ? 1 : 0, 2/this.renderGroup.actualWidth, 2/this.renderGroup.actualHeight);
-            }
             return true;
         }
 
@@ -470,14 +446,6 @@
     export class WireFrame2DInstanceData extends InstanceDataBase {
         constructor(partId: number) {
             super(partId, 1);
-        }
-
-        // the properties is for now the alignedToPixel value
-        @instanceData()
-        get properties(): Vector3 {
-            return null;
-        }
-        set properties(value: Vector3) {
         }
     }
 }
