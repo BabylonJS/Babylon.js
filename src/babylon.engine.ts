@@ -1292,6 +1292,22 @@
             this.wipeCaches();
         }
 
+        // UBOs
+        public createUniformBuffer(formattedUniforms: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (formattedUniforms instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>formattedUniforms, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>formattedUniforms), this._gl.STATIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+            ubo.references = 1;
+            return ubo;
+        }
+
         // VBOs
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
@@ -1401,6 +1417,14 @@
                 this._unBindVertexArrayObject();
             }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        }
+
+        public bindUniformBuffer(buffer?: WebGLBuffer): void {
+            this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer);
+        }
+
+        public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
+            this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
         }
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
@@ -1786,6 +1810,12 @@
             return results;
         }
 
+        public bindUniformBlock(shaderProgram: WebGLProgram): void {
+            var uniformPerPassLocation = this._gl.getUniformBlockIndex(shaderProgram, 'PerPass');
+            this._gl.uniformBlockBinding(shaderProgram, uniformPerPassLocation, 0);
+
+        };
+
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
             var results = [];
 
@@ -1809,6 +1839,15 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
+        }
+
+        public setUniformBuffer(ubo: WebGLBuffer, array: Float32Array): void {
+            this.bindUniformBuffer(ubo);
+
+            this._gl.bufferData(this._gl.UNIFORM_BUFFER, array, this._gl.STATIC_DRAW);
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, array);
+
+            this.bindUniformBuffer(null);
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
