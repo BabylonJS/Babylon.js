@@ -559,6 +559,13 @@
             }
             else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
+            }            
+            // Backward compat
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
             }
 
             if (parsedShadowGenerator.blurScale) {

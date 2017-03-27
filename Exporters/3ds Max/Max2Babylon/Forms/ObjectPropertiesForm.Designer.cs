@@ -412,7 +412,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(18, 27);
+            this.label6.Location = new System.Drawing.Point(18, 26);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(50, 13);
             this.label6.TabIndex = 8;
@@ -421,7 +421,6 @@
             // cbImpostor
             // 
             this.cbImpostor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbImpostor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cbImpostor.FormattingEnabled = true;
             this.cbImpostor.Items.AddRange(new object[] {
             "None",
@@ -681,7 +680,6 @@
             // cbDistanceModel
             // 
             this.cbDistanceModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbDistanceModel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cbDistanceModel.FormattingEnabled = true;
             this.cbDistanceModel.Items.AddRange(new object[] {
             "linear",
