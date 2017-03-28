@@ -895,13 +895,6 @@ module BABYLON {
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
-                var cameraPos = [];
-                if (scene._mirroredCameraPosition) {
-                    scene._mirroredCameraPosition.toArray(cameraPos);
-                } else {
-                    scene.activeCamera.position.toArray(cameraPos);
-                }
-
                 this._effect.updateUniformBufferDynamic();
                 this._effect.bindUniformBuffers();
             }

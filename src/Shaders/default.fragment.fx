@@ -34,9 +34,6 @@ uniform Static {
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-#ifdef SPECULARTERM
-uniform vec4 vSpecularColor;
-#endif
 uniform vec3 vEmissiveColor;
 
 // Input
@@ -232,8 +229,8 @@ void main(void) {
 
 	// Specular map
 #ifdef SPECULARTERM
-	float glossiness = vSpecularColor.a;
-	vec3 specularColor = vSpecularColor.rgb;
+	float glossiness = uStatic.material.vSpecularColor.a;
+	vec3 specularColor = uStatic.material.vSpecularColor.rgb;
 
 #ifdef SPECULAR
 	vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
