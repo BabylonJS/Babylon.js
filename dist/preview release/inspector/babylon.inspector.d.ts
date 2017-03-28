@@ -157,6 +157,96 @@ declare module INSPECTOR {
             type: typeof BABYLON.PBRMaterial;
             properties: string[];
         };
+        'Canvas2D': {
+            type: typeof BABYLON.Canvas2D;
+        };
+        'Canvas2DEngineBoundData': {
+            type: typeof BABYLON.Canvas2DEngineBoundData;
+        };
+        'Ellipse2D': {
+            type: typeof BABYLON.Ellipse2D;
+        };
+        'Ellipse2DInstanceData': {
+            type: typeof BABYLON.Ellipse2DInstanceData;
+        };
+        'Ellipse2DRenderCache': {
+            type: typeof BABYLON.Ellipse2DRenderCache;
+        };
+        'Group2D': {
+            type: typeof BABYLON.Group2D;
+        };
+        'IntersectInfo2D': {
+            type: typeof BABYLON.IntersectInfo2D;
+        };
+        'Lines2D': {
+            type: typeof BABYLON.Lines2D;
+        };
+        'Lines2DInstanceData': {
+            type: typeof BABYLON.Lines2DInstanceData;
+        };
+        'Lines2DRenderCache': {
+            type: typeof BABYLON.Lines2DRenderCache;
+        };
+        'PrepareRender2DContext': {
+            type: typeof BABYLON.PrepareRender2DContext;
+        };
+        'Prim2DBase': {
+            type: typeof BABYLON.Prim2DBase;
+        };
+        'Prim2DClassInfo': {
+            type: typeof BABYLON.Prim2DClassInfo;
+        };
+        'Prim2DPropInfo': {
+            type: typeof BABYLON.Prim2DPropInfo;
+        };
+        'Rectangle2D': {
+            type: typeof BABYLON.Rectangle2D;
+        };
+        'Rectangle2DInstanceData': {
+            type: typeof BABYLON.Rectangle2DInstanceData;
+        };
+        'Rectangle2DRenderCache': {
+            type: typeof BABYLON.Rectangle2DRenderCache;
+        };
+        'Render2DContext': {
+            type: typeof BABYLON.Render2DContext;
+        };
+        'RenderablePrim2D': {
+            type: typeof BABYLON.RenderablePrim2D;
+        };
+        'ScreenSpaceCanvas2D': {
+            type: typeof BABYLON.ScreenSpaceCanvas2D;
+        };
+        'Shape2D': {
+            type: typeof BABYLON.Shape2D;
+        };
+        'Shape2DInstanceData': {
+            type: typeof BABYLON.Shape2DInstanceData;
+        };
+        'Sprite2D': {
+            type: typeof BABYLON.Sprite2D;
+        };
+        'Sprite2DInstanceData': {
+            type: typeof BABYLON.Sprite2DInstanceData;
+        };
+        'Sprite2DRenderCache': {
+            type: typeof BABYLON.Sprite2DRenderCache;
+        };
+        'Text2D': {
+            type: typeof BABYLON.Text2D;
+        };
+        'Text2DInstanceData': {
+            type: typeof BABYLON.Text2DInstanceData;
+        };
+        'Text2DRenderCache': {
+            type: typeof BABYLON.Text2DRenderCache;
+        };
+        'WorldSpaceCanvas2D': {
+            type: typeof BABYLON.WorldSpaceCanvas2D;
+        };
+        'WorldSpaceCanvas2DNode': {
+            type: typeof BABYLON.WorldSpaceCanvas2DNode;
+        };
     };
 }
 
