@@ -5,7 +5,7 @@ var INSPECTOR;
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, popup, initialTab, parentElement) {
+        function Inspector(scene, popup, initialTab, parentElement, newColors) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
@@ -134,6 +134,30 @@ var INSPECTOR;
             // Refresh the inspector if the browser is not edge
             if (!INSPECTOR.Helpers.IsBrowserEdge()) {
                 this.refresh();
+            }
+            // Check custom css colors
+            if (newColors) {
+                var bColor = newColors.backgroundColor || '#242424';
+                var bColorl1 = newColors.backgroundColorLighter || '#2c2c2c';
+                var bColorl2 = newColors.backgroundColorLighter2 || '#383838';
+                var bColorl3 = newColors.backgroundColorLighter3 || '#454545';
+                var color = newColors.color || '#ccc';
+                var colorTop = newColors.colorTop || '#f29766';
+                var colorBot = newColors.colorBot || '#5db0d7';
+                var styles = Inspector.DOCUMENT.querySelectorAll('style');
+                for (var s = 0; s < styles.length; s++) {
+                    var style = styles[s];
+                    if (style.innerHTML.indexOf('insp-wrapper') != -1) {
+                        styles[s].innerHTML = styles[s].innerHTML
+                            .replace(/#242424/g, bColor) // background color
+                            .replace(/#2c2c2c/g, bColorl1) // background-lighter
+                            .replace(/#383838/g, bColorl2) // background-lighter2
+                            .replace(/#454545/g, bColorl3) // background-lighter3
+                            .replace(/#ccc/g, color) // color
+                            .replace(/#f29766/g, colorTop) // color-top
+                            .replace(/#5db0d7/g, colorBot); // color-bot
+                    }
+                }
             }
         }
         /**
