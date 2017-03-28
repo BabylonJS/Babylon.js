@@ -30,7 +30,15 @@ module INSPECTOR {
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement) {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+            backgroundColor?: string,
+            backgroundColorLighter?: string,
+            backgroundColorLighter2?: string,
+            backgroundColorLighter3?: string,
+            color?: string,
+            colorTop?: string,
+            colorBot?: string
+        }) {
 
             //get Tabbar initialTab
             this._initialTab = initialTab;
@@ -182,6 +190,36 @@ module INSPECTOR {
             // Refresh the inspector if the browser is not edge
             if (!Helpers.IsBrowserEdge()) {
                 this.refresh();
+            }
+
+            // Check custom css colors
+            if (newColors) {
+
+                let bColor = newColors.backgroundColor || '#242424';
+                let bColorl1 = newColors.backgroundColorLighter || '#2c2c2c';
+                let bColorl2 = newColors.backgroundColorLighter2 || '#383838';
+                let bColorl3 = newColors.backgroundColorLighter3 || '#454545';
+
+                let color = newColors.color || '#ccc';
+                let colorTop = newColors.colorTop || '#f29766';
+                let colorBot = newColors.colorBot || '#5db0d7';
+
+                let styles = Inspector.DOCUMENT.querySelectorAll('style');
+                for (let s = 0; s < styles.length; s++) {
+                    let style = styles[s];
+
+                    if (style.innerHTML.indexOf('insp-wrapper') != -1) {
+
+                        styles[s].innerHTML = styles[s].innerHTML
+                            .replace(/#242424/g, bColor) // background color
+                            .replace(/#2c2c2c/g, bColorl1) // background-lighter
+                            .replace(/#383838/g, bColorl2) // background-lighter2
+                            .replace(/#454545/g, bColorl3) // background-lighter3
+                            .replace(/#ccc/g, color) // color
+                            .replace(/#f29766/g, colorTop) // color-top
+                            .replace(/#5db0d7/g, colorBot) // color-bot
+                    }
+                }
             }
         }
 

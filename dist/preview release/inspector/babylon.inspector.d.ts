@@ -24,7 +24,15 @@ declare module INSPECTOR {
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement);
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+            backgroundColor?: string;
+            backgroundColorLighter?: string;
+            backgroundColorLighter2?: string;
+            backgroundColorLighter3?: string;
+            color?: string;
+            colorTop?: string;
+            colorBot?: string;
+        });
         /**
          * If the given element has a position 'asbolute' or 'relative',
          * returns the first parent of the given element that has a position 'relative' or 'absolute'.
