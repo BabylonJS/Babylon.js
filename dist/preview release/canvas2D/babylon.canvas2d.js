@@ -5,9 +5,9 @@ BABYLON.Effect.ShadersStore['lines2dVertexShader'] = "\n#ifdef Instanced\n#defin
 BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
-BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=floor((x/irw)+0.5)*irw;\ny=floor((y/irh)+0.5)*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n} ";
-BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxxx)*vColor;\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
-BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=floor((x/irw)+0.5)*irw;\ny=floor((y/irh)+0.5)*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
+BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\n\nvec4 pos;\n\n\n\n\npos.xy=pos2.xy*sizeUV*textureSize;\n\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw))*irw)+irw/2.0;\ny=(floor((y/irh))*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n} ";
+BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxx*vColor.xyz*vColor.a,vColor.a);\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
+BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\n\n\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*superSampleFactor*sizeUV*textureSize;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=((floor((x/irw)+0.5)*irw)+irw/2.0)+0.5*irw;\ny=((floor((y/irh)+0.5)*irh)+irh/2.0)+0.5*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nfloat x=dot(p,transformX);\nfloat y=dot(p,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
 
@@ -2036,6 +2036,7 @@ var BABYLON;
             _this._signedDistanceField = signedDistanceField;
             _this._superSample = false;
             _this._isPremultipliedAlpha = !signedDistanceField;
+            _this.name = "FontTexture " + font;
             // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {
                 var sfont = _this.getSuperSampleFont(font);
@@ -2190,7 +2191,7 @@ var BABYLON;
             var measure = this._context.measureText(char);
             var textureSize = this.getSize();
             // we reached the end of the current line?
-            var width = Math.ceil(measure.width);
+            var width = Math.ceil(measure.width + 0.5);
             if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
                 this._currentFreePosition.y += Math.ceil(this._lineHeightSuper + this._yMargin * 2);
@@ -2250,9 +2251,10 @@ var BABYLON;
                 this._context.putImageData(id, curPosXMargin, curPosYMargin);
             }
             // Fill the CharInfo object
-            info.topLeftUV = new BABYLON.Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
-            info.bottomRightUV = new BABYLON.Vector2((curPosXMargin + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + this._yMargin) / textureSize.height));
+            info.topLeftUV = new BABYLON.Vector2((curPosXMargin - 0.5) / textureSize.width, (this._currentFreePosition.y - 0.5 + this._yMargin) / textureSize.height);
+            info.bottomRightUV = new BABYLON.Vector2((curPosXMargin - 0.5 + width) / textureSize.width, info.topLeftUV.y + (this._lineHeightSuper / textureSize.height));
             info.yOffset = info.xOffset = 0;
+            //console.log(`Char: ${char}, Offset: ${curPosX}, ${this._currentFreePosition.y + this._yMargin}, Size: ${width}, ${this._lineHeightSuper}, UV: ${info.topLeftUV}, ${info.bottomRightUV}`);
             if (this._signedDistanceField) {
                 var off = 1 / textureSize.width;
                 info.topLeftUV.addInPlace(new BABYLON.Vector2(off, off));
@@ -6797,8 +6799,8 @@ var BABYLON;
                                 this._computePixels(2, sourceArea, true);
                                 rightPixels = this.rightPixels;
                             }
-                            var center = ((sourceArea.width - (leftPixels + rightPixels)) - (width * sx)) / 2;
-                            dstOffset.x = leftPixels + center;
+                            var center = ((sourceArea.width - (width * sx)) / 2);
+                            dstOffset.x = center + (leftPixels - rightPixels);
                             if (computeLayoutArea) {
                                 dstArea.width = (width * isx) + (this.leftPixels + this.rightPixels) * isx;
                             }
@@ -6886,8 +6888,8 @@ var BABYLON;
                                 this._computePixels(0, sourceArea, true);
                                 topPixels = this.topPixels;
                             }
-                            var center = ((sourceArea.height - (bottomPixels + topPixels)) - (height * sy)) / 2;
-                            dstOffset.y = bottomPixels + center;
+                            var center = ((sourceArea.height - (height * sy)) / 2);
+                            dstOffset.y = center + (bottomPixels - topPixels);
                             if (computeLayoutArea) {
                                 dstArea.height = (height * isy) + (bottomPixels + topPixels) * isy;
                             }
@@ -7421,7 +7423,7 @@ var BABYLON;
                 //    return;
                 //}
                 if (this._checkUseMargin()) {
-                    switch (this._marginAlignment.horizontal) {
+                    switch (this.marginAlignment.horizontal) {
                         case PrimitiveAlignment.AlignLeft:
                         case PrimitiveAlignment.AlignStretch:
                         case PrimitiveAlignment.AlignCenter:
@@ -7431,7 +7433,7 @@ var BABYLON;
                             this.margin.rightPixels = value.x;
                             break;
                     }
-                    switch (this._marginAlignment.vertical) {
+                    switch (this.marginAlignment.vertical) {
                         case PrimitiveAlignment.AlignBottom:
                         case PrimitiveAlignment.AlignStretch:
                         case PrimitiveAlignment.AlignCenter:
@@ -7481,7 +7483,7 @@ var BABYLON;
                     throw new Error("Can't set a null x in primitive " + this.id + ", only the position can be turned to null");
                 }
                 if (this._checkUseMargin()) {
-                    switch (this._marginAlignment.horizontal) {
+                    switch (this.marginAlignment.horizontal) {
                         case PrimitiveAlignment.AlignLeft:
                         case PrimitiveAlignment.AlignStretch:
                         case PrimitiveAlignment.AlignCenter:
@@ -7528,7 +7530,7 @@ var BABYLON;
                     throw new Error("Can't set a null y in primitive " + this.id + ", only the position can be turned to null");
                 }
                 if (this._checkUseMargin()) {
-                    switch (this._marginAlignment.vertical) {
+                    switch (this.marginAlignment.vertical) {
                         case PrimitiveAlignment.AlignBottom:
                         case PrimitiveAlignment.AlignStretch:
                         case PrimitiveAlignment.AlignCenter:
@@ -8094,7 +8096,7 @@ var BABYLON;
          */
         Prim2DBase.prototype.getActualGlobalScaleToRef = function (res) {
             var as = this.actualScale;
-            var cls = this.owner._canvasLevelScale || BABYLON.Canvas2D._iv3;
+            var cls = this.owner._canvasLevelScale || Prim2DBase_1._iv2;
             res.x = as.x * cls.x;
             res.y = as.y * cls.y;
         };
@@ -8397,7 +8399,9 @@ var BABYLON;
                         this._owner.addLayoutBoundingInfoUpdateCounter(1);
                     }
                     if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
-                        this.owner.addUpdateLayoutCounter(1);
+                        if (this._owner) {
+                            this._owner.addUpdateLayoutCounter(1);
+                        }
                         this._layoutEngine.updateLayout(this);
                         this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
                     }
@@ -8790,6 +8794,9 @@ var BABYLON;
                 try {
                     Prim2DBase_1._bypassGroup2DExclusion = true;
                     var ownerGroup = this.getExternalData("__cachedGroup__");
+                    if (!ownerGroup) {
+                        return false;
+                    }
                     return ownerGroup.intersect(intersectInfo);
                 }
                 finally {
@@ -8951,6 +8958,7 @@ var BABYLON;
             }
             var length = this._children.push(child);
             this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, length - 1);
+            child._setFlags(BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
         };
         /**
          * Dispose the primitive, remove it from its parent.
@@ -9121,12 +9129,12 @@ var BABYLON;
                 var local;
                 var pos = this._position ? this.position : (this.layoutAreaPos || Prim2DBase_1._v0);
                 var postScale = this._postScale;
-                var canvasScale = Prim2DBase_1._iv3;
-                var hasCanvasScale = false;
-                if (this._parent instanceof BABYLON.Canvas2D) {
-                    hasCanvasScale = true;
-                    canvasScale = this._parent._canvasLevelScale || Prim2DBase_1._iv3;
-                }
+                var canvasScale = Prim2DBase_1._iv2;
+                //let hasCanvasScale = false;
+                //if (this._parent instanceof Canvas2D) {
+                //    hasCanvasScale = true;
+                //    canvasScale = (this._parent as Canvas2D)._canvasLevelScale || Prim2DBase._iv2;
+                //}
                 var globalScale = this._scale.multiplyByFloats(/*postScale.x**/ canvasScale.x, /*postScale.y**/ canvasScale.y);
                 if ((this._origin.x === 0 && this._origin.y === 0) || this._hasMargin) {
                     local = BABYLON.Matrix2D.Compose(globalScale, rot, new BABYLON.Vector2(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y));
@@ -9154,10 +9162,10 @@ var BABYLON;
                     t0.multiplyToRef(t1, t2);
                     BABYLON.Matrix2D.TranslationToRef(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, t0);
                     t2.multiplyToRef(t0, this._localTransform);
-                    if (hasCanvasScale) {
-                        BABYLON.Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase_1._t1);
-                        this._localTransform.multiplyToRef(Prim2DBase_1._t1, this._localTransform);
-                    }
+                    //if (hasCanvasScale) {
+                    //    Matrix2D.ScalingToRef(canvasScale.x, canvasScale.y, Prim2DBase._t1);
+                    //    this._localTransform.multiplyToRef(Prim2DBase._t1, this._localTransform);
+                    //}
                     this._localLayoutTransform = BABYLON.Matrix2D.Compose(globalScale, rot, pos);
                 }
                 this.clearPropertiesDirty(tflags);
@@ -9711,7 +9719,7 @@ var BABYLON;
     Prim2DBase._t2 = new BABYLON.Matrix2D();
     Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
     Prim2DBase._v30 = BABYLON.Vector3.Zero(); // Must stay with the value 0,0,0
-    Prim2DBase._iv3 = new BABYLON.Vector3(1, 1, 1); // Must stay identity vector
+    Prim2DBase._iv2 = new BABYLON.Vector2(1, 1); // Must stay identity vector
     Prim2DBase._ts0 = BABYLON.Size.Zero();
     Prim2DBase._transMtx = BABYLON.Matrix2D.Zero();
     Prim2DBase._icPos = BABYLON.Vector2.Zero();
@@ -9855,6 +9863,7 @@ var BABYLON;
     var GroupInstanceInfo = (function () {
         function GroupInstanceInfo(owner, mrc, partCount) {
             this._partCount = partCount;
+            this._primCount = 0;
             this.owner = owner;
             this.modelRenderCache = mrc;
             this.modelRenderCache.addRef();
@@ -9866,10 +9875,21 @@ var BABYLON;
             this._transparentData = null;
             this.opaqueDirty = this.alphaTestDirty = this.transparentDirty = this.transparentOrderDirty = false;
         }
+        GroupInstanceInfo.prototype.incPrimCount = function () {
+            ++this._primCount;
+        };
         GroupInstanceInfo.prototype.dispose = function () {
             if (this._isDisposed) {
                 return false;
             }
+            // Disposed is called when a primitive instance is disposed, so we decrement the counter
+            --this._primCount;
+            // If the counter is still greater than 0 there's still other primitives using this GII
+            if (this._primCount > 0) {
+                return false;
+            }
+            // We're going to dispose this GII, first remove it from the dictionary
+            this.owner._renderableData._renderGroupInstancesInfo.remove(this.modelRenderCache.modelKey);
             if (this.modelRenderCache) {
                 this.modelRenderCache.dispose();
                 this.modelRenderCache = null;
@@ -10602,27 +10622,17 @@ var BABYLON;
                 gii = part.groupInstanceInfo;
                 part.groupInstanceInfo = null;
             }
-            if (gii && !gii.isDisposed) {
-                var usedCount = 0;
+            if (gii) {
                 if (gii.hasOpaqueData) {
-                    var od = gii.opaqueData[0];
-                    usedCount += od._partData.usedElementCount;
                     gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
-                    var atd = gii.alphaTestData[0];
-                    usedCount += atd._partData.usedElementCount;
                     gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
-                    var td = gii.transparentData[0];
-                    usedCount += td._partData.usedElementCount;
                     gii.transparentDirty = true;
                 }
-                if (usedCount === 0 && gii.modelRenderCache != null) {
-                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
-                    gii.dispose();
-                }
+                gii.dispose();
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
                     this._modelRenderCache = null;
@@ -10727,6 +10737,8 @@ var BABYLON;
                 part.renderMode = rm;
                 part.groupInstanceInfo = gii;
             }
+            // Increment the primitive count as one more primitive is using this GroupInstanceInfo
+            gii.incPrimCount();
             return gii;
         };
         RenderablePrim2D.prototype._setupModelRenderCache = function (parts) {
@@ -11036,10 +11048,13 @@ var BABYLON;
             var trn = RenderablePrim2D_1._t;
             var rot = t.decompose(scl, trn);
             var pas = this.actualScale;
+            //let cachedGroup = (this.getExternalData<Group2D>("__cachedGroup__") !== null);
             var canvasScale = this.owner._canvasLevelScale;
             scl.x = pas.x * canvasScale.x * this._postScale.x;
             scl.y = pas.y * canvasScale.y * this._postScale.y;
+            trn.multiplyInPlace(canvasScale);
             t = BABYLON.Matrix2D.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D_1._iV2, rot, trn);
+            //console.log(`Update Instance Data Part: ${this.id}`);
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -11208,9 +11223,9 @@ var BABYLON;
             }
             return cat;
         };
-        Shape2D.prototype.applyActualScaleOnTransform = function () {
-            return false;
-        };
+        //protected applyActualScaleOnTransform(): boolean {
+        //    return false;
+        //}
         Shape2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
@@ -11720,9 +11735,12 @@ var BABYLON;
             }
             var s = this.actualSize;
             var a = this.actualScale;
+            var ss = this.owner._canvasLevelScale;
             var hwsl = 1 / this.owner.engine.getHardwareScalingLevel();
-            var sw = Math.ceil(s.width * a.x * hwsl);
-            var sh = Math.ceil(s.height * a.y * hwsl);
+            //let sw = Math.ceil(s.width * a.x * ss.x/* * hwsl*/);
+            //let sh = Math.ceil(s.height * a.y *ss.y/* *  hwsl*/);
+            var sw = s.width * a.x * ss.x;
+            var sh = s.height * a.y * ss.y;
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
             if ((this instanceof BABYLON.Canvas2D || this.id === "__cachedCanvasGroup__") && this.owner.designSize != null) {
@@ -12097,11 +12115,12 @@ var BABYLON;
             var isCanvas = this.parent == null;
             var scale;
             if (noResizeScale) {
-                scale = isCanvas ? Group2D_1._uV : this.parent.actualScale;
+                scale = isCanvas ? Group2D_1._uV : this.parent.actualScale.multiply(this.owner._canvasLevelScale);
             }
             else {
-                scale = this.actualScale;
+                scale = this.actualScale.multiply(this.owner._canvasLevelScale);
             }
+            var actualSize = this.actualSize;
             if (isCanvas && this.owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
                 if (this.owner.designSize || this.owner.fitRenderingDevice) {
                     Group2D_1._s.width = this.owner.engine.getRenderWidth();
@@ -12112,12 +12131,13 @@ var BABYLON;
                 }
             }
             else {
-                Group2D_1._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
-                Group2D_1._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+                Group2D_1._s.width = Math.ceil(actualSize.width * scale.x * rs);
+                Group2D_1._s.height = Math.ceil(actualSize.height * scale.y * rs);
             }
             var sizeChanged = !Group2D_1._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
-                var size = rd._cacheNode.contentSize;
+                var size = Group2D_1._s;
+                rd._cacheNode.getInnerSizeToRef(size);
                 // Check if we have to deallocate because the size is too small
                 if ((size.width < Group2D_1._s.width) || (size.height < Group2D_1._s.height)) {
                     // For Screen space: over-provisioning of 7% more to avoid frequent resizing for few pixels...
@@ -12141,6 +12161,13 @@ var BABYLON;
                 rd._cacheRenderSprite = res.sprite;
                 sizeChanged = true;
             }
+            else if (sizeChanged) {
+                var sprite = rd._cacheRenderSprite;
+                if (sprite) {
+                    sprite.size = actualSize;
+                    sprite.spriteSize = new BABYLON.Size(actualSize.width * scale.x * rs, actualSize.height * scale.y * rs);
+                }
+            }
             if (sizeChanged) {
                 rd._cacheSize.copyFrom(Group2D_1._s);
                 rd._cacheNodeUVs = rd._cacheNode.getUVsForCustomSize(rd._cacheSize);
@@ -12149,8 +12176,9 @@ var BABYLON;
                 }
                 this._setFlags(BABYLON.SmartPropertyPrim.flagWorldCacheChanged);
             }
-            var n = rd._cacheNode;
-            rd._cacheTexture.bindTextureForPosSize(n.pos, Group2D_1._s, true);
+            var pos = Group2D_1._v1;
+            rd._cacheNode.getInnerPosToRef(pos);
+            rd._cacheTexture.bindTextureForPosSize(pos, Group2D_1._s, true);
         };
         Group2D.prototype._unbindCacheTarget = function () {
             if (this._renderableData._cacheTexture) {
@@ -12194,6 +12222,11 @@ var BABYLON;
                 case Group2D_1.actualSizeProperty.id:
                     cachedSprite.size = this.actualSize.clone();
                     break;
+                case Group2D_1.xProperty.id:
+                    cachedSprite.x = this.x;
+                    break;
+                case Group2D_1.yProperty.id:
+                    cachedSprite.y = this.y;
             }
         };
         Group2D.prototype.detectGroupStates = function () {
@@ -12301,6 +12334,8 @@ var BABYLON;
     Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK = 0xFF;
     Group2D._uV = new BABYLON.Vector2(1, 1);
     Group2D._s = BABYLON.Size.Zero();
+    Group2D._v1 = BABYLON.Vector2.Zero();
+    Group2D._s2 = BABYLON.Size.Zero();
     Group2D._unS = new BABYLON.Vector2(1, 1);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return Group2D_1.sizeProperty = pi; }, false, true)
@@ -13281,17 +13316,17 @@ var BABYLON;
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
-            var s = Rectangle2D_1._riv0;
-            this.getActualGlobalScaleToRef(s);
+            //let s = Rectangle2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new BABYLON.Vector3(size.width /* * s.x*/, size.height /* * s.y*/, this.roundRadius || 0);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
+                d.properties = new BABYLON.Vector3(size.width /* * s.x*/, size.height /* * s.y*/, this.roundRadius || 0);
             }
             return true;
         };
@@ -13660,17 +13695,17 @@ var BABYLON;
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
-            var s = Ellipse2D_1._riv0;
-            this.getActualGlobalScaleToRef(s);
+            //let s = Ellipse2D._riv0;
+            //this.getActualGlobalScaleToRef(s);
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new BABYLON.Vector3(size.width /* * s.x*/, size.height /* * s.y*/, this.subdivisions);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
+                d.properties = new BABYLON.Vector3(size.width /* * s.x*/, size.height /* * s.y*/, this.subdivisions);
             }
             return true;
         };
@@ -15121,7 +15156,7 @@ var BABYLON;
                 else if (alignH == Text2D_1.AlignCenter) {
                     offsetX += (contentAreaWidth - maxLineLen) * .5;
                 }
-                offset.x += offsetX;
+                offset.x += Math.floor(offsetX);
                 offset.y += contentAreaHeight + textHeight - lh;
                 offset.y += this.padding.bottomPixels;
                 if (alignV == Text2D_1.AlignBottom) {
@@ -15149,16 +15184,18 @@ var BABYLON;
                         if (char !== "\t" && !this._isWhiteSpaceCharVert(char)) {
                             //make sure space char gets processed here or overlapping can occur when text is set
                             var ci = texture.getChar(char);
-                            this.updateInstanceDataPart(d, new BABYLON.Vector2(offset.x + ci.xOffset, offset.y + ci.yOffset));
+                            var partOffset = new BABYLON.Vector2(Math.floor(offset.x + ci.xOffset), Math.floor(offset.y + ci.yOffset));
+                            this.updateInstanceDataPart(d, partOffset);
                             d.topLeftUV = ci.topLeftUV;
                             var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                             d.sizeUV = suv;
                             d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
                             d.color = this.defaultFontColor;
                             d.superSampleFactor = superSampleFactor;
+                            //console.log(`Char: ${char}, Offset: ${partOffset}`);
                             ++d.curElement;
                         }
-                        offset.x += charWidth;
+                        offset.x += Math.floor(charWidth);
                         charNum++;
                     }
                     offset.x = offsetX;
@@ -15280,6 +15317,9 @@ var BABYLON;
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Text2D_1.textureIsPremulAlphaProperty = pi; })
     ], Text2D.prototype, "textureIsPremulAlpha", null);
+    __decorate([
+        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, function (pi) { return Text2D_1.fontTextureProperty = pi; })
+    ], Text2D.prototype, "fontTexture", null);
     Text2D = Text2D_1 = __decorate([
         BABYLON.className("Text2D", "BABYLON")
     ], Text2D);
@@ -16624,7 +16664,7 @@ var BABYLON;
             _this._engine = engine;
             _this._renderingSize = new BABYLON.Size(0, 0);
             _this._curHWScale = 0;
-            _this._canvasLevelScale = new BABYLON.Vector3(1, 1, 1);
+            _this._canvasLevelScale = new BABYLON.Vector2(1, 1);
             _this._designSize = settings.designSize || null;
             _this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!_this._trackedGroups) {
@@ -16859,9 +16899,7 @@ var BABYLON;
                     if (_this.isVisible === false) {
                         return;
                     }
-                    var hs = 1 / _this.engine.getHardwareScalingLevel();
-                    var localPos = e.localPosition.multiplyByFloats(hs, hs);
-                    _this._handlePointerEventForInteraction(e, localPos, s);
+                    _this._handlePointerEventForInteraction(e, e.localPosition, s);
                 });
             }
             else {
@@ -16985,7 +17023,7 @@ var BABYLON;
             eventState.skipNextObservers = skip;
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
-            var s = this.scale;
+            var s = this._canvasLevelScale.multiplyByFloats(this.scaleX, this.scaleY);
             var pii = this._primPointerInfo;
             pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
@@ -16998,16 +17036,19 @@ var BABYLON;
             var engine = this._scene.getEngine();
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
-                var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                var renderWidth = engine.getRenderWidth();
+                var renderHeight = engine.getRenderHeight();
+                //                console.log(`Render Width: ${renderWidth} Height: ${renderHeight}, localX: ${localPosition.x}, localY: ${localPosition.y}`);
+                var viewport = cameraViewport.toGlobal(renderWidth, renderHeight);
                 // Moving coordinates to local viewport world
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
-                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s;
-                pii.canvasPointerPos.y = (engine.getRenderHeight() - y - this.actualPosition.y) / s;
+                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s.x;
+                pii.canvasPointerPos.y = (renderHeight - y - this.actualPosition.y) / s.y;
             }
             else {
-                pii.canvasPointerPos.x = localPosition.x / s;
-                pii.canvasPointerPos.y = localPosition.y / s;
+                pii.canvasPointerPos.x = localPosition.x / s.x;
+                pii.canvasPointerPos.y = localPosition.y / s.x;
             }
             //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
@@ -17235,13 +17276,13 @@ var BABYLON;
                             _this.intersect(ii);
                             if (ii.isPrimIntersected(prim) !== null) {
                                 if (prim.actionManager) {
-                                    if (_this._pickStartingTime !== 0 && ((new Date().getTime() - _this._pickStartingTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(_this._pickStartingPosition.x - ii.pickPosition.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._pickStartingPosition.y - ii.pickPosition.y) < BABYLON.ActionManager.DragMovementThreshold)) {
+                                    if (_this._pickStartingTime !== 0 && ((new Date().getTime() - _this._pickStartingTime) > BABYLON.Scene.LongPressDelay) && (Math.abs(_this._pickStartingPosition.x - ii.pickPosition.x) < BABYLON.Scene.DragMovementThreshold && Math.abs(_this._pickStartingPosition.y - ii.pickPosition.y) < BABYLON.Scene.DragMovementThreshold)) {
                                         _this._pickStartingTime = 0;
                                         prim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
-                        }, BABYLON.ActionManager.LongPressDelay);
+                        }, BABYLON.Scene.LongPressDelay);
                     }
                 }
             }
@@ -17252,7 +17293,7 @@ var BABYLON;
                     // OnPickUpTrigger
                     prim.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, actionEvent);
                     // OnPickTrigger
-                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < BABYLON.ActionManager.DragMovementThreshold) {
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < BABYLON.Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < BABYLON.Scene.DragMovementThreshold) {
                         prim.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, actionEvent);
                     }
                 }
@@ -17823,11 +17864,11 @@ var BABYLON;
                     scale = this._renderingSize.height / (this._designSize.height * hwsl);
                 }
                 this.size = this._designSize.clone();
-                this._canvasLevelScale.copyFromFloats(scale, scale, 1);
+                this._canvasLevelScale.copyFromFloats(scale, scale);
             }
             else {
                 var ratio = 1 / this._curHWScale;
-                this._canvasLevelScale.copyFromFloats(ratio, ratio, 1);
+                this._canvasLevelScale.copyFromFloats(ratio, ratio);
             }
             if (!prevCLS.equals(this._canvasLevelScale)) {
                 for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
@@ -17910,18 +17951,19 @@ var BABYLON;
             var isCanvas = parent == null;
             var scale;
             if (noResizeScale) {
-                scale = isCanvas ? Canvas2D_1._unS : group.parent.actualScale;
+                scale = isCanvas ? Canvas2D_1._unS : group.parent.actualScale.multiply(this._canvasLevelScale);
             }
             else {
-                scale = group.actualScale;
+                scale = group.actualScale.multiply(this._canvasLevelScale);
             }
             // Determine size
             var size = group.actualSize;
-            size = new BABYLON.Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
-            var originalSize = size.clone();
+            var scaledSize = new BABYLON.Size(size.width * scale.x, size.height * scale.y);
+            var roundedScaledSize = new BABYLON.Size(Math.ceil(scaledSize.width), Math.ceil(scaledSize.height));
+            var originalSize = scaledSize.clone();
             if (minSize) {
-                size.width = Math.max(minSize.width, size.width);
-                size.height = Math.max(minSize.height, size.height);
+                roundedScaledSize.width = Math.max(minSize.width, roundedScaledSize.width);
+                roundedScaledSize.height = Math.max(minSize.height, roundedScaledSize.height);
             }
             var mapArray = this._groupCacheMaps.getOrAddWithFactory(key, function () { return new Array(); });
             // Try to find a spot in one of the cached texture
@@ -17930,7 +17972,7 @@ var BABYLON;
             for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
                 var _map = mapArray_1[_i];
                 map = _map;
-                var node = map.allocateRect(size);
+                var node = map.allocateRect(roundedScaledSize);
                 if (node) {
                     res = { node: node, texture: map };
                     break;
@@ -17940,22 +17982,28 @@ var BABYLON;
             if (!res) {
                 var mapSize = new BABYLON.Size(Canvas2D_1._groupTextureCacheSize, Canvas2D_1._groupTextureCacheSize);
                 // Check if the predefined size would fit, other create a custom size using the nearest bigger power of 2
-                if (size.width > mapSize.width || size.height > mapSize.height) {
-                    mapSize.width = Math.pow(2, Math.ceil(Math.log(size.width) / Math.log(2)));
-                    mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
+                if (roundedScaledSize.width > mapSize.width || roundedScaledSize.height > mapSize.height) {
+                    mapSize.width = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.width) / Math.log(2)));
+                    mapSize.height = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.height) / Math.log(2)));
                 }
                 var id = "groupsMapChache" + this._mapCounter++ + "forCanvas" + this.id;
-                map = new BABYLON.MapTexture(id, this._scene, mapSize, useMipMap ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : BABYLON.Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map = new BABYLON.MapTexture(id, this._scene, mapSize, useMipMap ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : BABYLON.Texture.BILINEAR_SAMPLINGMODE, useMipMap, 2);
                 map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
-                var node = map.allocateRect(size);
+                //let debug = false;
+                //if (debug) {
+                //    let sprite = new Sprite2D(map, { parent: this, x: 10, y: 10, id: "__cachedSpriteOfGroup__Debug", alignToPixel: true });
+                //}
+                var node = map.allocateRect(roundedScaledSize);
                 res = { node: node, texture: map };
             }
             // Check if we have to create a Sprite that will display the content of the Canvas which is cached.
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
             if (group !== this || this._isScreenSpace) {
                 var node = res.node;
+                var pos = Canvas2D_1._cv1;
+                node.getInnerPosToRef(pos);
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 var sprite = void 0;
                 if (this._cachingStrategy === Canvas2D_1.CACHESTRATEGY_CANVAS) {
@@ -17963,12 +18011,12 @@ var BABYLON;
                         this._cachedCanvasGroup.dispose();
                     }
                     this._cachedCanvasGroup = BABYLON.Group2D._createCachedCanvasGroup(this);
-                    sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
+                    sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, size: size, alignToPixel: true, spriteLocation: pos });
                     sprite.zOrder = 1;
                     sprite.origin = BABYLON.Vector2.Zero();
                 }
                 else {
-                    sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.x, y: group.y, spriteSize: originalSize, size: size, spriteLocation: pos, alignToPixel: true, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add(function (e, s) {
@@ -18140,6 +18188,7 @@ var BABYLON;
     Canvas2D._zMinDelta = 1 / (Math.pow(2, 24) - 1);
     Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
     Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
+    Canvas2D._cv1 = BABYLON.Vector2.Zero(); // Must stay zero
     Canvas2D._m = BABYLON.Matrix.Identity();
     Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
     Canvas2D.tS = BABYLON.Vector3.Zero();
@@ -18147,7 +18196,7 @@ var BABYLON;
     Canvas2D.tR = BABYLON.Quaternion.Identity();
     Canvas2D._tmpMtx = BABYLON.Matrix.Identity();
     Canvas2D._tmpVec3 = BABYLON.Vector3.Zero();
-    Canvas2D._pCLS = BABYLON.Vector3.Zero();
+    Canvas2D._pCLS = BABYLON.Vector2.Zero();
     /**
      * Define the default size used for both the width and height of a MapTexture to allocate.
      * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height

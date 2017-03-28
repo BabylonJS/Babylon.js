@@ -169,7 +169,7 @@ module BABYLON {
         public getObjectExtendSize(): Vector3 {
             if (this.object.getBoundingInfo) {
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSize.scale(2).multiply(this.object.scaling)
+                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2).multiply(this.object.scaling)
             } else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
             }
@@ -177,7 +177,7 @@ module BABYLON {
 
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
-                return this.object.getBoundingInfo().boundingBox.center;
+                return this.object.getBoundingInfo().boundingBox.centerWorld;
             } else {
                 return this.object.position;
             }
@@ -327,7 +327,7 @@ module BABYLON {
         /**
          * Legacy collision detection event support
          */
-        public onCollideEvent: (collider:BABYLON.PhysicsImpostor, collidedWith:BABYLON.PhysicsImpostor) => void = null;
+        public onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void = null;
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {

@@ -100,8 +100,8 @@ HEMI_LIGHT = 3
 NO_SHADOWS = 'NONE'
 STD_SHADOWS = 'STD'
 POISSON_SHADOWS = 'POISSON'
-VARIANCE_SHADOWS = 'VARIANCE'
-BLUR_VARIANCE_SHADOWS = 'BLUR_VARIANCE'
+ESM_SHADOWS = 'ESM'
+BLUR_ESM_SHADOWS = 'BLUR_ESM'
 
 # used in Texture constructor, defined in BABYLON.Texture
 CLAMP_ADDRESSMODE = 0
@@ -1656,12 +1656,12 @@ class ShadowGenerator:
         self.mapSize = lamp.data.shadowMapSize
         self.shadowBias = lamp.data.shadowBias
 
-        if lamp.data.shadowMap == VARIANCE_SHADOWS:
-            self.useVarianceShadowMap = True
+        if lamp.data.shadowMap == ESM_SHADOWS:
+            self.useExponentialShadowMap = True
         elif lamp.data.shadowMap == POISSON_SHADOWS:
             self.usePoissonSampling = True
-        elif lamp.data.shadowMap == BLUR_VARIANCE_SHADOWS:
-            self.useBlurVarianceShadowMap = True
+        elif lamp.data.shadowMap == BLUR_ESM_SHADOWS:
+            self.useBlurExponentialShadowMap = True
             self.shadowBlurScale = lamp.data.shadowBlurScale
             self.shadowBlurBoxOffset = lamp.data.shadowBlurBoxOffset
 
@@ -1677,12 +1677,12 @@ class ShadowGenerator:
         write_string(file_handler, 'lightId', self.lightId)
         write_float(file_handler, 'bias', self.shadowBias)
 
-        if hasattr(self, 'useVarianceShadowMap') :
-            write_bool(file_handler, 'useVarianceShadowMap', self.useVarianceShadowMap)
+        if hasattr(self, 'useExponentialShadowMap') :
+            write_bool(file_handler, 'useExponentialShadowMap', self.useExponentialShadowMap)
         elif hasattr(self, 'usePoissonSampling'):
             write_bool(file_handler, 'usePoissonSampling', self.usePoissonSampling)
-        elif hasattr(self, 'useBlurVarianceShadowMap'):
-            write_bool(file_handler, 'useBlurVarianceShadowMap', self.useBlurVarianceShadowMap)
+        elif hasattr(self, 'useBlurExponentialShadowMap'):
+            write_bool(file_handler, 'useBlurExponentialShadowMap', self.useBlurExponentialShadowMap)
             write_int(file_handler, 'blurScale', self.shadowBlurScale)
             write_int(file_handler, 'blurBoxOffset', self.shadowBlurBoxOffset)
 
@@ -2713,8 +2713,8 @@ bpy.types.Lamp.shadowMap = bpy.props.EnumProperty(
     items = ((NO_SHADOWS           , 'None'         , 'No Shadow Maps'),
              (STD_SHADOWS          , 'Standard'     , 'Use Standard Shadow Maps'),
              (POISSON_SHADOWS      , 'Poisson'      , 'Use Poisson Sampling'),
-             (VARIANCE_SHADOWS     , 'Variance'     , 'Use Variance Shadow Maps'),
-             (BLUR_VARIANCE_SHADOWS, 'Blur Variance', 'Use Blur Variance Shadow Maps')
+             (ESM_SHADOWS          , 'ESM'          , 'Use Exponential Shadow Maps'),
+             (BLUR_ESM_SHADOWS     , 'Blur ESM'     , 'Use Blur Exponential Shadow Maps')
             ),
     default = NO_SHADOWS
 )
@@ -2809,7 +2809,7 @@ class ObjectPanel(bpy.types.Panel):
             layout.prop(ob.data, 'shadowBias')
 
             box = layout.box()
-            box.label(text="Blur Variance Shadows")
+            box.label(text="Blur ESM Shadows")
             box.prop(ob.data, 'shadowBlurScale')
             box.prop(ob.data, 'shadowBlurBoxOffset')
 

@@ -10,7 +10,12 @@
         public angle: number;
 
         @serialize()
-        public exponent: number
+        public exponent: number;
+        
+        @serialize()
+        public shadowMinZ: number;
+        @serialize()
+        public shadowMaxZ: number;
 
         public transformedPosition: Vector3;
 
@@ -49,6 +54,14 @@
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }
+
+        /**
+         * Return the depth scale used for the shadow map.
+         */
+        public getDepthScale(): number {
+            return 30.0;
+        }
+        
         /**
          * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.  
          * Returns the SpotLight.  
@@ -58,7 +71,8 @@
                 this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
             } else {
                 var activeCamera = this.getScene().activeCamera;
-                Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+                Matrix.PerspectiveFovLHToRef(this.angle, 1.0, 
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
             }
             return this;
         }
@@ -67,12 +81,6 @@
          */
         public needCube(): boolean {
             return false;
-        }
-        /**
-         * Boolean : true by default.  
-         */
-        public supportsVSM(): boolean {
-            return true;
         }
         /**
          * Boolean : false by default.  

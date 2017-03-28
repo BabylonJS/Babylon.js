@@ -29,7 +29,7 @@ module BABYLON {
         }
 
         checkInputs() {
-            if (this.gamepad) {
+            if (this.gamepad && this.gamepad.leftStick) {
                 var camera = this.camera;
                 var LSValues = this.gamepad.leftStick;
                 var normalizedLX = LSValues.x / this.gamepadMoveSensibility;

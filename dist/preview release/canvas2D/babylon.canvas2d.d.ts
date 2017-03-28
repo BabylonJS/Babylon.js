@@ -2496,7 +2496,7 @@ declare module BABYLON {
         private static _t2;
         private static _v0;
         private static _v30;
-        private static _iv3;
+        private static _iv2;
         private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
@@ -2621,6 +2621,7 @@ declare module BABYLON {
     }
     class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
+        incPrimCount(): void;
         dispose(): boolean;
         readonly isDisposed: boolean;
         private _isDisposed;
@@ -2641,6 +2642,7 @@ declare module BABYLON {
         readonly usedShaderCategories: string[];
         readonly strides: number[];
         private _partCount;
+        private _primCount;
         private _strides;
         private _usedShaderCategories;
         private _opaqueData;
@@ -2850,7 +2852,6 @@ declare module BABYLON {
             borderThickness?: number;
         });
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected applyActualScaleOnTransform(): boolean;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _updateTransparencyStatus();
         protected _mustUpdateInstance(): boolean;
@@ -3040,6 +3041,8 @@ declare module BABYLON {
         protected _setRenderingScale(scale: number): void;
         private static _uV;
         private static _s;
+        private static _v1;
+        private static _s2;
         private _bindCacheTarget();
         private _unbindCacheTarget();
         protected _spreadActualScaleDirty(): void;
@@ -3861,6 +3864,7 @@ declare module BABYLON {
         static fontSuperSampleProperty: Prim2DPropInfo;
         static fontSignedDistanceFieldProperty: Prim2DPropInfo;
         static textureIsPremulAlphaProperty: Prim2DPropInfo;
+        static fontTextureProperty: Prim2DPropInfo;
         /**
          * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
          */
@@ -4502,7 +4506,7 @@ declare module BABYLON {
         private _designSize;
         private _designUseHorizAxis;
         _primitiveCollisionManager: PrimitiveCollisionManagerBase;
-        _canvasLevelScale: Vector3;
+        _canvasLevelScale: Vector2;
         _renderingSize: Size;
         private _curHWScale;
         private _drawCallsOpaqueCounter;
@@ -4521,6 +4525,7 @@ declare module BABYLON {
         private _profilingCanvas;
         private _profileInfoText;
         private static _v;
+        private static _cv1;
         private static _m;
         private static _mI;
         private static tS;

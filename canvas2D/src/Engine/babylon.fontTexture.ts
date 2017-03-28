@@ -415,6 +415,7 @@
             this._signedDistanceField = signedDistanceField;
             this._superSample = false;
             this._isPremultipliedAlpha = !signedDistanceField;
+            this.name = `FontTexture ${font}`;
 
             // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {
@@ -556,7 +557,7 @@
             var textureSize = this.getSize();
 
             // we reached the end of the current line?
-            let width = Math.ceil(measure.width);
+            let width = Math.ceil(measure.width + 0.5);
             if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
                 this._currentFreePosition.y += Math.ceil(this._lineHeightSuper + this._yMargin*2);
@@ -626,9 +627,10 @@
             }
 
             // Fill the CharInfo object
-            info.topLeftUV = new Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
-            info.bottomRightUV = new Vector2((curPosXMargin + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + this._yMargin) / textureSize.height));
+            info.topLeftUV = new Vector2((curPosXMargin-0.5) / textureSize.width, (this._currentFreePosition.y-0.5 + this._yMargin) / textureSize.height);
+            info.bottomRightUV = new Vector2((curPosXMargin-0.5 + width) / textureSize.width, info.topLeftUV.y + (this._lineHeightSuper / textureSize.height));
             info.yOffset = info.xOffset = 0;
+            //console.log(`Char: ${char}, Offset: ${curPosX}, ${this._currentFreePosition.y + this._yMargin}, Size: ${width}, ${this._lineHeightSuper}, UV: ${info.topLeftUV}, ${info.bottomRightUV}`);
 
             if (this._signedDistanceField) {
                 let off = 1/textureSize.width;

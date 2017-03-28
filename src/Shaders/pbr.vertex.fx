@@ -5,6 +5,9 @@ attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
 #endif
+#ifdef TANGENT
+attribute vec4 tangent;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -80,6 +83,7 @@ varying vec4 vColor;
 #endif
 
 
+#include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
@@ -88,7 +92,7 @@ varying vec4 vColor;
 varying vec3 vPositionUVW;
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
@@ -111,7 +115,7 @@ void main(void) {
     vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
     vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 
@@ -199,6 +203,9 @@ void main(void) {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
+
+    // TBN
+#include<bumpVertex>
 
     // Clip plane
 #include<clipPlaneVertex>

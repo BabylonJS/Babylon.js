@@ -1211,7 +1211,7 @@
                     }
 
                     // Meshes
-                    if (!this._meshPickProceed && ActionManager.HasTriggers) {
+                    if (!this._meshPickProceed && (ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
@@ -1365,6 +1365,10 @@
 
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
+
+                if (!mesh.isEnabled()) {
+                    continue;
+                }
 
                 if (!mesh.isReady()) {
                     return false;
@@ -2609,6 +2613,10 @@
         }
 
         public render(): void {
+            if (this.isDisposed) {
+                return;
+            }
+
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -3036,6 +3044,11 @@
             }
 
             this._engine.wipeCaches();
+            this._engine = null;
+        }
+
+        public get isDisposed(): boolean {
+            return !this._engine;
         }
 
         // Release sounds & sounds tracks
