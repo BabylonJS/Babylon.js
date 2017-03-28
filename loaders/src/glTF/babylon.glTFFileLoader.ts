@@ -1293,14 +1293,14 @@ module BABYLON {
             return gltfRuntime;
         }
 
-        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void {
+        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void {
             var buffer: IGLTFBuffer = gltfRuntime.buffers[id];
 
             if (GLTFUtils.IsBase64(buffer.uri)) {
                 setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(buffer.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), null, null, true, onError);
+                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), onProgress, null, true, onError);
             }
         }
 
@@ -1560,7 +1560,7 @@ module BABYLON {
         /**
         * Import meshes
         */
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void, onProgress?: () => void): boolean {
             scene.useRightHandedSystem = true;
 
             var gltfRuntime = GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1613,7 +1613,8 @@ module BABYLON {
                             onSuccess(meshes, null, skeletons);
                         }
                     });
-                });
+                },
+                onProgress);
 
                 if (GLTFFileLoader.IncrementalLoading && onSuccess) {
                     onSuccess(meshes, null, skeletons);
@@ -1692,7 +1693,7 @@ module BABYLON {
             }
         };
 
-        private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onload: () => void): void {
+        private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onload: () => void, onProgress?: () => void): void {
             var hasBuffers = false;
 
             var processBuffer = (buf: string, buffer: IGLTFBuffer) => {
