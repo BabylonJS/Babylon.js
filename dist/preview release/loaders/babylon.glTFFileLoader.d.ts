@@ -446,7 +446,7 @@ declare module BABYLON {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        loadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean;
+        loadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean;
         /**
          * Defines an onverride for creating gltf runtime
          * Return true to stop further extensions from creating the runtime
@@ -477,7 +477,7 @@ declare module BABYLON {
         * Return true to stop further extensions from loading this material
         */
         loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean;
-        static LoadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void;
+        static LoadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void;
         static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void;
         static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void;
         static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): void;

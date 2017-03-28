@@ -59,7 +59,13 @@
 					// Move the sphere upward 1/2 its height
 					sphere.position.y = 1;
 					sphere.material = new BABYLON.StandardMaterial("test");
-					sphere.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+					sphere.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+					var t = 0;
+					scene.registerAfterRender(function() {
+						sphere.material.specularColor = new BABYLON.Color3(0, 0, Math.sin(t/100));
+						sphere.material.diffuseColor = new BABYLON.Color3(Math.abs(Math.sin(t/100)), Math.abs(Math.cos(t/200)), Math.abs(Math.sin(t/50)));
+						t++;
+					})
 
 					// Let's try our built-in 'ground' shape.  Params: name, width, depth, subdivisions, scene
 					var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);

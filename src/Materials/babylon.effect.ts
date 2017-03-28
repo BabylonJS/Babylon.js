@@ -612,12 +612,13 @@
 
             // std140 layout forces uniform to be multiple of 16 bytes (4 floats)
             var correctedSize = Math.ceil(size / 4) * 4;
-            index += correctedSize;
 
             if (dynamic) {
-                this._uniformBufferDynamicCache = new Float32Array(index);
+                this._uniformCurrentDynamicPointer += correctedSize;
+                this._uniformBufferDynamicCache = new Float32Array(this._uniformCurrentDynamicPointer);
             } else {
-                this._uniformBufferStaticCache = new Float32Array(index); 
+                this._uniformCurrentStaticPointer += correctedSize;
+                this._uniformBufferStaticCache = new Float32Array(this._uniformCurrentStaticPointer); 
             }
         };
 
