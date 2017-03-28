@@ -6,12 +6,21 @@ struct Camera {
 
 struct Material
 {
-  	vec4 vDiffuseColor;
+	vec4 vDiffuseColor;
+
+  	#ifdef DIFFUSE
+  	vec2 vDiffuseInfos;
+  	mat4 diffuseMatrix;
+  	#endif
+
   	vec3 vAmbientColor;
+
   	#ifdef SPECULARTERM
   	vec4 vSpecularColor;
   	#endif
+  	
   	vec3 vEmissiveColor;
+
 };
 
 uniform Dynamic {
@@ -33,8 +42,6 @@ uniform Static {
 
 // Constants
 #define RECIPROCAL_PI2 0.15915494
-
-uniform vec3 vEmissiveColor;
 
 // Input
 varying vec3 vPositionW;
@@ -60,7 +67,6 @@ varying vec4 vColor;
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
 uniform sampler2D diffuseSampler;
-uniform vec2 vDiffuseInfos;
 #endif
 
 #ifdef AMBIENT
@@ -213,7 +219,7 @@ void main(void) {
 	alpha *= baseColor.a;
 #endif
 
-	baseColor.rgb *= vDiffuseInfos.y;
+	baseColor.rgb *= uStatic.material.vDiffuseInfos.y;
 #endif
 
 #ifdef VERTEXCOLOR
@@ -360,7 +366,7 @@ void main(void) {
 #endif
 
 	// Emissive
-	vec3 emissiveColor = vEmissiveColor;
+	vec3 emissiveColor = uStatic.material.vEmissiveColor;
 #ifdef EMISSIVE
 	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
 #endif

@@ -1,4 +1,38 @@
-﻿// Attributes
+﻿layout(std140, column_major) uniform;
+
+struct Camera {
+	vec3 vEyePosition;
+};
+
+struct Material
+{
+	vec4 vDiffuseColor;
+
+  	#ifdef DIFFUSE
+  	vec2 vDiffuseInfos;
+  	mat4 diffuseMatrix;
+  	#endif
+
+  	vec3 vAmbientColor;
+
+  	#ifdef SPECULARTERM
+  	vec4 vSpecularColor;
+  	#endif
+  	
+  	vec3 vEmissiveColor;
+
+};
+
+uniform Dynamic {
+	Camera camera;
+}  uDynamic;
+
+uniform Static {
+	Material material;
+}  uStatic;
+
+
+// Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -26,8 +60,6 @@ uniform mat4 viewProjection;
 
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
-uniform mat4 diffuseMatrix;
-uniform vec2 vDiffuseInfos;
 #endif
 
 #ifdef AMBIENT
@@ -125,13 +157,13 @@ void main(void) {
 #endif
 
 #ifdef DIFFUSE
-	if (vDiffuseInfos.x == 0.)
+	if (uStatic.material.vDiffuseInfos.x == 0.)
 	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+		vDiffuseUV = vec2(uStatic.material.diffuseMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+		vDiffuseUV = vec2(uStatic.material.diffuseMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 

@@ -197,6 +197,28 @@
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
         }
 
+        public getUniformWithinDynamicUbo(uniformName: string): number {
+            var index;
+            var location;
+            if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
+                location = this._uniformBufferDynamicLocations[index]
+                return location;
+            } else {
+                return -1;
+            }
+        }
+
+        public getUniformWithinStaticUbo(uniformName: string): number {
+            var index;
+            var location;
+            if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
+                location = this._uniformBufferStaticLocations[index]
+                return location;
+            } else {
+                return -1;
+            }
+        }
+
         public getSamplers(): string[] {
             return this._samplers;
         }
@@ -732,7 +754,14 @@
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
             if (this._cacheMatrix(uniformName, matrix)) {
-                this._engine.setMatrix(this.getUniform(uniformName), matrix);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    this._uniformBufferStaticCache.set(matrix.toArray(), location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    this._uniformBufferDynamicCache.set(matrix.toArray(), location);
+                } else {
+                    this._engine.setMatrix(this.getUniform(uniformName), matrix);
+                }
             }
             return this;
         }
@@ -777,28 +806,39 @@
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
             if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-                this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    vector2.toArray(this._uniformBufferStaticCache, location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    vector2.toArray(this._uniformBufferDynamicCache, location);
+                } else {
+                    this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+                }
             }
             return this;
         }
 
         public setFloat2(uniformName: string, x: number, y: number): Effect {
             if (this._cacheFloat2(uniformName, x, y)) {
-                this._engine.setFloat2(this.getUniform(uniformName), x, y);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    this._uniformBufferStaticCache.set([x, y], location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    this._uniformBufferDynamicCache.set([x, y], location);
+                } else {
+                    this._engine.setFloat2(this.getUniform(uniformName), x, y);
+                }
             }
             return this;
         }
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
             if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-                var index;
-                var location;
-                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferDynamicLocations[index];
-                    vector3.toArray(this._uniformBufferDynamicCache, location);
-                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferStaticLocations[index];
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
                     vector3.toArray(this._uniformBufferStaticCache, location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    vector3.toArray(this._uniformBufferDynamicCache, location);
                 } else {
                     this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
                 }
@@ -808,35 +848,54 @@
 
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
             if (this._cacheFloat3(uniformName, x, y, z)) {
-                this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    this._uniformBufferStaticCache.set([x, y, z], location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    this._uniformBufferDynamicCache.set([x, y, z], location);
+                } else {
+                    this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+                }
             }
             return this;
         }
 
         public setVector4(uniformName: string, vector4: Vector4): Effect {
             if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-                this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    vector4.toArray(this._uniformBufferStaticCache, location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    vector4.toArray(this._uniformBufferDynamicCache, location);
+                } else {
+                    this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+                }
             }
             return this;
         }
 
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
             if (this._cacheFloat4(uniformName, x, y, z, w)) {
-                this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
+                    this._uniformBufferStaticCache.set([x, y, z, w], location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    this._uniformBufferDynamicCache.set([x, y, z, w], location);
+                } else {
+                    this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+                }
             }
             return this;
         }
 
         public setColor3(uniformName: string, color3: Color3): Effect {
+
             if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-                var index;
-                var location;
-                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferDynamicLocations[index];
-                    color3.toArray(this._uniformBufferDynamicCache, location);
-                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferStaticLocations[index];
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
                     color3.toArray(this._uniformBufferStaticCache, location);
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    color3.toArray(this._uniformBufferDynamicCache, location);
                 } else {
                     this._engine.setColor3(this.getUniform(uniformName), color3);
                 }
@@ -846,16 +905,13 @@
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
             if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-                var index;
-                var location;
-                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferDynamicLocations[index];
-                    color3.toArray(this._uniformBufferDynamicCache, location);
-                    this._uniformBufferDynamicCache[location + 3] = alpha;
-                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
-                    location = this._uniformBufferStaticLocations[index];
+                var location = this.getUniformWithinStaticUbo(uniformName);
+                if (location !== -1) {
                     color3.toArray(this._uniformBufferStaticCache, location);
                     this._uniformBufferStaticCache[location + 3] = alpha;
+                } else if ((location = this.getUniformWithinDynamicUbo(uniformName)) !== -1) {
+                    color3.toArray(this._uniformBufferDynamicCache, location);
+                    this._uniformBufferDynamicCache[location + 3] = alpha;
                 } else {
                     this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
                 }

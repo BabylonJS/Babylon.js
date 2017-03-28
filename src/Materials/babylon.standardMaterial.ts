@@ -729,14 +729,28 @@ module BABYLON {
         }
 
         public buildUniformLayout(): void {
+            // Order is important !
             this._effect.addUniform("vDiffuseColor", 4, false);
+
+            if (this._defines.DIFFUSE) {
+                this._effect.addUniform("vDiffuseInfos", 2, false);
+                this._effect.addUniform("diffuseMatrix", 16, false);
+            }
+
             this._effect.addUniform("vAmbientColor", 3, false);
+
             if (this._defines.SPECULARTERM) {
                 this._effect.addUniform("vSpecularColor", 3, false);
             }
 
+            this._effect.addUniform("vEmissiveColor", 3, false);
+            
             // Dynamic uniforms
             this._effect.addUniform("vEyePosition", 3, true);
+            // this._effect.addUniform("world", 16, true);
+            // this._effect.addUniform("view", 16, true);
+            // this._effect.addUniform("viewProjection", 16, true);
+            // "world", "view", "viewProjection"
         }
 
         public unbind(): void {

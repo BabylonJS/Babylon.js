@@ -60,10 +60,11 @@
 					sphere.position.y = 1;
 					sphere.material = new BABYLON.StandardMaterial("test");
 					sphere.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+					sphere.material.diffuseTexture = new BABYLON.Texture("test.jpeg", scene);
 					var t = 0;
 					scene.registerAfterRender(function() {
-						sphere.material.specularColor = new BABYLON.Color3(0, 0, Math.sin(t/100));
-						sphere.material.diffuseColor = new BABYLON.Color3(Math.abs(Math.sin(t/100)), Math.abs(Math.cos(t/200)), Math.abs(Math.sin(t/50)));
+						// sphere.material.specularColor = new BABYLON.Color3(0, 0, Math.sin(t/100));
+						// sphere.material.diffuseColor = new BABYLON.Color3(Math.abs(Math.sin(t/100)), Math.abs(Math.cos(t/200)), Math.abs(Math.sin(t/50)));
 						t++;
 					})
 
