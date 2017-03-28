@@ -3638,6 +3638,7 @@
             }
             let length = this._children.push(child);
             this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, length - 1);
+            child._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
         }
 
         /**
