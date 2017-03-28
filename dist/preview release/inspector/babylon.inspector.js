@@ -875,7 +875,7 @@ var INSPECTOR;
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
                 'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo',
-                '_cachedTexture'
+                '_cachedTexture', 'actualOpacity'
             ];
             for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
                 var dirty = toAddDirty_1[_i];
