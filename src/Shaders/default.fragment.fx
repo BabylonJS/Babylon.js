@@ -4,7 +4,7 @@ struct Camera {
 	vec3 vEyePosition;
 };
 
-struct Material
+uniform Material
 {
 	vec4 vDiffuseColor;
 
@@ -18,19 +18,12 @@ struct Material
   	#ifdef SPECULARTERM
   	vec4 vSpecularColor;
   	#endif
-  	
+
   	vec3 vEmissiveColor;
 
-};
+} uMaterial;
 
-uniform Dynamic {
-	Camera camera;
-}  uDynamic;
-
-uniform Static {
-	Material material;
-}  uStatic;
-
+uniform vec3 vEyePosition;
 
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
@@ -185,14 +178,14 @@ uniform vec4 reflectionRightColor;
 void main(void) {
 #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(uDynamic.camera.vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
-	vec3 diffuseColor = uStatic.material.vDiffuseColor.rgb;
+	vec3 diffuseColor = uMaterial.vDiffuseColor.rgb;
 
 	// Alpha
-	float alpha = uStatic.material.vDiffuseColor.a;
+	float alpha = uMaterial.vDiffuseColor.a;
 
 	// Bump
 #ifdef NORMAL
@@ -219,7 +212,7 @@ void main(void) {
 	alpha *= baseColor.a;
 #endif
 
-	baseColor.rgb *= uStatic.material.vDiffuseInfos.y;
+	baseColor.rgb *= uMaterial.vDiffuseInfos.y;
 #endif
 
 #ifdef VERTEXCOLOR
@@ -235,8 +228,8 @@ void main(void) {
 
 	// Specular map
 #ifdef SPECULARTERM
-	float glossiness = uStatic.material.vSpecularColor.a;
-	vec3 specularColor = uStatic.material.vSpecularColor.rgb;
+	float glossiness = uMaterial.vSpecularColor.a;
+	vec3 specularColor = uMaterial.vSpecularColor.rgb;
 
 #ifdef SPECULAR
 	vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
@@ -366,7 +359,7 @@ void main(void) {
 #endif
 
 	// Emissive
-	vec3 emissiveColor = uStatic.material.vEmissiveColor;
+	vec3 emissiveColor = uMaterial.vEmissiveColor;
 #ifdef EMISSIVE
 	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
 #endif
@@ -386,12 +379,12 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + uStatic.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
 #ifdef LINKEMISSIVEWITHDIFFUSE
-	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + uStatic.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + uStatic.material.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #endif
 #endif
 

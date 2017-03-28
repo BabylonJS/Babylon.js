@@ -704,11 +704,18 @@ module BABYLON {
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
 
+                var onCompiled = function(effect) {
+                    if (this.onCompiled) {
+                        this.onCompiled(effect);
+                    }
+                    
+                    this.buildUniformLayout();
+                }.bind(this);
+
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
 
-                this.buildUniformLayout();
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -730,27 +737,23 @@ module BABYLON {
 
         public buildUniformLayout(): void {
             // Order is important !
-            this._effect.addUniform("vDiffuseColor", 4, false);
+            this._effect.addUniform("vDiffuseColor", 4);
 
             if (this._defines.DIFFUSE) {
-                this._effect.addUniform("vDiffuseInfos", 2, false);
-                this._effect.addUniform("diffuseMatrix", 16, false);
+                this._effect.addUniform("vDiffuseInfos", 2);
+                this._effect.addUniform("diffuseMatrix", 16);
             }
 
-            this._effect.addUniform("vAmbientColor", 3, false);
+            this._effect.addUniform("vAmbientColor", 3);
+
 
             if (this._defines.SPECULARTERM) {
-                this._effect.addUniform("vSpecularColor", 3, false);
+                this._effect.addUniform("vSpecularColor", 3);
             }
 
-            this._effect.addUniform("vEmissiveColor", 3, false);
-            
-            // Dynamic uniforms
-            this._effect.addUniform("vEyePosition", 3, true);
-            // this._effect.addUniform("world", 16, true);
-            // this._effect.addUniform("view", 16, true);
-            // this._effect.addUniform("viewProjection", 16, true);
-            // "world", "view", "viewProjection"
+            this._effect.addUniform("vEmissiveColor", 3);
+
+            this._effect.buildUniformlayout();
         }
 
         public unbind(): void {
@@ -779,6 +782,8 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
+                this._effect.bindUniformBuffer();
+
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                 if (StandardMaterial.FresnelEnabled) {
@@ -909,8 +914,6 @@ module BABYLON {
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
-                this._effect.updateUniformBufferDynamic();
-                this._effect.bindUniformBuffers();
             }
 
             if (scene.getCachedMaterial() !== this || !this.isFrozen) {
@@ -937,9 +940,9 @@ module BABYLON {
                 if (this.cameraColorCurves) {
                     ColorCurves.Bind(this.cameraColorCurves, this._effect);
                 }
-                this._effect.updateUniformBufferStatic();
             }
 
+            this._effect.updateUniformBuffer();
             super.bind(world, mesh);
         }
 
