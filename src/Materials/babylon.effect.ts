@@ -82,8 +82,17 @@
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
-        private _uniformBufferPerPass: WebGLBuffer;
-        private _uniformBufferPerScene: WebGLBuffer;
+        private _uniformBufferDynamic: WebGLBuffer;
+        private _uniformBufferStatic: WebGLBuffer;
+        private _uniformBufferDynamicCache: Float32Array;
+        private _uniformBufferStaticCache: Float32Array;
+        private _uniformBufferDynamicNames: string[] = [];
+        private _uniformBufferDynamicLocations: number[] = [];
+        private _uniformBufferStaticNames: string[] = [];
+        private _uniformBufferStaticLocations: number[] = [];
+        private _uniformCurrentStaticPointer: number = 0;
+        private _uniformCurrentDynamicPointer: number = 0;
+        private _uniformOrder: string[];
         private _samplers: string[];
         private _isReady = false;
         private _compilationError = "";
@@ -415,8 +424,8 @@
                 this.bindUniformBlock();
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
-                this._uniformBufferPerPass = engine.createUniformBuffer(this.formatUniforms(8));
-                this._uniformBufferPerScene = engine.createUniformBuffer(this.formatUniforms(4));
+                this._uniformBufferDynamic = engine.createUniformBuffer(this.formatUniforms(8));
+                this._uniformBufferStatic = engine.createUniformBuffer(this.formatUniforms(4));
 
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
@@ -587,21 +596,42 @@
             return new Float32Array(length);
         };
 
-        public setUniformBufferScene(cameraPositionFormatted: Float32Array): Effect {
-            this._engine.setUniformBuffer(this._uniformBufferPerScene, cameraPositionFormatted);
+        public addUniform(name: string, size: number, dynamic: boolean): void {
+            var uniformNames, uniformLocations, index;
+            if (dynamic) {
+                uniformNames = this._uniformBufferDynamicNames;
+                uniformLocations = this._uniformBufferDynamicLocations;
+                index = this._uniformCurrentDynamicPointer;
+            } else {
+                uniformNames = this._uniformBufferStaticNames;
+                uniformLocations = this._uniformBufferStaticLocations;                
+                index = this._uniformCurrentStaticPointer;
+            }
+            uniformNames.push(name);
+            uniformLocations.push(index);
 
-            return this;
-        }
+            // std140 layout forces uniform to be multiple of 16 bytes (4 floats)
+            var correctedSize = Math.ceil(size / 4) * 4;
+            index += correctedSize;
 
-        public setUniformBufferPass(materialFormatted: Float32Array): Effect {
-            this._engine.setUniformBuffer(this._uniformBufferPerPass, materialFormatted);
-
-            return this;
+            if (dynamic) {
+                this._uniformBufferDynamicCache = new Float32Array(index);
+            } else {
+                this._uniformBufferStaticCache = new Float32Array(index); 
+            }
         };
 
+        public updateUniformBufferStatic(): void {
+            this._engine.setUniformBuffer(this._uniformBufferStatic, this._uniformBufferStaticCache);
+        }
+
+        public updateUniformBufferDynamic(): void {
+            this._engine.setUniformBuffer(this._uniformBufferDynamic, this._uniformBufferDynamicCache);
+        }
+
         public bindUniformBuffers(): void {
-            this._engine.bindUniformBufferBase(this._uniformBufferPerPass, 0);
-            this._engine.bindUniformBufferBase(this._uniformBufferPerScene, 1);
+            this._engine.bindUniformBufferBase(this._uniformBufferDynamic, 0);
+            this._engine.bindUniformBufferBase(this._uniformBufferStatic, 1);
         }
 
         public bindUniformBlock(): void {
@@ -760,7 +790,17 @@
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
             if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-                this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+                var index;
+                var location;
+                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferDynamicLocations[index];
+                    vector3.toArray(this._uniformBufferDynamicCache, location);
+                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferStaticLocations[index];
+                    vector3.toArray(this._uniformBufferStaticCache, location);
+                } else {
+                    this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+                }
             }
             return this;
         }
@@ -788,14 +828,36 @@
 
         public setColor3(uniformName: string, color3: Color3): Effect {
             if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-                this._engine.setColor3(this.getUniform(uniformName), color3);
+                var index;
+                var location;
+                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferDynamicLocations[index];
+                    color3.toArray(this._uniformBufferDynamicCache, location);
+                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferStaticLocations[index];
+                    color3.toArray(this._uniformBufferStaticCache, location);
+                } else {
+                    this._engine.setColor3(this.getUniform(uniformName), color3);
+                }
             }
             return this;
         }
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
             if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-                this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+                var index;
+                var location;
+                if ((index = this._uniformBufferDynamicNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferDynamicLocations[index];
+                    color3.toArray(this._uniformBufferDynamicCache, location);
+                    this._uniformBufferDynamicCache[location + 3] = alpha;
+                } else if ((index = this._uniformBufferStaticNames.indexOf(uniformName)) !== -1) {
+                    location = this._uniformBufferStaticLocations[index];
+                    color3.toArray(this._uniformBufferStaticCache, location);
+                    this._uniformBufferStaticCache[location + 3] = alpha;
+                } else {
+                    this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+                }
             }
             return this;
         }

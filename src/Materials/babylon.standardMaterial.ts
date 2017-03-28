@@ -692,6 +692,8 @@
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
                     join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+
+                this.buildUniformLayout();
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -711,6 +713,16 @@
             return true;
         }
 
+        public buildUniformLayout(): void {
+            this._effect.addUniform("vDiffuseColor", 4, false);
+            this._effect.addUniform("vAmbientColor", 3, false);
+            if (this._defines.SPECULARTERM) {
+                this._effect.addUniform("vSpecularColor", 3, false);
+            }
+
+            // Dynamic uniforms
+            this._effect.addUniform("vEyePosition", 3, true);
+        }
 
         public unbind(): void {
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
@@ -875,18 +887,13 @@
                     scene.activeCamera.position.toArray(cameraPos);
                 }
 
-                this._effect.setUniformBufferScene(new Float32Array(cameraPos.concat(0.0)));
+                this._effect.updateUniformBufferDynamic();
+                this._effect.bindUniformBuffers();
             }
 
             if (scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
                 this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-
-                // ADDED
-                this._effect.setUniformBufferPass(new Float32Array([
-                    this.diffuseColor.r, this.diffuseColor.g, this.diffuseColor.b, this.alpha * mesh.visibility,
-                    this._globalAmbientColor.r, this._globalAmbientColor.g, this._globalAmbientColor.b, 0.0]));
-                this._effect.bindUniformBuffers();
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
@@ -908,6 +915,7 @@
                 if (this.cameraColorCurves) {
                     ColorCurves.Bind(this.cameraColorCurves, this._effect);
                 }
+                this._effect.updateUniformBufferStatic();
             }
 
             super.bind(world, mesh);
