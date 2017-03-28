@@ -1834,7 +1834,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[], index?: number): Vector4 {
+        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }

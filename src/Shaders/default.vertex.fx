@@ -4,7 +4,7 @@ struct Camera {
 	vec3 vEyePosition;
 };
 
-struct Material
+uniform Material
 {
 	vec4 vDiffuseColor;
 
@@ -21,16 +21,7 @@ struct Material
   	
   	vec3 vEmissiveColor;
 
-};
-
-uniform Dynamic {
-	Camera camera;
-}  uDynamic;
-
-uniform Static {
-	Material material;
-}  uStatic;
-
+} uMaterial;
 
 // Attributes
 attribute vec3 position;
@@ -157,13 +148,13 @@ void main(void) {
 #endif
 
 #ifdef DIFFUSE
-	if (uStatic.material.vDiffuseInfos.x == 0.)
+	if (uMaterial.vDiffuseInfos.x == 0.)
 	{
-		vDiffuseUV = vec2(uStatic.material.diffuseMatrix * vec4(uv, 1.0, 0.0));
+		vDiffuseUV = vec2(uMaterial.diffuseMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vDiffuseUV = vec2(uStatic.material.diffuseMatrix * vec4(uv2, 1.0, 0.0));
+		vDiffuseUV = vec2(uMaterial.diffuseMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 

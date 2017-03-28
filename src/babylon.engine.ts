@@ -1300,15 +1300,11 @@
         }
 
         // UBOs
-        public createUniformBuffer(formattedUniforms: number[] | Float32Array): WebGLBuffer {
+        public createUniformBuffer(size: number): WebGLBuffer {
             var ubo = this._gl.createBuffer();
             this.bindUniformBuffer(ubo);
 
-            if (formattedUniforms instanceof Float32Array) {
-                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>formattedUniforms, this._gl.STATIC_DRAW);
-            } else {
-                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>formattedUniforms), this._gl.STATIC_DRAW);
-            }
+            this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(size), this._gl.STATIC_DRAW);
 
             this.bindUniformBuffer(null);
             ubo.references = 1;
@@ -1818,12 +1814,9 @@
         }
 
         public bindUniformBlock(shaderProgram: WebGLProgram): void {
-            var uniformDynamicLocation = this._gl.getUniformBlockIndex(shaderProgram, 'Dynamic');
-            var uniformStaticLocation = this._gl.getUniformBlockIndex(shaderProgram, 'Static');
+            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, 'Material');
 
-            this._gl.uniformBlockBinding(shaderProgram, uniformDynamicLocation, 0);
-            this._gl.uniformBlockBinding(shaderProgram, uniformStaticLocation, 1);
-
+            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, 0);
         };
 
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
@@ -1851,12 +1844,9 @@
             }
         }
 
-        public setUniformBuffer(ubo: WebGLBuffer, array: Float32Array): void {
+        public updateUniformBuffer(ubo: WebGLBuffer, array: Float32Array): void {
             this.bindUniformBuffer(ubo);
-
-            this._gl.bufferData(this._gl.UNIFORM_BUFFER, array, this._gl.STATIC_DRAW);
             this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, array);
-
             this.bindUniformBuffer(null);
         }
 
