@@ -16,7 +16,7 @@ var Test = (function () {
     Test.prototype._run = function () {
         var _this = this;
         this._initScene();
-        this.scene.debugLayer.show({ popup: false, initialTab: 4 });
+        this.scene.debugLayer.show({ popup: false, parentElement: document.getElementById('inspector') });
         this.scene.executeWhenReady(function () {
             _this._initGame();
             _this.engine.runRenderLoop(function () {
