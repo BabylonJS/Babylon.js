@@ -14,12 +14,25 @@ module BABYLON {
         }
 
         /** Creates the inspector window. */
-        private _createInspector(config: { popup?: boolean, initialTab?: number, parentElement?: HTMLElement } = {}) {
+        private _createInspector(config: {
+            popup?: boolean,
+            initialTab?: number,
+            parentElement?: HTMLElement,
+            newColors?: {
+                backgroundColor?: string,
+                backgroundColorLighter?: string,
+                backgroundColorLighter2?: string,
+                backgroundColorLighter3?: string,
+                color?: string,
+                colorTop?: string,
+                colorBot?: string
+            }
+        } = {}) {
             let popup = config.popup || false;
             let initialTab = config.initialTab || 0;
             let parentElement = config.parentElement || null;
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene, popup, initialTab, parentElement);
+                this._inspector = new INSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do,; instance is already existing
         }
 
@@ -37,7 +50,20 @@ module BABYLON {
             }
         }
 
-        public show(config: { popup?: boolean, initialTab?: number, parentElement?: HTMLElement } = {}) {
+        public show(config: {
+            popup?: boolean,
+            initialTab?: number,
+            parentElement?: HTMLElement,
+            newColors?: {
+                backgroundColor?: string,
+                backgroundColorLighter?: string,
+                backgroundColorLighter2?: string,
+                backgroundColorLighter3?: string,
+                color?: string,
+                colorTop?: string,
+                colorBot?: string
+            }
+        } = {}) {
             if (typeof INSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));

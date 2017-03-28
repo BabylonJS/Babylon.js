@@ -5,7 +5,7 @@ var INSPECTOR;
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, popup, initialTab, parentElement) {
+        function Inspector(scene, popup, initialTab, parentElement, newColors) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
@@ -53,80 +53,80 @@ var INSPECTOR;
                     marginTop: canvasComputedStyle.marginTop,
                     marginRight: canvasComputedStyle.marginRight
                 };
-                // Create c2di wrapper
-                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
-                // copy style from canvas to wrapper
-                for (var prop in this._canvasStyle) {
-                    this._c2diwrapper.style[prop] = this._canvasStyle[prop];
-                }
-                // Convert wrapper size in % (because getComputedStyle returns px only)
-                var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
-                var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
-                // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
-                if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
-                    // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
-                    var leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
-                    if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
-                        this._c2diwrapper.style.maxWidth = widthPx - leftPx + "px";
-                    }
-                }
-                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
-                var parent_1 = this._getRelativeParent(canvas);
-                var parentWidthPx = parent_1.clientWidth;
-                var parentHeightPx = parent_1.clientHeight;
-                var pWidth = widthPx / parentWidthPx * 100;
-                var pheight = heightPx / parentHeightPx * 100;
-                this._c2diwrapper.style.width = pWidth + "%";
-                this._c2diwrapper.style.height = pheight + "%";
-                // reset canvas style
-                canvas.style.position = "static";
-                canvas.style.width = "100%";
-                canvas.style.height = "100%";
-                canvas.style.paddingBottom = "0";
-                canvas.style.paddingLeft = "0";
-                canvas.style.paddingTop = "0";
-                canvas.style.paddingRight = "0";
-                canvas.style.margin = "0";
-                canvas.style.marginBottom = "0";
-                canvas.style.marginLeft = "0";
-                canvas.style.marginTop = "0";
-                canvas.style.marginRight = "0";
-                // Replace canvas with the wrapper...
-                // if (this._parentElement) {
-                //     canvasParent.replaceChild(this._parentElement, canvas);
-                //     this._parentElement.appendChild(canvas);
-                // }
-                // else {
-                canvasParent.replaceChild(this._c2diwrapper, canvas);
-                // ... and add canvas to the wrapper
-                this._c2diwrapper.appendChild(canvas);
-                // }
-                // add inspector
-                var inspector = void 0;
                 if (this._parentElement) {
-                    this._c2diwrapper.appendChild(this._parentElement);
-                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._parentElement);
+                    // Build the inspector wrapper
+                    this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', this._parentElement);
+                    this._c2diwrapper.style.width = '100%';
+                    this._c2diwrapper.style.height = '100%';
+                    this._c2diwrapper.style.paddingLeft = '5px';
+                    // add inspector     
+                    var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
                     inspector.style.width = '100%';
                     inspector.style.height = '100%';
+                    // and build it in the popup  
+                    this._buildInspector(inspector);
                 }
                 else {
-                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-                }
-                // Add split bar
-                if (!this._parentElement) {
-                    Split([canvas, inspector], {
-                        direction: 'horizontal',
-                        sizes: [75, 25],
-                        onDrag: function () {
-                            INSPECTOR.Helpers.SEND_EVENT('resize');
-                            if (_this._tabbar) {
-                                _this._tabbar.updateWidth();
-                            }
+                    // Create c2di wrapper
+                    this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
+                    // copy style from canvas to wrapper
+                    for (var prop in this._canvasStyle) {
+                        this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                    }
+                    // Convert wrapper size in % (because getComputedStyle returns px only)
+                    var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
+                    var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
+                    // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
+                    if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
+                        // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
+                        var leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
+                        if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
+                            this._c2diwrapper.style.maxWidth = widthPx - leftPx + "px";
                         }
-                    });
+                    }
+                    // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
+                    var parent_1 = this._getRelativeParent(canvas);
+                    var parentWidthPx = parent_1.clientWidth;
+                    var parentHeightPx = parent_1.clientHeight;
+                    var pWidth = widthPx / parentWidthPx * 100;
+                    var pheight = heightPx / parentHeightPx * 100;
+                    this._c2diwrapper.style.width = pWidth + "%";
+                    this._c2diwrapper.style.height = pheight + "%";
+                    // reset canvas style
+                    canvas.style.position = "static";
+                    canvas.style.width = "100%";
+                    canvas.style.height = "100%";
+                    canvas.style.paddingBottom = "0";
+                    canvas.style.paddingLeft = "0";
+                    canvas.style.paddingTop = "0";
+                    canvas.style.paddingRight = "0";
+                    canvas.style.margin = "0";
+                    canvas.style.marginBottom = "0";
+                    canvas.style.marginLeft = "0";
+                    canvas.style.marginTop = "0";
+                    canvas.style.marginRight = "0";
+                    // Replace canvas with the wrapper...
+                    canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    // ... and add canvas to the wrapper
+                    this._c2diwrapper.appendChild(canvas);
+                    // add inspector
+                    var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                    // Add split bar
+                    if (!this._parentElement) {
+                        Split([canvas, inspector], {
+                            direction: 'horizontal',
+                            sizes: [75, 25],
+                            onDrag: function () {
+                                INSPECTOR.Helpers.SEND_EVENT('resize');
+                                if (_this._tabbar) {
+                                    _this._tabbar.updateWidth();
+                                }
+                            }
+                        });
+                    }
+                    // Build the inspector
+                    this._buildInspector(inspector);
                 }
-                // Build the inspector
-                this._buildInspector(inspector);
                 // Send resize event to the window
                 INSPECTOR.Helpers.SEND_EVENT('resize');
                 this._tabbar.updateWidth();
@@ -134,6 +134,30 @@ var INSPECTOR;
             // Refresh the inspector if the browser is not edge
             if (!INSPECTOR.Helpers.IsBrowserEdge()) {
                 this.refresh();
+            }
+            // Check custom css colors
+            if (newColors) {
+                var bColor = newColors.backgroundColor || '#242424';
+                var bColorl1 = newColors.backgroundColorLighter || '#2c2c2c';
+                var bColorl2 = newColors.backgroundColorLighter2 || '#383838';
+                var bColorl3 = newColors.backgroundColorLighter3 || '#454545';
+                var color = newColors.color || '#ccc';
+                var colorTop = newColors.colorTop || '#f29766';
+                var colorBot = newColors.colorBot || '#5db0d7';
+                var styles = Inspector.DOCUMENT.querySelectorAll('style');
+                for (var s = 0; s < styles.length; s++) {
+                    var style = styles[s];
+                    if (style.innerHTML.indexOf('insp-wrapper') != -1) {
+                        styles[s].innerHTML = styles[s].innerHTML
+                            .replace(/#242424/g, bColor) // background color
+                            .replace(/#2c2c2c/g, bColorl1) // background-lighter
+                            .replace(/#383838/g, bColorl2) // background-lighter2
+                            .replace(/#454545/g, bColorl3) // background-lighter3
+                            .replace(/#ccc/g, color) // color
+                            .replace(/#f29766/g, colorTop) // color-top
+                            .replace(/#5db0d7/g, colorBot); // color-bot
+                    }
+                }
             }
         }
         /**
@@ -591,6 +615,96 @@ var INSPECTOR;
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
             ]
+        },
+        'Canvas2D': {
+            type: BABYLON.Canvas2D
+        },
+        'Canvas2DEngineBoundData': {
+            type: BABYLON.Canvas2DEngineBoundData
+        },
+        'Ellipse2D': {
+            type: BABYLON.Ellipse2D
+        },
+        'Ellipse2DInstanceData': {
+            type: BABYLON.Ellipse2DInstanceData
+        },
+        'Ellipse2DRenderCache': {
+            type: BABYLON.Ellipse2DRenderCache
+        },
+        'Group2D': {
+            type: BABYLON.Group2D
+        },
+        'IntersectInfo2D': {
+            type: BABYLON.IntersectInfo2D
+        },
+        'Lines2D': {
+            type: BABYLON.Lines2D
+        },
+        'Lines2DInstanceData': {
+            type: BABYLON.Lines2DInstanceData
+        },
+        'Lines2DRenderCache': {
+            type: BABYLON.Lines2DRenderCache
+        },
+        'PrepareRender2DContext': {
+            type: BABYLON.PrepareRender2DContext
+        },
+        'Prim2DBase': {
+            type: BABYLON.Prim2DBase
+        },
+        'Prim2DClassInfo': {
+            type: BABYLON.Prim2DClassInfo
+        },
+        'Prim2DPropInfo': {
+            type: BABYLON.Prim2DPropInfo
+        },
+        'Rectangle2D': {
+            type: BABYLON.Rectangle2D
+        },
+        'Rectangle2DInstanceData': {
+            type: BABYLON.Rectangle2DInstanceData
+        },
+        'Rectangle2DRenderCache': {
+            type: BABYLON.Rectangle2DRenderCache
+        },
+        'Render2DContext': {
+            type: BABYLON.Render2DContext
+        },
+        'RenderablePrim2D': {
+            type: BABYLON.RenderablePrim2D
+        },
+        'ScreenSpaceCanvas2D': {
+            type: BABYLON.ScreenSpaceCanvas2D
+        },
+        'Shape2D': {
+            type: BABYLON.Shape2D
+        },
+        'Shape2DInstanceData': {
+            type: BABYLON.Shape2DInstanceData
+        },
+        'Sprite2D': {
+            type: BABYLON.Sprite2D
+        },
+        'Sprite2DInstanceData': {
+            type: BABYLON.Sprite2DInstanceData
+        },
+        'Sprite2DRenderCache': {
+            type: BABYLON.Sprite2DRenderCache
+        },
+        'Text2D': {
+            type: BABYLON.Text2D
+        },
+        'Text2DInstanceData': {
+            type: BABYLON.Text2DInstanceData
+        },
+        'Text2DRenderCache': {
+            type: BABYLON.Text2DRenderCache
+        },
+        'WorldSpaceCanvas2D': {
+            type: BABYLON.WorldSpaceCanvas2D
+        },
+        'WorldSpaceCanvas2DNode': {
+            type: BABYLON.WorldSpaceCanvas2DNode
         }
     };
 })(INSPECTOR || (INSPECTOR = {}));
@@ -875,7 +989,7 @@ var INSPECTOR;
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
                 'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo',
-                '_cachedTexture'
+                '_cachedTexture', 'actualOpacity'
             ];
             for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
                 var dirty = toAddDirty_1[_i];
