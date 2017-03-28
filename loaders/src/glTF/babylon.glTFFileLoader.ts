@@ -1627,7 +1627,7 @@ module BABYLON {
         /**
         * Load scene
         */
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
+        public loadAsync(scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
