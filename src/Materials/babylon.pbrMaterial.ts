@@ -21,6 +21,7 @@
         public EMISSIVEFRESNEL = false;
         public FRESNEL = false;
         public NORMAL = false;
+        public TANGENT = false;
         public UV1 = false;
         public UV2 = false;
         public VERTEXCOLOR = false;
@@ -41,7 +42,9 @@
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
-        public REFLECTIONMAP_EQUIRECTANGULAR = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR = false;        
+        public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public CAMERATONEMAP = false;
@@ -60,9 +63,9 @@
         public RADIANCEOVERALPHA = false;
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
-        public OPENGLNORMALMAP = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
+        public TWOSIDEDLIGHTING = false;
         public SHADOWFULLFLOAT = false;
 
         public METALLICWORKFLOW = false;
@@ -486,6 +489,12 @@
         @serialize()
         public invertNormalMapY = false;
 
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        @serialize()
+        public twoSidedLighting = false;
+
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
@@ -732,6 +741,12 @@
                             case Texture.EQUIRECTANGULAR_MODE:
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                 break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                                this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                                break;                                
                         }
 
                         if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
@@ -845,6 +860,10 @@
                         this._defines.CAMERACOLORGRADING = true;
                     }
                 }
+
+                if (!this.backFaceCulling && this.twoSidedLighting) {
+                    this._defines.TWOSIDEDLIGHTING = true;
+                }
             }
 
             // Effect
@@ -946,6 +965,9 @@
             if (mesh) {
                 if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
+                    if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                        this._defines.TANGENT = true;
+                    }
                 }
                 if (needUVs) {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -1048,6 +1070,10 @@
 
                 if (this._defines.NORMAL) {
                     attribs.push(VertexBuffer.NormalKind);
+                }
+
+                if (this._defines.TANGENT) {
+                    attribs.push(VertexBuffer.TangentKind);
                 }
 
                 if (this._defines.UV1) {

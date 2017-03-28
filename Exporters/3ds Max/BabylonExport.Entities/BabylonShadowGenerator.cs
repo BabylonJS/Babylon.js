@@ -15,13 +15,13 @@ namespace BabylonExport.Entities
         public string lightId { get; set; }
 
         [DataMember]
-        public bool useVarianceShadowMap { get; set; }
+        public bool useExponentialShadowMap { get; set; }
 
         [DataMember]
         public bool usePoissonSampling { get; set; }
 
         [DataMember]
-        public bool useBlurVarianceShadowMap { get; set; }
+        public bool useBlurExponentialShadowMap { get; set; }
 
         [DataMember]
         public float darkness { get; set; }

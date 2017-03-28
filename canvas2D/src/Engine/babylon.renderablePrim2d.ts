@@ -451,28 +451,19 @@
                 gii = part.groupInstanceInfo;
                 part.groupInstanceInfo = null;
             }
-            if (gii && !gii.isDisposed) {
-                let usedCount = 0;
+
+            if (gii) {
                 if (gii.hasOpaqueData) {
-                    let od = gii.opaqueData[0];
-                    usedCount += od._partData.usedElementCount;
                     gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
-                    let atd = gii.alphaTestData[0];
-                    usedCount += atd._partData.usedElementCount;
                     gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
-                    let td = gii.transparentData[0];
-                    usedCount += td._partData.usedElementCount;
                     gii.transparentDirty = true;
                 }
 
-                if (usedCount === 0 && gii.modelRenderCache!=null) {
-                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
-                    gii.dispose();
-                }
+                gii.dispose();
 
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
@@ -480,6 +471,7 @@
                 }
 
             }
+
             this._instanceDataParts = null;
         }
 
@@ -596,6 +588,9 @@
                 part.renderMode = rm;
                 part.groupInstanceInfo = gii;
             }
+
+            // Increment the primitive count as one more primitive is using this GroupInstanceInfo
+            gii.incPrimCount();
 
             return gii;
         }
@@ -951,10 +946,14 @@
             let trn = RenderablePrim2D._t;
             let rot = t.decompose(scl, trn);
             let pas = this.actualScale;
-            let canvasScale = this.owner._canvasLevelScale;
+            //let cachedGroup = (this.getExternalData<Group2D>("__cachedGroup__") !== null);
+            let canvasScale = /*cachedGroup ? RenderablePrim2D._iV2 :  */this.owner._canvasLevelScale;
             scl.x = pas.x * canvasScale.x * this._postScale.x;
             scl.y = pas.y * canvasScale.y * this._postScale.y;
+            trn.multiplyInPlace(canvasScale);
             t = Matrix2D.Compose(this.applyActualScaleOnTransform() ? scl : RenderablePrim2D._iV2, rot, trn);
+
+            //console.log(`Update Instance Data Part: ${this.id}`);
 
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;

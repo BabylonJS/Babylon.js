@@ -310,7 +310,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 58);
+            this.label6.Location = new System.Drawing.Point(16, 57);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(34, 13);
             this.label6.TabIndex = 6;
@@ -319,7 +319,6 @@
             // cbCameraType
             // 
             this.cbCameraType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbCameraType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cbCameraType.FormattingEnabled = true;
             this.cbCameraType.Items.AddRange(new object[] {
             "AnaglyphArcRotateCamera",

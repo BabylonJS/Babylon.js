@@ -160,7 +160,7 @@
             var result = this._sourceMesh.createInstance(name);
 
             // Deep copy
-            Tools.DeepCopy(this, result, ["name", "subMeshes"], []);
+            Tools.DeepCopy(this, result, ["name", "subMeshes", "uniqueId"], []);
 
             // Bounding info
             this.refreshBoundingInfo();

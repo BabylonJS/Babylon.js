@@ -53,12 +53,13 @@ void main(void) {
 	}
 
 	// Align texture coordinate to texel to enhance rendering quality
-	vUV = (floor(vUV*textureSize) + vec2(0.0, 0.0)) / textureSize;
+//	vUV = (floor(vUV*textureSize) + vec2(0.5, 0.5)) / textureSize;
+	//vUV.x += 0.5 / textureSize.x;
 
 	vColor = color;
 	vColor.a *= opacity;
 	vec4 pos;
-	pos.xy = floor(pos2.xy * superSampleFactor * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
+	pos.xy = pos2.xy * superSampleFactor * sizeUV * textureSize;
 	pos.z = 1.0;
 	pos.w = 1.0;
 
@@ -70,9 +71,9 @@ void main(void) {
 		float irw = 2.0 / rw;
 		float irh = 2.0 / rh;
 
-		x = floor((x / irw) + 0.5) * irw;
-		y = floor((y / irh) + 0.5) * irh;
+		x = ((floor((x / irw) + 0.5) * irw) + irw / 2.0) + 0.5*irw;
+		y = ((floor((y / irh) + 0.5) * irh) + irh / 2.0) + 0.5*irh;
 	}
 
-	gl_Position = vec4(x, y, zBias.x, 1);
+	gl_Position = vec4(x, y, zBias.x, 1.0);
 }
