@@ -88,7 +88,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[], index?: number): Color3 {
+        public toArray(array: number[] | Float32Array, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
