@@ -32,7 +32,7 @@ module BABYLON {
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
-        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean {
+        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): boolean {
             return false;
         }
 
@@ -92,11 +92,11 @@ module BABYLON {
             });
         }
 
-        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void {
+        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void {
             GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
-                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             }, () => {
-                GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             });
         }
 
