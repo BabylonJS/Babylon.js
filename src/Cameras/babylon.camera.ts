@@ -618,9 +618,8 @@
                         this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[0].parent = this;
                         this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
-                        this._rigCameras[0]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[0]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
 
                         //Right eye
                         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
@@ -629,9 +628,8 @@
                         this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
-                        this._rigCameras[1]._isSynchronizedViewMatrix = this._isSynchronizedViewMatrix;
-                        this._rigCameras[1]._updateCameraRotationMatrix = this._updateWebVRCameraRotationMatrix;
                     }
                     break;
 

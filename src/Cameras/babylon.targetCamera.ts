@@ -179,7 +179,7 @@ module BABYLON {
 
                 //rotate, if quaternion is set and rotation was used
                 if (this.rotationQuaternion) {
-                    var len = this.rotation.length();
+                    var len = this.rotation.lengthSquared();
                     if (len) {
                         Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
                     }
@@ -302,7 +302,6 @@ module BABYLON {
                     break;
 
                 case Camera.RIG_MODE_VR:
-                case Camera.RIG_MODE_WEBVR:
                     if (camLeft.rotationQuaternion) {
                         camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                         camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);

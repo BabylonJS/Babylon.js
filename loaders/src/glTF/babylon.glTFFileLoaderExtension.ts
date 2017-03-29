@@ -16,7 +16,7 @@ module BABYLON {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        public loadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
+        public loadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
             return false;
         }
 
@@ -32,7 +32,7 @@ module BABYLON {
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
-        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean {
+        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): boolean {
             return false;
         }
 
@@ -72,12 +72,12 @@ module BABYLON {
         // Utilities
         // ---------
 
-        public static LoadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
+        public static LoadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
             GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, () => {
                 setTimeout(() => {
-                    onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(<string>data), scene, rootUrl));
+                    onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(data), scene, rootUrl));
                 });
             });
         }
@@ -92,11 +92,11 @@ module BABYLON {
             });
         }
 
-        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void {
+        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void {
             GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
-                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             }, () => {
-                GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             });
         }
 
