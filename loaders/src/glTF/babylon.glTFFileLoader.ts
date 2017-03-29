@@ -631,7 +631,7 @@ module BABYLON {
     var configureNode = (babylonNode: Mesh | TargetCamera, node: IGLTFNode): void => {
         var position = Vector3.Zero();
         var rotation = Quaternion.Identity();
-        var scaling = Vector3.Zero();
+        var scaling = new Vector3(1, 1, 1);
 
         if (node.matrix) {
             var mat = Matrix.FromArray(node.matrix);
