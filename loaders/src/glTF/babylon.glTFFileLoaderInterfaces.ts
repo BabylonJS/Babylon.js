@@ -309,8 +309,6 @@ module BABYLON {
 
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
-
-        dummyNodes: Node[];
     }
 
     /**

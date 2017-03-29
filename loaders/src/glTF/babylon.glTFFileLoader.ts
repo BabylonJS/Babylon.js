@@ -657,14 +657,13 @@ module BABYLON {
         if (babylonNode instanceof Mesh) {
             var mesh = <Mesh>babylonNode;
             mesh.scaling = scaling;
-            mesh.computeWorldMatrix(true);
         }
     };
 
     /**
     * Imports a node
     */
-    var importNode = (runtime: IGLTFRuntime, node: IGLTFNode, parent: Node): Node => {
+    var importNode = (runtime: IGLTFRuntime, node: IGLTFNode): Node => {
         var babylonNode: Mesh | TargetCamera = null;
 
         if (runtime.importOnlyMeshes && (node.skin !== undefined || node.mesh !== undefined)) {
@@ -775,7 +774,7 @@ module BABYLON {
         }
 
         if (node.jointName === undefined && meshIncluded) {
-            newNode = importNode(runtime, node, parent);
+            newNode = importNode(runtime, node);
 
             if (newNode !== null) {
                 newNode.parent = parent;
@@ -1195,8 +1194,6 @@ module BABYLON {
                 rootUrl: rootUrl,
 
                 importOnlyMeshes: importOnlyMeshes,
-
-                dummyNodes: []
             }
 
             if (data instanceof ArrayBuffer) {
