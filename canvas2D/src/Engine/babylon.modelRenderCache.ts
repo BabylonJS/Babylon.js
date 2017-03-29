@@ -6,6 +6,7 @@
     export class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number) {
             this._partCount = partCount;
+            this._primCount = 0;
             this.owner = owner;
             this.modelRenderCache = mrc;
             this.modelRenderCache.addRef();
@@ -18,10 +19,25 @@
             this.opaqueDirty = this.alphaTestDirty = this.transparentDirty = this.transparentOrderDirty = false;
         }
 
+        public incPrimCount() {
+            ++this._primCount;
+        }
+
         public dispose(): boolean {
             if (this._isDisposed) {
                 return false;
             }
+
+            // Disposed is called when a primitive instance is disposed, so we decrement the counter
+            --this._primCount;
+
+            // If the counter is still greater than 0 there's still other primitives using this GII
+            if (this._primCount > 0) {
+                return false;
+            }
+
+            // We're going to dispose this GII, first remove it from the dictionary
+            this.owner._renderableData._renderGroupInstancesInfo.remove(this.modelRenderCache.modelKey);
 
             if (this.modelRenderCache) {
                 this.modelRenderCache.dispose();
@@ -130,6 +146,7 @@
         }
 
         private _partCount: number;
+        private _primCount: number;
         private _strides: number[];
         private _usedShaderCategories: string[];
         private _opaqueData: GroupInfoPartData[];

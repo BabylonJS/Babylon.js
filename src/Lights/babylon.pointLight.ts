@@ -5,6 +5,11 @@
 
         @serializeAsVector3()
         public position: Vector3;
+
+        @serialize()
+        public shadowMinZ: number;
+        @serialize()
+        public shadowMaxZ: number;
         
         public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
 
@@ -79,12 +84,6 @@
         /**
          * Boolean : returns false by default.  
          */
-        public supportsVSM(): boolean {
-            return false;
-        }
-        /**
-         * Boolean : returns false by default.  
-         */
         public needRefreshPerFrame(): boolean {
             return false;
         }
@@ -110,6 +109,13 @@
 
             return Vector3.Zero();
         }
+        
+        /**
+         * Return the depth scale used for the shadow map.
+         */
+        public getDepthScale(): number {
+            return 30.0;
+        }
 
         /**
          * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings : 
@@ -123,7 +129,8 @@
                 this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
             } else {
                 var activeCamera = this.getScene().activeCamera;
-                Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+                Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, 
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
             }
             return this;
         }

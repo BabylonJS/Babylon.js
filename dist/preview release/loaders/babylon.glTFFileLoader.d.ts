@@ -326,7 +326,7 @@ declare module BABYLON {
     */
     class GLTFFileLoaderBase {
         static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime;
-        static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void;
+        static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void;
         static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void;
         static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: () => void): void;
         static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: () => void): void;
@@ -355,13 +355,13 @@ declare module BABYLON {
         /**
         * Import meshes
         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void, onProgress?: () => void): boolean;
         /**
         * Load scene
         */
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean;
+        loadAsync(scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onError: () => void): boolean;
         private _loadShadersAsync(gltfRuntime, onload);
-        private _loadBuffersAsync(gltfRuntime, onload);
+        private _loadBuffersAsync(gltfRuntime, onload, onProgress?);
         private _createNodes(gltfRuntime);
     }
 }
@@ -446,7 +446,7 @@ declare module BABYLON {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        loadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean;
+        loadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean;
         /**
          * Defines an onverride for creating gltf runtime
          * Return true to stop further extensions from creating the runtime
@@ -456,7 +456,7 @@ declare module BABYLON {
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
-        loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean;
+        loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): boolean;
         /**
         * Defines an override for loading texture buffers
         * Return true to stop further extensions from loading this texture data
@@ -477,9 +477,9 @@ declare module BABYLON {
         * Return true to stop further extensions from loading this material
         */
         loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean;
-        static LoadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void;
+        static LoadRuntimeAsync(scene: Scene, data: string, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void;
         static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void;
-        static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void;
+        static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void;
         static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): void;
         static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): void;
         static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): void;

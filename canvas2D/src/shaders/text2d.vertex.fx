@@ -71,8 +71,8 @@ void main(void) {
 		float irw = 2.0 / rw;
 		float irh = 2.0 / rh;
 
-		x = (floor((x / irw)) * irw) + irw / 2.0;
-		y = (floor((y / irh)) * irh) + irh / 2.0;
+		x = ((floor((x / irw) + 0.5) * irw) + irw / 2.0) + 0.5*irw;
+		y = ((floor((y / irh) + 0.5) * irh) + irh / 2.0) + 0.5*irh;
 	}
 
 	gl_Position = vec4(x, y, zBias.x, 1.0);

@@ -95,6 +95,7 @@
                     prim.layoutArea = contentArea;
                 }
             }
+            C2DLogging.setPostMessage(() => `Prim: ${prim.id} has layoutArea: ${prim.layoutArea}`);
         }
 
         get isChildPositionAllowed(): boolean {

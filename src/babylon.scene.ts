@@ -1211,7 +1211,7 @@
                     }
 
                     // Meshes
-                    if (!this._meshPickProceed && ActionManager.HasTriggers) {
+                    if (!this._meshPickProceed && (ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
@@ -2613,6 +2613,10 @@
         }
 
         public render(): void {
+            if (this.isDisposed) {
+                return;
+            }
+
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -3040,6 +3044,11 @@
             }
 
             this._engine.wipeCaches();
+            this._engine = null;
+        }
+
+        public get isDisposed(): boolean {
+            return !this._engine;
         }
 
         // Release sounds & sounds tracks
