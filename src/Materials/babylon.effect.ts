@@ -82,11 +82,6 @@
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
-        private _uniformBuffer: WebGLBuffer;
-        private _uniformBufferCache: Float32Array;
-        private _uniformBufferNames: string[] = [];
-        private _uniformBufferLocations: number[] = [];
-        private _uniformCurrentPointer: number = 0;
         private _uniformOrder: string[];
         private _samplers: string[];
         private _isReady = false;
@@ -190,17 +185,6 @@
 
         public getUniform(uniformName: string): WebGLUniformLocation {
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
-        }
-
-        public getUniformWithinUbo(uniformName: string): number {
-            var index;
-            var location;
-            if ((index = this._uniformBufferNames.indexOf(uniformName)) !== -1) {
-                location = this._uniformBufferLocations[index]
-                return location;
-            } else {
-                return -1;
-            }
         }
 
         public getSamplers(): string[] {
@@ -421,9 +405,6 @@
 
             return source;
         }
-        public buildUniformlayout(): void {
-            this._uniformBuffer = this._engine.createUniformBuffer(this._uniformCurrentPointer);
-        }
 
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
@@ -598,28 +579,8 @@
             return changed;
         }
 
-        public addUniform(name: string, size: number): void {
-            var uniformNames, uniformLocations, index;
-            uniformNames = this._uniformBufferNames;
-            uniformLocations = this._uniformBufferLocations;                
-            index = this._uniformCurrentPointer;
-
-            uniformNames.push(name);
-            uniformLocations.push(index);
-
-            // std140 layout forces uniform to be multiple of 16 bytes (4 floats)
-            var correctedSize = Math.ceil(size / 4) * 4;
-
-            this._uniformCurrentPointer += correctedSize;
-            this._uniformBufferCache = new Float32Array(this._uniformCurrentPointer); 
-        };
-
-        public updateUniformBuffer(): void {
-            this._engine.updateUniformBuffer(this._uniformBuffer, this._uniformBufferCache);
-        }
-
-        public bindUniformBuffer(): void {
-            this._engine.bindUniformBufferBase(this._uniformBuffer, 0);
+        public bindUniformBuffer(buffer: WebGLBuffer): void {
+            this._engine.bindUniformBufferBase(buffer, 0);
         }
 
         public bindUniformBlock(): void {
@@ -719,12 +680,7 @@
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
             if (this._cacheMatrix(uniformName, matrix)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    this._uniformBufferCache.set(matrix.toArray(), location);
-                } else {
-                    this._engine.setMatrix(this.getUniform(uniformName), matrix);
-                }
+                this._engine.setMatrix(this.getUniform(uniformName), matrix);
             }
             return this;
         }
@@ -769,72 +725,42 @@
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
             if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    vector2.toArray(this._uniformBufferCache, location);
-                } else {
                     this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
-                }
             }
             return this;
         }
 
         public setFloat2(uniformName: string, x: number, y: number): Effect {
             if (this._cacheFloat2(uniformName, x, y)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    this._uniformBufferCache.set([x, y], location);
-                } else {
-                    this._engine.setFloat2(this.getUniform(uniformName), x, y);
-                }
+                this._engine.setFloat2(this.getUniform(uniformName), x, y);
             }
             return this;
         }
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
             if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    vector3.toArray(this._uniformBufferCache, location);
-                } else {
-                    this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
-                }
+                this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
             }
             return this;
         }
 
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
             if (this._cacheFloat3(uniformName, x, y, z)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    this._uniformBufferCache.set([x, y, z], location);
-                } else {
-                    this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
-                }
+                this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
             }
             return this;
         }
 
         public setVector4(uniformName: string, vector4: Vector4): Effect {
             if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    vector4.toArray(this._uniformBufferCache, location);
-                } else {
-                    this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
-                }
+                this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
             }
             return this;
         }
 
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
             if (this._cacheFloat4(uniformName, x, y, z, w)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    this._uniformBufferCache.set([x, y, z, w], location);
-                } else {
-                    this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
-                }
+                this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
             }
             return this;
         }
@@ -842,25 +768,14 @@
         public setColor3(uniformName: string, color3: Color3): Effect {
 
             if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    color3.toArray(this._uniformBufferCache, location);
-                } else {
-                    this._engine.setColor3(this.getUniform(uniformName), color3);
-                }
+                this._engine.setColor3(this.getUniform(uniformName), color3);
             }
             return this;
         }
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
             if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-                var location = this.getUniformWithinUbo(uniformName);
-                if (location !== -1) {
-                    color3.toArray(this._uniformBufferCache, location);
-                    this._uniformBufferCache[location + 3] = alpha;
-                } else {
-                    this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
-                }
+                this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
         }

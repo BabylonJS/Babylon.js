@@ -704,17 +704,11 @@ module BABYLON {
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
 
-                var onCompiled = function(effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
-                    }
-                    
-                    this.buildUniformLayout();
-                }.bind(this);
-
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+
+                this.buildUniformLayout();
 
             }
             if (!this._effect.isReady()) {
@@ -737,23 +731,19 @@ module BABYLON {
 
         public buildUniformLayout(): void {
             // Order is important !
-            this._effect.addUniform("vDiffuseColor", 4);
+            this._uniformBuffer.addUniform("vDiffuseColor", 4);
 
-            if (this._defines.DIFFUSE) {
-                this._effect.addUniform("vDiffuseInfos", 2);
-                this._effect.addUniform("diffuseMatrix", 16);
-            }
+            this._uniformBuffer.addUniform("vDiffuseInfos", 2);
+            this._uniformBuffer.addUniform("diffuseMatrix", 16);
 
-            this._effect.addUniform("vAmbientColor", 3);
+            this._uniformBuffer.addUniform("vAmbientColor", 3);
 
 
-            if (this._defines.SPECULARTERM) {
-                this._effect.addUniform("vSpecularColor", 3);
-            }
+            this._uniformBuffer.addUniform("vSpecularColor", 3);
 
-            this._effect.addUniform("vEmissiveColor", 3);
+            this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
-            this._effect.buildUniformlayout();
+            this._uniformBuffer.create();
         }
 
         public unbind(): void {
@@ -782,7 +772,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
-                this._effect.bindUniformBuffer();
+                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer());
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -818,8 +808,10 @@ module BABYLON {
                     if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
-                        this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                        this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                        // this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                        this._uniformBuffer.updateFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                        // this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                        this._uniformBuffer.updateMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                     }
 
                     if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -907,18 +899,22 @@ module BABYLON {
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
-                this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
+                // this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
+                this._uniformBuffer.updateColor3("vAmbientColor", this._globalAmbientColor);
 
                 if (this._defines.SPECULARTERM) {
-                    this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+                    // this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+                    this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
-                this._effect.setColor3("vEmissiveColor", this.emissiveColor);
+                // this._effect.setColor3("vEmissiveColor", this.emissiveColor);
+                this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
 
             }
 
             if (scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
-                this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+                // this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+                this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
@@ -942,7 +938,7 @@ module BABYLON {
                 }
             }
 
-            this._effect.updateUniformBuffer();
+            this._uniformBuffer.update();
             super.bind(world, mesh);
         }
 

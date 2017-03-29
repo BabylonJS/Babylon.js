@@ -39,10 +39,15 @@ module BABYLON {
 
         // Methods
         private _adaptSizeToLayout(size: number): number {
+            // In std140 layout, uniform size must be multiple of 4 floats
             return Math.ceil(size / 4) * 4;
         }
 
         public addUniform(name: string, size: number | number[]) {
+            if (this._uniformNames.indexOf(name) !== -1) {
+                // Already existing uniform
+                return;
+            }
             // This function must be called in the order of the shader layout !
 
             // size can be the size of the uniform, or data directly
@@ -51,7 +56,6 @@ module BABYLON {
                 data = size;
                 size = this._adaptSizeToLayout(data.length);
             } else {
-                // In std140 layout, uniform size must be multiple of 4 floats
                 size = this._adaptSizeToLayout(<number>size);
                 data = [];
 
@@ -61,10 +65,6 @@ module BABYLON {
                 }
             }
 
-            if (this._uniformNames.indexOf(name) !== -1) {
-                // Already existing uniform
-                return;
-            }
 
             this._uniformNames.push(name);
             this._uniformSizes.push(size);
@@ -79,20 +79,20 @@ module BABYLON {
         }
 
         public addColor3(name: string, color: Color3) {
-            var temp = []
+            var temp = [];
             color.toArray(temp);
             this.addUniform(name, temp);
         }
 
         public addColor4(name: string, color: Color3, alpha: number) {
-            var temp = []
+            var temp = [];
             color.toArray(temp);
             temp.push(alpha);
             this.addUniform(name, temp);
         }
 
         public addVector3(name: string, vector: Vector3) {
-            var temp = []
+            var temp = [];
             vector.toArray(temp);
             this.addUniform(name, temp);
         }
@@ -109,9 +109,10 @@ module BABYLON {
             } else {
                 this._buffer = this._engine.createUniformBuffer(data);
             }
-
+            console.log("ubo creation");
+            
             this._needSync = false;
-        }
+        } 
 
         public update(): void {
             if (!this._buffer) {
@@ -119,12 +120,18 @@ module BABYLON {
                 return;
             }
 
+            if (!this._needSync) {
+                return;
+            }
+
+            console.log("Effective Update");
+
             this._engine.updateUniformBuffer(this._buffer, this._data);
 
             this._needSync = false;
         }
 
-        public updateUniform(uniformName: string, data: number[]) {
+        public updateUniform(uniformName: string, data: number[] | Float32Array) {
             var index = this._uniformNames.indexOf(uniformName);
 
             if (index === -1) {
@@ -146,12 +153,39 @@ module BABYLON {
             var changed = false;
             for (var i = 0; i < data.length; i++) {
                 if (this._data[location + i] !== data[i]) {
-                    changed = true;
+                   changed = true;
                     this._data[location + i] = data[i];
                 }
             }
 
             this._needSync = this._needSync || changed;
+        }
+
+        public updateFloat2(name: string, x: number, y: number) {
+            var temp = [x, y];
+            this.updateUniform(name, temp);
+        }
+        public updateMatrix(name: string, mat: Matrix) {
+            this.updateUniform(name, mat.toArray());
+        }
+
+        public updateVector3(name: string, vector: Vector3) {
+            var temp = [];
+            vector.toArray(temp);
+            this.updateUniform(name, temp);
+        }
+
+        public updateColor3(name: string, color: Color3) {
+            var temp = [];
+            color.toArray(temp);
+            this.updateUniform(name, temp);
+        }
+
+        public updateColor4(name: string, color: Color3, alpha: number) {
+            var temp = [];
+            color.toArray(temp);
+            temp.push(alpha);
+            this.updateUniform(name, temp);
         }
 
         public updateUniformDirectly(uniformName: string, data: number[]) {
