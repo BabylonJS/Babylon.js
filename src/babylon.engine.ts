@@ -1300,16 +1300,62 @@
         }
 
         // UBOs
-        public createUniformBuffer(size: number): WebGLBuffer {
+        public createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
             var ubo = this._gl.createBuffer();
             this.bindUniformBuffer(ubo);
 
-            this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(size), this._gl.STATIC_DRAW);
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.STATIC_DRAW);
+            }
 
             this.bindUniformBuffer(null);
+
             ubo.references = 1;
             return ubo;
         }
+
+        public createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.DYNAMIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.DYNAMIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+
+            ubo.references = 1;
+            return ubo;
+        }
+
+        public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void {
+            this.bindUniformBuffer(uniformBuffer);
+
+            if (offset === undefined) {
+                offset = 0;
+            }
+
+            if (count === undefined) {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
+                }
+            } else {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
+                }
+            }
+
+            this.bindUniformBuffer(null);
+        }
+
 
         // VBOs
         private _resetVertexBufferBinding(): void {
@@ -1842,12 +1888,6 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-        }
-
-        public updateUniformBuffer(ubo: WebGLBuffer, array: Float32Array): void {
-            this.bindUniformBuffer(ubo);
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, array);
-            this.bindUniformBuffer(null);
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {

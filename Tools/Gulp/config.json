@@ -89,6 +89,7 @@
             "../../src/Materials/babylon.material.js",
             "../../src/Materials/babylon.standardMaterial.js",
             "../../src/Materials/babylon.multiMaterial.js",
+            "../../src/Materials/babylon.uniformBuffer.js",
             "../../src/Loading/babylon.sceneLoader.js",
             "../../src/Loading/Plugins/babylon.babylonFileLoader.js",
             "../../src/Sprites/babylon.spriteManager.js",
