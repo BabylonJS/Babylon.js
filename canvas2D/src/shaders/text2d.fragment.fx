@@ -26,7 +26,7 @@ void main(void) {
 		discard;
 	}
 #ifdef FontTexture
-	gl_FragColor = vec4(color.xxx*vColor.xyz*vColor.a, vColor.a);
+	gl_FragColor = vec4(color.xxx*vColor.xyz*vColor.a, color.x*vColor.a);
 #else
 	gl_FragColor = color*vColor;
 #endif
