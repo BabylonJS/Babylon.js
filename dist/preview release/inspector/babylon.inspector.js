@@ -5,7 +5,7 @@ var INSPECTOR;
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, popup, initialTab, parentElement) {
+        function Inspector(scene, popup, initialTab, parentElement, newColors) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
@@ -53,80 +53,80 @@ var INSPECTOR;
                     marginTop: canvasComputedStyle.marginTop,
                     marginRight: canvasComputedStyle.marginRight
                 };
-                // Create c2di wrapper
-                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
-                // copy style from canvas to wrapper
-                for (var prop in this._canvasStyle) {
-                    this._c2diwrapper.style[prop] = this._canvasStyle[prop];
-                }
-                // Convert wrapper size in % (because getComputedStyle returns px only)
-                var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
-                var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
-                // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
-                if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
-                    // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
-                    var leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
-                    if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
-                        this._c2diwrapper.style.maxWidth = widthPx - leftPx + "px";
-                    }
-                }
-                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
-                var parent_1 = this._getRelativeParent(canvas);
-                var parentWidthPx = parent_1.clientWidth;
-                var parentHeightPx = parent_1.clientHeight;
-                var pWidth = widthPx / parentWidthPx * 100;
-                var pheight = heightPx / parentHeightPx * 100;
-                this._c2diwrapper.style.width = pWidth + "%";
-                this._c2diwrapper.style.height = pheight + "%";
-                // reset canvas style
-                canvas.style.position = "static";
-                canvas.style.width = "100%";
-                canvas.style.height = "100%";
-                canvas.style.paddingBottom = "0";
-                canvas.style.paddingLeft = "0";
-                canvas.style.paddingTop = "0";
-                canvas.style.paddingRight = "0";
-                canvas.style.margin = "0";
-                canvas.style.marginBottom = "0";
-                canvas.style.marginLeft = "0";
-                canvas.style.marginTop = "0";
-                canvas.style.marginRight = "0";
-                // Replace canvas with the wrapper...
-                // if (this._parentElement) {
-                //     canvasParent.replaceChild(this._parentElement, canvas);
-                //     this._parentElement.appendChild(canvas);
-                // }
-                // else {
-                canvasParent.replaceChild(this._c2diwrapper, canvas);
-                // ... and add canvas to the wrapper
-                this._c2diwrapper.appendChild(canvas);
-                // }
-                // add inspector
-                var inspector = void 0;
                 if (this._parentElement) {
-                    this._c2diwrapper.appendChild(this._parentElement);
-                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._parentElement);
+                    // Build the inspector wrapper
+                    this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', this._parentElement);
+                    this._c2diwrapper.style.width = '100%';
+                    this._c2diwrapper.style.height = '100%';
+                    this._c2diwrapper.style.paddingLeft = '5px';
+                    // add inspector     
+                    var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
                     inspector.style.width = '100%';
                     inspector.style.height = '100%';
+                    // and build it in the popup  
+                    this._buildInspector(inspector);
                 }
                 else {
-                    inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-                }
-                // Add split bar
-                if (!this._parentElement) {
-                    Split([canvas, inspector], {
-                        direction: 'horizontal',
-                        sizes: [75, 25],
-                        onDrag: function () {
-                            INSPECTOR.Helpers.SEND_EVENT('resize');
-                            if (_this._tabbar) {
-                                _this._tabbar.updateWidth();
-                            }
+                    // Create c2di wrapper
+                    this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
+                    // copy style from canvas to wrapper
+                    for (var prop in this._canvasStyle) {
+                        this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                    }
+                    // Convert wrapper size in % (because getComputedStyle returns px only)
+                    var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
+                    var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
+                    // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
+                    if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
+                        // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
+                        var leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
+                        if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
+                            this._c2diwrapper.style.maxWidth = widthPx - leftPx + "px";
                         }
-                    });
+                    }
+                    // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
+                    var parent_1 = this._getRelativeParent(canvas);
+                    var parentWidthPx = parent_1.clientWidth;
+                    var parentHeightPx = parent_1.clientHeight;
+                    var pWidth = widthPx / parentWidthPx * 100;
+                    var pheight = heightPx / parentHeightPx * 100;
+                    this._c2diwrapper.style.width = pWidth + "%";
+                    this._c2diwrapper.style.height = pheight + "%";
+                    // reset canvas style
+                    canvas.style.position = "static";
+                    canvas.style.width = "100%";
+                    canvas.style.height = "100%";
+                    canvas.style.paddingBottom = "0";
+                    canvas.style.paddingLeft = "0";
+                    canvas.style.paddingTop = "0";
+                    canvas.style.paddingRight = "0";
+                    canvas.style.margin = "0";
+                    canvas.style.marginBottom = "0";
+                    canvas.style.marginLeft = "0";
+                    canvas.style.marginTop = "0";
+                    canvas.style.marginRight = "0";
+                    // Replace canvas with the wrapper...
+                    canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    // ... and add canvas to the wrapper
+                    this._c2diwrapper.appendChild(canvas);
+                    // add inspector
+                    var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                    // Add split bar
+                    if (!this._parentElement) {
+                        Split([canvas, inspector], {
+                            direction: 'horizontal',
+                            sizes: [75, 25],
+                            onDrag: function () {
+                                INSPECTOR.Helpers.SEND_EVENT('resize');
+                                if (_this._tabbar) {
+                                    _this._tabbar.updateWidth();
+                                }
+                            }
+                        });
+                    }
+                    // Build the inspector
+                    this._buildInspector(inspector);
                 }
-                // Build the inspector
-                this._buildInspector(inspector);
                 // Send resize event to the window
                 INSPECTOR.Helpers.SEND_EVENT('resize');
                 this._tabbar.updateWidth();
@@ -134,6 +134,30 @@ var INSPECTOR;
             // Refresh the inspector if the browser is not edge
             if (!INSPECTOR.Helpers.IsBrowserEdge()) {
                 this.refresh();
+            }
+            // Check custom css colors
+            if (newColors) {
+                var bColor = newColors.backgroundColor || '#242424';
+                var bColorl1 = newColors.backgroundColorLighter || '#2c2c2c';
+                var bColorl2 = newColors.backgroundColorLighter2 || '#383838';
+                var bColorl3 = newColors.backgroundColorLighter3 || '#454545';
+                var color = newColors.color || '#ccc';
+                var colorTop = newColors.colorTop || '#f29766';
+                var colorBot = newColors.colorBot || '#5db0d7';
+                var styles = Inspector.DOCUMENT.querySelectorAll('style');
+                for (var s = 0; s < styles.length; s++) {
+                    var style = styles[s];
+                    if (style.innerHTML.indexOf('insp-wrapper') != -1) {
+                        styles[s].innerHTML = styles[s].innerHTML
+                            .replace(/#242424/g, bColor) // background color
+                            .replace(/#2c2c2c/g, bColorl1) // background-lighter
+                            .replace(/#383838/g, bColorl2) // background-lighter2
+                            .replace(/#454545/g, bColorl3) // background-lighter3
+                            .replace(/#ccc/g, color) // color
+                            .replace(/#f29766/g, colorTop) // color-top
+                            .replace(/#5db0d7/g, colorBot); // color-bot
+                    }
+                }
             }
         }
         /**
@@ -591,6 +615,96 @@ var INSPECTOR;
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
             ]
+        },
+        'Canvas2D': {
+            type: BABYLON.Canvas2D
+        },
+        'Canvas2DEngineBoundData': {
+            type: BABYLON.Canvas2DEngineBoundData
+        },
+        'Ellipse2D': {
+            type: BABYLON.Ellipse2D
+        },
+        'Ellipse2DInstanceData': {
+            type: BABYLON.Ellipse2DInstanceData
+        },
+        'Ellipse2DRenderCache': {
+            type: BABYLON.Ellipse2DRenderCache
+        },
+        'Group2D': {
+            type: BABYLON.Group2D
+        },
+        'IntersectInfo2D': {
+            type: BABYLON.IntersectInfo2D
+        },
+        'Lines2D': {
+            type: BABYLON.Lines2D
+        },
+        'Lines2DInstanceData': {
+            type: BABYLON.Lines2DInstanceData
+        },
+        'Lines2DRenderCache': {
+            type: BABYLON.Lines2DRenderCache
+        },
+        'PrepareRender2DContext': {
+            type: BABYLON.PrepareRender2DContext
+        },
+        'Prim2DBase': {
+            type: BABYLON.Prim2DBase
+        },
+        'Prim2DClassInfo': {
+            type: BABYLON.Prim2DClassInfo
+        },
+        'Prim2DPropInfo': {
+            type: BABYLON.Prim2DPropInfo
+        },
+        'Rectangle2D': {
+            type: BABYLON.Rectangle2D
+        },
+        'Rectangle2DInstanceData': {
+            type: BABYLON.Rectangle2DInstanceData
+        },
+        'Rectangle2DRenderCache': {
+            type: BABYLON.Rectangle2DRenderCache
+        },
+        'Render2DContext': {
+            type: BABYLON.Render2DContext
+        },
+        'RenderablePrim2D': {
+            type: BABYLON.RenderablePrim2D
+        },
+        'ScreenSpaceCanvas2D': {
+            type: BABYLON.ScreenSpaceCanvas2D
+        },
+        'Shape2D': {
+            type: BABYLON.Shape2D
+        },
+        'Shape2DInstanceData': {
+            type: BABYLON.Shape2DInstanceData
+        },
+        'Sprite2D': {
+            type: BABYLON.Sprite2D
+        },
+        'Sprite2DInstanceData': {
+            type: BABYLON.Sprite2DInstanceData
+        },
+        'Sprite2DRenderCache': {
+            type: BABYLON.Sprite2DRenderCache
+        },
+        'Text2D': {
+            type: BABYLON.Text2D
+        },
+        'Text2DInstanceData': {
+            type: BABYLON.Text2DInstanceData
+        },
+        'Text2DRenderCache': {
+            type: BABYLON.Text2DRenderCache
+        },
+        'WorldSpaceCanvas2D': {
+            type: BABYLON.WorldSpaceCanvas2D
+        },
+        'WorldSpaceCanvas2DNode': {
+            type: BABYLON.WorldSpaceCanvas2DNode
         }
     };
 })(INSPECTOR || (INSPECTOR = {}));
@@ -676,11 +790,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=Adapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var CameraAdapter = (function (_super) {
@@ -734,11 +853,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=CameraAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var SoundAdapter = (function (_super) {
@@ -794,11 +918,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=SoundAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var TextureAdapter = (function (_super) {
@@ -835,11 +964,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=TextureAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var Canvas2DAdapter = (function (_super) {
@@ -875,7 +1009,7 @@ var INSPECTOR;
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
                 'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo',
-                '_cachedTexture'
+                '_cachedTexture', 'actualOpacity'
             ];
             for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
                 var dirty = toAddDirty_1[_i];
@@ -911,11 +1045,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=Canvas2DAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var LightAdapter = (function (_super) {
@@ -981,11 +1120,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=LightAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var MaterialAdapter = (function (_super) {
@@ -1047,11 +1191,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=MaterialAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var MeshAdapter = (function (_super) {
@@ -1170,11 +1319,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=MeshAdapter.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var DetailPanel = (function (_super) {
@@ -1705,11 +1859,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=PropertyLine.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -1751,11 +1910,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=ColorElement.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -1783,6 +1947,7 @@ var INSPECTOR;
         }
         CubeTextureElement.prototype.update = function (tex) {
             if (tex && tex.url === this._textureUrl) {
+                // Nothing to do, as the old texture is the same as the old one
             }
             else {
                 if (tex) {
@@ -1864,11 +2029,16 @@ var INSPECTOR;
 
 //# sourceMappingURL=CubeTextureElement.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -1903,11 +2073,16 @@ var INSPECTOR;
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -1945,11 +2120,16 @@ var INSPECTOR;
     INSPECTOR.SearchBar = SearchBar;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -2211,11 +2391,16 @@ var INSPECTOR;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var Tab = (function (_super) {
@@ -2283,11 +2468,16 @@ var INSPECTOR;
     INSPECTOR.Tab = Tab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -2419,11 +2609,16 @@ var INSPECTOR;
     INSPECTOR.PropertyTab = PropertyTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var CameraTab = (function (_super) {
@@ -2447,11 +2642,16 @@ var INSPECTOR;
     INSPECTOR.CameraTab = CameraTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var SoundTab = (function (_super) {
@@ -2479,11 +2679,16 @@ var INSPECTOR;
     INSPECTOR.SoundTab = SoundTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var TextureTab = (function (_super) {
@@ -2605,11 +2810,16 @@ var INSPECTOR;
     INSPECTOR.TextureTab = TextureTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var Canvas2DTab = (function (_super) {
@@ -2657,11 +2867,16 @@ var INSPECTOR;
     INSPECTOR.Canvas2DTab = Canvas2DTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var LightTab = (function (_super) {
@@ -2685,11 +2900,16 @@ var INSPECTOR;
     INSPECTOR.LightTab = LightTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var MaterialTab = (function (_super) {
@@ -2713,11 +2933,16 @@ var INSPECTOR;
     INSPECTOR.MaterialTab = MaterialTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var MeshTab = (function (_super) {
@@ -2774,11 +2999,16 @@ var INSPECTOR;
     INSPECTOR.MeshTab = MeshTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var SceneTab = (function (_super) {
@@ -2951,11 +3181,16 @@ var INSPECTOR;
     INSPECTOR.SceneTab = SceneTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var ShaderTab = (function (_super) {
@@ -3080,11 +3315,16 @@ var INSPECTOR;
     INSPECTOR.ShaderTab = ShaderTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -3209,11 +3449,16 @@ var INSPECTOR;
     INSPECTOR.ConsoleTab = ConsoleTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var StatsTab = (function (_super) {
@@ -3485,11 +3730,16 @@ var INSPECTOR;
     INSPECTOR.StatsTab = StatsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -3718,11 +3968,16 @@ var INSPECTOR;
     INSPECTOR.AbstractTool = AbstractTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var PauseScheduleTool = (function (_super) {
@@ -3749,11 +4004,16 @@ var INSPECTOR;
     INSPECTOR.PauseScheduleTool = PauseScheduleTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var PickTool = (function (_super) {
@@ -3806,11 +4066,16 @@ var INSPECTOR;
     INSPECTOR.PickTool = PickTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var PopupTool = (function (_super) {
@@ -3827,11 +4092,16 @@ var INSPECTOR;
     INSPECTOR.PopupTool = PopupTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var RefreshTool = (function (_super) {
@@ -3848,11 +4118,16 @@ var INSPECTOR;
     INSPECTOR.RefreshTool = RefreshTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var LabelTool = (function (_super) {
@@ -3996,11 +4271,16 @@ var INSPECTOR;
     INSPECTOR.LabelTool = LabelTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var Toolbar = (function (_super) {
@@ -4054,11 +4334,16 @@ var INSPECTOR;
     INSPECTOR.Toolbar = Toolbar;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -4078,11 +4363,16 @@ var INSPECTOR;
     INSPECTOR.DisposeTool = DisposeTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var TreeItem = (function (_super) {
@@ -4291,11 +4581,16 @@ var INSPECTOR;
     INSPECTOR.AbstractTreeTool = AbstractTreeTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -4333,11 +4628,16 @@ var INSPECTOR;
     INSPECTOR.BoundingBox = BoundingBox;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -4372,11 +4672,16 @@ var INSPECTOR;
     INSPECTOR.CameraPOV = CameraPOV;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -4415,11 +4720,16 @@ var INSPECTOR;
     INSPECTOR.SoundInteractions = SoundInteractions;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -4463,11 +4773,16 @@ var INSPECTOR;
     INSPECTOR.Checkbox = Checkbox;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     var DebugArea = (function (_super) {
@@ -4495,11 +4810,16 @@ var INSPECTOR;
     INSPECTOR.DebugArea = DebugArea;
 })(INSPECTOR || (INSPECTOR = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
