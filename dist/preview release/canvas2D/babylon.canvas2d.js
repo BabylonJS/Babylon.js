@@ -6,7 +6,7 @@ BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid m
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
 BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\n\nvec4 pos;\n\n\n\n\npos.xy=pos2.xy*sizeUV*textureSize;\n\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw))*irw)+irw/2.0;\ny=(floor((y/irh))*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n} ";
-BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxx*vColor.xyz*vColor.a,vColor.a);\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
+BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxx*vColor.xyz*vColor.a,color.x*vColor.a);\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\n\n\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*superSampleFactor*sizeUV*textureSize;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=((floor((x/irw)+0.5)*irw)+irw/2.0)+0.5*irw;\ny=((floor((y/irh)+0.5)*irh)+irh/2.0)+0.5*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nfloat x=dot(p,transformX);\nfloat y=dot(p,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
@@ -3677,6 +3677,7 @@ var BABYLON;
                     prim.layoutArea = contentArea;
                 }
             }
+            BABYLON.C2DLogging.setPostMessage(function () { return "Prim: " + prim.id + " has layoutArea: " + prim.layoutArea; });
         };
         Object.defineProperty(CanvasLayoutEngine.prototype, "isChildPositionAllowed", {
             get: function () {
@@ -9332,7 +9333,7 @@ var BABYLON;
                 var primNewSize = Prim2DBase_1._size;
                 var hasH = false;
                 var hasV = false;
-                var paddingApplied = false;
+                //let paddingApplied = false;
                 var hasPadding = this._hasPadding;
                 // Compute the size
                 // The size is the size of the prim or the computed one if there's a marginAlignment of Stretch
@@ -9369,43 +9370,40 @@ var BABYLON;
                         primNewSize.height = primSize.height;
                     }
                 }
-                if (!isVSizeAuto || !isHSizeAuto) {
-                    Prim2DBase_1._curContentArea.copyFrom(this._contentArea);
-                    if (hasPadding) {
-                        var area = Prim2DBase_1._icArea;
-                        var zone = Prim2DBase_1._icZone;
-                        this._getInitialContentAreaToRef(primNewSize, zone, area);
-                        area.width = Math.max(0, area.width);
-                        area.height = Math.max(0, area.height);
-                        this.padding.compute(area, this._paddingOffset, Prim2DBase_1._size2);
-                        if (!isHSizeAuto) {
-                            this._paddingOffset.x += zone.x;
-                            this._paddingOffset.z -= zone.z;
-                            this._contentArea.width = Prim2DBase_1._size2.width;
-                        }
-                        if (!isVSizeAuto) {
-                            this._paddingOffset.y += zone.y;
-                            this._paddingOffset.w -= zone.w;
-                            this._contentArea.height = Prim2DBase_1._size2.height;
-                        }
+                Prim2DBase_1._curContentArea.copyFrom(this._contentArea);
+                if (hasPadding) {
+                    var area = Prim2DBase_1._icArea;
+                    var zone = Prim2DBase_1._icZone;
+                    this._getInitialContentAreaToRef(primNewSize, zone, area);
+                    area.width = Math.max(0, area.width);
+                    area.height = Math.max(0, area.height);
+                    this.padding.compute(area, this._paddingOffset, Prim2DBase_1._size2);
+                    if (!isHSizeAuto) {
+                        this._paddingOffset.x += zone.x;
+                        this._paddingOffset.z -= zone.z;
+                        this._contentArea.width = Prim2DBase_1._size2.width;
                     }
-                    else {
-                        this._contentArea.copyFrom(primNewSize);
+                    if (!isVSizeAuto) {
+                        this._paddingOffset.y += zone.y;
+                        this._paddingOffset.w -= zone.w;
+                        this._contentArea.height = Prim2DBase_1._size2.height;
                     }
-                    if (!Prim2DBase_1._curContentArea.equals(this._contentArea)) {
-                        this._setLayoutDirty();
-                    }
-                    paddingApplied = true;
+                }
+                else {
+                    this._contentArea.copyFrom(primNewSize);
+                }
+                if (!Prim2DBase_1._curContentArea.equals(this._contentArea)) {
+                    this._setLayoutDirty();
                 }
                 // Finally we apply margin to determine the position
                 if (hasMargin) {
                     var layoutArea = this.layoutArea;
                     var mo = this._marginOffset;
                     var margin = this.margin;
-                    // We compute margin only if the layoutArea is as big as the contentSize, sometime this code is triggered when the layoutArea is
-                    //  not yet set and computing alignment would result into a bad size.
+                    // We compute margin only if the layoutArea is "real": a valid object with dimensions greater than 0
+                    //  otherwise sometimes this code would be triggered with and invalid layoutArea, resulting to an invalid positioning
                     // So we make sure with compute alignment only if the layoutArea is good
-                    if (layoutArea && layoutArea.width >= transformedBSize.width && layoutArea.height >= transformedBSize.height) {
+                    if (layoutArea && layoutArea.width > 0 && layoutArea.height > 0) {
                         margin.computeWithAlignment(layoutArea, transformedBSize, ma, levelScale, mo, Prim2DBase_1._size2);
                     }
                     else {
@@ -11729,8 +11727,14 @@ var BABYLON;
             var sortedDirtyList = null;
             // Update the Global Transformation and visibility status of the changed primitives
             var rd = this._renderableData;
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
-                sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+            var curPrimDirtyList = rd._primDirtyList;
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
+                // From now on we use the 'curPrimDirtyList' variable to process the primitives that was marked as dirty
+                // But we also allocate a new array in the object's member to get the prim that will be dirty again during the process
+                //  and that would need another process next time.
+                rd._primDirtyList = new Array();
+                // Sort the primitives to process them from the highest in the tree to the lowest
+                sortedDirtyList = curPrimDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
             var s = this.actualSize;
@@ -11767,7 +11771,7 @@ var BABYLON;
                 this._viewportSize.width = sw;
                 this._viewportSize.height = sh;
             }
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
                 this._cacheGroupDirty = this._isCachedGroup;
                 rd._primNewDirtyList.splice(0);
@@ -11784,7 +11788,7 @@ var BABYLON;
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
                     //  the hierarchyDepth in order to prepare primitives from top to bottom
                     if (!sortedDirtyList) {
-                        sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+                        sortedDirtyList = curPrimDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                     }
                     sortedDirtyList.forEach(function (p) {
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
@@ -11795,7 +11799,7 @@ var BABYLON;
                     });
                 }
                 // Everything is updated, clear the dirty list
-                rd._primDirtyList.forEach(function (p) {
+                curPrimDirtyList.forEach(function (p) {
                     if (rd._primNewDirtyList.indexOf(p) === -1) {
                         p._resetPropertiesDirty();
                     }
@@ -11803,8 +11807,7 @@ var BABYLON;
                         p._setFlags(BABYLON.SmartPropertyPrim.flagNeedRefresh);
                     }
                 });
-                rd._primDirtyList.splice(0);
-                rd._primDirtyList = rd._primDirtyList.concat(rd._primNewDirtyList);
+                rd._primDirtyList = curPrimDirtyList.concat(rd._primNewDirtyList);
             }
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
             rd._childrenRenderableGroups.forEach(function (g) {
@@ -12136,7 +12139,7 @@ var BABYLON;
             }
             var sizeChanged = !Group2D_1._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
-                var size = Group2D_1._s;
+                var size = Group2D_1._s2;
                 rd._cacheNode.getInnerSizeToRef(size);
                 // Check if we have to deallocate because the size is too small
                 if ((size.width < Group2D_1._s.width) || (size.height < Group2D_1._s.height)) {
@@ -17824,11 +17827,11 @@ var BABYLON;
                 edge = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
             }
             // Clip values if needed
-            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize);
+            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize - 4); // -4 is to consider the border of 2 pixels, other we couldn't allocate a rect
             var newScale = edge / ((isW) ? this.size.width : this.size.height);
-            if (newScale !== this.scale) {
+            if (newScale !== this._renderableData._renderingScale) {
                 var scale = newScale;
-                //                console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
+                //console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
                 this._setRenderingScale(scale);
             }
         };
@@ -17947,6 +17950,7 @@ var BABYLON;
             if (anisotropicLevel === void 0) { anisotropicLevel = 1; }
             var key = (useMipMap ? "MipMap" : "NoMipMap") + "_" + anisotropicLevel;
             var rd = group._renderableData;
+            var rs = rd._renderingScale;
             var noResizeScale = rd._noResizeOnScale;
             var isCanvas = parent == null;
             var scale;
@@ -17956,6 +17960,8 @@ var BABYLON;
             else {
                 scale = group.actualScale.multiply(this._canvasLevelScale);
             }
+            scale.x *= rs;
+            scale.y *= rs;
             // Determine size
             var size = group.actualSize;
             var scaledSize = new BABYLON.Size(size.width * scale.x, size.height * scale.y);
