@@ -525,6 +525,7 @@
             serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.depthScale = this.depthScale;
             serializationObject.darkness = this.getDarkness();
 
             serializationObject.renderList = [];
@@ -566,6 +567,10 @@
             }
             else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
+            }
+
+            if (parsedShadowGenerator.depthScale) {
+                shadowGenerator.depthScale = parsedShadowGenerator.depthScale;
             }
 
             if (parsedShadowGenerator.blurScale) {
