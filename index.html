@@ -58,10 +58,11 @@
 						var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
 
 						// Move the sphere upward 1/2 its height
-						sphere.position.y = 1 + i / 250;
+						sphere.position.y = 1+i / 500;
 						sphere.material = new BABYLON.StandardMaterial("test");
 						sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-						// sphere.material.diffuseTexture = new BABYLON.Texture("test.jpeg", scene);
+						window.sphere = sphere;
+						sphere.material.diffuseTexture = new BABYLON.Texture("test.jpeg", scene);
 						// sphere.material.freeze();
 						var t = 0;/*
 						scene.registerAfterRender(function() {
@@ -72,7 +73,6 @@
 					}
 
 					// Let's try our built-in 'ground' shape.  Params: name, width, depth, subdivisions, scene
-					var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
 
 					// Leave this function
 					return scene;

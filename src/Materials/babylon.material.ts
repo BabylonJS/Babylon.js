@@ -208,6 +208,7 @@
         private _fillMode = Material.TriangleFillMode;
         private _cachedDepthWriteState: boolean;
 
+        protected _uniformBuffer: UniformBuffer;
 
         constructor(name: string, scene: Scene, doNotAdd?: boolean) {
             this.name = name;
@@ -220,6 +221,8 @@
             } else {
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
             }
+
+            this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);

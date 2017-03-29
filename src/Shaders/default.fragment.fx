@@ -8,16 +8,12 @@ uniform Material
 {
 	vec4 vDiffuseColor;
 
-  	#ifdef DIFFUSE
   	vec2 vDiffuseInfos;
   	mat4 diffuseMatrix;
-  	#endif
 
   	vec3 vAmbientColor;
 
-  	#ifdef SPECULARTERM
   	vec4 vSpecularColor;
-  	#endif
 
   	vec3 vEmissiveColor;
 
