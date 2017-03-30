@@ -743,7 +743,6 @@ module BABYLON {
 
             this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
-            this._uniformBuffer.create();
         }
 
         public unbind(): void {
@@ -768,13 +767,10 @@ module BABYLON {
             // Matrices        
             this.bindOnlyWorldMatrix(world);
 
-            // Bones
+            // Bonesf
             MaterialHelper.BindBonesParameters(mesh, this._effect);
-
-            if (scene.getCachedMaterial() !== this) {
-                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer());
-
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            
+            if (!this.isFrozen || !this._uniformBuffer.isSync) {
 
                 if (StandardMaterial.FresnelEnabled) {
                     // Fresnel
@@ -909,9 +905,8 @@ module BABYLON {
                 // this._effect.setColor3("vEmissiveColor", this.emissiveColor);
                 this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
 
-            }
+                // TODO : this depends on mesh
 
-            if (scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
                 // this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -936,9 +931,16 @@ module BABYLON {
                 if (this.cameraColorCurves) {
                     ColorCurves.Bind(this.cameraColorCurves, this._effect);
                 }
+
+            }
+            this._uniformBuffer.update();
+            
+            if (scene.getCachedMaterial() !== this) {
+                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer());
+
+                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             }
 
-            this._uniformBuffer.update();
             super.bind(world, mesh);
         }
 
