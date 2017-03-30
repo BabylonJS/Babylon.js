@@ -60,6 +60,9 @@ module BABYLON {
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
 
+        public _areTexturesDirty = false;
+        public _needUVs = false;
+
         constructor() {
             super(true);
             this.rebuild();
@@ -88,7 +91,7 @@ module BABYLON {
                 return;
             }
             this._diffuseTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get diffuseTexture(): BaseTexture {
@@ -103,7 +106,7 @@ module BABYLON {
                 return;
             }
             this._ambientTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get ambientTexture(): BaseTexture {
@@ -118,7 +121,7 @@ module BABYLON {
                 return;
             }
             this._opacityTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get opacityTexture(): BaseTexture {
@@ -133,7 +136,7 @@ module BABYLON {
                 return;
             }
             this._reflectionTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get reflectionTexture(): BaseTexture {
@@ -148,7 +151,7 @@ module BABYLON {
                 return;
             }
             this._emissiveTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get emissiveTexture(): BaseTexture {
@@ -163,7 +166,7 @@ module BABYLON {
                 return;
             }
             this._specularTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get specularTexture(): BaseTexture {
@@ -178,7 +181,7 @@ module BABYLON {
                 return;
             }
             this._bumpTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get bumpTexture(): BaseTexture {
@@ -193,7 +196,7 @@ module BABYLON {
                 return;
             }
             this._lightmapTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get lightmapTexture(): BaseTexture {
@@ -208,7 +211,7 @@ module BABYLON {
                 return;
             }
             this._refractionTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get refractionTexture(): BaseTexture {
@@ -323,7 +326,7 @@ module BABYLON {
                 return;
             }
             this._cameraColorGradingTexture = value;
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public get cameraColorGradingTexture(): BaseTexture {
@@ -347,9 +350,6 @@ module BABYLON {
         protected _defines = new StandardMaterialDefines();
 
         protected _useLogarithmicDepth: boolean;
-
-        protected _areTexturesDirty = false;
-        protected _needUVs = false;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -415,7 +415,7 @@ module BABYLON {
          * Child classes can use it to update shaders
          */
         public markAsDirty() {
-            this._areTexturesDirty = true;
+            this._defines._areTexturesDirty = true;
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -443,14 +443,14 @@ module BABYLON {
             }
 
             // Textures
-            if (this._areTexturesDirty) {
-                this._needUVs = false;
+            if (this._defines._areTexturesDirty) {
+                this._defines._needUVs = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         if (!this._diffuseTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.DIFFUSE = true;
                         }
                     } else {
@@ -461,7 +461,7 @@ module BABYLON {
                         if (!this._ambientTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.AMBIENT = true;
                         }
                     } else {
@@ -472,7 +472,7 @@ module BABYLON {
                         if (!this._opacityTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.OPACITY = true;
                             this._defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                         }
@@ -531,7 +531,7 @@ module BABYLON {
                         if (!this._emissiveTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.EMISSIVE = true;
                         }
                     } else {
@@ -542,7 +542,7 @@ module BABYLON {
                         if (!this._lightmapTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.LIGHTMAP = true;
                             this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                         }
@@ -554,7 +554,7 @@ module BABYLON {
                         if (!this._specularTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.SPECULAR = true;
                             this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;
                         }
@@ -566,7 +566,7 @@ module BABYLON {
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.BUMP = true;
 
                             this._defines.PARALLAX = this.useParallax;
@@ -588,7 +588,7 @@ module BABYLON {
                         if (!this._refractionTexture.isReady()) {
                             return false;
                         } else {
-                            this._needUVs = true;
+                            this._defines._needUVs = true;
                             this._defines.REFRACTION = true;
 
                             this._defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
@@ -613,7 +613,7 @@ module BABYLON {
                         this._defines.TWOSIDEDLIGHTING = false;
                     }
                 }
-                this._areTexturesDirty = false;
+                this._defines._areTexturesDirty = false;
             }
 
             // Effect
@@ -670,7 +670,7 @@ module BABYLON {
             if (mesh) {
                 this._defines.NORMAL = (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
-                if (this._needUVs) {
+                if (this._defines._needUVs) {
                     this._defines.UV1 = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
                     this._defines.UV2 = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
                 } else {

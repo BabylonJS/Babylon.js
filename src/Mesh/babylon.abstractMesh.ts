@@ -224,6 +224,8 @@
 
         public _poseMatrix: Matrix;
 
+        public _lightSources = new SmartArray<Light>(8);
+
         // Loading properties
         public _waitingActions: any;
         public _waitingFreezeWorldMatrix: boolean;
@@ -1436,6 +1438,8 @@
                     }
                 }
             });
+
+            this._lightSources.dispose();
 
             // Edges
             if (this._edgesRenderer) {

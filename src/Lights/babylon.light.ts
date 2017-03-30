@@ -73,8 +73,25 @@
         @serialize()
         public includeOnlyWithLayerMask = 0;
 
-        public includedOnlyMeshes = new Array<AbstractMesh>();
-        public excludedMeshes = new Array<AbstractMesh>();
+        private _includedOnlyMeshes = new ObservableArray<AbstractMesh>();
+        public get includedOnlyMeshes(): any {
+            return this._includedOnlyMeshes;
+        }
+        public set includedOnlyMeshes(value: any) {
+            this._includedOnlyMeshes = new ObservableArray<AbstractMesh>();
+
+            this._includedOnlyMeshes.push(value);
+        }
+
+        private _excludedMeshes = new ObservableArray<AbstractMesh>();
+        public get excludedMeshes(): any {
+            return this._excludedMeshes;
+        }
+        public set excludedMeshes(value: any) {
+            this._excludedMeshes = new ObservableArray<AbstractMesh>();
+
+            this._excludedMeshes.push(value);
+        }        
 
         @serialize()
         public excludeWithLayerMask = 0;
@@ -98,6 +115,10 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
             this.getScene().addLight(this);
+
+            this._excludedMeshes.onDataAdded.add((mesh) => {
+                
+            });
         }
         /**
          * Returns the string "Light".  
