@@ -12,7 +12,7 @@
 
                 if (!light.isEnabled()) {
                     if (defines["LIGHT" + lightIndex] !== undefined) {
-                        defines["LIGHT" + lightIndex] = undefined;
+                        defines["LIGHT" + lightIndex] = false;
                     }
                     continue;
                 }
@@ -45,7 +45,7 @@
 
                 if (!light.canAffectMesh(mesh)) {
                     if (defines["LIGHT" + lightIndex] !== undefined) {
-                        defines["LIGHT" + lightIndex] = undefined;
+                        defines["LIGHT" + lightIndex] = false;
                     }
                     continue;
                 }
@@ -130,7 +130,7 @@
             // Resetting all other lights if any
             for (var index = scene.lights.length; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + lightIndex] !== undefined) {
-                    defines["LIGHT" + lightIndex] = undefined;
+                    defines["LIGHT" + lightIndex] = false;
                 }
             }
 
