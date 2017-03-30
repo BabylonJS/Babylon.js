@@ -11,6 +11,9 @@
                 var light = scene.lights[index];
 
                 if (!light.isEnabled()) {
+                    if (defines["LIGHT" + lightIndex] !== undefined) {
+                        defines["LIGHT" + lightIndex] = undefined;
+                    }
                     continue;
                 }
 
@@ -41,6 +44,9 @@
                 }
 
                 if (!light.canAffectMesh(mesh)) {
+                    if (defines["LIGHT" + lightIndex] !== undefined) {
+                        defines["LIGHT" + lightIndex] = undefined;
+                    }
                     continue;
                 }
                 needNormals = true;
@@ -48,7 +54,6 @@
                 if (defines["LIGHT" + lightIndex] === undefined) {
                     needRebuild = true;
                 }
-
                 defines["LIGHT" + lightIndex] = true;
 
                 var type;
@@ -120,6 +125,13 @@
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
                     break;
+            }
+
+            // Resetting all other lights if any
+            for (var index = scene.lights.length; index < maxSimultaneousLights; index++) {
+                if (defines["LIGHT" + lightIndex] !== undefined) {
+                    defines["LIGHT" + lightIndex] = undefined;
+                }
             }
 
             let caps = scene.getEngine().getCaps();

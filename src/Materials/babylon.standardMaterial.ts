@@ -212,14 +212,11 @@ module BABYLON {
         protected _renderId: number;
 
         protected _defines = new StandardMaterialDefines();
-        protected _cachedDefines = new StandardMaterialDefines();
 
         protected _useLogarithmicDepth: boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
-
-            this._cachedDefines.BonesPerMesh = -1;
 
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
@@ -293,8 +290,6 @@ module BABYLON {
             var engine = scene.getEngine();
             var needUVs = false;
             var needNormals = false;
-
-            this._defines.reset();
 
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
@@ -590,9 +585,7 @@ module BABYLON {
             }
 
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
-
+            if (this._defines._isDirty) {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
