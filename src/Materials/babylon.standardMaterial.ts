@@ -614,6 +614,16 @@ module BABYLON {
                     }
                 }
                 this._defines._areTexturesDirty = false;
+            } else {
+                this._defines.DIFFUSE = false;
+                this._defines.AMBIENT = false;
+                this._defines.OPACITY = false;
+                this._defines.REFLECTION = false;
+                this._defines.EMISSIVE = false;
+                this._defines.LIGHTMAP = false;
+                this._defines.BUMP = false;
+                this._defines.REFRACTION = false;
+                this._defines.CAMERACOLORGRADING = false;
             }
 
             // Effect

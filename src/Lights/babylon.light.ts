@@ -70,31 +70,46 @@
         @serialize()
         public range = Number.MAX_VALUE;
 
-        @serialize()
-        public includeOnlyWithLayerMask = 0;
-
-        private _includedOnlyMeshes = new ObservableArray<AbstractMesh>();
-        public get includedOnlyMeshes(): any {
+        private _includedOnlyMeshes: AbstractMesh[];
+        public get includedOnlyMeshes(): AbstractMesh[] {
             return this._includedOnlyMeshes;
         }
-        public set includedOnlyMeshes(value: any) {
-            this._includedOnlyMeshes = new ObservableArray<AbstractMesh>();
 
-            this._includedOnlyMeshes.push(value);
+        public set includedOnlyMeshes(value: AbstractMesh[]) {
+            this._includedOnlyMeshes = value;
+            this._hookArray(value);
         }
 
-        private _excludedMeshes = new ObservableArray<AbstractMesh>();
-        public get excludedMeshes(): any {
+        private _excludedMeshes: AbstractMesh[];
+        public get excludedMeshes(): AbstractMesh[] {
             return this._excludedMeshes;
         }
-        public set excludedMeshes(value: any) {
-            this._excludedMeshes = new ObservableArray<AbstractMesh>();
-
-            this._excludedMeshes.push(value);
+        public set excludedMeshes(value: AbstractMesh[]) {
+            this._excludedMeshes = value;
+            this._hookArray(value);
         }        
 
-        @serialize()
-        public excludeWithLayerMask = 0;
+        @serialize("excludeWithLayerMask")
+        private _excludeWithLayerMask = 0;
+        public get excludeWithLayerMask(): number {
+            return this._excludeWithLayerMask;
+        }
+
+        public set excludeWithLayerMask(value: number) {
+            this._excludeWithLayerMask = value;
+            this._resyncMeshes();
+        }        
+
+        @serialize("includeOnlyWithLayerMask")
+        private _includeOnlyWithLayerMask = 0;
+        public get includeOnlyWithLayerMask(): number {
+            return this._includeOnlyWithLayerMask;
+        }
+
+        public set includeOnlyWithLayerMask(value: number) {
+            this._includeOnlyWithLayerMask = value;
+            this._resyncMeshes();
+        }          
 
         @serialize()
         public lightmapMode = 0;
@@ -116,9 +131,10 @@
             super(name, scene);
             this.getScene().addLight(this);
 
-            this._excludedMeshes.onDataAdded.add((mesh) => {
-                
-            });
+            this.includedOnlyMeshes = new Array<AbstractMesh>();
+            this.excludedMeshes = new Array<AbstractMesh>();
+
+            this._resyncMeshes();
         }
         /**
          * Returns the string "Light".  
@@ -142,6 +158,19 @@
             }
             return ret;
         } 
+
+
+        /**
+         * Set the enabled state of this node.
+         * @param {boolean} value - the new enabled state
+         * @see isEnabled
+         */
+        public setEnabled(value: boolean): void {
+            super.setEnabled(value);
+
+            this._resyncMeshes();
+        }
+
         /**
          * Returns the Light associated shadow generator.  
          */
@@ -224,6 +253,12 @@
 
             // Animations
             this.getScene().stopAnimation(this);
+
+            // Remove from meshes
+            for (var mesh of this.getScene().meshes) {
+                mesh._removeLightSource(this);
+            }
+
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();
@@ -331,6 +366,36 @@
             }
 
             return light;
+        }
+
+        private _hookArray(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = function(...items: AbstractMesh[]): number {
+                var result = oldPush.apply(array, items);
+
+                for (var item of items) {
+                    item._resyncLighSource(this);
+                }
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = function(index: number, deleteCount?: number): AbstractMesh[] {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                for (var item of deleted) {
+                    item._resyncLighSource(this);
+                }
+
+                return deleted;
+            }
+        }
+
+        private _resyncMeshes() {
+            for (var mesh of this.getScene().meshes) {
+                mesh._resyncLighSource(this);
+            }
         }
     }
 }
