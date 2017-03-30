@@ -966,6 +966,11 @@ module BABYLON {
                     material.babylonMaterial.emissiveTexture = babylonTexture;
                 }, () => Tools.Warn("Failed to load normal texture"));
             }
+
+            if (material.doubleSided) {
+                material.babylonMaterial.backFaceCulling = false;
+                material.babylonMaterial.twoSidedLighting = true;
+            }
         }
 
         public static LoadAlphaProperties(runtime: IGLTFRuntime, material: IGLTFMaterial): void {
