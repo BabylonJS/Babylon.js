@@ -53,7 +53,7 @@
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
          * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
@@ -87,7 +87,7 @@
             trackNode               ?: Node,
             trackNodeOffset         ?: Vector3,
             opacity                 ?: number,
-            zOrder                  ?: number, 
+            zOrder                  ?: number,
             origin                  ?: Vector2,
             size                    ?: Size,
             width                   ?: number,
@@ -126,16 +126,18 @@
 
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
 
-            this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
-            this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
-            if (this._trackedNode && this.owner) {
-                this.owner._registerTrackedNode(this);
+            if (!(this instanceof WorldSpaceCanvas2D)) {
+                this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+                this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
+                if (this._trackedNode && this.owner) {
+                    this.owner._registerTrackedNode(this);
+                }
             }
 
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             let rd = this._renderableData;
             if (rd) {
-                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;                
+                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;
             }
             this.size = size;
             this._viewportPosition = Vector2.Zero();
@@ -348,15 +350,26 @@
 
             // Update the Global Transformation and visibility status of the changed primitives
             let rd = this._renderableData;
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
-                sortedDirtyList = rd._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
+            let curPrimDirtyList = rd._primDirtyList;
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
+                // From now on we use the 'curPrimDirtyList' variable to process the primitives that was marked as dirty
+                // But we also allocate a new array in the object's member to get the prim that will be dirty again during the process
+                //  and that would need another process next time.
+                rd._primDirtyList = new Array<Prim2DBase>();
+
+                // Sort the primitives to process them from the highest in the tree to the lowest
+                sortedDirtyList = curPrimDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
 
             let s = this.actualSize;
             let a = this.actualScale;
-            let sw = Math.ceil(s.width * a.x);
-            let sh = Math.ceil(s.height * a.y);
+            let ss = this.owner._canvasLevelScale;
+            let hwsl = 1/this.owner.engine.getHardwareScalingLevel();
+            //let sw = Math.ceil(s.width * a.x * ss.x/* * hwsl*/);
+            //let sh = Math.ceil(s.height * a.y *ss.y/* *  hwsl*/);
+            let sw = s.width * a.x * ss.x;
+            let sh = s.height * a.y *ss.y;
 
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
@@ -370,7 +383,7 @@
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 let t = this._globalTransform.getTranslation();
-                let rs = this.owner._renderingSize;
+                let rs = this.owner._renderingSize.multiplyByFloats(hwsl, hwsl);
                 sh = Math.min(sh, rs.height - t.y);
                 sw = Math.min(sw, rs.width - t.x);
                 let x = t.x;
@@ -388,7 +401,7 @@
                 this._viewportSize.height = sh;
             }
 
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
                 this._cacheGroupDirty = this._isCachedGroup;
 
@@ -397,13 +410,15 @@
                 // If it's a force refresh, prepare all the children
                 if (context.forceRefreshPrimitive) {
                     for (let p of this._children) {
-                        p._prepareRender(context);
+                        if (!p.isDisposed) {
+                            p._prepareRender(context);
+                        }
                     }
                 } else {
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
                     //  the hierarchyDepth in order to prepare primitives from top to bottom
                     if (!sortedDirtyList) {
-                        sortedDirtyList = rd._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
+                        sortedDirtyList = curPrimDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
                     }
 
                     sortedDirtyList.forEach(p => {
@@ -417,15 +432,14 @@
                 }
 
                 // Everything is updated, clear the dirty list
-                rd._primDirtyList.forEach(p => {
+                curPrimDirtyList.forEach(p => {
                     if (rd._primNewDirtyList.indexOf(p) === -1) {
                         p._resetPropertiesDirty();
                     } else {
                         p._setFlags(SmartPropertyPrim.flagNeedRefresh);
                     }
                 });
-                rd._primDirtyList.splice(0);
-                rd._primDirtyList = rd._primDirtyList.concat(rd._primNewDirtyList);
+                rd._primDirtyList = curPrimDirtyList.concat(rd._primNewDirtyList);
             }
 
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
@@ -798,6 +812,8 @@
 
         private static _uV = new Vector2(1, 1);
         private static _s = Size.Zero();
+        private static _v1 = Vector2.Zero();
+        private static _s2 = Size.Zero();
         private _bindCacheTarget() {
             let curWidth: number;
             let curHeight: number;
@@ -808,11 +824,11 @@
             let isCanvas = this.parent == null;
             let scale: Vector2;
             if (noResizeScale) {
-                scale = isCanvas ? Group2D._uV: this.parent.actualScale;
+                scale = isCanvas ? Group2D._uV: this.parent.actualScale.multiply(this.owner._canvasLevelScale);
             } else {
-                scale = this.actualScale;
+                scale = this.actualScale.multiply(this.owner._canvasLevelScale);
             }
-
+            let actualSize = this.actualSize;
             if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
                 if(this.owner.designSize || this.owner.fitRenderingDevice){
                     Group2D._s.width = this.owner.engine.getRenderWidth();
@@ -822,21 +838,22 @@
                     Group2D._s.copyFrom(this.owner.size);
                 }
             } else {
-                Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
-                Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+                Group2D._s.width  = Math.ceil(actualSize.width  * scale.x * rs);
+                Group2D._s.height = Math.ceil(actualSize.height * scale.y * rs);
             }
 
             let sizeChanged = !Group2D._s.equals(rd._cacheSize);
 
             if (rd._cacheNode) {
-                let size = rd._cacheNode.contentSize;
+                let size = Group2D._s2;
+                rd._cacheNode.getInnerSizeToRef(size);
 
                 // Check if we have to deallocate because the size is too small
                 if ((size.width < Group2D._s.width) || (size.height < Group2D._s.height)) {
                     // For Screen space: over-provisioning of 7% more to avoid frequent resizing for few pixels...
                     // For World space: no over-provisioning
-                    let overprovisioning = this.owner.isScreenSpace ? 1.07 : 1; 
-                    curWidth  = Math.floor(Group2D._s.width  * overprovisioning);    
+                    let overprovisioning = this.owner.isScreenSpace ? 1.07 : 1;
+                    curWidth  = Math.floor(Group2D._s.width  * overprovisioning);
                     curHeight = Math.floor(Group2D._s.height * overprovisioning);
                     //console.log(`[${this._globalTransformProcessStep}] Resize group ${this.id}, width: ${curWidth}, height: ${curHeight}`);
                     rd._cacheTexture.freeRect(rd._cacheNode);
@@ -854,6 +871,12 @@
                 }
                 rd._cacheRenderSprite = res.sprite;
                 sizeChanged = true;
+            } else if (sizeChanged) {
+                let sprite = rd._cacheRenderSprite;
+                if (sprite) {
+                    sprite.size = actualSize;
+                    sprite.spriteSize = new Size(actualSize.width * scale.x * rs, actualSize.height * scale.y * rs);
+                }
             }
 
             if (sizeChanged) {
@@ -866,8 +889,9 @@
                 this._setFlags(SmartPropertyPrim.flagWorldCacheChanged);
             }
 
-            let n = rd._cacheNode;
-            rd._cacheTexture.bindTextureForPosSize(n.pos, Group2D._s, true);
+            let pos = Group2D._v1;
+            rd._cacheNode.getInnerPosToRef(pos);
+            rd._cacheTexture.bindTextureForPosSize(pos, Group2D._s, true);
         }
 
         private _unbindCacheTarget() {
@@ -919,6 +943,11 @@
                 case Group2D.actualSizeProperty.id:
                     cachedSprite.size = this.actualSize.clone();
                     break;
+                case Group2D.xProperty.id:
+                    cachedSprite.x = this.x;
+                    break;
+                case Group2D.yProperty.id:
+                    cachedSprite.y = this.y;
             }
         }
 

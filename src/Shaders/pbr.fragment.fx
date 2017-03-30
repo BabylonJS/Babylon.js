@@ -135,7 +135,7 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
@@ -157,7 +157,7 @@ uniform mat4 reflectionMatrix;
 #endif
 
 // PBR
-#include<pbrShadowFunctions>
+#include<shadowsFragmentFunctions>
 #include<pbrFunctions>
 
 #ifdef CAMERACOLORGRADING
@@ -185,13 +185,17 @@ void main(void) {
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Bump
-	#ifdef NORMAL
-		vec3 normalW = normalize(vNormalW);
-	#else
-		vec3 normalW = vec3(1.0, 1.0, 1.0);
-	#endif
+#ifdef NORMAL
+	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
 
-	#include<bumpFragment>
+#include<bumpFragment>
+
+#ifdef TWOSIDEDLIGHTING
+	normalW = gl_FrontFacing ? normalW : -normalW;
+#endif
 
 	// Albedo
 	vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);

@@ -83,6 +83,8 @@ var BABYLON;
                     else if (key === "d") {
                         //d is dissolve for current material. It mean alpha for BABYLON
                         material.alpha = value;
+                        //Texture
+                        //This part can be improved by adding the possible options of texture
                     }
                     else if (key === "map_ka") {
                         // ambient texture map with a loaded image
@@ -99,6 +101,13 @@ var BABYLON;
                         material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                     }
                     else if (key === "map_ns") {
+                        //Specular
+                        //Specular highlight component
+                        //We must first get the folder of the image
+                        //
+                        //Not supported by BABYLON
+                        //
+                        //    continue;
                     }
                     else if (key === "map_bump") {
                         //The bump texture
@@ -107,33 +116,46 @@ var BABYLON;
                     else if (key === "map_d") {
                         // The dissolve of the material
                         material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                        //Options for illumination
                     }
                     else if (key === "illum") {
                         //Illumination
                         if (value === "0") {
+                            //That mean Kd == Kd
                         }
                         else if (value === "1") {
+                            //Color on and Ambient on
                         }
                         else if (value === "2") {
+                            //Highlight on
                         }
                         else if (value === "3") {
+                            //Reflection on and Ray trace on
                         }
                         else if (value === "4") {
+                            //Transparency: Glass on, Reflection: Ray trace on
                         }
                         else if (value === "5") {
+                            //Reflection: Fresnel on and Ray trace on
                         }
                         else if (value === "6") {
+                            //Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
                         }
                         else if (value === "7") {
+                            //Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
                         }
                         else if (value === "8") {
+                            //Reflection on and Ray trace off
                         }
                         else if (value === "9") {
+                            //Transparency: Glass on, Reflection: Ray trace off
                         }
                         else if (value === "10") {
+                            //Casts shadows onto invisible surfaces
                         }
                     }
                     else {
+                        // console.log("Unhandled expression at line : " + i +'\n' + "with value : " + line);
                     }
                 }
                 //At the end of the file, add the last material
@@ -517,6 +539,7 @@ var BABYLON;
                 //Comment or newLine
                 if (line.length === 0 || line.charAt(0) === '#') {
                     continue;
+                    //Get information about one position possible for the vertices
                 }
                 else if ((result = this.vertexPattern.exec(line)) !== null) {
                     //Create a Vector3 with the position x, y, z
@@ -538,6 +561,8 @@ var BABYLON;
                     // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
                     //Add the Vector in the list of uvs
                     uvs.push(new BABYLON.Vector2(parseFloat(result[1]), parseFloat(result[2])));
+                    //Identify patterns of faces
+                    //Face could be defined in different type of pattern
                 }
                 else if ((result = this.facePattern3.exec(line)) !== null) {
                     //Value of result:
@@ -566,6 +591,8 @@ var BABYLON;
                     //Set the data for this face
                     setDataForCurrentFaceWithPattern1(result[1].trim().split(" "), // ["1", "2", "3"]
                     1);
+                    //Define a mesh or an object
+                    //Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
                 }
                 else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
@@ -587,6 +614,7 @@ var BABYLON;
                     hasMeshes = true;
                     isFirstMaterial = true;
                     increment = 1;
+                    //Keyword for applying a material
                 }
                 else if (this.usemtl.test(line)) {
                     //Get the name of the material
@@ -616,12 +644,17 @@ var BABYLON;
                         meshesFromObj[meshesFromObj.length - 1].materialName = materialNameFromObj;
                         isFirstMaterial = false;
                     }
+                    //Keyword for loading the mtl file
                 }
                 else if (this.mtllib.test(line)) {
                     //Get the name of mtl file
                     fileToLoad = line.substring(7).trim();
+                    //Apply smoothing
                 }
                 else if (this.smooth.test(line)) {
+                    // smooth shading => apply smoothing
+                    //Toda  y I don't know it work with babylon and with obj.
+                    //With the obj file  an integer is set
                 }
                 else {
                     //If there is another possibility

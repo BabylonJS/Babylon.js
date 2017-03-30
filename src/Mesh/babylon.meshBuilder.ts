@@ -122,9 +122,14 @@
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
+         * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones.  
+         * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values.  
+         * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that 
+         * if you set `closePath` to `true`, there's one extra vertex per path in the geometry.  
+         * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean }, scene?: Scene): Mesh {
+        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }, scene?: Scene): Mesh {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
@@ -187,6 +192,24 @@
                 instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
+                if (options.colors) {
+                    var colors = instance.getVerticesData(VertexBuffer.ColorKind);
+                    for (var c = 0; c < options.colors.length; c++) {
+                        colors[c * 4] = options.colors[c].r;
+                        colors[c * 4 + 1] = options.colors[c].g;
+                        colors[c * 4 + 2] = options.colors[c].b;
+                        colors[c * 4 + 3] = options.colors[c].a;
+                    }
+                    instance.updateVerticesData(VertexBuffer.ColorKind, colors, false, false);
+                }
+                if (options.uvs) {
+                    var uvs = instance.getVerticesData(VertexBuffer.UVKind);
+                    for (var i = 0; i < options.uvs.length; i++) {
+                        uvs[i * 2] = options.uvs[i].x;
+                        uvs[i * 2 + 1] = options.uvs[i].y;
+                    }
+                    instance.updateVerticesData(VertexBuffer.UVKind, uvs, false, false);
+                }
                 if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(VertexBuffer.NormalKind);

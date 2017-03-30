@@ -87,20 +87,6 @@
         }) {
             super(settings);
 
-            this._drawCallsOpaqueCounter          = new PerfCounter();
-            this._drawCallsAlphaTestCounter       = new PerfCounter();
-            this._drawCallsTransparentCounter     = new PerfCounter();
-            this._groupRenderCounter              = new PerfCounter();
-            this._updateTransparentDataCounter    = new PerfCounter();
-            this._cachedGroupRenderCounter        = new PerfCounter();
-            this._updateCachedStateCounter        = new PerfCounter();
-            this._updateLayoutCounter             = new PerfCounter();
-            this._updatePositioningCounter        = new PerfCounter();
-            this._updateLocalTransformCounter     = new PerfCounter();
-            this._updateGlobalTransformCounter    = new PerfCounter();
-            this._boundingInfoRecomputeCounter    = new PerfCounter();
-            this._layoutBoundingInfoUpdateCounter = new PerfCounter();
-
             this._cachedCanvasGroup = null;
 
             this._renderingGroupObserver = null;
@@ -169,6 +155,8 @@
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
+            this._curHWScale = 0;
+            this._canvasLevelScale = new Vector2(1, 1);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
             if (!this._trackedGroups) {
@@ -198,18 +186,24 @@
                     this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
                         if ((this._scene.activeCamera === settings.renderingPhase.camera) && (e.renderStage===RenderingGroupInfo.STAGE_POSTTRANSPARENT)) {
                             this._engine.clear(null, false, true, true);
+                            C2DLogging._startFrameRender();
                             this._render();
+                            C2DLogging._endFrameRender();
                         }
                     }, Math.pow(2, settings.renderingPhase.renderingGroupID));
                 } else {
                     this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
                         this._engine.clear(null, false, true, true);
+                        C2DLogging._startFrameRender();
                         this._render();
+                        C2DLogging._endFrameRender();
                     });
                 }
             } else {
                 this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add((d, s) => {
+                    C2DLogging._startFrameRender();
                     this._render();
+                    C2DLogging._endFrameRender();
                 });
             }
 
@@ -230,55 +224,94 @@
         }
 
         public get drawCallsOpaqueCounter(): PerfCounter {
+            if (!this._drawCallsOpaqueCounter) {
+                this._drawCallsOpaqueCounter = new PerfCounter();
+            }
             return this._drawCallsOpaqueCounter;
         }
 
         public get drawCallsAlphaTestCounter(): PerfCounter {
+            if (!this._drawCallsAlphaTestCounter) {
+                this._drawCallsAlphaTestCounter = new PerfCounter();
+            }
             return this._drawCallsAlphaTestCounter;
         }
 
         public get drawCallsTransparentCounter(): PerfCounter {
+            if (!this._drawCallsTransparentCounter) {
+                this._drawCallsTransparentCounter = new PerfCounter();
+            }
             return this._drawCallsTransparentCounter;
         }
 
         public get groupRenderCounter(): PerfCounter {
+            if (!this._groupRenderCounter) {
+                this._groupRenderCounter = new PerfCounter();
+            }
             return this._groupRenderCounter;
         }
 
         public get updateTransparentDataCounter(): PerfCounter {
+            if (!this._updateTransparentDataCounter) {
+                this._updateTransparentDataCounter = new PerfCounter();
+            }
             return this._updateTransparentDataCounter;
         }
 
-        public get cachedGroupRenderCounter(): PerfCounter {
-            return this._cachedGroupRenderCounter;
-        }
-
         public get updateCachedStateCounter(): PerfCounter {
+            if (!this._updateCachedStateCounter) {
+                this._updateCachedStateCounter = new PerfCounter();
+            }
             return this._updateCachedStateCounter;
         }
 
         public get updateLayoutCounter(): PerfCounter {
+            if (!this._updateLayoutCounter) {
+                this._updateLayoutCounter = new PerfCounter();
+            }
             return this._updateLayoutCounter;
         }
 
         public get updatePositioningCounter(): PerfCounter {
+            if (!this._updatePositioningCounter) {
+                this._updatePositioningCounter = new PerfCounter();
+            }
             return this._updatePositioningCounter;
         }
 
         public get updateLocalTransformCounter(): PerfCounter {
+            if (!this._updateLocalTransformCounter) {
+                this._updateLocalTransformCounter = new PerfCounter();
+            }
             return this._updateLocalTransformCounter;
         }
 
         public get updateGlobalTransformCounter(): PerfCounter {
+            if (!this._updateGlobalTransformCounter) {
+                this._updateGlobalTransformCounter = new PerfCounter();
+            }
             return this._updateGlobalTransformCounter;
         }
 
         public get boundingInfoRecomputeCounter(): PerfCounter {
+            if (!this._boundingInfoRecomputeCounter) {
+                this._boundingInfoRecomputeCounter = new PerfCounter();
+            }
             return this._boundingInfoRecomputeCounter;
         }
 
         public get layoutBoundingInfoUpdateCounter(): PerfCounter {
+            if (!this._layoutBoundingInfoUpdateCounter) {
+                this._layoutBoundingInfoUpdateCounter = new PerfCounter();
+            }
             return this._layoutBoundingInfoUpdateCounter;
+        }
+
+        public get canvasRenderTimeCounter(): PerfCounter {
+            if (!this._canvasRenderTimeCounter) {
+                this._canvasRenderTimeCounter = new PerfCounter();
+            }
+            return this._canvasRenderTimeCounter;
         }
 
         public static get instances() : Array<Canvas2D> {
@@ -293,6 +326,7 @@
             let cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
+            this._hierarchyDepth = 0;
         }
 
         public static _zMinDelta: number = 1 / (Math.pow(2, 24) - 1);
@@ -325,9 +359,7 @@
                     if (this.isVisible === false) {
                         return;
                     }
-                    let hs = 1 / this.engine.getHardwareScalingLevel();
-                    let localPos = e.localPosition.multiplyByFloats(hs, hs);
-                    this._handlePointerEventForInteraction(e, localPos, s);
+                    this._handlePointerEventForInteraction(e, e.localPosition, s);
                 });
             }
 
@@ -500,7 +532,7 @@
             // Update the relatedTarget info with the over primitive or the captured one (if any)
             let targetPrim = capturedPrim || this._actualOverPrimitive.prim;
 
-            let targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
+            let targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new Vector2(targetPrim.globalTransform.m[4], targetPrim.globalTransform.m[5])) : this._actualOverPrimitive.intersectionLocation;
 
             this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
 
@@ -521,7 +553,7 @@
         }
 
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
-            let s = this.scale;
+            let s = this._canvasLevelScale.multiplyByFloats(this.scaleX, this.scaleY);
             let pii = this._primPointerInfo;
             pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
@@ -536,17 +568,20 @@
 
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
-                var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                let renderWidth = engine.getRenderWidth();
+                let renderHeight = engine.getRenderHeight();
+//                console.log(`Render Width: ${renderWidth} Height: ${renderHeight}, localX: ${localPosition.x}, localY: ${localPosition.y}`);
+                var viewport = cameraViewport.toGlobal(renderWidth, renderHeight);
 
                 // Moving coordinates to local viewport world
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
 
-                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s;
-                pii.canvasPointerPos.y = (engine.getRenderHeight() - y - this.actualPosition.y) / s;
+                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s.x;
+                pii.canvasPointerPos.y = (renderHeight - y - this.actualPosition.y) / s.y;
             } else {
-                pii.canvasPointerPos.x = localPosition.x / s;
-                pii.canvasPointerPos.y = localPosition.y / s;
+                pii.canvasPointerPos.x = localPosition.x / s.x;
+                pii.canvasPointerPos.y = localPosition.y / s.x;
             }
             //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
@@ -796,13 +831,13 @@
 
                             if (ii.isPrimIntersected(prim) !== null) {
                                 if (prim.actionManager) {
-                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > ActionManager.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < ActionManager.DragMovementThreshold)) {
+                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > Scene.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < Scene.DragMovementThreshold)) {
                                         this._pickStartingTime = 0;
                                         prim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
-                        }, ActionManager.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -817,7 +852,7 @@
                     prim.actionManager.processTrigger(ActionManager.OnPickUpTrigger, actionEvent);
 
                     // OnPickTrigger
-                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < ActionManager.DragMovementThreshold) {
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < Scene.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < Scene.DragMovementThreshold) {
                         prim.actionManager.processTrigger(ActionManager.OnPickTrigger, actionEvent);
                     }
                 }
@@ -1127,35 +1162,35 @@
         }
 
         private _initPerfMetrics() {
-            this._drawCallsOpaqueCounter.fetchNewFrame();
-            this._drawCallsAlphaTestCounter.fetchNewFrame();
-            this._drawCallsTransparentCounter.fetchNewFrame();
-            this._groupRenderCounter.fetchNewFrame();
-            this._updateTransparentDataCounter.fetchNewFrame();
-            this._cachedGroupRenderCounter.fetchNewFrame();
-            this._updateCachedStateCounter.fetchNewFrame();
-            this._updateLayoutCounter.fetchNewFrame();
-            this._updatePositioningCounter.fetchNewFrame();
-            this._updateLocalTransformCounter.fetchNewFrame();
-            this._updateGlobalTransformCounter.fetchNewFrame();
-            this._boundingInfoRecomputeCounter.fetchNewFrame();
-            this._layoutBoundingInfoUpdateCounter.fetchNewFrame();
+            this.drawCallsOpaqueCounter.fetchNewFrame();
+            this.drawCallsAlphaTestCounter.fetchNewFrame();
+            this.drawCallsTransparentCounter.fetchNewFrame();
+            this.groupRenderCounter.fetchNewFrame();
+            this.updateTransparentDataCounter.fetchNewFrame();
+            this.updateCachedStateCounter.fetchNewFrame();
+            this.updateLayoutCounter.fetchNewFrame();
+            this.updatePositioningCounter.fetchNewFrame();
+            this.updateLocalTransformCounter.fetchNewFrame();
+            this.updateGlobalTransformCounter.fetchNewFrame();
+            this.boundingInfoRecomputeCounter.fetchNewFrame();
+            this.layoutBoundingInfoUpdateCounter.fetchNewFrame();
+            this.canvasRenderTimeCounter.beginMonitoring();
         }
 
         private _fetchPerfMetrics() {
-            this._drawCallsOpaqueCounter.addCount(0, true);
-            this._drawCallsAlphaTestCounter.addCount(0, true);
-            this._drawCallsTransparentCounter.addCount(0, true);
-            this._groupRenderCounter.addCount(0, true);
-            this._updateTransparentDataCounter.addCount(0, true);
-            this._cachedGroupRenderCounter.addCount(0, true);
-            this._updateCachedStateCounter.addCount(0, true);
-            this._updateLayoutCounter.addCount(0, true);
-            this._updatePositioningCounter.addCount(0, true);
-            this._updateLocalTransformCounter.addCount(0, true);
-            this._updateGlobalTransformCounter.addCount(0, true);
-            this._boundingInfoRecomputeCounter.addCount(0, true);
-            this._layoutBoundingInfoUpdateCounter.addCount(0, true);
+            this.drawCallsOpaqueCounter.addCount(0, true);
+            this.drawCallsAlphaTestCounter.addCount(0, true);
+            this.drawCallsTransparentCounter.addCount(0, true);
+            this.groupRenderCounter.addCount(0, true);
+            this.updateTransparentDataCounter.addCount(0, true);
+            this.updateCachedStateCounter.addCount(0, true);
+            this.updateLayoutCounter.addCount(0, true);
+            this.updatePositioningCounter.addCount(0, true);
+            this.updateLocalTransformCounter.addCount(0, true);
+            this.updateGlobalTransformCounter.addCount(0, true);
+            this.boundingInfoRecomputeCounter.addCount(0, true);
+            this.layoutBoundingInfoUpdateCounter.addCount(0, true);
+            this.canvasRenderTimeCounter.endMonitoring(true);
         }
 
         private _updateProfileCanvas() {
@@ -1165,13 +1200,13 @@
 
             let format = (v: number) => (Math.round(v*100)/100).toString();
 
-            let p = `Draw Calls:\n` +
+            let p = `Render Time: avg:${format(this.canvasRenderTimeCounter.lastSecAverage)}ms ${format(this.canvasRenderTimeCounter.current)}ms\n` +
+                    `Draw Calls:\n` +
                     ` - Opaque:      ${format(this.drawCallsOpaqueCounter.current)}, (avg:${format(this.drawCallsOpaqueCounter.lastSecAverage)}, t:${format(this.drawCallsOpaqueCounter.total)})\n` +
                     ` - AlphaTest:   ${format(this.drawCallsAlphaTestCounter.current)}, (avg:${format(this.drawCallsAlphaTestCounter.lastSecAverage)}, t:${format(this.drawCallsAlphaTestCounter.total)})\n` +
                     ` - Transparent: ${format(this.drawCallsTransparentCounter.current)}, (avg:${format(this.drawCallsTransparentCounter.lastSecAverage)}, t:${format(this.drawCallsTransparentCounter.total)})\n` +
                     `Group Render: ${this.groupRenderCounter.current}, (avg:${format(this.groupRenderCounter.lastSecAverage)}, t:${format(this.groupRenderCounter.total)})\n` + 
                     `Update Transparent Data: ${this.updateTransparentDataCounter.current}, (avg:${format(this.updateTransparentDataCounter.lastSecAverage)}, t:${format(this.updateTransparentDataCounter.total)})\n` + 
-                    `Cached Group Render: ${this.cachedGroupRenderCounter.current}, (avg:${format(this.cachedGroupRenderCounter.lastSecAverage)}, t:${format(this.cachedGroupRenderCounter.total)})\n` + 
                     `Update Cached States: ${this.updateCachedStateCounter.current}, (avg:${format(this.updateCachedStateCounter.lastSecAverage)}, t:${format(this.updateCachedStateCounter.total)})\n` + 
                     ` - Update Layout: ${this.updateLayoutCounter.current}, (avg:${format(this.updateLayoutCounter.lastSecAverage)}, t:${format(this.updateLayoutCounter.total)})\n` + 
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
@@ -1205,12 +1240,6 @@
         public _addUpdateTransparentDataCount(count: number) {
             if (this._updateTransparentDataCounter) {
                 this._updateTransparentDataCounter.addCount(count, false);
-            }
-        }
-
-        public addCachedGroupRenderCounter(count: number) {
-            if (this._cachedGroupRenderCounter) {
-                this._cachedGroupRenderCounter.addCount(count, false);
             }
         }
 
@@ -1292,14 +1321,15 @@
         private _designUseHorizAxis: boolean;
         public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
-        public _renderingSize: Size;
+        public _canvasLevelScale: Vector2;
+        public  _renderingSize: Size;
+        private _curHWScale;
 
         private _drawCallsOpaqueCounter          : PerfCounter;
         private _drawCallsAlphaTestCounter       : PerfCounter;
         private _drawCallsTransparentCounter     : PerfCounter;
         private _groupRenderCounter              : PerfCounter;
         private _updateTransparentDataCounter    : PerfCounter;
-        private _cachedGroupRenderCounter        : PerfCounter;
         private _updateCachedStateCounter        : PerfCounter;
         private _updateLayoutCounter             : PerfCounter;
         private _updatePositioningCounter        : PerfCounter;
@@ -1307,11 +1337,13 @@
         private _updateLocalTransformCounter     : PerfCounter;
         private _boundingInfoRecomputeCounter    : PerfCounter;
         private _layoutBoundingInfoUpdateCounter : PerfCounter;
+        private _canvasRenderTimeCounter         : PerfCounter;
 
         private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;
 
         private static _v = Vector3.Zero(); // Must stay zero
+        private static _cv1 = Vector2.Zero(); // Must stay zero
         private static _m = Matrix.Identity();
         private static _mI = Matrix.Identity(); // Must stay identity
         private static tS = Vector3.Zero();
@@ -1353,8 +1385,8 @@
                 group.levelVisible = proj.z >= 0 && proj.z < 1.0;
 
                 let s = this.scale;
-                group.x = Math.round(proj.x/s);
-                group.y = Math.round((rh - proj.y)/s);
+                group.x = Math.round(proj.x / s);
+                group.y = Math.round((rh - proj.y) / s);
             }
 
             // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
@@ -1442,15 +1474,16 @@
             }
 
             // Clip values if needed
-            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize);
+            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize-4); // -4 is to consider the border of 2 pixels, other we couldn't allocate a rect
 
             let newScale = edge / ((isW) ? this.size.width : this.size.height);
-            if (newScale !== this.scale) {
+            if (newScale !== this._renderableData._renderingScale) {
                 let scale = newScale;
-//                console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
+                //console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
                 this._setRenderingScale(scale);
             }
         }
+        private static _pCLS = Vector2.Zero();
 
         private _updateCanvasState(forceRecompute: boolean) {
             // Check if the update has already been made for this render Frame
@@ -1458,19 +1491,48 @@
                 return;
             }
 
+            // Detect a change of HWRendering scale
+            let hwsl = this.engine.getHardwareScalingLevel();
+            this._curHWScale = hwsl;
+
             // Detect a change of rendering size
             let renderingSizeChanged = false;
-            let newWidth = this.engine.getRenderWidth();
+            let newWidth = this.engine.getRenderWidth() * hwsl;
             if (newWidth !== this._renderingSize.width) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.width = newWidth;
 
-            let newHeight = this.engine.getRenderHeight();
+            let newHeight = this.engine.getRenderHeight() * hwsl;
             if (newHeight !== this._renderingSize.height) {
                 renderingSizeChanged = true;
             }
             this._renderingSize.height = newHeight;
+
+            let prevCLS = Canvas2D._pCLS;
+            prevCLS.copyFrom(this._canvasLevelScale);
+
+            // If there's a design size, update the scale according to the renderingSize
+            if (this._designSize) {
+                let scale: number;
+                if (this._designUseHorizAxis) {
+                    scale = this._renderingSize.width / (this._designSize.width * hwsl);
+                } else {
+                    scale = this._renderingSize.height / (this._designSize.height * hwsl);
+                }
+                this.size = this._designSize.clone();
+                this._canvasLevelScale.copyFromFloats(scale, scale);
+            } else {
+                let ratio = 1 / this._curHWScale;
+                this._canvasLevelScale.copyFromFloats(ratio, ratio);
+            }
+
+            if (!prevCLS.equals(this._canvasLevelScale)) {
+                for (let child of this.children) {
+                    child._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
+                }
+                this._setLayoutDirty();
+            }
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
@@ -1483,21 +1545,10 @@
                 this._setLayoutDirty();
             }
 
-            // If there's a design size, update the scale according to the renderingSize
-            if (this._designSize) {
-                let scale: number;
-                if (this._designUseHorizAxis) {
-                    scale = this._renderingSize.width / this._designSize.width;
-                } else {
-                    scale = this._renderingSize.height / this._designSize.height;
-                }
-                this.size = this._designSize.clone();
-                this.scale = scale;
-            }
-
             var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
+            this._setFlags(SmartPropertyPrim.flagLocalTransformDirty|SmartPropertyPrim.flagGlobalTransformDirty);
             this.updateCachedStates(false);
 
             this._prepareGroupRender(context);
@@ -1508,8 +1559,8 @@
         /**
          * Method that renders the Canvas, you should not invoke
          */
+        @logMethod("==========CANVAS RENDER===============")
         private _render() {
-
             this._initPerfMetrics();
 
             if (this._renderObservable && this._renderObservable.hasObservers()) {
@@ -1574,22 +1625,26 @@
             let key = `${useMipMap ? "MipMap" : "NoMipMap"}_${anisotropicLevel}`;
 
             let rd = group._renderableData;
+            let rs = rd._renderingScale;
             let noResizeScale = rd._noResizeOnScale;
             let isCanvas = parent == null;
             let scale: Vector2;
             if (noResizeScale) {
-                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale;
+                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale.multiply(this._canvasLevelScale);
             } else {
-                scale = group.actualScale;
+                scale = group.actualScale.multiply(this._canvasLevelScale);
             }
+            scale.x *= rs;
+            scale.y *= rs;
 
             // Determine size
             let size = group.actualSize;
-            size = new Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
-            let originalSize = size.clone();
+            let scaledSize = new Size(size.width * scale.x, size.height * scale.y);
+            let roundedScaledSize = new Size(Math.ceil(scaledSize.width), Math.ceil(scaledSize.height));
+            let originalSize = scaledSize.clone();
             if (minSize) {
-                size.width = Math.max(minSize.width, size.width);
-                size.height = Math.max(minSize.height, size.height);
+                roundedScaledSize.width = Math.max(minSize.width, roundedScaledSize.width);
+                roundedScaledSize.height = Math.max(minSize.height, roundedScaledSize.height);
             }
 
             let mapArray = this._groupCacheMaps.getOrAddWithFactory(key, () => new Array<MapTexture>());
@@ -1599,7 +1654,7 @@
             var map: MapTexture;
             for (var _map of mapArray) {
                 map = _map;
-                let node = map.allocateRect(size);
+                let node = map.allocateRect(roundedScaledSize);
                 if (node) {
                     res = { node: node, texture: map }
                     break;
@@ -1611,18 +1666,24 @@
                 let mapSize = new Size(Canvas2D._groupTextureCacheSize, Canvas2D._groupTextureCacheSize);
 
                 // Check if the predefined size would fit, other create a custom size using the nearest bigger power of 2
-                if (size.width > mapSize.width || size.height > mapSize.height) {
-                    mapSize.width = Math.pow(2, Math.ceil(Math.log(size.width) / Math.log(2)));
-                    mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
+                if (roundedScaledSize.width > mapSize.width || roundedScaledSize.height > mapSize.height) {
+                    mapSize.width = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.width) / Math.log(2)));
+                    mapSize.height = Math.pow(2, Math.ceil(Math.log(roundedScaledSize.height) / Math.log(2)));
                 }
 
                 let id = `groupsMapChache${this._mapCounter++}forCanvas${this.id}`;
-                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap, 2);
                 map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
 
-                let node = map.allocateRect(size);
+                //let debug = false;
+
+                //if (debug) {
+                //    let sprite = new Sprite2D(map, { parent: this, x: 10, y: 10, id: "__cachedSpriteOfGroup__Debug", alignToPixel: true });
+                //}
+
+                let node = map.allocateRect(roundedScaledSize);
                 res = { node: node, texture: map }
             }
 
@@ -1630,6 +1691,8 @@
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
             if (group !== <any>this || this._isScreenSpace) {
                 let node: PackedRect = res.node;
+                let pos = Canvas2D._cv1;
+                node.getInnerPosToRef(pos);
 
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
 
@@ -1639,14 +1702,14 @@
                         this._cachedCanvasGroup.dispose();
                     }
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, size: size, alignToPixel: true, spriteLocation: pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.x, y: group.y, spriteSize: originalSize, size: size, spriteLocation: pos, alignToPixel: true, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {

@@ -45,7 +45,7 @@
 	// Shadows
 	var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
 	shadowGenerator.getShadowMap().renderList.push(torus);
-	shadowGenerator.useVarianceShadowMap = true;
+	shadowGenerator.useExponentialShadowMap = true;
 
 	var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light2);
 	shadowGenerator2.getShadowMap().renderList.push(torus);

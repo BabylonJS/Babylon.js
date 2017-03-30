@@ -18,6 +18,13 @@ module BABYLON {
         @serialize()
         public autoUpdateExtends = true;
 
+        @serialize()
+        public shadowMinZ: number;
+        @serialize()
+        public shadowMaxZ: number;
+        
+        public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
+
         // Cache
         private _orthoLeft = Number.MAX_VALUE;
         private _orthoRight = Number.MIN_VALUE;
@@ -55,69 +62,74 @@ module BABYLON {
             this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         }
+
+        /**
+         * Return the depth scale used for the shadow map.
+         */
+        public getDepthScale(): number {
+            return 30.0;
+        }
+
         /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.  
          * Returns the DirectionalLight.  
          */
         public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): DirectionalLight {
-            var activeCamera = this.getScene().activeCamera;
+            if (this.customProjectionMatrixBuilder) {
+                this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
+            } else {
+                var activeCamera = this.getScene().activeCamera;
 
-            // Check extends
-            if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
-                var tempVector3 = Vector3.Zero();
+                // Check extends
+                if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
+                    var tempVector3 = Vector3.Zero();
 
-                this._orthoLeft = Number.MAX_VALUE;
-                this._orthoRight = Number.MIN_VALUE;
-                this._orthoTop = Number.MIN_VALUE;
-                this._orthoBottom = Number.MAX_VALUE;
+                    this._orthoLeft = Number.MAX_VALUE;
+                    this._orthoRight = Number.MIN_VALUE;
+                    this._orthoTop = Number.MIN_VALUE;
+                    this._orthoBottom = Number.MAX_VALUE;
 
-                for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
-                    var mesh = renderList[meshIndex];
+                    for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                        var mesh = renderList[meshIndex];
 
-                    if (!mesh) {
-                        continue;
-                    }
+                        if (!mesh) {
+                            continue;
+                        }
 
-                    var boundingInfo = mesh.getBoundingInfo();
+                        var boundingInfo = mesh.getBoundingInfo();
 
-                    if (!boundingInfo) {
-                        continue;
-                    }
+                        if (!boundingInfo) {
+                            continue;
+                        }
 
-                    var boundingBox = boundingInfo.boundingBox;
+                        var boundingBox = boundingInfo.boundingBox;
 
-                    for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
-                        Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+                        for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                            Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
 
-                        if (tempVector3.x < this._orthoLeft)
-                            this._orthoLeft = tempVector3.x;
-                        if (tempVector3.y < this._orthoBottom)
-                            this._orthoBottom = tempVector3.y;
+                            if (tempVector3.x < this._orthoLeft)
+                                this._orthoLeft = tempVector3.x;
+                            if (tempVector3.y < this._orthoBottom)
+                                this._orthoBottom = tempVector3.y;
 
-                        if (tempVector3.x > this._orthoRight)
-                            this._orthoRight = tempVector3.x;
-                        if (tempVector3.y > this._orthoTop)
-                            this._orthoTop = tempVector3.y;
+                            if (tempVector3.x > this._orthoRight)
+                                this._orthoRight = tempVector3.x;
+                            if (tempVector3.y > this._orthoTop)
+                                this._orthoTop = tempVector3.y;
+                        }
                     }
                 }
+
+                var xOffset = this._orthoRight - this._orthoLeft;
+                var yOffset = this._orthoTop - this._orthoBottom;
+
+                Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
+                    this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
+                    this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
             }
-
-            var xOffset = this._orthoRight - this._orthoLeft;
-            var yOffset = this._orthoTop - this._orthoBottom;
-
-            Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                -activeCamera.maxZ, activeCamera.maxZ, matrix);
-
             return this;
         }
 
-        /**
-         * Boolean : true by default.  
-         */
-        public supportsVSM(): boolean {
-            return true;
-        }
         /**
          * Boolean : true by default.  
          */

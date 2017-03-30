@@ -18,7 +18,7 @@
 
         constructor(public name: string, emitter: any, scene: Scene) {
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._emitter = emitter;
             this.id = name;
             scene.lensFlareSystems.push(this);

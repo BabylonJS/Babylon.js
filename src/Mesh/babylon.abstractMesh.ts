@@ -161,8 +161,6 @@
 
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;
-        //Deprecated, Legacy support
-        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void;
 
         // Collisions
         private _checkCollisions = false;
@@ -258,7 +256,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.addMesh(this);
+            this.getScene().addMesh(this);
         }
 
         /**
@@ -462,7 +460,8 @@
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
+            
+            if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
@@ -815,7 +814,7 @@
                 return this._worldMatrix;
             }
 
-            if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+            if (!force && ((this._currentRenderId === this.getScene().getRenderId() && this.isSynchronized(true)))) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
@@ -867,40 +866,48 @@
             // Composing transformations
             this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-            // Billboarding
+            
+            // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
+                    // Need to decompose each rotation here
+                    var currentPosition = Tmp.Vector3[3];
 
-                Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
+                    if (this.parent && this.parent.getWorldMatrix) {
+                        if (this._meshToBoneReferal) {
+                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                            Vector3.TransformCoordinatesToRef(this.position, Tmp.Matrix[6], currentPosition);
+                        } else {
+                            Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
+                        }
+                    } else {
+                        currentPosition.copyFrom(this.position);
+                    }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL)
-                {
-                    // Need to extract rotation vectors
-                    var scale = Tmp.Vector3[2];
-                    var rotation = Tmp.Quaternion[0];
-                    var translation = Tmp.Vector3[3];
-                    Tmp.Matrix[0].decompose(scale, rotation, translation);
+                    currentPosition.subtractInPlace(this.getScene().activeCamera.globalPosition);
 
-                    var finalQuaternion = Tmp.Quaternion[1];
-                    finalQuaternion.w = rotation.w;
+                    var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X)
                     {
-                        finalQuaternion.x = rotation.x;
+                        finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
                     }
                     
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y)
                     {
-                        finalQuaternion.y = rotation.y;
+                        finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
                     }
                     
                     if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z)
                     {
-                        finalQuaternion.z = rotation.z;
+                        finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
                     }
  
-                    Matrix.ComposeToRef(scale, finalQuaternion, translation, Tmp.Matrix[0]);
+                    Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, Tmp.Matrix[0]);
+                } else {
+                    Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
+
+                    Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
+                    Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
                 }
 
                 Tmp.Matrix[1].copyFrom(Tmp.Matrix[5]);
@@ -916,13 +923,17 @@
 
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
-                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[5]);
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                        Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
                     } else {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
-                    Tmp.Matrix[5].removeRotationAndScaling();
-
-                    this._localWorld.multiplyToRef(Tmp.Matrix[5], this._worldMatrix);
+                    
+                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
+                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
+                    
                 } else {
                     if (this._meshToBoneReferal) {
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
@@ -1085,43 +1096,8 @@
             return this._boundingInfo.intersectsPoint(point);
         }
 
-        // Physics
-        /**
-         *  @Deprecated. Use new PhysicsImpostor instead.
-         * */
-        public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
-            //legacy support
-            if (impostor.impostor) {
-                options = impostor;
-                impostor = impostor.impostor;
-            }
-            this.physicsImpostor = new PhysicsImpostor(this, impostor, options, this.getScene());
-            return this.physicsImpostor.physicsBody;
-        }
-
         public getPhysicsImpostor(): PhysicsImpostor {
             return this.physicsImpostor;
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
-         */
-        public getPhysicsMass(): number {
-            return this.physicsImpostor.getParam("mass")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
-         */
-        public getPhysicsFriction(): number {
-            return this.physicsImpostor.getParam("friction")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
-         */
-        public getPhysicsRestitution(): number {
-            return this.physicsImpostor.getParam("restitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
@@ -1162,24 +1138,6 @@
             });
             return this;
         }
-
-        /**
-         * @Deprecated
-         */
-        public updatePhysicsBodyPosition(): void {
-            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
-            this.updatePhysicsBody();
-        }
-
-        /**
-         * @Deprecated
-         * Calling this function is not needed anymore. 
-         * The physics engine takes care of transofmration automatically.
-         */
-        public updatePhysicsBody(): void {
-            //Unneeded
-        }
-
 
         // Collisions
 

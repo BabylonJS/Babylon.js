@@ -31,7 +31,6 @@ module BABYLON {
         
         
         constructor(name: string, position: Vector3, scene: Scene) {
-            Tools.Warn("Deprecated. Please use Universal Camera instead.");
             super(name, position, scene);
         }
 

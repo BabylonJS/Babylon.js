@@ -1,5 +1,5 @@
-﻿module BABYLON {
-    class StandardMaterialDefines extends MaterialDefines {
+module BABYLON {
+   export class StandardMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -47,6 +47,7 @@
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public REFRACTION = false;
@@ -54,6 +55,7 @@
         public REFLECTIONOVERALPHA = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
+        public TWOSIDEDLIGHTING = false;
         public SHADOWFULLFLOAT = false;
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
@@ -183,6 +185,12 @@
         public invertNormalMapY = false;
 
         /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        @serialize()
+        public twoSidedLighting = false;
+
+        /**
          * Color Grading 2D Lookup Texture.
          * This allows special effects like sepia, black and white to sixties rendering style. 
          */
@@ -198,15 +206,15 @@
         @serializeAsColorCurves()
         public cameraColorCurves: ColorCurves = null;
 
-        private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _globalAmbientColor = new Color3(0, 0, 0);
-        private _renderId: number;
+        protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
+        protected _worldViewProjectionMatrix = Matrix.Zero();
+        protected _globalAmbientColor = new Color3(0, 0, 0);
+        protected _renderId: number;
 
-        private _defines = new StandardMaterialDefines();
-        private _cachedDefines = new StandardMaterialDefines();
+        protected _defines = new StandardMaterialDefines();
+        protected _cachedDefines = new StandardMaterialDefines();
 
-        private _useLogarithmicDepth: boolean;
+        protected _useLogarithmicDepth: boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -249,7 +257,7 @@
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         }
 
-        private _shouldUseAlphaFromDiffuseTexture(): boolean {
+        protected _shouldUseAlphaFromDiffuseTexture(): boolean {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         }
 
@@ -258,7 +266,7 @@
         }
 
         // Methods   
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        protected _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (!mesh) {
                 return true;
             }
@@ -381,6 +389,9 @@
                             case Texture.FIXED_EQUIRECTANGULAR_MODE:
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
                                 break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                                this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                                break;
                         }
                     }
                 }
@@ -460,6 +471,10 @@
                     } else {
                         this._defines.CAMERACOLORGRADING = true;
                     }
+                }
+
+                if (!this.backFaceCulling && this.twoSidedLighting) {
+                    this._defines.TWOSIDEDLIGHTING = true;
                 }
             }
 

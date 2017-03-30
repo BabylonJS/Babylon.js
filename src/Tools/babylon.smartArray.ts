@@ -25,6 +25,12 @@
             value.__smartArrayFlags[this._id] = this._duplicateId;
         }
 
+        public forEach(func: (content: T) => void): void {
+            for (var index = 0; index < this.length; index++) {
+                func(this.data[index]);
+            }
+        }
+
         public pushNoDuplicate(value): boolean {
             if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
                 return false;
@@ -40,6 +46,11 @@
         public reset(): void {
             this.length = 0;
             this._duplicateId++;
+        }
+
+        public dispose(): void {
+            this.reset();
+            this.data.length = 0;
         }
 
         public concat(array: any): void {
