@@ -151,7 +151,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
 
                 // Parent
                 this.parent = source.parent;
@@ -707,6 +707,14 @@
             return this;
         }
 
+        public markVerticesDataAsUpdatable(kind: string, updatable = true) {
+            if (this.getVertexBuffer(kind).isUpdatable() === updatable) {
+                return;
+            }
+
+            this.setVerticesData(kind, this.getVerticesData(kind), updatable);
+        }
+
         /**
          * Sets the mesh VertexBuffer.  
          * Returns the Mesh.  
@@ -758,24 +766,6 @@
                 this.updateVerticesData(kind, data, updateExtends, false);
             }
             return this;
-        }
-
-        /**
-         * Deprecated since BabylonJS v2.3
-         */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
-            Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
-
-            if (!this._geometry) {
-                return;
-            }
-            if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data, offset);
-            }
-            else {
-                this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, offset, false);
-            }
         }
 
         /**
@@ -1837,6 +1827,138 @@
             return this;
         }
 
+        public serialize(serializationObject: any): void {
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+
+            if (Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.position = this.position.asArray();
+
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            } else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isVisible = this.isVisible;
+            serializationObject.infiniteDistance = this.infiniteDistance;
+            serializationObject.pickable = this.isPickable;
+
+            serializationObject.receiveShadows = this.receiveShadows;
+
+            serializationObject.billboardMode = this.billboardMode;
+            serializationObject.visibility = this.visibility;
+
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.isBlocker = this.isBlocker;
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            // Geometry
+            var geometry = this._geometry;
+            if (geometry) {
+                var geometryId = geometry.id;
+                serializationObject.geometryId = geometryId;
+
+                // SubMeshes
+                serializationObject.subMeshes = [];
+                for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+                    var subMesh = this.subMeshes[subIndex];
+
+                    serializationObject.subMeshes.push({
+                        materialIndex: subMesh.materialIndex,
+                        verticesStart: subMesh.verticesStart,
+                        verticesCount: subMesh.verticesCount,
+                        indexStart: subMesh.indexStart,
+                        indexCount: subMesh.indexCount
+                    });
+                }
+            }
+
+            // Material
+            if (this.material) {
+                serializationObject.materialId = this.material.id;
+            } else {
+                this.material = null;
+            }
+
+            // Skeleton
+            if (this.skeleton) {
+                serializationObject.skeletonId = this.skeleton.id;
+            }
+
+            // Physics
+            //TODO implement correct serialization for physics impostors.
+            if (this.getPhysicsImpostor()) {
+                var impostor = this.getPhysicsImpostor();
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = this.getPhysicsImpostor().type;
+            }
+
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+
+            // Instances
+            serializationObject.instances = [];
+            for (var index = 0; index < this.instances.length; index++) {
+                var instance = this.instances[index];
+                var serializationInstance: any = {
+                    name: instance.name,
+                    position: instance.position.asArray(),
+                    scaling: instance.scaling.asArray()
+                };
+                if (instance.rotationQuaternion) {
+                    serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
+                } else if (instance.rotation) {
+                    serializationInstance.rotation = instance.rotation.asArray();
+                }
+                serializationObject.instances.push(serializationInstance);
+
+                // Animations
+                Animation.AppendSerializedAnimations(instance, serializationInstance);
+                serializationInstance.ranges = instance.serializeAnimationRanges();
+            }
+
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
+
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+
+            // Alpha
+            serializationObject.alphaIndex = this.alphaIndex;
+            serializationObject.hasVertexAlpha = this.hasVertexAlpha;
+            
+            // Overlay
+            serializationObject.overlayAlpha = this.overlayAlpha;
+            serializationObject.overlayColor = this.overlayColor.asArray();
+            serializationObject.renderOverlay = this.renderOverlay;
+
+            // Fog
+            serializationObject.applyFog = this.applyFog;
+
+            // Action Manager
+            if (this.actionManager) {
+                serializationObject.actions = this.actionManager.serialize(this.name);
+            }
+        }
+
         // Statics
         /**
          * Returns a new Mesh object what is a deep copy of the passed mesh.   
@@ -1844,7 +1966,13 @@
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
-            var mesh = new Mesh(parsedMesh.name, scene);
+            var mesh : Mesh;
+
+            if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+                mesh = GroundMesh.Parse(parsedMesh, scene);
+            } else {
+                mesh = new Mesh(parsedMesh.name, scene);
+            }
             mesh.id = parsedMesh.id;
 
             Tags.AddTagsTo(mesh, parsedMesh.tags);
@@ -2028,7 +2156,7 @@
             }
 
 
-            //(Deprecated) physics
+            // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,

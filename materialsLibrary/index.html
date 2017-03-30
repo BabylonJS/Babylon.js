@@ -168,7 +168,6 @@
 				std.diffuseTexture.uScale = 5;
 				std.diffuseTexture.vScale = 5;
 
-                // Lava
                 var lava = prepareLava();
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
@@ -199,19 +198,24 @@
 				var sky = prepareSky();
                 
                 var grid = prepareGrid();
+
+				var shadowOnly = new BABYLON.ShadowOnlyMaterial();
 				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
 					fur.resetFur();
                     
 					switch (options.material) {
+						case "shadowOnly":
+							currentMaterial = shadowOnly;
+							break;						
 						case "simple":
 							currentMaterial = simple;
 							break;

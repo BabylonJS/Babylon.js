@@ -415,7 +415,7 @@ module BABYLON {
             }
             
             if (toBoundingCenter && (<any>target).getBoundingInfo){
-                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.center.clone();
+                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
             }else{
                 this._targetBoundingCenter = null;
             }
@@ -445,7 +445,7 @@ module BABYLON {
                 this.position.copyFrom(this._newPosition);
 
                 var up = this.upVector;
-                if (this.allowUpsideDown && this.beta < 0) {
+                if (this.allowUpsideDown && sinb < 0) {
                     up = up.clone();
                     up = up.negate();
                 }

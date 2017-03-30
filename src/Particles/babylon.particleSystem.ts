@@ -106,7 +106,7 @@
             this.id = name;
             this._capacity = capacity;
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             this._customEffect = customEffect;
 

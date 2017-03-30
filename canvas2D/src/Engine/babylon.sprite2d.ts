@@ -224,17 +224,6 @@
         //    this._spriteScaleFactor = value;
         //}
 
-        /**
-         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
-         */
-        public get alignToPixel(): boolean {
-            return this._alignToPixel;
-        }
-
-        public set alignToPixel(value: boolean) {
-            this._alignToPixel = value;
-        }
-
         protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
             return true;
@@ -273,15 +262,14 @@
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
-         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
@@ -317,6 +305,7 @@
             scaleX                ?: number,
             scaleY                ?: number,
             dontInheritParentScale?: boolean,
+            alignToPixel          ?: boolean,
             opacity               ?: number,
             zOrder                ?: number, 
             origin                ?: Vector2,
@@ -325,7 +314,6 @@
             spriteScaleFactor     ?: Vector2,
             scale9                ?: Vector4,
             invertY               ?: boolean,
-            alignToPixel          ?: boolean,
             isVisible             ?: boolean,
             isPickable            ?: boolean,
             isContainer           ?: boolean,
@@ -364,6 +352,7 @@
             if (settings.size != null) {
                 this.size = settings.size;
             }
+            this._updatePositioningState();
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
@@ -552,7 +541,6 @@
         private _spriteFrame: number;
         private _scale9: Vector4;
         private _invertY: boolean;
-        private _alignToPixel: boolean;
     }
 
     export class Sprite2DInstanceData extends InstanceDataBase {

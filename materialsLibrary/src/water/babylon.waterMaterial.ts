@@ -1,5 +1,4 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../simple/babylon.simpleMaterial.ts"/>
 
 module BABYLON {
     class WaterMaterialDefines extends MaterialDefines {

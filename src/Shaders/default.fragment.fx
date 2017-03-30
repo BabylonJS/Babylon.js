@@ -124,7 +124,7 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
@@ -177,6 +177,10 @@ void main(void) {
 #endif
 
 #include<bumpFragment>
+
+#ifdef TWOSIDEDLIGHTING
+	normalW = gl_FrontFacing ? normalW : -normalW;
+#endif
 
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);

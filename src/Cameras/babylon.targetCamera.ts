@@ -142,6 +142,10 @@ module BABYLON {
             }
         }
 
+
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         */
         public getTarget(): Vector3 {
             return this._currentTarget;
         }
@@ -151,6 +155,12 @@ module BABYLON {
         }
 
         public _updatePosition(): void {
+            if (this.parent) {
+                this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
+                Vector3.TransformNormalToRef(this.cameraDirection, Tmp.Matrix[0], Tmp.Vector3[0]);
+                this.position.addInPlace(Tmp.Vector3[0]);
+                return;
+            }
             this.position.addInPlace(this.cameraDirection);
         }
         public _checkInputs(): void {
@@ -166,6 +176,14 @@ module BABYLON {
             if (needToRotate) {
                 this.rotation.x += this.cameraRotation.x;
                 this.rotation.y += this.cameraRotation.y;
+
+                //rotate, if quaternion is set and rotation was used
+                if (this.rotationQuaternion) {
+                    var len = this.rotation.lengthSquared();
+                    if (len) {
+                        Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    }
+                }
 
 
                 if (!this.noRotationConstraint) {
@@ -209,7 +227,7 @@ module BABYLON {
             super._checkInputs();
         }
 
-        private _updateCameraRotationMatrix() {
+        protected _updateCameraRotationMatrix() {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
                 //update the up vector!
@@ -237,7 +255,7 @@ module BABYLON {
             } else {
                 Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             }
-            
+
             return this._viewMatrix;
         }
 
@@ -284,7 +302,6 @@ module BABYLON {
                     break;
 
                 case Camera.RIG_MODE_VR:
-                case Camera.RIG_MODE_WEBVR:
                     if (camLeft.rotationQuaternion) {
                         camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                         camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);

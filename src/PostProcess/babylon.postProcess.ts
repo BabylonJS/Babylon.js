@@ -14,6 +14,8 @@
         */ 
         public enablePixelPerfectMode = false;
 
+        public samples = 1;
+
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
@@ -193,6 +195,12 @@
                 this.onSizeChangedObservable.notifyObservers(this);
             }
 
+            this._textures.forEach(texture => {
+                if (texture.samples !== this.samples) {
+                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
+                }
+            });
+
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
                 this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd], 0, requiredWidth, requiredHeight);
@@ -243,14 +251,14 @@
         }
 
         public dispose(camera?: Camera): void {
-            camera = camera || this._camera;
+            camera = camera || this._camera;            
 
             if (this._textures.length > 0) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._engine._releaseTexture(this._textures.data[i]);
                 }
-                this._textures.reset();
             }
+            this._textures.dispose();
 
             if (!camera) {
                 return;

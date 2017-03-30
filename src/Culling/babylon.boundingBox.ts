@@ -2,11 +2,14 @@
     export class BoundingBox implements ICullable {
         public vectors: Vector3[] = new Array<Vector3>();
         public center: Vector3;
+        public centerWorld: Vector3;
         public extendSize: Vector3;
+        public extendSizeWorld: Vector3;
         public directions: Vector3[];
         public vectorsWorld: Vector3[] = new Array<Vector3>();
         public minimumWorld: Vector3;
         public maximumWorld: Vector3;
+
 
         private _worldMatrix: Matrix;
 
@@ -44,6 +47,8 @@
             }
             this.minimumWorld = Vector3.Zero();
             this.maximumWorld = Vector3.Zero();
+            this.centerWorld = Vector3.Zero();
+            this.extendSizeWorld = Vector3.Zero();
 
             this._update(Matrix.Identity());
         }
@@ -81,9 +86,13 @@
                     this.maximumWorld.z = v.z;
             }
 
+            // Extend
+            this.maximumWorld.subtractToRef(this.minimumWorld, this.extendSizeWorld);
+            this.extendSizeWorld.scaleInPlace(0.5);
+
             // OBB
-            this.maximumWorld.addToRef(this.minimumWorld, this.center);
-            this.center.scaleInPlace(0.5);
+            this.maximumWorld.addToRef(this.minimumWorld, this.centerWorld);
+            this.centerWorld.scaleInPlace(0.5);
 
             Vector3.FromFloatArrayToRef(world.m, 0, this.directions[0]);
             Vector3.FromFloatArrayToRef(world.m, 4, this.directions[1]);
