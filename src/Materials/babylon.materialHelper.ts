@@ -74,11 +74,10 @@
                 defines[type] = true;
 
                 // Specular
-                if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
-                    defines["SPECULARTERM"] = true;
-                }
+                defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
 
                 // Shadows
+                var shadowEnabled = false;
                 if (scene.shadowsEnabled) {
                     var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
@@ -87,7 +86,7 @@
                         }
                         defines["SHADOW" + lightIndex] = true;
 
-                        defines["SHADOWS"] = true;
+                        shadowEnabled = true;
 
                         if (shadowGenerator.usePoissonSampling) {
                             if (defines["SHADOWPCF" + lightIndex] === undefined) {
@@ -105,8 +104,12 @@
                         }
 
                         needShadows = true;
+                    } else {
+                        defines["SHADOW" + lightIndex] = false;
                     }
                 }
+
+                defines["SHADOWS"] = shadowEnabled;
 
                 if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
                     lightmapMode = true;
@@ -117,9 +120,10 @@
                         needRebuild = true;
                     }
                     defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-                    if (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY) {
-                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = true;
-                    }
+                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
+                } else {
+                    defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
+                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
                 }
 
                 lightIndex++;
@@ -135,20 +139,17 @@
             }
 
             let caps = scene.getEngine().getCaps();
-            if (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
-                if (defines["SHADOWFULLFLOAT"] === undefined) {
-                    needRebuild = true;
-                }
-
-                defines["SHADOWFULLFLOAT"] = true;
+            if (defines["SHADOWFULLFLOAT"] === undefined) {
+                needRebuild = true;
             }
+
+            defines["SHADOWFULLFLOAT"] = (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
 
             if (defines["LIGHTMAPEXCLUDED"] === undefined) {
                 needRebuild = true;
             }
-            if (lightmapMode) {
-                defines["LIGHTMAPEXCLUDED"] = true;
-            }
+
+            defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
                 defines.rebuild();

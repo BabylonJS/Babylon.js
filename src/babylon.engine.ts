@@ -223,6 +223,19 @@
             return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
         }
 
+        /**
+         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+         */
+        public static MarkAllMaterialsAsDirty(): void {
+            for (var engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
+                var engine = Engine.Instances[engineIndex];
+
+                for (var sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+                    engine.scenes[sceneIndex].markAllMaterialsAsDirty();
+                }
+            }
+        }
+
         // Const statics
         private static _ALPHA_DISABLE = 0;
         private static _ALPHA_ADD = 1;
