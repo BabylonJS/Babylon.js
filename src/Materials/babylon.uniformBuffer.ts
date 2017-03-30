@@ -24,6 +24,10 @@ module BABYLON {
             this._needSync = false;
         }
 
+        public get isSync(): boolean {
+            return this._needSync;
+        }
+
         // Properties
         public isDynamic(): boolean {
             return this._dynamic;
@@ -78,6 +82,15 @@ module BABYLON {
             this._needSync = true;
         }
 
+        public addFloat2(name: string, x: number, y: number) {
+            var temp = [x, y];
+            this.addUniform(name, temp);
+        }
+        public addMatrix(name: string, mat: Matrix) {
+            this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
+        }
+
+
         public addColor3(name: string, color: Color3) {
             var temp = [];
             color.toArray(temp);
@@ -110,7 +123,7 @@ module BABYLON {
                 this._buffer = this._engine.createUniformBuffer(data);
             }
             console.log("ubo creation");
-            
+
             this._needSync = false;
         } 
 
