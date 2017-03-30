@@ -302,12 +302,12 @@ void main(void) {
 	// Diffuse is used as the base of the reflectivity.
 	vec3 baseColor = surfaceAlbedo.rgb;
 
-	// Drop the surface diffuse by the 1.0 - metalness.
-	surfaceAlbedo.rgb *= (1.0 - metallicRoughness.r);
-
 	// Default specular reflectance at normal incidence.
 	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
 	const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
+
+	// Compute the converted diffuse.
+	surfaceAlbedo.rgb = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
 
 	// Compute the converted reflectivity.
 	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
