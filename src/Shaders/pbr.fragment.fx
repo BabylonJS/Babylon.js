@@ -238,7 +238,12 @@ void main(void) {
 	vec3 ambientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
+#ifdef AMBIENTSTOREINRED
+	ambientColor *= texture2D(ambientSampler, vAmbientUV + uvOffset).r * vAmbientInfos.y;
+#else
 	ambientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+#endif
+
 	ambientColor = vec3(1., 1., 1.) - ((vec3(1., 1., 1.) - ambientColor) * vAmbientInfos.z);
 
 #ifdef OVERLOADEDVALUES
@@ -279,11 +284,16 @@ void main(void) {
 		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 
 		// No gamma space from the metallic map in metallic workflow.
-		metallicRoughness.r *= surfaceMetallicColorMap.r;
-		#ifdef METALLICROUGHNESSGSTOREINALPHA
+		#ifdef METALLICSTOREINBLUE
+			metallicRoughness.r *= surfaceMetallicColorMap.b;
+		#else
+			metallicRoughness.r *= surfaceMetallicColorMap.r;
+		#endif
+
+		#ifdef ROUGHNESSGSTOREINALPHA
 			metallicRoughness.g *= surfaceMetallicColorMap.a;
 		#else
-			#ifdef METALLICROUGHNESSGSTOREINGREEN
+			#ifdef ROUGHNESSGSTOREINGREEN
 				metallicRoughness.g *= surfaceMetallicColorMap.g;
 			#endif
 		#endif
@@ -294,7 +304,7 @@ void main(void) {
 
 	// Drop the surface diffuse by the 1.0 - metalness.
 	surfaceAlbedo.rgb *= (1.0 - metallicRoughness.r);
-	
+
 	// Default specular reflectance at normal incidence.
 	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
 	const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);

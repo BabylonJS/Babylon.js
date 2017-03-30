@@ -2,6 +2,7 @@
     class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public AMBIENT = false;
+        public AMBIENTSTOREINRED = false;
         public OPACITY = false;
         public OPACITYRGB = false;
         public REFLECTION = false;
@@ -68,8 +69,9 @@
 
         public METALLICWORKFLOW = false;
         public METALLICROUGHNESSMAP = false;
-        public METALLICROUGHNESSGSTOREINALPHA = false;
-        public METALLICROUGHNESSGSTOREINGREEN = false;
+        public METALLICSTOREINBLUE = false;
+        public ROUGHNESSGSTOREINALPHA = false;
+        public ROUGHNESSGSTOREINGREEN = false;
 
         constructor() {
             super();
@@ -273,6 +275,12 @@
         @serialize()
         public ambientTextureStrength: number = 1.0;
 
+        /**
+         * Specifies if the ambient occlusion texture contains the information in its red channel only.
+         */
+        @serialize()
+        public useAmbientFromAmbientTextureRed: boolean = false;
+
         @serializeAsTexture()
         public opacityTexture: BaseTexture;
 
@@ -319,7 +327,7 @@
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Diffuse Color in other nomenclature.
          */
@@ -403,6 +411,12 @@
          */
         @serialize()
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+
+        /**
+         * Specifies if the metallic texture contains the metallic information in its blue channel.
+         */
+        @serialize()
+        public useMetallicFromMetallicTextureBlue = false;
 
         /**
          * Specifies if the metallic texture contains the roughness information in its alpha channel.
@@ -687,6 +701,7 @@
                     } else {
                         needUVs = true;
                         this._defines.AMBIENT = true;
+                        this._defines.AMBIENTSTOREINRED = this.useAmbientFromAmbientTextureRed;
                     }
                 }
 
@@ -779,8 +794,9 @@
                             needUVs = true;
                             this._defines.METALLICWORKFLOW = true;
                             this._defines.METALLICROUGHNESSMAP = true;
-                            this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
-                            this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
+                            this._defines.METALLICSTOREINBLUE = this.useMetallicFromMetallicTextureBlue;
+                            this._defines.ROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
+                            this._defines.ROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
                         }
                     }
                     else if (this.reflectivityTexture) {
