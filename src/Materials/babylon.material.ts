@@ -2,12 +2,55 @@
     export class MaterialDefines {
         _keys: string[];
         _isDirty = true;
+        _trackIsDirty = false;
+
+        constructor(trackIsDirty?: boolean) {
+            this._trackIsDirty = trackIsDirty;
+        }
+
+        private _reBind(key: string): void {
+            this["_" + key] = this[key]; 
+
+            Object.defineProperty(this, key, {
+                get: function () {
+                    return this["_" + key];
+                },
+                set: function (value) {
+                    if (this["_" + key] === value) {
+                        return;
+                    }
+                    this["_" + key] = value;
+                    this._isDirty = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+        }
 
         public rebuild() {
             if (this._keys) {
                 delete this._keys;
             }
-            this._keys = Object.keys(this);
+
+            this._keys = [];
+
+            for (var key of Object.keys(this)) {
+                if (key[0] === "_") {
+                    continue;
+                }
+
+                this._keys.push(key);
+
+                if (!this._trackIsDirty) {
+                    continue;
+                }
+            
+                if (Object.getOwnPropertyDescriptor(this, key).get) {
+                    continue;
+                }
+
+                this._reBind(key);
+            }
         } 
 
         public isEqual(other: MaterialDefines): boolean {
@@ -55,11 +98,12 @@
             var result = "";
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
+                var value = this[prop];
 
-                if (typeof (this[prop]) === "number") {
+                if (typeof (value) === "number") {
                     result += "#define " + prop + " " + this[prop] + "\n";
 
-                } else if (this[prop]) {
+                } else if (value) {
                     result += "#define " + prop + "\n";
                 }
             }
@@ -237,6 +281,13 @@
             }
             return ret;
         } 
+
+        /**
+         * Child classes can use it to update shaders
+         */
+        public markAsDirty() {
+
+        }
         
         public getClassName(): string {
             return "Material";

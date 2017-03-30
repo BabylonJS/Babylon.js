@@ -15162,6 +15162,7 @@ var BABYLON;
             serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.depthScale = this.depthScale;
             serializationObject.darkness = this.getDarkness();
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -15197,6 +15198,9 @@ var BABYLON;
             }
             else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
+            }
+            if (parsedShadowGenerator.depthScale) {
+                shadowGenerator.depthScale = parsedShadowGenerator.depthScale;
             }
             if (parsedShadowGenerator.blurScale) {
                 shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
@@ -29524,6 +29528,9 @@ var BABYLON;
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
                 if (!light.isEnabled()) {
+                    if (defines["LIGHT" + lightIndex] !== undefined) {
+                        defines["LIGHT" + lightIndex] = false;
+                    }
                     continue;
                 }
                 // Excluded check
@@ -29547,6 +29554,9 @@ var BABYLON;
                     light._includedOnlyMeshesIds = [];
                 }
                 if (!light.canAffectMesh(mesh)) {
+                    if (defines["LIGHT" + lightIndex] !== undefined) {
+                        defines["LIGHT" + lightIndex] = false;
+                    }
                     continue;
                 }
                 needNormals = true;
@@ -29615,6 +29625,12 @@ var BABYLON;
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
                     break;
+            }
+            // Resetting all other lights if any
+            for (var index = scene.lights.length; index < maxSimultaneousLights; index++) {
+                if (defines["LIGHT" + lightIndex] !== undefined) {
+                    defines["LIGHT" + lightIndex] = false;
+                }
             }
             var caps = scene.getEngine().getCaps();
             if (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
@@ -29824,12 +29840,36 @@ var BABYLON;
 (function (BABYLON) {
     var MaterialDefines = (function () {
         function MaterialDefines() {
+            this._isDirty = true;
         }
-        MaterialDefines.prototype.rebuild = function () {
+        MaterialDefines.prototype.rebuild = function (trackIsDirty) {
             if (this._keys) {
                 delete this._keys;
             }
             this._keys = Object.keys(this);
+            if (!trackIsDirty) {
+                return;
+            }
+            for (var key in Object.keys(this)) {
+                if (Object.getOwnPropertyDescriptor(this, key).get) {
+                    continue;
+                }
+                this["_" + key] = this[key];
+                Object.defineProperty(this, key, {
+                    get: function () {
+                        return this["_" + key];
+                    },
+                    set: function (value) {
+                        if (this["_" + key] === value) {
+                            return;
+                        }
+                        this["_" + key] = value;
+                        this._isDirty = true;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+            }
         };
         MaterialDefines.prototype.isEqual = function (other) {
             if (this._keys.length !== other._keys.length) {
@@ -30274,7 +30314,7 @@ var BABYLON;
             _this.SHADOWFULLFLOAT = false;
             _this.CAMERACOLORGRADING = false;
             _this.CAMERACOLORCURVES = false;
-            _this.rebuild();
+            _this.rebuild(true);
             return _this;
         }
         return StandardMaterialDefines;
@@ -30333,8 +30373,6 @@ var BABYLON;
             _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             _this._defines = new StandardMaterialDefines();
-            _this._cachedDefines = new StandardMaterialDefines();
-            _this._cachedDefines.BonesPerMesh = -1;
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
                 if (_this.reflectionTexture && _this.reflectionTexture.isRenderTarget) {
@@ -30395,7 +30433,6 @@ var BABYLON;
             var engine = scene.getEngine();
             var needUVs = false;
             var needNormals = false;
-            this._defines.reset();
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
                 needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
@@ -30655,8 +30692,7 @@ var BABYLON;
                 }
             }
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (this._defines._isDirty) {
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();
@@ -57054,7 +57090,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 var BABYLON;

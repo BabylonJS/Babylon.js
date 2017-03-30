@@ -466,7 +466,20 @@
         }
 
         // Textures
-        public texturesEnabled = true;
+        private _texturesEnabled = true;
+
+        public set texturesEnabled(value : boolean) {
+            if (this._texturesEnabled === value) {
+                return;
+            }
+            this._texturesEnabled = value;
+            this.markAllMaterialsAsDirty();
+        }
+
+        public get texturesEnabled(): boolean {
+            return this._texturesEnabled;
+        }     
+
         public textures = new Array<BaseTexture>();
 
         // Particles
@@ -3464,6 +3477,15 @@
             depth = true,
             stencil = true): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
+        }
+
+        /**
+         * Will flag all materials as dirty to trigger new shader compilation
+         */
+        public markAllMaterialsAsDirty(): void {
+            for (var index = 0; index < this.materials.length; index++) {
+                this.materials[index].markAsDirty();
+            }
         }
     }
 }
