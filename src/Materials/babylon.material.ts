@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     export class MaterialDefines {
         _keys: string[];
+        _isDirty = true;
 
         public rebuild() {
             if (this._keys) {
