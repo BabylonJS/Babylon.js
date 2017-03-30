@@ -1,5 +1,4 @@
 ﻿layout(std140, column_major) uniform;
-
 uniform Material
 {
 	vec4 diffuseLeftColor;
@@ -18,7 +17,6 @@ uniform Material
 	vec2 vEmissiveInfos;
 	vec2 vLightmapInfos;
 	vec2 vSpecularInfos;
-	
 	vec3 vBumpInfos;
 	mat4 diffuseMatrix;
 	mat4 ambientMatrix;
@@ -100,13 +98,11 @@ uniform mat4 view;
 #endif
 
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
 
 #ifdef REFRACTIONMAP_3D
 uniform samplerCube refractionCubeSampler;
 #else
 uniform sampler2D refraction2DSampler;
-uniform mat4 refractionMatrix;
 #endif
 
 #endif
@@ -134,9 +130,6 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
 #endif
 
 #include<reflectionFunction>
@@ -243,23 +236,23 @@ void main(void) {
 	vec3 refractionColor = vec3(0., 0., 0.);
 
 #ifdef REFRACTION
-	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, uMaterial.vRefractionInfos.y));
 #ifdef REFRACTIONMAP_3D
 
-	refractionVector.y = refractionVector.y * vRefractionInfos.w;
+	refractionVector.y = refractionVector.y * uMaterial.vRefractionInfos.w;
 
 	if (dot(refractionVector, viewDirectionW) < 1.0)
 	{
-		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * vRefractionInfos.x;
+		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * uMaterial.vRefractionInfos.x;
 	}
 #else
-	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+	vec3 vRefractionUVW = vec3(uMaterial.refractionMatrix * (view * vec4(vPositionW + refractionVector * uMaterial.vRefractionInfos.z, 1.0)));
 
 	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
 
 	refractionCoords.y = 1.0 - refractionCoords.y;
 
-	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * uMaterial.vRefractionInfos.x;
 #endif
 #endif
 
@@ -362,12 +355,12 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
 #ifdef LINKEMISSIVEWITHDIFFUSE
-	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + uMaterial.vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #endif
 #endif
 
