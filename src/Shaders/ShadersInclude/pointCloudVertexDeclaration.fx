@@ -1,1 +1,2 @@
-﻿
+﻿#ifdef POINTSIZE
+#endif

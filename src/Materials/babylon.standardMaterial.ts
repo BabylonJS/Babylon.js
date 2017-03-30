@@ -748,6 +748,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
             this._uniformBuffer.addUniform("vSpecularInfos", 2);
+            // this._uniformBuffer.addUniform("fill", 2);
             this._uniformBuffer.addUniform("vBumpInfos", 3);
 
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
@@ -758,15 +759,12 @@ module BABYLON {
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
-            this._uniformBuffer.addUniform("pointSize", 1);
-
-            this._uniformBuffer.addUniform("vSpecularColor", 3);
+            this._uniformBuffer.addUniform("vSpecularColor", 4);
             this._uniformBuffer.addUniform("vEmissiveColor", 3);
             this._uniformBuffer.addUniform("vDiffuseColor", 4);
-
+            this._uniformBuffer.addUniform("pointSize", 1);
         }
 
         public unbind(): void {
