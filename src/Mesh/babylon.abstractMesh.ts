@@ -207,7 +207,6 @@
         public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
-        public _materialDefines: MaterialDefines;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();

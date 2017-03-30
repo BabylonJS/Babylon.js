@@ -1096,7 +1096,15 @@
             // Material
             var effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial || !effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            if (!effectiveMaterial) {
+                return this;
+            }
+
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
 
@@ -1108,16 +1116,26 @@
                 engine.setDepthWrite(savedDepthWrite);
             }
 
-            effectiveMaterial._preBind();
-            var effect = effectiveMaterial.getEffect();
+            var effect: Effect;
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effect = subMesh.effect;
+            } else {
+                effect = effectiveMaterial.getEffect();
+            }
+
+            effectiveMaterial._preBind(effect);
 
             // Bind
             var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
-
-            effectiveMaterial.bind(world, this);
+            
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effectiveMaterial.bind(world, this);
+            } else {
+                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {

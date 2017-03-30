@@ -15,6 +15,17 @@
         public _distanceToCamera: number;
         public _id: number;
 
+        public _materialDefines: MaterialDefines;
+        private _materialEffect: Effect;
+
+        public get effect(): Effect {
+            return this._materialEffect;
+        }
+
+        public set effect(effect: Effect) {
+            this._materialEffect = effect;
+        }
+
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;

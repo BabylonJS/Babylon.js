@@ -170,6 +170,8 @@
 
         public doNotSerialize = false;
 
+        public storeEffectOnSubMeshes = false;
+
         /**
         * An event triggered when the material is disposed.
         * @type {BABYLON.Observable}
@@ -309,6 +311,10 @@
             return true;
         }
 
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+            return false;            
+        }
+
         public getEffect(): Effect {
             return this._effect;
         }
@@ -333,12 +339,12 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(): void {
+        public _preBind(effect?: Effect): void {
             var engine = this._scene.getEngine();
 
             var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
 
-            engine.enableEffect(this._effect);
+            engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
         }
 
@@ -352,6 +358,9 @@
                 this._cachedDepthWriteState = engine.getDepthWrite();
                 engine.setDepthWrite(false);
             }
+        }
+
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
