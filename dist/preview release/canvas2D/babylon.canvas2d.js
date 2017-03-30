@@ -7877,7 +7877,10 @@ var BABYLON;
                             return null;
                         }
                         return _this.parent.margin;
-                    }, function () { return _this._positioningDirty(); });
+                    }, function () {
+                        _this._positioningDirty();
+                        _this._updatePositioningState();
+                    });
                     this._updatePositioningState();
                 }
                 return this._margin;
@@ -7958,7 +7961,10 @@ var BABYLON;
             get: function () {
                 var _this = this;
                 if (!this._marginAlignment) {
-                    this._marginAlignment = new PrimitiveAlignment(function () { return _this._positioningDirty(); });
+                    this._marginAlignment = new PrimitiveAlignment(function () {
+                        _this._positioningDirty();
+                        _this._updatePositioningState();
+                    });
                     this._updatePositioningState();
                 }
                 return this._marginAlignment;
