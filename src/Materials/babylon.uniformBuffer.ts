@@ -25,7 +25,7 @@ module BABYLON {
         }
 
         public get isSync(): boolean {
-            return this._needSync;
+            return !this._needSync;
         }
 
         // Properties
@@ -174,10 +174,26 @@ module BABYLON {
             this._needSync = this._needSync || changed;
         }
 
+        public updateFloat(name: string, x: number) {
+            var temp = [x];
+            this.updateUniform(name, temp);
+        }
+
         public updateFloat2(name: string, x: number, y: number) {
             var temp = [x, y];
             this.updateUniform(name, temp);
         }
+
+        public updateFloat3(name: string, x: number, y: number, z: number) {
+            var temp = [x, y, z];
+            this.updateUniform(name, temp);
+        }
+
+        public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
+            var temp = [x, y, z, w];
+            this.updateUniform(name, temp);
+        }
+
         public updateMatrix(name: string, mat: Matrix) {
             this.updateUniform(name, mat.toArray());
         }

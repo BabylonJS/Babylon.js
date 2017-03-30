@@ -1,9 +1,5 @@
 ﻿layout(std140, column_major) uniform;
 
-struct Camera {
-	vec3 vEyePosition;
-};
-
 uniform Material
 {
 	vec4 vDiffuseColor;
