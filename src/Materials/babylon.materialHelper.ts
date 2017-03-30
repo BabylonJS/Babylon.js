@@ -1,102 +1,105 @@
 ﻿module BABYLON {
     export class MaterialHelper {
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4, disableLighting = false): boolean {
+            if (!defines._areLightsDirty) {
+                return defines._needNormals;
+            }
+
             var lightIndex = 0;
             var needNormals = false;
             var needRebuild = false;
             var needShadows = false;
             var lightmapMode = false;
 
-            var count = 0;
-            for (var light of mesh._lightSources) {
-                count++;
+            if (scene.lightsEnabled && !disableLighting) {
+                for (var light of mesh._lightSources) {
+                    needNormals = true;
 
-                needNormals = true;
+                    if (defines["LIGHT" + lightIndex] === undefined) {
+                        needRebuild = true;
+                    }
+                    defines["LIGHT" + lightIndex] = true;
 
-                if (defines["LIGHT" + lightIndex] === undefined) {
-                    needRebuild = true;
-                }
-                defines["LIGHT" + lightIndex] = true;
+                    var type;
+                    if (light instanceof SpotLight) {
+                        type = "SPOTLIGHT" + lightIndex;
+                    } else if (light instanceof HemisphericLight) {
+                        type = "HEMILIGHT" + lightIndex;
+                    } else if (light instanceof PointLight) {
+                        type = "POINTLIGHT" + lightIndex;
+                    } else {
+                        type = "DIRLIGHT" + lightIndex;
+                    }
 
-                var type;
-                if (light instanceof SpotLight) {
-                    type = "SPOTLIGHT" + lightIndex;
-                } else if (light instanceof HemisphericLight) {
-                    type = "HEMILIGHT" + lightIndex;
-                } else if (light instanceof PointLight) {
-                    type = "POINTLIGHT" + lightIndex;
-                } else {
-                    type = "DIRLIGHT" + lightIndex;
-                }
+                    if (!needRebuild && defines[type] === undefined) {
+                        needRebuild = true;
+                    }
 
-                if (!needRebuild && defines[type] === undefined) {
-                    needRebuild = true;
-                }
+                    defines[type] = true;
 
-                defines[type] = true;
+                    // Specular
+                    defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
 
-                // Specular
-                defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
+                    // Shadows
+                    var shadowEnabled = false;
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
+                        if (mesh && mesh.receiveShadows && shadowGenerator) {
+                            if (!needRebuild && defines["SHADOW" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
+                            defines["SHADOW" + lightIndex] = true;
 
-                // Shadows
-                var shadowEnabled = false;
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        if (!needRebuild && defines["SHADOW" + lightIndex] === undefined) {
+                            shadowEnabled = true;
+
+                            if (shadowGenerator.usePoissonSampling) {
+                                if (!needRebuild && defines["SHADOWPCF" + lightIndex] === undefined) {
+                                    needRebuild = true;
+                                }
+
+                                defines["SHADOWPCF" + lightIndex] = true;
+                            } 
+                            else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
+                                if (!needRebuild && defines["SHADOWESM" + lightIndex] === undefined) {
+                                    needRebuild = true;
+                                }
+
+                                defines["SHADOWESM" + lightIndex] = true;
+                            }
+
+                            needShadows = true;
+                        } else {
+                            defines["SHADOW" + lightIndex] = false;
+                        }
+                    }
+
+                    defines["SHADOWS"] = shadowEnabled;
+
+                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
+                        lightmapMode = true;
+                        if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
                             needRebuild = true;
                         }
-                        defines["SHADOW" + lightIndex] = true;
-
-                        shadowEnabled = true;
-
-                        if (shadowGenerator.usePoissonSampling) {
-                            if (!needRebuild && defines["SHADOWPCF" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
-
-                            defines["SHADOWPCF" + lightIndex] = true;
-                        } 
-                        else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
-                            if (!needRebuild && defines["SHADOWESM" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
-
-                            defines["SHADOWESM" + lightIndex] = true;
+                        if (!needRebuild && defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
+                            needRebuild = true;
                         }
-
-                        needShadows = true;
+                        defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
+                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
                     } else {
-                        defines["SHADOW" + lightIndex] = false;
+                        defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
+                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
                     }
+
+                    lightIndex++;
+                    if (lightIndex === maxSimultaneousLights)
+                        break;
                 }
-
-                defines["SHADOWS"] = shadowEnabled;
-
-                if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
-                    lightmapMode = true;
-                    if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
-                        needRebuild = true;
-                    }
-                    if (!needRebuild && defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
-                        needRebuild = true;
-                    }
-                    defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
-                } else {
-                    defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
-                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
-                }
-
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
-                    break;
             }
 
             // Resetting all other lights if any
-            for (var index = count; index < maxSimultaneousLights; index++) {
-                if (defines["LIGHT" + lightIndex] !== undefined) {
-                    defines["LIGHT" + lightIndex] = false;
+            for (var index = lightIndex; index < maxSimultaneousLights; index++) {
+                if (defines["LIGHT" + index] !== undefined) {
+                    defines["LIGHT" + index] = false;
                 }
             }
 
@@ -115,7 +118,7 @@
 
             if (needRebuild) {
                 defines.rebuild();
-            }
+            }        
 
             return needNormals;
         }

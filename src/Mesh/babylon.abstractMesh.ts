@@ -129,7 +129,19 @@
         public isBlocker = false;
         public renderingGroupId = 0;
         public material: Material;
-        public receiveShadows = false;
+        private _receiveShadows = false;
+        public get receiveShadows(): boolean {
+            return this._receiveShadows;
+        }
+        public set receiveShadows(value: boolean) {
+            if (this._receiveShadows === value) {
+                return;
+            }
+
+            this._receiveShadows = value;
+            this._markSubMeshesAsLightDirty();
+        }
+
         public renderOutline = false;
         public outlineColor = Color3.Red();
         public outlineWidth = 0.02;
@@ -297,6 +309,8 @@
                     this._lightSources.push(light);
                 }
             }
+
+            this._markSubMeshesAsLightDirty();
         }
 
         public _resyncLighSource(light: Light): void {
@@ -309,13 +323,14 @@
                     return;
                 }
                 this._lightSources.push(light);
-                return;
+            } else {
+                if (isIn) {
+                    return;
+                }
+                this._lightSources.splice(index, 1);            
             }
 
-            if (isIn) {
-                return;
-            }
-            this._lightSources.splice(index, 1);            
+            this._markSubMeshesAsLightDirty();
         }
 
         public _removeLightSource(light: Light): void {
@@ -325,6 +340,18 @@
                 return;
             }
             this._lightSources.slice(index, 1);       
+        }
+
+        public _markSubMeshesAsLightDirty() {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                if (subMesh._materialDefines) {
+                    subMesh._materialDefines._areLightsDirty = true;
+                }
+            }
         }
 
         /**

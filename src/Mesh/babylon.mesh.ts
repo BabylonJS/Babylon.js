@@ -1132,9 +1132,9 @@
             var world = this.getWorldMatrix();
             
             if (effectiveMaterial.storeEffectOnSubMeshes) {
-                effectiveMaterial.bind(world, this);
-            } else {
                 effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            } else {
+                effectiveMaterial.bind(world, this);
             }
 
             // Alpha mode

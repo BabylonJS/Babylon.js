@@ -2,7 +2,10 @@
     export class MaterialDefines {
         _keys: string[];
         _isDirty = true;
-        _trackIsDirty = false;
+        _trackIsDirty = false;    
+
+        public _areLightsDirty = true;
+        public _needNormals = false;
 
         constructor(trackIsDirty?: boolean) {
             this._trackIsDirty = trackIsDirty;

@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    export interface IShadowLight {
+    export interface IShadowLight extends Light {
         id: string;
         position: Vector3;
         transformedPosition: Vector3;
@@ -111,8 +111,20 @@
             this._resyncMeshes();
         }          
 
-        @serialize()
-        public lightmapMode = 0;
+        @serialize("lightmapMode")
+        private _lightmapMode = 0;
+        public get lightmapMode(): number {
+            return this._lightmapMode;
+        }
+
+        public set lightmapMode(value: number) {
+            if (this._lightmapMode === value) {
+                return;
+            }
+            
+            this._lightmapMode = value;
+            this._markMeshesAsLightDirty();
+        }    
 
         // PBR Properties.
         @serialize()
@@ -395,6 +407,14 @@
         private _resyncMeshes() {
             for (var mesh of this.getScene().meshes) {
                 mesh._resyncLighSource(this);
+            }
+        }
+
+        public _markMeshesAsLightDirty() {
+            for (var mesh of this.getScene().meshes) {
+                if (mesh._lightSources.indexOf(this) !== -1) {
+                    mesh._markSubMeshesAsLightDirty();
+                }
             }
         }
     }

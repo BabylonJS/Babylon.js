@@ -251,8 +251,18 @@ module BABYLON {
         @serialize()
         public useReflectionOverAlpha = false;
 
-        @serialize()
-        public disableLighting = false;
+        @serialize("disableLighting")
+        private _disableLighting = false;
+        public set disableLighting(value : boolean) {
+            if (this._disableLighting === value) {
+                return;
+            }
+            this._disableLighting = value;
+            this._markAllSubMeshesAsLightDirty();
+        }
+        public get disableLighting(): boolean {
+            return this._disableLighting;
+        }            
 
         @serialize()
         public useParallax = false;
@@ -404,6 +414,11 @@ module BABYLON {
          */
         public markAsDirty() {
             this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsLightDirty();
+        }
+
+        public getEffect(): Effect {
+            return this._activeEffect;
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -428,14 +443,12 @@ module BABYLON {
             var defines = <StandardMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
             var engine = scene.getEngine();
-            var needNormals = false;
 
             // Lights
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this.maxSimultaneousLights);
-            }
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this.maxSimultaneousLights, this.disableLighting);
+            defines._areLightsDirty = false;
 
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
                     return true;
                 }
@@ -483,7 +496,7 @@ module BABYLON {
                         if (!this._reflectionTexture.isReady()) {
                             return false;
                         } else {
-                            needNormals = true;
+                            defines._needNormals = true;
                             defines.REFLECTION = true;
 
                             defines.ROUGHNESS = (this.roughness > 0);
@@ -666,7 +679,7 @@ module BABYLON {
 
                     defines.EMISSIVEFRESNEL = (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) ;
 
-                    needNormals = true;
+                    defines._needNormals = true;
                     defines.FRESNEL = true;
                 }
             } else {
@@ -677,7 +690,7 @@ module BABYLON {
 
             // Attribs
             if (mesh) {
-                defines.NORMAL = (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+                defines.NORMAL = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
                 if (defines._needUVs) {
                     defines.UV1 = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
@@ -831,7 +844,6 @@ module BABYLON {
 
             return true;
         }
-
 
         public unbind(): void {
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
@@ -1145,6 +1157,23 @@ module BABYLON {
                         subMesh._materialDefines = new StandardMaterialDefines();
                     }
                     (<StandardMaterialDefines>subMesh._materialDefines)._areTexturesDirty = true;
+                }
+            }
+        }
+
+        private _markAllSubMeshesAsLightDirty() {
+            for (var mesh of this.getScene().meshes) {
+                if (!mesh.subMeshes) {
+                    continue;
+                }
+                for (var subMesh of mesh.subMeshes) {
+                    if (subMesh.getMaterial() !== this) {
+                        continue;
+                    }
+                    if (!subMesh._materialDefines) {
+                        subMesh._materialDefines = new StandardMaterialDefines();
+                    }
+                    subMesh._materialDefines._areLightsDirty = true;
                 }
             }
         }
