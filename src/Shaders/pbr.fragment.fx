@@ -643,9 +643,9 @@ void main(void) {
 	// Composition
 	// Reflection already includes the environment intensity.
 #ifdef EMISSIVEASILLUMINATION
-	vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y + refractance, alpha);
+	vec4 finalColor = vec4((finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientColor + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y + refractance, alpha);
 #else
-	vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
+	vec4 finalColor = vec4((finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientColor + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
 #endif
 
 #ifdef LIGHTMAP
