@@ -43,8 +43,38 @@ module BABYLON {
 
         // Methods
         private _adaptSizeToLayout(size: number): number {
-            // In std140 layout, uniform size must be multiple of 4 floats
-            return Math.ceil(size / 4) * 4;
+            // std140 layout
+            var uniformSize;
+            if (size <= 2) {
+                uniformSize = size;
+            } else if (size == 2) {
+                uniformSize = Math.ceil(size / 4) * 4;
+            }
+
+            return uniformSize;
+        }
+
+        private _fillAlignment(size: number) {
+            // std140 layout
+
+            // TODO : Debug !!
+            
+            var alignment;
+            if (size <= 2) {
+                alignment = size;
+            } else if (size == 2) {
+                alignment = Math.ceil(size / 4) * 4;
+            }
+
+            if ((this._uniformLocationPointer % alignment) !== 0) {
+                var oldPointer = this._uniformLocationPointer;
+                this._uniformLocationPointer += alignment - (this._uniformLocationPointer % alignment);
+                var diff = this._uniformLocationPointer - oldPointer;
+
+                for (var i = 0; i < diff; i++) {
+                      this._data.push(0); 
+                }
+            }
         }
 
         public addUniform(name: string, size: number | number[]) {
@@ -72,8 +102,10 @@ module BABYLON {
 
             this._uniformNames.push(name);
             this._uniformSizes.push(size);
+            this._fillAlignment(size);
             this._uniformLocations.push(this._uniformLocationPointer);
             this._uniformLocationPointer += size;
+
 
             for (var i = 0; i < size; i++) {
                 this._data.push(data[i]);

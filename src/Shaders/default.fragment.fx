@@ -1,6 +1,7 @@
 ﻿layout(std140, column_major) uniform;
 uniform Material
 {
+	
 	vec4 diffuseLeftColor;
 	vec4 diffuseRightColor;
 	vec4 opacityParts;
@@ -28,13 +29,14 @@ uniform Material
 	mat4 bumpMatrix;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
-	float pointSize;
-	vec3 vSpecularColor;
+	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
+	float pointSize;
 } uMaterial;
 
 uniform vec3 vEyePosition;
+uniform vec3 vAmbientColor;
 
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
@@ -378,7 +380,6 @@ void main(void) {
 	alpha = clamp(alpha + dot(reflectionColor, vec3(0.3, 0.59, 0.11)), 0., 1.);
 #endif
 
-	// Composition
 #ifdef EMISSIVEASILLUMINATION
 	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor + refractionColor, 0.0, 1.0), alpha);
 #else
@@ -406,6 +407,5 @@ void main(void) {
 #ifdef CAMERACOLORCURVES
 	color.rgb = applyColorCurves(color.rgb);
 #endif
-
 	gl_FragColor = color;
 }

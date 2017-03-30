@@ -2,6 +2,7 @@
 
 uniform Material
 {
+	
 	vec4 diffuseLeftColor;
 	vec4 diffuseRightColor;
 	vec4 opacityParts;
@@ -29,10 +30,10 @@ uniform Material
 	mat4 bumpMatrix;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
-	float pointSize;
-	vec3 vSpecularColor;
+	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
+	float pointSize;
 } uMaterial;
 
 // Attributes
