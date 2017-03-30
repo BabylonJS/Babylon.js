@@ -419,12 +419,36 @@
         * is shadow enabled on this scene.
         * @type {boolean}
         */
-        public shadowsEnabled = true;
+        private _shadowsEnabled = true;
+        public set shadowsEnabled(value : boolean) {
+            if (this._shadowsEnabled === value) {
+                return;
+            }
+            this._shadowsEnabled = value;
+            this.markAllMaterialsAsDirty();
+        }
+
+        public get shadowsEnabled(): boolean {
+            return this._shadowsEnabled;
+        }       
+           
         /**
         * is light enabled on this scene.
         * @type {boolean}
         */
-        public lightsEnabled = true;
+        private _lightsEnabled = true;
+        public set lightsEnabled(value : boolean) {
+            if (this._lightsEnabled === value) {
+                return;
+            }
+            this._lightsEnabled = value;
+            this.markAllMaterialsAsDirty();
+        }
+
+        public get lightsEnabled(): boolean {
+            return this._lightsEnabled;
+        }    
+
         /**
         * All of the lights added to this scene.
         * @see BABYLON.Light

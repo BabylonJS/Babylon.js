@@ -102,6 +102,8 @@
                 this._shadowMap.anisotropicFilteringLevel = 1;
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             }
+
+            this._light._markMeshesAsLightDirty();
         }
 
         public get useVarianceShadowMap(): boolean {
@@ -187,6 +189,7 @@
             this._mapSize = mapSize;
 
             light._shadowGenerator = this;
+            light._markMeshesAsLightDirty();
 
             // Texture type fallback from float to int if not supported.
             var textureType: number;
@@ -512,6 +515,7 @@
             }
 
             this._light._shadowGenerator = null;
+            this._light._markMeshesAsLightDirty();
         }
         /**
          * Serializes the ShadowGenerator and returns a serializationObject.  
