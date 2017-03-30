@@ -80,7 +80,7 @@
             }
         }
 
-        public indexOf(value): number {
+        public indexOf(value: T): number {
             var position = this.data.indexOf(value);
 
             if (position >= this.length) {
@@ -88,6 +88,10 @@
             }
 
             return position;
+        }
+
+        public contains(value: T): boolean {
+            return this.data.indexOf(value) !== -1;
         }
 
         // Statics

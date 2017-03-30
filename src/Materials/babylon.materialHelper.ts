@@ -7,22 +7,10 @@
             var needShadows = false;
             var lightmapMode = false;
 
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
+            var count = 0;
+            for (var light of mesh._lightSources) {
+                count++;
 
-                if (!light.isEnabled()) {
-                    if (defines["LIGHT" + lightIndex] !== undefined) {
-                        defines["LIGHT" + lightIndex] = false;
-                    }
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    if (defines["LIGHT" + lightIndex] !== undefined) {
-                        defines["LIGHT" + lightIndex] = false;
-                    }
-                    continue;
-                }
                 needNormals = true;
 
                 if (defines["LIGHT" + lightIndex] === undefined) {
@@ -41,7 +29,7 @@
                     type = "DIRLIGHT" + lightIndex;
                 }
 
-                if (defines[type] === undefined) {
+                if (!needRebuild && defines[type] === undefined) {
                     needRebuild = true;
                 }
 
@@ -55,7 +43,7 @@
                 if (scene.shadowsEnabled) {
                     var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        if (defines["SHADOW" + lightIndex] === undefined) {
+                        if (!needRebuild && defines["SHADOW" + lightIndex] === undefined) {
                             needRebuild = true;
                         }
                         defines["SHADOW" + lightIndex] = true;
@@ -63,14 +51,14 @@
                         shadowEnabled = true;
 
                         if (shadowGenerator.usePoissonSampling) {
-                            if (defines["SHADOWPCF" + lightIndex] === undefined) {
+                            if (!needRebuild && defines["SHADOWPCF" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
 
                             defines["SHADOWPCF" + lightIndex] = true;
                         } 
                         else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
-                            if (defines["SHADOWESM" + lightIndex] === undefined) {
+                            if (!needRebuild && defines["SHADOWESM" + lightIndex] === undefined) {
                                 needRebuild = true;
                             }
 
@@ -87,10 +75,10 @@
 
                 if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
                     lightmapMode = true;
-                    if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
+                    if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
                         needRebuild = true;
                     }
-                    if (defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
+                    if (!needRebuild && defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
                         needRebuild = true;
                     }
                     defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
@@ -106,20 +94,20 @@
             }
 
             // Resetting all other lights if any
-            for (var index = scene.lights.length; index < maxSimultaneousLights; index++) {
+            for (var index = count; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + lightIndex] !== undefined) {
                     defines["LIGHT" + lightIndex] = false;
                 }
             }
 
             let caps = scene.getEngine().getCaps();
-            if (defines["SHADOWFULLFLOAT"] === undefined) {
+            if (!needRebuild && defines["SHADOWFULLFLOAT"] === undefined) {
                 needRebuild = true;
             }
 
             defines["SHADOWFULLFLOAT"] = (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
 
-            if (defines["LIGHTMAPEXCLUDED"] === undefined) {
+            if (!needRebuild && defines["LIGHTMAPEXCLUDED"] === undefined) {
                 needRebuild = true;
             }
 

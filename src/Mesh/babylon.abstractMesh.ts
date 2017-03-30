@@ -224,7 +224,7 @@
 
         public _poseMatrix: Matrix;
 
-        public _lightSources = new SmartArray<Light>(8);
+        public _lightSources = new Array<Light>();
 
         // Loading properties
         public _waitingActions: any;
@@ -259,6 +259,8 @@
             super(name, scene);
 
             this.getScene().addMesh(this);
+
+            this._resyncLightSources();
         }
 
         /**
@@ -282,6 +284,48 @@
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
+        }
+
+        public _resyncLightSources(): void {
+            this._lightSources.length = 0;
+
+            for (var light of this.getScene().lights) {
+                if (!light.isEnabled()) {
+                    continue;
+                }
+
+                if (light.canAffectMesh(this)) {
+                    this._lightSources.push(light);
+                }
+            }
+        }
+
+        public _resyncLighSource(light: Light): void {
+            var isIn = light.isEnabled() && light.canAffectMesh(this);
+
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                if (!isIn) {
+                    return;
+                }
+                this._lightSources.push(light);
+                return;
+            }
+
+            if (isIn) {
+                return;
+            }
+            this._lightSources.splice(index, 1);            
+        }
+
+        public _removeLightSource(light: Light): void {
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                return;
+            }
+            this._lightSources.slice(index, 1);       
         }
 
         /**
@@ -1438,8 +1482,6 @@
                     }
                 }
             });
-
-            this._lightSources.dispose();
 
             // Edges
             if (this._edgesRenderer) {
