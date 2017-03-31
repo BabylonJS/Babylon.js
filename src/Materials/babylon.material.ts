@@ -1,12 +1,62 @@
 ﻿module BABYLON {
     export class MaterialDefines {
         _keys: string[];
+        _isDirty = true;
+        _trackIsDirty = false;    
+
+        public _renderId: number;
+        public _areLightsDirty = true;
+        public _areAttributesDirty = true;
+        public _needNormals = false;
+        public _needUVs = false;
+
+        constructor(trackIsDirty?: boolean) {
+            this._trackIsDirty = trackIsDirty;
+        }
+
+        private _reBind(key: string): void {
+            this["_" + key] = this[key]; 
+
+            Object.defineProperty(this, key, {
+                get: function () {
+                    return this["_" + key];
+                },
+                set: function (value) {
+                    if (this["_" + key] === value) {
+                        return;
+                    }
+                    this["_" + key] = value;
+                    this._isDirty = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+        }
 
         public rebuild() {
             if (this._keys) {
                 delete this._keys;
             }
-            this._keys = Object.keys(this);
+
+            this._keys = [];
+
+            for (var key of Object.keys(this)) {
+                if (key[0] === "_") {
+                    continue;
+                }
+
+                this._keys.push(key);
+
+                if (!this._trackIsDirty) {
+                    continue;
+                }
+            
+                if (Object.getOwnPropertyDescriptor(this, key).get) {
+                    continue;
+                }
+
+                this._reBind(key);
+            }
         } 
 
         public isEqual(other: MaterialDefines): boolean {
@@ -54,11 +104,12 @@
             var result = "";
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
+                var value = this[prop];
 
-                if (typeof (this[prop]) === "number") {
+                if (typeof (value) === "number") {
                     result += "#define " + prop + " " + this[prop] + "\n";
 
-                } else if (this[prop]) {
+                } else if (value) {
                     result += "#define " + prop + "\n";
                 }
             }
@@ -95,6 +146,32 @@
             return Material._CounterClockWiseSideOrientation;
         }
 
+        private static _TextureDirtyFlag = 0;
+        private static _LightDirtyFlag = 1;
+        private static _FresnelDirtyFlag = 2;
+        private static _AttributesDirtyFlag = 4;
+        private static _MiscDirtyFlag = 8;
+
+        public static get TextureDirtyFlag(): number {
+            return Material._TextureDirtyFlag;
+        }
+
+        public static get LightDirtyFlag(): number {
+            return Material._LightDirtyFlag;
+        }
+
+        public static get FresnelDirtyFlag(): number {
+            return Material._FresnelDirtyFlag;
+        }
+
+        public static get AttributesDirtyFlag(): number {
+            return Material._AttributesDirtyFlag;
+        }
+
+        public static get MiscDirtyFlag(): number {
+            return Material._MiscDirtyFlag;
+        }
+
         @serialize()
         public id: string;
 
@@ -113,8 +190,18 @@
         @serialize()
         public alpha = 1.0;
 
-        @serialize()
-        public backFaceCulling = true;
+        @serialize("backFaceCulling")
+        protected _backFaceCulling = true;
+        public set backFaceCulling(value : boolean) {
+            if (this._backFaceCulling === value) {
+                return;
+            }
+            this._backFaceCulling = value;
+            this.markAsDirty(Material.TextureDirtyFlag);
+        }
+        public get backFaceCulling(): boolean {
+            return this._backFaceCulling;
+        }          
 
         @serialize()
         public sideOrientation: number;
@@ -124,6 +211,8 @@
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         public doNotSerialize = false;
+
+        public storeEffectOnSubMeshes = false;
 
         /**
         * An event triggered when the material is disposed.
@@ -166,8 +255,18 @@
         @serialize()
         public disableDepthWrite = false;
 
-        @serialize()
-        public fogEnabled = true;
+        @serialize("fogEnabled")
+        private _fogEnabled = true;
+        public set fogEnabled(value : boolean) {
+            if (this._fogEnabled === value) {
+                return;
+            }
+            this._fogEnabled = value;
+            this.markAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogEnabled(): boolean {
+            return this._fogEnabled;
+        }         
 
         @serialize()
         public pointSize = 1.0;
@@ -190,7 +289,7 @@
         }
 
         public set pointsCloud(value: boolean) {
-            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);            
         }
 
         @serialize()
@@ -199,7 +298,12 @@
         }
 
         public set fillMode(value: number) {
+            if (this._fillMode === value) {
+                return;
+            }
+
             this._fillMode = value;
+            this.markAsDirty(Material.MiscDirtyFlag);
         }
 
         public _effect: Effect;
@@ -236,6 +340,13 @@
             }
             return ret;
         } 
+
+        /**
+         * Child classes can use it to update shaders         
+         */
+        public markAsDirty(flag: number): void {
+
+        }
         
         public getClassName(): string {
             return "Material";
@@ -255,6 +366,10 @@
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             return true;
+        }
+
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+            return false;            
         }
 
         public getEffect(): Effect {
@@ -281,12 +396,12 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(): void {
+        public _preBind(effect?: Effect): void {
             var engine = this._scene.getEngine();
 
             var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
 
-            engine.enableEffect(this._effect);
+            engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
         }
 
@@ -300,6 +415,9 @@
                 this._cachedDepthWriteState = engine.getDepthWrite();
                 engine.setDepthWrite(false);
             }
+        }
+
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {

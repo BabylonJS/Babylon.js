@@ -74,9 +74,6 @@ var BABYLON;
             if (this._defines.INSTANCES !== useInstances) {
                 return false;
             }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
             return false;
         };
         TerrainMaterial.prototype.isReady = function (mesh, useInstances) {

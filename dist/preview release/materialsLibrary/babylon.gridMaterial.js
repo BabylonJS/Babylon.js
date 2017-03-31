@@ -80,9 +80,6 @@ var BABYLON;
             if (!mesh) {
                 return true;
             }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
             return false;
         };
         GridMaterial.prototype.isReady = function (mesh, useInstances) {

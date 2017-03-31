@@ -618,12 +618,11 @@ void main(void) {
 
 #ifdef SPECULARTERM
 	vec3 finalSpecular = lightSpecularContribution * surfaceReflectivityColor;
+	#ifdef SPECULAROVERALPHA
+		alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
+	#endif
 #else
 	vec3 finalSpecular = vec3(0.0);
-#endif
-
-#ifdef SPECULAROVERALPHA
-	alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
 #endif
 
 #ifdef RADIANCEOVERALPHA

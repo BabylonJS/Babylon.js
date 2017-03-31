@@ -129,19 +129,91 @@
         public isBlocker = false;
         public renderingGroupId = 0;
         public material: Material;
-        public receiveShadows = false;
+        private _receiveShadows = false;
+        public get receiveShadows(): boolean {
+            return this._receiveShadows;
+        }
+        public set receiveShadows(value: boolean) {
+            if (this._receiveShadows === value) {
+                return;
+            }
+
+            this._receiveShadows = value;
+            this._markSubMeshesAsLightDirty();
+        }
+
         public renderOutline = false;
         public outlineColor = Color3.Red();
         public outlineWidth = 0.02;
         public renderOverlay = false;
         public overlayColor = Color3.Red();
         public overlayAlpha = 0.5;
-        public hasVertexAlpha = false;
-        public useVertexColors = true;
-        public applyFog = true;
-        public computeBonesUsingShaders = true;
+        private _hasVertexAlpha = false;
+        public get hasVertexAlpha(): boolean {
+            return this._hasVertexAlpha;
+        }
+        public set hasVertexAlpha(value: boolean) {
+            if (this._hasVertexAlpha === value) {
+                return;
+            }
+
+            this._hasVertexAlpha = value;
+            this._markSubMeshesAsAttributesDirty();
+        }        
+
+        private _useVertexColors = true;
+        public get useVertexColors(): boolean {
+            return this._useVertexColors;
+        }
+        public set useVertexColors(value: boolean) {
+            if (this._useVertexColors === value) {
+                return;
+            }
+
+            this._useVertexColors = value;
+            this._markSubMeshesAsAttributesDirty();
+        }         
+
+        private _computeBonesUsingShaders = true;
+        public get computeBonesUsingShaders(): boolean {
+            return this._computeBonesUsingShaders;
+        }
+        public set computeBonesUsingShaders(value: boolean) {
+            if (this._computeBonesUsingShaders === value) {
+                return;
+            }
+
+            this._computeBonesUsingShaders = value;
+            this._markSubMeshesAsAttributesDirty();
+        }                
+
+        private _numBoneInfluencers = 4;
+        public get numBoneInfluencers(): number {
+            return this._numBoneInfluencers;
+        }
+        public set numBoneInfluencers(value: number) {
+            if (this._numBoneInfluencers === value) {
+                return;
+            }
+
+            this._numBoneInfluencers = value;
+            this._markSubMeshesAsAttributesDirty();
+        }           
+
+        private _applyFog = true;
+        public get applyFog(): boolean {
+            return this._applyFog;
+        }
+        public set applyFog(value: boolean) {
+            if (this._applyFog === value) {
+                return;
+            }
+
+            this._applyFog = value;
+            this._markSubMeshesAsMiscDirty();
+        }  
+
         public scalingDeterminant = 1;
-        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -207,7 +279,6 @@
         public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
-        public _materialDefines: MaterialDefines;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();
@@ -223,6 +294,8 @@
         public _unIndexed = false;
 
         public _poseMatrix: Matrix;
+
+        public _lightSources = new Array<Light>();
 
         // Loading properties
         public _waitingActions: any;
@@ -246,6 +319,8 @@
             if (!this._skeleton) {
                 this._bonesTransformMatrices = null;
             }
+
+            this._markSubMeshesAsAttributesDirty();
         }
 
         public get skeleton(): Skeleton {
@@ -257,6 +332,8 @@
             super(name, scene);
 
             this.getScene().addMesh(this);
+
+            this._resyncLightSources();
         }
 
         /**
@@ -280,6 +357,84 @@
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
+        }
+
+        public _resyncLightSources(): void {
+            this._lightSources.length = 0;
+
+            for (var light of this.getScene().lights) {
+                if (!light.isEnabled()) {
+                    continue;
+                }
+
+                if (light.canAffectMesh(this)) {
+                    this._lightSources.push(light);
+                }
+            }
+
+            this._markSubMeshesAsLightDirty();
+        }
+
+        public _resyncLighSource(light: Light): void {
+            var isIn = light.isEnabled() && light.canAffectMesh(this);
+
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                if (!isIn) {
+                    return;
+                }
+                this._lightSources.push(light);
+            } else {
+                if (isIn) {
+                    return;
+                }
+                this._lightSources.splice(index, 1);            
+            }
+
+            this._markSubMeshesAsLightDirty();
+        }
+
+        public _removeLightSource(light: Light): void {
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                return;
+            }
+            this._lightSources.slice(index, 1);       
+        }
+
+        private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                if (subMesh._materialDefines) {
+                    func(subMesh._materialDefines);
+                }
+            }
+        }
+
+        public _markSubMeshesAsLightDirty() {
+            this._markSubMeshesAsDirty(defines => defines._areLightsDirty = true);
+        }
+
+        public _markSubMeshesAsAttributesDirty() {
+            this._markSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
+        }
+
+        public _markSubMeshesAsMiscDirty() {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                var material = subMesh.getMaterial();
+                if (material) {
+                    material.markAsDirty(Material.MiscDirtyFlag);
+                }
+            }
         }
 
         /**
