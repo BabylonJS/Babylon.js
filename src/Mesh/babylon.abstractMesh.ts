@@ -148,12 +148,72 @@
         public renderOverlay = false;
         public overlayColor = Color3.Red();
         public overlayAlpha = 0.5;
-        public hasVertexAlpha = false;
-        public useVertexColors = true;
-        public applyFog = true;
-        public computeBonesUsingShaders = true;
+        private _hasVertexAlpha = false;
+        public get hasVertexAlpha(): boolean {
+            return this._hasVertexAlpha;
+        }
+        public set hasVertexAlpha(value: boolean) {
+            if (this._hasVertexAlpha === value) {
+                return;
+            }
+
+            this._hasVertexAlpha = value;
+            this._markSubMeshesAsAttributesDirty();
+        }        
+
+        private _useVertexColors = true;
+        public get useVertexColors(): boolean {
+            return this._useVertexColors;
+        }
+        public set useVertexColors(value: boolean) {
+            if (this._useVertexColors === value) {
+                return;
+            }
+
+            this._useVertexColors = value;
+            this._markSubMeshesAsAttributesDirty();
+        }         
+
+        private _computeBonesUsingShaders = true;
+        public get computeBonesUsingShaders(): boolean {
+            return this._computeBonesUsingShaders;
+        }
+        public set computeBonesUsingShaders(value: boolean) {
+            if (this._computeBonesUsingShaders === value) {
+                return;
+            }
+
+            this._computeBonesUsingShaders = value;
+            this._markSubMeshesAsAttributesDirty();
+        }                
+
+        private _numBoneInfluencers = 4;
+        public get numBoneInfluencers(): number {
+            return this._numBoneInfluencers;
+        }
+        public set numBoneInfluencers(value: number) {
+            if (this._numBoneInfluencers === value) {
+                return;
+            }
+
+            this._numBoneInfluencers = value;
+            this._markSubMeshesAsAttributesDirty();
+        }           
+
+        private _applyFog = true;
+        public get applyFog(): boolean {
+            return this._applyFog;
+        }
+        public set applyFog(value: boolean) {
+            if (this._applyFog === value) {
+                return;
+            }
+
+            this._applyFog = value;
+            this._markSubMeshesAsMiscDirty();
+        }  
+
         public scalingDeterminant = 1;
-        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -259,6 +319,8 @@
             if (!this._skeleton) {
                 this._bonesTransformMatrices = null;
             }
+
+            this._markSubMeshesAsAttributesDirty();
         }
 
         public get skeleton(): Skeleton {
@@ -342,14 +404,35 @@
             this._lightSources.slice(index, 1);       
         }
 
-        public _markSubMeshesAsLightDirty() {
+        private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
             if (!this.subMeshes) {
                 return;
             }
             
             for (var subMesh of this.subMeshes) {
                 if (subMesh._materialDefines) {
-                    subMesh._materialDefines._areLightsDirty = true;
+                    func(subMesh._materialDefines);
+                }
+            }
+        }
+
+        public _markSubMeshesAsLightDirty() {
+            this._markSubMeshesAsDirty(defines => defines._areLightsDirty = true);
+        }
+
+        public _markSubMeshesAsAttributesDirty() {
+            this._markSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
+        }
+
+        public _markSubMeshesAsMiscDirty() {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                var material = subMesh.getMaterial();
+                if (material) {
+                    material.markAsDirty(Material.MiscDirtyFlag);
                 }
             }
         }

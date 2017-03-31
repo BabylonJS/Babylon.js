@@ -3,8 +3,18 @@
         @serialize()
         public name: string;
 
-        @serialize()
-        public hasAlpha = false;
+        @serialize("hasAlpha")
+        private _hasAlpha = false;
+        public set hasAlpha(value : boolean) {
+            if (this._hasAlpha === value) {
+                return;
+            }
+            this._hasAlpha = value;
+            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+        public get hasAlpha(): boolean {
+            return this._hasAlpha;
+        }    
 
         @serialize()
         public getAlphaFromRGB = false;
@@ -15,8 +25,18 @@
         @serialize()
         public coordinatesIndex = 0;
 
-        @serialize()
-        public coordinatesMode = Texture.EXPLICIT_MODE;
+        @serialize("coordinatesMode")
+        private _coordinatesMode = Texture.EXPLICIT_MODE;
+        public set coordinatesMode(value : number) {
+            if (this._coordinatesMode === value) {
+                return;
+            }
+            this._coordinatesMode = value;
+            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+        public get coordinatesMode(): number {
+            return this._coordinatesMode;
+        }            
 
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;

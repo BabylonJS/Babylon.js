@@ -190,7 +190,18 @@
         public ambientColor = new Color3(0, 0, 0);
 
         public forceWireframe = false;
-        public forcePointsCloud = false;
+        private _forcePointsCloud = false;
+        public set forcePointsCloud(value : boolean) {
+            if (this._forcePointsCloud === value) {
+                return;
+            }
+            this._forcePointsCloud = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forcePointsCloud(): boolean {
+            return this._forcePointsCloud;
+        }   
+
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
@@ -395,6 +406,7 @@
         private _previousStartingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         private _previousStartingPointerTime = 0;
+        
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -407,8 +419,30 @@
         * is fog enabled on this scene.
         * @type {boolean}
         */
-        public fogEnabled = true;
-        public fogMode = Scene.FOGMODE_NONE;
+        private _fogEnabled = true;
+        public set fogEnabled(value : boolean) {
+            if (this._fogEnabled === value) {
+                return;
+            }
+            this._fogEnabled = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogEnabled(): boolean {
+            return this._fogEnabled;
+        }   
+
+        private _fogMode = Scene.FOGMODE_NONE;
+        public set fogMode(value : number) {
+            if (this._fogMode === value) {
+                return;
+            }
+            this._fogMode = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogMode(): number {
+            return this._fogMode;
+        }  
+
         public fogColor = new Color3(0.2, 0.2, 0.3);
         public fogDensity = 0.1;
         public fogStart = 0;
@@ -427,7 +461,6 @@
             this._shadowsEnabled = value;
             this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
         }
-
         public get shadowsEnabled(): boolean {
             return this._shadowsEnabled;
         }       
@@ -491,7 +524,6 @@
 
         // Textures
         private _texturesEnabled = true;
-
         public set texturesEnabled(value : boolean) {
             if (this._texturesEnabled === value) {
                 return;
@@ -519,7 +551,19 @@
         public highlightLayers = new Array<HighlightLayer>();
 
         // Skeletons
-        public skeletonsEnabled = true;
+        private _skeletonsEnabled = true;
+        public set skeletonsEnabled(value : boolean) {
+            if (this._skeletonsEnabled === value) {
+                return;
+            }
+            this._skeletonsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.AttributesDirtyFlag);
+        }
+
+        public get skeletonsEnabled(): boolean {
+            return this._skeletonsEnabled;
+        }       
+
         public skeletons = new Array<Skeleton>();
 
         // Lens flares

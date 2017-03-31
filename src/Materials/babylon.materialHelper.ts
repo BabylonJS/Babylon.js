@@ -1,5 +1,33 @@
 ﻿module BABYLON {
     export class MaterialHelper {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void {
+            if (!defines._areAttributesDirty) {
+                return;
+            }
+
+            defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+
+            if (defines._needUVs) {
+                defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+                defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
+            } else {
+                defines["UV1"] = false;
+                defines["UV2"] = false;
+            }
+
+            defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+
+            defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+                defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+            } else {
+                defines["NUM_BONE_INFLUENCERS"] = 0;
+                defines["BonesPerMesh"] = 0;
+            }           
+        }
+
         public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
