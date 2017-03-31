@@ -556,6 +556,8 @@ module BABYLON {
             return this._cameraColorCurves;
         }          
 
+        public customShaderNameResolve: (shaderName: string) => string;
+
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
         protected _worldViewProjectionMatrix = Matrix.Zero();
         protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -1008,6 +1010,10 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 
                 var shaderName = "default";
+
+                if (this.customShaderNameResolve) {
+                    shaderName = this.customShaderNameResolve(shaderName);
+                }
 
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",

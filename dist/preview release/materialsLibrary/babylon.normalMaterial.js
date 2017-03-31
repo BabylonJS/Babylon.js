@@ -102,9 +102,6 @@ var BABYLON;
             if (this._defines.INSTANCES !== useInstances) {
                 return false;
             }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
             return false;
         };
         NormalMaterial.prototype.isReady = function (mesh, useInstances) {
@@ -234,12 +231,6 @@ var BABYLON;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new NormalMaterialDefines();
-                }
-                this._defines.cloneTo(mesh._materialDefines);
-            }
             return true;
         };
         NormalMaterial.prototype.bindOnlyWorldMatrix = function (world) {
