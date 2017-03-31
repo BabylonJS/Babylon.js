@@ -522,6 +522,8 @@ declare module INSPECTOR {
         private _displayInputHandler;
         /** Handler used to validate the input by pressing 'enter' */
         private _validateInputHandler;
+        /** Handler used to validate the input by pressing 'esc' */
+        private _escapeInputHandler;
         constructor(prop: Property, parent?: PropertyLine, level?: number);
         /**
          * Init the input element and al its handler :
@@ -534,6 +536,10 @@ declare module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e);
+        /**
+         * On escape : removes the input
+         */
+        private _escapeInput(e);
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating();
         /** Replaces the default display with an input */
