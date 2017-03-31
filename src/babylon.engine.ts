@@ -3124,7 +3124,11 @@
             if (texture instanceof VideoTexture) {
                 this.activateTexture(this._gl["TEXTURE" + channel]);
                 alreadyActivated = true;
-                texture.update();
+                if (!texture.update()) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                    return;
+                }
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
                 return;

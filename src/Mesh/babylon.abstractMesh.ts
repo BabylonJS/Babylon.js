@@ -128,7 +128,25 @@
         public showSubMeshesBoundingBox = false;
         public isBlocker = false;
         public renderingGroupId = 0;
-        public material: Material;
+        private _material: Material
+        public get material(): Material {
+            return this._material;
+        }
+        public set material(value: Material) {
+            if (this._material === value) {
+                return;
+            }
+
+            this._material = value;
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                subMesh.effect = null;
+            }
+        }
+
         private _receiveShadows = false;
         public get receiveShadows(): boolean {
             return this._receiveShadows;

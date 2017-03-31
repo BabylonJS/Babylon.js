@@ -12325,6 +12325,26 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "material", {
+            get: function () {
+                return this._material;
+            },
+            set: function (value) {
+                if (this._material === value) {
+                    return;
+                }
+                this._material = value;
+                if (!this.subMeshes) {
+                    return;
+                }
+                for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                    var subMesh = _a[_i];
+                    subMesh.effect = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AbstractMesh.prototype, "receiveShadows", {
             get: function () {
                 return this._receiveShadows;
@@ -26106,6 +26126,10 @@ var BABYLON;
                 return this._materialEffect;
             },
             set: function (effect) {
+                if (this._materialEffect === effect) {
+                    return;
+                }
+                this._materialDefines = null;
                 this._materialEffect = effect;
             },
             enumerable: true,
@@ -29048,6 +29072,7 @@ var BABYLON;
         }
         VideoTexture.prototype._createTexture = function () {
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
+            this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
             this._texture.isReady = true;
         };
         VideoTexture.prototype.update = function () {
@@ -31845,6 +31870,9 @@ var BABYLON;
         StandardMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
             var defines = subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
             var effect = subMesh.effect;
             this._activeEffect = effect;
             // Matrices        

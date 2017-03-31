@@ -1079,6 +1079,9 @@ module BABYLON {
             var scene = this.getScene();
 
             var defines = <StandardMaterialDefines>subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
 
             var effect = subMesh.effect;
             this._activeEffect = effect;
