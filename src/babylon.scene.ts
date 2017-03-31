@@ -425,13 +425,13 @@
                 return;
             }
             this._shadowsEnabled = value;
-            this.markAllMaterialsAsDirty();
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
         }
 
         public get shadowsEnabled(): boolean {
             return this._shadowsEnabled;
         }       
-           
+
         /**
         * is light enabled on this scene.
         * @type {boolean}
@@ -442,7 +442,7 @@
                 return;
             }
             this._lightsEnabled = value;
-            this.markAllMaterialsAsDirty();
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
         }
 
         public get lightsEnabled(): boolean {
@@ -497,7 +497,7 @@
                 return;
             }
             this._texturesEnabled = value;
-            this.markAllMaterialsAsDirty();
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
         public get texturesEnabled(): boolean {
@@ -3505,10 +3505,14 @@
 
         /**
          * Will flag all materials as dirty to trigger new shader compilation
+         * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
          */
-        public markAllMaterialsAsDirty(): void {
-            for (var index = 0; index < this.materials.length; index++) {
-                this.materials[index].markAsDirty();
+        public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+            for (var material of this.materials) {
+                if (predicate && !predicate(material)) {
+                    continue;
+                }
+                material.markAsDirty(flag);
             }
         }
     }

@@ -226,12 +226,12 @@
         /**
          * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
          */
-        public static MarkAllMaterialsAsDirty(): void {
+        public static MarkAllMaterialsAsDirty(flag:number, predicate?: (mat: Material) => boolean): void {
             for (var engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
                 var engine = Engine.Instances[engineIndex];
 
                 for (var sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
-                    engine.scenes[sceneIndex].markAllMaterialsAsDirty();
+                    engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
                 }
             }
         }

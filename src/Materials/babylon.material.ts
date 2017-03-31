@@ -143,6 +143,22 @@
             return Material._CounterClockWiseSideOrientation;
         }
 
+        private static _TextureDirtyFlag = 0;
+        private static _LightDirtyFlag = 1;
+        private static _FresnelDirtyFlag = 2;
+
+        public static get TextureDirtyFlag(): number {
+            return Material._TextureDirtyFlag;
+        }
+
+        public static get LightDirtyFlag(): number {
+            return Material._LightDirtyFlag;
+        }
+
+        public static get FresnelDirtyFlag(): number {
+            return Material._FresnelDirtyFlag;
+        }
+
         @serialize()
         public id: string;
 
@@ -288,9 +304,9 @@
         } 
 
         /**
-         * Child classes can use it to update shaders
+         * Child classes can use it to update shaders         
          */
-        public markAsDirty() {
+        public markAsDirty(flag: number): void {
 
         }
         
