@@ -2279,11 +2279,10 @@
 
                 if (!fromData || isBase64)
                     Tools.LoadImage(url, onload, onerror, scene.database);
-                else if (buffer instanceof Array)
+                else if (buffer instanceof Array || typeof buffer === "string")
                     Tools.LoadImage(buffer, onload, onerror, scene.database);
                 else
-                    onload(buffer);
-                
+                    onload(buffer);                
             }
 
             return texture;

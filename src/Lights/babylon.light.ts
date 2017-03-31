@@ -382,7 +382,7 @@
 
         private _hookArray(array: AbstractMesh[]): void {
             var oldPush = array.push;
-            array.push = function(...items: AbstractMesh[]): number {
+            array.push = (...items: AbstractMesh[]) => {
                 var result = oldPush.apply(array, items);
 
                 for (var item of items) {
@@ -393,7 +393,7 @@
             }
 
             var oldSplice = array.splice;
-            array.splice = function(index: number, deleteCount?: number): AbstractMesh[] {
+            array.splice = (index: number, deleteCount?: number) => {
                 var deleted = oldSplice.apply(array, [index, deleteCount]);
 
                 for (var item of deleted) {
