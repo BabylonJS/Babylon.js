@@ -4,8 +4,11 @@
         _isDirty = true;
         _trackIsDirty = false;    
 
+        public _renderId: number;
         public _areLightsDirty = true;
+        public _areAttributesDirty = true;
         public _needNormals = false;
+        public _needUVs = false;
 
         constructor(trackIsDirty?: boolean) {
             this._trackIsDirty = trackIsDirty;
@@ -146,6 +149,8 @@
         private static _TextureDirtyFlag = 0;
         private static _LightDirtyFlag = 1;
         private static _FresnelDirtyFlag = 2;
+        private static _AttributesDirtyFlag = 4;
+        private static _MiscDirtyFlag = 8;
 
         public static get TextureDirtyFlag(): number {
             return Material._TextureDirtyFlag;
@@ -157,6 +162,14 @@
 
         public static get FresnelDirtyFlag(): number {
             return Material._FresnelDirtyFlag;
+        }
+
+        public static get AttributesDirtyFlag(): number {
+            return Material._AttributesDirtyFlag;
+        }
+
+        public static get MiscDirtyFlag(): number {
+            return Material._MiscDirtyFlag;
         }
 
         @serialize()
@@ -177,8 +190,18 @@
         @serialize()
         public alpha = 1.0;
 
-        @serialize()
-        public backFaceCulling = true;
+        @serialize("backFaceCulling")
+        protected _backFaceCulling = true;
+        public set backFaceCulling(value : boolean) {
+            if (this._backFaceCulling === value) {
+                return;
+            }
+            this._backFaceCulling = value;
+            this.markAsDirty(Material.TextureDirtyFlag);
+        }
+        public get backFaceCulling(): boolean {
+            return this._backFaceCulling;
+        }          
 
         @serialize()
         public sideOrientation: number;
@@ -232,8 +255,18 @@
         @serialize()
         public disableDepthWrite = false;
 
-        @serialize()
-        public fogEnabled = true;
+        @serialize("fogEnabled")
+        private _fogEnabled = true;
+        public set fogEnabled(value : boolean) {
+            if (this._fogEnabled === value) {
+                return;
+            }
+            this._fogEnabled = value;
+            this.markAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogEnabled(): boolean {
+            return this._fogEnabled;
+        }         
 
         @serialize()
         public pointSize = 1.0;
@@ -256,7 +289,7 @@
         }
 
         public set pointsCloud(value: boolean) {
-            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);            
         }
 
         @serialize()
@@ -265,7 +298,12 @@
         }
 
         public set fillMode(value: number) {
+            if (this._fillMode === value) {
+                return;
+            }
+
             this._fillMode = value;
+            this.markAsDirty(Material.MiscDirtyFlag);
         }
 
         public _effect: Effect;

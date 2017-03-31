@@ -62,7 +62,7 @@ module BABYLON {
 
         public _areTexturesDirty = true;
         public _areFresnelDirty = true;
-        public _needUVs = false;
+        public _areMiscDirty = true;
 
         constructor() {
             super(true);
@@ -91,7 +91,7 @@ module BABYLON {
                 return;
             }
             this._diffuseTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get diffuseTexture(): BaseTexture {
@@ -105,7 +105,7 @@ module BABYLON {
                 return;
             }
             this._ambientTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get ambientTexture(): BaseTexture {
@@ -119,7 +119,7 @@ module BABYLON {
                 return;
             }
             this._opacityTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get opacityTexture(): BaseTexture {
@@ -133,7 +133,7 @@ module BABYLON {
                 return;
             }
             this._reflectionTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get reflectionTexture(): BaseTexture {
@@ -147,7 +147,7 @@ module BABYLON {
                 return;
             }
             this._emissiveTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get emissiveTexture(): BaseTexture {
@@ -161,7 +161,7 @@ module BABYLON {
                 return;
             }
             this._specularTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get specularTexture(): BaseTexture {
@@ -175,7 +175,7 @@ module BABYLON {
                 return;
             }
             this._bumpTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get bumpTexture(): BaseTexture {
@@ -189,7 +189,7 @@ module BABYLON {
                 return;
             }
             this._lightmapTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get lightmapTexture(): BaseTexture {
@@ -203,7 +203,7 @@ module BABYLON {
                 return;
             }
             this._refractionTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get refractionTexture(): BaseTexture {
@@ -225,20 +225,70 @@ module BABYLON {
         @serialize()
         public specularPower = 64;
 
-        @serialize()
-        public useAlphaFromDiffuseTexture = false;
+        @serialize("useAlphaFromDiffuseTexture")
+        private _useAlphaFromDiffuseTexture = false;
+        public set useAlphaFromDiffuseTexture(value : boolean) {
+            if (this._useAlphaFromDiffuseTexture === value) {
+                return;
+            }
+            this._useAlphaFromDiffuseTexture = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useAlphaFromDiffuseTexture(): boolean {
+            return this._useAlphaFromDiffuseTexture;
+        }           
 
-        @serialize()
-        public useEmissiveAsIllumination = false;
+        @serialize("useEmissiveAsIllumination")
+        private _useEmissiveAsIllumination = false;
+        public set useEmissiveAsIllumination(value : boolean) {
+            if (this._useAlphaFromDiffuseTexture === value) {
+                return;
+            }
+            this._useEmissiveAsIllumination = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useEmissiveAsIllumination(): boolean {
+            return this._useEmissiveAsIllumination;
+        }          
+      
+        @serialize("linkEmissiveWithDiffuse")
+        private _linkEmissiveWithDiffuse = false;
+        public set linkEmissiveWithDiffuse(value : boolean) {
+            if (this._linkEmissiveWithDiffuse === value) {
+                return;
+            }
+            this._linkEmissiveWithDiffuse = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get linkEmissiveWithDiffuse(): boolean {
+            return this._linkEmissiveWithDiffuse;
+        }                    
 
-        @serialize()
-        public linkEmissiveWithDiffuse = false;
+        @serialize("useSpecularOverAlpha")
+        private _useSpecularOverAlpha = false;
+        public set useSpecularOverAlpha(value : boolean) {
+            if (this._useSpecularOverAlpha === value) {
+                return;
+            }
+            this._useSpecularOverAlpha = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useSpecularOverAlpha(): boolean {
+            return this._useSpecularOverAlpha;
+        }          
 
-        @serialize()
-        public useSpecularOverAlpha = false;
-
-        @serialize()
-        public useReflectionOverAlpha = false;
+        @serialize("useReflectionOverAlpha")
+        private _useReflectionOverAlpha = false;
+        public set useReflectionOverAlpha(value : boolean) {
+            if (this._useReflectionOverAlpha === value) {
+                return;
+            }
+            this._useReflectionOverAlpha = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useReflectionOverAlpha(): boolean {
+            return this._useReflectionOverAlpha;
+        }            
 
         @serialize("disableLighting")
         private _disableLighting = false;
@@ -247,23 +297,53 @@ module BABYLON {
                 return;
             }
             this._disableLighting = value;
-            this._markAllSubMeshesAsLightDirty();
+            this._markAllSubMeshesAsLightsDirty();
         }
         public get disableLighting(): boolean {
             return this._disableLighting;
         }            
 
-        @serialize()
-        public useParallax = false;
+        @serialize("useParallax")
+        private _useParallax = false;
+        public set useParallax(value : boolean) {
+            if (this._useParallax === value) {
+                return;
+            }
+            this._useParallax = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useParallax(): boolean {
+            return this._useParallax;
+        }          
 
-        @serialize()
-        public useParallaxOcclusion = false;
+        @serialize("useParallaxOcclusion")
+        private _useParallaxOcclusion = false;
+        public set useParallaxOcclusion(value : boolean) {
+            if (this._useParallaxOcclusion === value) {
+                return;
+            }
+            this._useParallaxOcclusion = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useParallaxOcclusion(): boolean {
+            return this._useParallaxOcclusion;
+        }         
 
         @serialize()
         public parallaxScaleBias = 0.05;
 
-        @serialize()
-        public roughness = 0;
+        @serialize("roughness")
+        private _roughness = 0;
+        public set roughness(value : number) {
+            if (this._roughness === value) {
+                return;
+            }
+            this._roughness = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get roughness(): number {
+            return this._roughness;
+        }         
 
         @serialize()
         public indexOfRefraction = 0.98;
@@ -271,8 +351,18 @@ module BABYLON {
         @serialize()
         public invertRefractionY = true;
 
-        @serialize()
-        public useLightmapAsShadowmap = false;
+        @serialize("useLightmapAsShadowmap")
+        private _useLightmapAsShadowmap = false;
+        public set useLightmapAsShadowmap(value : boolean) {
+            if (this._useLightmapAsShadowmap === value) {
+                return;
+            }
+            this._useLightmapAsShadowmap = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useLightmapAsShadowmap(): boolean {
+            return this._useLightmapAsShadowmap;
+        }            
 
         // Fresnel
         @serializeAsFresnelParameters("diffuseFresnelParameters")
@@ -353,29 +443,79 @@ module BABYLON {
             return this._useReflectionFresnelFromSpecular;
         }               
 
-        @serialize()
-        public useGlossinessFromSpecularMapAlpha = false;
+        @serialize("useGlossinessFromSpecularMapAlpha")
+        private _useGlossinessFromSpecularMapAlpha = false;
+        public set useGlossinessFromSpecularMapAlpha(value : boolean) {
+            if (this._useGlossinessFromSpecularMapAlpha === value) {
+                return;
+            }
+            this._useGlossinessFromSpecularMapAlpha = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get useGlossinessFromSpecularMapAlpha(): boolean {
+            return this._useGlossinessFromSpecularMapAlpha;
+        }        
 
-        @serialize()
-        public maxSimultaneousLights = 4;
+        @serialize("maxSimultaneousLights")
+        private _maxSimultaneousLights = 4;
+        public set maxSimultaneousLights(value : number) {
+            if (this._maxSimultaneousLights === value) {
+                return;
+            }
+            this._maxSimultaneousLights = value;
+            this._markAllSubMeshesAsLightsDirty();
+        }
+        public get maxSimultaneousLights(): number {
+            return this._maxSimultaneousLights;
+        }          
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
-        @serialize()
-        public invertNormalMapX = false;
+        @serialize("invertNormalMapX")
+        private _invertNormalMapX = false;
+        public set invertNormalMapX(value : boolean) {
+            if (this._invertNormalMapX === value) {
+                return;
+            }
+            this._invertNormalMapX = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get invertNormalMapX(): boolean {
+            return this._invertNormalMapX;
+        }           
 
         /**
          * If sets to true, y component of normal map value will invert (y = 1.0 - y).
          */
-        @serialize()
-        public invertNormalMapY = false;
+        @serialize("invertNormalMapY")
+        private _invertNormalMapY = false;
+        public set invertNormalMapY(value : boolean) {
+            if (this._invertNormalMapY === value) {
+                return;
+            }
+            this._invertNormalMapY = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get invertNormalMapY(): boolean {
+            return this._invertNormalMapY;
+        }           
 
         /**
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
          */
-        @serialize()
-        public twoSidedLighting = false;
+        @serialize("twoSidedLighting")
+        private _twoSidedLighting = false;
+        public set twoSidedLighting(value : boolean) {
+            if (this._twoSidedLighting === value) {
+                return;
+            }
+            this._twoSidedLighting = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+        public get inverttwoSidedLightingNormalMapY(): boolean {
+            return this._twoSidedLighting;
+        }            
 
         /**
          * Color Grading 2D Lookup Texture.
@@ -389,7 +529,7 @@ module BABYLON {
                 return;
             }
             this._cameraColorGradingTexture = value;
-            this._markAllSubMeshesAsTextureDirty();
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         public get cameraColorGradingTexture(): BaseTexture {
@@ -402,13 +542,23 @@ module BABYLON {
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        @serializeAsColorCurves()
-        public cameraColorCurves: ColorCurves = null;
+        @serializeAsColorCurves("cameraColorCurves")
+        private _cameraColorCurves: ColorCurves = null;
+        public set cameraColorCurves(value : ColorCurves) {
+            if (this._cameraColorCurves === value) {
+                return;
+            }
+            this._cameraColorCurves = value;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+
+        public get cameraColorCurves(): ColorCurves {
+            return this._cameraColorCurves;
+        }          
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
         protected _worldViewProjectionMatrix = Matrix.Zero();
         protected _globalAmbientColor = new Color3(0, 0, 0);
-        protected _renderId: number;
 
         protected _useLogarithmicDepth: boolean;
 
@@ -444,6 +594,8 @@ module BABYLON {
 
         public set useLogarithmicDepth(value: boolean) {
             this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+
+            this._markAllSubMeshesAsMiscDirty();
         }
 
         public needAlphaBlending(): boolean {
@@ -467,15 +619,23 @@ module BABYLON {
          */
         public markAsDirty(flag: number): void {
             if (flag & Material.TextureDirtyFlag) {
-                this._markAllSubMeshesAsTextureDirty();
+                this._markAllSubMeshesAsTexturesDirty();
             }
 
             if (flag & Material.LightDirtyFlag) {
-                this._markAllSubMeshesAsLightDirty();
+                this._markAllSubMeshesAsLightsDirty();
             }
 
             if (flag & Material.FresnelDirtyFlag) {
                 this._markAllSubMeshesAsFresnelDirty();
+            }
+
+            if (flag & Material.AttributesDirtyFlag) {
+                this._markAllSubMeshesAsAttributesDirty();
+            }
+
+            if (flag & Material.MiscDirtyFlag) {
+                this._markAllSubMeshesAsMiscDirty();
             }
         }
 
@@ -507,11 +667,11 @@ module BABYLON {
             var engine = scene.getEngine();
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this.maxSimultaneousLights, this.disableLighting);
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
             defines._areLightsDirty = false;
 
             if (!this.checkReadyOnEveryCall && subMesh.effect) {
-                if (this._renderId === scene.getRenderId()) {
+                if (defines._renderId === scene.getRenderId()) {
                     return true;
                 }
             }
@@ -561,8 +721,8 @@ module BABYLON {
                             defines._needNormals = true;
                             defines.REFLECTION = true;
 
-                            defines.ROUGHNESS = (this.roughness > 0);
-                            defines.REFLECTIONOVERALPHA = this.useReflectionOverAlpha;
+                            defines.ROUGHNESS = (this._roughness > 0);
+                            defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                             defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                             defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
 
@@ -618,7 +778,7 @@ module BABYLON {
                         } else {
                             defines._needUVs = true;
                             defines.LIGHTMAP = true;
-                            defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
+                            defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                         }
                     } else {
                         defines.LIGHTMAP = false;
@@ -630,7 +790,7 @@ module BABYLON {
                         } else {
                             defines._needUVs = true;
                             defines.SPECULAR = true;
-                            defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;
+                            defines.GLOSSINESS = this._useGlossinessFromSpecularMapAlpha;
                         }
                     } else {
                         defines.SPECULAR = false;
@@ -643,16 +803,11 @@ module BABYLON {
                             defines._needUVs = true;
                             defines.BUMP = true;
 
-                            defines.PARALLAX = this.useParallax;
-                            defines.PARALLAXOCCLUSION = this.useParallaxOcclusion;
-
                             defines.INVERTNORMALMAPX = this.invertNormalMapX;
                             defines.INVERTNORMALMAPY = this.invertNormalMapY;
 
-                            if (scene._mirroredCameraPosition) {
-                                defines.INVERTNORMALMAPX = !defines.INVERTNORMALMAPX;
-                                defines.INVERTNORMALMAPY = !defines.INVERTNORMALMAPY;
-                            }
+                            defines.PARALLAX = this._useParallax;
+                            defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
                     } else {
                         defines.BUMP = false;
@@ -681,11 +836,7 @@ module BABYLON {
                         defines.CAMERACOLORGRADING = false;
                     }
 
-                    if (!this.backFaceCulling && this.twoSidedLighting) {
-                        defines.TWOSIDEDLIGHTING = true;
-                    } else {
-                        defines.TWOSIDEDLIGHTING = false;
-                    }
+                    defines.TWOSIDEDLIGHTING = !this._backFaceCulling && this._twoSidedLighting;
                 } else {
                     defines.DIFFUSE = false;
                     defines.AMBIENT = false;
@@ -698,6 +849,16 @@ module BABYLON {
                     defines.CAMERACOLORGRADING = false;
                 }
 
+                defines.CAMERACOLORCURVES = (this._cameraColorCurves !== undefined && this._cameraColorCurves !== null);
+
+                defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
+
+                defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
+
+                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
+
+                defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+         
                 defines._areTexturesDirty = false;
             } 
 
@@ -732,55 +893,27 @@ module BABYLON {
                 defines._areFresnelDirty = false;
             }
 
-            // Effect
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
+            // Misc.
+            if (defines._areMiscDirty) {
+                defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
+                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
+                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
 
-            defines.ALPHATEST = engine.getAlphaTesting();
-
-            defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
-
-            defines.EMISSIVEASILLUMINATION = this.useEmissiveAsIllumination;
-
-            defines.LINKEMISSIVEWITHDIFFUSE = this.linkEmissiveWithDiffuse;
-
-            defines.LOGARITHMICDEPTH = this.useLogarithmicDepth;
-
-            defines.CAMERACOLORCURVES = (this.cameraColorCurves !== undefined && this.cameraColorCurves !== null);
-
-            // Point size
-            defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-
-            // Fog
-            defines.FOG = (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-            defines.SPECULAROVERALPHA = (defines.SPECULARTERM && this.useSpecularOverAlpha);
+                defines._areMiscDirty = false;
+            }
 
             // Attribs
-            if (mesh) {
-                defines.NORMAL = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
+            defines._areAttributesDirty = false;
 
-                if (defines._needUVs) {
-                    defines.UV1 = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
-                    defines.UV2 = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
-                } else {
-                    defines.UV1 = false;
-                    defines.UV2 = false;
-                }
+            // Values that need to be evaluated on every frame
+            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
+            defines.ALPHATEST = engine.getAlphaTesting();
+            defines.INSTANCES = useInstances;
 
-                defines.VERTEXCOLOR = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
-
-                defines.VERTEXALPHA = mesh.hasVertexAlpha;
-
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                } else {
-                    defines.NUM_BONE_INFLUENCERS = 0;
-                    defines.BonesPerMesh = 0;
-                }
-
-                // Instances
-                defines.INSTANCES = useInstances;
+            if (scene._mirroredCameraPosition && defines.BUMP) {
+                defines.INVERTNORMALMAPX = !this.invertNormalMapX;
+                defines.INVERTNORMALMAPY = !this.invertNormalMapY;
             }
 
             // Get correct effect      
@@ -826,7 +959,7 @@ module BABYLON {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
+                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
                 if (defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -895,18 +1028,18 @@ module BABYLON {
                 if (defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
 
                 subMesh.effect = scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 });
             }
 
             if (!subMesh.effect.isReady()) {
                 return false;
             }
 
-            this._renderId = scene.getRenderId();
+            defines._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
 
             return true;
@@ -1088,7 +1221,7 @@ module BABYLON {
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
-                    MaterialHelper.BindLights(scene, mesh, effect, defines, this.maxSimultaneousLights);
+                    MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
                 }
 
                 // View
@@ -1211,7 +1344,7 @@ module BABYLON {
             return SerializationHelper.Serialize(this);
         }
 
-        private _markAllSubMeshesAsTextureDirty() {
+        private _markAllSubMeshesAsDirty(func: (defines: StandardMaterialDefines) => void) {
             for (var mesh of this.getScene().meshes) {
                 if (!mesh.subMeshes) {
                     continue;
@@ -1223,43 +1356,29 @@ module BABYLON {
                     if (!subMesh._materialDefines) {
                         subMesh._materialDefines = new StandardMaterialDefines();
                     }
-                    (<StandardMaterialDefines>subMesh._materialDefines)._areTexturesDirty = true;
+                    func(<StandardMaterialDefines>(subMesh._materialDefines));
                 }
             }
+        }
+
+        private _markAllSubMeshesAsTexturesDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines._areTexturesDirty = true);
         }
 
         private _markAllSubMeshesAsFresnelDirty() {
-            for (var mesh of this.getScene().meshes) {
-                if (!mesh.subMeshes) {
-                    continue;
-                }
-                for (var subMesh of mesh.subMeshes) {
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
-                    if (!subMesh._materialDefines) {
-                        subMesh._materialDefines = new StandardMaterialDefines();
-                    }
-                    (<StandardMaterialDefines>subMesh._materialDefines)._areFresnelDirty = true;
-                }
-            }
+            this._markAllSubMeshesAsDirty(defines => defines._areFresnelDirty = true);
         }
 
-        private _markAllSubMeshesAsLightDirty() {
-            for (var mesh of this.getScene().meshes) {
-                if (!mesh.subMeshes) {
-                    continue;
-                }
-                for (var subMesh of mesh.subMeshes) {
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
-                    if (!subMesh._materialDefines) {
-                        subMesh._materialDefines = new StandardMaterialDefines();
-                    }
-                    subMesh._materialDefines._areLightsDirty = true;
-                }
-            }
+        private _markAllSubMeshesAsLightsDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines._areLightsDirty = true);
+        }
+
+        private _markAllSubMeshesAsAttributesDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
+        }
+
+        private _markAllSubMeshesAsMiscDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines._areMiscDirty = true);
         }
 
         // Statics
