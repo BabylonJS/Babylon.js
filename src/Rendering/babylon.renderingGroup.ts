@@ -103,6 +103,8 @@
                 engine.setAlphaTesting(false);
             }
 
+            var stencilState = engine.getStencilBuffer();
+            engine.setStencilBuffer(false);
             // Sprites
             if (renderSprites) {
                 this._renderSprites();
@@ -122,6 +124,7 @@
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
+            engine.setStencilBuffer(stencilState);
         }
 
         /**
