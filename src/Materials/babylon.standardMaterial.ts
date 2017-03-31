@@ -61,6 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
 
         public _areTexturesDirty = true;
+        public _areFresnelDirty = true;
         public _needUVs = false;
 
         constructor() {
@@ -85,7 +86,6 @@ module BABYLON {
     export class StandardMaterial extends Material {
         @serializeAsTexture("diffuseTexture")
         private _diffuseTexture: BaseTexture;
-
         public set diffuseTexture(value : BaseTexture) {
             if (this._diffuseTexture === value) {
                 return;
@@ -100,7 +100,6 @@ module BABYLON {
 
         @serializeAsTexture("ambientTexture")
         private _ambientTexture: BaseTexture;
-
         public set ambientTexture(value : BaseTexture) {
             if (this._ambientTexture === value) {
                 return;
@@ -115,7 +114,6 @@ module BABYLON {
 
         @serializeAsTexture("opacityTexture")
         private _opacityTexture: BaseTexture;
-
         public set opacityTexture(value : BaseTexture) {
             if (this._opacityTexture === value) {
                 return;
@@ -130,7 +128,6 @@ module BABYLON {
 
         @serializeAsTexture("reflectionTexture")
         private _reflectionTexture: BaseTexture;
-
         public set reflectionTexture(value : BaseTexture) {
             if (this._reflectionTexture === value) {
                 return;
@@ -145,7 +142,6 @@ module BABYLON {
 
         @serializeAsTexture("emissiveTexture")
         private _emissiveTexture: BaseTexture;
-
         public set emissiveTexture(value : BaseTexture) {
             if (this._emissiveTexture === value) {
                 return;
@@ -160,7 +156,6 @@ module BABYLON {
 
         @serializeAsTexture("specularTexture")
         private _specularTexture: BaseTexture;
-
         public set specularTexture(value : BaseTexture) {
             if (this._specularTexture === value) {
                 return;
@@ -175,7 +170,6 @@ module BABYLON {
 
         @serializeAsTexture("bumpTexture")
         private _bumpTexture: BaseTexture;
-
         public set bumpTexture(value : BaseTexture) {
             if (this._bumpTexture === value) {
                 return;
@@ -190,7 +184,6 @@ module BABYLON {
 
         @serializeAsTexture("lightmapTexture")
         private _lightmapTexture: BaseTexture;
-
         public set lightmapTexture(value : BaseTexture) {
             if (this._lightmapTexture === value) {
                 return;
@@ -205,7 +198,6 @@ module BABYLON {
 
         @serializeAsTexture("refractionTexture")
         private _refractionTexture: BaseTexture;
-
         public set refractionTexture(value : BaseTexture) {
             if (this._refractionTexture === value) {
                 return;
@@ -241,9 +233,6 @@ module BABYLON {
 
         @serialize()
         public linkEmissiveWithDiffuse = false;
-
-        @serialize()
-        public useReflectionFresnelFromSpecular = false;
 
         @serialize()
         public useSpecularOverAlpha = false;
@@ -285,20 +274,84 @@ module BABYLON {
         @serialize()
         public useLightmapAsShadowmap = false;
 
-        @serializeAsFresnelParameters()
-        public diffuseFresnelParameters: FresnelParameters;
+        // Fresnel
+        @serializeAsFresnelParameters("diffuseFresnelParameters")
+        private _diffuseFresnelParameters: FresnelParameters;
+        public set diffuseFresnelParameters(value : FresnelParameters) {
+            if (this._diffuseFresnelParameters === value) {
+                return;
+            }
+            this._diffuseFresnelParameters = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get diffuseFresnelParameters(): FresnelParameters {
+            return this._diffuseFresnelParameters;
+        }           
 
-        @serializeAsFresnelParameters()
-        public opacityFresnelParameters: FresnelParameters;
+        @serializeAsFresnelParameters("opacityFresnelParameters")
+        private _opacityFresnelParameters: FresnelParameters;
+        public set opacityFresnelParameters(value : FresnelParameters) {
+            if (this._opacityFresnelParameters === value) {
+                return;
+            }
+            this._opacityFresnelParameters = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get opacityFresnelParameters(): FresnelParameters {
+            return this._opacityFresnelParameters;
+        }             
 
-        @serializeAsFresnelParameters()
-        public reflectionFresnelParameters: FresnelParameters;
+        @serializeAsFresnelParameters("reflectionFresnelParameters")
+        private _reflectionFresnelParameters: FresnelParameters;
+        public set reflectionFresnelParameters(value : FresnelParameters) {
+            if (this._reflectionFresnelParameters === value) {
+                return;
+            }
+            this._reflectionFresnelParameters = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get reflectionFresnelParameters(): FresnelParameters {
+            return this._reflectionFresnelParameters;
+        }           
 
-        @serializeAsFresnelParameters()
-        public refractionFresnelParameters: FresnelParameters;
+        @serializeAsFresnelParameters("refractionFresnelParameters")
+        private _refractionFresnelParameters: FresnelParameters;
+        public set refractionFresnelParameters(value : FresnelParameters) {
+            if (this._refractionFresnelParameters === value) {
+                return;
+            }
+            this._refractionFresnelParameters = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get refractionFresnelParameters(): FresnelParameters {
+            return this._refractionFresnelParameters;
+        }          
 
-        @serializeAsFresnelParameters()
-        public emissiveFresnelParameters: FresnelParameters;
+        @serializeAsFresnelParameters("emissiveFresnelParameters")
+        private _emissiveFresnelParameters: FresnelParameters;
+        public set emissiveFresnelParameters(value : FresnelParameters) {
+            if (this._emissiveFresnelParameters === value) {
+                return;
+            }
+            this._emissiveFresnelParameters = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get emissiveFresnelParameters(): FresnelParameters {
+            return this._emissiveFresnelParameters;
+        }         
+
+        @serialize("useReflectionFresnelFromSpecular")
+        private _useReflectionFresnelFromSpecular = false;    
+        public set useReflectionFresnelFromSpecular(value : boolean) {
+            if (this._useReflectionFresnelFromSpecular === value) {
+                return;
+            }
+            this._useReflectionFresnelFromSpecular = value;
+            this._markAllSubMeshesAsFresnelDirty();
+        }
+        public get useReflectionFresnelFromSpecular(): boolean {
+            return this._useReflectionFresnelFromSpecular;
+        }               
 
         @serialize()
         public useGlossinessFromSpecularMapAlpha = false;
@@ -412,9 +465,18 @@ module BABYLON {
         /**
          * Child classes can use it to update shaders
          */
-        public markAsDirty() {
-            this._markAllSubMeshesAsTextureDirty();
-            this._markAllSubMeshesAsLightDirty();
+        public markAsDirty(flag: number): void {
+            if (flag & Material.TextureDirtyFlag) {
+                this._markAllSubMeshesAsTextureDirty();
+            }
+
+            if (flag & Material.LightDirtyFlag) {
+                this._markAllSubMeshesAsLightDirty();
+            }
+
+            if (flag & Material.FresnelDirtyFlag) {
+                this._markAllSubMeshesAsFresnelDirty();
+            }
         }
 
         public getEffect(): Effect {
@@ -635,8 +697,40 @@ module BABYLON {
                     defines.REFRACTION = false;
                     defines.CAMERACOLORGRADING = false;
                 }
+
                 defines._areTexturesDirty = false;
             } 
+
+            if (defines._areFresnelDirty) {
+                if (StandardMaterial.FresnelEnabled) {
+                    // Fresnel
+                    if (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled ||
+                        this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled ||
+                        this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled ||
+                        this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled ||
+                        this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled) {
+
+                        defines.DIFFUSEFRESNEL = (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled);
+
+                        defines.OPACITYFRESNEL = (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled);
+
+                        defines.REFLECTIONFRESNEL = (this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled);
+
+                        defines.REFLECTIONFRESNELFROMSPECULAR = this._useReflectionFresnelFromSpecular;
+
+                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled) ;
+
+                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled) ;
+
+                        defines._needNormals = true;
+                        defines.FRESNEL = true;
+                    }
+                } else {
+                    defines.FRESNEL = false;
+                }
+
+                defines._areFresnelDirty = false;
+            }
 
             // Effect
             defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
@@ -658,33 +752,6 @@ module BABYLON {
 
             // Fog
             defines.FOG = (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-            if (StandardMaterial.FresnelEnabled) {
-                // Fresnel
-                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled ||
-                    this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled ||
-                    this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled ||
-                    this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled ||
-                    this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-
-                    defines.DIFFUSEFRESNEL = (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled);
-
-                    defines.OPACITYFRESNEL = (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled);
-
-                    defines.REFLECTIONFRESNEL = (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled);
-
-                    defines.REFLECTIONFRESNELFROMSPECULAR = this.useReflectionFresnelFromSpecular;
-
-                    defines.REFRACTIONFRESNEL = (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) ;
-
-                    defines.EMISSIVEFRESNEL = (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) ;
-
-                    defines._needNormals = true;
-                    defines.FRESNEL = true;
-                }
-            } else {
-                defines.FRESNEL = false;
-            }
 
             defines.SPECULAROVERALPHA = (defines.SPECULARTERM && this.useSpecularOverAlpha);
 
@@ -1161,6 +1228,23 @@ module BABYLON {
             }
         }
 
+        private _markAllSubMeshesAsFresnelDirty() {
+            for (var mesh of this.getScene().meshes) {
+                if (!mesh.subMeshes) {
+                    continue;
+                }
+                for (var subMesh of mesh.subMeshes) {
+                    if (subMesh.getMaterial() !== this) {
+                        continue;
+                    }
+                    if (!subMesh._materialDefines) {
+                        subMesh._materialDefines = new StandardMaterialDefines();
+                    }
+                    (<StandardMaterialDefines>subMesh._materialDefines)._areFresnelDirty = true;
+                }
+            }
+        }
+
         private _markAllSubMeshesAsLightDirty() {
             for (var mesh of this.getScene().meshes) {
                 if (!mesh.subMeshes) {
@@ -1194,7 +1278,7 @@ module BABYLON {
             }
 
             StandardMaterial._DiffuseTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
 
@@ -1208,7 +1292,7 @@ module BABYLON {
             }
 
             StandardMaterial._AmbientTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
         static _OpacityTextureEnabled = true;
@@ -1221,7 +1305,7 @@ module BABYLON {
             }
 
             StandardMaterial._OpacityTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
         static _ReflectionTextureEnabled = true;
@@ -1234,7 +1318,7 @@ module BABYLON {
             }
 
             StandardMaterial._ReflectionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }        
         
         static _EmissiveTextureEnabled = true;
@@ -1247,7 +1331,7 @@ module BABYLON {
             }
 
             StandardMaterial._EmissiveTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }       
 
         static _SpecularTextureEnabled = true;
@@ -1260,7 +1344,7 @@ module BABYLON {
             }
 
             StandardMaterial._SpecularTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }     
 
         static _BumpTextureEnabled = true;
@@ -1273,7 +1357,7 @@ module BABYLON {
             }
 
             StandardMaterial._BumpTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }         
 
         static _LightmapTextureEnabled = true;
@@ -1286,7 +1370,7 @@ module BABYLON {
             }
 
             StandardMaterial._LightmapTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }           
 
         static _RefractionTextureEnabled = true;    
@@ -1299,10 +1383,10 @@ module BABYLON {
             }
 
             StandardMaterial._RefractionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }    
 
-        public static _ColorGradingTextureEnabled = true;
+        static _ColorGradingTextureEnabled = true;
         public static get ColorGradingTextureEnabled(): boolean {
             return StandardMaterial._ColorGradingTextureEnabled;
         }
@@ -1312,9 +1396,20 @@ module BABYLON {
             }
 
             StandardMaterial._ColorGradingTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty();
+            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }           
 
-        public static FresnelEnabled = true;
+        static _FresnelEnabled = true;
+        public static get FresnelEnabled(): boolean {
+            return StandardMaterial._FresnelEnabled;
+        }
+        public static set FresnelEnabled(value: boolean) {
+            if (StandardMaterial._FresnelEnabled === value) {
+                return;
+            }
+
+            StandardMaterial._FresnelEnabled = value;
+            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
+        }          
     }
 } 
