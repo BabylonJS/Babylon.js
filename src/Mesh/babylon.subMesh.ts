@@ -23,6 +23,10 @@
         }
 
         public set effect(effect: Effect) {
+            if (this._materialEffect === effect) {
+                return;
+            }
+            this._materialDefines = null;
             this._materialEffect = effect;
         }
 
