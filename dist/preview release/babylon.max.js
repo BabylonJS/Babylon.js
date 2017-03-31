@@ -8063,7 +8063,6 @@ var BABYLON;
             this._caps.etc1 = this._gl.getExtension('WEBGL_compressed_texture_etc1') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1');
             this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
                 this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
-            this._caps.atc = this._gl.getExtension('WEBGL_compressed_texture_atc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc');
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
@@ -8116,7 +8115,6 @@ var BABYLON;
             // Next PVRTC & DXT, which are probably superior to ETC1/2.  
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-            // ATC before ETC1, since both old (widely supported), but ATC supports alpha, but ETC1 does not
             if (this._caps.astc)
                 this.texturesSupported.push('-astc.ktx');
             if (this._caps.s3tc)
@@ -8125,8 +8123,6 @@ var BABYLON;
                 this.texturesSupported.push('-pvrtc.ktx');
             if (this._caps.etc2)
                 this.texturesSupported.push('-etc2.ktx');
-            if (this._caps.atc)
-                this.texturesSupported.push('-atc.ktx');
             if (this._caps.etc1)
                 this.texturesSupported.push('-etc1.ktx');
             if (this._gl.getShaderPrecisionFormat) {
@@ -9583,7 +9579,7 @@ var BABYLON;
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
          *
-         * Current families are astc, dxt, pvrtc, etc2, atc, & etc1.
+         * Current families are astc, dxt, pvrtc, etc2, & etc1.
          * @returns The extension selected.
          */
         Engine.prototype.setTextureFormatToUse = function (formatsAvailable) {
@@ -9598,6 +9594,25 @@ var BABYLON;
             // and possibly fail the 2nd time
             return this._textureFormatInUse = null;
         };
+        /**
+         * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
+         * @param {string} urlArg- This contains one of the following:
+         *                         1. A conventional http URL, e.g. 'http://...' or 'file://...'
+         *                         2. A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         *                         3. An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         *
+         * @param {boolean} noMipmap- When true, no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file.
+         * @param {boolean} invertY- When true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file.
+         * @param {Scene} scene- Needed for loading to the correct scene.
+         * @param {number} samplingMode- Mode with should be used sample / access the texture.  Default: TRILINEAR
+         * @param {callback} onLoad- Optional callback to be called upon successful completion.
+         * @param {callback} onError- Optional callback to be called upon failure.
+         * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
+         * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
+         * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
+         *
+         * @returns {WebGLTexture} for assignment back into BABYLON.Texture
+         */
         Engine.prototype.createTexture = function (urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, fallBack, format) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
@@ -9605,30 +9620,23 @@ var BABYLON;
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
             var texture = fallBack ? fallBack : this._gl.createTexture();
-            var extension;
-            var isKTX = false;
-            var fromData = false;
-            var url = String(urlArg);
-            if (url.substr(0, 5) === "data:") {
-                fromData = true;
-            }
-            if (!fromData) {
-                var lastDot = url.lastIndexOf('.');
-                extension = url.substring(lastDot).toLowerCase();
-                if (this._textureFormatInUse && !fromData && !fallBack) {
-                    extension = this._textureFormatInUse;
-                    url = url.substring(0, lastDot) + this._textureFormatInUse;
-                    isKTX = true;
-                }
-            }
-            else {
-                var oldUrl = url;
-                fromData = oldUrl.split(':');
-                url = oldUrl;
-                extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
-            }
+            var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
+            var fromData = url.substr(0, 5) === "data:";
+            var isBase64 = fromData && url.indexOf("base64") !== -1;
+            // establish the file extension, if possible
+            var lastDot = url.lastIndexOf('.');
+            var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            if (isDDS) {
+                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            }
             var isTGA = (extension === ".tga");
+            // determine if a ktx file should be substituted
+            var isKTX = false;
+            if (this._textureFormatInUse && !isBase64 && !fallBack) {
+                url = url.substring(0, lastDot) + this._textureFormatInUse;
+                isKTX = true;
+            }
             scene._addPendingData(texture);
             texture.url = url;
             texture.noMipmap = noMipmap;
@@ -9644,13 +9652,14 @@ var BABYLON;
                 scene._removePendingData(texture);
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
-                    _this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, texture);
+                    _this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
                 else if (onError) {
                     onError();
                 }
             };
             var callback;
+            // processing for non-image formats
             if (isKTX || isTGA || isDDS) {
                 if (isKTX) {
                     callback = function (data) {
@@ -9678,12 +9687,15 @@ var BABYLON;
                         }, samplingMode);
                     };
                 }
-                if (!(fromData instanceof Array))
+                if (!buffer) {
                     BABYLON.Tools.LoadFile(url, function (data) {
                         callback(data);
                     }, null, scene.database, true, onerror);
-                else
+                }
+                else {
                     callback(buffer);
+                }
+                // image format processing
             }
             else {
                 var onload = function (img) {
@@ -9709,14 +9721,16 @@ var BABYLON;
                                 _this._workingContext.msImageSmoothingEnabled = true;
                             }
                         }
-                        var internalFormat = format ? _this._getInternalFormat(format) : _this._gl.RGBA;
+                        var internalFormat = format ? _this._getInternalFormat(format) : ((extension === ".jpg") ? _this._gl.RGB : _this._gl.RGBA);
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
                     }, samplingMode);
                 };
-                if (!(fromData instanceof Array))
+                if (!fromData || isBase64)
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
-                else
+                else if (buffer instanceof Array || typeof buffer === "string")
                     BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
+                else
+                    onload(buffer);
             }
             return texture;
         };
@@ -10088,6 +10102,9 @@ var BABYLON;
                 isKTX = true;
             }
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            if (isDDS) {
+                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            }
             if (isKTX) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
                     var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 6);
@@ -14321,6 +14338,7 @@ var BABYLON;
             return light;
         };
         Light.prototype._hookArray = function (array) {
+            var _this = this;
             var oldPush = array.push;
             array.push = function () {
                 var items = [];
@@ -14330,7 +14348,7 @@ var BABYLON;
                 var result = oldPush.apply(array, items);
                 for (var _a = 0, items_1 = items; _a < items_1.length; _a++) {
                     var item = items_1[_a];
-                    item._resyncLighSource(this);
+                    item._resyncLighSource(_this);
                 }
                 return result;
             };
@@ -14339,7 +14357,7 @@ var BABYLON;
                 var deleted = oldSplice.apply(array, [index, deleteCount]);
                 for (var _i = 0, deleted_1 = deleted; _i < deleted_1.length; _i++) {
                     var item = deleted_1[_i];
-                    item._resyncLighSource(this);
+                    item._resyncLighSource(_this);
                 }
                 return deleted;
             };
@@ -27678,7 +27696,6 @@ var BABYLON;
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
             if (deleteBuffer === void 0) { deleteBuffer = false; }
-            if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             var _this = _super.call(this, scene) || this;
             _this.uOffset = 0;
             _this.vOffset = 0;
