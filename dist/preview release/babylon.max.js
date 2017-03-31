@@ -19615,6 +19615,8 @@ var BABYLON;
                 this._renderAlphaTest(this._alphaTestSubMeshes);
                 engine.setAlphaTesting(false);
             }
+            var stencilState = engine.getStencilBuffer();
+            engine.setStencilBuffer(false);
             // Sprites
             if (renderSprites) {
                 this._renderSprites();
@@ -19631,6 +19633,7 @@ var BABYLON;
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
+            engine.setStencilBuffer(stencilState);
         };
         /**
          * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
@@ -29055,7 +29058,7 @@ var BABYLON;
                 _this._generateMipMaps = false;
             }
             if (urls) {
-                _this.video.addEventListener("canplaythrough", function () {
+                _this.video.addEventListener("canplay", function () {
                     _this._createTexture();
                 });
                 urls.forEach(function (url) {
@@ -29071,15 +29074,17 @@ var BABYLON;
             return _this;
         }
         VideoTexture.prototype._createTexture = function () {
+            var _this = this;
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
-            this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
-            this._texture.isReady = true;
-        };
-        VideoTexture.prototype.update = function () {
             if (this._autoLaunch) {
                 this._autoLaunch = false;
                 this.video.play();
             }
+            this.video.addEventListener("playing", function () {
+                _this._texture.isReady = true;
+            });
+        };
+        VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
             if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
                 return false;
