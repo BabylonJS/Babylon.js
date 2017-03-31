@@ -74,10 +74,6 @@ module BABYLON {
                 return false;
             }
 
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
             return false;
         }
 
@@ -215,14 +211,6 @@ module BABYLON {
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new FireMaterialDefines();
-                }
-
-                this._defines.cloneTo(mesh._materialDefines);
-            }
 
             return true;
         }
