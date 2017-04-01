@@ -12339,7 +12339,7 @@ var BABYLON;
                 }
                 for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
                     var subMesh = _a[_i];
-                    subMesh.effect = null;
+                    subMesh.setEffect(null);
                 }
             },
             enumerable: true,
@@ -26128,16 +26128,16 @@ var BABYLON;
             get: function () {
                 return this._materialEffect;
             },
-            set: function (effect) {
-                if (this._materialEffect === effect) {
-                    return;
-                }
-                this._materialDefines = null;
-                this._materialEffect = effect;
-            },
             enumerable: true,
             configurable: true
         });
+        SubMesh.prototype.setEffect = function (effect, defines) {
+            if (this._materialEffect === effect) {
+                return;
+            }
+            this._materialDefines = defines;
+            this._materialEffect = effect;
+        };
         Object.defineProperty(SubMesh.prototype, "IsGlobal", {
             get: function () {
                 return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
@@ -31845,7 +31845,7 @@ var BABYLON;
                     BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
-                subMesh.effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 });
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
             }
             if (!subMesh.effect.isReady()) {
                 return false;

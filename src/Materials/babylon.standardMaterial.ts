@@ -1036,9 +1036,9 @@ module BABYLON {
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
 
-                subMesh.effect = scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
             }
 
             if (!subMesh.effect.isReady()) {
