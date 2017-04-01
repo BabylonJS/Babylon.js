@@ -143,7 +143,7 @@
             }
             
             for (var subMesh of this.subMeshes) {
-                subMesh.effect = null;
+                subMesh.setEffect(null);
             }
         }
 

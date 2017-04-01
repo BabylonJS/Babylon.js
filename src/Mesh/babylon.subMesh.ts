@@ -22,11 +22,11 @@
             return this._materialEffect;
         }
 
-        public set effect(effect: Effect) {
+        public setEffect(effect: Effect, defines?: MaterialDefines) {
             if (this._materialEffect === effect) {
                 return;
             }
-            this._materialDefines = null;
+            this._materialDefines = defines;
             this._materialEffect = effect;
         }
 
