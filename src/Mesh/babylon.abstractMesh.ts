@@ -987,7 +987,7 @@
                 return this._worldMatrix;
             }
 
-            if (!force && ((this._currentRenderId === this.getScene().getRenderId() && this.isSynchronized(true)))) {
+            if (!force && this.isSynchronized(true)) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
