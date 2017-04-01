@@ -1052,12 +1052,14 @@ module BABYLON {
         }
 
         public unbind(): void {
-            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("reflection2DSampler", null);
-            }
+            if (this._activeEffect) {
+                if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                    this._activeEffect.setTexture("reflection2DSampler", null);
+                }
 
-            if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("refraction2DSampler", null);
+                if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
+                    this._activeEffect.setTexture("refraction2DSampler", null);
+                }
             }
 
             super.unbind();
