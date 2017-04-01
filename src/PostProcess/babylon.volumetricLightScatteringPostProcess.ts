@@ -275,7 +275,11 @@
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     var effect: Effect = this._volumetricLightScatteringPass;
                     if (mesh === this.mesh) {
-                        effect = subMesh.getMaterial().getEffect();
+                        if (subMesh.effect) {
+                            effect = subMesh.effect;
+                        } else {
+                            effect = subMesh.getMaterial().getEffect();
+                        }
                     }
 
                     engine.enableEffect(effect);

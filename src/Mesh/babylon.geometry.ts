@@ -433,6 +433,10 @@
             if (this.onGeometryUpdated) {
                 this.onGeometryUpdated(this, kind);
             }
+
+            for (var mesh of this._meshes) {
+                mesh._markSubMeshesAsAttributesDirty();
+            }
         }
 
         public load(scene: Scene, onLoaded?: () => void): void {
