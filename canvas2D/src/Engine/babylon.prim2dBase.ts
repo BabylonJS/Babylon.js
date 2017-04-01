@@ -2529,7 +2529,10 @@
                         return null;
                     }
                     return this.parent.margin;
-                }, () => this._positioningDirty());
+                }, () => {
+                    this._positioningDirty();
+                    this._updatePositioningState();
+                });
                 this._updatePositioningState();
             }
             return this._margin;
@@ -2607,7 +2610,10 @@
          */
         public get marginAlignment(): PrimitiveAlignment {
             if (!this._marginAlignment) {
-                this._marginAlignment = new PrimitiveAlignment(() => this._positioningDirty());
+                this._marginAlignment = new PrimitiveAlignment(() => {
+                    this._positioningDirty();
+                    this._updatePositioningState();
+                });
                 this._updatePositioningState();
             }
             return this._marginAlignment;

@@ -1612,6 +1612,7 @@ var INSPECTOR;
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
                 this._input.addEventListener('keypress', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
             // Add this property to the scheduler
             INSPECTOR.Scheduler.getInstance().add(this);
@@ -1628,6 +1629,7 @@ var INSPECTOR;
             // if the property is 'simple', add an event listener to create an input
             this._displayInputHandler = this._displayInput.bind(this);
             this._validateInputHandler = this._validateInput.bind(this);
+            this._escapeInputHandler = this._escapeInput.bind(this);
         };
         /**
          * On enter : validates the new value and removes the input
@@ -1645,6 +1647,15 @@ var INSPECTOR;
                 INSPECTOR.Scheduler.getInstance().pause = false;
             }
             else if (e.keyCode == 27) {
+                // Esc : remove input
+                this.update();
+            }
+        };
+        /**
+         * On escape : removes the input
+         */
+        PropertyLine.prototype._escapeInput = function (e) {
+            if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
             }
