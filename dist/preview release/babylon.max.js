@@ -31855,11 +31855,13 @@ var BABYLON;
             return true;
         };
         StandardMaterial.prototype.unbind = function () {
-            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("reflection2DSampler", null);
-            }
-            if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("refraction2DSampler", null);
+            if (this._activeEffect) {
+                if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                    this._activeEffect.setTexture("reflection2DSampler", null);
+                }
+                if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
+                    this._activeEffect.setTexture("refraction2DSampler", null);
+                }
             }
             _super.prototype.unbind.call(this);
         };
@@ -58384,7 +58386,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 var BABYLON;
