@@ -30242,14 +30242,8 @@ var BABYLON;
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-                if (!light.isEnabled()) {
-                    continue;
-                }
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
+            for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
+                var light = _a[_i];
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
                 light.diffuse.scaleToRef(light.intensity, BABYLON.Tmp.Color3[0]);
                 effect.setColor4("vLightDiffuse" + lightIndex, BABYLON.Tmp.Color3[0], light.range);
@@ -31999,7 +31993,7 @@ var BABYLON;
                 }
                 effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-            if (!this.isFrozen) {
+            if (scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
                 effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 // Lights
