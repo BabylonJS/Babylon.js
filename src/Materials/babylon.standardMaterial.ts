@@ -1226,7 +1226,7 @@ module BABYLON {
                 effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
 
-            if (!this.isFrozen) {
+            if (scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
                 effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
