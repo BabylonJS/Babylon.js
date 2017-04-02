@@ -38,6 +38,8 @@
             var needRebuild = false;
             var needShadows = false;
             var lightmapMode = false;
+            var shadowEnabled = false;
+            var specularEnabled = false;
 
             if (scene.lightsEnabled && !disableLighting) {
                 for (var light of mesh._lightSources) {
@@ -66,10 +68,11 @@
                     defines[type] = true;
 
                     // Specular
-                    defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                        specularEnabled = true;
+                    }
 
                     // Shadows
-                    var shadowEnabled = false;
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                         if (mesh && mesh.receiveShadows && shadowGenerator) {
@@ -101,8 +104,6 @@
                         }
                     }
 
-                    defines["SHADOWS"] = shadowEnabled;
-
                     if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
                         lightmapMode = true;
                         if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
@@ -123,6 +124,9 @@
                         break;
                 }
             }
+
+            defines["SPECULARTERM"] = specularEnabled;
+            defines["SHADOWS"] = shadowEnabled;
 
             // Resetting all other lights if any
             for (var index = lightIndex; index < maxSimultaneousLights; index++) {

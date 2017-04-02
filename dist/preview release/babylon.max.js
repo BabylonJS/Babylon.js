@@ -20536,6 +20536,9 @@ var BABYLON;
         Scene.prototype.getCachedMaterial = function () {
             return this._cachedMaterial;
         };
+        Scene.prototype.getCachedEffect = function () {
+            return this._cachedEffect;
+        };
         Scene.prototype.getBoundingBoxRenderer = function () {
             return this._boundingBoxRenderer;
         };
@@ -21150,6 +21153,7 @@ var BABYLON;
         };
         Scene.prototype.resetCachedMaterial = function () {
             this._cachedMaterial = null;
+            this._cachedEffect = null;
         };
         Scene.prototype.registerBeforeRender = function (func) {
             this.onBeforeRenderObservable.add(func);
@@ -30049,6 +30053,8 @@ var BABYLON;
             var needRebuild = false;
             var needShadows = false;
             var lightmapMode = false;
+            var shadowEnabled = false;
+            var specularEnabled = false;
             if (scene.lightsEnabled && !disableLighting) {
                 for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
                     var light = _a[_i];
@@ -30075,9 +30081,10 @@ var BABYLON;
                     }
                     defines[type] = true;
                     // Specular
-                    defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                        specularEnabled = true;
+                    }
                     // Shadows
-                    var shadowEnabled = false;
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh && mesh.receiveShadows && shadowGenerator) {
@@ -30104,7 +30111,6 @@ var BABYLON;
                             defines["SHADOW" + lightIndex] = false;
                         }
                     }
-                    defines["SHADOWS"] = shadowEnabled;
                     if (light.lightmapMode != BABYLON.Light.LIGHTMAP_DEFAULT) {
                         lightmapMode = true;
                         if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
@@ -30125,6 +30131,8 @@ var BABYLON;
                         break;
                 }
             }
+            defines["SPECULARTERM"] = specularEnabled;
+            defines["SHADOWS"] = shadowEnabled;
             // Resetting all other lights if any
             for (var index = lightIndex; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + index] !== undefined) {
@@ -30710,6 +30718,7 @@ var BABYLON;
             }
         };
         Material.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+            this._scene._cachedEffect = subMesh.effect;
         };
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
@@ -31886,7 +31895,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
-            if (scene.getCachedMaterial() !== this) {
+            if (scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (StandardMaterial.FresnelEnabled) {
                     // Fresnel
@@ -31990,7 +31999,7 @@ var BABYLON;
                 }
                 effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-            if (scene.getCachedMaterial() !== this || !this.isFrozen) {
+            if (!this.isFrozen) {
                 // Diffuse
                 effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 // Lights
@@ -32010,6 +32019,7 @@ var BABYLON;
                     BABYLON.ColorCurves.Bind(this.cameraColorCurves, effect);
                 }
             }
+            _super.prototype.bindForSubMesh.call(this, world, mesh, subMesh);
             _super.prototype.bind.call(this, world, mesh);
         };
         StandardMaterial.prototype.getAnimatables = function () {

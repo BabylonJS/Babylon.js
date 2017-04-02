@@ -1094,7 +1094,7 @@ module BABYLON {
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
 
-            if (scene.getCachedMaterial() !== this) {
+            if (scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                 if (StandardMaterial.FresnelEnabled) {
@@ -1226,7 +1226,7 @@ module BABYLON {
                 effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
 
-            if (scene.getCachedMaterial() !== this || !this.isFrozen) {
+            if (!this.isFrozen) {
                 // Diffuse
                 effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
@@ -1252,6 +1252,7 @@ module BABYLON {
                 }
             }
 
+            super.bindForSubMesh(world, mesh, subMesh);
             super.bind(world, mesh);
         }
 
