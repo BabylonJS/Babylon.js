@@ -418,6 +418,7 @@
         }
 
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+            this._scene._cachedEffect = subMesh.effect;
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
