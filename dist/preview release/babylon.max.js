@@ -31513,11 +31513,14 @@ var BABYLON;
             if (!mesh) {
                 return false;
             }
+            if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                return true;
+            }
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         };
         StandardMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
-                if (this._wasPreviouslyReady) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
