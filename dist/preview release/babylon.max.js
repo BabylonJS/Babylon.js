@@ -21139,6 +21139,9 @@ var BABYLON;
                 if (!mesh.isEnabled()) {
                     continue;
                 }
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
                 if (!mesh.isReady()) {
                     return false;
                 }
@@ -58390,7 +58393,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 var BABYLON;

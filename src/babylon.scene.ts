@@ -1456,6 +1456,10 @@
                     continue;
                 }
 
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
+
                 if (!mesh.isReady()) {
                     return false;
                 }
