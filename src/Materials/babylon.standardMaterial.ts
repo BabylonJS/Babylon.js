@@ -650,12 +650,16 @@ module BABYLON {
                 return false;
             }
 
+            if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                return true;
+            }
+
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         }
 
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
             if (this.isFrozen) {
-                if (this._wasPreviouslyReady) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
