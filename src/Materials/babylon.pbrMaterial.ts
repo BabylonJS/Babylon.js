@@ -601,17 +601,7 @@
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-
+            for (var light of mesh._lightSources) {
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
