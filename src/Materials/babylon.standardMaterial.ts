@@ -748,7 +748,6 @@ module BABYLON {
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
             this._uniformBuffer.addUniform("vSpecularInfos", 2);
-            // this._uniformBuffer.addUniform("fill", 2);
             this._uniformBuffer.addUniform("vBumpInfos", 3);
 
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
