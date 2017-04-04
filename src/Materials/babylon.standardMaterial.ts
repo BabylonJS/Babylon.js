@@ -888,10 +888,11 @@ module BABYLON {
                 // Diffuse
                 this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             }
+            
             this._uniformBuffer.update();
             
             if (scene.getCachedMaterial() !== this) {
-                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer());
+                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer(), "Material");
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 

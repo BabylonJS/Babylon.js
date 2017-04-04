@@ -224,7 +224,7 @@
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
+                light._uniformBuffer.updateFloat3("shadowsInfo", shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
             }
 
             return depthValuesAlreadySet;
@@ -233,16 +233,16 @@
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
             if (light instanceof PointLight) {
                 // Point Light
-                light.transferToEffect(effect, "vLightData" + lightIndex);
+                light.transferToEffect(effect, "vLightData");
             } else if (light instanceof DirectionalLight) {
                 // Directional Light
-                light.transferToEffect(effect, "vLightData" + lightIndex);
+                light.transferToEffect(effect, "vLightData");
             } else if (light instanceof SpotLight) {
                 // Spot Light
-                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
+                light.transferToEffect(effect, "vLightData", "vLightDirection");
             } else if (light instanceof HemisphericLight) {
                 // Hemispheric Light
-                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
+                light.transferToEffect(effect, "vLightData", "vLightGround");
             }
         }
 
@@ -263,17 +263,18 @@
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                effect.setColor4("vLightDiffuse" + lightIndex, Tmp.Color3[0], light.range);
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
-                    effect.setColor3("vLightSpecular" + lightIndex, Tmp.Color3[1]);
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1]);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
                     depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
-
+                light._uniformBuffer.update();
+                effect.bindUniformBuffer(light._uniformBuffer.getBuffer(), "Light" + lightIndex);
                 lightIndex++;
 
                 if (lightIndex === maxSimultaneousLights)

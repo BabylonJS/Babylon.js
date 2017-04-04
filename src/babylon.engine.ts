@@ -1859,10 +1859,10 @@
             return results;
         }
 
-        public bindUniformBlock(shaderProgram: WebGLProgram): void {
-            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, 'Material');
+        public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
+            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
 
-            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, 0);
+            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
         };
 
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {

@@ -81,6 +81,7 @@
 
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
+        private _uniformBuffersNames: string[];
         private _uniformsNames: string[];
         private _uniformOrder: string[];
         private _samplers: string[];
@@ -99,6 +100,9 @@
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
+            // TODO
+            this._uniformBuffersNames = ["Material", "Light0"];
+
             this._uniformsNames = uniformsNames.concat(samplers);
             this._samplers = samplers;
             this._attributesNames = attributesNames;
@@ -411,7 +415,10 @@
                 var engine = this._engine;
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
-                this.bindUniformBlock();
+
+                for (var i = 0; i < this._uniformBuffersNames.length; i++) {
+                    this.bindUniformBlock(this._uniformBuffersNames[i], i);
+                }
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
 
@@ -579,12 +586,12 @@
             return changed;
         }
 
-        public bindUniformBuffer(buffer: WebGLBuffer): void {
-            this._engine.bindUniformBufferBase(buffer, 0);
+        public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
+            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames.indexOf(name));
         }
 
-        public bindUniformBlock(): void {
-            this._engine.bindUniformBlock(this._program);
+        public bindUniformBlock(blockName: string, index: number): void {
+            this._engine.bindUniformBlock(this._program, blockName, index);
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {
