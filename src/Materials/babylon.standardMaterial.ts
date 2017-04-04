@@ -778,7 +778,7 @@ module BABYLON {
             if (this._mustRebind(scene, effect)) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-                if (StandardMaterial.FresnelEnabled) {
+                if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
                         effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
