@@ -114,7 +114,7 @@ module BABYLON {
 
             // Values that need to be evaluated on every frame
             defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
+            defines.ALPHATEST = true;
             defines.INSTANCES = useInstances;
             
             // Attribs
@@ -184,10 +184,6 @@ module BABYLON {
             this._wasPreviouslyReady = true;
 
             return true;
-        }
-
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._activeEffect.setMatrix("world", world);
         }
 
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {

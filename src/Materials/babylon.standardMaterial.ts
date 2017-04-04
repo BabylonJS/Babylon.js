@@ -758,10 +758,6 @@ module BABYLON {
             super.unbind();
         }
 
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._activeEffect.setMatrix("world", world);
-        }
-
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
