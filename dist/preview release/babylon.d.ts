@@ -1598,7 +1598,7 @@ declare module BABYLON {
         constructor(engine: Engine);
         readonly debugLayer: DebugLayer;
         workerCollisions: boolean;
-        readonly SelectionOctree: Octree<AbstractMesh>;
+        readonly selectionOctree: Octree<AbstractMesh>;
         /**
          * The mesh that is currently under the pointer.
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.

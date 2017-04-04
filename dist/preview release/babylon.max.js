@@ -13620,6 +13620,14 @@ var BABYLON;
             if (this.getClassName() !== "InstancedMesh") {
                 this.releaseSubMeshes();
             }
+            // Octree
+            var sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree) {
+                var index = sceneOctree.dynamicContent.indexOf(this);
+                if (index !== -1) {
+                    sceneOctree.dynamicContent.splice(index, 1);
+                }
+            }
             // Engine
             this.getScene().getEngine().wipeCaches();
             // Remove from scene
@@ -20537,7 +20545,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene.prototype, "SelectionOctree", {
+        Object.defineProperty(Scene.prototype, "selectionOctree", {
             get: function () {
                 return this._selectionOctree;
             },
@@ -30908,6 +30916,9 @@ var BABYLON;
             }
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         };
+        PushMaterial.prototype.bindOnlyWorldMatrix = function (world) {
+            this._activeEffect.setMatrix("world", world);
+        };
         PushMaterial.prototype.bind = function (world, mesh) {
             if (!mesh) {
                 return;
@@ -31511,9 +31522,6 @@ var BABYLON;
             }
             _super.prototype.unbind.call(this);
         };
-        StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
-            this._activeEffect.setMatrix("world", world);
-        };
         StandardMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
             var defines = subMesh._materialDefines;
@@ -31528,7 +31536,7 @@ var BABYLON;
             BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                if (StandardMaterial.FresnelEnabled) {
+                if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
                         effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
@@ -59969,14 +59977,8 @@ var BABYLON;
         PBRMaterial.BindLights = function (scene, mesh, effect, defines, useScalarInLinearSpace, maxSimultaneousLights, usePhysicalLightFalloff) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-                if (!light.isEnabled()) {
-                    continue;
-                }
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
+            for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
+                var light = _a[_i];
                 BABYLON.MaterialHelper.BindLightProperties(light, effect, lightIndex);
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);

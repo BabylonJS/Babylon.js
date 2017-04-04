@@ -765,7 +765,7 @@
             return this._workerCollisions;
         }
 
-        public get SelectionOctree(): Octree<AbstractMesh> {
+        public get selectionOctree(): Octree<AbstractMesh> {
             return this._selectionOctree;
         }
 
