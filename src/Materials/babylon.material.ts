@@ -5,8 +5,13 @@
         _trackIsDirty = false;    
 
         public _renderId: number;
+
         public _areLightsDirty = true;
         public _areAttributesDirty = true;
+        public _areTexturesDirty = true;
+        public _areFresnelDirty = true;
+        public _areMiscDirty = true;    
+
         public _needNormals = false;
         public _needUVs = false;
 
@@ -57,6 +62,8 @@
 
                 this._reBind(key);
             }
+
+            this._isDirty = true;
         } 
 
         public isEqual(other: MaterialDefines): boolean {
@@ -406,6 +413,15 @@
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {
+        }
+
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {            
+        }
+
+        public bindOnlyWorldMatrix(world: Matrix): void {
+        }
+
+        protected _afterBind(mesh: Mesh): void {
             this._scene._cachedMaterial = this;
 
             this.onBindObservable.notifyObservers(mesh);
@@ -415,13 +431,6 @@
                 this._cachedDepthWriteState = engine.getDepthWrite();
                 engine.setDepthWrite(false);
             }
-        }
-
-        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-            this._scene._cachedEffect = subMesh.effect;
-        }
-
-        public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         public unbind(): void {

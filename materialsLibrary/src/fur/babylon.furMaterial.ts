@@ -382,7 +382,7 @@ module BABYLON {
                 this._effect.setTexture("furTexture", this.furTexture);
             }
  
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {

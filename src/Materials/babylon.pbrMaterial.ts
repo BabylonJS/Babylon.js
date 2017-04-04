@@ -1392,7 +1392,7 @@
                 // Log. depth
                 MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
-            super.bind(world, mesh);
+            this._afterBind(mesh);
 
             this._myScene = null;
         }
