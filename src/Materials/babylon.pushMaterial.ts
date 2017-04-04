@@ -24,6 +24,11 @@
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         }
 
+        
+        public bindOnlyWorldMatrix(world: Matrix): void {
+            this._activeEffect.setMatrix("world", world);
+        }
+
         public bind(world: Matrix, mesh?: Mesh): void {
             if (!mesh) {
                 return;
