@@ -320,7 +320,7 @@ module BABYLON {
             this._effect.setFloat("offset", this.offset);
             this._effect.setFloat("smoothness", this.smoothness);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {

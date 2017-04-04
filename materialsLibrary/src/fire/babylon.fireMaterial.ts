@@ -272,7 +272,7 @@ module BABYLON {
             // Speed
             this._effect.setFloat("speed", this.speed);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {

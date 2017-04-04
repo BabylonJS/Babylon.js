@@ -77,7 +77,7 @@
 
         public set includedOnlyMeshes(value: AbstractMesh[]) {
             this._includedOnlyMeshes = value;
-            this._hookArray(value);
+            this._hookArrayForIncludedOnly(value);
         }
 
         private _excludedMeshes: AbstractMesh[];
@@ -86,7 +86,7 @@
         }
         public set excludedMeshes(value: AbstractMesh[]) {
             this._excludedMeshes = value;
-            this._hookArray(value);
+            this._hookArrayForExcluded(value);
         }        
 
         @serialize("excludeWithLayerMask")
@@ -380,7 +380,7 @@
             return light;
         }
 
-        private _hookArray(array: AbstractMesh[]): void {
+        private _hookArrayForExcluded(array: AbstractMesh[]): void {
             var oldPush = array.push;
             array.push = (...items: AbstractMesh[]) => {
                 var result = oldPush.apply(array, items);
@@ -399,6 +399,26 @@
                 for (var item of deleted) {
                     item._resyncLighSource(this);
                 }
+
+                return deleted;
+            }
+        }
+
+        private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+
+                this._resyncMeshes();
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this._resyncMeshes();
 
                 return deleted;
             }

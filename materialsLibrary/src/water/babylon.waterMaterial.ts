@@ -480,7 +480,7 @@ module BABYLON {
             this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
 		}
 		
 		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {

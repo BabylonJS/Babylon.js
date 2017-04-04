@@ -206,7 +206,7 @@ module BABYLON {
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public clone(name: string): ShadowOnlyMaterial {
