@@ -41,29 +41,18 @@ module BABYLON {
             return this._buffer;
         }
 
-        // Methods
-        private _adaptSizeToLayout(size: number): number {
-            // std140 layout
-            var uniformSize;
-            if (size <= 2) {
-                uniformSize = size;
-            } else if (size == 2) {
-                uniformSize = Math.ceil(size / 4) * 4;
-            }
-
-            return uniformSize;
-        }
-
         private _fillAlignment(size: number) {
             // std140 layout
+            // This computation is really simple because we only use floats, vectors of 1, 2, 3, 4 components
+            // and 4x4 matrices
+            // TODO : change if other types are used
+            // See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
 
-            // TODO : Debug !!
-            
             var alignment;
             if (size <= 2) {
                 alignment = size;
-            } else if (size == 2) {
-                alignment = Math.ceil(size / 4) * 4;
+            } else {
+                alignment = 4;
             }
 
             if ((this._uniformLocationPointer % alignment) !== 0) {
@@ -88,9 +77,9 @@ module BABYLON {
             var data;
             if (size instanceof Array) {
                 data = size;
-                size = this._adaptSizeToLayout(data.length);
+                size = data.length;
             } else {
-                size = this._adaptSizeToLayout(<number>size);
+                size = <number>size;
                 data = [];
 
                 // Fill with zeros
@@ -100,11 +89,11 @@ module BABYLON {
             }
 
 
+            this._fillAlignment(<number>size);
             this._uniformNames.push(name);
-            this._uniformSizes.push(size);
-            this._fillAlignment(size);
+            this._uniformSizes.push(<number>size);
             this._uniformLocations.push(this._uniformLocationPointer);
-            this._uniformLocationPointer += size;
+            this._uniformLocationPointer += <number>size;
 
 
             for (var i = 0; i < size; i++) {
@@ -154,7 +143,6 @@ module BABYLON {
             } else {
                 this._buffer = this._engine.createUniformBuffer(data);
             }
-            console.log("ubo creation");
 
             this._needSync = false;
         } 
@@ -168,8 +156,6 @@ module BABYLON {
             if (!this._needSync) {
                 return;
             }
-
-            console.log("Effective Update");
 
             this._engine.updateUniformBuffer(this._buffer, this._data);
 
@@ -188,7 +174,7 @@ module BABYLON {
             }
 
             var location = this._uniformLocations[index];
-            var size = this._adaptSizeToLayout(data.length);
+            var size = data.length;
 
             if (size != this._uniformSizes[index]) {
                 Tools.Error("Wrong uniform size.");

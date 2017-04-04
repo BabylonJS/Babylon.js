@@ -54,29 +54,38 @@
 					light.intensity = .5;
 
 					// Let's try our built-in 'sphere' shape. Params: name, subdivisions, size, scene
-					for (var i = 0; i < 1; i++) {
-						var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+					var squareSize = 20;
+					var spheres = []
+					for (var i = 0; i < squareSize; i++) {
+						for (var j = 0; j < squareSize; j++) {
+							for (var k = 0; k < 3; k++) {
+								var sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 0.5, scene);
 
-						// Move the sphere upward 1/2 its height
-						sphere.position.y = 1+ 2*i;
-						sphere.material = new BABYLON.StandardMaterial("test");
-						sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-						sphere.material.emissiveColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-						sphere.material.specularColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-						window.sphere = sphere;
-						// sphere.material.diffuseTexture = new BABYLON.Texture("test.jpeg", scene);
-						var t = 0;
-							// sphere.material.freeze();
-						scene.registerAfterRender(function() {
-							sphere.material.diffuseColor = new BABYLON.Color3(Math.abs(Math.sin(t/100)), Math.abs(Math.cos(t/200)), Math.abs(Math.sin(t/50)));
-							t++;
-							if (t % 120 < 60) {
+								// Move the sphere upward 1/2 its height
+								sphere.position.z = - squareSize / 4 + j / 2;
+								sphere.position.x = - squareSize / 4 + i / 2;
+								sphere.position.y = - squareSize / 4 + k / 2;
+								sphere.material = new BABYLON.StandardMaterial("test");
+								sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+								sphere.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
 								sphere.material.freeze();
-							} else {
-								sphere.material.unfreeze();
+								spheres.push(sphere);
 							}
-						})
+						}
 					}
+							var t = 0;
+							scene.registerAfterRender(function() {
+								for (var i = 0; i < spheres.length; i++) {
+									// spheres[i].material.diffuseColor = new BABYLON.Color3(Math.abs(Math.sin(t/100)), Math.abs(Math.cos(t/200)), Math.abs(Math.sin(t/500)));
+									// if (t % 120 < 60) {
+									// 	spheres[i].material.freeze();
+									// } else {
+									// 	spheres[i].material.unfreeze();
+									// }
+									
+								}
+									t++;
+							});
 
 					// Let's try our built-in 'ground' shape.  Params: name, width, depth, subdivisions, scene
 
