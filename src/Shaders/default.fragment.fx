@@ -1,4 +1,5 @@
 ﻿layout(std140, column_major) uniform;
+
 uniform Material
 {
 	

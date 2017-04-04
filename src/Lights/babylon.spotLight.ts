@@ -42,6 +42,15 @@
             this.angle = angle;
             this.exponent = exponent;
         }
+
+        protected _buildUniformLayout(): void {
+            this._uniformBuffer.addUniform("vLightData", 4);
+            this._uniformBuffer.addUniform("vLightDiffuse", 4);
+            this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("vLightGround", 3);
+            this._uniformBuffer.addUniform("shadowsInfo", 3);
+        }
+        
         /**
          * Returns the string "SpotLight".  
          */
@@ -131,7 +140,7 @@
                 
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                effect.setFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4(positionUniformName,
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
@@ -139,7 +148,7 @@
 
                 normalizeDirection = Vector3.Normalize(this._transformedDirection);
             } else {
-                effect.setFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4(positionUniformName,
                     this.position.x,
                     this.position.y,
                     this.position.z,
@@ -148,7 +157,7 @@
                 normalizeDirection = Vector3.Normalize(this.direction);
             }
 
-            effect.setFloat4(directionUniformName,
+            this._uniformBuffer.updateFloat4(directionUniformName,
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,

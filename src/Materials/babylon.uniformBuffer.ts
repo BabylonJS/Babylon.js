@@ -4,6 +4,7 @@ module BABYLON {
         private _buffer: WebGLBuffer;
         private _data: number[];
         private _dynamic: boolean;
+        private _uniformName: string;
         private _uniformNames: string[];
         private _uniformLocations: number[];
         private _uniformSizes: number[];
@@ -72,7 +73,6 @@ module BABYLON {
                 return;
             }
             // This function must be called in the order of the shader layout !
-
             // size can be the size of the uniform, or data directly
             var data;
             if (size instanceof Array) {
@@ -103,14 +103,19 @@ module BABYLON {
             this._needSync = true;
         }
 
-        public addFloat2(name: string, x: number, y: number) {
-            var temp = [x, y];
-            this.addUniform(name, temp);
-        }
         public addMatrix(name: string, mat: Matrix) {
             this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
         }
 
+        public addFloat2(name: string, x: number, y: number) {
+            var temp = [x, y];
+            this.addUniform(name, temp);
+        }
+
+        public addFloat3(name: string, x: number, y: number, z: number) {
+            var temp = [x, y, z];
+            this.addUniform(name, temp);
+        }
 
         public addColor3(name: string, color: Color3) {
             var temp = [];

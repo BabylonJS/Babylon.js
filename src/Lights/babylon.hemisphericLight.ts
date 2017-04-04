@@ -18,6 +18,15 @@
             super(name, scene);
             this.direction = direction;
         }
+
+        protected _buildUniformLayout(): void {
+            this._uniformBuffer.addUniform("vLightData", 4);
+            this._uniformBuffer.addUniform("vLightDiffuse", 4);
+            this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("vLightDirection", 4);
+            this._uniformBuffer.addUniform("shadowsInfo", 3);
+        }
+
         /**
          * Returns the string "HemisphericLight".  
          */
@@ -43,12 +52,12 @@
          */
         public transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): HemisphericLight {
             var normalizeDirection = Vector3.Normalize(this.direction);
-            effect.setFloat4(directionUniformName,
+            this._uniformBuffer.updateFloat4(directionUniformName,
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,
                 0.0);
-            effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
+            this._uniformBuffer.updateColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
             return this;
         }
 

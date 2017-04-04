@@ -91,6 +91,9 @@
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
+        // Light uniform buffer
+        public _uniformBuffer: UniformBuffer;
+
         /**
          * Creates a Light object in the scene.  
          * Documentation : http://doc.babylonjs.com/tutorials/lights  
@@ -98,7 +101,14 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
             this.getScene().addLight(this);
+            this._uniformBuffer = new UniformBuffer(scene.getEngine(), null, true);
+            this._buildUniformLayout();
         }
+
+        protected _buildUniformLayout(): void {
+            // Overridden
+        }
+
         /**
          * Returns the string "Light".  
          */
