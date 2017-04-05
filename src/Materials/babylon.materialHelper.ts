@@ -29,7 +29,7 @@
             }           
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4, disableLighting = false): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
             }
@@ -70,7 +70,7 @@
                     defines[type] = true;
 
                     // Specular
-                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
                         specularEnabled = true;
                     }
 

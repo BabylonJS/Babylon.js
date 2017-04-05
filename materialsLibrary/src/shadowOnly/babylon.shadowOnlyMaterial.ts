@@ -95,7 +95,7 @@ module BABYLON {
             }
 
             if (scene.lightsEnabled) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, 1);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, 1);
             }
 
             // Attribs
