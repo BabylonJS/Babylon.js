@@ -209,10 +209,6 @@ module BABYLON {
                 return false;
             }
 
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
             return false;
         }
 		
@@ -405,14 +401,6 @@ module BABYLON {
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
 
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new WaterMaterialDefines();
-                }
-
-                this._defines.cloneTo(mesh._materialDefines);
-            }
-
             return true;
 		}
         
@@ -492,7 +480,7 @@ module BABYLON {
             this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
 		}
 		
 		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {

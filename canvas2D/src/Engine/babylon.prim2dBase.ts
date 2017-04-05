@@ -2529,7 +2529,10 @@
                         return null;
                     }
                     return this.parent.margin;
-                }, () => this._positioningDirty());
+                }, () => {
+                    this._positioningDirty();
+                    this._updatePositioningState();
+                });
                 this._updatePositioningState();
             }
             return this._margin;
@@ -2607,7 +2610,10 @@
          */
         public get marginAlignment(): PrimitiveAlignment {
             if (!this._marginAlignment) {
-                this._marginAlignment = new PrimitiveAlignment(() => this._positioningDirty());
+                this._marginAlignment = new PrimitiveAlignment(() => {
+                    this._positioningDirty();
+                    this._updatePositioningState();
+                });
                 this._updatePositioningState();
             }
             return this._marginAlignment;
@@ -4114,7 +4120,7 @@
                 let primNewSize: Size = Prim2DBase._size;
                 let hasH = false;
                 let hasV = false;
-                let paddingApplied = false;
+                //let paddingApplied = false;
                 let hasPadding = this._hasPadding;
 
                 // Compute the size
@@ -4155,39 +4161,35 @@
                     }
                 }
 
-                if (!isVSizeAuto || !isHSizeAuto) {
-                    Prim2DBase._curContentArea.copyFrom(this._contentArea);
+                Prim2DBase._curContentArea.copyFrom(this._contentArea);
 
-                    if (hasPadding) {
-                        let area = Prim2DBase._icArea;
-                        let zone = Prim2DBase._icZone;
+                if (hasPadding) {
+                    let area = Prim2DBase._icArea;
+                    let zone = Prim2DBase._icZone;
 
-                        this._getInitialContentAreaToRef(primNewSize, zone, area);
-                        area.width = Math.max(0, area.width);
-                        area.height = Math.max(0, area.height);
+                    this._getInitialContentAreaToRef(primNewSize, zone, area);
+                    area.width = Math.max(0, area.width);
+                    area.height = Math.max(0, area.height);
 
-                        this.padding.compute(area, this._paddingOffset, Prim2DBase._size2);
+                    this.padding.compute(area, this._paddingOffset, Prim2DBase._size2);
 
-                        if (!isHSizeAuto) {
-                            this._paddingOffset.x += zone.x;
-                            this._paddingOffset.z -= zone.z;
-                            this._contentArea.width = Prim2DBase._size2.width;
-                        }
-
-                        if (!isVSizeAuto) {
-                            this._paddingOffset.y += zone.y;
-                            this._paddingOffset.w -= zone.w;
-                            this._contentArea.height = Prim2DBase._size2.height;
-                        }
-                    } else {
-                        this._contentArea.copyFrom(primNewSize);
+                    if (!isHSizeAuto) {
+                        this._paddingOffset.x += zone.x;
+                        this._paddingOffset.z -= zone.z;
+                        this._contentArea.width = Prim2DBase._size2.width;
                     }
 
-                    if (!Prim2DBase._curContentArea.equals(this._contentArea)) {
-                        this._setLayoutDirty();
+                    if (!isVSizeAuto) {
+                        this._paddingOffset.y += zone.y;
+                        this._paddingOffset.w -= zone.w;
+                        this._contentArea.height = Prim2DBase._size2.height;
                     }
+                } else {
+                    this._contentArea.copyFrom(primNewSize);
+                }
 
-                    paddingApplied = true;
+                if (!Prim2DBase._curContentArea.equals(this._contentArea)) {
+                    this._setLayoutDirty();
                 }
 
                 // Finally we apply margin to determine the position
@@ -4196,10 +4198,10 @@
                     let mo = this._marginOffset;
                     let margin = this.margin;
 
-                    // We compute margin only if the layoutArea is as big as the contentSize, sometime this code is triggered when the layoutArea is
-                    //  not yet set and computing alignment would result into a bad size.
+                    // We compute margin only if the layoutArea is "real": a valid object with dimensions greater than 0
+                    //  otherwise sometimes this code would be triggered with and invalid layoutArea, resulting to an invalid positioning
                     // So we make sure with compute alignment only if the layoutArea is good
-                    if (layoutArea && layoutArea.width >= transformedBSize.width && layoutArea.height >= transformedBSize.height) {
+                    if (layoutArea && layoutArea.width > 0 && layoutArea.height > 0) {
                         margin.computeWithAlignment(layoutArea, transformedBSize, ma, levelScale, mo, Prim2DBase._size2);
                     } else {
                         mo.copyFromFloats(0, 0, 0, 0);

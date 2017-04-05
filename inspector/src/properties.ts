@@ -315,8 +315,97 @@ module INSPECTOR {
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
             ]
+        },
+        'Canvas2D': {
+            type: BABYLON.Canvas2D
+        },
+        'Canvas2DEngineBoundData': {
+            type: BABYLON.Canvas2DEngineBoundData
+        },
+        'Ellipse2D': {
+            type: BABYLON.Ellipse2D
+        },
+        'Ellipse2DInstanceData': {
+            type: BABYLON.Ellipse2DInstanceData
+        },
+        'Ellipse2DRenderCache': {
+            type: BABYLON.Ellipse2DRenderCache
+        },
+        'Group2D': {
+            type: BABYLON.Group2D
+        },
+        'IntersectInfo2D': {
+            type: BABYLON.IntersectInfo2D
+        },
+        'Lines2D': {
+            type: BABYLON.Lines2D
+        },
+        'Lines2DInstanceData': {
+            type: BABYLON.Lines2DInstanceData
+        },
+        'Lines2DRenderCache': {
+            type: BABYLON.Lines2DRenderCache
+        },
+        'PrepareRender2DContext': {
+            type: BABYLON.PrepareRender2DContext
+        },
+        'Prim2DBase': {
+            type: BABYLON.Prim2DBase
+        },
+        'Prim2DClassInfo': {
+            type: BABYLON.Prim2DClassInfo
+        },
+        'Prim2DPropInfo': {
+            type: BABYLON.Prim2DPropInfo
+        },
+        'Rectangle2D': {
+            type: BABYLON.Rectangle2D
+        },
+        'Rectangle2DInstanceData': {
+            type: BABYLON.Rectangle2DInstanceData
+        },
+        'Rectangle2DRenderCache': {
+            type: BABYLON.Rectangle2DRenderCache
+        },
+        'Render2DContext': {
+            type: BABYLON.Render2DContext
+        },
+        'RenderablePrim2D': {
+            type: BABYLON.RenderablePrim2D
+        },
+        'ScreenSpaceCanvas2D': {
+            type: BABYLON.ScreenSpaceCanvas2D
+        },
+        'Shape2D': {
+            type: BABYLON.Shape2D
+        },
+        'Shape2DInstanceData': {
+            type: BABYLON.Shape2DInstanceData
+        },
+        'Sprite2D': {
+            type: BABYLON.Sprite2D
+        },
+        'Sprite2DInstanceData': {
+            type: BABYLON.Sprite2DInstanceData
+        },
+        'Sprite2DRenderCache': {
+            type: BABYLON.Sprite2DRenderCache
+        },
+        'Text2D': {
+            type: BABYLON.Text2D
+        },
+        'Text2DInstanceData': {
+            type: BABYLON.Text2DInstanceData
+        },
+        'Text2DRenderCache': {
+            type: BABYLON.Text2DRenderCache
+        },
+        'WorldSpaceCanvas2D': {
+            type: BABYLON.WorldSpaceCanvas2D
+        },
+        'WorldSpaceCanvas2DNode': {
+            type: BABYLON.WorldSpaceCanvas2DNode
         }
-
     }
 
 }

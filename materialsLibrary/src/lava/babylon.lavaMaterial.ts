@@ -123,10 +123,6 @@ module BABYLON {
                 return false;
             }
 
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
             return false;
         }
 
@@ -287,15 +283,7 @@ module BABYLON {
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new LavaMaterialDefines();
-                }
-
-                this._defines.cloneTo(mesh._materialDefines);
-            }
-
+            
             return true;
         }
 
@@ -365,7 +353,7 @@ module BABYLON {
             this._effect.setFloat("movingSpeed", this.movingSpeed);
 
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {

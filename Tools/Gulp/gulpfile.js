@@ -31,7 +31,7 @@ var includeShadersStream;
 var shadersStream;
 var workersStream;
 
-var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
+var extendsSearchRegex = /var\s__extends[\s\S]+?\}\)\(\);/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
 /**
