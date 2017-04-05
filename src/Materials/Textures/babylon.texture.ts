@@ -74,7 +74,7 @@
         private _delayedOnError: () => void;
         private _onLoadObservarble: Observable<boolean>;
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format: number = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url;

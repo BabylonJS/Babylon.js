@@ -80,11 +80,7 @@ module BABYLON {
             if (!mesh) {
                 return true;
             }
-
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
+            
             return false;
         }
 
@@ -186,7 +182,7 @@ module BABYLON {
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public dispose(forceDisposeEffect?: boolean): void {

@@ -41,7 +41,6 @@ declare module BABYLON {
         etc1: any;
         etc2: any;
         astc: any;
-        atc: any;
         textureFloat: boolean;
         vertexArrayObject: boolean;
         textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
@@ -72,6 +71,10 @@ declare module BABYLON {
         static Instances: Engine[];
         static readonly LastCreatedEngine: Engine;
         static readonly LastCreatedScene: Scene;
+        /**
+         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+         */
+        static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
         private static _ALPHA_DISABLE;
         private static _ALPHA_ADD;
         private static _ALPHA_COMBINE;
@@ -339,9 +342,6 @@ declare module BABYLON {
         generateMipMapsForCubemap(texture: WebGLTexture): void;
         flushFramebuffer(): void;
         restoreDefaultFramebuffer(): void;
-        createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer;
-        createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer;
-        updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void;
         private _resetVertexBufferBinding();
         createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer;
         createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer;
@@ -349,8 +349,6 @@ declare module BABYLON {
         private _resetIndexBufferBinding();
         createIndexBuffer(indices: IndicesArray): WebGLBuffer;
         bindArrayBuffer(buffer: WebGLBuffer): void;
-        bindUniformBuffer(buffer?: WebGLBuffer): void;
-        bindUniformBufferBase(buffer: WebGLBuffer, location: number): void;
         private bindIndexBuffer(buffer);
         private bindBuffer(buffer, target);
         updateArrayBuffer(data: Float32Array): void;
@@ -381,7 +379,6 @@ declare module BABYLON {
         createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
         createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
-        bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void;
         getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
         enableEffect(effect: Effect): void;
         setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -434,11 +431,30 @@ declare module BABYLON {
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
          *
-         * Current families are astc, dxt, pvrtc, etc2, atc, & etc1.
+         * Current families are astc, dxt, pvrtc, etc2, & etc1.
          * @returns The extension selected.
          */
         setTextureFormatToUse(formatsAvailable: Array<string>): string;
-        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, fallBack?: WebGLTexture, format?: number): WebGLTexture;
+        /**
+         * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
+         * @param {string} urlArg- This contains one of the following:
+         *                         1. A conventional http URL, e.g. 'http://...' or 'file://...'
+         *                         2. A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         *                         3. An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         *
+         * @param {boolean} noMipmap- When true, no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file.
+         * @param {boolean} invertY- When true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file.
+         * @param {Scene} scene- Needed for loading to the correct scene.
+         * @param {number} samplingMode- Mode with should be used sample / access the texture.  Default: TRILINEAR
+         * @param {callback} onLoad- Optional callback to be called upon successful completion.
+         * @param {callback} onError- Optional callback to be called upon failure.
+         * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
+         * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
+         * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
+         *
+         * @returns {WebGLTexture} for assignment back into BABYLON.Texture
+         */
+        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: ArrayBuffer | HTMLImageElement, fallBack?: WebGLTexture, format?: number): WebGLTexture;
         private _getInternalFormat(format);
         updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean, compression?: string): void;
         createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: string): WebGLTexture;
@@ -1284,6 +1300,7 @@ declare module BABYLON {
         clearColor: Color4;
         ambientColor: Color3;
         forceWireframe: boolean;
+        private _forcePointsCloud;
         forcePointsCloud: boolean;
         forceShowBoundingBoxes: boolean;
         clipPlane: Plane;
@@ -1431,7 +1448,9 @@ declare module BABYLON {
         * is fog enabled on this scene.
         * @type {boolean}
         */
+        private _fogEnabled;
         fogEnabled: boolean;
+        private _fogMode;
         fogMode: number;
         fogColor: Color3;
         fogDensity: number;
@@ -1441,11 +1460,13 @@ declare module BABYLON {
         * is shadow enabled on this scene.
         * @type {boolean}
         */
+        private _shadowsEnabled;
         shadowsEnabled: boolean;
         /**
         * is light enabled on this scene.
         * @type {boolean}
         */
+        private _lightsEnabled;
         lightsEnabled: boolean;
         /**
         * All of the lights added to this scene.
@@ -1472,6 +1493,7 @@ declare module BABYLON {
         multiMaterials: MultiMaterial[];
         private _defaultMaterial;
         readonly defaultMaterial: StandardMaterial;
+        private _texturesEnabled;
         texturesEnabled: boolean;
         textures: BaseTexture[];
         particlesEnabled: boolean;
@@ -1480,6 +1502,7 @@ declare module BABYLON {
         spriteManagers: SpriteManager[];
         layers: Layer[];
         highlightLayers: HighlightLayer[];
+        private _skeletonsEnabled;
         skeletonsEnabled: boolean;
         skeletons: Skeleton[];
         lensFlaresEnabled: boolean;
@@ -1533,6 +1556,7 @@ declare module BABYLON {
         private _animationTime;
         animationTimeScale: number;
         _cachedMaterial: Material;
+        _cachedEffect: Effect;
         private _renderId;
         private _executeWhenReadyTimeoutId;
         private _intermediateRendering;
@@ -1574,7 +1598,7 @@ declare module BABYLON {
         constructor(engine: Engine);
         readonly debugLayer: DebugLayer;
         workerCollisions: boolean;
-        readonly SelectionOctree: Octree<AbstractMesh>;
+        readonly selectionOctree: Octree<AbstractMesh>;
         /**
          * The mesh that is currently under the pointer.
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
@@ -1591,6 +1615,7 @@ declare module BABYLON {
          */
         readonly pointerY: number;
         getCachedMaterial(): Material;
+        getCachedEffect(): Effect;
         getBoundingBoxRenderer(): BoundingBoxRenderer;
         getOutlineRenderer(): OutlineRenderer;
         getEngine(): Engine;
@@ -1924,6 +1949,11 @@ declare module BABYLON {
          * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+        /**
+         * Will flag all materials as dirty to trigger new shader compilation
+         * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
+         */
+        markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
     }
 }
 
@@ -4004,6 +4034,15 @@ declare module BABYLON {
             popup?: boolean;
             initialTab?: number;
             parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
         }): void;
     }
 }
@@ -4379,7 +4418,6 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, direction: Vector3, scene: Scene);
-        protected _buildUniformLayout(): void;
         /**
          * Returns the string "DirectionalLight".
          */
@@ -4443,7 +4481,6 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, direction: Vector3, scene: Scene);
-        protected _buildUniformLayout(): void;
         /**
          * Returns the string "HemisphericLight".
          */
@@ -4468,7 +4505,7 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IShadowLight {
+    interface IShadowLight extends Light {
         id: string;
         position: Vector3;
         transformedPosition: Vector3;
@@ -4512,23 +4549,26 @@ declare module BABYLON {
         specular: Color3;
         intensity: number;
         range: number;
-        includeOnlyWithLayerMask: number;
+        private _includedOnlyMeshes;
         includedOnlyMeshes: AbstractMesh[];
+        private _excludedMeshes;
         excludedMeshes: AbstractMesh[];
+        private _excludeWithLayerMask;
         excludeWithLayerMask: number;
+        private _includeOnlyWithLayerMask;
+        includeOnlyWithLayerMask: number;
+        private _lightmapMode;
         lightmapMode: number;
         radius: number;
         _shadowGenerator: IShadowGenerator;
         private _parentedWorldMatrix;
         _excludedMeshesIds: string[];
         _includedOnlyMeshesIds: string[];
-        _uniformBuffer: UniformBuffer;
         /**
          * Creates a Light object in the scene.
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, scene: Scene);
-        protected _buildUniformLayout(): void;
         /**
          * Returns the string "Light".
          */
@@ -4537,6 +4577,12 @@ declare module BABYLON {
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         toString(fullDetails?: boolean): string;
+        /**
+         * Set the enabled state of this node.
+         * @param {boolean} value - the new enabled state
+         * @see isEnabled
+         */
+        setEnabled(value: boolean): void;
         /**
          * Returns the Light associated shadow generator.
          */
@@ -4581,6 +4627,10 @@ declare module BABYLON {
          * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
          */
         static Parse(parsedLight: any, scene: Scene): Light;
+        private _hookArrayForExcluded(array);
+        private _hookArrayForIncludedOnly(array);
+        private _resyncMeshes();
+        _markMeshesAsLightDirty(): void;
     }
 }
 
@@ -4603,7 +4653,6 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, position: Vector3, scene: Scene);
-        protected _buildUniformLayout(): void;
         /**
          * Returns the string "PointLight"
          */
@@ -4676,7 +4725,6 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        protected _buildUniformLayout(): void;
         /**
          * Returns the string "SpotLight".
          */
@@ -5041,9 +5089,7 @@ declare module BABYLON {
         uniqueId: number;
         private static _uniqueIdSeed;
         private _engine;
-        private _uniformBuffersNames;
         private _uniformsNames;
-        private _uniformOrder;
         private _samplers;
         private _isReady;
         private _compilationError;
@@ -5084,8 +5130,6 @@ declare module BABYLON {
         _cacheFloat2(uniformName: string, x: number, y: number): boolean;
         _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
         _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
-        bindUniformBuffer(buffer: WebGLBuffer, name: string): void;
-        bindUniformBlock(blockName: string, index: number): void;
         setIntArray(uniformName: string, array: Int32Array): Effect;
         setIntArray2(uniformName: string, array: Int32Array): Effect;
         setIntArray3(uniformName: string, array: Int32Array): Effect;
@@ -5121,6 +5165,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class FresnelParameters {
+        private _isEnabled;
         isEnabled: boolean;
         leftColor: Color3;
         rightColor: Color3;
@@ -5135,6 +5180,18 @@ declare module BABYLON {
 declare module BABYLON {
     class MaterialDefines {
         _keys: string[];
+        _isDirty: boolean;
+        _trackIsDirty: boolean;
+        _renderId: number;
+        _areLightsDirty: boolean;
+        _areAttributesDirty: boolean;
+        _areTexturesDirty: boolean;
+        _areFresnelDirty: boolean;
+        _areMiscDirty: boolean;
+        _needNormals: boolean;
+        _needUVs: boolean;
+        constructor(trackIsDirty?: boolean);
+        private _reBind(key);
         rebuild(): void;
         isEqual(other: MaterialDefines): boolean;
         cloneTo(other: MaterialDefines): void;
@@ -5152,18 +5209,30 @@ declare module BABYLON {
         private static _CounterClockWiseSideOrientation;
         static readonly ClockWiseSideOrientation: number;
         static readonly CounterClockWiseSideOrientation: number;
+        private static _TextureDirtyFlag;
+        private static _LightDirtyFlag;
+        private static _FresnelDirtyFlag;
+        private static _AttributesDirtyFlag;
+        private static _MiscDirtyFlag;
+        static readonly TextureDirtyFlag: number;
+        static readonly LightDirtyFlag: number;
+        static readonly FresnelDirtyFlag: number;
+        static readonly AttributesDirtyFlag: number;
+        static readonly MiscDirtyFlag: number;
         id: string;
         name: string;
         checkReadyOnEveryCall: boolean;
         checkReadyOnlyOnce: boolean;
         state: string;
         alpha: number;
+        protected _backFaceCulling: boolean;
         backFaceCulling: boolean;
         sideOrientation: number;
         onCompiled: (effect: Effect) => void;
         onError: (effect: Effect, errors: string) => void;
         getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         doNotSerialize: boolean;
+        storeEffectOnSubMeshes: boolean;
         /**
         * An event triggered when the material is disposed.
         * @type {BABYLON.Observable}
@@ -5185,6 +5254,7 @@ declare module BABYLON {
         onUnBindObservable: Observable<Material>;
         alphaMode: number;
         disableDepthWrite: boolean;
+        private _fogEnabled;
         fogEnabled: boolean;
         pointSize: number;
         zOffset: number;
@@ -5196,27 +5266,33 @@ declare module BABYLON {
         private _scene;
         private _fillMode;
         private _cachedDepthWriteState;
-        protected _uniformBuffer: UniformBuffer;
         constructor(name: string, scene: Scene, doNotAdd?: boolean);
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          * subclasses should override adding information pertainent to themselves
          */
         toString(fullDetails?: boolean): string;
+        /**
+         * Child classes can use it to update shaders
+         */
+        markAsDirty(flag: number): void;
         getClassName(): string;
         readonly isFrozen: boolean;
         freeze(): void;
         unfreeze(): void;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         getEffect(): Effect;
         getScene(): Scene;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BaseTexture;
         markDirty(): void;
-        _preBind(): void;
+        _preBind(effect?: Effect): void;
         bind(world: Matrix, mesh?: Mesh): void;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         bindOnlyWorldMatrix(world: Matrix): void;
+        protected _afterBind(mesh: Mesh): void;
         unbind(): void;
         clone(name: string): Material;
         getBindedMeshes(): AbstractMesh[];
@@ -5229,7 +5305,8 @@ declare module BABYLON {
 
 declare module BABYLON {
     class MaterialHelper {
-        static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights?: number): boolean;
+        static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void;
+        static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights?: number, disableLighting?: boolean): boolean;
         static PrepareUniformsAndSamplersList(uniformsList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights?: number): void;
         static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights?: number): void;
         static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void;
@@ -5576,6 +5653,26 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class PushMaterial extends Material {
+        protected _activeEffect: Effect;
+        constructor(name: string, scene: Scene);
+        getEffect(): Effect;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        protected _afterBind(mesh: Mesh, effect?: Effect): void;
+        protected _mustRebind(scene: Scene, effect: Effect): boolean;
+        markAsDirty(flag: number): void;
+        protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void): void;
+        protected _markAllSubMeshesAsTexturesDirty(): void;
+        protected _markAllSubMeshesAsFresnelDirty(): void;
+        protected _markAllSubMeshesAsLightsDirty(): void;
+        protected _markAllSubMeshesAsAttributesDirty(): void;
+        protected _markAllSubMeshesAsMiscDirty(): void;
+    }
+}
+
+declare module BABYLON {
     class ShaderMaterial extends Material {
         private _shaderPath;
         private _options;
@@ -5685,59 +5782,91 @@ declare module BABYLON {
         CAMERACOLORGRADING: boolean;
         CAMERACOLORCURVES: boolean;
         constructor();
+        setReflectionMode(modeToEnable: string): void;
     }
-    class StandardMaterial extends Material {
+    class StandardMaterial extends PushMaterial {
+        private _diffuseTexture;
         diffuseTexture: BaseTexture;
+        private _ambientTexture;
         ambientTexture: BaseTexture;
+        private _opacityTexture;
         opacityTexture: BaseTexture;
+        private _reflectionTexture;
         reflectionTexture: BaseTexture;
+        private _emissiveTexture;
         emissiveTexture: BaseTexture;
+        private _specularTexture;
         specularTexture: BaseTexture;
+        private _bumpTexture;
         bumpTexture: BaseTexture;
+        private _lightmapTexture;
         lightmapTexture: BaseTexture;
+        private _refractionTexture;
         refractionTexture: BaseTexture;
         ambientColor: Color3;
         diffuseColor: Color3;
         specularColor: Color3;
         emissiveColor: Color3;
         specularPower: number;
+        private _useAlphaFromDiffuseTexture;
         useAlphaFromDiffuseTexture: boolean;
+        private _useEmissiveAsIllumination;
         useEmissiveAsIllumination: boolean;
+        private _linkEmissiveWithDiffuse;
         linkEmissiveWithDiffuse: boolean;
-        useReflectionFresnelFromSpecular: boolean;
+        private _useSpecularOverAlpha;
         useSpecularOverAlpha: boolean;
+        private _useReflectionOverAlpha;
         useReflectionOverAlpha: boolean;
+        private _disableLighting;
         disableLighting: boolean;
+        private _useParallax;
         useParallax: boolean;
+        private _useParallaxOcclusion;
         useParallaxOcclusion: boolean;
         parallaxScaleBias: number;
+        private _roughness;
         roughness: number;
         indexOfRefraction: number;
         invertRefractionY: boolean;
+        private _useLightmapAsShadowmap;
         useLightmapAsShadowmap: boolean;
+        private _diffuseFresnelParameters;
         diffuseFresnelParameters: FresnelParameters;
+        private _opacityFresnelParameters;
         opacityFresnelParameters: FresnelParameters;
+        private _reflectionFresnelParameters;
         reflectionFresnelParameters: FresnelParameters;
+        private _refractionFresnelParameters;
         refractionFresnelParameters: FresnelParameters;
+        private _emissiveFresnelParameters;
         emissiveFresnelParameters: FresnelParameters;
+        private _useReflectionFresnelFromSpecular;
+        useReflectionFresnelFromSpecular: boolean;
+        private _useGlossinessFromSpecularMapAlpha;
         useGlossinessFromSpecularMapAlpha: boolean;
+        private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
+        private _invertNormalMapX;
         invertNormalMapX: boolean;
         /**
          * If sets to true, y component of normal map value will invert (y = 1.0 - y).
          */
+        private _invertNormalMapY;
         invertNormalMapY: boolean;
         /**
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
          */
+        private _twoSidedLighting;
         twoSidedLighting: boolean;
         /**
          * Color Grading 2D Lookup Texture.
          * This allows special effects like sepia, black and white to sixties rendering style.
          */
+        private _cameraColorGradingTexture;
         cameraColorGradingTexture: BaseTexture;
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
@@ -5745,13 +5874,12 @@ declare module BABYLON {
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
+        private _cameraColorCurves;
         cameraColorCurves: ColorCurves;
+        customShaderNameResolve: (shaderName: string) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
-        protected _renderId: number;
-        protected _defines: StandardMaterialDefines;
-        protected _cachedDefines: StandardMaterialDefines;
         protected _useLogarithmicDepth: boolean;
         constructor(name: string, scene: Scene);
         getClassName(): string;
@@ -5760,69 +5888,39 @@ declare module BABYLON {
         needAlphaTesting(): boolean;
         protected _shouldUseAlphaFromDiffuseTexture(): boolean;
         getAlphaTestTexture(): BaseTexture;
-        protected _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        buildUniformLayout(): void;
+        /**
+         * Child classes can use it to update shaders
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         unbind(): void;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
         clone(name: string): StandardMaterial;
         serialize(): any;
         static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial;
+        static _DiffuseTextureEnabled: boolean;
         static DiffuseTextureEnabled: boolean;
+        static _AmbientTextureEnabled: boolean;
         static AmbientTextureEnabled: boolean;
+        static _OpacityTextureEnabled: boolean;
         static OpacityTextureEnabled: boolean;
+        static _ReflectionTextureEnabled: boolean;
         static ReflectionTextureEnabled: boolean;
+        static _EmissiveTextureEnabled: boolean;
         static EmissiveTextureEnabled: boolean;
+        static _SpecularTextureEnabled: boolean;
         static SpecularTextureEnabled: boolean;
+        static _BumpTextureEnabled: boolean;
         static BumpTextureEnabled: boolean;
-        static FresnelEnabled: boolean;
+        static _LightmapTextureEnabled: boolean;
         static LightmapTextureEnabled: boolean;
+        static _RefractionTextureEnabled: boolean;
         static RefractionTextureEnabled: boolean;
+        static _ColorGradingTextureEnabled: boolean;
         static ColorGradingTextureEnabled: boolean;
-    }
-}
-
-declare module BABYLON {
-    class UniformBuffer {
-        private _engine;
-        private _buffer;
-        private _data;
-        private _dynamic;
-        private _uniformName;
-        private _uniformNames;
-        private _uniformLocations;
-        private _uniformSizes;
-        private _uniformLocationPointer;
-        private _needSync;
-        constructor(engine: Engine, data?: number[], dynamic?: boolean);
-        readonly isSync: boolean;
-        isDynamic(): boolean;
-        getData(): number[];
-        getBuffer(): WebGLBuffer;
-        private _fillAlignment(size);
-        addUniform(name: string, size: number | number[]): void;
-        addMatrix(name: string, mat: Matrix): void;
-        addFloat2(name: string, x: number, y: number): void;
-        addFloat3(name: string, x: number, y: number, z: number): void;
-        addColor3(name: string, color: Color3): void;
-        addColor4(name: string, color: Color3, alpha: number): void;
-        addVector3(name: string, vector: Vector3): void;
-        create(): void;
-        update(): void;
-        updateUniform(uniformName: string, data: number[] | Float32Array): void;
-        updateFloat(name: string, x: number): void;
-        updateFloat2(name: string, x: number, y: number): void;
-        updateFloat3(name: string, x: number, y: number, z: number): void;
-        updateFloat4(name: string, x: number, y: number, z: number, w: number): void;
-        updateMatrix(name: string, mat: Matrix): void;
-        updateVector3(name: string, vector: Vector3): void;
-        updateColor3(name: string, color: Color3): void;
-        updateColor4(name: string, color: Color3, alpha: number): void;
-        updateUniformDirectly(uniformName: string, data: number[]): void;
-        dispose(): void;
+        static _FresnelEnabled: boolean;
+        static FresnelEnabled: boolean;
     }
 }
 
@@ -5884,7 +5982,7 @@ declare module BABYLON {
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.
          * Returns the Color3.
          */
-        toArray(array: number[] | Float32Array, index?: number): Color3;
+        toArray(array: number[], index?: number): Color3;
         /**
          * Returns a new Color4 object from the current Color3 and the passed alpha.
          */
@@ -6692,7 +6790,7 @@ declare module BABYLON {
          * Populates the passed array from the passed index with the Vector4 coordinates.
          * Returns the Vector4.
          */
-        toArray(array: number[] | Float32Array, index?: number): Vector4;
+        toArray(array: number[], index?: number): Vector4;
         /**
          * Adds the passed vector to the current Vector4.
          * Returns the updated Vector4.
@@ -7912,7 +8010,9 @@ declare module BABYLON {
         showSubMeshesBoundingBox: boolean;
         isBlocker: boolean;
         renderingGroupId: number;
+        private _material;
         material: Material;
+        private _receiveShadows;
         receiveShadows: boolean;
         renderOutline: boolean;
         outlineColor: Color3;
@@ -7920,12 +8020,17 @@ declare module BABYLON {
         renderOverlay: boolean;
         overlayColor: Color3;
         overlayAlpha: number;
+        private _hasVertexAlpha;
         hasVertexAlpha: boolean;
+        private _useVertexColors;
         useVertexColors: boolean;
-        applyFog: boolean;
+        private _computeBonesUsingShaders;
         computeBonesUsingShaders: boolean;
-        scalingDeterminant: number;
+        private _numBoneInfluencers;
         numBoneInfluencers: number;
+        private _applyFog;
+        applyFog: boolean;
+        scalingDeterminant: number;
         useOctreeForRenderingSelection: boolean;
         useOctreeForPicking: boolean;
         useOctreeForCollisions: boolean;
@@ -7963,7 +8068,6 @@ declare module BABYLON {
         _positions: Vector3[];
         private _isDirty;
         _masterMesh: AbstractMesh;
-        _materialDefines: MaterialDefines;
         _boundingInfo: BoundingInfo;
         private _pivotMatrix;
         _isDisposed: boolean;
@@ -7974,6 +8078,7 @@ declare module BABYLON {
         private _isWorldMatrixFrozen;
         _unIndexed: boolean;
         _poseMatrix: Matrix;
+        _lightSources: Light[];
         _waitingActions: any;
         _waitingFreezeWorldMatrix: boolean;
         private _skeleton;
@@ -7988,6 +8093,13 @@ declare module BABYLON {
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         toString(fullDetails?: boolean): string;
+        _resyncLightSources(): void;
+        _resyncLighSource(light: Light): void;
+        _removeLightSource(light: Light): void;
+        private _markSubMeshesAsDirty(func);
+        _markSubMeshesAsLightDirty(): void;
+        _markSubMeshesAsAttributesDirty(): void;
+        _markSubMeshesAsMiscDirty(): void;
         /**
          * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
          * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
@@ -10738,6 +10850,10 @@ declare module BABYLON {
         _alphaIndex: number;
         _distanceToCamera: number;
         _id: number;
+        _materialDefines: MaterialDefines;
+        private _materialEffect;
+        readonly effect: Effect;
+        setEffect(effect: Effect, defines?: MaterialDefines): void;
         constructor(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: any, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);
         readonly IsGlobal: boolean;
         /**
@@ -12968,6 +13084,7 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    function expandToProperty(callback: string): (target: any, propertyKey: string) => void;
     function serialize(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     function serializeAsTexture(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     function serializeAsColor3(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
@@ -13656,7 +13773,8 @@ declare module BABYLON {
         dispose(): void;
         concat(array: any): void;
         concatWithNoDuplicate(array: any): void;
-        indexOf(value: any): number;
+        indexOf(value: T): number;
+        contains(value: T): boolean;
         private static _GlobalId;
     }
 }
@@ -14621,10 +14739,12 @@ declare module BABYLON.Internals {
 declare module BABYLON {
     class BaseTexture {
         name: string;
+        private _hasAlpha;
         hasAlpha: boolean;
         getAlphaFromRGB: boolean;
         level: number;
         coordinatesIndex: number;
+        private _coordinatesMode;
         coordinatesMode: number;
         wrapU: number;
         wrapV: number;

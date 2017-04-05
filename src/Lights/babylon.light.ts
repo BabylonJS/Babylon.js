@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    export interface IShadowLight {
+    export interface IShadowLight extends Light {
         id: string;
         position: Vector3;
         transformedPosition: Vector3;
@@ -70,17 +70,61 @@
         @serialize()
         public range = Number.MAX_VALUE;
 
-        @serialize()
-        public includeOnlyWithLayerMask = 0;
+        private _includedOnlyMeshes: AbstractMesh[];
+        public get includedOnlyMeshes(): AbstractMesh[] {
+            return this._includedOnlyMeshes;
+        }
 
-        public includedOnlyMeshes = new Array<AbstractMesh>();
-        public excludedMeshes = new Array<AbstractMesh>();
+        public set includedOnlyMeshes(value: AbstractMesh[]) {
+            this._includedOnlyMeshes = value;
+            this._hookArrayForIncludedOnly(value);
+        }
 
-        @serialize()
-        public excludeWithLayerMask = 0;
+        private _excludedMeshes: AbstractMesh[];
+        public get excludedMeshes(): AbstractMesh[] {
+            return this._excludedMeshes;
+        }
+        public set excludedMeshes(value: AbstractMesh[]) {
+            this._excludedMeshes = value;
+            this._hookArrayForExcluded(value);
+        }        
 
-        @serialize()
-        public lightmapMode = 0;
+        @serialize("excludeWithLayerMask")
+        private _excludeWithLayerMask = 0;
+        public get excludeWithLayerMask(): number {
+            return this._excludeWithLayerMask;
+        }
+
+        public set excludeWithLayerMask(value: number) {
+            this._excludeWithLayerMask = value;
+            this._resyncMeshes();
+        }        
+
+        @serialize("includeOnlyWithLayerMask")
+        private _includeOnlyWithLayerMask = 0;
+        public get includeOnlyWithLayerMask(): number {
+            return this._includeOnlyWithLayerMask;
+        }
+
+        public set includeOnlyWithLayerMask(value: number) {
+            this._includeOnlyWithLayerMask = value;
+            this._resyncMeshes();
+        }          
+
+        @serialize("lightmapMode")
+        private _lightmapMode = 0;
+        public get lightmapMode(): number {
+            return this._lightmapMode;
+        }
+
+        public set lightmapMode(value: number) {
+            if (this._lightmapMode === value) {
+                return;
+            }
+            
+            this._lightmapMode = value;
+            this._markMeshesAsLightDirty();
+        }    
 
         // PBR Properties.
         @serialize()
@@ -103,6 +147,11 @@
             this.getScene().addLight(this);
             this._uniformBuffer = new UniformBuffer(scene.getEngine(), null, true);
             this._buildUniformLayout();
+
+            this.includedOnlyMeshes = new Array<AbstractMesh>();
+            this.excludedMeshes = new Array<AbstractMesh>();
+
+            this._resyncMeshes();
         }
 
         protected _buildUniformLayout(): void {
@@ -131,6 +180,19 @@
             }
             return ret;
         } 
+
+
+        /**
+         * Set the enabled state of this node.
+         * @param {boolean} value - the new enabled state
+         * @see isEnabled
+         */
+        public setEnabled(value: boolean): void {
+            super.setEnabled(value);
+
+            this._resyncMeshes();
+        }
+
         /**
          * Returns the Light associated shadow generator.  
          */
@@ -213,6 +275,12 @@
 
             // Animations
             this.getScene().stopAnimation(this);
+
+            // Remove from meshes
+            for (var mesh of this.getScene().meshes) {
+                mesh._removeLightSource(this);
+            }
+
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();
@@ -320,6 +388,64 @@
             }
 
             return light;
+        }
+
+        private _hookArrayForExcluded(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+
+                for (var item of items) {
+                    item._resyncLighSource(this);
+                }
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                for (var item of deleted) {
+                    item._resyncLighSource(this);
+                }
+
+                return deleted;
+            }
+        }
+
+        private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+
+                this._resyncMeshes();
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this._resyncMeshes();
+
+                return deleted;
+            }
+        }
+
+        private _resyncMeshes() {
+            for (var mesh of this.getScene().meshes) {
+                mesh._resyncLighSource(this);
+            }
+        }
+
+        public _markMeshesAsLightDirty() {
+            for (var mesh of this.getScene().meshes) {
+                if (mesh._lightSources.indexOf(this) !== -1) {
+                    mesh._markSubMeshesAsLightDirty();
+                }
+            }
         }
     }
 }

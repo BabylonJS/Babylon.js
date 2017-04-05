@@ -1,9 +1,10 @@
 global proc reskinSelectedMeshes() {
-    $influencers = `intSliderGrp -q -value myReskinInfluencers`;
     $selection = `ls -sl`;
     $selected = size($selection);
     if ($selected > 0) {
         $skinName = `textFieldGrp -q -text myReskinName`;
+        $regenerate = `radioButtonGrp -q -select myReskinGenerate`;
+        $influencers = `intSliderGrp -q -value myReskinInfluencers`;
         if ($skinName != "") {
             $textField_exists = `objExists $skinName`;
             if ($textField_exists == 0) {
@@ -13,7 +14,8 @@ global proc reskinSelectedMeshes() {
                 if ($selected > 1) {
                     $duplicateObj = `duplicate $selection`;
                     $createGrp = `group -n tempGroup`;
-                    $combine = `polyUnite -n $skinName $createGrp`;
+                    $mergeType = ($regenerate - 1);
+                    $combine = `polyUnite -muv $mergeType -n $skinName $createGrp`;
                     $deleteHistory = `delete -ch $combine`;
                     delete $createGrp;
                 } else {
@@ -26,7 +28,7 @@ global proc reskinSelectedMeshes() {
                 $transfer = `copySkinWeights -nm -sa "closestPoint" -ia "closestJoint"`;
                 $cleared = `textFieldGrp -edit -text "" myReskinName`;
                 $deleted = `delete $selection`;
-                $deselect = `select -cl`;
+                select -cl;
                 waitCursor -state 0;
             } else {
                 error ("Skin name is already in use: " + $skinName);
@@ -42,8 +44,9 @@ global proc reskinSelectedMeshes() {
 global proc babylonReskinTool() {
     string $window = `window -title "Reskin Geometry Tool"`;
     columnLayout -adjustableColumn true;
-    textFieldGrp -label "New Skin Name" -text "" myReskinName;
-    intSliderGrp -label "Max Influencers" -field true -minValue 1 -maxValue 8 -fieldMinValue 1 -fieldMaxValue 8 -value 4 myReskinInfluencers;
+    textFieldGrp -label "Skin Name" -text "" myReskinName;
+    intSliderGrp -label "Max Influencers" -field true -minValue 1 -maxValue 4 -fieldMinValue 1 -fieldMaxValue 4 -value 4 myReskinInfluencers;
+    radioButtonGrp -label "UV Map Generation" -numberOfRadioButtons 3 -labelArray3 "No Merge" "Same Name" "Set Links" -select 2 myReskinGenerate;
     button -label "Reskin Selected Meshes" -command "reskinSelectedMeshes()" myReskinButton; 
     showWindow $window;
 }

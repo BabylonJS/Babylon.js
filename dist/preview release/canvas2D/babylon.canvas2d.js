@@ -6,7 +6,7 @@ BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid m
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
 BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\n\nvec4 pos;\n\n\n\n\npos.xy=pos2.xy*sizeUV*textureSize;\n\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw))*irw)+irw/2.0;\ny=(floor((y/irh))*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n} ";
-BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxx*vColor.xyz*vColor.a,vColor.a);\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
+BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,vColor.a);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\nif (color.a == 0.0) {\ndiscard;\n}\n#ifdef FontTexture\ngl_FragColor=vec4(color.xxx*vColor.xyz*vColor.a,color.x*vColor.a);\n#else\ngl_FragColor=color*vColor;\n#endif\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\n\n\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*superSampleFactor*sizeUV*textureSize;\npos.z=1.0;\npos.w=1.0;\nfloat x=dot(pos,transformX);\nfloat y=dot(pos,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=((floor((x/irw)+0.5)*irw)+irw/2.0)+0.5*irw;\ny=((floor((y/irh)+0.5)*irh)+irh/2.0)+0.5*irh;\n}\ngl_Position=vec4(x,y,zBias.x,1.0);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt vec3 renderingInfo;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nfloat x=dot(p,transformX);\nfloat y=dot(p,transformY);\nif (renderingInfo.z == 1.0) {\nfloat rw=renderingInfo.x;\nfloat rh=renderingInfo.y;\nfloat irw=2.0/rw;\nfloat irh=2.0/rh;\nx=(floor((x/irw)+0.5)*irw)+irw/2.0;\ny=(floor((y/irh)+0.5)*irh)+irh/2.0;\n}\ngl_Position=vec4(x,y,zBias.x,1);\n}";
@@ -845,11 +845,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.c2dlogging.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -1406,11 +1411,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.observableArray.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -1710,11 +1720,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.observableStringDictionary.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2165,6 +2180,7 @@ var BABYLON;
                     a.parentElement.removeChild(a);
                 });
                 a.click();
+                //Or opening a new tab with the image if it is not possible to automatically start download.
             }
             else {
                 var newWindow = window.open("");
@@ -2999,11 +3015,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.bounding2d.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -3590,11 +3611,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.primitiveCollisionManager.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3630,6 +3656,11 @@ var BABYLON;
     }());
     LayoutEngineBase = __decorate([
         BABYLON.className("LayoutEngineBase", "BABYLON")
+        /**
+         * This is the base class you have to extend in order to implement your own Layout Engine.
+         * Note that for performance reason, each different Layout Engine type can be exposed as one/many singleton or must be instanced each time.
+         * If data has to be associated to a given primitive you can use the SmartPropertyPrim.addExternalData API to do it.
+         */
     ], LayoutEngineBase);
     BABYLON.LayoutEngineBase = LayoutEngineBase;
     var CanvasLayoutEngine = CanvasLayoutEngine_1 = (function (_super) {
@@ -3677,6 +3708,7 @@ var BABYLON;
                     prim.layoutArea = contentArea;
                 }
             }
+            BABYLON.C2DLogging.setPostMessage(function () { return "Prim: " + prim.id + " has layoutArea: " + prim.layoutArea; });
         };
         Object.defineProperty(CanvasLayoutEngine.prototype, "isChildPositionAllowed", {
             get: function () {
@@ -3696,6 +3728,10 @@ var BABYLON;
     ], CanvasLayoutEngine.prototype, "_doUpdate", null);
     CanvasLayoutEngine = CanvasLayoutEngine_1 = __decorate([
         BABYLON.className("CanvasLayoutEngine", "BABYLON")
+        /**
+         * The default Layout Engine, primitive are positioning into a Canvas, using their x/y coordinates.
+         * This layout must be used as a Singleton through the CanvasLayoutEngine.Singleton property.
+         */
     ], CanvasLayoutEngine);
     BABYLON.CanvasLayoutEngine = CanvasLayoutEngine;
     var StackPanelLayoutEngine = StackPanelLayoutEngine_1 = (function (_super) {
@@ -3836,6 +3872,10 @@ var BABYLON;
     StackPanelLayoutEngine.computeCounter = 0;
     StackPanelLayoutEngine = StackPanelLayoutEngine_1 = __decorate([
         BABYLON.className("StackPanelLayoutEngine", "BABYLON")
+        /**
+         * A stack panel layout. Primitive will be stack either horizontally or vertically.
+         * This Layout type must be used as a Singleton, use the StackPanelLayoutEngine.Horizontal for an horizontal stack panel or StackPanelLayoutEngine.Vertical for a vertical one.
+         */
     ], StackPanelLayoutEngine);
     BABYLON.StackPanelLayoutEngine = StackPanelLayoutEngine;
     /**
@@ -4196,6 +4236,10 @@ var BABYLON;
     GridPanelLayoutEngine.dstAreaPos = BABYLON.Vector2.Zero();
     GridPanelLayoutEngine = GridPanelLayoutEngine_1 = __decorate([
         BABYLON.className("GridPanelLayoutEngine", "BABYLON")
+        /**
+         * A grid panel layout.  Grid panel is a table that has rows and columns.
+         * When adding children to a primitive that is using grid panel layout, you must assign a GridData object to the child to indicate where the child will appear in the grid.
+         */
     ], GridPanelLayoutEngine);
     BABYLON.GridPanelLayoutEngine = GridPanelLayoutEngine;
     var CanvasLayoutEngine_1, StackPanelLayoutEngine_1, GridPanelLayoutEngine_1;
@@ -4203,11 +4247,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.canvas2dLayoutEngine.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -4288,6 +4337,9 @@ var BABYLON;
     }(LockableBase));
     SolidColorBrush2D = __decorate([
         BABYLON.className("SolidColorBrush2D", "BABYLON")
+        /**
+         * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
+         */
     ], SolidColorBrush2D);
     BABYLON.SolidColorBrush2D = SolidColorBrush2D;
     var GradientColorBrush2D = (function (_super) {
@@ -4414,17 +4466,25 @@ var BABYLON;
     }(LockableBase));
     GradientColorBrush2D = __decorate([
         BABYLON.className("GradientColorBrush2D", "BABYLON")
+        /**
+         * This class implements a Gradient Color Brush, the brush color will blend from a first given color to a second one.
+         */
     ], GradientColorBrush2D);
     BABYLON.GradientColorBrush2D = GradientColorBrush2D;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.brushes2d.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -4654,9 +4714,12 @@ var BABYLON;
                     return;
                 }
                 if (this._owner) {
+                    //BindingWatcher.unregisterBinding(this, null);
                 }
                 this._propertyPathName = value;
                 if (this._owner) {
+                    //let watched = BindingWatcher._getDataSource(this._owner.dataSource, this);
+                    //BindingWatcher.refreshBinding(watched, this._owner, this, true, null, true);
                 }
             },
             enumerable: true,
@@ -5108,6 +5171,7 @@ var BABYLON;
             for (var _i = 0, _a = this._bindings; _i < _a.length; _i++) {
                 var binding = _a[_i];
                 if (binding) {
+                    //BindingWatcher.updateFromDataSource(this, binding, false);
                 }
             }
         };
@@ -5653,6 +5717,9 @@ var BABYLON;
     ], SmartPropertyPrim.prototype, "levelBoundingInfo", null);
     SmartPropertyPrim = SmartPropertyPrim_1 = __decorate([
         BABYLON.className("SmartPropertyPrim", "BABYLON")
+        /**
+         * Base class of the primitives, implementing core crosscutting features
+         */
     ], SmartPropertyPrim);
     BABYLON.SmartPropertyPrim = SmartPropertyPrim;
     function dependencyProperty(propId, piStore, mode, updateSourceTrigger) {
@@ -5687,11 +5754,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.smartPropertyPrim.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7876,7 +7948,10 @@ var BABYLON;
                             return null;
                         }
                         return _this.parent.margin;
-                    }, function () { return _this._positioningDirty(); });
+                    }, function () {
+                        _this._positioningDirty();
+                        _this._updatePositioningState();
+                    });
                     this._updatePositioningState();
                 }
                 return this._margin;
@@ -7957,7 +8032,10 @@ var BABYLON;
             get: function () {
                 var _this = this;
                 if (!this._marginAlignment) {
-                    this._marginAlignment = new PrimitiveAlignment(function () { return _this._positioningDirty(); });
+                    this._marginAlignment = new PrimitiveAlignment(function () {
+                        _this._positioningDirty();
+                        _this._updatePositioningState();
+                    });
                     this._updatePositioningState();
                 }
                 return this._marginAlignment;
@@ -9332,7 +9410,7 @@ var BABYLON;
                 var primNewSize = Prim2DBase_1._size;
                 var hasH = false;
                 var hasV = false;
-                var paddingApplied = false;
+                //let paddingApplied = false;
                 var hasPadding = this._hasPadding;
                 // Compute the size
                 // The size is the size of the prim or the computed one if there's a marginAlignment of Stretch
@@ -9369,43 +9447,40 @@ var BABYLON;
                         primNewSize.height = primSize.height;
                     }
                 }
-                if (!isVSizeAuto || !isHSizeAuto) {
-                    Prim2DBase_1._curContentArea.copyFrom(this._contentArea);
-                    if (hasPadding) {
-                        var area = Prim2DBase_1._icArea;
-                        var zone = Prim2DBase_1._icZone;
-                        this._getInitialContentAreaToRef(primNewSize, zone, area);
-                        area.width = Math.max(0, area.width);
-                        area.height = Math.max(0, area.height);
-                        this.padding.compute(area, this._paddingOffset, Prim2DBase_1._size2);
-                        if (!isHSizeAuto) {
-                            this._paddingOffset.x += zone.x;
-                            this._paddingOffset.z -= zone.z;
-                            this._contentArea.width = Prim2DBase_1._size2.width;
-                        }
-                        if (!isVSizeAuto) {
-                            this._paddingOffset.y += zone.y;
-                            this._paddingOffset.w -= zone.w;
-                            this._contentArea.height = Prim2DBase_1._size2.height;
-                        }
+                Prim2DBase_1._curContentArea.copyFrom(this._contentArea);
+                if (hasPadding) {
+                    var area = Prim2DBase_1._icArea;
+                    var zone = Prim2DBase_1._icZone;
+                    this._getInitialContentAreaToRef(primNewSize, zone, area);
+                    area.width = Math.max(0, area.width);
+                    area.height = Math.max(0, area.height);
+                    this.padding.compute(area, this._paddingOffset, Prim2DBase_1._size2);
+                    if (!isHSizeAuto) {
+                        this._paddingOffset.x += zone.x;
+                        this._paddingOffset.z -= zone.z;
+                        this._contentArea.width = Prim2DBase_1._size2.width;
                     }
-                    else {
-                        this._contentArea.copyFrom(primNewSize);
+                    if (!isVSizeAuto) {
+                        this._paddingOffset.y += zone.y;
+                        this._paddingOffset.w -= zone.w;
+                        this._contentArea.height = Prim2DBase_1._size2.height;
                     }
-                    if (!Prim2DBase_1._curContentArea.equals(this._contentArea)) {
-                        this._setLayoutDirty();
-                    }
-                    paddingApplied = true;
+                }
+                else {
+                    this._contentArea.copyFrom(primNewSize);
+                }
+                if (!Prim2DBase_1._curContentArea.equals(this._contentArea)) {
+                    this._setLayoutDirty();
                 }
                 // Finally we apply margin to determine the position
                 if (hasMargin) {
                     var layoutArea = this.layoutArea;
                     var mo = this._marginOffset;
                     var margin = this.margin;
-                    // We compute margin only if the layoutArea is as big as the contentSize, sometime this code is triggered when the layoutArea is
-                    //  not yet set and computing alignment would result into a bad size.
+                    // We compute margin only if the layoutArea is "real": a valid object with dimensions greater than 0
+                    //  otherwise sometimes this code would be triggered with and invalid layoutArea, resulting to an invalid positioning
                     // So we make sure with compute alignment only if the layoutArea is good
-                    if (layoutArea && layoutArea.width >= transformedBSize.width && layoutArea.height >= transformedBSize.height) {
+                    if (layoutArea && layoutArea.width > 0 && layoutArea.height > 0) {
                         margin.computeWithAlignment(layoutArea, transformedBSize, ma, levelScale, mo, Prim2DBase_1._size2);
                     }
                     else {
@@ -9741,6 +9816,10 @@ var BABYLON;
     __decorate([
         BABYLON.logProp(null, false, false, false),
         BABYLON.instanceLevelProperty(1, function (pi) { return Prim2DBase_1.actualPositionProperty = pi; }, false, false, true)
+        /**
+         * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing.
+         * BEWARE: don't change this value, it's read-only!
+         */
     ], Prim2DBase.prototype, "actualPosition", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 1, function (pi) { return Prim2DBase_1.actualXProperty = pi; }, false, false, true)
@@ -9760,6 +9839,11 @@ var BABYLON;
     __decorate([
         BABYLON.logProp(),
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 6, function (pi) { return Prim2DBase_1.sizeProperty = pi; }, false, true)
+        /**
+         * Size of the primitive or its bounding area
+         * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
+         * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
+         */
     ], Prim2DBase.prototype, "size", null);
     __decorate([
         BABYLON.logMethod()
@@ -9770,58 +9854,115 @@ var BABYLON;
     __decorate([
         BABYLON.logProp(),
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 7, function (pi) { return Prim2DBase_1.widthProperty = pi; }, false, true)
+        /**
+         * Direct access to the size.width value of the primitive
+         * Use this property when you only want to change one component of the size property
+         */
     ], Prim2DBase.prototype, "width", null);
     __decorate([
         BABYLON.logProp(),
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 8, function (pi) { return Prim2DBase_1.heightProperty = pi; }, false, true)
+        /**
+         * Direct access to the size.height value of the primitive
+         * Use this property when you only want to change one component of the size property
+         */
     ], Prim2DBase.prototype, "height", null);
     __decorate([
         BABYLON.logProp(),
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 9, function (pi) { return Prim2DBase_1.rotationProperty = pi; }, false, true)
+        /**
+         * Rotation of the primitive, in radian, along the Z axis
+         */
     ], Prim2DBase.prototype, "rotation", null);
     __decorate([
         BABYLON.logProp(),
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 10, function (pi) { return Prim2DBase_1.scaleProperty = pi; }, false, true)
+        /**
+         * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
+         */
     ], Prim2DBase.prototype, "scale", null);
     __decorate([
         BABYLON.logProp(),
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 11, function (pi) { return Prim2DBase_1.actualSizeProperty = pi; }, false, true)
+        /**
+         * Return the size of the primitive as it's being rendered into the target.
+         * This value may be different of the size property when layout/alignment is used or specific primitive types can implement a custom logic through this property.
+         * BEWARE: don't use the setter, it's for internal purpose only
+         * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
+         */
     ], Prim2DBase.prototype, "actualSize", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 12, function (pi) { return Prim2DBase_1.actualWidthProperty = pi; }, false, true)
+        /**
+         * Shortcut to actualSize.width
+         */
     ], Prim2DBase.prototype, "actualWidth", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, function (pi) { return Prim2DBase_1.actualHeightProperty = pi; }, false, true)
+        /**
+         * Shortcut to actualPosition.height
+         */
     ], Prim2DBase.prototype, "actualHeight", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 14, function (pi) { return Prim2DBase_1.originProperty = pi; }, false, true)
     ], Prim2DBase.prototype, "origin", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 15, function (pi) { return Prim2DBase_1.levelVisibleProperty = pi; })
+        /**
+         * Let the user defines if the Primitive is hidden or not at its level. As Primitives inherit the hidden status from their parent, only the isVisible property give properly the real visible state.
+         * Default is true, setting to false will hide this primitive and its children.
+         */
     ], Prim2DBase.prototype, "levelVisible", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 16, function (pi) { return Prim2DBase_1.isVisibleProperty = pi; })
+        /**
+         * Use ONLY THE GETTER to determine if the primitive is visible or not.
+         * The Setter is for internal purpose only!
+         */
     ], Prim2DBase.prototype, "isVisible", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 17, function (pi) { return Prim2DBase_1.zOrderProperty = pi; })
+        /**
+         * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
+         */
     ], Prim2DBase.prototype, "zOrder", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 18, function (pi) { return Prim2DBase_1.marginProperty = pi; })
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
     ], Prim2DBase.prototype, "margin", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 19, function (pi) { return Prim2DBase_1.paddingProperty = pi; })
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
     ], Prim2DBase.prototype, "padding", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 20, function (pi) { return Prim2DBase_1.marginAlignmentProperty = pi; })
+        /**
+         * You can get/set the margin alignment through this property
+         */
     ], Prim2DBase.prototype, "marginAlignment", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 21, function (pi) { return Prim2DBase_1.opacityProperty = pi; })
+        /**
+         * Get/set the opacity of the whole primitive
+         */
     ], Prim2DBase.prototype, "opacity", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 22, function (pi) { return Prim2DBase_1.scaleXProperty = pi; }, false, true)
+        /**
+         * Scale applied on the X axis of the primitive
+         */
     ], Prim2DBase.prototype, "scaleX", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 23, function (pi) { return Prim2DBase_1.scaleYProperty = pi; }, false, true)
+        /**
+         * Scale applied on the Y axis of the primitive
+         */
     ], Prim2DBase.prototype, "scaleY", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 24, function (pi) { return Prim2DBase_1.actualScaleProperty = pi; }, false, true)
@@ -9846,6 +9987,9 @@ var BABYLON;
     ], Prim2DBase.prototype, "_updatePositioning", null);
     Prim2DBase = Prim2DBase_1 = __decorate([
         BABYLON.className("Prim2DBase", "BABYLON")
+        /**
+         * Base class for a Primitive of the Canvas2D feature
+         */
     ], Prim2DBase);
     BABYLON.Prim2DBase = Prim2DBase;
     var PrimitiveAlignment_1, PrimitiveThickness_1, Prim2DBase_1;
@@ -9853,11 +9997,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.prim2dBase.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     var GroupInstanceInfo = (function () {
@@ -10200,11 +10349,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.modelRenderCache.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11104,12 +11258,25 @@ var BABYLON;
     RenderablePrim2D._iV2 = new BABYLON.Vector2(1, 1); // Must stay identity vector3
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
+        /**
+         * Get/set if the Primitive is from the AlphaTest rendering category.
+         * The AlphaTest category is the rendering pass with alpha blend, depth compare and write activated.
+         * Primitives that render with an alpha mask should be from this category.
+         * The setter should be used only by implementers of new primitive type.
+         */
     ], RenderablePrim2D.prototype, "isAlphaTest", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return RenderablePrim2D_1.isTransparentProperty = pi; })
+        /**
+         * Get/set if the Primitive is from the Transparent rendering category.
+         * The setter should be used only by implementers of new primitive type.
+         */
     ], RenderablePrim2D.prototype, "isTransparent", null);
     RenderablePrim2D = RenderablePrim2D_1 = __decorate([
         BABYLON.className("RenderablePrim2D", "BABYLON")
+        /**
+         * The abstract class for primitive that render into the Canvas2D
+         */
     ], RenderablePrim2D);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
     var RenderablePrim2D_1;
@@ -11117,11 +11284,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.renderablePrim2d.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11296,15 +11468,26 @@ var BABYLON;
     Shape2D.SHAPE2D_PROPCOUNT = BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Shape2D_1.borderProperty = pi; }, true)
+        /**
+         * Get/set the brush to render the Border part of the Primitive
+         */
     ], Shape2D.prototype, "border", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Shape2D_1.fillProperty = pi; }, true)
     ], Shape2D.prototype, "fill", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Shape2D_1.borderThicknessProperty = pi; })
+        /**
+         * Get/set the thickness of the border part.
+         */
     ], Shape2D.prototype, "borderThickness", null);
     Shape2D = Shape2D_1 = __decorate([
         BABYLON.className("Shape2D", "BABYLON")
+        /**
+         * The abstract class for parametric shape based Primitives types.
+         * Shape2D based primitives are composed of two parts: fill and border, both are optional but at least one must be specified.
+         * The fill part is the primitive 'body', the border is a border around this body. The border has a thickness that can be changed.
+         */
     ], Shape2D);
     BABYLON.Shape2D = Shape2D;
     var Shape2DInstanceData = (function (_super) {
@@ -11430,11 +11613,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.shape2d.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11729,8 +11917,14 @@ var BABYLON;
             var sortedDirtyList = null;
             // Update the Global Transformation and visibility status of the changed primitives
             var rd = this._renderableData;
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
-                sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+            var curPrimDirtyList = rd._primDirtyList;
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
+                // From now on we use the 'curPrimDirtyList' variable to process the primitives that was marked as dirty
+                // But we also allocate a new array in the object's member to get the prim that will be dirty again during the process
+                //  and that would need another process next time.
+                rd._primDirtyList = new Array();
+                // Sort the primitives to process them from the highest in the tree to the lowest
+                sortedDirtyList = curPrimDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
             var s = this.actualSize;
@@ -11767,7 +11961,7 @@ var BABYLON;
                 this._viewportSize.width = sw;
                 this._viewportSize.height = sh;
             }
-            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+            if ((curPrimDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
                 this._cacheGroupDirty = this._isCachedGroup;
                 rd._primNewDirtyList.splice(0);
@@ -11784,7 +11978,7 @@ var BABYLON;
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
                     //  the hierarchyDepth in order to prepare primitives from top to bottom
                     if (!sortedDirtyList) {
-                        sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+                        sortedDirtyList = curPrimDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                     }
                     sortedDirtyList.forEach(function (p) {
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
@@ -11795,7 +11989,7 @@ var BABYLON;
                     });
                 }
                 // Everything is updated, clear the dirty list
-                rd._primDirtyList.forEach(function (p) {
+                curPrimDirtyList.forEach(function (p) {
                     if (rd._primNewDirtyList.indexOf(p) === -1) {
                         p._resetPropertiesDirty();
                     }
@@ -11803,8 +11997,7 @@ var BABYLON;
                         p._setFlags(BABYLON.SmartPropertyPrim.flagNeedRefresh);
                     }
                 });
-                rd._primDirtyList.splice(0);
-                rd._primDirtyList = rd._primDirtyList.concat(rd._primNewDirtyList);
+                rd._primDirtyList = curPrimDirtyList.concat(rd._primNewDirtyList);
             }
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
             rd._childrenRenderableGroups.forEach(function (g) {
@@ -12136,7 +12329,7 @@ var BABYLON;
             }
             var sizeChanged = !Group2D_1._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
-                var size = Group2D_1._s;
+                var size = Group2D_1._s2;
                 rd._cacheNode.getInnerSizeToRef(size);
                 // Check if we have to deallocate because the size is too small
                 if ((size.width < Group2D_1._s.width) || (size.height < Group2D_1._s.height)) {
@@ -12342,6 +12535,10 @@ var BABYLON;
     ], Group2D.prototype, "size", null);
     Group2D = Group2D_1 = __decorate([
         BABYLON.className("Group2D", "BABYLON")
+        /**
+         * A non renderable primitive that defines a logical group.
+         * Can also serve the purpose of caching its content into a bitmap to reduce rendering overhead
+         */
     ], Group2D);
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
@@ -12432,11 +12629,16 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.group2d.js.map
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -12493,6 +12695,7 @@ var BABYLON;
                 for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                     this.setupUniforms(effect, 0, pid._partData, i);
                     engine.drawUnIndexed(false, 0, this.vtxCount);
+                    //                  engine.draw(true, 0, 6);
                 }
             }
             engine.setAlphaMode(cur, true);
@@ -12632,6 +12835,11 @@ var BABYLON;
     }());
     WireFrameGroup2D = __decorate([
         BABYLON.className("WireFrameGroup2D", "BABYLON")
+        /**
+         * A WireFrameGroup2D has a unique id (among the WireFrame2D primitive) and a collection of WireFrameVertex2D which form a Line list.
+         * A Line is defined by two vertices, the storage of vertices doesn't follow the Line Strip convention, so to create consecutive lines the intermediate vertex must be doubled. The best way to build a Line Strip is to use the startLineStrip, pushVertex and endLineStrip methods.
+         * You can manually add vertices using the pushVertex method, but mind that the vertices array must be a multiple of 2 as each line are defined with TWO SEPARATED vertices. I hope this is clear enough.
+         */
     ], WireFrameGroup2D);
     BABYLON.WireFrameGroup2D = WireFrameGroup2D;
     var WireFrame2D = WireFrame2D_1 = (function (_super) {
@@ -12817,9 +13025,15 @@ var BABYLON;
     WireFrame2D.WIREFRAME2D_MAINPARTID = 1;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return WireFrame2D_1.wireFrameGroupsProperty = pi; })
+        /**
+         * Get/set the texture that contains the sprite to display
+         */
     ], WireFrame2D.prototype, "wireFrameGroups", null);
     WireFrame2D = WireFrame2D_1 = __decorate([
         BABYLON.className("WireFrame2D", "BABYLON")
+        /**
+         * Primitive that displays a WireFrame
+         */
     ], WireFrame2D);
     BABYLON.WireFrame2D = WireFrame2D;
     var WireFrame2DInstanceData = (function (_super) {
@@ -12833,11 +13047,16 @@ var BABYLON;
     var WireFrame2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -13339,22 +13558,37 @@ var BABYLON;
     Rectangle2D._riv0 = new BABYLON.Vector2(0, 0);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Rectangle2D_1.notRoundedProperty = pi; })
+        /**
+         * Get if the rectangle is notRound (returns true) or rounded (returns false).
+         * Don't use the setter, it's for internal purpose only
+         */
     ], Rectangle2D.prototype, "notRounded", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 3, function (pi) { return Rectangle2D_1.roundRadiusProperty = pi; })
+        /**
+         * Get/set the round Radius, a value of 0 for a sharp edges rectangle, otherwise the value will be used as the diameter of the round to apply on corder. The Rectangle2D.notRounded property will be updated accordingly.
+         */
     ], Rectangle2D.prototype, "roundRadius", null);
     Rectangle2D = Rectangle2D_1 = __decorate([
         BABYLON.className("Rectangle2D", "BABYLON")
+        /**
+         * The Rectangle Primitive type
+         */
     ], Rectangle2D);
     BABYLON.Rectangle2D = Rectangle2D;
     var Rectangle2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -13714,19 +13948,30 @@ var BABYLON;
     Ellipse2D._riv0 = new BABYLON.Vector2(0, 0);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Ellipse2D_1.subdivisionsProperty = pi; })
+        /**
+         * Get/set the number of subdivisions used to draw the ellipsis. Default is 64.
+         */
     ], Ellipse2D.prototype, "subdivisions", null);
     Ellipse2D = Ellipse2D_1 = __decorate([
         BABYLON.className("Ellipse2D", "BABYLON")
+        /**
+         * Ellipse Primitive class
+         */
     ], Ellipse2D);
     BABYLON.Ellipse2D = Ellipse2D;
     var Ellipse2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -14163,27 +14408,52 @@ var BABYLON;
     Sprite2D.layoutConstructMode = false;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D_1.textureProperty = pi; })
+        /**
+         * Get/set the texture that contains the sprite to display
+         */
     ], Sprite2D.prototype, "texture", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Sprite2D_1.useAlphaFromTextureProperty = pi; })
+        /**
+         * If true and the texture has an Alpha Channel which is used (BaseTexture.hasAlpha = true) the Sprite2d will be rendered as a Transparent Primitive, if false and the texture has an Alpha Channel which is used (BaseTexture.hasAlpha = true) the Sprite2d will be rendered as Alpha Test. If false or if the Texture has no alpha or it's not used (BaseTexture.hasAlpha = false) the Sprite2d will be rendered as an Opaque Primitive
+         */
     ], Sprite2D.prototype, "useAlphaFromTexture", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Sprite2D_1.spriteSizeProperty = pi; }, false, true)
+        /**
+         * Get/set the sprite location (in pixels) in the texture
+         */
     ], Sprite2D.prototype, "spriteSize", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D_1.spriteLocationProperty = pi; })
+        /**
+         * Get/set the sprite location (in pixels) in the texture
+         */
     ], Sprite2D.prototype, "spriteLocation", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D_1.spriteFrameProperty = pi; })
+        /**
+         * Get/set the sprite frame to display.
+         * The frame number is just an offset applied horizontally, based on the sprite's width. it does not wrap, all the frames must be on the same line.
+         */
     ], Sprite2D.prototype, "spriteFrame", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D_1.invertYProperty = pi; })
+        /**
+         * Get/set if the sprite texture coordinates should be inverted on the Y axis
+         */
     ], Sprite2D.prototype, "invertY", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, function (pi) { return Sprite2D_1.spriteScale9Property = pi; })
+        /**
+         * Get/set the texture that contains the sprite to display
+         */
     ], Sprite2D.prototype, "isScale9", null);
     Sprite2D = Sprite2D_1 = __decorate([
         BABYLON.className("Sprite2D", "BABYLON")
+        /**
+         * Primitive that displays a Sprite/Picture
+         */
     ], Sprite2D);
     BABYLON.Sprite2D = Sprite2D;
     var Sprite2DInstanceData = (function (_super) {
@@ -14467,11 +14737,16 @@ var BABYLON;
     var JSONArrayLoader_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -15298,40 +15573,74 @@ var BABYLON;
     Text2D._AlignCenter = 3;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Text2D_1.fontProperty = pi; }, false, true)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
     ], Text2D.prototype, "fontName", null);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Text2D_1.defaultFontColorProperty = pi; })
+        /**
+         * Get/set the font default color
+         */
     ], Text2D.prototype, "defaultFontColor", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Text2D_1.textProperty = pi; }, false, true)
+        /**
+         * Get/set the text to render.
+         * \n \t character are supported.
+         */
     ], Text2D.prototype, "text", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D_1.sizeProperty = pi; })
+        /**
+         * Get/set the size of the area where the text is drawn.
+         * You should not set this size, the default behavior compute the size based on the actual text.
+         */
     ], Text2D.prototype, "size", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Text2D_1.fontSuperSampleProperty = pi; }, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
     ], Text2D.prototype, "fontSuperSample", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D_1.fontSignedDistanceFieldProperty = pi; }, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
     ], Text2D.prototype, "fontSignedDistanceField", null);
     __decorate([
         BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Text2D_1.textureIsPremulAlphaProperty = pi; })
+        /**
+         * Set to true if the FontTexture use Premultiplied Alpha, default is false
+         */
     ], Text2D.prototype, "textureIsPremulAlpha", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, function (pi) { return Text2D_1.fontTextureProperty = pi; })
     ], Text2D.prototype, "fontTexture", null);
     Text2D = Text2D_1 = __decorate([
         BABYLON.className("Text2D", "BABYLON")
+        /**
+         * Primitive that render text using a specific font
+         */
     ], Text2D);
     BABYLON.Text2D = Text2D;
     var Text2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -16504,31 +16813,55 @@ var BABYLON;
     Lines2D._roundCapSubDiv = 36;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Lines2D_1.pointsProperty = pi; })
+        /**
+         * Get the list of points that define the Lines2D primitive. You shouldn't try to change the list or its content. it's not supported right now.
+         */
     ], Lines2D.prototype, "points", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Lines2D_1.fillThicknessProperty = pi; })
+        /**
+         * Get the thickness of the line. You shouldn't try to change this value, it's not supported right now.
+         */
     ], Lines2D.prototype, "fillThickness", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 3, function (pi) { return Lines2D_1.closedProperty = pi; })
+        /**
+         * Get if the Lines2D is a closed shape (true) or an opened one (false).
+         * Don't change this property, setter is for internal purpose only.
+         */
     ], Lines2D.prototype, "closed", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 4, function (pi) { return Lines2D_1.startCapProperty = pi; })
+        /**
+         * Get the start cap of the line. You shouldn't try to change this value, it's not supported right now.
+         */
     ], Lines2D.prototype, "startCap", null);
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 5, function (pi) { return Lines2D_1.endCapProperty = pi; })
+        /**
+         * Get the end cap of the line. You shouldn't try to change this value, it's not supported right now.
+         */
     ], Lines2D.prototype, "endCap", null);
     Lines2D = Lines2D_1 = __decorate([
         BABYLON.className("Lines2D", "BABYLON")
+        /**
+         * Primitive drawing a series of line segments
+         */
     ], Lines2D);
     BABYLON.Lines2D = Lines2D;
     var Lines2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -16939,6 +17272,7 @@ var BABYLON;
                 this.engine.getRenderingCanvas().setPointerCapture(pointerId);
             }
             catch (e) {
+                //Nothing to do with the error. Execution will continue.
             }
             this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
             this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerGotCapture, null);
@@ -16957,6 +17291,7 @@ var BABYLON;
                 this.engine.getRenderingCanvas().releasePointerCapture(pointerId);
             }
             catch (e) {
+                //Nothing to do with the error. Execution will continue.
             }
             this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
             this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerLostCapture, null);
@@ -17824,11 +18159,11 @@ var BABYLON;
                 edge = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
             }
             // Clip values if needed
-            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize);
+            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize - 4); // -4 is to consider the border of 2 pixels, other we couldn't allocate a rect
             var newScale = edge / ((isW) ? this.size.width : this.size.height);
-            if (newScale !== this.scale) {
+            if (newScale !== this._renderableData._renderingScale) {
                 var scale = newScale;
-                //                console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
+                //console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
                 this._setRenderingScale(scale);
             }
         };
@@ -17947,6 +18282,7 @@ var BABYLON;
             if (anisotropicLevel === void 0) { anisotropicLevel = 1; }
             var key = (useMipMap ? "MipMap" : "NoMipMap") + "_" + anisotropicLevel;
             var rd = group._renderableData;
+            var rs = rd._renderingScale;
             var noResizeScale = rd._noResizeOnScale;
             var isCanvas = parent == null;
             var scale;
@@ -17956,6 +18292,8 @@ var BABYLON;
             else {
                 scale = group.actualScale.multiply(this._canvasLevelScale);
             }
+            scale.x *= rs;
+            scale.y *= rs;
             // Determine size
             var size = group.actualSize;
             var scaledSize = new BABYLON.Size(size.width * scale.x, size.height * scale.y);
@@ -18209,6 +18547,11 @@ var BABYLON;
     ], Canvas2D.prototype, "_render", null);
     Canvas2D = Canvas2D_1 = __decorate([
         BABYLON.className("Canvas2D", "BABYLON")
+        /**
+         * The Canvas2D main class.
+         * This class is extended in both ScreenSpaceCanvas2D and WorldSpaceCanvas2D which are designed only for semantic use.
+         * User creates a Screen or WorldSpace canvas which is a 2D surface area that will draw the primitives that were added as children.
+         */
     ], Canvas2D);
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
@@ -18369,6 +18712,9 @@ var BABYLON;
     }(Canvas2D));
     WorldSpaceCanvas2D = __decorate([
         BABYLON.className("WorldSpaceCanvas2D", "BABYLON")
+        /**
+         * Class to create a WorldSpace Canvas2D.
+         */
     ], WorldSpaceCanvas2D);
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
@@ -18415,16 +18761,24 @@ var BABYLON;
     }(Canvas2D));
     ScreenSpaceCanvas2D = __decorate([
         BABYLON.className("ScreenSpaceCanvas2D", "BABYLON")
+        /**
+         * Class to create a ScreenSpace Canvas2D
+         */
     ], ScreenSpaceCanvas2D);
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
     var Canvas2D_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -18449,11 +18803,16 @@ var BABYLON;
     BABYLON.WorldSpaceCanvas2DNode = WorldSpaceCanvas2DNode;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -19232,24 +19591,48 @@ var BABYLON;
     ], UIElement.prototype, "actualHeight", null);
     __decorate([
         BABYLON.dynamicLevelProperty(9, function (pi) { return UIElement.marginProperty = pi; })
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
     ], UIElement.prototype, "margin", null);
     __decorate([
         BABYLON.dynamicLevelProperty(10, function (pi) { return UIElement.paddingProperty = pi; })
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
     ], UIElement.prototype, "padding", null);
     __decorate([
         BABYLON.dynamicLevelProperty(11, function (pi) { return UIElement.marginAlignmentProperty = pi; })
+        /**
+         * You can get/set the margin alignment through this property
+         */
     ], UIElement.prototype, "marginAlignment", null);
     __decorate([
         BABYLON.dynamicLevelProperty(12, function (pi) { return UIElement.paddingAlignmentProperty = pi; })
+        /**
+         * You can get/set the margin alignment through this property
+         */
     ], UIElement.prototype, "paddingAlignment", null);
     __decorate([
         BABYLON.dynamicLevelProperty(13, function (pi) { return UIElement.isEnabledProperty = pi; })
+        /**
+         * True if the UIElement is enabled, false if it's disabled.
+         * User interaction is not possible if the UIElement is not enabled
+         */
     ], UIElement.prototype, "isEnabled", null);
     __decorate([
         BABYLON.dynamicLevelProperty(14, function (pi) { return UIElement.isFocusedProperty = pi; })
+        /**
+         * True if the UIElement has the focus, false if it doesn't
+         */
     ], UIElement.prototype, "isFocused", null);
     __decorate([
         BABYLON.dynamicLevelProperty(15, function (pi) { return UIElement.isMouseOverProperty = pi; })
+        /**
+         * True if the UIElement has the mouse over it
+         */
     ], UIElement.prototype, "isMouseOver", null);
     BABYLON.UIElement = UIElement;
     var UIElementStyle = (function () {
@@ -19374,11 +19757,16 @@ var BABYLON;
     BABYLON.registerWindowRenderingTemplate = registerWindowRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -19470,11 +19858,16 @@ var BABYLON;
     var StackPanel_1, DefaultStackPanelRenderingTemplate_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -19566,11 +19959,16 @@ var BABYLON;
     var Control_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -19659,6 +20057,7 @@ var BABYLON;
                 this.__contentUIElement = l;
             }
             else {
+                // TODO: DataTemplate lookup and create instance
             }
             if (this.__contentUIElement) {
                 this.__contentUIElement._patchUIElement(this.ownerWindow, this);
@@ -19684,11 +20083,16 @@ var BABYLON;
     var ContentControl_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -19937,11 +20341,16 @@ var BABYLON;
     var Window_1, DefaultWindowRenderingTemplate_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -20017,11 +20426,16 @@ var BABYLON;
     var Label_1, DefaultLabelRenderingTemplate_1;
 })(BABYLON || (BABYLON = {}));
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);

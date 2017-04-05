@@ -602,6 +602,7 @@ var BABYLON;
                 var tempVertexData = new BABYLON.VertexData();
                 var primitive = mesh.primitives[i];
                 if (primitive.mode !== 4) {
+                    // continue;
                 }
                 var attributes = primitive.attributes;
                 var accessor = null;
@@ -692,6 +693,7 @@ var BABYLON;
             }
             for (var i = 0; i < mesh.primitives.length; i++) {
                 if (mesh.primitives[i].mode !== 4) {
+                    //continue;
                 }
                 var subMesh = new BABYLON.SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
                 index++;
@@ -1152,13 +1154,13 @@ var BABYLON;
             }
             return gltfRuntime;
         };
-        GLTFFileLoaderBase.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+        GLTFFileLoaderBase.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError, onProgress) {
             var buffer = gltfRuntime.buffers[id];
             if (BABYLON.GLTFUtils.IsBase64(buffer.uri)) {
                 setTimeout(function () { return onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(buffer.uri))); });
             }
             else {
-                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
+                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, onProgress, null, true, onError);
             }
         };
         GLTFFileLoaderBase.LoadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -1364,7 +1366,7 @@ var BABYLON;
         /**
         * Import meshes
         */
-        GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onError) {
+        GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onError, onProgress) {
             var _this = this;
             scene.useRightHandedSystem = true;
             var gltfRuntime = BABYLON.GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
@@ -1408,7 +1410,7 @@ var BABYLON;
                             onSuccess(meshes, null, skeletons);
                         }
                     });
-                });
+                }, onProgress);
                 if (GLTFFileLoader.IncrementalLoading && onSuccess) {
                     onSuccess(meshes, null, skeletons);
                 }
@@ -1473,7 +1475,7 @@ var BABYLON;
             }
         };
         ;
-        GLTFFileLoader.prototype._loadBuffersAsync = function (gltfRuntime, onload) {
+        GLTFFileLoader.prototype._loadBuffersAsync = function (gltfRuntime, onload, onProgress) {
             var hasBuffers = false;
             var processBuffer = function (buf, buffer) {
                 BABYLON.GLTFFileLoaderExtension.LoadBufferAsync(gltfRuntime, buf, function (bufferView) {
@@ -1825,7 +1827,7 @@ var BABYLON;
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
-        GLTFFileLoaderExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+        GLTFFileLoaderExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError, onProgress) {
             return false;
         };
         /**
@@ -1877,11 +1879,11 @@ var BABYLON;
                 });
             });
         };
-        GLTFFileLoaderExtension.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+        GLTFFileLoaderExtension.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError, onProgress) {
             GLTFFileLoaderExtension.ApplyExtensions(function (loaderExtension) {
-                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             }, function () {
-                BABYLON.GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError);
+                BABYLON.GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             });
         };
         GLTFFileLoaderExtension.LoadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -1932,11 +1934,16 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFFileLoaderExtension.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     var BinaryExtensionBufferName = "binary_glTF";
@@ -2076,11 +2083,16 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFBinaryExtension.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var BABYLON;
 (function (BABYLON) {
     ;

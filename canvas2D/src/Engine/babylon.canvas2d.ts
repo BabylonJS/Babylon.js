@@ -1474,12 +1474,12 @@
             }
 
             // Clip values if needed
-            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize);
+            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize-4); // -4 is to consider the border of 2 pixels, other we couldn't allocate a rect
 
             let newScale = edge / ((isW) ? this.size.width : this.size.height);
-            if (newScale !== this.scale) {
+            if (newScale !== this._renderableData._renderingScale) {
                 let scale = newScale;
-//                console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
+                //console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
                 this._setRenderingScale(scale);
             }
         }
@@ -1625,6 +1625,7 @@
             let key = `${useMipMap ? "MipMap" : "NoMipMap"}_${anisotropicLevel}`;
 
             let rd = group._renderableData;
+            let rs = rd._renderingScale;
             let noResizeScale = rd._noResizeOnScale;
             let isCanvas = parent == null;
             let scale: Vector2;
@@ -1633,6 +1634,8 @@
             } else {
                 scale = group.actualScale.multiply(this._canvasLevelScale);
             }
+            scale.x *= rs;
+            scale.y *= rs;
 
             // Determine size
             let size = group.actualSize;
