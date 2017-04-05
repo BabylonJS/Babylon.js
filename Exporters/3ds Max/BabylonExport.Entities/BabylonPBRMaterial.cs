@@ -169,6 +169,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool disableLighting { get; set; }
 
+        [DataMember]
+        public bool twoSidedLighting { get; set; }
+
         public BabylonPBRMaterial() : base()
         {
             customType = "BABYLON.PBRMaterial";
@@ -180,6 +183,7 @@ namespace BabylonExport.Entities
             cameraExposure = 1.0f;
             cameraContrast = 1.0f;
             indexOfRefraction = 0.66f;
+            twoSidedLighting = false;
             useRadianceOverAlpha = true;
             useSpecularOverAlpha = true;
             usePhysicalLightFalloff = true;
