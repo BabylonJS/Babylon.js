@@ -26,7 +26,7 @@ var BABYLON;
             _this.FOG = false;
             _this.VERTEXCOLOR = false;
             _this.VERTEXALPHA = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return SkyMaterialDefines;

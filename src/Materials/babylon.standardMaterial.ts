@@ -61,7 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
 
         constructor() {
-            super(true);
+            super();
             this.rebuild();
         }
 
@@ -602,18 +602,17 @@ module BABYLON {
             defines._areAttributesDirty = false;
 
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
-            defines.INSTANCES = useInstances;
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
             if (scene._mirroredCameraPosition && defines.BUMP) {
                 defines.INVERTNORMALMAPX = !this.invertNormalMapX;
                 defines.INVERTNORMALMAPY = !this.invertNormalMapY;
+                defines.markAsUnprocessed();
             }
 
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks

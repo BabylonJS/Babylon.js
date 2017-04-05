@@ -9567,7 +9567,7 @@ var BABYLON;
             this._alphaTest = enable;
         };
         Engine.prototype.getAlphaTesting = function () {
-            return this._alphaTest;
+            return !!this._alphaTest;
         };
         // Textures
         Engine.prototype.wipeCaches = function () {
@@ -30073,6 +30073,24 @@ var BABYLON;
     var MaterialHelper = (function () {
         function MaterialHelper() {
         }
+        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances) {
+            var changed = false;
+            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
+                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+                changed = true;
+            }
+            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+                defines["ALPHATEST"] = !defines["ALPHATEST"];
+                changed = true;
+            }
+            if (defines["INSTANCES"] !== useInstances) {
+                defines["INSTANCES"] = useInstances;
+                changed = true;
+            }
+            if (changed) {
+                defines.markAsUnprocessed();
+            }
+        };
         MaterialHelper.PrepareDefinesForAttributes = function (mesh, defines, useInstances) {
             if (!defines._areAttributesDirty) {
                 return;
@@ -30386,9 +30404,8 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var MaterialDefines = (function () {
-        function MaterialDefines(trackIsDirty) {
+        function MaterialDefines() {
             this._isDirty = true;
-            this._trackIsDirty = false;
             this._areLightsDirty = true;
             this._areAttributesDirty = true;
             this._areTexturesDirty = true;
@@ -30396,24 +30413,39 @@ var BABYLON;
             this._areMiscDirty = true;
             this._needNormals = false;
             this._needUVs = false;
-            this._trackIsDirty = trackIsDirty;
         }
-        MaterialDefines.prototype._reBind = function (key) {
-            this["_" + key] = this[key];
-            Object.defineProperty(this, key, {
-                get: function () {
-                    return this["_" + key];
-                },
-                set: function (value) {
-                    if (this["_" + key] === value) {
-                        return;
-                    }
-                    this["_" + key] = value;
-                    this._isDirty = true;
-                },
-                enumerable: true,
-                configurable: true
-            });
+        Object.defineProperty(MaterialDefines.prototype, "isDirty", {
+            get: function () {
+                return this._isDirty;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MaterialDefines.prototype.markAsProcessed = function () {
+            this._isDirty = false;
+        };
+        MaterialDefines.prototype.markAsUnprocessed = function () {
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsLightDirty = function () {
+            this._areLightsDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsAttributesDirty = function () {
+            this._areAttributesDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsTexturesDirty = function () {
+            this._areTexturesDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsFresnelDirty = function () {
+            this._areFresnelDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsMiscDirty = function () {
+            this._areMiscDirty = true;
+            this._isDirty = true;
         };
         MaterialDefines.prototype.rebuild = function () {
             if (this._keys) {
@@ -30426,15 +30458,7 @@ var BABYLON;
                     continue;
                 }
                 this._keys.push(key);
-                if (!this._trackIsDirty) {
-                    continue;
-                }
-                if (Object.getOwnPropertyDescriptor(this, key).get) {
-                    continue;
-                }
-                this._reBind(key);
             }
-            this._isDirty = true;
         };
         MaterialDefines.prototype.isEqual = function (other) {
             if (this._keys.length !== other._keys.length) {
@@ -30968,19 +30992,19 @@ var BABYLON;
             }
         };
         PushMaterial.prototype._markAllSubMeshesAsTexturesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines._areTexturesDirty = true; });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
         };
         PushMaterial.prototype._markAllSubMeshesAsFresnelDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines._areFresnelDirty = true; });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsFresnelDirty(); });
         };
         PushMaterial.prototype._markAllSubMeshesAsLightsDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines._areLightsDirty = true; });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsLightDirty(); });
         };
         PushMaterial.prototype._markAllSubMeshesAsAttributesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines._areAttributesDirty = true; });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsAttributesDirty(); });
         };
         PushMaterial.prototype._markAllSubMeshesAsMiscDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines._areMiscDirty = true; });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsMiscDirty(); });
         };
         return PushMaterial;
     }(BABYLON.Material));
@@ -31000,7 +31024,7 @@ var BABYLON;
     var StandardMaterialDefines = (function (_super) {
         __extends(StandardMaterialDefines, _super);
         function StandardMaterialDefines() {
-            var _this = _super.call(this, true) || this;
+            var _this = _super.call(this) || this;
             _this.DIFFUSE = false;
             _this.AMBIENT = false;
             _this.OPACITY = false;
@@ -31405,16 +31429,15 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
             defines._areAttributesDirty = false;
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
-            defines.INSTANCES = useInstances;
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             if (scene._mirroredCameraPosition && defines.BUMP) {
                 defines.INVERTNORMALMAPX = !this.invertNormalMapX;
                 defines.INVERTNORMALMAPY = !this.invertNormalMapY;
+                defines.markAsUnprocessed();
             }
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();

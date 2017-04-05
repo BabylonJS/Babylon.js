@@ -68,7 +68,7 @@ var BABYLON;
             _this.NUM_BONE_INFLUENCERS = 0;
             _this.BonesPerMesh = 0;
             _this.INSTANCES = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return GradientMaterialDefines;

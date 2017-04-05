@@ -23,7 +23,7 @@ var BABYLON;
             var _this = _super.call(this) || this;
             _this.TRANSPARENT = false;
             _this.FOG = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return GRIDMaterialDefines;
