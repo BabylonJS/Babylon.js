@@ -31176,16 +31176,16 @@ var BABYLON;
             configurable: true
         });
         StandardMaterial.prototype.needAlphaBlending = function () {
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
         };
         StandardMaterial.prototype.needAlphaTesting = function () {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
         };
         StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         };
         StandardMaterial.prototype.getAlphaTestTexture = function () {
-            return this.diffuseTexture;
+            return this._diffuseTexture;
         };
         /**
          * Child classes can use it to update shaders
