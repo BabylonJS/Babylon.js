@@ -329,7 +329,7 @@
                 }
             }
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public clone(name: string): ShaderMaterial {

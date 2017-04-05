@@ -76,7 +76,7 @@
         #endif
 	}
 
-	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness)
+	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
@@ -92,12 +92,11 @@
 			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
 		#endif
 
-		const float shadowStrength = 80.;
-		float visibility = 1.0 - clamp(exp(shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);	
 		#ifdef OVERLOADEDSHADOWVALUES
-			return mix(1.0, visibility, vOverloadedShadowIntensity.x);
+			return mix(1.0, esm, vOverloadedShadowIntensity.x);
 		#else
-			return visibility;
+			return esm;
 		#endif
 	}
 

@@ -601,17 +601,7 @@
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-
+            for (var light of mesh._lightSources) {
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
@@ -654,7 +644,7 @@
             this._defines.reset();
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights) || needNormals;
             }
 
             if (!this.checkReadyOnEveryCall) {
@@ -1392,7 +1382,7 @@
                 // Log. depth
                 MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
-            super.bind(world, mesh);
+            this._afterBind(mesh);
 
             this._myScene = null;
         }

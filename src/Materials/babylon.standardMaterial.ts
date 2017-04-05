@@ -60,12 +60,8 @@ module BABYLON {
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
 
-        public _areTexturesDirty = true;
-        public _areFresnelDirty = true;
-        public _areMiscDirty = true;
-
         constructor() {
-            super(true);
+            super();
             this.rebuild();
         }
 
@@ -83,132 +79,51 @@ module BABYLON {
         }
     }
 
-    export class StandardMaterial extends Material {
+    export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
         private _diffuseTexture: BaseTexture;
-        public set diffuseTexture(value : BaseTexture) {
-            if (this._diffuseTexture === value) {
-                return;
-            }
-            this._diffuseTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get diffuseTexture(): BaseTexture {
-            return this._diffuseTexture;
-        }
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public diffuseTexture: BaseTexture;
 
         @serializeAsTexture("ambientTexture")
         private _ambientTexture: BaseTexture;
-        public set ambientTexture(value : BaseTexture) {
-            if (this._ambientTexture === value) {
-                return;
-            }
-            this._ambientTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get ambientTexture(): BaseTexture {
-            return this._ambientTexture;
-        }
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public ambientTexture: BaseTexture;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;
-        public set opacityTexture(value : BaseTexture) {
-            if (this._opacityTexture === value) {
-                return;
-            }
-            this._opacityTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get opacityTexture(): BaseTexture {
-            return this._opacityTexture;
-        }        
+        private _opacityTexture: BaseTexture;        
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public opacityTexture: BaseTexture;    
 
         @serializeAsTexture("reflectionTexture")
         private _reflectionTexture: BaseTexture;
-        public set reflectionTexture(value : BaseTexture) {
-            if (this._reflectionTexture === value) {
-                return;
-            }
-            this._reflectionTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get reflectionTexture(): BaseTexture {
-            return this._reflectionTexture;
-        }           
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionTexture: BaseTexture;        
 
         @serializeAsTexture("emissiveTexture")
         private _emissiveTexture: BaseTexture;
-        public set emissiveTexture(value : BaseTexture) {
-            if (this._emissiveTexture === value) {
-                return;
-            }
-            this._emissiveTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get emissiveTexture(): BaseTexture {
-            return this._emissiveTexture;
-        }  
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public emissiveTexture: BaseTexture;     
 
         @serializeAsTexture("specularTexture")
         private _specularTexture: BaseTexture;
-        public set specularTexture(value : BaseTexture) {
-            if (this._specularTexture === value) {
-                return;
-            }
-            this._specularTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get specularTexture(): BaseTexture {
-            return this._specularTexture;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public specularTexture: BaseTexture;             
 
         @serializeAsTexture("bumpTexture")
         private _bumpTexture: BaseTexture;
-        public set bumpTexture(value : BaseTexture) {
-            if (this._bumpTexture === value) {
-                return;
-            }
-            this._bumpTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get bumpTexture(): BaseTexture {
-            return this._bumpTexture;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public bumpTexture: BaseTexture;         
 
         @serializeAsTexture("lightmapTexture")
         private _lightmapTexture: BaseTexture;
-        public set lightmapTexture(value : BaseTexture) {
-            if (this._lightmapTexture === value) {
-                return;
-            }
-            this._lightmapTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get lightmapTexture(): BaseTexture {
-            return this._lightmapTexture;
-        }             
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public lightmapTexture: BaseTexture;            
 
         @serializeAsTexture("refractionTexture")
         private _refractionTexture: BaseTexture;
-        public set refractionTexture(value : BaseTexture) {
-            if (this._refractionTexture === value) {
-                return;
-            }
-            this._refractionTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get refractionTexture(): BaseTexture {
-            return this._refractionTexture;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public refractionTexture: BaseTexture;   
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -227,123 +142,52 @@ module BABYLON {
 
         @serialize("useAlphaFromDiffuseTexture")
         private _useAlphaFromDiffuseTexture = false;
-        public set useAlphaFromDiffuseTexture(value : boolean) {
-            if (this._useAlphaFromDiffuseTexture === value) {
-                return;
-            }
-            this._useAlphaFromDiffuseTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useAlphaFromDiffuseTexture(): boolean {
-            return this._useAlphaFromDiffuseTexture;
-        }           
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useAlphaFromDiffuseTexture: boolean;      
 
         @serialize("useEmissiveAsIllumination")
         private _useEmissiveAsIllumination = false;
-        public set useEmissiveAsIllumination(value : boolean) {
-            if (this._useAlphaFromDiffuseTexture === value) {
-                return;
-            }
-            this._useEmissiveAsIllumination = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useEmissiveAsIllumination(): boolean {
-            return this._useEmissiveAsIllumination;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useEmissiveAsIllumination: boolean;           
       
         @serialize("linkEmissiveWithDiffuse")
         private _linkEmissiveWithDiffuse = false;
-        public set linkEmissiveWithDiffuse(value : boolean) {
-            if (this._linkEmissiveWithDiffuse === value) {
-                return;
-            }
-            this._linkEmissiveWithDiffuse = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get linkEmissiveWithDiffuse(): boolean {
-            return this._linkEmissiveWithDiffuse;
-        }                    
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public linkEmissiveWithDiffuse: boolean;                    
 
         @serialize("useSpecularOverAlpha")
         private _useSpecularOverAlpha = false;
-        public set useSpecularOverAlpha(value : boolean) {
-            if (this._useSpecularOverAlpha === value) {
-                return;
-            }
-            this._useSpecularOverAlpha = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useSpecularOverAlpha(): boolean {
-            return this._useSpecularOverAlpha;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useSpecularOverAlpha: boolean;               
 
         @serialize("useReflectionOverAlpha")
         private _useReflectionOverAlpha = false;
-        public set useReflectionOverAlpha(value : boolean) {
-            if (this._useReflectionOverAlpha === value) {
-                return;
-            }
-            this._useReflectionOverAlpha = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useReflectionOverAlpha(): boolean {
-            return this._useReflectionOverAlpha;
-        }            
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useReflectionOverAlpha: boolean;               
 
         @serialize("disableLighting")
         private _disableLighting = false;
-        public set disableLighting(value : boolean) {
-            if (this._disableLighting === value) {
-                return;
-            }
-            this._disableLighting = value;
-            this._markAllSubMeshesAsLightsDirty();
-        }
-        public get disableLighting(): boolean {
-            return this._disableLighting;
-        }            
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public disableLighting: boolean;           
+          
 
         @serialize("useParallax")
         private _useParallax = false;
-        public set useParallax(value : boolean) {
-            if (this._useParallax === value) {
-                return;
-            }
-            this._useParallax = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useParallax(): boolean {
-            return this._useParallax;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useParallax: boolean;            
 
         @serialize("useParallaxOcclusion")
         private _useParallaxOcclusion = false;
-        public set useParallaxOcclusion(value : boolean) {
-            if (this._useParallaxOcclusion === value) {
-                return;
-            }
-            this._useParallaxOcclusion = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useParallaxOcclusion(): boolean {
-            return this._useParallaxOcclusion;
-        }         
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useParallaxOcclusion: boolean;                  
 
         @serialize()
         public parallaxScaleBias = 0.05;
 
         @serialize("roughness")
         private _roughness = 0;
-        public set roughness(value : number) {
-            if (this._roughness === value) {
-                return;
-            }
-            this._roughness = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get roughness(): number {
-            return this._roughness;
-        }         
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public roughness: number;            
 
         @serialize()
         public indexOfRefraction = 0.98;
@@ -353,189 +197,84 @@ module BABYLON {
 
         @serialize("useLightmapAsShadowmap")
         private _useLightmapAsShadowmap = false;
-        public set useLightmapAsShadowmap(value : boolean) {
-            if (this._useLightmapAsShadowmap === value) {
-                return;
-            }
-            this._useLightmapAsShadowmap = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useLightmapAsShadowmap(): boolean {
-            return this._useLightmapAsShadowmap;
-        }            
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLightmapAsShadowmap: boolean;             
 
         // Fresnel
         @serializeAsFresnelParameters("diffuseFresnelParameters")
         private _diffuseFresnelParameters: FresnelParameters;
-        public set diffuseFresnelParameters(value : FresnelParameters) {
-            if (this._diffuseFresnelParameters === value) {
-                return;
-            }
-            this._diffuseFresnelParameters = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get diffuseFresnelParameters(): FresnelParameters {
-            return this._diffuseFresnelParameters;
-        }           
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public diffuseFresnelParameters: FresnelParameters;            
 
         @serializeAsFresnelParameters("opacityFresnelParameters")
         private _opacityFresnelParameters: FresnelParameters;
-        public set opacityFresnelParameters(value : FresnelParameters) {
-            if (this._opacityFresnelParameters === value) {
-                return;
-            }
-            this._opacityFresnelParameters = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get opacityFresnelParameters(): FresnelParameters {
-            return this._opacityFresnelParameters;
-        }             
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public opacityFresnelParameters: FresnelParameters;            
+           
 
         @serializeAsFresnelParameters("reflectionFresnelParameters")
         private _reflectionFresnelParameters: FresnelParameters;
-        public set reflectionFresnelParameters(value : FresnelParameters) {
-            if (this._reflectionFresnelParameters === value) {
-                return;
-            }
-            this._reflectionFresnelParameters = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get reflectionFresnelParameters(): FresnelParameters {
-            return this._reflectionFresnelParameters;
-        }           
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public reflectionFresnelParameters: FresnelParameters;             
 
         @serializeAsFresnelParameters("refractionFresnelParameters")
         private _refractionFresnelParameters: FresnelParameters;
-        public set refractionFresnelParameters(value : FresnelParameters) {
-            if (this._refractionFresnelParameters === value) {
-                return;
-            }
-            this._refractionFresnelParameters = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get refractionFresnelParameters(): FresnelParameters {
-            return this._refractionFresnelParameters;
-        }          
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public refractionFresnelParameters: FresnelParameters;           
 
         @serializeAsFresnelParameters("emissiveFresnelParameters")
         private _emissiveFresnelParameters: FresnelParameters;
-        public set emissiveFresnelParameters(value : FresnelParameters) {
-            if (this._emissiveFresnelParameters === value) {
-                return;
-            }
-            this._emissiveFresnelParameters = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get emissiveFresnelParameters(): FresnelParameters {
-            return this._emissiveFresnelParameters;
-        }         
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public emissiveFresnelParameters: FresnelParameters;            
 
         @serialize("useReflectionFresnelFromSpecular")
         private _useReflectionFresnelFromSpecular = false;    
-        public set useReflectionFresnelFromSpecular(value : boolean) {
-            if (this._useReflectionFresnelFromSpecular === value) {
-                return;
-            }
-            this._useReflectionFresnelFromSpecular = value;
-            this._markAllSubMeshesAsFresnelDirty();
-        }
-        public get useReflectionFresnelFromSpecular(): boolean {
-            return this._useReflectionFresnelFromSpecular;
-        }               
+        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        public useReflectionFresnelFromSpecular: boolean;                 
 
         @serialize("useGlossinessFromSpecularMapAlpha")
         private _useGlossinessFromSpecularMapAlpha = false;
-        public set useGlossinessFromSpecularMapAlpha(value : boolean) {
-            if (this._useGlossinessFromSpecularMapAlpha === value) {
-                return;
-            }
-            this._useGlossinessFromSpecularMapAlpha = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get useGlossinessFromSpecularMapAlpha(): boolean {
-            return this._useGlossinessFromSpecularMapAlpha;
-        }        
-
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useGlossinessFromSpecularMapAlpha: boolean;           
+  
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
-        public set maxSimultaneousLights(value : number) {
-            if (this._maxSimultaneousLights === value) {
-                return;
-            }
-            this._maxSimultaneousLights = value;
-            this._markAllSubMeshesAsLightsDirty();
-        }
-        public get maxSimultaneousLights(): number {
-            return this._maxSimultaneousLights;
-        }          
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public maxSimultaneousLights: number;                   
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
         @serialize("invertNormalMapX")
         private _invertNormalMapX = false;
-        public set invertNormalMapX(value : boolean) {
-            if (this._invertNormalMapX === value) {
-                return;
-            }
-            this._invertNormalMapX = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get invertNormalMapX(): boolean {
-            return this._invertNormalMapX;
-        }           
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public invertNormalMapX: boolean;
 
         /**
          * If sets to true, y component of normal map value will invert (y = 1.0 - y).
          */
         @serialize("invertNormalMapY")
         private _invertNormalMapY = false;
-        public set invertNormalMapY(value : boolean) {
-            if (this._invertNormalMapY === value) {
-                return;
-            }
-            this._invertNormalMapY = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get invertNormalMapY(): boolean {
-            return this._invertNormalMapY;
-        }           
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public invertNormalMapY: boolean;
 
         /**
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
          */
         @serialize("twoSidedLighting")
         private _twoSidedLighting = false;
-        public set twoSidedLighting(value : boolean) {
-            if (this._twoSidedLighting === value) {
-                return;
-            }
-            this._twoSidedLighting = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-        public get inverttwoSidedLightingNormalMapY(): boolean {
-            return this._twoSidedLighting;
-        }            
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public twoSidedLighting: boolean;     
 
         /**
          * Color Grading 2D Lookup Texture.
          * This allows special effects like sepia, black and white to sixties rendering style. 
          */
-        @serializeAsTexture()
+        @serializeAsTexture("cameraColorGradingTexture")
         private _cameraColorGradingTexture: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public cameraColorGradingTexture: BaseTexture;             
 
-        public set cameraColorGradingTexture(value : BaseTexture) {
-            if (this._cameraColorGradingTexture === value) {
-                return;
-            }
-            this._cameraColorGradingTexture = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get cameraColorGradingTexture(): BaseTexture {
-            return this._cameraColorGradingTexture;
-        }           
-        
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
@@ -544,17 +283,8 @@ module BABYLON {
          */
         @serializeAsColorCurves("cameraColorCurves")
         private _cameraColorCurves: ColorCurves = null;
-        public set cameraColorCurves(value : ColorCurves) {
-            if (this._cameraColorCurves === value) {
-                return;
-            }
-            this._cameraColorCurves = value;
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        public get cameraColorCurves(): ColorCurves {
-            return this._cameraColorCurves;
-        }          
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public cameraColorCurves: ColorCurves;             
 
         public customShaderNameResolve: (shaderName: string) => string;
 
@@ -566,7 +296,6 @@ module BABYLON {
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
-            this.storeEffectOnSubMeshes = true;
 
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
@@ -582,8 +311,6 @@ module BABYLON {
                 return this._renderTargets;
             }
         }
-
-        private _activeEffect: Effect;
 
         public getClassName(): string {
             return "StandardMaterial";
@@ -601,61 +328,27 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
         }
 
         protected _shouldUseAlphaFromDiffuseTexture(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         }
 
         public getAlphaTestTexture(): BaseTexture {
-            return this.diffuseTexture;
+            return this._diffuseTexture;
         }
 
         /**
          * Child classes can use it to update shaders
          */
-        public markAsDirty(flag: number): void {
-            if (flag & Material.TextureDirtyFlag) {
-                this._markAllSubMeshesAsTexturesDirty();
-            }
-
-            if (flag & Material.LightDirtyFlag) {
-                this._markAllSubMeshesAsLightsDirty();
-            }
-
-            if (flag & Material.FresnelDirtyFlag) {
-                this._markAllSubMeshesAsFresnelDirty();
-            }
-
-            if (flag & Material.AttributesDirtyFlag) {
-                this._markAllSubMeshesAsAttributesDirty();
-            }
-
-            if (flag & Material.MiscDirtyFlag) {
-                this._markAllSubMeshesAsMiscDirty();
-            }
-        }
-
-        public getEffect(): Effect {
-            return this._activeEffect;
-        }
-
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (!mesh) {
-                return false;
-            }
-
-            return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
-        }
-
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
             if (this.isFrozen) {
-                if (this._wasPreviouslyReady) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
@@ -664,19 +357,19 @@ module BABYLON {
                 subMesh._materialDefines = new StandardMaterialDefines();
             }
 
-            var defines = <StandardMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
-            var engine = scene.getEngine();
-
-            // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
-
+            var defines = <StandardMaterialDefines>subMesh._materialDefines;
             if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (defines._renderId === scene.getRenderId()) {
                     return true;
                 }
             }
+
+            var engine = scene.getEngine();
+
+            // Lights
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+            defines._areLightsDirty = false;
 
             // Textures
             if (defines._areTexturesDirty) {
@@ -909,18 +602,17 @@ module BABYLON {
             defines._areAttributesDirty = false;
 
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
-            defines.INSTANCES = useInstances;
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
             if (scene._mirroredCameraPosition && defines.BUMP) {
                 defines.INVERTNORMALMAPX = !this.invertNormalMapX;
                 defines.INVERTNORMALMAPY = !this.invertNormalMapY;
+                defines.markAsUnprocessed();
             }
 
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks
@@ -1065,18 +757,6 @@ module BABYLON {
             super.unbind();
         }
 
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._activeEffect.setMatrix("world", world);
-        }
-
-        public bind(world: Matrix, mesh?: Mesh): void {
-            if (!mesh) {
-                return;
-            }
-
-            this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
-        }
-
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
@@ -1094,10 +774,10 @@ module BABYLON {
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
 
-            if (scene.getCachedMaterial() !== this) {
+            if (this._mustRebind(scene, effect)) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-                if (StandardMaterial.FresnelEnabled) {
+                if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
                         effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
@@ -1226,7 +906,7 @@ module BABYLON {
                 effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
 
-            if (scene.getCachedMaterial() !== this || !this.isFrozen) {
+            if (this._mustRebind(scene, effect) || !this.isFrozen) {
                 // Diffuse
                 effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
@@ -1252,7 +932,7 @@ module BABYLON {
                 }
             }
 
-            super.bind(world, mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -1353,43 +1033,6 @@ module BABYLON {
 
         public serialize(): any {
             return SerializationHelper.Serialize(this);
-        }
-
-        private _markAllSubMeshesAsDirty(func: (defines: StandardMaterialDefines) => void) {
-            for (var mesh of this.getScene().meshes) {
-                if (!mesh.subMeshes) {
-                    continue;
-                }
-                for (var subMesh of mesh.subMeshes) {
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
-                    if (!subMesh._materialDefines) {
-                        subMesh._materialDefines = new StandardMaterialDefines();
-                    }
-                    func(<StandardMaterialDefines>(subMesh._materialDefines));
-                }
-            }
-        }
-
-        private _markAllSubMeshesAsTexturesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areTexturesDirty = true);
-        }
-
-        private _markAllSubMeshesAsFresnelDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areFresnelDirty = true);
-        }
-
-        private _markAllSubMeshesAsLightsDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areLightsDirty = true);
-        }
-
-        private _markAllSubMeshesAsAttributesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
-        }
-
-        private _markAllSubMeshesAsMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areMiscDirty = true);
         }
 
         // Statics

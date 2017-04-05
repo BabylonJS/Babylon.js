@@ -1,5 +1,29 @@
 ﻿module BABYLON {
     export class MaterialHelper {
+
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void {
+            var changed = false;
+
+            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
+                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+                changed = true;
+            }
+
+            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+                defines["ALPHATEST"] = !defines["ALPHATEST"];
+                changed = true;
+            }
+
+            if (defines["INSTANCES"] !== useInstances) {
+                defines["INSTANCES"] = useInstances;
+                changed = true;
+            }
+            
+            if (changed) {
+                defines.markAsUnprocessed();
+            }
+        }
+
         public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void {
             if (!defines._areAttributesDirty) {
                 return;
@@ -28,7 +52,7 @@
             }           
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4, disableLighting = false): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
             }
@@ -36,8 +60,9 @@
             var lightIndex = 0;
             var needNormals = false;
             var needRebuild = false;
-            var needShadows = false;
             var lightmapMode = false;
+            var shadowEnabled = false;
+            var specularEnabled = false;
 
             if (scene.lightsEnabled && !disableLighting) {
                 for (var light of mesh._lightSources) {
@@ -46,7 +71,13 @@
                     if (defines["LIGHT" + lightIndex] === undefined) {
                         needRebuild = true;
                     }
+
                     defines["LIGHT" + lightIndex] = true;
+                    
+                    defines["SPOTLIGHT" + lightIndex] = false;
+                    defines["HEMILIGHT" + lightIndex] = false;
+                    defines["POINTLIGHT" + lightIndex] = false;
+                    defines["DIRLIGHT" + lightIndex] = false;
 
                     var type;
                     if (light instanceof SpotLight) {
@@ -59,58 +90,36 @@
                         type = "DIRLIGHT" + lightIndex;
                     }
 
-                    if (!needRebuild && defines[type] === undefined) {
-                        needRebuild = true;
-                    }
-
                     defines[type] = true;
 
                     // Specular
-                    defines["SPECULARTERM"] = (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined);
+                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
+                        specularEnabled = true;
+                    }
 
                     // Shadows
-                    var shadowEnabled = false;
+                    defines["SHADOW" + lightIndex] = false;
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                         if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            if (!needRebuild && defines["SHADOW" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
                             defines["SHADOW" + lightIndex] = true;
 
                             shadowEnabled = true;
 
-                            if (shadowGenerator.usePoissonSampling) {
-                                if (!needRebuild && defines["SHADOWPCF" + lightIndex] === undefined) {
-                                    needRebuild = true;
-                                }
+                            defines["SHADOWPCF" + lightIndex] = false;
+                            defines["SHADOWESM" + lightIndex] = false;
 
+                            if (shadowGenerator.usePoissonSampling) {
                                 defines["SHADOWPCF" + lightIndex] = true;
                             } 
                             else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
-                                if (!needRebuild && defines["SHADOWESM" + lightIndex] === undefined) {
-                                    needRebuild = true;
-                                }
-
                                 defines["SHADOWESM" + lightIndex] = true;
                             }
-
-                            needShadows = true;
-                        } else {
-                            defines["SHADOW" + lightIndex] = false;
                         }
                     }
 
-                    defines["SHADOWS"] = shadowEnabled;
-
                     if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
                         lightmapMode = true;
-                        if (!needRebuild && defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
-                            needRebuild = true;
-                        }
-                        if (!needRebuild && defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
-                            needRebuild = true;
-                        }
                         defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
                     } else {
@@ -124,6 +133,9 @@
                 }
             }
 
+            defines["SPECULARTERM"] = specularEnabled;
+            defines["SHADOWS"] = shadowEnabled;
+
             // Resetting all other lights if any
             for (var index = lightIndex; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + index] !== undefined) {
@@ -132,21 +144,17 @@
             }
 
             let caps = scene.getEngine().getCaps();
-            if (!needRebuild && defines["SHADOWFULLFLOAT"] === undefined) {
+
+            if (defines["SHADOWFULLFLOAT"] === undefined) {
                 needRebuild = true;
             }
 
-            defines["SHADOWFULLFLOAT"] = (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
-
-            if (!needRebuild && defines["LIGHTMAPEXCLUDED"] === undefined) {
-                needRebuild = true;
-            }
-
+            defines["SHADOWFULLFLOAT"] = (shadowEnabled && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
             defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
                 defines.rebuild();
-            }        
+            }
 
             return needNormals;
         }
@@ -255,16 +263,8 @@
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
 
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
+            for (var light of mesh._lightSources) {
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 

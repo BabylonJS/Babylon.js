@@ -10,7 +10,7 @@ module BABYLON {
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
     
@@ -231,7 +231,7 @@ module BABYLON {
             
 			this._effect.setVector3("sunPosition", this.sunPosition);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {
