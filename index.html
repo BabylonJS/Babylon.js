@@ -58,7 +58,7 @@
 					var spheres = []
 					for (var i = 0; i < squareSize; i++) {
 						for (var j = 0; j < squareSize; j++) {
-							for (var k = 0; k < 3; k++) {
+							for (var k = 0; k < 4; k++) {
 								var sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 0.5, scene);
 
 								// Move the sphere upward 1/2 its height
@@ -67,8 +67,10 @@
 								sphere.position.y = - squareSize / 4 + k / 2;
 								sphere.material = new BABYLON.StandardMaterial("test");
 								sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+								sphere.material.specularColor = new BABYLON.Color3(Math.random() < 0.8 ? 0 : 1, Math.random() < 0.8 ? 0 : 1, Math.random() < 0.8 ? 0 : 1);
 								sphere.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
 								sphere.material.freeze();
+								sphere.freezeWorldMatrix();
 								spheres.push(sphere);
 							}
 						}
