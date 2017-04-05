@@ -81,15 +81,15 @@ module BABYLON {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 1;
 
             if (enabled && !this._depthOfFieldEnabled) {
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._cameras);
                 this._depthRenderer = this._scene.enableDepthRenderer();
             }
             else if (!enabled && this._depthOfFieldEnabled) {
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDepthOfField", this._cameras);
             }
 
             this._depthOfFieldEnabled = enabled;
@@ -104,20 +104,20 @@ module BABYLON {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 2;
 
             if (enabled && !this._lensFlareEnabled) {
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
 
                 this._setDepthOfFieldSavePostProcess("HDRPostLensFlareDepthOfFieldSource");
             }
             else if (!enabled && this._lensFlareEnabled) {
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
 
                 this._setDepthOfFieldSavePostProcess("HDRBaseDepthOfFieldSource");
             }
@@ -140,6 +140,7 @@ module BABYLON {
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: PostProcess = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
+            this._cameras = cameras || [];
 
             // Initialize
             this._scene = scene;
@@ -200,9 +201,10 @@ module BABYLON {
 
         // Sets depth-of-field save post-process
         private _setDepthOfFieldSavePostProcess(name: string): void {
-            this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._scene.cameras);
+            
+            this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._cameras);
 
-            this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, name, this._scene.cameras);
+            this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, name, this._cameras);
 
             switch (name) {
                 case "HDRBaseDepthOfFieldSource": this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess; break;
@@ -414,8 +416,8 @@ module BABYLON {
 
         // Dispose
         public dispose(): void {
-            for (var i = 0; i < this._scene.cameras.length; i++) {
-                var camera = this._scene.cameras[i];
+            for (var i = 0; i < this._cameras.length; i++) {
+                var camera = this._cameras[i];
 
                 this.originalPostProcess.dispose(camera);
                 this.downSampleX4PostProcess.dispose(camera);
@@ -436,7 +438,7 @@ module BABYLON {
                 this.depthOfFieldPostProcess.dispose(camera);
             }
 
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
             super.dispose();
         }
