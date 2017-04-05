@@ -93,7 +93,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, 1);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, 1);
             }
             // Attribs
             if (mesh) {
@@ -176,7 +176,7 @@ var BABYLON;
             }
             // Fog
             BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         ShadowOnlyMaterial.prototype.clone = function (name) {
             var _this = this;

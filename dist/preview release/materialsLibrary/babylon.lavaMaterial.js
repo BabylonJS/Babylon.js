@@ -67,7 +67,7 @@ var BABYLON;
             _this.NUM_BONE_INFLUENCERS = 0;
             _this.BonesPerMesh = 0;
             _this.INSTANCES = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return LavaMaterialDefines;
@@ -155,7 +155,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled && !this.disableLighting) {
-                BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, this.maxSimultaneousLights);
             }
             // Attribs
             if (mesh) {
@@ -218,10 +218,10 @@ var BABYLON;
                 var shaderName = "lava";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                    "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                    "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                    "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                    "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                    "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
+                    "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
+                    "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
+                    "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
@@ -287,7 +287,7 @@ var BABYLON;
             this._effect.setFloat("fogDensity", this.fogDensity);
             this._effect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
             this._effect.setFloat("movingSpeed", this.movingSpeed);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         LavaMaterial.prototype.getAnimatables = function () {
             var results = [];

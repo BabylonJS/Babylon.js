@@ -111,7 +111,7 @@ var BABYLON;
             }
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
             // Textures
             if (scene.texturesEnabled) {
@@ -273,7 +273,7 @@ var BABYLON;
             }
             // Fog
             BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         TerrainMaterial.prototype.getAnimatables = function () {
             var results = [];

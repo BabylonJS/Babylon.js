@@ -647,6 +647,7 @@
         public animationTimeScale: number = 1;
 
         public _cachedMaterial: Material;
+        public _cachedEffect: Effect;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
@@ -764,7 +765,7 @@
             return this._workerCollisions;
         }
 
-        public get SelectionOctree(): Octree<AbstractMesh> {
+        public get selectionOctree(): Octree<AbstractMesh> {
             return this._selectionOctree;
         }
 
@@ -794,6 +795,10 @@
 
         public getCachedMaterial(): Material {
             return this._cachedMaterial;
+        }
+
+         public getCachedEffect(): Effect {
+            return this._cachedEffect;
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
@@ -1451,6 +1456,10 @@
                     continue;
                 }
 
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
+
                 if (!mesh.isReady()) {
                     return false;
                 }
@@ -1468,6 +1477,7 @@
 
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
+            this._cachedEffect = null;
         }
 
         public registerBeforeRender(func: () => void): void {

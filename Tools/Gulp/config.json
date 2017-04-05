@@ -87,6 +87,7 @@
             "../../src/Materials/babylon.materialHelper.js",
             "../../src/Materials/babylon.fresnelParameters.js",
             "../../src/Materials/babylon.material.js",
+            "../../src/Materials/babylon.pushMaterial.js",
             "../../src/Materials/babylon.standardMaterial.js",
             "../../src/Materials/babylon.multiMaterial.js",
             "../../src/Loading/babylon.sceneLoader.js",

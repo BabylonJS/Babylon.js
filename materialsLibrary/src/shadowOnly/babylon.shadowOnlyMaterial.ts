@@ -95,7 +95,7 @@ module BABYLON {
             }
 
             if (scene.lightsEnabled) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, 1);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, 1);
             }
 
             // Attribs
@@ -206,7 +206,7 @@ module BABYLON {
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public clone(name: string): ShadowOnlyMaterial {

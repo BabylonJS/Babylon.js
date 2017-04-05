@@ -1,36 +1,53 @@
 ﻿module BABYLON {
     export class MaterialDefines {
-        _keys: string[];
-        _isDirty = true;
-        _trackIsDirty = false;    
-
+        private _keys: string[];
+        private _isDirty = true;
         public _renderId: number;
+
         public _areLightsDirty = true;
         public _areAttributesDirty = true;
+        public _areTexturesDirty = true;
+        public _areFresnelDirty = true;
+        public _areMiscDirty = true;    
+
         public _needNormals = false;
         public _needUVs = false;
 
-        constructor(trackIsDirty?: boolean) {
-            this._trackIsDirty = trackIsDirty;
+        public get isDirty(): boolean {
+            return this._isDirty;
         }
 
-        private _reBind(key: string): void {
-            this["_" + key] = this[key]; 
+        public markAsProcessed() {
+            this._isDirty = false;
+        }
 
-            Object.defineProperty(this, key, {
-                get: function () {
-                    return this["_" + key];
-                },
-                set: function (value) {
-                    if (this["_" + key] === value) {
-                        return;
-                    }
-                    this["_" + key] = value;
-                    this._isDirty = true;
-                },
-                enumerable: true,
-                configurable: true
-            });
+        public markAsUnprocessed() {
+            this._isDirty = true;
+        }
+
+        public markAsLightDirty() {
+            this._areLightsDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsAttributesDirty() {
+            this._areAttributesDirty = true;
+            this._isDirty = true;
+        }
+        
+        public markAsTexturesDirty() {
+            this._areTexturesDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsFresnelDirty() {
+            this._areFresnelDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsMiscDirty() {
+            this._areMiscDirty = true;
+            this._isDirty = true;
         }
 
         public rebuild() {
@@ -46,16 +63,6 @@
                 }
 
                 this._keys.push(key);
-
-                if (!this._trackIsDirty) {
-                    continue;
-                }
-            
-                if (Object.getOwnPropertyDescriptor(this, key).get) {
-                    continue;
-                }
-
-                this._reBind(key);
             }
         } 
 
@@ -406,6 +413,15 @@
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {
+        }
+
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {            
+        }
+
+        public bindOnlyWorldMatrix(world: Matrix): void {
+        }
+
+        protected _afterBind(mesh: Mesh): void {
             this._scene._cachedMaterial = this;
 
             this.onBindObservable.notifyObservers(mesh);
@@ -415,12 +431,6 @@
                 this._cachedDepthWriteState = engine.getDepthWrite();
                 engine.setDepthWrite(false);
             }
-        }
-
-        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        }
-
-        public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         public unbind(): void {

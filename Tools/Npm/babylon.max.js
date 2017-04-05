@@ -9567,7 +9567,7 @@ var BABYLON;
             this._alphaTest = enable;
         };
         Engine.prototype.getAlphaTesting = function () {
-            return !!this._alphaTest;
+            return this._alphaTest;
         };
         // Textures
         Engine.prototype.wipeCaches = function () {
@@ -30073,24 +30073,6 @@ var BABYLON;
     var MaterialHelper = (function () {
         function MaterialHelper() {
         }
-        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances) {
-            var changed = false;
-            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
-                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
-                changed = true;
-            }
-            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
-                defines["ALPHATEST"] = !defines["ALPHATEST"];
-                changed = true;
-            }
-            if (defines["INSTANCES"] !== useInstances) {
-                defines["INSTANCES"] = useInstances;
-                changed = true;
-            }
-            if (changed) {
-                defines.markAsUnprocessed();
-            }
-        };
         MaterialHelper.PrepareDefinesForAttributes = function (mesh, defines, useInstances) {
             if (!defines._areAttributesDirty) {
                 return;
@@ -30115,7 +30097,7 @@ var BABYLON;
                 defines["BonesPerMesh"] = 0;
             }
         };
-        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines, specularSupported, maxSimultaneousLights, disableLighting) {
+        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines, maxSimultaneousLights, disableLighting) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             if (disableLighting === void 0) { disableLighting = false; }
             if (!defines._areLightsDirty) {
@@ -30154,7 +30136,7 @@ var BABYLON;
                     }
                     defines[type] = true;
                     // Specular
-                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
                         specularEnabled = true;
                     }
                     // Shadows
@@ -30404,8 +30386,9 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var MaterialDefines = (function () {
-        function MaterialDefines() {
+        function MaterialDefines(trackIsDirty) {
             this._isDirty = true;
+            this._trackIsDirty = false;
             this._areLightsDirty = true;
             this._areAttributesDirty = true;
             this._areTexturesDirty = true;
@@ -30413,39 +30396,24 @@ var BABYLON;
             this._areMiscDirty = true;
             this._needNormals = false;
             this._needUVs = false;
+            this._trackIsDirty = trackIsDirty;
         }
-        Object.defineProperty(MaterialDefines.prototype, "isDirty", {
-            get: function () {
-                return this._isDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        MaterialDefines.prototype.markAsProcessed = function () {
-            this._isDirty = false;
-        };
-        MaterialDefines.prototype.markAsUnprocessed = function () {
-            this._isDirty = true;
-        };
-        MaterialDefines.prototype.markAsLightDirty = function () {
-            this._areLightsDirty = true;
-            this._isDirty = true;
-        };
-        MaterialDefines.prototype.markAsAttributesDirty = function () {
-            this._areAttributesDirty = true;
-            this._isDirty = true;
-        };
-        MaterialDefines.prototype.markAsTexturesDirty = function () {
-            this._areTexturesDirty = true;
-            this._isDirty = true;
-        };
-        MaterialDefines.prototype.markAsFresnelDirty = function () {
-            this._areFresnelDirty = true;
-            this._isDirty = true;
-        };
-        MaterialDefines.prototype.markAsMiscDirty = function () {
-            this._areMiscDirty = true;
-            this._isDirty = true;
+        MaterialDefines.prototype._reBind = function (key) {
+            this["_" + key] = this[key];
+            Object.defineProperty(this, key, {
+                get: function () {
+                    return this["_" + key];
+                },
+                set: function (value) {
+                    if (this["_" + key] === value) {
+                        return;
+                    }
+                    this["_" + key] = value;
+                    this._isDirty = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
         };
         MaterialDefines.prototype.rebuild = function () {
             if (this._keys) {
@@ -30458,7 +30426,15 @@ var BABYLON;
                     continue;
                 }
                 this._keys.push(key);
+                if (!this._trackIsDirty) {
+                    continue;
+                }
+                if (Object.getOwnPropertyDescriptor(this, key).get) {
+                    continue;
+                }
+                this._reBind(key);
             }
+            this._isDirty = true;
         };
         MaterialDefines.prototype.isEqual = function (other) {
             if (this._keys.length !== other._keys.length) {
@@ -30992,19 +30968,19 @@ var BABYLON;
             }
         };
         PushMaterial.prototype._markAllSubMeshesAsTexturesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines._areTexturesDirty = true; });
         };
         PushMaterial.prototype._markAllSubMeshesAsFresnelDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsFresnelDirty(); });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines._areFresnelDirty = true; });
         };
         PushMaterial.prototype._markAllSubMeshesAsLightsDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsLightDirty(); });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines._areLightsDirty = true; });
         };
         PushMaterial.prototype._markAllSubMeshesAsAttributesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsAttributesDirty(); });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines._areAttributesDirty = true; });
         };
         PushMaterial.prototype._markAllSubMeshesAsMiscDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsMiscDirty(); });
+            this._markAllSubMeshesAsDirty(function (defines) { return defines._areMiscDirty = true; });
         };
         return PushMaterial;
     }(BABYLON.Material));
@@ -31024,7 +31000,7 @@ var BABYLON;
     var StandardMaterialDefines = (function (_super) {
         __extends(StandardMaterialDefines, _super);
         function StandardMaterialDefines() {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, true) || this;
             _this.DIFFUSE = false;
             _this.AMBIENT = false;
             _this.OPACITY = false;
@@ -31176,16 +31152,16 @@ var BABYLON;
             configurable: true
         });
         StandardMaterial.prototype.needAlphaBlending = function () {
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         };
         StandardMaterial.prototype.needAlphaTesting = function () {
-            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         };
         StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
-            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         };
         StandardMaterial.prototype.getAlphaTestTexture = function () {
-            return this._diffuseTexture;
+            return this.diffuseTexture;
         };
         /**
          * Child classes can use it to update shaders
@@ -31208,7 +31184,7 @@ var BABYLON;
             }
             var engine = scene.getEngine();
             // Lights
-            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
             defines._areLightsDirty = false;
             // Textures
             if (defines._areTexturesDirty) {
@@ -31429,15 +31405,16 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
             defines._areAttributesDirty = false;
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
+            defines.ALPHATEST = engine.getAlphaTesting();
+            defines.INSTANCES = useInstances;
             if (scene._mirroredCameraPosition && defines.BUMP) {
                 defines.INVERTNORMALMAPX = !this.invertNormalMapX;
                 defines.INVERTNORMALMAPY = !this.invertNormalMapY;
-                defines.markAsUnprocessed();
             }
             // Get correct effect      
-            if (defines.isDirty) {
-                defines.markAsProcessed();
+            if (defines._isDirty) {
+                defines._isDirty = false;
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();
@@ -60033,7 +60010,7 @@ var BABYLON;
             var needUVs = false;
             this._defines.reset();
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights) || needNormals;
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
             }
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
@@ -61036,7 +61013,6 @@ var BABYLON;
             // Getters and setters
             _this._depthOfFieldEnabled = true;
             _this._lensFlareEnabled = true;
-            _this._cameras = cameras || [];
             // Initialize
             _this._scene = scene;
             // Create pass post-processe
@@ -61087,15 +61063,15 @@ var BABYLON;
             set: function (enabled) {
                 var blurIndex = this.gaussianBlurHPostProcesses.length - 1;
                 if (enabled && !this._depthOfFieldEnabled) {
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
                     this._depthRenderer = this._scene.enableDepthRenderer();
                 }
                 else if (!enabled && this._depthOfFieldEnabled) {
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDepthOfField", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
                 }
                 this._depthOfFieldEnabled = enabled;
             },
@@ -61109,19 +61085,19 @@ var BABYLON;
             set: function (enabled) {
                 var blurIndex = this.gaussianBlurHPostProcesses.length - 2;
                 if (enabled && !this._lensFlareEnabled) {
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
                     this._setDepthOfFieldSavePostProcess("HDRPostLensFlareDepthOfFieldSource");
                 }
                 else if (!enabled && this._lensFlareEnabled) {
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
                     this._setDepthOfFieldSavePostProcess("HDRBaseDepthOfFieldSource");
                 }
                 this._lensFlareEnabled = enabled;
@@ -61131,8 +61107,8 @@ var BABYLON;
         });
         // Sets depth-of-field save post-process
         StandardRenderingPipeline.prototype._setDepthOfFieldSavePostProcess = function (name) {
-            this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._cameras);
-            this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, name, this._cameras);
+            this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._scene.cameras);
+            this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, name, this._scene.cameras);
             switch (name) {
                 case "HDRBaseDepthOfFieldSource":
                     this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess;
@@ -61298,8 +61274,8 @@ var BABYLON;
         };
         // Dispose
         StandardRenderingPipeline.prototype.dispose = function () {
-            for (var i = 0; i < this._cameras.length; i++) {
-                var camera = this._cameras[i];
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
                 this.originalPostProcess.dispose(camera);
                 this.downSampleX4PostProcess.dispose(camera);
                 this.brightPassPostProcess.dispose(camera);
@@ -61315,7 +61291,7 @@ var BABYLON;
                 this.lensFlareComposePostProcess.dispose(camera);
                 this.depthOfFieldPostProcess.dispose(camera);
             }
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             _super.prototype.dispose.call(this);
         };
         // Serialize rendering pipeline

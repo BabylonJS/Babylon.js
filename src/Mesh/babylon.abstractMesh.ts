@@ -1621,6 +1621,16 @@
                 this.releaseSubMeshes();
             }
 
+            // Octree
+            var sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree) {
+                var index = sceneOctree.dynamicContent.indexOf(this);
+
+                if (index !== -1) {
+                    sceneOctree.dynamicContent.splice(index, 1);
+                }
+            }
+
             // Engine
             this.getScene().getEngine().wipeCaches();
 

@@ -8,7 +8,7 @@ module BABYLON {
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
@@ -182,7 +182,7 @@ module BABYLON {
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public dispose(forceDisposeEffect?: boolean): void {

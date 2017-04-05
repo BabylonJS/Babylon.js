@@ -209,7 +209,7 @@ module BABYLON {
 
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, this.maxSimultaneousLights);
             }
 
             // Attribs
@@ -382,7 +382,7 @@ module BABYLON {
                 this._effect.setTexture("furTexture", this.furTexture);
             }
  
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public getAnimatables(): IAnimatable[] {
