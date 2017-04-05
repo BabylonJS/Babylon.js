@@ -12564,10 +12564,10 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype._markSubMeshesAsLightDirty = function () {
-            this._markSubMeshesAsDirty(function (defines) { return defines._areLightsDirty = true; });
+            this._markSubMeshesAsDirty(function (defines) { return defines.markAsLightDirty(); });
         };
         AbstractMesh.prototype._markSubMeshesAsAttributesDirty = function () {
-            this._markSubMeshesAsDirty(function (defines) { return defines._areAttributesDirty = true; });
+            this._markSubMeshesAsDirty(function (defines) { return defines.markAsAttributesDirty(); });
         };
         AbstractMesh.prototype._markSubMeshesAsMiscDirty = function () {
             if (!this.subMeshes) {
@@ -30219,6 +30219,9 @@ var BABYLON;
         };
         MaterialHelper.HandleFallbacksForShadows = function (defines, fallbacks, maxSimultaneousLights) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
+            if (!defines["SHADOWS"]) {
+                return;
+            }
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
