@@ -887,6 +887,11 @@ module BABYLON {
 
                 // Diffuse
                 this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+
+                // Lights
+                if (scene.lightsEnabled && !this.disableLighting) {
+                    MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
+                }
             }
             
             this._uniformBuffer.update();
@@ -956,11 +961,6 @@ module BABYLON {
 
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-
-                // Lights
-                if (scene.lightsEnabled && !this.disableLighting) {
-                    MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
-                }
 
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture || this.refractionTexture) {
