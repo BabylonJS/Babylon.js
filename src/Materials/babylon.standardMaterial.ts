@@ -815,9 +815,6 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, effect);
             
             if (!this.isFrozen || !this._uniformBuffer.isSync) {
-            if (this._mustRebind(scene, effect)) {
-                effect.setMatrix("viewProjection", scene.getTransformMatrix());
-
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -905,7 +902,7 @@ module BABYLON {
                     this._uniformBuffer.updateFloat("pointSize", this.pointSize);
                 }
 
-                if (this._defines.SPECULARTERM) {
+                if (defines.SPECULARTERM) {
                     this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
                 this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
@@ -913,19 +910,19 @@ module BABYLON {
                 // Diffuse
                 this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
+                this._uniformBuffer.update();
             }
             
-            this._uniformBuffer.update();
             
-            if (scene.getCachedMaterial() !== this) {
-                this._effect.bindUniformBuffer(this._uniformBuffer.getBuffer(), "Material");
+            if (this._mustRebind(scene, effect)) {
+                effect.bindUniformBuffer(this._uniformBuffer.getBuffer(), "Material");
 
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                 // Textures     
                 if (scene.texturesEnabled) {
                     if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+                        effect.setTexture("diffuseSampler", this.diffuseTexture);
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -942,8 +939,6 @@ module BABYLON {
                         } else {
                             effect.setTexture("reflection2DSampler", this._reflectionTexture);
                         }
-                    }
-
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -985,10 +980,8 @@ module BABYLON {
                 effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
 
-                // View
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture || this.refractionTexture) {
-                    this._effect.setMatrix("view", scene.getViewMatrix());
-                }
+            }
+
 
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
                 // Lights
@@ -996,6 +989,11 @@ module BABYLON {
                     MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
                 }
 
+                // View
+                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture || this.refractionTexture) {
+                    effect.setMatrix("view", scene.getViewMatrix());
+                }
+                
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
 
