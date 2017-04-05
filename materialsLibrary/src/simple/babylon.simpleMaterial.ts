@@ -113,17 +113,15 @@ module BABYLON {
             defines._areLightsDirty = false;
 
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = true;
-            defines.INSTANCES = useInstances;
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
             defines._areAttributesDirty = false;
 
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks

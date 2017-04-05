@@ -51,7 +51,7 @@ module BABYLON {
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 

@@ -1,6 +1,29 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void {
+            var changed = false;
+
+            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
+                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+                changed = true;
+            }
+
+            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+                defines["ALPHATEST"] = !defines["ALPHATEST"];
+                changed = true;
+            }
+
+            if (defines["INSTANCES"] !== useInstances) {
+                defines["INSTANCES"] = useInstances;
+                changed = true;
+            }
+            
+            if (changed) {
+                defines.markAsUnprocessed();
+            }
+        }
+
         public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void {
             if (!defines._areAttributesDirty) {
                 return;
