@@ -71,6 +71,7 @@
 			pointLight.setEnabled(false);
 			var directionalLight = new BABYLON.DirectionalLight("directional", new BABYLON.Vector3(0,-1, 0), scene);
 			directionalLight.setEnabled(false);
+			directionalLight.position = new BABYLON.Vector3(0, 50, 0);
 			var spotLight = new BABYLON.SpotLight("spot", new BABYLON.Vector3(0, -30, 0), new BABYLON.Vector3(0, 1, 0), 1.1, 1, scene);
 			spotLight.setEnabled(false);
 
@@ -128,6 +129,7 @@
 				var shadowGenerator = new BABYLON.ShadowGenerator(1024, directionalLight);
 				shadowGenerator.getShadowMap().renderList.push(shadowCaster);
 				shadowGenerator.usePoissonSampling = true;
+				shadowGenerator.bias = 0;
 				
 				var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, spotLight);
 				shadowGenerator2.getShadowMap().renderList.push(shadowCaster2);
