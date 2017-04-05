@@ -109,7 +109,7 @@ module BABYLON {
             }
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             defines._areLightsDirty = false;
 
             // Values that need to be evaluated on every frame

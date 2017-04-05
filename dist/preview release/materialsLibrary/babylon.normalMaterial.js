@@ -151,7 +151,7 @@ var BABYLON;
             }
             var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false);
             }
             // Attribs
             if (mesh) {
@@ -213,10 +213,10 @@ var BABYLON;
                 var shaderName = "normal";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                    "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                    "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                    "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                    "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                    "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
+                    "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
+                    "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
+                    "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
@@ -269,7 +269,7 @@ var BABYLON;
             }
             // Fog
             BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         NormalMaterial.prototype.getAnimatables = function () {
             var results = [];

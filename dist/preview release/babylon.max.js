@@ -30097,7 +30097,7 @@ var BABYLON;
                 defines["BonesPerMesh"] = 0;
             }
         };
-        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines, maxSimultaneousLights, disableLighting) {
+        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines, specularSupported, maxSimultaneousLights, disableLighting) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             if (disableLighting === void 0) { disableLighting = false; }
             if (!defines._areLightsDirty) {
@@ -30136,7 +30136,7 @@ var BABYLON;
                     }
                     defines[type] = true;
                     // Specular
-                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
                         specularEnabled = true;
                     }
                     // Shadows
@@ -31184,7 +31184,7 @@ var BABYLON;
             }
             var engine = scene.getEngine();
             // Lights
-            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
             defines._areLightsDirty = false;
             // Textures
             if (defines._areTexturesDirty) {
@@ -60010,7 +60010,7 @@ var BABYLON;
             var needUVs = false;
             this._defines.reset();
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights) || needNormals;
             }
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {

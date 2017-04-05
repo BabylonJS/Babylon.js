@@ -151,7 +151,7 @@ var BABYLON;
             }
             // Fog
             BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         GridMaterial.prototype.dispose = function (forceDisposeEffect) {
             _super.prototype.dispose.call(this, forceDisposeEffect);

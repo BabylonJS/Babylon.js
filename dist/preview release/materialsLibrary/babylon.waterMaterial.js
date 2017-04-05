@@ -248,7 +248,7 @@ var BABYLON;
             }
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
             // Attribs
             if (mesh) {
@@ -397,7 +397,7 @@ var BABYLON;
             this._effect.setColor4("waterColor2", this.waterColor2, 1.0);
             this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         WaterMaterial.prototype._createRenderTargets = function (scene, renderTargetSize) {
             var _this = this;

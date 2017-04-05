@@ -170,7 +170,7 @@ var BABYLON;
             }
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, this.maxSimultaneousLights);
             }
             // Attribs
             if (mesh) {
@@ -302,7 +302,7 @@ var BABYLON;
                 this._effect.setFloat("furTime", this._furTime);
                 this._effect.setTexture("furTexture", this.furTexture);
             }
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         FurMaterial.prototype.getAnimatables = function () {
             var results = [];

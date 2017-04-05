@@ -288,7 +288,7 @@ module BABYLON {
             
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
 
             // Attribs
