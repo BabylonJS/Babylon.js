@@ -173,7 +173,7 @@ module BABYLON {
                         this._defines.DIFFUSE = true;
                     }
                 } 
-                if (this.heightTexture) {
+                if (this.heightTexture && engine.getCaps().maxVertexTextureImageUnits) {
                     if (!this.heightTexture.isReady()) {
                         return false;
                     } else {
