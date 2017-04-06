@@ -586,7 +586,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);

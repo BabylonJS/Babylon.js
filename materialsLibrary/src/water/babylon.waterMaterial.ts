@@ -275,7 +275,7 @@ module BABYLON {
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             
             this._mesh = mesh;
 

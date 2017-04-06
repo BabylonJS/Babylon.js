@@ -109,7 +109,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
             // Get correct effect      
             if (defines.isDirty) {
