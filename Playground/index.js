@@ -16,8 +16,11 @@
             document.getElementById('safemodeToggle').checked = true;
         });
 
-        var snippetUrl = "https://babylonjs-api.azurewebsites.net/api/snippet";
+        var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
         var currentSnippetToken;
+        var currentSnippetTitle = null;
+        var currentSnippetDescription = null;
+        var currentSnippetTags = null;
         var engine;
         var fpsLabel = document.getElementById("fpsLabel");
         var scripts;
@@ -501,6 +504,14 @@
 
         // Snippet
         var save = function () {
+
+            // Retrieve title if necessary
+            if(document.getElementById("saveLayer")) {
+                currentSnippetTitle = document.getElementById("saveFormTitle").value;
+                currentSnippetDescription = document.getElementById("saveFormDescription").value;
+                currentSnippetTags = document.getElementById("saveFormTags").value;
+            }
+
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = function () {
                 if (xmlHttp.readyState === 4) {
@@ -509,10 +520,12 @@
                         var snippet = JSON.parse(xmlHttp.responseText);
                         var newUrl = baseUrl + "#" + snippet.id;
                         currentSnippetToken = snippet.id;
-                        if (snippet.version !== "0") {
+                        if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
                         }
                         location.href = newUrl;
+                        // Hide the complete title & co message
+                        document.getElementById("saveMessage").style.display = "none";
                         compileAndRun();
                     } else {
                         showError("Unable to save your code. It may be too long.", null);
@@ -523,14 +536,39 @@
             xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-            var payload = {
-                code: jsEditor.getValue()
+            var dataToSend = {
+                payload: {
+                    code: jsEditor.getValue()
+                },
+                name: currentSnippetTitle,
+                description: currentSnippetDescription,
+                tags: currentSnippetTags
             };
 
-            xmlHttp.send(JSON.stringify(payload));
+            xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        document.getElementById("saveButton").addEventListener("click", save);
+        document.getElementById("saveButton").addEventListener("click", function() {
+            if(currentSnippetTitle == null
+                && currentSnippetDescription == null
+                && currentSnippetTags == null) {
+
+                document.getElementById("saveLayer").style.display = "block";
+            }
+            else {
+                save();
+            }
+        });
+        document.getElementById("saveFormButtonOk").addEventListener("click", function () {
+            document.getElementById("saveLayer").style.display = "none";
+            save();
+        });
+        document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
+            document.getElementById("saveLayer").style.display = "none";
+        });
+        document.getElementById("saveMessage").addEventListener("click", function() {
+            document.getElementById("saveMessage").style.display = "none";
+        });
         document.getElementById("mainTitle").innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " Playground";
 
         var previousHash = "";
@@ -557,9 +595,30 @@
                         xmlHttp.onreadystatechange = function () {
                             if (xmlHttp.readyState === 4) {
                                 if (xmlHttp.status === 200) {
-                                    var snippet = JSON.parse(xmlHttp.responseText);
+                                    var snippet = JSON.parse(xmlHttp.responseText)[0];
+
                                     blockEditorChange = true;
-                                    jsEditor.setValue(snippet.code.toString());
+                                    jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
+
+                                    // Check if title / descr / tags are already set
+                                    if((snippet.name != null && snippet.name != "")
+                                        || (snippet.description != null && snippet.description != "")
+                                        || (snippet.tags != null && snippet.tags != ""))
+                                    {
+                                        currentSnippetTitle = snippet.name;
+                                        currentSnippetDescription = snippet.description;
+                                        currentSnippetTags = snippet.tags;
+
+                                        if(document.getElementById("saveLayer")) {
+                                            var elem = document.getElementById("saveLayer");
+                                            elem.outerHTML = "";
+                                            delete elem;
+                                        }
+                                    }
+                                    else {
+                                        document.getElementById("saveMessage").style.display = "block";
+                                    }
+
                                     jsEditor.setPosition({ lineNumber: 0, column: 0 });
                                     blockEditorChange = false;
                                     compileAndRun();
