@@ -19,6 +19,11 @@
 
         public markAsProcessed() {
             this._isDirty = false;
+            this._areAttributesDirty = false;
+            this._areTexturesDirty = false;
+            this._areFresnelDirty = false;
+            this._areLightsDirty = false;
+            this._areMiscDirty = false;
         }
 
         public markAsUnprocessed() {

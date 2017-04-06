@@ -97,27 +97,19 @@ module BABYLON {
                         }
                     }                
                 }
-                defines._areTexturesDirty = false;
             }
 
             // Misc.
-            if (defines._areMiscDirty) {
-                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-                defines._areMiscDirty = false;
-            }
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
 
             // Get correct effect      
             if (defines.isDirty) {
