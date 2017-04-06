@@ -30073,6 +30073,13 @@ var BABYLON;
     var MaterialHelper = (function () {
         function MaterialHelper() {
         }
+        MaterialHelper.PrepareDefinesForMisc = function (mesh, scene, useLogarithmicDepth, pointsCloud, fogEnabled, defines) {
+            if (defines._areMiscDirty) {
+                defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
+                defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
+                defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && fogEnabled);
+            }
+        };
         MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances) {
             var changed = false;
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -31424,11 +31431,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            if (defines._areMiscDirty) {
-                defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
-                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled);
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
             // Values that need to be evaluated on every frame
