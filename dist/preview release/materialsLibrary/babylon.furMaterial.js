@@ -170,7 +170,7 @@ var BABYLON;
             }
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, this.maxSimultaneousLights);
             }
             // Attribs
             if (mesh) {

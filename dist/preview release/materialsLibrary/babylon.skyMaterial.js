@@ -26,7 +26,7 @@ var BABYLON;
             _this.FOG = false;
             _this.VERTEXCOLOR = false;
             _this.VERTEXALPHA = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return SkyMaterialDefines;
@@ -184,7 +184,7 @@ var BABYLON;
                 this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             }
             this._effect.setVector3("sunPosition", this.sunPosition);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         SkyMaterial.prototype.getAnimatables = function () {
             return [];

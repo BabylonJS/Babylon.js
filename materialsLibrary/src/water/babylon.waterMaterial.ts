@@ -29,12 +29,14 @@ module BABYLON {
         }
     }
 	
-	export class WaterMaterial extends Material {
+	export class WaterMaterial extends PushMaterial {
 		/*
 		* Public members
 		*/
-        @serializeAsTexture()
-        public bumpTexture: BaseTexture;
+        @serializeAsTexture("bumpTexture")
+        private _bumpTexture: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public bumpTexture: BaseTexture;        
         
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
@@ -45,11 +47,15 @@ module BABYLON {
         @serialize()
         public specularPower = 64;
         
-        @serialize()
-        public disableLighting = false;
+        @serialize("disableLighting")
+        private _disableLighting = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public disableLighting: boolean;
         
-        @serialize()
-        public maxSimultaneousLights = 4;
+        @serialize("maxSimultaneousLights")
+        private _maxSimultaneousLights = 4;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public maxSimultaneousLights: number;                   
         
         /**
         * @param {number}: Represents the wind force
@@ -74,18 +80,26 @@ module BABYLON {
         /**
          * @param {boolean}: Add a smaller moving bump to less steady waves.
          */
-        @serialize()
-        public bumpSuperimpose = false;
+        @serialize("bumpSuperimpose")
+        private _bumpSuperimpose = false;
+        @expandToProperty("_markAllSubMeshesAsMiscDirty")
+        public bumpSuperimpose: boolean;
+
         /**
          * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
          */
-        @serialize()
-        public fresnelSeparate = false;
+        @serialize("fresnelSeparate")
+        private _fresnelSeparate = false;
+        @expandToProperty("_markAllSubMeshesAsMiscDirty")
+        public fresnelSeparate: boolean;
+
         /**
          * @param {boolean}: bump Waves modify the reflection.
          */
-        @serialize()
-        public bumpAffectsReflection = false;
+        @serialize("bumpAffectsReflection")
+        private _bumpAffectsReflection = false;
+        @expandToProperty("_markAllSubMeshesAsMiscDirty")
+        public bumpAffectsReflection: boolean;        
 
         /**
         * @param {number}: The water color blended with the refraction (near)
@@ -134,9 +148,6 @@ module BABYLON {
         
         private _renderId: number;
 
-        private _defines = new WaterMaterialDefines();
-        private _cachedDefines = new WaterMaterialDefines();
-
         private _useLogarithmicDepth: boolean;
 
         /**
@@ -156,6 +167,7 @@ module BABYLON {
 
         public set useLogarithmicDepth(value: boolean) {
             this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+            this._markAllSubMeshesAsMiscDirty();
         }
 
         // Get / Set
@@ -199,179 +211,120 @@ module BABYLON {
         public getAlphaTestTexture(): BaseTexture {
             return null;
         }
-        
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (!mesh) {
-                return true;
-            }
-
-            if (this._defines.INSTANCES !== useInstances) {
-                return false;
-            }
-
-            return false;
-        }
 		
-		public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-			if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+		public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
 
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new WaterMaterialDefines();
+            }
+
+            var defines = <WaterMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-
-            this._defines.reset();
 
             // Textures
-            if (scene.texturesEnabled) {
-                if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                    if (!this.bumpTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.BUMP = true;
+            if (defines._areTexturesDirty) {
+                defines._needUVs = false;
+                if (scene.texturesEnabled) {
+                    if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+                        if (!this.bumpTexture.isReady()) {
+                            return false;
+                        } else {
+                            defines._needUVs = true;
+                            defines.BUMP = true;
+                        }
+                    }
+                    
+                    if (StandardMaterial.ReflectionTextureEnabled) {
+                        defines.REFLECTION = true;
                     }
                 }
-                
-                if (StandardMaterial.ReflectionTextureEnabled) {
-                    this._defines.REFLECTION = true;
+            }
+
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+
+            if (defines._areMiscDirty) {
+                if (this._fresnelSeparate) {
+                    defines.FRESNELSEPARATE = true;
+                }
+
+                if (this._bumpSuperimpose) {
+                    defines.BUMPSUPERIMPOSE = true;
+                }
+
+                if (this._bumpAffectsReflection) {
+                    defines.BUMPAFFECTSREFLECTION = true;
                 }
             }
-
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-
-            if (engine.getAlphaTesting()) {
-                this._defines.ALPHATEST = true;
-            }
-
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-
-            if (this.useLogarithmicDepth) {
-                this._defines.LOGARITHMICDEPTH = true;
-            }
-
-            if (this.fresnelSeparate) {
-                this._defines.FRESNELSEPARATE = true;
-            }
-
-            if (this.bumpSuperimpose) {
-                this._defines.BUMPSUPERIMPOSE = true;
-            }
-
-            if (this.bumpAffectsReflection) {
-                this._defines.BUMPAFFECTSREFLECTION = true;
-            }
-
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
-            
+           
             // Lights
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
-            }
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
             // Attribs
-            if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
-                if (needUVs) {
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                        this._defines.UV1 = true;
-                    }
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                        this._defines.UV2 = true;
-                    }
-                }
-                if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    this._defines.VERTEXCOLOR = true;
-
-                    if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true;
-                    }
-                }
-                
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                }
-
-                // Instances
-                if (useInstances) {
-                    this._defines.INSTANCES = true;
-                }
-            }
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
             
             this._mesh = mesh;
 
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
-
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();             
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                if (this._defines.LOGARITHMICDEPTH) {
+                if (defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
+                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
              
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 
-                if (this._defines.NORMAL) {
+                if (defines.NORMAL) {
                     attribs.push(VertexBuffer.NormalKind);
                 }
 
-                if (this._defines.UV1) {
+                if (defines.UV1) {
                     attribs.push(VertexBuffer.UVKind);
                 }
 
-                if (this._defines.UV2) {
+                if (defines.UV2) {
                     attribs.push(VertexBuffer.UV2Kind);
                 }
 
-                if (this._defines.VERTEXCOLOR) {
+                if (defines.VERTEXCOLOR) {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
                 // Legacy browser patch
                 var shaderName = "water";
-                var join = this._defines.toString();
+                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vNormalInfos", 
@@ -388,13 +341,13 @@ module BABYLON {
                     "refractionSampler", "reflectionSampler"
                 ];
                 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
                 
-                this._effect = scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights }), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -404,83 +357,87 @@ module BABYLON {
             return true;
 		}
         
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._effect.setMatrix("world", world);
-        }
-		
-		public bind(world: Matrix, mesh?: Mesh): void {
+		public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
+
+            var defines = <WaterMaterialDefines>subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
-            if (scene.getCachedMaterial() !== this) {
+            if (this._mustRebind(scene, effect)) {
                 // Textures        
                 if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                    this._effect.setTexture("normalSampler", this.bumpTexture);
+                    this._activeEffect.setTexture("normalSampler", this.bumpTexture);
 
-                    this._effect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
-                    this._effect.setMatrix("normalMatrix", this.bumpTexture.getTextureMatrix());
+                    this._activeEffect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
+                    this._activeEffect.setMatrix("normalMatrix", this.bumpTexture.getTextureMatrix());
                 }
                 // Clip plane
-                MaterialHelper.BindClipPlane(this._effect, scene);
+                MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+            this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             
-            if (this._defines.SPECULARTERM) {
-                this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            if (defines.SPECULARTERM) {
+                this._activeEffect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
             }
 
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
             // Log. depth
-            MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
+            MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
 
             // Water
             if (StandardMaterial.ReflectionTextureEnabled) {
-                this._effect.setTexture("refractionSampler", this._refractionRTT);
-                this._effect.setTexture("reflectionSampler", this._reflectionRTT);
+                this._activeEffect.setTexture("refractionSampler", this._refractionRTT);
+                this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
             }
             
 			var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
 			this._lastTime += scene.getEngine().getDeltaTime();
 			
-			this._effect.setMatrix("worldReflectionViewProjection", wrvp);
-			this._effect.setVector2("windDirection", this.windDirection);
-			this._effect.setFloat("waveLength", this.waveLength);
-			this._effect.setFloat("time", this._lastTime / 100000);
-			this._effect.setFloat("windForce", this.windForce);
-			this._effect.setFloat("waveHeight", this.waveHeight);
-            this._effect.setFloat("bumpHeight", this.bumpHeight);
-			this._effect.setColor4("waterColor", this.waterColor, 1.0);
-			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
-            this._effect.setColor4("waterColor2", this.waterColor2, 1.0);
-            this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
-            this._effect.setFloat("waveSpeed", this.waveSpeed);
+			this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
+			this._activeEffect.setVector2("windDirection", this.windDirection);
+			this._activeEffect.setFloat("waveLength", this.waveLength);
+			this._activeEffect.setFloat("time", this._lastTime / 100000);
+			this._activeEffect.setFloat("windForce", this.windForce);
+			this._activeEffect.setFloat("waveHeight", this.waveHeight);
+            this._activeEffect.setFloat("bumpHeight", this.bumpHeight);
+			this._activeEffect.setColor4("waterColor", this.waterColor, 1.0);
+			this._activeEffect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._activeEffect.setColor4("waterColor2", this.waterColor2, 1.0);
+            this._activeEffect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
+            this._activeEffect.setFloat("waveSpeed", this.waveSpeed);
 
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
 		}
 		
 		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {

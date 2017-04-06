@@ -2079,7 +2079,7 @@
         }
 
         public getAlphaTesting(): boolean {
-            return this._alphaTest;
+            return !!this._alphaTest;
         }
 
         // Textures

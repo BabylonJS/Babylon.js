@@ -435,11 +435,11 @@
         }
 
         public _markSubMeshesAsLightDirty() {
-            this._markSubMeshesAsDirty(defines => defines._areLightsDirty = true);
+            this._markSubMeshesAsDirty(defines => defines.markAsLightDirty());
         }
 
         public _markSubMeshesAsAttributesDirty() {
-            this._markSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
+            this._markSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
         }
 
         public _markSubMeshesAsMiscDirty() {

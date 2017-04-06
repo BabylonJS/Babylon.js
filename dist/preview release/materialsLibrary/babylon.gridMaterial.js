@@ -23,7 +23,7 @@ var BABYLON;
             var _this = _super.call(this) || this;
             _this.TRANSPARENT = false;
             _this.FOG = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return GRIDMaterialDefines;
@@ -151,7 +151,7 @@ var BABYLON;
             }
             // Fog
             BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            this._afterBind(mesh);
         };
         GridMaterial.prototype.dispose = function (forceDisposeEffect) {
             _super.prototype.dispose.call(this, forceDisposeEffect);
