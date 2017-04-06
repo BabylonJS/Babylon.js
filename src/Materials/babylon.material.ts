@@ -1,9 +1,7 @@
 ﻿module BABYLON {
     export class MaterialDefines {
-        _keys: string[];
-        _isDirty = true;
-        _trackIsDirty = false;    
-
+        private _keys: string[];
+        private _isDirty = true;
         public _renderId: number;
 
         public _areLightsDirty = true;
@@ -15,27 +13,46 @@
         public _needNormals = false;
         public _needUVs = false;
 
-        constructor(trackIsDirty?: boolean) {
-            this._trackIsDirty = trackIsDirty;
+        public get isDirty(): boolean {
+            return this._isDirty;
         }
 
-        private _reBind(key: string): void {
-            this["_" + key] = this[key]; 
+        public markAsProcessed() {
+            this._isDirty = false;
+            this._areAttributesDirty = false;
+            this._areTexturesDirty = false;
+            this._areFresnelDirty = false;
+            this._areLightsDirty = false;
+            this._areMiscDirty = false;
+        }
 
-            Object.defineProperty(this, key, {
-                get: function () {
-                    return this["_" + key];
-                },
-                set: function (value) {
-                    if (this["_" + key] === value) {
-                        return;
-                    }
-                    this["_" + key] = value;
-                    this._isDirty = true;
-                },
-                enumerable: true,
-                configurable: true
-            });
+        public markAsUnprocessed() {
+            this._isDirty = true;
+        }
+
+        public markAsLightDirty() {
+            this._areLightsDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsAttributesDirty() {
+            this._areAttributesDirty = true;
+            this._isDirty = true;
+        }
+        
+        public markAsTexturesDirty() {
+            this._areTexturesDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsFresnelDirty() {
+            this._areFresnelDirty = true;
+            this._isDirty = true;
+        }
+
+        public markAsMiscDirty() {
+            this._areMiscDirty = true;
+            this._isDirty = true;
         }
 
         public rebuild() {
@@ -51,19 +68,7 @@
                 }
 
                 this._keys.push(key);
-
-                if (!this._trackIsDirty) {
-                    continue;
-                }
-            
-                if (Object.getOwnPropertyDescriptor(this, key).get) {
-                    continue;
-                }
-
-                this._reBind(key);
             }
-
-            this._isDirty = true;
         } 
 
         public isEqual(other: MaterialDefines): boolean {

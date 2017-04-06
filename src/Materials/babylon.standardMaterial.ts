@@ -61,7 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
 
         constructor() {
-            super(true);
+            super();
             this.rebuild();
         }
 
@@ -168,8 +168,7 @@ module BABYLON {
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;           
-          
+        public disableLighting: boolean;
 
         @serialize("useParallax")
         private _useParallax = false;
@@ -328,19 +327,19 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
         }
 
         protected _shouldUseAlphaFromDiffuseTexture(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
+            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         }
 
         public getAlphaTestTexture(): BaseTexture {
-            return this.diffuseTexture;
+            return this._diffuseTexture;
         }
 
         /**
@@ -368,8 +367,7 @@ module BABYLON {
             var engine = scene.getEngine();
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
             // Textures
             if (defines._areTexturesDirty) {
@@ -553,8 +551,6 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-         
-                defines._areTexturesDirty = false;
             } 
 
             if (defines._areFresnelDirty) {
@@ -584,36 +580,26 @@ module BABYLON {
                 } else {
                     defines.FRESNEL = false;
                 }
-
-                defines._areFresnelDirty = false;
             }
 
             // Misc.
-            if (defines._areMiscDirty) {
-                defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
-                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-                defines._areMiscDirty = false;
-            }
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
 
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
-            defines.INSTANCES = useInstances;
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
             if (scene._mirroredCameraPosition && defines.BUMP) {
                 defines.INVERTNORMALMAPX = !this.invertNormalMapX;
                 defines.INVERTNORMALMAPY = !this.invertNormalMapY;
+                defines.markAsUnprocessed();
             }
 
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks
