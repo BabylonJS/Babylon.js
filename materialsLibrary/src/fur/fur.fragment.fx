@@ -97,8 +97,13 @@ void main(void) {
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
     lightingInfo info;
+
 	float shadow = 1.;
 	float glossiness = 0.;
+
+#ifdef SPECULARTERM
+	vec3 specularBase = vec3(0., 0., 0.);
+#endif
 
 	#include<lightFragment>[0..maxSimultaneousLights]
 
