@@ -32,7 +32,7 @@
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean): void {
             if (!defines._areAttributesDirty) {
                 return;
             }
@@ -47,17 +47,20 @@
                 defines["UV2"] = false;
             }
 
-            defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+            if (useVertexColor) {
+                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+            }
 
-            defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
-
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-                defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
-            } else {
-                defines["NUM_BONE_INFLUENCERS"] = 0;
-                defines["BonesPerMesh"] = 0;
-            }           
+            if (useBones) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                } else {
+                    defines["NUM_BONE_INFLUENCERS"] = 0;
+                    defines["BonesPerMesh"] = 0;
+                }           
+            }
         }
 
         public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
