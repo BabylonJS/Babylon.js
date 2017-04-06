@@ -5797,7 +5797,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.tga.js.map
+//# sourceMappingURL=babylon.tga.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -8060,6 +8060,7 @@ var BABYLON;
             this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+            this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
@@ -46913,7 +46914,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.dds.js.map
+//# sourceMappingURL=babylon.dds.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -56716,7 +56717,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.cubemapToSphericalPolynomial.js.map
+//# sourceMappingURL=babylon.cubemapToSphericalPolynomial.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -56858,7 +56859,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.panoramaToCubemap.js.map
+//# sourceMappingURL=babylon.panoramaToCubemap.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -57063,7 +57064,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.hdr.js.map
+//# sourceMappingURL=babylon.hdr.js.map
 
 //_______________________________________________________________
 // Extracted from CubeMapGen: 
@@ -58126,7 +58127,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.pmremgenerator.js.map
 
 
 var BABYLON;
