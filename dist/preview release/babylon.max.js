@@ -30426,6 +30426,11 @@ var BABYLON;
         });
         MaterialDefines.prototype.markAsProcessed = function () {
             this._isDirty = false;
+            this._areAttributesDirty = false;
+            this._areTexturesDirty = false;
+            this._areFresnelDirty = false;
+            this._areLightsDirty = false;
+            this._areMiscDirty = false;
         };
         MaterialDefines.prototype.markAsUnprocessed = function () {
             this._isDirty = true;
@@ -31212,7 +31217,6 @@ var BABYLON;
             var engine = scene.getEngine();
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
             // Textures
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
@@ -31396,7 +31400,6 @@ var BABYLON;
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-                defines._areTexturesDirty = false;
             }
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
@@ -31419,18 +31422,15 @@ var BABYLON;
                 else {
                     defines.FRESNEL = false;
                 }
-                defines._areFresnelDirty = false;
             }
             // Misc.
             if (defines._areMiscDirty) {
                 defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
                 defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
                 defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled);
-                defines._areMiscDirty = false;
             }
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
             // Values that need to be evaluated on every frame
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             if (scene._mirroredCameraPosition && defines.BUMP) {
