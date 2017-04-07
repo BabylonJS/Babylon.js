@@ -11369,7 +11369,7 @@ var BABYLON;
                         FilesInput.FilesTextures[name_1] = this._filesToLoad[i];
                     }
                     else {
-                        if ((extension === "babylon" || extension === "stl" || extension === "obj")
+                        if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                             && name_1.indexOf(".binary.babylon") === -1 && name_1.indexOf(".incremental.babylon") === -1) {
                             this._sceneFileToLoad = this._filesToLoad[i];
                         }
