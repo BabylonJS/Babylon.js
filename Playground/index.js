@@ -129,6 +129,10 @@
         var createNewScript = function () {
             location.hash = "";
             currentSnippetToken = null;
+            currentSnippetTitle = null;
+            currentSnippetDescription = null;
+            currentSnippetTags = null;
+            document.getElementById("saveMessage").style.display = "block";
             jsEditor.setValue('// You have to create a function called createScene. This function must return a BABYLON.Scene object\r\n// You can reference the following variables: scene, canvas\r\n// You must at least define a camera\r\n// More info here: https://doc.babylonjs.com/generals/The_Playground_Tutorial\r\n\r\nvar createScene = function() {\r\n\tvar scene = new BABYLON.Scene(engine);\r\n\tvar camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);\r\n\tcamera.attachControl(canvas, true);\r\n\r\n\r\n\r\n\treturn scene;\r\n};');
             jsEditor.setPosition({ lineNumber: 11, column: 0 });
             jsEditor.focus();
@@ -178,7 +182,7 @@
                 }
 
                 var canvas = document.getElementById("renderCanvas");
-                engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
+                engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
 
@@ -506,7 +510,7 @@
         var save = function () {
 
             // Retrieve title if necessary
-            if(document.getElementById("saveLayer")) {
+            if (document.getElementById("saveLayer")) {
                 currentSnippetTitle = document.getElementById("saveFormTitle").value;
                 currentSnippetDescription = document.getElementById("saveFormDescription").value;
                 currentSnippetTags = document.getElementById("saveFormTags").value;
@@ -548,8 +552,8 @@
             xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        document.getElementById("saveButton").addEventListener("click", function() {
-            if(currentSnippetTitle == null
+        document.getElementById("saveButton").addEventListener("click", function () {
+            if (currentSnippetTitle == null
                 && currentSnippetDescription == null
                 && currentSnippetTags == null) {
 
@@ -566,7 +570,7 @@
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
         });
-        document.getElementById("saveMessage").addEventListener("click", function() {
+        document.getElementById("saveMessage").addEventListener("click", function () {
             document.getElementById("saveMessage").style.display = "none";
         });
         document.getElementById("mainTitle").innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " Playground";
@@ -601,21 +605,29 @@
                                     jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
 
                                     // Check if title / descr / tags are already set
-                                    if((snippet.name != null && snippet.name != "")
+                                    if ((snippet.name != null && snippet.name != "")
                                         || (snippet.description != null && snippet.description != "")
-                                        || (snippet.tags != null && snippet.tags != ""))
-                                    {
+                                        || (snippet.tags != null && snippet.tags != "")) {
                                         currentSnippetTitle = snippet.name;
                                         currentSnippetDescription = snippet.description;
                                         currentSnippetTags = snippet.tags;
 
-                                        if(document.getElementById("saveLayer")) {
+                                        if (document.getElementById("saveLayer")) {
                                             var elem = document.getElementById("saveLayer");
-                                            elem.outerHTML = "";
-                                            delete elem;
+                                            // elem.outerHTML = "";
+                                            // delete elem;
+
+                                            document.getElementById("saveFormTitle").value = '';
+                                            document.getElementById("saveFormDescription").value = '';
+                                            document.getElementById("saveFormTags").value = '';
+                                            elem.style.display = 'none';
                                         }
                                     }
                                     else {
+                                        currentSnippetTitle = null;
+                                        currentSnippetDescription = null;
+                                        currentSnippetTags = null;
+
                                         document.getElementById("saveMessage").style.display = "block";
                                     }
 
@@ -678,7 +690,7 @@
 
                     run();
                 });
-           }
+            }
         }
     };
     xhr.send(null);
