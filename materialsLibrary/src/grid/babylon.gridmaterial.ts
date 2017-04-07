@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    class GRIDMaterialDefines extends MaterialDefines {
+    class GridMaterialDefines extends MaterialDefines {
         public TRANSPARENT = false;
 
         public FOG = false;
@@ -16,7 +16,7 @@ module BABYLON {
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    export class GridMaterial extends BABYLON.Material {
+    export class GridMaterial extends BABYLON.PushMaterial {
 
         /**
          * Main color of the grid (e.g. between lines)
@@ -57,8 +57,6 @@ module BABYLON {
         private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 
         private _renderId: number;
-        private _defines = new GRIDMaterialDefines();
-        private _cachedDefines = new GRIDMaterialDefines();
 
         /**
          * constructor
@@ -76,48 +74,38 @@ module BABYLON {
             return this.opacity < 1.0;
         }
 
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (!mesh) {
-                return true;
-            }
-            
-            return false;
-        }
-
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
 
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new GridMaterialDefines();
+            }
+
+            var defines = <GridMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             var engine = scene.getEngine();
-            var needNormals = true;
 
-            this._defines.reset();
-
-            if (this.opacity < 1.0) {
-                this._defines.TRANSPARENT = true;
+            if (this.opacity < 1.0 && !defines.TRANSPARENT) {
+                defines.TRANSPARENT = true;
+                defines.markAsUnprocessed();
             }
 
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
 
             // Get correct effect      
-            if (!this._effect || !this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Attributes
@@ -127,18 +115,18 @@ module BABYLON {
                 var shaderName = scene.getEngine().getCaps().standardDerivatives ? "grid" : "legacygrid";
 
                 // Defines
-                var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName,
+                var join = defines.toString();
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs,
                     ["worldViewProjection", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
                     [],
                     join,
                     null,
                     this.onCompiled,
-                    this.onError);
+                    this.onError), defines);
             }
 
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -148,41 +136,37 @@ module BABYLON {
             return true;
         }
 
-        public bindOnlyWorldMatrix(world: Matrix): void {
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
-            this._effect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
-            this._effect.setMatrix("world", world);
-            this._effect.setMatrix("view", scene.getViewMatrix());
-        }
+            var defines = <GridMaterialDefines>subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
 
-        public bind(world: Matrix, mesh?: Mesh): void {
-            var scene = this.getScene();
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
 
             // Matrices
             this.bindOnlyWorldMatrix(world);
+            this._activeEffect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            this._activeEffect.setMatrix("view", scene.getViewMatrix());
 
             // Uniforms
-            if (scene.getCachedMaterial() !== (<BABYLON.Material>this)) {
-                this._effect.setColor3("mainColor", this.mainColor);
-                this._effect.setColor3("lineColor", this.lineColor);
+            if (this._mustRebind(scene, effect)) {
+                this._activeEffect.setColor3("mainColor", this.mainColor);
+                this._activeEffect.setColor3("lineColor", this.lineColor);
 
                 this._gridControl.x = this.gridRatio;
                 this._gridControl.y = Math.round(this.majorUnitFrequency);
                 this._gridControl.z = this.minorUnitVisibility;
                 this._gridControl.w = this.opacity;
-                this._effect.setVector4("gridControl", this._gridControl);
+                this._activeEffect.setVector4("gridControl", this._gridControl);
             }
-
-            // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
-            }
-
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
