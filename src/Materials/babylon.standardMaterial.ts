@@ -168,8 +168,7 @@ module BABYLON {
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;           
-          
+        public disableLighting: boolean;
 
         @serialize("useParallax")
         private _useParallax = false;
@@ -369,7 +368,6 @@ module BABYLON {
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
 
             // Textures
             if (defines._areTexturesDirty) {
@@ -553,8 +551,6 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-         
-                defines._areTexturesDirty = false;
             } 
 
             if (defines._areFresnelDirty) {
@@ -584,22 +580,13 @@ module BABYLON {
                 } else {
                     defines.FRESNEL = false;
                 }
-
-                defines._areFresnelDirty = false;
             }
 
             // Misc.
-            if (defines._areMiscDirty) {
-                defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
-                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-                defines._areMiscDirty = false;
-            }
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
