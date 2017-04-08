@@ -335,7 +335,7 @@ module BABYLON {
             if (this._cameraRigParams["specs"] === 1.0) {
                 var eyeParams = this._cameraRigParams["eyeParameters"];
                 // deprecated!!
-                Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, 0.1, 1000, this._projectionMatrix, this.getScene().useRightHandedSystem);
+                Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, this.minZ, this.maxZ, this._projectionMatrix, this.getScene().useRightHandedSystem);
             } else /*WebVR 1.1*/ {
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
