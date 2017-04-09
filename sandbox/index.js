@@ -17,6 +17,9 @@ if (BABYLON.Engine.isSupported()) {
     var currentHelpCounter;
     var currentScene;
     var enableDebugLayer = false;
+    var enableArcRotateCamera = false;
+    var arcRotateCamera;
+    var defaultCamera;
 
     currentHelpCounter = localStorage.getItem("helpcounter");
 
@@ -68,6 +71,15 @@ if (BABYLON.Engine.isSupported()) {
                 currentScene.activeCamera.keysRight.push(69); // E
                 currentScene.activeCamera.keysRight.push(68); // D
             }
+            defaultCamera = currentScene.activeCamera;
+            arcRotateCamera = new BABYLON.ArcRotateCamera("camera", 4.71238898038469, 1.5707963267948966, 3, BABYLON.Vector3.Zero(), currentScene);
+            arcRotateCamera.wheelPrecision = 100.0;
+            arcRotateCamera.minZ = 0.1;
+            arcRotateCamera.maxZ = 1000;
+            if(enableArcRotateCamera){
+                currentScene.activeCamera = arcRotateCamera;
+                currentScene.activeCamera.attachControl(canvas);
+            }
         }
     };
 
@@ -81,6 +93,26 @@ if (BABYLON.Engine.isSupported()) {
         }
     });
     htmlInput.addEventListener('change', function (event) {
+        var filestoLoad;
+            // Handling data transfer via drag'n'drop
+            if (event && event.dataTransfer && event.dataTransfer.files) {
+                filesToLoad = event.dataTransfer.files;
+            }
+            // Handling files from input files
+            if (event && event.target && event.target.files) {
+                filesToLoad = event.target.files;
+            }
+            if (filesToLoad && filesToLoad.length > 0) {
+            enableArcRotateCamera= false;
+            for (var i = 0; i < filesToLoad.length; i++) {
+                    var extension = filesToLoad[i].name.split('.').pop();
+                    if (extension === "gltf" || extension === "glb")
+                    {       
+                         enableArcRotateCamera= true;
+                         break;
+                    }
+                }
+            }
         filesInput.loadFiles(event);
     }, false);
     btnFullScreen.addEventListener('click', function () {
@@ -95,6 +127,20 @@ if (BABYLON.Engine.isSupported()) {
             } else {
                 currentScene.debugLayer.hide();
                 enableDebugLayer = false;
+            }
+        }
+    }, false);
+    btnCamera.addEventListener('click', function () {
+        if (currentScene) {
+            if (!enableArcRotateCamera) {
+                currentScene.activeCamera = arcRotateCamera;
+                currentScene.activeCamera.attachControl(canvas);
+                enableArcRotateCamera = true;
+            }
+            else {
+                currentScene.activeCamera = defaultCamera;
+                currentScene.activeCamera.attachControl(canvas);
+                enableArcRotateCamera = false;
             }
         }
     }, false);
