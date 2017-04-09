@@ -177,12 +177,11 @@ a {
     position: relative;
     text-align: right;    
     -moz-opacity:0 ;
-    filter:alpha(opacity: 0);
     opacity: 0;
     z-index: 2;
     width:100%;
     height:100%;
-    
+    filter:alpha(opacity=0);
 }
 
 #logo {
@@ -192,10 +191,7 @@ a {
     background-position: center;
 }
 
-#btnFullscreen {
-}
-
-#btnFullscreen {
+#btnFullscreen , #btnCamera {
     margin-top: 10px;
     margin-right: 25px;
 }
