@@ -80,17 +80,6 @@
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
-                var gltf = false;
-                for (var i = 0; i < this._filesToLoad.length; i++) {
-                    var name_1 = this._filesToLoad[i].name.toLowerCase();
-                    var extension = name_1.split('.').pop();
-                    if (extension === "glb" || extension === "gltf")
-                    {       
-                         gltf = true;
-                            break;
-                    }
-                }
-
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     let name = this._filesToLoad[i].name.toLowerCase();
                     let extension = name.split('.').pop();

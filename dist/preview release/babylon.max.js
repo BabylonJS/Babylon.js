@@ -11360,25 +11360,16 @@ var BABYLON;
                 this._filesToLoad = event.target.files;
             }
             if (this._filesToLoad && this._filesToLoad.length > 0) {
-                var gltf = false;
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     var name_1 = this._filesToLoad[i].name.toLowerCase();
                     var extension = name_1.split('.').pop();
-                    if (extension === "glb" || extension === "gltf") {
-                        gltf = true;
-                        break;
-                    }
-                }
-                for (var i = 0; i < this._filesToLoad.length; i++) {
-                    var name_2 = this._filesToLoad[i].name.toLowerCase();
-                    var extension_1 = name_2.split('.').pop();
                     var type = this._filesToLoad[i].type;
-                    if ((extension_1 === "babylon" || extension_1 === "stl" || extension_1 === "obj" || extension_1 === "gltf" || extension_1 === "glb")
-                        && name_2.indexOf(".binary.babylon") === -1 && name_2.indexOf(".incremental.babylon") === -1) {
+                    if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
+                        && name_1.indexOf(".binary.babylon") === -1 && name_1.indexOf(".incremental.babylon") === -1) {
                         this._sceneFileToLoad = this._filesToLoad[i];
                     }
                     else {
-                        FilesInput.FilesToLoad[name_2] = this._filesToLoad[i];
+                        FilesInput.FilesToLoad[name_1] = this._filesToLoad[i];
                     }
                 }
                 this.reload();
