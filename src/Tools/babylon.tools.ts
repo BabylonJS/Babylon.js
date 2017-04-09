@@ -368,15 +368,15 @@
                 }
                 else {
                     var textureName = url.substring(5).toLowerCase();
-                    if (FilesInput.FilesTextures[textureName]) {
+                    if (FilesInput.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
                             try {
-                                blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
+                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName], { oneTimeOnly: true });
                             }
                             catch (ex) {
                                 // Chrome doesn't support oneTimeOnly parameter
-                                blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName]);
+                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
                             }
                             img.src = blobURL;
                         }
