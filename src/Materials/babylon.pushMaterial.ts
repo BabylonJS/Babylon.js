@@ -88,23 +88,23 @@
         }
 
         protected _markAllSubMeshesAsTexturesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areTexturesDirty = true);
+            this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());
         }
 
         protected _markAllSubMeshesAsFresnelDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areFresnelDirty = true);
+            this._markAllSubMeshesAsDirty(defines => defines.markAsFresnelDirty());
         }
 
         protected _markAllSubMeshesAsLightsDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areLightsDirty = true);
+            this._markAllSubMeshesAsDirty(defines => defines.markAsLightDirty());
         }
 
         protected _markAllSubMeshesAsAttributesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areAttributesDirty = true);
+            this._markAllSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
         }
 
         protected _markAllSubMeshesAsMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines._areMiscDirty = true);
+            this._markAllSubMeshesAsDirty(defines => defines.markAsMiscDirty());
         }
     }
 } 

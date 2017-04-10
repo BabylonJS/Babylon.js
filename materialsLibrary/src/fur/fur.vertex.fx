@@ -76,8 +76,12 @@ void main(void) {
 
 //FUR
 float r = Rand(position);
-#ifdef HEIGHTMAP	
-	vfur_length = furLength * texture2D(heightTexture, uv).rgb.x;
+#ifdef HEIGHTMAP
+	#if __VERSION__ > 100
+	vfur_length = furLength * texture(heightTexture, uv).x;
+	#else
+	vfur_length = furLength * texture2D(heightTexture, uv).r;
+	#endif
 #else	
 	vfur_length = (furLength * r);
 #endif

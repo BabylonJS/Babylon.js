@@ -9,7 +9,6 @@
         private _textureLoadingCallback;
         private _startingProcessingFilesCallback;
         private _elementToMonitor: HTMLElement;
-        public static FilesTextures: File[] = new Array();
         public static FilesToLoad: File[] = new Array();
 
         private _sceneFileToLoad: File;
@@ -86,18 +85,12 @@
                     let extension = name.split('.').pop();
                     let type = this._filesToLoad[i].type;
                     
-                    if (extension === "jpg" || extension === "png" || extension === "bmp" || extension === "jpeg" || 
-                        type === "image/jpeg" || type === "image/png" || type === "image/bmp") {
-                           FilesInput.FilesTextures[name] = this._filesToLoad[i]; 
-                        }
+                    if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb") 
+                        && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+                        this._sceneFileToLoad = this._filesToLoad[i];
+                    }
                     else {
-                        if ((extension === "babylon" || extension === "stl" || extension === "obj") 
-                            && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
-                            this._sceneFileToLoad = this._filesToLoad[i];
-                        }
-                        else {
-                            FilesInput.FilesToLoad[name] = this._filesToLoad[i];
-                        }
+                        FilesInput.FilesToLoad[name] = this._filesToLoad[i];
                     }
                 }
 

@@ -644,7 +644,7 @@
             this._defines.reset();
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights) || needNormals;
             }
 
             if (!this.checkReadyOnEveryCall) {

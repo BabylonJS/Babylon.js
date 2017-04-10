@@ -96,30 +96,24 @@ module BABYLON {
                         defines._needUVs = true;
                         defines.DIFFUSE = true;
                     }
-                }  
-                defines._areTexturesDirty = false;              
+                }              
             }
 
             // Misc.
             if (defines._areMiscDirty) {
                 defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
                 defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
-
-                defines._areMiscDirty = false;
             }
             
             // Values that need to be evaluated on every frame
-            defines.CLIPPLANE = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            defines.ALPHATEST = engine.getAlphaTesting();
-            defines.INSTANCES = useInstances;
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
 
             // Get correct effect      
-            if (defines._isDirty) {
-                defines._isDirty = false;
+            if (defines.isDirty) {
+                defines.markAsProcessed();
 
                 scene.resetCachedMaterial();
 

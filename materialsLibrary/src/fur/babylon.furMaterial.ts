@@ -1,8 +1,6 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    var maxSimultaneousLights = 4;
-
     class FurMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public HEIGHTMAP = false;
@@ -26,13 +24,17 @@ module BABYLON {
         }
     }
 
-    export class FurMaterial extends Material {
+    export class FurMaterial extends PushMaterial {
         
-        @serializeAsTexture()
+        @serializeAsTexture("diffuseTexture")
+        private _diffuseTexture: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: BaseTexture;
         
-        @serializeAsTexture()
-        public heightTexture: BaseTexture;
+        @serializeAsTexture("heightTexture")
+        private _heightTexture: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public heightTexture: BaseTexture;        
         
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
@@ -63,15 +65,20 @@ module BABYLON {
         
         public furTexture: DynamicTexture;
         
-        @serialize()
-        public disableLighting = false;
+        
+        @serialize("disableLighting")
+        private _disableLighting = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public disableLighting: boolean;   
+        
+        @serialize("maxSimultaneousLights")
+        private _maxSimultaneousLights = 4;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public maxSimultaneousLights: number; 
         
         @serialize()
         public highLevelFur: boolean = true;
-        
-        @serialize()
-        public maxSimultaneousLights = 4;
-        
+               
         public _meshes: AbstractMesh[];
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -79,13 +86,8 @@ module BABYLON {
         
         private _furTime: number = 0;
 
-        private _defines = new FurMaterialDefines();
-        private _cachedDefines = new FurMaterialDefines();
-
         constructor(name: string, scene: Scene) {
             super(name, scene);
-
-            this._cachedDefines.BonesPerMesh = -1;
         }
         
         @serialize()
@@ -128,165 +130,111 @@ module BABYLON {
         }
 
         // Methods   
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (!mesh) {
-                return true;
-            }
-
-            if (this._defines.INSTANCES !== useInstances) {
-                return false;
-            }
-
-            return false;
-        }
-
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
 
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new FurMaterialDefines();
+            }
+
+            var defines = <FurMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-
-            this._defines.reset();
 
             // Textures
-            if (scene.texturesEnabled) {
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this.diffuseTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.DIFFUSE = true;
-                    }
-                } 
-                if (this.heightTexture) {
-                    if (!this.heightTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.HEIGHTMAP = true;
-                    }
-                }               
+            if (defines._areTexturesDirty) {
+                if (scene.texturesEnabled) {
+                    if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        if (!this.diffuseTexture.isReady()) {
+                            return false;
+                        } else {
+                            defines._needUVs = true;
+                            defines.DIFFUSE = true;
+                        }
+                    } 
+                    if (this.heightTexture && engine.getCaps().maxVertexTextureImageUnits) {
+                        if (!this.heightTexture.isReady()) {
+                            return false;
+                        } else {
+                            defines._needUVs = true;
+                            defines.HEIGHTMAP = true;
+                        }
+                    }               
+                }
             }
 
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-
-            if (engine.getAlphaTesting()) {
-                this._defines.ALPHATEST = true;
-            }
-
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
-            
             // High level
-            if (this.highLevelFur) {
-                this._defines.HIGHLEVEL = true;
+            if (this.highLevelFur !== defines.HIGHLEVEL) {
+                defines.HIGHLEVEL = true;
+                defines.markAsUnprocessed();
             }
+
+            // Misc.   
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
             // Lights
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
-            }
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
+            // Values that need to be evaluated on every frame
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            
             // Attribs
-            if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
-                if (needUVs) {
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                        this._defines.UV1 = true;
-                    }
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                        this._defines.UV2 = true;
-                    }
-                }
-                if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    this._defines.VERTEXCOLOR = true;
-
-                    if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true;
-                    }
-                }
-                
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                }
-
-                // Instances
-                if (useInstances) {
-                    this._defines.INSTANCES = true;
-                }
-            }
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
 
                 scene.resetCachedMaterial();
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();             
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
+                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
              
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 
-                if (this._defines.NORMAL) {
+                if (defines.NORMAL) {
                     attribs.push(VertexBuffer.NormalKind);
                 }
 
-                if (this._defines.UV1) {
+                if (defines.UV1) {
                     attribs.push(VertexBuffer.UVKind);
                 }
 
-                if (this._defines.UV2) {
+                if (defines.UV2) {
                     attribs.push(VertexBuffer.UV2Kind);
                 }
 
-                if (this._defines.VERTEXCOLOR) {
+                if (defines.VERTEXCOLOR) {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
                 // Legacy browser patch
                 var shaderName = "fur";
-                var join = this._defines.toString();
+                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", 
@@ -298,13 +246,13 @@ module BABYLON {
                     "heightTexture", "furTexture"
                 ];
                 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
                 
-                this._effect = scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights }), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -314,75 +262,79 @@ module BABYLON {
             return true;
         }
 
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._effect.setMatrix("world", world);
-        }
-
-        public bind(world: Matrix, mesh?: Mesh): void {
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
+
+            var defines = <FurMaterialDefines>subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+                if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
 
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                    this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
+                    this._activeEffect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
                 }
                 
-                if (this.heightTexture) {
-                    this._effect.setTexture("heightTexture", this.heightTexture);
+                if (this._heightTexture) {
+                    this._activeEffect.setTexture("heightTexture", this._heightTexture);
                 }
                 
                 // Clip plane
-                MaterialHelper.BindClipPlane(this._effect, scene);
+                MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+            this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
             }
 
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
             
-            this._effect.setFloat("furLength", this.furLength);
-            this._effect.setFloat("furAngle", this.furAngle);
-            this._effect.setColor4("furColor", this.furColor, 1.0);
+            this._activeEffect.setFloat("furLength", this.furLength);
+            this._activeEffect.setFloat("furAngle", this.furAngle);
+            this._activeEffect.setColor4("furColor", this.furColor, 1.0);
             
             if (this.highLevelFur) {
-                this._effect.setVector3("furGravity", this.furGravity);
-                this._effect.setFloat("furOffset", this.furOffset);
-                this._effect.setFloat("furSpacing", this.furSpacing);
-                this._effect.setFloat("furDensity", this.furDensity);
+                this._activeEffect.setVector3("furGravity", this.furGravity);
+                this._activeEffect.setFloat("furOffset", this.furOffset);
+                this._activeEffect.setFloat("furSpacing", this.furSpacing);
+                this._activeEffect.setFloat("furDensity", this.furDensity);
                 
                 this._furTime += this.getScene().getEngine().getDeltaTime() / this.furSpeed;
-                this._effect.setFloat("furTime", this._furTime);
+                this._activeEffect.setFloat("furTime", this._furTime);
                 
-                this._effect.setTexture("furTexture", this.furTexture);
+                this._activeEffect.setTexture("furTexture", this.furTexture);
             }
  
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         public getAnimatables(): IAnimatable[] {
