@@ -55,7 +55,7 @@ module INSPECTOR {
 
             // Load the Canvas2D library if it's not already done
             if (!BABYLON.Canvas2D) {
-                BABYLON.Tools.LoadScript("http://www.babylonjs.com/babylon.canvas2d.js", () => { });
+                BABYLON.Tools.LoadScript("https://www.babylonjs.com/babylon.canvas2d.js", () => { });
             }
 
             // POPUP MODE
