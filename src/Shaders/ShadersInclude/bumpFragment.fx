@@ -4,7 +4,7 @@
 	#if defined(TANGENT) && defined(NORMAL)
 		mat3 TBN = vTBN;
 	#else
-		mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, vPositionW, vBumpUV);
+		mat3 TBN = cotangent_frame(normalW * uMaterial.vBumpInfos.y, vPositionW, vBumpUV);
 	#endif
 #endif
 
@@ -12,9 +12,9 @@
 	mat3 invTBN = transposeMat3(TBN);
 
 	#ifdef PARALLAXOCCLUSION
-		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, vBumpUV, vBumpInfos.z);
+		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, vBumpUV, uMaterial.vBumpInfos.z);
 	#else
-		uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
+		uvOffset = parallaxOffset(invTBN * viewDirectionW, uMaterial.vBumpInfos.z);
 	#endif
 #endif
 
