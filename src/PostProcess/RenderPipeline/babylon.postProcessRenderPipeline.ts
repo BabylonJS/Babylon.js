@@ -5,7 +5,7 @@ module BABYLON {
         private _renderEffects: any;
         private _renderEffectsForIsolatedPass: any;
 
-        private _cameras: Camera[];
+        protected _cameras: Camera[];
 
         // private
         public _name: string;

@@ -20,7 +20,7 @@ var INSPECTOR;
             Inspector.WINDOW = window;
             // Load the Canvas2D library if it's not already done
             if (!BABYLON.Canvas2D) {
-                BABYLON.Tools.LoadScript("http://www.babylonjs.com/babylon.canvas2d.js", function () { });
+                BABYLON.Tools.LoadScript("https://www.babylonjs.com/babylon.canvas2d.js", function () { });
             }
             // POPUP MODE
             if (popup) {

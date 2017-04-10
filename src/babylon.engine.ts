@@ -157,6 +157,7 @@
 
     export class EngineCapabilities {
         public maxTexturesImageUnits: number;
+        public maxVertexTextureImageUnits: number;
         public maxTextureSize: number;
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
@@ -622,6 +623,7 @@
             this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+            this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
@@ -2149,7 +2151,7 @@
         }
 
         public getAlphaTesting(): boolean {
-            return this._alphaTest;
+            return !!this._alphaTest;
         }
 
         // Textures

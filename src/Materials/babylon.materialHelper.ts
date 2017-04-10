@@ -1,7 +1,38 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useInstances: boolean): void {
+        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
+            if (defines._areMiscDirty) {
+                defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
+                defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
+                defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
+            }
+        }
+
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void {
+            var changed = false;
+
+            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
+                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+                changed = true;
+            }
+
+            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+                defines["ALPHATEST"] = !defines["ALPHATEST"];
+                changed = true;
+            }
+
+            if (defines["INSTANCES"] !== useInstances) {
+                defines["INSTANCES"] = useInstances;
+                changed = true;
+            }
+            
+            if (changed) {
+                defines.markAsUnprocessed();
+            }
+        }
+
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean): void {
             if (!defines._areAttributesDirty) {
                 return;
             }
@@ -16,20 +47,23 @@
                 defines["UV2"] = false;
             }
 
-            defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+            if (useVertexColor) {
+                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+            }
 
-            defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
-
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-                defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
-            } else {
-                defines["NUM_BONE_INFLUENCERS"] = 0;
-                defines["BonesPerMesh"] = 0;
-            }           
+            if (useBones) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                } else {
+                    defines["NUM_BONE_INFLUENCERS"] = 0;
+                    defines["BonesPerMesh"] = 0;
+                }           
+            }
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4, disableLighting = false): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
             }
@@ -70,7 +104,7 @@
                     defines[type] = true;
 
                     // Specular
-                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
                         specularEnabled = true;
                     }
 
@@ -157,6 +191,10 @@
         }
 
         public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
+            if (!defines["SHADOWS"]) {
+                return;
+            }
+
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
