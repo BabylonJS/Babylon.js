@@ -5,9 +5,8 @@ module BABYLON {
         private _data: number[];
         private _dynamic: boolean;
         private _uniformName: string;
-        private _uniformNames: string[];
-        private _uniformLocations: number[];
-        private _uniformSizes: number[];
+        private _uniformLocations: { [key:string]:number; };
+        private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
         private _needSync: boolean;
 
@@ -18,9 +17,8 @@ module BABYLON {
 
             this._data = data || [];
 
-            this._uniformNames = [];
-            this._uniformLocations = [];
-            this._uniformSizes = [];
+            this._uniformLocations = {};
+            this._uniformSizes = {};
             this._uniformLocationPointer = 0;
             this._needSync = false;
         }
@@ -68,7 +66,7 @@ module BABYLON {
         }
 
         public addUniform(name: string, size: number | number[]) {
-            if (this._uniformNames.indexOf(name) !== -1) {
+            if (this._uniformLocations[name] !== undefined) {
                 // Already existing uniform
                 return;
             }
@@ -90,9 +88,8 @@ module BABYLON {
 
 
             this._fillAlignment(<number>size);
-            this._uniformNames.push(name);
-            this._uniformSizes.push(<number>size);
-            this._uniformLocations.push(this._uniformLocationPointer);
+            this._uniformSizes[name] = <number>size;
+            this._uniformLocations[name] = this._uniformLocationPointer;
             this._uniformLocationPointer += <number>size;
 
 
@@ -168,22 +165,14 @@ module BABYLON {
         }
 
         public updateUniform(uniformName: string, data: number[] | Float32Array) {
-            var index = this._uniformNames.indexOf(uniformName);
 
-            if (index === -1) {
+            var location = this._uniformLocations[uniformName];
+            if (location === undefined) {
                 return;
             }
 
             if (!this._buffer) {
                 this.create();
-            }
-
-            var location = this._uniformLocations[index];
-            var size = data.length;
-
-            if (size != this._uniformSizes[index]) {
-                Tools.Error("Wrong uniform size.");
-                return;
             }
 
             var changed = false;
