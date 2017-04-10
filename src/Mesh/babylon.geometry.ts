@@ -115,6 +115,7 @@
         public removeVerticesData(kind: string) {
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
             }
         }
 
