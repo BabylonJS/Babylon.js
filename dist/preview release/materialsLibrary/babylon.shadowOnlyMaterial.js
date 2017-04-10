@@ -39,9 +39,6 @@ var BABYLON;
             var _this = _super.call(this, name, scene) || this;
             _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
-            _this._defines = new ShadowOnlyMaterialDefines();
-            _this._cachedDefines = new ShadowOnlyMaterialDefines();
-            _this._cachedDefines.BonesPerMesh = -1;
             return _this;
         }
         ShadowOnlyMaterial.prototype.needAlphaBlending = function () {
@@ -54,129 +51,99 @@ var BABYLON;
             return null;
         };
         // Methods   
-        ShadowOnlyMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
-            if (!mesh) {
-                return true;
-            }
-            if (this._defines.INSTANCES !== useInstances) {
-                return false;
-            }
-            return false;
-        };
-        ShadowOnlyMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        ShadowOnlyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new ShadowOnlyMaterialDefines();
+            }
+            var defines = subMesh._materialDefines;
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
             var engine = scene.getEngine();
-            var needNormals = false;
-            this._defines.reset();
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
-            if (scene.lightsEnabled) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, false, 1);
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
             // Attribs
-            if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                }
-                // Instances
-                if (useInstances) {
-                    this._defines.INSTANCES = true;
-                }
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, 1);
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, 1);
+                if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
-                if (this._defines.NORMAL) {
+                if (defines.NORMAL) {
                     attribs.push(BABYLON.VertexBuffer.NormalKind);
                 }
-                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 var shaderName = "shadowOnly";
-                var join = this._defines.toString();
+                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                     "vFogInfos", "vFogColor", "pointSize",
                     "mBones",
                     "vClipPlane", "depthValues"
                 ];
                 var samplers = [];
-                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, 1);
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: 1 });
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, 1);
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: 1 }), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
             return true;
         };
-        ShadowOnlyMaterial.prototype.bindOnlyWorldMatrix = function (world) {
-            this._effect.setMatrix("world", world);
-        };
-        ShadowOnlyMaterial.prototype.bind = function (world, mesh) {
+        ShadowOnlyMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
+            var defines = subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
-            if (scene.getCachedMaterial() !== this) {
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+            if (this._mustRebind(scene, effect)) {
                 // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
+                BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
             }
             // Lights
             if (scene.lightsEnabled) {
-                BABYLON.MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, 1);
+                BABYLON.MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);
             }
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            this._afterBind(mesh);
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+            this._afterBind(mesh, this._activeEffect);
         };
         ShadowOnlyMaterial.prototype.clone = function (name) {
             var _this = this;
@@ -192,7 +159,7 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new ShadowOnlyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         return ShadowOnlyMaterial;
-    }(BABYLON.Material));
+    }(BABYLON.PushMaterial));
     __decorate([
         BABYLON.serialize()
     ], ShadowOnlyMaterial.prototype, "_worldViewProjectionMatrix", void 0);

@@ -91,22 +91,15 @@ var BABYLON;
                         }
                     }
                 }
-                defines._areTexturesDirty = false;
             }
             // Misc.
-            if (defines._areMiscDirty) {
-                defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-                defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled);
-                defines._areMiscDirty = false;
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
-            defines._areLightsDirty = false;
             // Values that need to be evaluated on every frame
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             // Attribs
-            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, useInstances);
-            defines._areAttributesDirty = false;
+            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
