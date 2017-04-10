@@ -7,6 +7,7 @@ module BABYLON {
         private _influences: Float32Array;
         private _supportsNormals = false;
         private _vertexCount = 0;
+        private _uniqueId = 0;
 
         public constructor(scene?: Scene) {
             if (!scene) {
@@ -14,6 +15,12 @@ module BABYLON {
             }
 
             this._scene = scene;
+
+            this._uniqueId = scene.getUniqueId();
+        }
+
+        public get uniqueId(): number {
+            return this._uniqueId;
         }
 
         public get vertexCount(): number {
@@ -60,6 +67,23 @@ module BABYLON {
                 this._vertexCount = 0;
                 this._syncActiveTargets(true);
             }
+        }
+
+        /**
+         * Serializes the current manager into a Serialization object.  
+         * Returns the serialized object.  
+         */
+        public serialize(): any {
+            var serializationObject:any = {};
+
+            serializationObject.id = this.uniqueId;
+
+            serializationObject.targets = [];
+            for (var target of this._targets) {
+                serializationObject.targets.push(target.serialize());
+            }
+
+            return serializationObject;
         }
 
         private _onInfluenceChanged(needUpdate: boolean): void {
