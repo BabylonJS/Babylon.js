@@ -9,6 +9,8 @@ module BABYLON {
         private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
         private _needSync: boolean;
+        private _cache: Float32Array;
+        private static _MAX_UNIFORM_SIZE = 256;
 
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
@@ -21,6 +23,7 @@ module BABYLON {
             this._uniformSizes = {};
             this._uniformLocationPointer = 0;
             this._needSync = false;
+            this._cache = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
         }
 
         public get isSync(): boolean {
@@ -164,7 +167,7 @@ module BABYLON {
             this._needSync = false;
         }
 
-        public updateUniform(uniformName: string, data: number[] | Float32Array) {
+        public updateUniform(uniformName: string, data: number[] | Float32Array, size: number) {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
@@ -176,7 +179,7 @@ module BABYLON {
             }
 
             var changed = false;
-            for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < size; i++) {
                 if (this._data[location + i] !== data[i]) {
                    changed = true;
                     this._data[location + i] = data[i];
@@ -187,50 +190,53 @@ module BABYLON {
         }
 
         public updateFloat(name: string, x: number) {
-            var temp = [x];
-            this.updateUniform(name, temp);
+            this._cache[0] = x;
+            this.updateUniform(name, this._cache, 1);
         }
 
         public updateFloat2(name: string, x: number, y: number) {
-            var temp = [x, y];
-            this.updateUniform(name, temp);
+            this._cache[0] = x;
+            this._cache[1] = y;
+            this.updateUniform(name, this._cache, 2);
         }
 
         public updateFloat3(name: string, x: number, y: number, z: number) {
-            var temp = [x, y, z];
-            this.updateUniform(name, temp);
+            this._cache[0] = x;
+            this._cache[1] = y;
+            this._cache[2] = z;
+            this.updateUniform(name, this._cache, 3);
         }
 
         public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
-            var temp = [x, y, z, w];
-            this.updateUniform(name, temp);
+            this._cache[0] = x;
+            this._cache[1] = y;
+            this._cache[2] = z;
+            this._cache[3] = w;
+            this.updateUniform(name, this._cache, 4);
         }
 
         public updateMatrix(name: string, mat: Matrix) {
-            this.updateUniform(name, mat.toArray());
+            this.updateUniform(name, mat.toArray(), 16);
         }
 
         public updateVector3(name: string, vector: Vector3) {
-            var temp = [];
-            vector.toArray(temp);
-            this.updateUniform(name, temp);
+            vector.toArray(this._cache);
+            this.updateUniform(name, this._cache, 3);
         }
 
         public updateColor3(name: string, color: Color3) {
-            var temp = [];
-            color.toArray(temp);
-            this.updateUniform(name, temp);
+            color.toArray(this._cache);
+            this.updateUniform(name, this._cache, 3);
         }
 
         public updateColor4(name: string, color: Color3, alpha: number) {
-            var temp = [];
-            color.toArray(temp);
-            temp.push(alpha);
-            this.updateUniform(name, temp);
+            color.toArray(this._cache);
+            this._cache[3] = alpha;
+            this.updateUniform(name, this._cache, 4);
         }
 
         public updateUniformDirectly(uniformName: string, data: number[]) {
-            this.updateUniform(uniformName, data);
+            this.updateUniform(uniformName, data, data.length);
 
             this.update();
         }
