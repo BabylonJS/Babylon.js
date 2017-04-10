@@ -2001,7 +2001,13 @@
 
             this._markSubMeshesAsAttributesDirty();
 
-            if (this._morphTargetManager) {
+            if (this._morphTargetManager && this._morphTargetManager.vertexCount) {
+                if (this._morphTargetManager.vertexCount !== this.getTotalVertices()) {
+                    Tools.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
+                    this.morphTargetManager = undefined;
+                    return;
+                }
+
                 for (var index = 0; index < this.morphTargetManager.numInfluencers; index++) {
                     var morphTarget = this.morphTargetManager.getActiveTarget(index);
                     this.geometry.setVerticesData(VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);

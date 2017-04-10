@@ -99,6 +99,19 @@ var createScene = function () {
 
     gui.add(button,'switch');
 
+    var disposeButton = { dispose:function(){
+         sphere.dispose();
+    }};
+
+    gui.add(disposeButton,'dispose');
+
+    var removeButton = { removeLast:function(){
+         manager.removeTarget(target3);   
+    }};
+
+    gui.add(removeButton,'removeLast');
+
+
     return scene;
 
 };

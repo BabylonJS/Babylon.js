@@ -243,6 +243,7 @@
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
 
             if (influencers > 0) {
+                var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
                 var normal = manager.supportsNormals && defines["NORMAL"];
                 for (var index = 0; index < influencers; index++) {
@@ -250,6 +251,10 @@
 
                     if (normal) {
                         attribs.push(VertexBuffer.NormalKind + index);
+                    }
+
+                    if (attribs.length > maxAttributesCount) {
+                        Tools.Error("Cannot add more vertex attributes for mesh " + mesh.name);
                     }
                 }
             }

@@ -25683,7 +25683,12 @@ var BABYLON;
                 return;
             }
             this._markSubMeshesAsAttributesDirty();
-            if (this._morphTargetManager) {
+            if (this._morphTargetManager && this._morphTargetManager.vertexCount) {
+                if (this._morphTargetManager.vertexCount !== this.getTotalVertices()) {
+                    BABYLON.Tools.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
+                    this.morphTargetManager = undefined;
+                    return;
+                }
                 for (var index = 0; index < this.morphTargetManager.numInfluencers; index++) {
                     var morphTarget = this.morphTargetManager.getActiveTarget(index);
                     this.geometry.setVerticesData(BABYLON.VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
@@ -30722,12 +30727,16 @@ var BABYLON;
         MaterialHelper.PrepareAttributesForMorphTargets = function (attribs, mesh, defines) {
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
             if (influencers > 0) {
+                var maxAttributesCount = BABYLON.Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = mesh.morphTargetManager;
                 var normal = manager.supportsNormals && defines["NORMAL"];
                 for (var index = 0; index < influencers; index++) {
                     attribs.push(BABYLON.VertexBuffer.PositionKind + index);
                     if (normal) {
                         attribs.push(BABYLON.VertexBuffer.NormalKind + index);
+                    }
+                    if (attribs.length > maxAttributesCount) {
+                        BABYLON.Tools.Error("Cannot add more vertex attributes for mesh " + mesh.name);
                     }
                 }
             }
@@ -42508,6 +42517,7 @@ var BABYLON;
         Geometry.prototype.removeVerticesData = function (kind) {
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
             }
         };
         Geometry.prototype.setVerticesBuffer = function (buffer) {
@@ -61521,9 +61531,13 @@ var BABYLON;
                 return this._influence;
             },
             set: function (influence) {
+                if (this._influence === influence) {
+                    return;
+                }
+                var previous = this._influence;
                 this._influence = influence;
                 if (this.onInfluenceChanged.hasObservers) {
-                    this.onInfluenceChanged.notifyObservers(this);
+                    this.onInfluenceChanged.notifyObservers(previous === 0 || influence === 0);
                 }
             },
             enumerable: true,
@@ -61572,13 +61586,22 @@ var BABYLON;
     var MorphTargetManager = (function () {
         function MorphTargetManager(scene) {
             this._targets = new Array();
+            this._targetObservable = new Array();
             this._activeTargets = new BABYLON.SmartArray(16);
             this._supportsNormals = false;
+            this._vertexCount = 0;
             if (!scene) {
                 scene = BABYLON.Engine.LastCreatedScene;
             }
             this._scene = scene;
         }
+        Object.defineProperty(MorphTargetManager.prototype, "vertexCount", {
+            get: function () {
+                return this._vertexCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(MorphTargetManager.prototype, "supportsNormals", {
             get: function () {
                 return this._supportsNormals;
@@ -61604,22 +61627,32 @@ var BABYLON;
             return this._activeTargets.data[index];
         };
         MorphTargetManager.prototype.addTarget = function (target) {
+            var _this = this;
+            if (this._vertexCount) {
+                if (this._vertexCount !== target.getPositions().length / 3) {
+                    BABYLON.Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                    return;
+                }
+            }
             this._targets.push(target);
-            target.onInfluenceChanged.add(this._onInfluenceChanged.bind(this));
-            this._syncActiveTargets();
+            this._targetObservable.push(target.onInfluenceChanged.add(function (needUpdate) {
+                _this._syncActiveTargets(needUpdate);
+            }));
+            this._syncActiveTargets(true);
         };
         MorphTargetManager.prototype.removeTarget = function (target) {
             var index = this._targets.indexOf(target);
             if (index >= 0) {
                 this._targets.splice(index, 1);
-                target.onInfluenceChanged.removeCallback(this._onInfluenceChanged);
-                this._syncActiveTargets();
+                target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
+                this._vertexCount = 0;
+                this._syncActiveTargets(true);
             }
         };
-        MorphTargetManager.prototype._onInfluenceChanged = function (target) {
-            this._syncActiveTargets();
+        MorphTargetManager.prototype._onInfluenceChanged = function (needUpdate) {
+            this._syncActiveTargets(needUpdate);
         };
-        MorphTargetManager.prototype._syncActiveTargets = function () {
+        MorphTargetManager.prototype._syncActiveTargets = function (needUpdate) {
             this._activeTargets.reset();
             var tempInfluences = [];
             this._supportsNormals = true;
@@ -61629,14 +61662,19 @@ var BABYLON;
                     this._activeTargets.push(target);
                     tempInfluences.push(target.influence);
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
+                    if (this._vertexCount === 0) {
+                        this._vertexCount = target.getPositions().length / 3;
+                    }
                 }
             }
             this._influences = new Float32Array(tempInfluences);
-            // Flag meshes as dirty to resync with the active targets
-            for (var _b = 0, _c = this._scene.meshes; _b < _c.length; _b++) {
-                var mesh = _c[_b];
-                if (mesh.morphTargetManager === this) {
-                    mesh._syncGeometryWithMorphTargetManager();
+            if (needUpdate) {
+                // Flag meshes as dirty to resync with the active targets
+                for (var _b = 0, _c = this._scene.meshes; _b < _c.length; _b++) {
+                    var mesh = _c[_b];
+                    if (mesh.morphTargetManager === this) {
+                        mesh._syncGeometryWithMorphTargetManager();
+                    }
                 }
             }
         };

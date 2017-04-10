@@ -1,10 +1,12 @@
 module BABYLON {
     export class MorphTargetManager {
         private _targets = new Array<MorphTarget>();
+        private _targetObservable = new Array<Observer<boolean>>();
         private _activeTargets = new SmartArray<MorphTarget>(16);
         private _scene: Scene;
         private _influences: Float32Array;
         private _supportsNormals = false;
+        private _vertexCount = 0;
 
         public constructor(scene?: Scene) {
             if (!scene) {
@@ -12,6 +14,10 @@ module BABYLON {
             }
 
             this._scene = scene;
+        }
+
+        public get vertexCount(): number {
+            return this._vertexCount
         }
 
         public get supportsNormals(): boolean {
@@ -31,25 +37,36 @@ module BABYLON {
         }
        
         public addTarget(target: MorphTarget): void {
+            if (this._vertexCount) {
+                if (this._vertexCount !== target.getPositions().length / 3) {
+                    Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                    return;
+                }
+            }
+
             this._targets.push(target);
-            target.onInfluenceChanged.add(this._onInfluenceChanged.bind(this));
-            this._syncActiveTargets();        
+            this._targetObservable.push(target.onInfluenceChanged.add(needUpdate => {
+                this._syncActiveTargets(needUpdate);
+            }));
+            this._syncActiveTargets(true);        
         }
 
         public removeTarget(target: MorphTarget): void {
             var index = this._targets.indexOf(target);
             if (index >= 0) {
                 this._targets.splice(index, 1);
-                target.onInfluenceChanged.removeCallback(this._onInfluenceChanged);
-                this._syncActiveTargets();
+
+                target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
+                this._vertexCount = 0;
+                this._syncActiveTargets(true);
             }
         }
 
-        private _onInfluenceChanged(target: MorphTarget): void {
-            this._syncActiveTargets();
+        private _onInfluenceChanged(needUpdate: boolean): void {
+            this._syncActiveTargets(needUpdate);
         }
 
-        private _syncActiveTargets(): void {
+        private _syncActiveTargets(needUpdate: boolean): void {
             this._activeTargets.reset();
             var tempInfluences = [];
             this._supportsNormals = true;
@@ -59,15 +76,21 @@ module BABYLON {
                     tempInfluences.push(target.influence);
 
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
+
+                    if (this._vertexCount === 0) {
+                        this._vertexCount = target.getPositions().length / 3;
+                    }
                 }
             }
 
             this._influences = new Float32Array(tempInfluences);
 
-            // Flag meshes as dirty to resync with the active targets
-            for (var mesh of this._scene.meshes) {
-                if ((<any>mesh).morphTargetManager === this) {
-                    (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
+            if (needUpdate) {
+                // Flag meshes as dirty to resync with the active targets
+                for (var mesh of this._scene.meshes) {
+                    if ((<any>mesh).morphTargetManager === this) {
+                        (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
+                    }
                 }
             }
         }

@@ -4,17 +4,22 @@ module BABYLON {
         private _normals: Float32Array;
         private _influence: number;
 
-        public onInfluenceChanged = new Observable<MorphTarget>();
+        public onInfluenceChanged = new Observable<boolean>();
 
         public get influence(): number {
             return this._influence;
         }
 
         public set influence(influence: number) {
+            if (this._influence === influence) {
+                return;
+            }
+
+            var previous = this._influence;
             this._influence = influence;
 
             if (this.onInfluenceChanged.hasObservers) {
-                this.onInfluenceChanged.notifyObservers(this);
+                this.onInfluenceChanged.notifyObservers(previous === 0 || influence === 0);
             }
         }
 
