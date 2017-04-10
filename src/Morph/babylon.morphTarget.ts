@@ -47,6 +47,24 @@ module BABYLON {
             return this._normals;
         }
 
+        /**
+         * Serializes the current target into a Serialization object.  
+         * Returns the serialized object.  
+         */
+        public serialize(): any {
+            var serializationObject:any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.influence = this.influence;
+
+            serializationObject.positions = this.getPositions();
+            if (this.hasNormals) {
+                serializationObject.normals = this.getNormals();
+            }
+
+            return serializationObject;
+        }
+
         // Statics
         public static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget {
             if (!name) {
