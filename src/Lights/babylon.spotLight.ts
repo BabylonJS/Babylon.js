@@ -128,7 +128,7 @@
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.  
          * Return the SpotLight.   
          */
-        public transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): SpotLight {
+        public transferToEffect(effect: Effect): SpotLight {
             var normalizeDirection;
 
             if (this.parent && this.parent.getWorldMatrix) {
@@ -140,7 +140,7 @@
                 
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                this._uniformBuffer.updateFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
@@ -148,7 +148,7 @@
 
                 normalizeDirection = Vector3.Normalize(this._transformedDirection);
             } else {
-                this._uniformBuffer.updateFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.position.x,
                     this.position.y,
                     this.position.z,
@@ -157,7 +157,7 @@
                 normalizeDirection = Vector3.Normalize(this.direction);
             }
 
-            this._uniformBuffer.updateFloat4(directionUniformName,
+            this._uniformBuffer.updateFloat4("vLightDirection",
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,

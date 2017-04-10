@@ -173,16 +173,16 @@ module BABYLON {
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
          * Returns the DirectionalLight.  
          */
-        public transferToEffect(effect: Effect, directionUniformName: string): DirectionalLight {
+        public transferToEffect(effect: Effect): DirectionalLight {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
                     this._transformedDirection = Vector3.Zero();
                 }
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                this._uniformBuffer.updateFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
+                this._uniformBuffer.updateFloat4("vLightData", this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
                 return this;
             }
-            this._uniformBuffer.updateFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1);
             return this;
         }
 

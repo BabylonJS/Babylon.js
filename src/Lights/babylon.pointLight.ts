@@ -68,11 +68,11 @@
          * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
          * Returns the PointLight.  
          */
-        public transferToEffect(effect: Effect, positionUniformName: string): PointLight {
+        public transferToEffect(effect: Effect): PointLight {
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
 
-                this._uniformBuffer.updateFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
@@ -80,7 +80,7 @@
                 return this;
             }
 
-            this._uniformBuffer.updateFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0);
             return this;
         }
         /**
