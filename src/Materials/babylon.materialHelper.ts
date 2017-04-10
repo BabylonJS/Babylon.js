@@ -32,12 +32,16 @@
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean): void {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): void {
             if (!defines._areAttributesDirty) {
                 return;
-            }
+            }               
 
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+
+            if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                defines["TANGENT"] = true;
+            }
 
             if (defines._needUVs) {
                 defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
@@ -60,6 +64,19 @@
                     defines["NUM_BONE_INFLUENCERS"] = 0;
                     defines["BonesPerMesh"] = 0;
                 }           
+            }
+
+            if (useMorphTargets) {
+                if ((<any>mesh).morphTargetManager) {
+                    var manager = (<Mesh>mesh).morphTargetManager;
+                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
+                    defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
+                    defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+                } else {
+                    defines["MORPHTARGETS_NORMAL"] = false;
+                    defines["MORPHTARGETS"] = false;
+                    defines["NUM_MORPH_INFLUENCERS"] = 0;
+                }
             }
         }
 
@@ -188,6 +205,10 @@
 
                 samplersList.push("shadowSampler" + lightIndex);
             }
+
+            if (defines["NUM_MORPH_INFLUENCERS"]) {
+                uniformsList.push("morphTargetInfluences");
+            }
         }
 
         public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
@@ -214,6 +235,22 @@
 
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
+                }
+            }
+        }
+
+        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines): void {
+            var influencers = defines["NUM_MORPH_INFLUENCERS"];
+
+            if (influencers > 0) {
+                var manager = (<Mesh>mesh).morphTargetManager;
+                var normal = manager.supportsNormals && defines["NORMAL"];
+                for (var index = 0; index < influencers; index++) {
+                    attribs.push(VertexBuffer.PositionKind + index);
+
+                    if (normal) {
+                        attribs.push(VertexBuffer.NormalKind + index);
+                    }
                 }
             }
         }
@@ -317,6 +354,14 @@
                     effect.setMatrices("mBones", matrices);
                 }
             }
+        }
+
+        public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
+            if (!abstractMesh || !(<Mesh>abstractMesh).morphTargetManager) {
+                return;
+            }
+
+            effect.setFloatArray("morphTargetInfluences", (<Mesh>abstractMesh).morphTargetManager.influences);
         }
 
         public static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void {
