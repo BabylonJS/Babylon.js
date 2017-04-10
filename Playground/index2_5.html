@@ -103,6 +103,9 @@
                 </a>
                 <ul class="dropdown-menu" id="scriptsList"></ul>
             </div>
+            <div class="save-message" id="saveMessage">
+                Be the first to fill this playground metadata!
+            </div>
         </div>
     </div>
 
@@ -130,6 +133,24 @@
                 <li><a href="https://github.com/BabylonJS/Babylon.js/wiki">Wiki</a></li>
                 <li><a href="https://doc.babylonjs.com">Documentation</a></li>
             </ul>
+        </div>
+    </div>
+
+    <div id="saveLayer" class="save-layer">
+        <div class="save-form">
+            <label for="saveFormTitle">TITLE</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="saveFormTitle" class="save-form-title">
+            <label for="saveFormDescription">DESCRIPTION</label>
+            <div class="separator"></div>
+            <textarea id="saveFormDescription" rows="4" cols="10"></textarea>
+            <label for="saveFormTags">TAGS (separated by comma)</label>
+            <div class="separator"></div>
+            <textarea id="saveFormTags" rows="4" cols="10"></textarea>
+            <div class="save-form-buttons">
+                <button class="btn save-form-button" id="saveFormButtonOk">OK</button>
+                <button class="btn save-form-button" id="saveFormButtonCancel">Cancel</button>
+            </div>
         </div>
     </div>
 
