@@ -260,19 +260,7 @@
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-            if (light instanceof PointLight) {
-                // Point Light
-                light.transferToEffect(effect, "vLightData");
-            } else if (light instanceof DirectionalLight) {
-                // Directional Light
-                light.transferToEffect(effect, "vLightData");
-            } else if (light instanceof SpotLight) {
-                // Spot Light
-                light.transferToEffect(effect, "vLightData", "vLightDirection");
-            } else if (light instanceof HemisphericLight) {
-                // Hemispheric Light
-                light.transferToEffect(effect, "vLightData", "vLightGround");
-            }
+                light.transferToEffect(effect);
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
