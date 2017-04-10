@@ -112,6 +112,13 @@
             this.setVerticesBuffer(buffer);
         }
 
+        public removeVerticesData(kind: string) {
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
+            }
+        }
+
         public setVerticesBuffer(buffer: VertexBuffer): void {
             var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
