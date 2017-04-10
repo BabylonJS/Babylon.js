@@ -100,6 +100,21 @@
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
+        // Morph
+        private _morphTargetManager: MorphTargetManager;
+
+        public get morphTargetManager(): MorphTargetManager {
+            return this._morphTargetManager;
+        }
+
+        public set morphTargetManager(value: MorphTargetManager) {
+            if (this._morphTargetManager === value) {
+                return;
+            }
+            this._morphTargetManager = value;
+            this._syncGeometryWithMorphTargetManager();
+        }
+
         // Private
         public _geometry: Geometry;
         public _delayInfo; //ANY
@@ -1417,6 +1432,8 @@
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
         public dispose(doNotRecurse?: boolean): void {
+            this.morphTargetManager = undefined;
+
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
@@ -1974,6 +1991,39 @@
             // Action Manager
             if (this.actionManager) {
                 serializationObject.actions = this.actionManager.serialize(this.name);
+            }
+        }
+        
+        public _syncGeometryWithMorphTargetManager() {
+            if (!this.geometry) {
+                return;
+            }
+
+            this._markSubMeshesAsAttributesDirty();
+
+            if (this._morphTargetManager) {
+                for (var index = 0; index < this.morphTargetManager.numInfluencers; index++) {
+                    var morphTarget = this.morphTargetManager.getActiveTarget(index);
+                    this.geometry.setVerticesData(VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
+
+                    if (morphTarget.hasNormals) {
+                        this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
+                    }
+                }
+            } else {
+                var index = 0;
+                
+                // Positions
+                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index))
+                {
+                    this.geometry.removeVerticesData(VertexBuffer.PositionKind + index);
+                    
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
+                    {
+                        this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
+                    }
+                    index++;
+                }    
             }
         }
 
