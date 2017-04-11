@@ -144,7 +144,7 @@ module BABYLON {
             var defines = <FurMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
 
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
                     return true;
                 }
