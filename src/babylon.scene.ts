@@ -669,6 +669,8 @@
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
+        private _transformMatrixBuffer: UniformBuffer;
+
         private _pickWithRayInverseMatrix: Matrix;
 
         private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
@@ -737,6 +739,9 @@
 
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
+
+            // Transform Buffer
+            this._transformMatrixBuffer = new UniformBuffer(this._engine, null, true);
         }
 
         // Properties
@@ -1666,6 +1671,12 @@
             } else {
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
+            this._transformMatrixBuffer.updateMatrix("viewProjection", this._transformMatrix);
+            this._transformMatrixBuffer.update();
+        }
+
+        public getTransformMatrixBuffer(): UniformBuffer {
+            return this._transformMatrixBuffer;
         }
 
         // Methods

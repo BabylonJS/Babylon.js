@@ -24,7 +24,10 @@
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         }
 
-        
+        public bindTransformMatrix(effect: Effect, transformMatrixBuffer: UniformBuffer): void {
+            effect.bindUniformBuffer(transformMatrixBuffer.getBuffer(), "Scene");
+        }
+
         public bindOnlyWorldMatrix(world: Matrix): void {
             this._activeEffect.setMatrix("world", world);
         }

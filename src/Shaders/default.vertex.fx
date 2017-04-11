@@ -36,6 +36,11 @@ uniform Material
 	float pointSize;
 } uMaterial;
 
+uniform mat4 viewProjection;
+uniform Scene {
+	mat4 viewProjection;
+} uScene;
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -60,7 +65,6 @@ attribute vec4 color;
 #include<instancesDeclaration>
 
 uniform mat4 view;
-uniform mat4 viewProjection;
 
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
@@ -127,7 +131,7 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
-	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+	gl_Position = uScene.viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);

@@ -3,6 +3,7 @@ module BABYLON {
         private _engine: Engine;
         private _buffer: WebGLBuffer;
         private _data: number[];
+        private _bufferData: Float32Array;
         private _dynamic: boolean;
         private _uniformName: string;
         private _uniformLocations: { [key:string]:number; };
@@ -35,8 +36,8 @@ module BABYLON {
             return this._dynamic;
         }
 
-        public getData(): number[] {
-            return this._data;
+        public getData(): Float32Array {
+            return this._bufferData;
         }
 
         public getBuffer(): WebGLBuffer {
@@ -141,12 +142,12 @@ module BABYLON {
                 return; // nothing to do
             }
 
-            var data = this._data;
+            this._bufferData = new Float32Array(this._data);
 
             if (this._dynamic) {
-                this._buffer = this._engine.createDynamicUniformBuffer(data);
+                this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
             } else {
-                this._buffer = this._engine.createUniformBuffer(data);
+                this._buffer = this._engine.createUniformBuffer(this._bufferData);
             }
 
             this._needSync = false;
@@ -158,11 +159,11 @@ module BABYLON {
                 return;
             }
 
-            if (!this._needSync) {
+            if (!this._dynamic && !this._needSync) {
                 return;
             }
 
-            this._engine.updateUniformBuffer(this._buffer, this._data);
+            this._engine.updateUniformBuffer(this._buffer, this._bufferData);
 
             this._needSync = false;
         }
@@ -171,22 +172,36 @@ module BABYLON {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
-                return;
+                if (this._buffer) {
+                    // Cannot add an uniform if the buffer is already created
+                    Tools.Error("Uniform buffer overflow.");
+                    return;
+                }
+                this.addUniform(uniformName, size);
+                location = this._uniformLocations[uniformName];
             }
 
             if (!this._buffer) {
                 this.create();
             }
 
-            var changed = false;
-            for (var i = 0; i < size; i++) {
-                if (this._data[location + i] !== data[i]) {
-                   changed = true;
-                    this._data[location + i] = data[i];
+            if (!this._dynamic) {
+                // Cache for static uniform buffers
+                var changed = false;
+                for (var i = 0; i < size; i++) {
+                    if (this._bufferData[location + i] !== data[i]) {
+                       changed = true;
+                        this._bufferData[location + i] = data[i];
+                    }
+                }
+
+                this._needSync = this._needSync || changed;
+            } else {
+                // No cache for dynamic
+                for (var i = 0; i < size; i++) {
+                    this._bufferData[location + i] = data[i];
                 }
             }
-
-            this._needSync = this._needSync || changed;
         }
 
         public updateFloat(name: string, x: number) {

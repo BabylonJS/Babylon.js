@@ -101,7 +101,7 @@
             this.name = baseName;
             this.defines = defines;
             // TODO
-            this._uniformBuffersNames = ["Material", "Light0"];
+            this._uniformBuffersNames = ["Material", "Light0", "Scene"];
 
             this._uniformsNames = uniformsNames.concat(samplers);
             this._samplers = samplers;

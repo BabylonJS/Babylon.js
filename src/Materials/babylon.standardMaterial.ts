@@ -715,11 +715,20 @@ module BABYLON {
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
 
+                var onCompiled = function(effect) {
+                    if (this.onCompiled) {
+                        this.onCompiled(effect);
+                    }
+
+                    this.bindTransformMatrix(effect, scene.getTransformMatrixBuffer());
+                }.bind(this);
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
+                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
 
                 this.buildUniformLayout();
+
 
             }
 
@@ -800,9 +809,9 @@ module BABYLON {
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
-                effect.setMatrix("viewProjection", scene.getTransformMatrix());
-
                 if (!this.isFrozen || !this._uniformBuffer.isSync) {
+                    effect.setMatrix("viewProjection", scene.getTransformMatrix());
+
                     if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                         // Fresnel
                         if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
