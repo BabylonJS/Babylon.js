@@ -23,7 +23,7 @@
             this._uniformBuffer.addUniform("vLightData", 4);
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
-            this._uniformBuffer.addUniform("vLightDirection", 4);
+            this._uniformBuffer.addUniform("vLightGround", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
         }
 
