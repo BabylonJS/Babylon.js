@@ -1,5 +1,5 @@
 ﻿(function () {
-    var snippetUrl = "https://babylonjs-api.azurewebsites.net/api/snippet";
+    var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
@@ -15,6 +15,7 @@
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     blockEditorChange = true;
+                    console.log(xhr.responseText);
                     jsEditor.setValue(xhr.responseText);
                     jsEditor.setPosition({ lineNumber: 0, column: 0 });
                     blockEditorChange = false;
@@ -28,6 +29,10 @@
         };
 
         xhr.send(null);
+    };
+
+    var showError = function(error) {
+        console.warn(error);
     };
 
     compileAndRun = function (code) {
@@ -103,7 +108,7 @@
             }
 
         } catch (e) {
-            showError(e.message);
+            // showError(e.message);
         }
     };
     window.addEventListener("resize", function () {
@@ -122,7 +127,7 @@
         }
 
         location.hash = splits.join("#");
-    }
+    };
 
     var checkHash = function () {
         if (location.hash) {
@@ -133,15 +138,15 @@
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
-                            var snippet = JSON.parse(xmlHttp.responseText);
-                            compileAndRun(snippet.code.toString());
+                            var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText)[0].jsonPayload).code;
+                            compileAndRun(snippetCode);
 
                             document.getElementById("refresh").addEventListener("click", function () {
-                                compileAndRun(snippet.code.toString());
+                                compileAndRun(snippetCode);
                             });
                         }
                     }
-                }
+                };
 
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
@@ -154,7 +159,7 @@
 
             }
         }
-    }
+    };
 
     checkHash();
 
