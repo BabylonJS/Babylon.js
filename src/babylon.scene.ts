@@ -656,6 +656,9 @@
         private _executeWhenReadyTimeoutId = -1;
         private _intermediateRendering = false;
 
+        private _viewUpdateFlag = -1;
+        private _projectionUpdateFlag = -1;
+
         public _toBeDisposed = new SmartArray<IDisposable>(256);
         private _pendingData = [];//ANY
 
@@ -1658,6 +1661,12 @@
         }
 
         public setTransformMatrix(view: Matrix, projection: Matrix): void {
+            if (this._viewUpdateFlag === view.updateFlag && this._projectionUpdateFlag === projection.updateFlag) {
+                return;
+            }
+
+            this._viewUpdateFlag = view.updateFlag;
+            this._projectionUpdateFlag = projection.updateFlag;
             this._viewMatrix = view;
             this._projectionMatrix = projection;
 
