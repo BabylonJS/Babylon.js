@@ -24729,7 +24729,13 @@ var BABYLON;
         Mesh.prototype.createNormals = function (updatable) {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var normals;
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            }
+            else {
+                normals = [];
+            }
             BABYLON.VertexData.ComputeNormals(positions, indices, normals);
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };

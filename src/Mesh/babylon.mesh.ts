@@ -806,7 +806,14 @@
         public createNormals(updatable: boolean) {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals = this.getVerticesData(VertexBuffer.NormalKind);
+            var normals: number[] | Float32Array;
+            
+            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                normals = this.getVerticesData(VertexBuffer.NormalKind);
+            } else {
+                normals = [];
+            }
+            
             VertexData.ComputeNormals(positions, indices, normals);
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
         }
