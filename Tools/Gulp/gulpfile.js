@@ -398,6 +398,6 @@ gulp.task("zip-blender" , function() {
 
 gulp.task('clean-JS-MAP', function () {
 	  return del([
-		  '../../src/**/*.js.map','../../src/**.js'
+		  '../../src/**/*.js.map','../../src/**/*.js'
 	  ], {force: true});
 	});
