@@ -290,7 +290,7 @@ module BABYLON {
                 if (this.getScene().useRightHandedSystem) {
                     offset[2] *= -1;
                 }
-                Matrix.TranslationToRef(offset[0], offset[1], -offset[2], Tmp.Matrix[0]);
+                Matrix.TranslationToRef(-offset[0], offset[1], -offset[2], Tmp.Matrix[0]);
 
                 this._webvrViewMatrix.multiplyToRef(Tmp.Matrix[0], this._webvrViewMatrix);
 
@@ -304,6 +304,13 @@ module BABYLON {
                         this._webvrViewMatrix.m[num] *= -1;
                     });
                 }
+
+                // update the camera rotation matrix
+                this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
+                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+                // Computing target and final matrix
+                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             }
 
 
@@ -322,12 +329,6 @@ module BABYLON {
                 this._webvrViewMatrix.invert();
             }
 
-            // update the camera rotation matrix
-            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
-            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-
-            // Computing target and final matrix
-            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
         }
 
@@ -335,7 +336,7 @@ module BABYLON {
             if (this._cameraRigParams["specs"] === 1.0) {
                 var eyeParams = this._cameraRigParams["eyeParameters"];
                 // deprecated!!
-                Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, this.minZ, this.maxZ, this._projectionMatrix, this.getScene().useRightHandedSystem);
+                Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, 0.1, 1000, this._projectionMatrix, this.getScene().useRightHandedSystem);
             } else /*WebVR 1.1*/ {
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);

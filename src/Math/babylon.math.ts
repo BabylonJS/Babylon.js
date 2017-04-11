@@ -516,7 +516,7 @@
          * Returns the updated Color4.  
          */
         public set(r: number, g: number, b: number, a: number): Color4 {
-            return this.copyFromFloats(r, g, b,a);
+            return this.copyFromFloats(r, g, b, a);
         }
         /**
          * Returns a string containing the hexadecimal Color4 code.  
@@ -2144,7 +2144,7 @@
         /**
          * Returns a new Vector4 set from the starting index of the passed array.  
          */
-        public static FromArray(array: number[]  | Float32Array, offset?: number): Vector4 {
+        public static FromArray(array: number[] | Float32Array, offset?: number): Vector4 {
             if (!offset) {
                 offset = 0;
             }
@@ -2328,7 +2328,7 @@
          */
         public set(width: number, height: number): Size {
             return this.copyFromFloats(width, height);
-        }        
+        }
         /**
          * Returns a new Size set with the multiplication result of the current Size and the passed floats.  
          */
@@ -2465,7 +2465,7 @@
          */
         public set(x: number, y: number, z: number, w: number): Quaternion {
             return this.copyFromFloats(x, y, z, w);
-        }        
+        }
         /**
          * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.  
          */
@@ -3949,10 +3949,10 @@
             result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
             result.m[5] = yScale;
             result.m[6] = result.m[7] = 0.0;
-            result.m[8] = ((leftTan - rightTan) * xScale * 0.5) * rightHandedFactor;
-            result.m[9] = -((upTan - downTan) * yScale * 0.5) * rightHandedFactor;
-            result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
-            // result.m[10] = -zfar / (znear - zfar);
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5)// * rightHandedFactor;
+            result.m[9] = -((upTan - downTan) * yScale * 0.5)// * rightHandedFactor;
+            //result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
+            result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0 * rightHandedFactor;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
