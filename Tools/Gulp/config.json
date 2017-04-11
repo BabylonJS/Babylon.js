@@ -229,7 +229,9 @@
             "../../src/Materials/babylon.colorCurves.js",
             "../../src/Materials/babylon.pbrMaterial.js",
             "../../src/Debug/babylon.debugLayer.js",
-            "../../src/PostProcess/babylon.standardRenderingPipeline.js"
+            "../../src/PostProcess/babylon.standardRenderingPipeline.js",
+            "../../src/Morph/babylon.morphTarget.js",
+            "../../src/Morph/babylon.morphTargetManager.js"
         ]
     },
     "modules": [

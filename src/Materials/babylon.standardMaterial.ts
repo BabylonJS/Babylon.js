@@ -59,6 +59,9 @@ module BABYLON {
         public SHADOWFULLFLOAT = false;
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
+        public MORPHTARGETS = false;
+        public MORPHTARGETS_NORMAL = false;
+        public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {
             super();
@@ -586,7 +589,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
@@ -687,6 +690,7 @@ module BABYLON {
 
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
                 
                 var shaderName = "default";
 
@@ -725,7 +729,7 @@ module BABYLON {
 
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
+                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }), defines);
 
                 this.buildUniformLayout();
 
@@ -984,6 +988,11 @@ module BABYLON {
                 
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
+
+                // Morph targets
+                if (defines.NUM_MORPH_INFLUENCERS) {
+                    MaterialHelper.BindMorphTargetParameters(mesh, effect);                
+                }
 
                 // Log. depth
                 MaterialHelper.BindLogDepth(defines, effect, scene);
