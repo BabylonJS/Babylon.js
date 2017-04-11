@@ -65,51 +65,67 @@ var createScene = function () {
     var target3 = BABYLON.MorphTarget.FromMesh(sphere5, "sphere5", 0.25);
     manager.addTarget(target3);       
 
-    var gui = new dat.GUI();
-    var options = {
-	    influence0: 0.25,
-        influence1: 0.25,
-        influence2: 0.25,
-        influence3: 0.25,
-    }
+    var data = BABYLON.SceneSerializer.Serialize(scene);
 
-    gui.add(options, "influence0", 0, 1).onChange(function(value) {
-		target0.influence = value;
+    scene.dispose();
+
+    var strScene = JSON.stringify(data);
+	var scene = new BABYLON.Scene(engine);
+    BABYLON.SceneLoader.Append("", "data:" + strScene, scene, function (newScene) {
+
+        var gui = new dat.GUI();
+        var options = {
+            influence0: 0.25,
+            influence1: 0.25,
+            influence2: 0.25,
+            influence3: 0.25,
+        }
+
+        var manager = scene.morphTargetManagers[0];
+
+        target0 = manager.getActiveTarget(0);
+        target1 = manager.getActiveTarget(1);
+        target2 = manager.getActiveTarget(2);
+        target3 = manager.getActiveTarget(3);
+
+        gui.add(options, "influence0", 0, 1).onChange(function(value) {
+            target0.influence = value;
+        });
+
+        gui.add(options, "influence1", 0, 1).onChange(function(value) {
+            target1.influence = value;
+        });
+
+        gui.add(options, "influence2", 0, 1).onChange(function(value) {
+            target2.influence = value;
+        });  
+
+        gui.add(options, "influence3", 0, 1).onChange(function(value) {
+            target3.influence = value;
+        });        
+
+        var button = { switch:function(){
+            if (sphere.morphTargetManager) {
+                sphere.morphTargetManager = null;
+            } else {
+                sphere.morphTargetManager = manager;
+            }
+        }};
+
+        gui.add(button,'switch');
+
+        var disposeButton = { dispose:function(){
+            sphere.dispose();
+        }};
+
+        gui.add(disposeButton,'dispose');
+
+        var removeButton = { removeLast:function(){
+            manager.removeTarget(target3);   
+        }};
+
+        gui.add(removeButton,'removeLast');
     });
-
-    gui.add(options, "influence1", 0, 1).onChange(function(value) {
-		target1.influence = value;
-    });
-
-    gui.add(options, "influence2", 0, 1).onChange(function(value) {
-		target2.influence = value;
-    });  
-
-    gui.add(options, "influence3", 0, 1).onChange(function(value) {
-		target3.influence = value;
-    });        
-
-    var button = { switch:function(){
-         if (sphere.morphTargetManager) {
-             sphere.morphTargetManager = null;
-         } else {
-             sphere.morphTargetManager = manager;
-         }
-    }};
-
-    gui.add(button,'switch');
-
-    var disposeButton = { dispose:function(){
-         sphere.dispose();
-    }};
-
-    gui.add(disposeButton,'dispose');
-
-    var removeButton = { removeLast:function(){
-         manager.removeTarget(target3);   
-    }};
-
-    gui.add(removeButton,'removeLast');
 
 
     return scene;

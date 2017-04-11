@@ -16,6 +16,8 @@ module BABYLON {
 
             this._scene = scene;
 
+            this._scene.morphTargetManagers.push(this);
+
             this._uniqueId = scene.getUniqueId();
         }
 
@@ -117,6 +119,19 @@ module BABYLON {
                     }
                 }
             }
+        }
+
+        // Statics
+        public static Parse(serializationObject: any, scene: Scene): MorphTargetManager {
+            var result = new MorphTargetManager(scene);
+
+            result._uniqueId = serializationObject.id;
+
+            for (var targetData of serializationObject.targets) {
+                result.addTarget(MorphTarget.Parse(targetData));
+            }
+
+            return result;
         }
     }
 }
