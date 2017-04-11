@@ -132,7 +132,7 @@
             currentSnippetTitle = null;
             currentSnippetDescription = null;
             currentSnippetTags = null;
-            document.getElementById("saveMessage").style.display = "block";
+            showNoMetadata();
             jsEditor.setValue('// You have to create a function called createScene. This function must return a BABYLON.Scene object\r\n// You can reference the following variables: scene, canvas\r\n// You must at least define a camera\r\n// More info here: https://doc.babylonjs.com/generals/The_Playground_Tutorial\r\n\r\nvar createScene = function() {\r\n\tvar scene = new BABYLON.Scene(engine);\r\n\tvar camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);\r\n\tcamera.attachControl(canvas, true);\r\n\r\n\r\n\r\n\treturn scene;\r\n};');
             jsEditor.setPosition({ lineNumber: 11, column: 0 });
             jsEditor.focus();
@@ -167,6 +167,28 @@
 
             document.getElementById("errorZone").innerHTML = errorContent;
         }
+
+        var showNoMetadata = function() {
+            document.getElementById("saveFormTitle").value = '';
+            document.getElementById("saveFormTitle").readOnly = false;
+            document.getElementById("saveFormDescription").value = '';
+            document.getElementById("saveFormDescription").readOnly = false;
+            document.getElementById("saveFormTags").value = '';
+            document.getElementById("saveFormTags").readOnly = false;
+            document.getElementById("saveFormButtons").style.display = "block";
+            document.getElementById("saveMessage").style.display = "block";
+            document.getElementById("metadataButton").style.display = "none";
+        };
+        showNoMetadata();
+
+        var hideNoMetadata = function() {
+            document.getElementById("saveFormTitle").readOnly = true;
+            document.getElementById("saveFormDescription").readOnly = true;
+            document.getElementById("saveFormTags").readOnly = true;
+            document.getElementById("saveFormButtons").style.display = "none";
+            document.getElementById("saveMessage").style.display = "none";
+            document.getElementById("metadataButton").style.display = "inline-block";
+        };
 
         compileAndRun = function () {
             try {
@@ -481,6 +503,19 @@
             }
         }
 
+        var toggleMetadata = function() {
+            var metadataButton = document.getElementById("metadataButton");
+            var scene = engine.scenes[0];
+
+            if (metadataButton.innerHTML === "+Meta data") {
+                metadataButton.innerHTML = "-Meta data";
+                document.getElementById("saveLayer").style.display = "block";
+            } else {
+                metadataButton.innerHTML = "+Meta data";
+                document.getElementById("saveLayer").style.display = "none";
+            }
+        }
+
         // UI
         document.getElementById("runButton").addEventListener("click", compileAndRun);
         document.getElementById("zipButton").addEventListener("click", getZip);
@@ -489,6 +524,7 @@
         document.getElementById("clearButton").addEventListener("click", clear);
         document.getElementById("editorButton").addEventListener("click", toggleEditor);
         document.getElementById("debugButton").addEventListener("click", toggleDebug);
+        document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {
@@ -529,7 +565,7 @@
                         }
                         location.href = newUrl;
                         // Hide the complete title & co message
-                        document.getElementById("saveMessage").style.display = "none";
+                        hideNoMetadata();
                         compileAndRun();
                     } else {
                         showError("Unable to save your code. It may be too long.", null);
@@ -614,13 +650,12 @@
 
                                         if (document.getElementById("saveLayer")) {
                                             var elem = document.getElementById("saveLayer");
-                                            // elem.outerHTML = "";
-                                            // delete elem;
 
-                                            document.getElementById("saveFormTitle").value = '';
-                                            document.getElementById("saveFormDescription").value = '';
-                                            document.getElementById("saveFormTags").value = '';
-                                            elem.style.display = 'none';
+                                            document.getElementById("saveFormTitle").value = currentSnippetTitle;
+                                            document.getElementById("saveFormDescription").value = currentSnippetDescription;
+                                            document.getElementById("saveFormTags").value = currentSnippetTags;
+
+                                            hideNoMetadata();
                                         }
                                     }
                                     else {
@@ -628,7 +663,7 @@
                                         currentSnippetDescription = null;
                                         currentSnippetTags = null;
 
-                                        document.getElementById("saveMessage").style.display = "block";
+                                        showNoMetadata();
                                     }
 
                                     jsEditor.setPosition({ lineNumber: 0, column: 0 });

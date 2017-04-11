@@ -12,7 +12,7 @@
     "type": "git",
     "url": "https://github.com/BabylonJS/Babylon.js.git"
   },
-  "main": "babylon.js",
+  "main": "babylon.max.js",
   "files": [
     "babylon.d.ts",
     "babylon.module.d.ts",

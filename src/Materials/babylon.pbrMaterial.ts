@@ -73,6 +73,10 @@
         public METALLICROUGHNESSGSTOREINALPHA = false;
         public METALLICROUGHNESSGSTOREINGREEN = false;
 
+        public MORPHTARGETS = false;
+        public MORPHTARGETS_NORMAL = false;
+        public NUM_MORPH_INFLUENCERS = 0;
+
         constructor() {
             super();
             this.rebuild();
@@ -979,6 +983,13 @@
                 if (useInstances) {
                     this._defines.INSTANCES = true;
                 }
+
+               if ((<any>mesh).morphTargetManager) {
+                    var manager = (<Mesh>mesh).morphTargetManager;
+                    this._defines.MORPHTARGETS_NORMAL = manager.supportsNormals && this._defines.NORMAL;
+                    this._defines.MORPHTARGETS = (manager.numInfluencers > 0);
+                    this._defines.NUM_MORPH_INFLUENCERS = manager.numInfluencers;
+                }
             }
 
             // Get correct effect
@@ -1076,6 +1087,7 @@
 
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
 
                 // Legacy browser patch
                 var join = this._defines.toString();
@@ -1104,7 +1116,7 @@
                 
                 this._effect = scene.getEngine().createEffect("pbr",
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
+                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: this._defines.NUM_MORPH_INFLUENCERS});
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -1338,6 +1350,11 @@
 
                 // Fog
                 MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
+
+                // Morph targets
+                if (this._defines.NUM_MORPH_INFLUENCERS) {
+                    MaterialHelper.BindMorphTargetParameters(mesh, this._effect);                
+                }
 
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;
