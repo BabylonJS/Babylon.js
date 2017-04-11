@@ -38249,8 +38249,17 @@ var BABYLON;
         };
         PhysicsImpostor.prototype.getObjectExtendSize = function () {
             if (this.object.getBoundingInfo) {
+                var q = this.object.rotationQuaternion;
+                //reset rotation
+                this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
+                //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2).multiply(this.object.scaling);
+                var size = this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2);
+                //bring back the rotation
+                this.object.rotationQuaternion = q;
+                //calculate the world matrix with the new rotation
+                this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+                return size;
             }
             else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
@@ -38436,6 +38445,7 @@ var BABYLON;
         return PhysicsImpostor;
     }());
     PhysicsImpostor.DEFAULT_OBJECT_SIZE = new BABYLON.Vector3(1, 1, 1);
+    PhysicsImpostor.IDENTITY_QUATERNION = BABYLON.Quaternion.Identity();
     //Impostor types
     PhysicsImpostor.NoImpostor = 0;
     PhysicsImpostor.SphereImpostor = 1;
@@ -47524,7 +47534,6 @@ var BABYLON;
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var center = impostor.getObjectCenter();
-            var extendSize = impostor.getObjectExtendSize();
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
