@@ -145,7 +145,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
             this.getScene().addLight(this);
-            this._uniformBuffer = new UniformBuffer(scene.getEngine(), null, true);
+            this._uniformBuffer = new UniformBuffer(scene.getEngine());
             this._buildUniformLayout();
 
             this.includedOnlyMeshes = new Array<AbstractMesh>();
