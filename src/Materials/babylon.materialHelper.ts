@@ -33,10 +33,13 @@
         }
 
         public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): void {
-            if (!defines._areAttributesDirty) {
+            if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return;
             }               
 
+            defines._normals = defines._needNormals;
+            defines._uvs = defines._needUVs;
+            
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
             if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {

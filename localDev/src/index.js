@@ -1,19 +1,14 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
 
-var scramble = function(data) {
-    for (index = 0; index < data.length; index ++) {
-        data[index] += 0.1 * Math.random();
-    }
-}
 
-// Playground like creation of the scene
-var createScene = function () {
+var globals = {};
 
+var createScene = function()
+{
     // This creates a basic Babylon Scene object (non-mesh)
     var scene = new BABYLON.Scene(engine);
 
     // This creates and positions a free camera (non-mesh)
-    var camera = new BABYLON.ArcRotateCamera("camera1", 1.14, 1.13, 10, BABYLON.Vector3.Zero(), scene);
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -5), scene);
 
     // This targets the camera to scene origin
     camera.setTarget(BABYLON.Vector3.Zero());
@@ -27,107 +22,51 @@ var createScene = function () {
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0.7;
 
-    // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-    var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+    var material0 = new BABYLON.StandardMaterial("mat0", scene);
+    material0.diffuseColor = new BABYLON.Color3(1, 0, 0);
+    //material0.bumpTexture = new BABYLON.Texture("normalMap.jpg", scene);
+   
+    var material1 = new BABYLON.StandardMaterial("mat1", scene);
+    material1.diffuseColor = new BABYLON.Color3(0, 0, 1);
+    
+    var material2 = new BABYLON.StandardMaterial("mat2", scene);
+    material2.emissiveColor = new BABYLON.Color3(0.4, 0, 0.4);
 
-    var sphere2 = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
-    sphere2.setEnabled(false);
-    sphere2.updateMeshPositions(scramble);
+    var multimat = new BABYLON.MultiMaterial("multi", scene);
+    multimat.subMaterials.push(material0);
+    multimat.subMaterials.push(material1);
+    multimat.subMaterials.push(material2);
 
-    var sphere3 = BABYLON.Mesh.CreateSphere("sphere3", 16, 2, scene);
-    sphere3.setEnabled(false);
+    globals.multimat = multimat;
 
-    sphere3.scaling = new BABYLON.Vector3(2.1, 3.5, 1.0);
-    sphere3.bakeCurrentTransformIntoVertices();
+    var sphere = BABYLON.Mesh.CreateSphere("Sphere0", 16, 3, scene);
+    sphere.material = multimat;
 
-    var sphere4 = BABYLON.Mesh.CreateSphere("sphere4", 16, 2, scene);
-    sphere4.setEnabled(false);
-    sphere4.updateMeshPositions(scramble);
+    sphere.subMeshes = [];
+    var verticesCount = sphere.getTotalVertices();
 
-    var sphere5 = BABYLON.Mesh.CreateSphere("sphere5", 16, 2, scene);
-    sphere5.setEnabled(false);
+    sphere.subMeshes.push(new BABYLON.SubMesh(0, 0, verticesCount, 0, 900, sphere));
+    sphere.subMeshes.push(new BABYLON.SubMesh(1, 0, verticesCount, 900, 900, sphere));
+    sphere.subMeshes.push(new BABYLON.SubMesh(2, 0, verticesCount, 1800, 2088, sphere));
 
-    sphere5.scaling = new BABYLON.Vector3(1.0, 0.1, 1.0);
-    sphere5.bakeCurrentTransformIntoVertices();    
+  //  material0.diffuseTexture = new BABYLON.Texture("textures/misc.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE); 
 
-    var manager = new BABYLON.MorphTargetManager();
-    sphere.morphTargetManager = manager;
-
-    var target0 = BABYLON.MorphTarget.FromMesh(sphere2, "sphere2", 0.25);
-    manager.addTarget(target0);
-
-    var target1 = BABYLON.MorphTarget.FromMesh(sphere3, "sphere3", 0.25);
-    manager.addTarget(target1);
-
-    var target2 = BABYLON.MorphTarget.FromMesh(sphere4, "sphere4", 0.25);
-    manager.addTarget(target2);   
-
-    var target3 = BABYLON.MorphTarget.FromMesh(sphere5, "sphere5", 0.25);
-    manager.addTarget(target3);       
-
-    var data = BABYLON.SceneSerializer.Serialize(scene);
-
-    scene.dispose();
-
-    var strScene = JSON.stringify(data);
-	var scene = new BABYLON.Scene(engine);
-    BABYLON.SceneLoader.Append("", "data:" + strScene, scene, function (newScene) {
-
-        var gui = new dat.GUI();
-        var options = {
-            influence0: 0.25,
-            influence1: 0.25,
-            influence2: 0.25,
-            influence3: 0.25,
+    scene.actionManager = new BABYLON.ActionManager(scene);
+    scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+        if (evt.sourceEvent.key == "t")
+        {
+          //  globals.multimat.subMaterials[0].diffuseColor = new BABYLON.Color3(1, 1, 1);
+            globals.multimat.subMaterials[0].diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
         }
+        else if (evt.sourceEvent.key == "m")
+        {
+            var material0 = new BABYLON.StandardMaterial("mat0", scene);
+          //  material0.diffuseColor = new BABYLON.Color3(0, 1, 0);
+            material0.diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
 
-        var manager = scene.morphTargetManagers[0];
-
-        target0 = manager.getActiveTarget(0);
-        target1 = manager.getActiveTarget(1);
-        target2 = manager.getActiveTarget(2);
-        target3 = manager.getActiveTarget(3);
-
-        gui.add(options, "influence0", 0, 1).onChange(function(value) {
-            target0.influence = value;
-        });
-
-        gui.add(options, "influence1", 0, 1).onChange(function(value) {
-            target1.influence = value;
-        });
-
-        gui.add(options, "influence2", 0, 1).onChange(function(value) {
-            target2.influence = value;
-        });  
-
-        gui.add(options, "influence3", 0, 1).onChange(function(value) {
-            target3.influence = value;
-        });        
-
-        var button = { switch:function(){
-            if (sphere.morphTargetManager) {
-                sphere.morphTargetManager = null;
-            } else {
-                sphere.morphTargetManager = manager;
-            }
-        }};
-
-        gui.add(button,'switch');
-
-        var disposeButton = { dispose:function(){
-            sphere.dispose();
-        }};
-
-        gui.add(disposeButton,'dispose');
-
-        var removeButton = { removeLast:function(){
-            manager.removeTarget(target3);   
-        }};
-
-        gui.add(removeButton,'removeLast');
-    });
-
+            globals.multimat.subMaterials[0] = material0; 
+        }
+    }));
 
     return scene;
-
 };
