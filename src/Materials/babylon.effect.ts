@@ -368,7 +368,7 @@
                                 maxIndex = this._indexParameters[indexSplits[1]];
                             }
 
-                            for (var i = minIndex; i <= maxIndex; i++) {
+                            for (var i = minIndex; i < maxIndex; i++) {
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {

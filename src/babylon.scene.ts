@@ -1681,8 +1681,14 @@
 
         // Methods
 
+        public getUniqueId() {
+            var result = this._uniqueIdCounter;
+            this._uniqueIdCounter++;
+            return result;
+        }
+
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this._uniqueIdCounter++;
+            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
@@ -1750,13 +1756,13 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this._uniqueIdCounter++;
+            newLight.uniqueId = this.getUniqueId();
             var position = this.lights.push(newLight);
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this._uniqueIdCounter++;
+            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
