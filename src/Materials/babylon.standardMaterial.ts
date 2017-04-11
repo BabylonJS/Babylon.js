@@ -810,7 +810,6 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
                 if (!this.isFrozen || !this._uniformBuffer.isSync) {
-                    effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                         // Fresnel

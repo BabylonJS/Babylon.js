@@ -36,7 +36,6 @@ uniform Material
 	float pointSize;
 } uMaterial;
 
-uniform mat4 viewProjection;
 uniform Scene {
 	mat4 viewProjection;
 } uScene;

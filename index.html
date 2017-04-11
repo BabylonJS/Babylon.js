@@ -67,10 +67,10 @@
 								sphere.position.y = - squareSize / 4 + k / 2;
 									sphere.material = new BABYLON.StandardMaterial("test");
 									if (Math.random() > 0.2) {
-										sphere.material.diffuseTexture = new BABYLON.Texture("test.jpeg", scene);
+										// sphere.material.diffuseTexture = new BABYLON.Texture("test-low.jpeg", scene);
 									}
 									if (Math.random() > 0.2) {
-										sphere.material.bumpTexture = new BABYLON.Texture("test.jpeg", scene);
+										// sphere.material.bumpTexture = new BABYLON.Texture("test-low.jpeg", scene);
 									}
 									sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
 									sphere.material.specularColor = new BABYLON.Color3(Math.random() < 0.8 ? 0 : 1, Math.random() < 0.8 ? 0 : 1, Math.random() < 0.8 ? 0 : 1);
@@ -93,7 +93,7 @@
 									// }
 									
 								}
-								light.direction = new BABYLON.Vector3(Math.cos(t / 30), 1, Math.sin(t / 30));
+								// light.direction = new BABYLON.Vector3(Math.cos(t / 30), 1, Math.sin(t / 30));
 									t++;
 							});
 
