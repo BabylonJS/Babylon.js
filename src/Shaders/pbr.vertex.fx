@@ -58,8 +58,14 @@ uniform mat4 lightmapMatrix;
 
 #if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec2 vReflectivityInfos;
+uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
+#endif
+
+#ifdef MICROSURFACEMAP
+varying vec2 vMicroSurfaceSamplerUV;
+uniform vec2 vMicroSurfaceSamplerInfos;
+uniform mat4 microSurfaceSamplerMatrix;
 #endif
 
 #ifdef BUMP
@@ -200,6 +206,17 @@ void main(void) {
     else
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
+#ifdef MICROSURFACEMAP
+    if (vMicroSurfaceSamplerInfos.x == 0.)
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv, 1.0, 0.0));
+    }
+    else
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 
