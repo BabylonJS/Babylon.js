@@ -24726,6 +24726,13 @@ var BABYLON;
             }
             return this;
         };
+        Mesh.prototype.createNormals = function (updatable) {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var indices = this.getIndices();
+            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
+        };
         /**
          * Creates a un-shared specific occurence of the geometry for the mesh.
          * Returns the Mesh.
