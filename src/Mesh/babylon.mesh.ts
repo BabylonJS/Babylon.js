@@ -1928,6 +1928,11 @@
                 this.material = null;
             }
 
+            // Morph targets
+            if (this.morphTargetManager) {
+                serializationObject.morphTargetManagerId = this.morphTargetManager.uniqueId;
+            }
+
             // Skeleton
             if (this.skeleton) {
                 serializationObject.skeletonId = this.skeleton.id;
@@ -1968,6 +1973,8 @@
                 Animation.AppendSerializedAnimations(instance, serializationInstance);
                 serializationInstance.ranges = instance.serializeAnimationRanges();
             }
+
+            // 
 
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
@@ -2198,6 +2205,11 @@
                 mesh.setMaterialByID(parsedMesh.materialId);
             } else {
                 mesh.material = null;
+            }
+
+            // Morph targets
+            if (parsedMesh.morphTargetManagerId > -1) {
+                mesh.morphTargetManager = scene.getMorphTargetManagerById(parsedMesh.morphTargetManagerId);
             }
 
             // Skeleton

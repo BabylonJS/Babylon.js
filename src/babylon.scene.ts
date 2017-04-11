@@ -566,6 +566,9 @@
 
         public skeletons = new Array<Skeleton>();
 
+        // Morph targets
+        public morphTargetManagers = new Array<MorphTargetManager>();
+
         // Lens flares
         public lensFlaresEnabled = true;
         public lensFlareSystems = new Array<LensFlareSystem>();
@@ -1703,8 +1706,18 @@
         public removeSkeleton(toRemove: Skeleton): number {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if found 
                 this.skeletons.splice(index, 1);
+            }
+
+            return index;
+        }
+
+        public removeMorphTargetManager(toRemove: MorphTargetManager): number {
+            var index = this.morphTargetManagers.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found 
+                this.morphTargetManagers.splice(index, 1);
             }
 
             return index;
@@ -2228,6 +2241,16 @@
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].name === name) {
                     return this.skeletons[index];
+                }
+            }
+
+            return null;
+        }
+
+        public getMorphTargetManagerById(id: number): MorphTargetManager {
+            for (var index = 0; index < this.morphTargetManagers.length; index++) {
+                if (this.morphTargetManagers[index].uniqueId === id) {
+                    return this.morphTargetManagers[index];
                 }
             }
 
@@ -3033,6 +3056,7 @@
             this.afterRender = null;
 
             this.skeletons = [];
+            this.morphTargetManagers = [];
 
             this._boundingBoxRenderer.dispose();
 
