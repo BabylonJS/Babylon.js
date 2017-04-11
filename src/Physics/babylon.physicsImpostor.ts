@@ -169,7 +169,7 @@ module BABYLON {
         public getObjectExtendSize(): Vector3 {
             if (this.object.getBoundingInfo) {
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2).multiply(this.object.scaling)
+                return this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2);
             } else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
             }
