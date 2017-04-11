@@ -2,6 +2,11 @@
 
 module BABYLON {
     export class Bone extends Node {
+
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero()];
+        private static _tmpQuat = Quaternion.Identity();
+        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
+
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
         public length: number;
@@ -211,8 +216,8 @@ module BABYLON {
                 }
 
                 this._skeleton.computeAbsoluteTransforms();
-                var tmat = Tmp.Matrix[0];
-                var tvec = Tmp.Vector3[0];
+                var tmat = Bone._tmpMats[0];
+                var tvec = Bone._tmpVecs[0];
 
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -265,8 +270,8 @@ module BABYLON {
 
                 this._skeleton.computeAbsoluteTransforms();
 
-                var tmat = Tmp.Matrix[0];
-                var vec = Tmp.Vector3[0];
+                var tmat = Bone._tmpMats[0];
+                var vec = Bone._tmpVecs[0];
 
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -331,14 +336,14 @@ module BABYLON {
         public scale (x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
-            var origLocMat = Tmp.Matrix[0];
+            var origLocMat = Bone._tmpMats[0];
             origLocMat.copyFrom(locMat);
 
-            var origLocMatInv = Tmp.Matrix[1];
+            var origLocMatInv = Bone._tmpMats[1];
             origLocMatInv.copyFrom(origLocMat);
             origLocMatInv.invert();
 
-            var scaleMat = Tmp.Matrix[2];
+            var scaleMat = Bone._tmpMats[2];
             Matrix.FromValuesToRef(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1, scaleMat);
             this._scaleMatrix.multiplyToRef(scaleMat, this._scaleMatrix);
             this._scaleVector.x *= x;
@@ -393,10 +398,10 @@ module BABYLON {
          */
         public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 	
-            var rotMat = Tmp.Matrix[0];
+            var rotMat = Bone._tmpMats[0];
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
             
-            var rotMatInv = Tmp.Matrix[1];
+            var rotMatInv = Bone._tmpMats[1];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 	
@@ -415,7 +420,7 @@ module BABYLON {
          */
         public rotate (axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             
-            var rmat = Tmp.Matrix[0];
+            var rmat = Bone._tmpMats[0];
             rmat.m[12] = 0;
             rmat.m[13] = 0;
             rmat.m[14] = 0;
@@ -435,9 +440,9 @@ module BABYLON {
          */
         public setAxisAngle (axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
-            var rotMat = Tmp.Matrix[0];
+            var rotMat = Bone._tmpMats[0];
             Matrix.RotationAxisToRef(axis, angle, rotMat);
-            var rotMatInv = Tmp.Matrix[1];
+            var rotMatInv = Bone._tmpMats[1];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
             
@@ -466,11 +471,11 @@ module BABYLON {
          */
         public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
-            var rotMatInv = Tmp.Matrix[0];
+            var rotMatInv = Bone._tmpMats[0];
 
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 
-            var rotMat = Tmp.Matrix[1];
+            var rotMat = Bone._tmpMats[1];
             Matrix.FromQuaternionToRef(quat, rotMat);
 
             rotMatInv.multiplyToRef(rotMat, rotMat);
@@ -487,11 +492,11 @@ module BABYLON {
          */
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
-            var rotMatInv = Tmp.Matrix[0];
+            var rotMatInv = Bone._tmpMats[0];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 
-            var rotMat2 = Tmp.Matrix[1];
+            var rotMat2 = Bone._tmpMats[1];
             rotMat2.copyFrom(rotMat);
 
             rotMatInv.multiplyToRef(rotMat, rotMat2);
@@ -507,8 +512,8 @@ module BABYLON {
             var ly = lmat.m[13];
             var lz = lmat.m[14];
             var parent = this.getParent();
-            var parentScale = Tmp.Matrix[3];
-            var parentScaleInv = Tmp.Matrix[4];
+            var parentScale = Bone._tmpMats[3];
+            var parentScaleInv = Bone._tmpMats[4];
 
             if (parent) {
                 if (space == Space.WORLD) {
@@ -552,13 +557,13 @@ module BABYLON {
         private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             if (space == Space.WORLD) {
-                var scaleMatrix = Tmp.Matrix[2];
+                var scaleMatrix = Bone._tmpMats[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
                 rotMatInv.copyFrom(this.getAbsoluteTransform());
                 
                 if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
-                    var meshScale = Tmp.Matrix[3];
+                    var meshScale = Bone._tmpMats[3];
                     Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
                     scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
@@ -569,11 +574,11 @@ module BABYLON {
             } else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
                 rotMatInv.invert();
-                var scaleMatrix = Tmp.Matrix[2];
+                var scaleMatrix = Bone._tmpMats[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
 
                 if (this._parent) {
-                    var pscaleMatrix = Tmp.Matrix[3];
+                    var pscaleMatrix = Bone._tmpMats[3];
                     pscaleMatrix.copyFrom(this._parent._scaleMatrix);
                     pscaleMatrix.invert();
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
@@ -649,7 +654,7 @@ module BABYLON {
                 
                 this._skeleton.computeAbsoluteTransforms();
                 
-                var tmat = Tmp.Matrix[0];
+                var tmat = Bone._tmpMats[0];
 
                 if (mesh) {
                     tmat.copyFrom(this.getAbsoluteTransform());
@@ -777,7 +782,7 @@ module BABYLON {
 
             this._skeleton.computeAbsoluteTransforms();
             
-            var mat = Tmp.Matrix[0];
+            var mat = Bone._tmpMats[0];
 
             mat.copyFrom(this.getAbsoluteTransform());
 
@@ -815,7 +820,7 @@ module BABYLON {
          */
         public getRotationToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
 
-            var quat = Tmp.Quaternion[0];
+            var quat = Bone._tmpQuat;
 
             this.getRotationQuaternionToRef(space, mesh, quat);
             
@@ -849,11 +854,11 @@ module BABYLON {
 
             if(space == Space.LOCAL){
 
-                this.getLocalMatrix().decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
+                this.getLocalMatrix().decompose(Bone._tmpVecs[0], result, Bone._tmpVecs[1]);
 
             }else{
 
-                var mat = Tmp.Matrix[0];
+                var mat = Bone._tmpMats[0];
                 var amat = this.getAbsoluteTransform();
 
                 if(mesh){
@@ -866,7 +871,7 @@ module BABYLON {
                 mat.m[1] *= this._scalingDeterminant;
                 mat.m[2] *= this._scalingDeterminant;
 
-                mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
+                mat.decompose(Bone._tmpVecs[0], result, Bone._tmpVecs[1]);
 
             }
         }
@@ -901,7 +906,7 @@ module BABYLON {
 
             }else{
 
-                var mat = Tmp.Matrix[0];
+                var mat = Bone._tmpMats[0];
                 var amat = this.getAbsoluteTransform();
 
                 if(mesh){
@@ -953,7 +958,7 @@ module BABYLON {
 
             this._skeleton.computeAbsoluteTransforms();
 
-            var tmat = Tmp.Matrix[0];
+            var tmat = Bone._tmpMats[0];
             
             if (mesh) {
                 tmat.copyFrom(this.getAbsoluteTransform());
@@ -999,7 +1004,7 @@ module BABYLON {
 
             this._skeleton.computeAbsoluteTransforms();
 
-            var tmat = Tmp.Matrix[0];
+            var tmat = Bone._tmpMats[0];
 
             tmat.copyFrom(this.getAbsoluteTransform());
             
