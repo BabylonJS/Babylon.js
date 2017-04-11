@@ -72,7 +72,11 @@ if (BABYLON.Engine.isSupported()) {
                 currentScene.activeCamera.keysRight.push(68); // D
             }
             defaultCamera = currentScene.activeCamera;
-            arcRotateCamera = new BABYLON.ArcRotateCamera("camera", 4.71238898038469, 1.5707963267948966, 3, BABYLON.Vector3.Zero(), currentScene);
+            var worldExtends = currentScene.getWorldExtends();
+            var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+            arcRotateCamera = new BABYLON.ArcRotateCamera("arcRotateCamera", 0, 0, 10, BABYLON.Vector3.Zero(), currentScene);
+            arcRotateCamera.setPosition(new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+            arcRotateCamera.setTarget(worldCenter);
             arcRotateCamera.wheelPrecision = 100.0;
             arcRotateCamera.minZ = 0.1;
             arcRotateCamera.maxZ = 1000;
