@@ -30629,9 +30629,11 @@ var BABYLON;
         };
         MaterialHelper.PrepareDefinesForAttributes = function (mesh, defines, useVertexColor, useBones, useMorphTargets) {
             if (useMorphTargets === void 0) { useMorphTargets = false; }
-            if (!defines._areAttributesDirty) {
+            if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return;
             }
+            defines._normals = defines._needNormals;
+            defines._uvs = defines._needUVs;
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind));
             if (defines._needNormals && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.TangentKind)) {
                 defines["TANGENT"] = true;
@@ -30997,6 +30999,8 @@ var BABYLON;
             this._areTexturesDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._normals = false;
+            this._uvs = false;
             this._needNormals = false;
             this._needUVs = false;
         }
