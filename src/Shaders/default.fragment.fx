@@ -35,8 +35,6 @@ uniform Material
 	float pointSize;
 };
 
-uniform vec3 vEyePosition;
-uniform vec3 vAmbientColor;
 
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
@@ -48,6 +46,9 @@ uniform vec3 vAmbientColor;
 
 // Constants
 #define RECIPROCAL_PI2 0.15915494
+
+uniform vec3 vEyePosition;
+uniform vec3 vAmbientColor;
 
 // Input
 varying vec3 vPositionW;
@@ -379,6 +380,7 @@ void main(void) {
 	alpha = clamp(alpha + dot(reflectionColor, vec3(0.3, 0.59, 0.11)), 0., 1.);
 #endif
 
+	// Composition
 #ifdef EMISSIVEASILLUMINATION
 	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor + refractionColor, 0.0, 1.0), alpha);
 #else

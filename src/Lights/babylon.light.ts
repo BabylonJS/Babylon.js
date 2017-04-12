@@ -281,6 +281,8 @@
                 mesh._removeLightSource(this);
             }
 
+            this._uniformBuffer.dispose();
+
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();

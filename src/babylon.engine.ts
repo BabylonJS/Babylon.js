@@ -1487,6 +1487,12 @@
             this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
         }
 
+        public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
+            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
+
+            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
+        };
+
         private bindIndexBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
                 this._unBindVertexArrayObject();
@@ -1870,12 +1876,6 @@
 
             return results;
         }
-
-        public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
-            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
-
-            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
-        };
 
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
             var results = [];

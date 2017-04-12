@@ -39,7 +39,7 @@
 	vec3 viewDir = worldPos.xyz - vEyePosition;
 	vec3 coords = normalize(reflect(viewDir, worldNormal));
 
-	return vec3(uMaterial.reflectionMatrix * vec4(coords, 1));
+	return vec3(reflectionMatrix * vec4(coords, 1));
 #endif
 
 #ifdef REFLECTIONMAP_CUBIC
@@ -48,11 +48,11 @@
 #ifdef INVERTCUBICMAP
 	coords.y = 1.0 - coords.y;
 #endif
-	return vec3(uMaterial.reflectionMatrix * vec4(coords, 0));
+	return vec3(reflectionMatrix * vec4(coords, 0));
 #endif
 
 #ifdef REFLECTIONMAP_PROJECTION
-	return vec3(uMaterial.reflectionMatrix * (view * worldPos));
+	return vec3(reflectionMatrix * (view * worldPos));
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX

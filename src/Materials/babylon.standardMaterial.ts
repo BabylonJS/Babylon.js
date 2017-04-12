@@ -781,7 +781,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("vDiffuseColor", 4);
             this._uniformBuffer.addUniform("pointSize", 1);
         }
-        
+
         public unbind(): void {
             if (this._activeEffect) {
                 if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
@@ -1096,6 +1096,8 @@ module BABYLON {
                     this._cameraColorGradingTexture.dispose();
                 }
             }
+
+            this._uniformBuffer.dispose();
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
