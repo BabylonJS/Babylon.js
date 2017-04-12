@@ -111,11 +111,11 @@
                     defines["DIRLIGHT" + lightIndex] = false;
 
                     var type;
-                    if (light.getClassName() === "SpotLight") {
+                    if (light.getTypeID() === 2) {
                         type = "SPOTLIGHT" + lightIndex;
-                    } else if (light.getClassName() === "HemisphericLight") {
+                    } else if (light.getTypeID() === 3) {
                         type = "HEMILIGHT" + lightIndex;
-                    } else if (light.getClassName() === "PointLight") {
+                    } else if (light.getTypeID() === 0) {
                         type = "POINTLIGHT" + lightIndex;
                     } else {
                         type = "DIRLIGHT" + lightIndex;
@@ -305,16 +305,16 @@
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-            if (light.getClassName() === "PointLight") {
+            if (light.getTypeID() === 0) {
                 // Point Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light.getClassName() === "DirectionalLight") {
+            } else if (light.getTypeID() === 1) {
                 // Directional Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light.getClassName() === "SpotLight") {
+            } else if (light.getTypeID() === 2) {
                 // Spot Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-            } else if (light.getClassName() === "HemisphericLight") {
+            } else if (light.getTypeID() === 3) {
                 // Hemispheric Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
             }
