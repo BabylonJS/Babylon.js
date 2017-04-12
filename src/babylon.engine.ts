@@ -779,9 +779,6 @@
                 Engine.audioEngine = new AudioEngine();
             }
 
-            //default loading screen
-            this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
-
             //Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
@@ -3362,26 +3359,32 @@
 
         // Loading screen
         public displayLoadingUI(): void {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen.displayLoadingUI();
         }
 
         public hideLoadingUI(): void {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen.hideLoadingUI();
         }
 
         public get loadingScreen(): ILoadingScreen {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
 
         public set loadingScreen(loadingScreen: ILoadingScreen) {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen = loadingScreen;
         }
 
         public set loadingUIText(text: string) {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen.loadingUIText = text;
         }
 
         public set loadingUIBackgroundColor(color: string) {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen.loadingUIBackgroundColor = color;
         }
 

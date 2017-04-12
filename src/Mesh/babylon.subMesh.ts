@@ -89,7 +89,7 @@
         public getMaterial(): Material {
             var rootMaterial = this._renderingMesh.material;
 
-            if (rootMaterial && rootMaterial instanceof MultiMaterial) {
+            if (rootMaterial && rootMaterial.getClassName() === "MultiMaterial") {
                 var multiMaterial = <MultiMaterial>rootMaterial;
                 return multiMaterial.getSubMaterial(this.materialIndex);
             }
