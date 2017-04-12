@@ -83,7 +83,6 @@
         private _engine: Engine;
         private _uniformBuffersNames: string[];
         private _uniformsNames: string[];
-        private _uniformOrder: string[];
         private _samplers: string[];
         private _isReady = false;
         private _compilationError = "";
@@ -722,7 +721,7 @@
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
             if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-                    this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+                this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
             }
             return this;
         }

@@ -1,3 +1,3 @@
 ﻿#ifdef POINTSIZE
-	gl_PointSize = uMaterial.pointSize;
+	gl_PointSize = pointSize;
 #endif

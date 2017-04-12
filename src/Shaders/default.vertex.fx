@@ -92,8 +92,6 @@ varying vec2 vSpecularUV;
 varying vec2 vBumpUV;
 #endif
 
-#include<pointCloudVertexDeclaration>
-
 // Output
 varying vec3 vPositionW;
 #ifdef NORMAL

@@ -3169,6 +3169,9 @@
                 this.textures[0].dispose();
             }
 
+            // Release UBO
+            this._transformMatrixBuffer.dispose();
+
             // Post-processes
             this.postProcessManager.dispose();
 
