@@ -1,4 +1,8 @@
 module BABYLON {
+
+    var MAX_UNIFORM_SIZE = 256;
+    var _tempBuffer = new Float32Array(MAX_UNIFORM_SIZE);
+
     export class UniformBuffer {
         private _engine: Engine;
         private _buffer: WebGLBuffer;
@@ -11,7 +15,6 @@ module BABYLON {
         private _uniformLocationPointer: number;
         private _needSync: boolean;
         private _cache: Float32Array;
-        private static _MAX_UNIFORM_SIZE = 256;
 
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
@@ -24,7 +27,6 @@ module BABYLON {
             this._uniformSizes = {};
             this._uniformLocationPointer = 0;
             this._needSync = false;
-            this._cache = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
         }
 
         public get isSync(): boolean {
@@ -205,29 +207,29 @@ module BABYLON {
         }
 
         public updateFloat(name: string, x: number) {
-            this._cache[0] = x;
-            this.updateUniform(name, this._cache, 1);
+            _tempBuffer[0] = x;
+            this.updateUniform(name, _tempBuffer, 1);
         }
 
         public updateFloat2(name: string, x: number, y: number) {
-            this._cache[0] = x;
-            this._cache[1] = y;
-            this.updateUniform(name, this._cache, 2);
+            _tempBuffer[0] = x;
+            _tempBuffer[1] = y;
+            this.updateUniform(name, _tempBuffer, 2);
         }
 
         public updateFloat3(name: string, x: number, y: number, z: number) {
-            this._cache[0] = x;
-            this._cache[1] = y;
-            this._cache[2] = z;
-            this.updateUniform(name, this._cache, 3);
+            _tempBuffer[0] = x;
+            _tempBuffer[1] = y;
+            _tempBuffer[2] = z;
+            this.updateUniform(name, _tempBuffer, 3);
         }
 
         public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
-            this._cache[0] = x;
-            this._cache[1] = y;
-            this._cache[2] = z;
-            this._cache[3] = w;
-            this.updateUniform(name, this._cache, 4);
+            _tempBuffer[0] = x;
+            _tempBuffer[1] = y;
+            _tempBuffer[2] = z;
+            _tempBuffer[3] = w;
+            this.updateUniform(name, _tempBuffer, 4);
         }
 
         public updateMatrix(name: string, mat: Matrix) {
@@ -235,19 +237,19 @@ module BABYLON {
         }
 
         public updateVector3(name: string, vector: Vector3) {
-            vector.toArray(this._cache);
-            this.updateUniform(name, this._cache, 3);
+            vector.toArray(_tempBuffer);
+            this.updateUniform(name, _tempBuffer, 3);
         }
 
         public updateColor3(name: string, color: Color3) {
-            color.toArray(this._cache);
-            this.updateUniform(name, this._cache, 3);
+            color.toArray(_tempBuffer);
+            this.updateUniform(name, _tempBuffer, 3);
         }
 
         public updateColor4(name: string, color: Color3, alpha: number) {
-            color.toArray(this._cache);
-            this._cache[3] = alpha;
-            this.updateUniform(name, this._cache, 4);
+            color.toArray(_tempBuffer);
+            _tempBuffer[3] = alpha;
+            this.updateUniform(name, _tempBuffer, 4);
         }
 
         public updateUniformDirectly(uniformName: string, data: number[]) {
