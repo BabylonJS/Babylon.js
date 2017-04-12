@@ -213,7 +213,7 @@
          * This as to be use with the overloadedReflectivityIntensity parameter.
          */
         @serializeAsColor3()
-        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.3, 0.3, 0.3);
+        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.0, 0.0, 0.0);
         
         /**
          * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
@@ -349,7 +349,7 @@
         public reflectivityColor = new Color3(1, 1, 1);
 
         @serializeAsColor3("reflection")
-        public reflectionColor = new Color3(0.5, 0.5, 0.5);
+        public reflectionColor = new Color3(0.0, 0.0, 0.0);
 
         @serializeAsColor3("emissive")
         public emissiveColor = new Color3(0, 0, 0);
@@ -664,13 +664,12 @@
 
             var scene = this.getScene();
             var engine = scene.getEngine();
-            var needNormals = false;
             var needUVs = false;
 
             this._defines.reset();
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights) || needNormals;
+                MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
 
             if (!this.checkReadyOnEveryCall) {
@@ -722,7 +721,6 @@
                         return false;
                     }
                     
-                    needNormals = true;
                     this._defines.REFLECTION = true;
 
                     if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
@@ -764,7 +762,6 @@
 
                     if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                         this._defines.USESPHERICALFROMREFLECTIONMAP = true;
-                        needNormals = true;
 
                         if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
                             this._defines.USEPMREMREFLECTION = true;
@@ -963,7 +960,6 @@
                         this._defines.EMISSIVEFRESNEL = true;
                     }
 
-                    needNormals = true;
                     this._defines.FRESNEL = true;
                 }
             }
@@ -986,7 +982,12 @@
 
             // Attribs
             if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                if (!mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                    mesh.createNormals(true);
+                    Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
+                }
+
+                if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
                     if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                         this._defines.TANGENT = true;
