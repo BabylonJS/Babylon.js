@@ -3359,13 +3359,11 @@
 
         // Loading screen
         public displayLoadingUI(): void {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
-            this._loadingScreen.displayLoadingUI();
+            this.loadingScreen.displayLoadingUI();
         }
 
         public hideLoadingUI(): void {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
-            this._loadingScreen.hideLoadingUI();
+            this.loadingScreen.hideLoadingUI();
         }
 
         public get loadingScreen(): ILoadingScreen {
@@ -3374,18 +3372,15 @@
         }
 
         public set loadingScreen(loadingScreen: ILoadingScreen) {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             this._loadingScreen = loadingScreen;
         }
 
         public set loadingUIText(text: string) {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
-            this._loadingScreen.loadingUIText = text;
+            this.loadingScreen.loadingUIText = text;
         }
 
         public set loadingUIBackgroundColor(color: string) {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
-            this._loadingScreen.loadingUIBackgroundColor = color;
+            this.loadingScreen.loadingUIBackgroundColor = color;
         }
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
