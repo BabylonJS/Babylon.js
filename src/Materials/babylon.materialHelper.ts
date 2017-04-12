@@ -187,21 +187,16 @@
             return needNormals;
         }
 
-        public static PrepareUniformsAndSamplersList(uniformsList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
+        public static PrepareUniformsAndSamplersList(uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
                 }
 
                 uniformsList.push(
-                    "vLightData" + lightIndex,
-                    "vLightDiffuse" + lightIndex,
-                    "vLightSpecular" + lightIndex,
-                    "vLightDirection" + lightIndex,
-                    "vLightGround" + lightIndex,
-                    "lightMatrix" + lightIndex,
-                    "shadowsInfo" + lightIndex
+                    "lightMatrix" + lightIndex
                 );
+                uniformBuffersList.push("Light" + lightIndex);
 
                 samplersList.push("shadowSampler" + lightIndex);
             }

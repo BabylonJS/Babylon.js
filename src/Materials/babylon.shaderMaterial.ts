@@ -26,6 +26,7 @@
             options.needAlphaTesting = options.needAlphaTesting || false;
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
+            options.uniformBuffers = options.uniformBuffers || [];
             options.samplers = options.samplers || [];
             options.defines = options.defines || [];
 
@@ -208,6 +209,7 @@
             this._effect = engine.createEffect(this._shaderPath,
                 this._options.attributes,
                 this._options.uniforms,
+                this._options.uniformBuffers,
                 this._options.samplers,
                 join, fallbacks, this.onCompiled, this.onError);
 

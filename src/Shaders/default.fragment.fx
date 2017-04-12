@@ -2,7 +2,6 @@
 
 uniform Material
 {
-	
 	vec4 diffuseLeftColor;
 	vec4 diffuseRightColor;
 	vec4 opacityParts;
@@ -34,7 +33,7 @@ uniform Material
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
 	float pointSize;
-} uMaterial;
+};
 
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
@@ -161,10 +160,10 @@ void main(void) {
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
-	vec3 diffuseColor = uMaterial.vDiffuseColor.rgb;
+	vec3 diffuseColor = vDiffuseColor.rgb;
 
 	// Alpha
-	float alpha = uMaterial.vDiffuseColor.a;
+	float alpha = vDiffuseColor.a;
 
 	// Bump
 #ifdef NORMAL
@@ -191,7 +190,7 @@ void main(void) {
 	alpha *= baseColor.a;
 #endif
 
-	baseColor.rgb *= uMaterial.vDiffuseInfos.y;
+	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
 #ifdef VERTEXCOLOR
@@ -202,13 +201,13 @@ void main(void) {
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
-	baseAmbientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * uMaterial.vAmbientInfos.y;
+	baseAmbientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 #endif
 
 	// Specular map
 #ifdef SPECULARTERM
-	float glossiness = uMaterial.vSpecularColor.a;
-	vec3 specularColor = uMaterial.vSpecularColor.rgb;
+	float glossiness = vSpecularColor.a;
+	vec3 specularColor = vSpecularColor.rgb;
 
 #ifdef SPECULAR
 	vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
@@ -230,7 +229,7 @@ void main(void) {
 	float shadow = 1.;
 
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * uMaterial.vLightmapInfos.y;
+	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
@@ -239,23 +238,23 @@ void main(void) {
 	vec3 refractionColor = vec3(0., 0., 0.);
 
 #ifdef REFRACTION
-	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, uMaterial.vRefractionInfos.y));
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
 #ifdef REFRACTIONMAP_3D
 
-	refractionVector.y = refractionVector.y * uMaterial.vRefractionInfos.w;
+	refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
 	if (dot(refractionVector, viewDirectionW) < 1.0)
 	{
-		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * uMaterial.vRefractionInfos.x;
+		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * vRefractionInfos.x;
 	}
 #else
-	vec3 vRefractionUVW = vec3(uMaterial.refractionMatrix * (view * vec4(vPositionW + refractionVector * uMaterial.vRefractionInfos.z, 1.0)));
+	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
 
 	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
 
 	refractionCoords.y = 1.0 - refractionCoords.y;
 
-	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * uMaterial.vRefractionInfos.x;
+	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
 #endif
 #endif
 
@@ -267,7 +266,7 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_3D
 #ifdef ROUGHNESS
-	float bias = uMaterial.vReflectionInfos.y;
+	float bias = vReflectionInfos.y;
 
 #ifdef SPECULARTERM
 	#ifdef SPECULAR
@@ -277,9 +276,9 @@ void main(void) {
 	#endif
 #endif
 
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * uMaterial.vReflectionInfos.x;
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
 #else
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * uMaterial.vReflectionInfos.x;
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.x;
 #endif
 
 #else
@@ -291,28 +290,28 @@ void main(void) {
 
 	coords.y = 1.0 - coords.y;
 
-	reflectionColor = texture2D(reflection2DSampler, coords).rgb * uMaterial.vReflectionInfos.x;
+	reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
 #endif
 
 #ifdef REFLECTIONFRESNEL
-	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, uMaterial.reflectionRightColor.a, uMaterial.reflectionLeftColor.a);
+	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
 
 #ifdef REFLECTIONFRESNELFROMSPECULAR
 #ifdef SPECULARTERM
-	reflectionColor *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uMaterial.reflectionRightColor.rgb;
+	reflectionColor *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 #else
-	reflectionColor *= uMaterial.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uMaterial.reflectionRightColor.rgb;
+	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 #endif
 #else
-	reflectionColor *= uMaterial.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uMaterial.reflectionRightColor.rgb;
+	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 #endif
 #endif
 #endif
 
 #ifdef REFRACTIONFRESNEL
-	float refractionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, uMaterial.refractionRightColor.a, uMaterial.refractionLeftColor.a);
+	float refractionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, refractionRightColor.a, refractionLeftColor.a);
 
-	refractionColor *= uMaterial.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uMaterial.refractionRightColor.rgb;
+	refractionColor *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
 #endif
 
 #ifdef OPACITY
@@ -320,9 +319,9 @@ void main(void) {
 
 #ifdef OPACITYRGB
 	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* uMaterial.vOpacityInfos.y;
+	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
 #else
-	alpha *= opacityMap.a * uMaterial.vOpacityInfos.y;
+	alpha *= opacityMap.a * vOpacityInfos.y;
 #endif
 
 #endif
@@ -332,28 +331,28 @@ void main(void) {
 #endif
 
 #ifdef OPACITYFRESNEL
-	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, uMaterial.opacityParts.z, uMaterial.opacityParts.w);
+	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
 
-	alpha += uMaterial.opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * uMaterial.opacityParts.y;
+	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
 #endif
 
 	// Emissive
-	vec3 emissiveColor = uMaterial.vEmissiveColor;
+	vec3 emissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * uMaterial.vEmissiveInfos.y;
+	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL
-	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, uMaterial.emissiveRightColor.a, uMaterial.emissiveLeftColor.a);
+	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);
 
-	emissiveColor *= uMaterial.emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * uMaterial.emissiveRightColor.rgb;
+	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;
 #endif
 
 	// Fresnel
 #ifdef DIFFUSEFRESNEL
-	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, uMaterial.diffuseRightColor.a, uMaterial.diffuseLeftColor.a);
+	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);
 
-	diffuseBase *= uMaterial.diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * uMaterial.diffuseRightColor.rgb;
+	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;
 #endif
 
 	// Composition

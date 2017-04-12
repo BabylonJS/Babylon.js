@@ -298,6 +298,7 @@
                     "particles",
                     [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"],
                     ["invView", "view", "projection", "vClipPlane", "textureMask"],
+                    [],
                     ["diffuseSampler"], join);
             }
 

@@ -1112,10 +1112,12 @@
                 
                 ColorCurves.PrepareUniforms(uniforms); 
                 ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights); 
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, [], samplers, this._defines, this.maxSimultaneousLights); 
                 
                 this._effect = scene.getEngine().createEffect("pbr",
-                    attribs, uniforms, samplers,
+                    attribs, uniforms, 
+                    [],
+                    samplers,
                     join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: this._defines.NUM_MORPH_INFLUENCERS});
             }
             if (!this._effect.isReady()) {

@@ -1802,7 +1802,7 @@
             }
         }
 
-        public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
+        public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], uniformBuffers: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
@@ -1812,7 +1812,7 @@
                 return this._compiledEffects[name];
             }
 
-            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
+            var effect = new Effect(baseName, attributesNames, uniformsNames, uniformBuffers, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1829,6 +1829,7 @@
                 },
                 ["position", "color", "options"],
                 ["view", "projection"].concat(uniformsNames),
+                [],
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 

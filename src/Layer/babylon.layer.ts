@@ -95,11 +95,13 @@
             this._effect = engine.createEffect("layer",
                 [VertexBuffer.PositionKind],
                 ["textureMatrix", "color", "scale", "offset"],
+                [],
                 ["textureSampler"], "");
 
             this._alphaTestEffect = engine.createEffect("layer",
                 [VertexBuffer.PositionKind],
                 ["textureMatrix", "color", "scale", "offset"],
+                [],
                 ["textureSampler"], "#define ALPHATEST");
         }
 

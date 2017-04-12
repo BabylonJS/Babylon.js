@@ -133,6 +133,7 @@
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
                 ["position"],
                 this._parameters,
+                [],
                 this._samplers, defines !== undefined ? defines : "");
         }
 

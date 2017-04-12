@@ -188,6 +188,7 @@
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    [],
                     ["diffuseSampler"], join);
             }
 
