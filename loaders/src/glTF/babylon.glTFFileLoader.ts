@@ -594,7 +594,7 @@ module BABYLON {
                 tempVertexData.indices = new Int32Array(indices);
                 indexCounts.push(tempVertexData.indices.length);
             }
-            
+
             vertexData.merge(tempVertexData);
             tempVertexData = undefined;
 
@@ -956,7 +956,7 @@ module BABYLON {
                     if (material.occlusionTexture.strength !== undefined) {
                         material.babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
                     }
-                }, () => Tools.Warn("Failed to load normal texture"));
+                }, () => Tools.Warn("Failed to load occlusion texture"));
             }
 
             material.babylonMaterial.useEmissiveAsIllumination = (material.emissiveFactor || material.emissiveTexture) ? true : false;
@@ -964,7 +964,7 @@ module BABYLON {
             if (material.emissiveTexture) {
                 GLTFFileLoader.LoadTextureAsync(runtime, material.emissiveTexture, babylonTexture => {
                     material.babylonMaterial.emissiveTexture = babylonTexture;
-                }, () => Tools.Warn("Failed to load normal texture"));
+                }, () => Tools.Warn("Failed to load emissive texture"));
             }
 
             if (material.doubleSided) {
