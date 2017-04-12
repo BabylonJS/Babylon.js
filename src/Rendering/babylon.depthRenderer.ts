@@ -142,6 +142,7 @@
                 this._effect = this._scene.getEngine().createEffect("depth",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
+                    [],
                     ["diffuseSampler"], join);
             }
 

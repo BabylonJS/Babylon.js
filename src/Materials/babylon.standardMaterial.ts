@@ -699,17 +699,16 @@ module BABYLON {
                 }
 
                 var join = defines.toString();
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                    "vFogInfos", "vFogColor", "pointSize",
-                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                var uniforms = ["world", "view", "vEyePosition", "vLightsType",
+                    "vFogInfos", "vFogColor",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vClipPlane",
                     "depthValues",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+                var uniformBuffers = ["Material", "Scene"];
 
                 if (defines.CAMERACOLORCURVES) {
                     ColorCurves.PrepareUniforms(uniforms);
@@ -717,7 +716,7 @@ module BABYLON {
                 if (defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, uniformBuffers, samplers, defines, this._maxSimultaneousLights);
 
                 var onCompiled = function(effect) {
                     if (this.onCompiled) {
@@ -728,7 +727,7 @@ module BABYLON {
                 }.bind(this);
 
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms, samplers,
+                    attribs, uniforms, uniformBuffers, samplers,
                     join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }), defines);
 
                 this.buildUniformLayout();
@@ -782,6 +781,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("vDiffuseColor", 4);
             this._uniformBuffer.addUniform("pointSize", 1);
         }
+        
         public unbind(): void {
             if (this._activeEffect) {
                 if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {

@@ -2,7 +2,6 @@
 
 uniform Material
 {
-	
 	vec4 diffuseLeftColor;
 	vec4 diffuseRightColor;
 	vec4 opacityParts;
@@ -34,11 +33,11 @@ uniform Material
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
 	float pointSize;
-} uMaterial;
+};
 
 uniform Scene {
 	mat4 viewProjection;
-} uScene;
+};
 
 // Attributes
 attribute vec3 position;
@@ -140,7 +139,7 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
-	gl_Position = uScene.viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 	vPositionW = vec3(worldPos);
@@ -162,79 +161,79 @@ void main(void) {
 #endif
 
 #ifdef DIFFUSE
-	if (uMaterial.vDiffuseInfos.x == 0.)
+	if (vDiffuseInfos.x == 0.)
 	{
-		vDiffuseUV = vec2(uMaterial.diffuseMatrix * vec4(uv, 1.0, 0.0));
+		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vDiffuseUV = vec2(uMaterial.diffuseMatrix * vec4(uv2, 1.0, 0.0));
+		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #ifdef AMBIENT
-	if (uMaterial.vAmbientInfos.x == 0.)
+	if (vAmbientInfos.x == 0.)
 	{
-		vAmbientUV = vec2(uMaterial.ambientMatrix * vec4(uv, 1.0, 0.0));
+		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vAmbientUV = vec2(uMaterial.ambientMatrix * vec4(uv2, 1.0, 0.0));
+		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #ifdef OPACITY
-	if (uMaterial.vOpacityInfos.x == 0.)
+	if (vOpacityInfos.x == 0.)
 	{
-		vOpacityUV = vec2(uMaterial.opacityMatrix * vec4(uv, 1.0, 0.0));
+		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vOpacityUV = vec2(uMaterial.opacityMatrix * vec4(uv2, 1.0, 0.0));
+		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #ifdef EMISSIVE
-	if (uMaterial.vEmissiveInfos.x == 0.)
+	if (vEmissiveInfos.x == 0.)
 	{
-		vEmissiveUV = vec2(uMaterial.emissiveMatrix * vec4(uv, 1.0, 0.0));
+		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vEmissiveUV = vec2(uMaterial.emissiveMatrix * vec4(uv2, 1.0, 0.0));
+		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #ifdef LIGHTMAP
-	if (uMaterial.vLightmapInfos.x == 0.)
+	if (vLightmapInfos.x == 0.)
 	{
-		vLightmapUV = vec2(uMaterial.lightmapMatrix * vec4(uv, 1.0, 0.0));
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vLightmapUV = vec2(uMaterial.lightmapMatrix * vec4(uv2, 1.0, 0.0));
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
-	if (uMaterial.vSpecularInfos.x == 0.)
+	if (vSpecularInfos.x == 0.)
 	{
-		vSpecularUV = vec2(uMaterial.specularMatrix * vec4(uv, 1.0, 0.0));
+		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vSpecularUV = vec2(uMaterial.specularMatrix * vec4(uv2, 1.0, 0.0));
+		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
 #ifdef BUMP
-	if (uMaterial.vBumpInfos.x == 0.)
+	if (vBumpInfos.x == 0.)
 	{
-		vBumpUV = vec2(uMaterial.bumpMatrix * vec4(uv, 1.0, 0.0));
+		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));
 	}
 	else
 	{
-		vBumpUV = vec2(uMaterial.bumpMatrix * vec4(uv2, 1.0, 0.0));
+		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 

@@ -96,12 +96,11 @@
         private _program: WebGLProgram;
         private _valueCache: { [key: string]: any } = {};
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], uniformBuffers: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
-            // TODO
-            this._uniformBuffersNames = ["Material", "Light0", "Scene"];
+            this._uniformBuffersNames = uniformBuffers;
 
             this._uniformsNames = uniformsNames.concat(samplers);
             this._samplers = samplers;
