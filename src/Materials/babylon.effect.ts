@@ -490,24 +490,15 @@
         }
 
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
-            var changed = false;
-            var cache: Matrix = this._valueCache[uniformName];
-            if (!cache || !(cache instanceof Matrix)) {
-                changed = true;
-                cache = new Matrix();
+            var cache = this._valueCache[uniformName];
+            var flag = matrix.updateFlag;
+            if (cache !== undefined && cache === flag) {
+                return false;
             }
 
-            var tm = cache.m;
-            var om = matrix.m;
-            for (var index = 0; index < 16; index++) {
-                if (tm[index] !== om[index]) {
-                    tm[index] = om[index];
-                    changed = true;
-                }
-            }
+            this._valueCache[uniformName] = flag;
 
-            this._valueCache[uniformName] = cache;
-            return changed;
+            return true;
         }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): boolean {

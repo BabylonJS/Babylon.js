@@ -309,6 +309,13 @@
                         log += "\n\t\t" + mmat.toString(fullDetails);
                     }
                 }
+
+                // Morph targets
+                if (parsedData.morphTargetManagers) {
+                    for (var managerData of parsedData.morphTargetManagers) {
+                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
+                    }
+                }
     
                 // Skeletons
                 if (parsedData.skeletons) {

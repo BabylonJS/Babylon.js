@@ -10,6 +10,9 @@
         public _areFresnelDirty = true;
         public _areMiscDirty = true;    
 
+        public _normals = false;
+        public _uvs = false;
+
         public _needNormals = false;
         public _needUVs = false;
 
