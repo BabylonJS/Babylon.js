@@ -33,6 +33,15 @@
             this._isDirty = true;
         }
 
+        public markAllAsDirty() {
+            this._areTexturesDirty = true;
+            this._areAttributesDirty = true;
+            this._areLightsDirty = true;
+            this._areFresnelDirty = true;
+            this._areMiscDirty = true;
+            this._isDirty = true;
+        }
+
         public markAsLightDirty() {
             this._areLightsDirty = true;
             this._isDirty = true;

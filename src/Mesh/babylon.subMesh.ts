@@ -17,6 +17,7 @@
 
         public _materialDefines: MaterialDefines;
         private _materialEffect: Effect;
+        private _currentMaterial: Material;
 
         public get effect(): Effect {
             return this._materialEffect;
@@ -91,7 +92,16 @@
 
             if (rootMaterial && rootMaterial instanceof MultiMaterial) {
                 var multiMaterial = <MultiMaterial>rootMaterial;
-                return multiMaterial.getSubMaterial(this.materialIndex);
+                var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
+
+                if (this._currentMaterial !== effectiveMaterial) {
+                    this._currentMaterial = effectiveMaterial;
+                    if (this._materialDefines) {
+                        this._materialDefines.markAllAsDirty();
+                    }
+                }
+
+                return effectiveMaterial;
             }
 
             if (!rootMaterial) {
