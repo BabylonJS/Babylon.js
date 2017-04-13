@@ -699,11 +699,13 @@ module BABYLON {
                 }
 
                 var join = defines.toString();
-                var uniforms = ["world", "view", "vEyePosition", "vLightsType",
-                    "vFogInfos", "vFogColor",
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
-                    "vClipPlane",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "depthValues",
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
                 ];
 
@@ -817,7 +819,8 @@ module BABYLON {
             if (this._mustRebind(scene, effect)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 
-                if (!this.isFrozen || !this._uniformBuffer.isSync) {
+                this.bindViewProjection(effect);
+                if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
                     if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                         // Fresnel

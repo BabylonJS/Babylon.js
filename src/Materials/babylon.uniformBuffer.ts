@@ -30,13 +30,10 @@ module BABYLON {
             this._uniformLocationPointer = 0;
             this._needSync = false;
 
-            if (this._noUbo) {
-                this._backPort();
-            }
         }
 
-        private _backPort(): void {
-            
+        public get useUbo(): boolean {
+            return !this._noUbo;
         }
         
         public get isSync(): boolean {
@@ -154,6 +151,9 @@ module BABYLON {
         }
 
         public create(): void {
+            if (this._noUbo) {
+                return;
+            }
             if (this._buffer) {
                 return; // nothing to do
             }
@@ -222,7 +222,9 @@ module BABYLON {
 
         public updateFloat(name: string, x: number) {
             if (this._noUbo) {
-                this._currentEffect.setFloat(name, x);
+                if (this._currentEffect) {
+                    this._currentEffect.setFloat(name, x);
+                }
                 return;
             }
 
@@ -232,7 +234,9 @@ module BABYLON {
 
         public updateFloat2(name: string, x: number, y: number) {
             if (this._noUbo) {
-                this._currentEffect.setFloat2(name, x, y);
+                if (this._currentEffect) {
+                    this._currentEffect.setFloat2(name, x, y);
+                }
                 return;
             }
 
@@ -243,7 +247,9 @@ module BABYLON {
 
         public updateFloat3(name: string, x: number, y: number, z: number) {
             if (this._noUbo) {
-                this._currentEffect.setFloat3(name, x, y, z);
+                if (this._currentEffect) {
+                    this._currentEffect.setFloat3(name, x, y, z);
+                }
                 return;
             }
 
@@ -255,7 +261,9 @@ module BABYLON {
 
         public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
             if (this._noUbo) {
-                this._currentEffect.setFloat4(name, x, y, z, w);
+                if (this._currentEffect) {
+                    this._currentEffect.setFloat4(name, x, y, z, w);
+                }
                 return;
             }
 
@@ -268,7 +276,9 @@ module BABYLON {
 
         public updateMatrix(name: string, mat: Matrix) {
             if (this._noUbo) {
-                this._currentEffect.setMatrix(name, mat);
+                if (this._currentEffect) {
+                    this._currentEffect.setMatrix(name, mat);
+                }
                 return;
             }
 
@@ -277,7 +287,9 @@ module BABYLON {
 
         public updateVector3(name: string, vector: Vector3) {
             if (this._noUbo) {
-                this._currentEffect.setVector3(name, vector);
+                if (this._currentEffect) {
+                    this._currentEffect.setVector3(name, vector);
+                }
                 return;
             }
             vector.toArray(_tempBuffer);
@@ -286,7 +298,9 @@ module BABYLON {
 
         public updateColor3(name: string, color: Color3) {
             if (this._noUbo) {
-                this._currentEffect.setColor3(name, color);
+                if (this._currentEffect) {
+                    this._currentEffect.setColor3(name, color);
+                }
                 return;
             }
             color.toArray(_tempBuffer);
@@ -295,7 +309,9 @@ module BABYLON {
 
         public updateColor4(name: string, color: Color3, alpha: number) {
             if (this._noUbo) {
-                this._currentEffect.setColor4(name, color, alpha);
+                if (this._currentEffect) {
+                    this._currentEffect.setColor4(name, color, alpha);
+                }
                 return;
             }
             color.toArray(_tempBuffer);
@@ -311,6 +327,11 @@ module BABYLON {
 
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
+
+            if (this._noUbo) {
+                return;
+            }
+            
             effect.bindUniformBuffer(this._buffer, name);
         }
 

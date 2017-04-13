@@ -36,16 +36,6 @@ uniform vec3 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-// Output
-varying vec3 vPositionW;
-#ifdef NORMAL
-varying vec3 vNormalW;
-#endif
-
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#endif
-
 #ifdef POINTSIZE
 	uniform float pointSize;
 #endif

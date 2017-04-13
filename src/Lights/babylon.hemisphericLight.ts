@@ -51,14 +51,16 @@
          * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).  
          * Returns the HemisphericLight.  
          */
-        public transferToEffect(effect: Effect): HemisphericLight {
+        public transferToEffect(effect: Effect, lightIndex: number): HemisphericLight {
+            var useUbo = this._uniformBuffer.useUbo;
+
             var normalizeDirection = Vector3.Normalize(this.direction);
-            this._uniformBuffer.updateFloat4("vLightData",
+            this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex,
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,
                 0.0);
-            this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity));
+            this._uniformBuffer.updateColor3(useUbo ? "vLightGround" : "vLightGround" + lightIndex, this.groundColor.scale(this.intensity));
             return this;
         }
 

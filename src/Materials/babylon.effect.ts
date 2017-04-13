@@ -378,9 +378,21 @@
                             }
 
                             for (var i = minIndex; i < maxIndex; i++) {
+                                if (this._engine.webGLVersion === 1) {
+                                    // Ubo replacement
+                                    sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                        return p1 + "{X}";
+                                    });
+                                }
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {
+                            if (this._engine.webGLVersion === 1) {
+                                // Ubo replacement
+                                sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    return p1 + "{X}";
+                                });
+                            }
                             includeContent = includeContent.replace(/\{X\}/g, indexString);
                         }
                     }
