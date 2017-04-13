@@ -289,6 +289,7 @@
                 Tools.Error("Fragment shader:" + this.name);
             }
         }
+
         private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
 
             var preparedSourceCode = this._processPrecision(sourceCode);
@@ -337,6 +338,16 @@
 
             while (match != null) {
                 var includeFile = match[1];
+
+                // Uniform declaration
+                if (includeFile.indexOf("__decl__") !== -1) {
+                    includeFile = includeFile.replace(/__decl__/, "");
+                    if (this._engine.webGLVersion != 1) {
+                        includeFile = includeFile.replace(/Vertex/, "Ubo");
+                        includeFile = includeFile.replace(/Fragment/, "Ubo");
+                    }
+                    includeFile = includeFile + "Declaration";
+                }
 
                 if (Effect.IncludesShadersStore[includeFile]) {
                     // Substitution
