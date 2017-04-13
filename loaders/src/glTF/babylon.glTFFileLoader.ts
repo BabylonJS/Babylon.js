@@ -198,14 +198,21 @@ module BABYLON {
             if (!version) {
                 return null;
             }
-            
+
             var parts = version.split(".");
-            if (parts.length != 2) {
+            if (parts.length === 0) {
                 return null;
             }
 
+            var major = parseInt(parts[0]);
+            if (major > 1 && parts.length != 2) {
+                return null;
+            }
+
+            var minor = parseInt(parts[1]);
+
             return {
-                major: parseInt(parts[0]),
+                major: major,
                 minor: parseInt(parts[0])
             };
         }
