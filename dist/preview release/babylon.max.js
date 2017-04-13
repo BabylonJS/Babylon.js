@@ -8362,8 +8362,6 @@ var BABYLON;
             if (options.audioEngine && BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
             }
-            //default loading screen
-            this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
             //Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
@@ -9463,14 +9461,14 @@ var BABYLON;
                 }
             }
         };
-        Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, fallbacks, onCompiled, onError, indexParameters) {
+        Engine.prototype.createEffect = function (baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, defines, fallbacks, onCompiled, onError, indexParameters) {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
-            var name = vertex + "+" + fragment + "@" + defines;
+            var name = vertex + "+" + fragment + "@" + (defines ? defines : attributesNamesOrOptions.defines);
             if (this._compiledEffects[name]) {
                 return this._compiledEffects[name];
             }
-            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
+            var effect = new BABYLON.Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
             return effect;
@@ -10797,13 +10795,15 @@ var BABYLON;
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
-            this._loadingScreen.displayLoadingUI();
+            this.loadingScreen.displayLoadingUI();
         };
         Engine.prototype.hideLoadingUI = function () {
-            this._loadingScreen.hideLoadingUI();
+            this.loadingScreen.hideLoadingUI();
         };
         Object.defineProperty(Engine.prototype, "loadingScreen", {
             get: function () {
+                if (!this._loadingScreen)
+                    this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
                 return this._loadingScreen;
             },
             set: function (loadingScreen) {
@@ -10814,14 +10814,14 @@ var BABYLON;
         });
         Object.defineProperty(Engine.prototype, "loadingUIText", {
             set: function (text) {
-                this._loadingScreen.loadingUIText = text;
+                this.loadingScreen.loadingUIText = text;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Engine.prototype, "loadingUIBackgroundColor", {
             set: function (color) {
-                this._loadingScreen.loadingUIBackgroundColor = color;
+                this.loadingScreen.loadingUIBackgroundColor = color;
             },
             enumerable: true,
             configurable: true
@@ -26918,7 +26918,7 @@ var BABYLON;
          */
         SubMesh.prototype.getMaterial = function () {
             var rootMaterial = this._renderingMesh.material;
-            if (rootMaterial && rootMaterial instanceof BABYLON.MultiMaterial) {
+            if (rootMaterial && rootMaterial.getSubMaterial) {
                 var multiMaterial = rootMaterial;
                 var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
                 if (this._currentMaterial !== effectiveMaterial) {
@@ -30089,22 +30089,43 @@ var BABYLON;
         return EffectFallbacks;
     }());
     BABYLON.EffectFallbacks = EffectFallbacks;
+    var EffectCreationOptions = (function () {
+        function EffectCreationOptions() {
+        }
+        return EffectCreationOptions;
+    }());
+    BABYLON.EffectCreationOptions = EffectCreationOptions;
     var Effect = (function () {
-        function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
+        function Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
             var _this = this;
             this.uniqueId = 0;
             this._isReady = false;
             this._compilationError = "";
             this._valueCache = {};
-            this._engine = engine;
             this.name = baseName;
-            this.defines = defines;
-            this._uniformsNames = uniformsNames.concat(samplers);
-            this._samplers = samplers;
-            this._attributesNames = attributesNames;
-            this.onError = onError;
-            this.onCompiled = onCompiled;
-            this._indexParameters = indexParameters;
+            if (attributesNamesOrOptions.attributes) {
+                var options = attributesNamesOrOptions;
+                this._engine = uniformsNamesOrEngine;
+                this._attributesNames = options.attributes;
+                this._uniformsNames = options.uniformsNames.concat(options.samplers);
+                this._samplers = options.samplers;
+                this.defines = options.defines;
+                this.onError = options.onError;
+                this.onCompiled = options.onCompiled;
+                this._fallbacks = options.fallbacks;
+                this._indexParameters = options.indexParameters;
+            }
+            else {
+                this._engine = engine;
+                this.defines = defines;
+                this._uniformsNames = uniformsNamesOrEngine.concat(samplers);
+                this._samplers = samplers;
+                this._attributesNames = attributesNamesOrOptions;
+                this.onError = onError;
+                this.onCompiled = onCompiled;
+                this._indexParameters = indexParameters;
+                this._fallbacks = fallbacks;
+            }
             this.uniqueId = Effect._uniqueIdSeed++;
             var vertexSource;
             var fragmentSource;
@@ -30132,7 +30153,7 @@ var BABYLON;
                         _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
                             _this._processIncludes(fragmentCode, function (fragmentCodeWithIncludes) {
                                 _this._processShaderConversion(fragmentCodeWithIncludes, true, function (migratedFragmentCode) {
-                                    _this._prepareEffect(migratedVertexCode, migratedFragmentCode, attributesNames, defines, fallbacks);
+                                    _this._prepareEffect(migratedVertexCode, migratedFragmentCode, _this._attributesNames, _this.defines, _this._fallbacks);
                                 });
                             });
                         });
@@ -30862,13 +30883,13 @@ var BABYLON;
                     defines["POINTLIGHT" + lightIndex] = false;
                     defines["DIRLIGHT" + lightIndex] = false;
                     var type;
-                    if (light instanceof BABYLON.SpotLight) {
+                    if (light.getTypeID() === 2) {
                         type = "SPOTLIGHT" + lightIndex;
                     }
-                    else if (light instanceof BABYLON.HemisphericLight) {
+                    else if (light.getTypeID() === 3) {
                         type = "HEMILIGHT" + lightIndex;
                     }
-                    else if (light instanceof BABYLON.PointLight) {
+                    else if (light.getTypeID() === 0) {
                         type = "POINTLIGHT" + lightIndex;
                     }
                     else {
@@ -31020,19 +31041,19 @@ var BABYLON;
             return depthValuesAlreadySet;
         };
         MaterialHelper.BindLightProperties = function (light, effect, lightIndex) {
-            if (light instanceof BABYLON.PointLight) {
+            if (light.getTypeID() === 0) {
                 // Point Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
             }
-            else if (light instanceof BABYLON.DirectionalLight) {
+            else if (light.getTypeID() === 1) {
                 // Directional Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
             }
-            else if (light instanceof BABYLON.SpotLight) {
+            else if (light.getTypeID() === 2) {
                 // Spot Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
             }
-            else if (light instanceof BABYLON.HemisphericLight) {
+            else if (light.getTypeID() === 3) {
                 // Hemispheric Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
             }
@@ -32286,7 +32307,16 @@ var BABYLON;
                     BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }), defines);
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
+                }, engine), defines);
             }
             if (!subMesh.effect.isReady()) {
                 return false;
@@ -42720,7 +42750,7 @@ var BABYLON;
             }
             // applyToMesh
             if (mesh) {
-                if (mesh instanceof BABYLON.LinesMesh) {
+                if (mesh.getClassName() === "LinesMesh") {
                     this.boundingBias = new BABYLON.Vector2(0, mesh.intersectionThreshold);
                     this.updateExtend();
                 }
