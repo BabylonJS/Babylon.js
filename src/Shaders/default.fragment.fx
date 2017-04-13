@@ -1,40 +1,4 @@
-﻿layout(std140, column_major) uniform;
-
-uniform Material
-{
-	vec4 diffuseLeftColor;
-	vec4 diffuseRightColor;
-	vec4 opacityParts;
-	vec4 reflectionLeftColor;
-	vec4 reflectionRightColor;
-	vec4 refractionLeftColor;
-	vec4 refractionRightColor;
-	vec4 emissiveLeftColor;
-	vec4 emissiveRightColor;
-	vec2 vDiffuseInfos;
-	vec2 vAmbientInfos;
-	vec2 vOpacityInfos;
-	vec2 vReflectionInfos;
-	vec2 vEmissiveInfos;
-	vec2 vLightmapInfos;
-	vec2 vSpecularInfos;
-	vec3 vBumpInfos;
-	mat4 diffuseMatrix;
-	mat4 ambientMatrix;
-	mat4 opacityMatrix;
-	mat4 reflectionMatrix;
-	mat4 emissiveMatrix;
-	mat4 lightmapMatrix;
-	mat4 specularMatrix;
-	mat4 bumpMatrix;
-	mat4 refractionMatrix;
-	vec4 vRefractionInfos;
-	vec4 vSpecularColor;
-	vec3 vEmissiveColor;
-	vec4 vDiffuseColor;
-	float pointSize;
-};
-
+﻿#include<__decl__defaultFragment>
 
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
@@ -65,7 +29,7 @@ varying vec4 vColor;
 #include<helperFunctions>
 
 // Lights
-#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
