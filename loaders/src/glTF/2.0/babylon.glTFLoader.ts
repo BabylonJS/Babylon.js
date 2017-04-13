@@ -535,20 +535,8 @@ module BABYLON.GLTF2 {
                     (<Float32Array>tempVertexData.normals).set(buffer);
                 }
                 else if (semantic === "POSITION") {
-                    if (BABYLON.GLTFFileLoader.HomogeneousCoordinates) {
-                        tempVertexData.positions = new Float32Array(buffer.length - buffer.length / 4);
-
-                        for (var j = 0; j < buffer.length; j += 4) {
-                            tempVertexData.positions[j] = buffer[j];
-                            tempVertexData.positions[j + 1] = buffer[j + 1];
-                            tempVertexData.positions[j + 2] = buffer[j + 2];
-                        }
-                    }
-                    else {
-                        tempVertexData.positions = new Float32Array(buffer.length);
-                        (<Float32Array>tempVertexData.positions).set(buffer);
-                    }
-
+                    tempVertexData.positions = new Float32Array(buffer.length);
+                    (<Float32Array>tempVertexData.positions).set(buffer);
                     verticesCounts.push(tempVertexData.positions.length);
                 }
                 else if (semantic === "TANGENT") {
