@@ -932,7 +932,7 @@ module BABYLON.GLTF2 {
             if (material.occlusionTexture) {
                 GLTFLoader.LoadTextureAsync(runtime, material.occlusionTexture, babylonTexture => {
                     material.babylonMaterial.ambientTexture = babylonTexture;
-                    material.babylonMaterial.useAmbientOcclusionFromMetallicTextureRed = true;
+                    material.babylonMaterial.useAmbientInGrayScale = true;
                     if (material.occlusionTexture.strength !== undefined) {
                         material.babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
                     }
