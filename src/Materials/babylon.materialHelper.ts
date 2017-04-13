@@ -33,10 +33,13 @@
         }
 
         public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): void {
-            if (!defines._areAttributesDirty) {
+            if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return;
             }               
 
+            defines._normals = defines._needNormals;
+            defines._uvs = defines._needUVs;
+            
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
             if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
@@ -108,11 +111,11 @@
                     defines["DIRLIGHT" + lightIndex] = false;
 
                     var type;
-                    if (light instanceof SpotLight) {
+                    if (light.getTypeID() === 2) {
                         type = "SPOTLIGHT" + lightIndex;
-                    } else if (light instanceof HemisphericLight) {
+                    } else if (light.getTypeID() === 3) {
                         type = "HEMILIGHT" + lightIndex;
-                    } else if (light instanceof PointLight) {
+                    } else if (light.getTypeID() === 0) {
                         type = "POINTLIGHT" + lightIndex;
                     } else {
                         type = "DIRLIGHT" + lightIndex;
@@ -302,16 +305,16 @@
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-            if (light instanceof PointLight) {
+            if (light.getTypeID() === 0) {
                 // Point Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light instanceof DirectionalLight) {
+            } else if (light.getTypeID() === 1) {
                 // Directional Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light instanceof SpotLight) {
+            } else if (light.getTypeID() === 2) {
                 // Spot Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-            } else if (light instanceof HemisphericLight) {
+            } else if (light.getTypeID() === 3) {
                 // Hemispheric Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
             }

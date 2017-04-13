@@ -148,6 +148,16 @@
                 serializationObject.metadata = scene.metadata;
             }
 
+            // Morph targets
+            serializationObject.morphTargetManagers = [];
+            for (var abstractMesh of scene.meshes) {
+                var manager = (<Mesh>abstractMesh).morphTargetManager;
+                
+                if (manager) {
+                    serializationObject.morphTargetManagers.push(manager.serialize());
+                }
+            }            
+
             // Lights
             serializationObject.lights = [];
             var index: number;

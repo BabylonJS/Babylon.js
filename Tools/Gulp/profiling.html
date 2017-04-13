@@ -3,26 +3,29 @@
     <title>Customize BJS for a specific Scene</title>
     <meta charset="UTF-8">
     <script src="../../dist/preview release/babylon.js"></script>
+    <style>
+    input.path {width:600px;}
+    input.filename {width:200px;}
+    em {color:red;}
+    </style>
     
 </head>
 <body onload="readConfigFile()">
 Obtain a FireFox performance file by:
 <ol>
 	<li>Make sure scene uses Babylon MAX.</li>
-	<li>Load the scene.</li>
-	<li>Turn on performance profiling.</li>
-	<li>Reload the scene (very important if code like sceneLoader runs on page load).</li>
+	<li>Add the temporary Javascript line <em>window.alert('Turn on Performance Recording')</em> just prior to Engine Instancing line.
+	<li>Load the scene, turn on performance profiling, &amp; click ok to the temporary alert.</li>
 	<li>Do anything that might call code in babylon.js not yet encountered.</li>
 	<li>Stop recording, and save the data as a file.</li>
 </ol>
 On this page:
 <ol>
 	<li>Select File with 'Browse' button below, and pick the file saved from above.</li>
-	<li>Make any changes of name to babylon file names.</li>
-	<li>Click Generate.</li>
+	<li>Make any changes of name to babylon file names &amp; directory..</li>
+	<li>Click Generate. Tip: change Firefox Option for Downloads to <em>Always ask me where to save files</em> to avoid having to move custom config to Gulp Directory.</li>
 	<li>Copy the 'custom.cofig.json' file generated in Downloads directory to the Gulp directory.</li>
-	<li>run: 'Gulp build-custom'</li>
-	<li>Copy generated scripts from dist/preview lease to where needed, and test.  Tip: test with the max version</li>
+	<li>Run: 'Gulp build-custom' then test with scene.  Tip: test with the max version generated.</li>
 	<li>If need stuff did not get recorded in performance file, then select file(s) &amp; click Generate again.</li>
 </ol>
 	<form>
@@ -32,11 +35,12 @@ On this page:
 		
 		<label>Profiling file: <input type="file" id="upload_file" name="upload" accept="text/*" multiple="" onchange="assignProfile(this.files[0])"/></label><br><br>
 		
-		Filename: <input type="text" id="filename" maxlength="32" value="babylon.custom.max.js">         
-		minFilename: <input type="text" id="minFilename" maxlength="32" value="babylon.custom.js"><br>         
+		Output Directory: <input class="path"     type="text" id="directory"   maxlength="256" value="C:/"> (clear for default of <em>../../dist/preview release</em>)<br>
+		Filename:         <input class="filename" type="text" id="filename"    maxlength="32"  value="babylon.custom.max.js">         
+		minFilename:      <input class="filename" type="text" id="minFilename" maxlength="32"  value="babylon.custom.js"><br>         
         Files Not In Recording: (Select those to still keep)
-			<input type="button" value="Generate" onclick="generate()"><br>
-        <select id="discards" multiple size="30">
+			<input type="button" value="Generate Custom Config" onclick="generate()"><br>
+        <select id="discards" multiple size="50">
         </select>
 
 	</form>
@@ -75,22 +79,15 @@ On this page:
                         	var name = fileNames[i].match(reg)[0].substring(8);  // remove the babylon.
                         	files[i] = [false, fileNames[i], name];
                         }
-						appendSecondarySearches("math.js", "mathtools|color3|color4|vector2|vector3|vector4|size|quaternion|matrix|plane|viewport|frustum|bezierCurve"); // got tired
+						appendSecondarySearches("math.js", "mathtools|color3|color4|vector2|vector3|vector4|size|quaternion|matrix|plane|viewport|frustum|space|axis|bezierCurve|orientation|angle|arc2|path2|path3d|curve3|sphericalHarmonics|mathTmp");
 
 						// force stuff to always be added
 						appendSecondarySearches("decorators.js", "engine"); //needed for Serialize
 						appendSecondarySearches("stringDictionary.js", "engine"); //needed in Engine Constructor
-						appendSecondarySearches("loadingScreen.js", "engine"); //needed in Engine Constructor		
 						appendSecondarySearches("postProcessRenderPipelineManager.js", "scene"); //needed in Scene Constructor		
 						appendSecondarySearches("boundingBoxRenderer.js", "scene"); //needed in Scene Constructor		
 						appendSecondarySearches("collisionCoordinator.js", "scene"); //needed in Scene Constructor, from a called set of this.workerCollisions = false;
 						appendSecondarySearches("collider.js", "abstractMesh"); // needed in abstractMesh constructor
-						appendSecondarySearches("linesMesh.js", "geometry"); // needed in geometry constructor
-						appendSecondarySearches("multiMaterial.js", "subMesh"); // needed in subMesh.getMaterial()
-						appendSecondarySearches("pointLight.js", "subMesh"); // needed in MaterialHelper.PrepareDefinesForLights
-						appendSecondarySearches("spotLight.js", "subMesh"); // needed in MaterialHelper.PrepareDefinesForLights
-						appendSecondarySearches("hemisphericLight.js", "subMesh"); // needed in MaterialHelper.PrepareDefinesForLights
-						appendSecondarySearches("directionalLight.js", "subMesh"); // needed in MaterialHelper.PrepareDefinesForLights
 						appendSecondarySearches("videoTexture.js", "engine"); //needed in Engine._setTexture()	
 						
 						// there should always some detection of FreeCamera or ArcRotateCamera, but maybe not all inputs got recorded
@@ -191,14 +188,17 @@ On this page:
                 }
 			}
 
+			var directory   = document.getElementById("directory"  ).value;
 			var filename    = document.getElementById("filename"   ).value;
 			var minFilename = document.getElementById("minFilename").value;
+			
+			if (directory.length === 0) directory = "../../dist/preview release";
 	    	var out = '';
 	    	out += '{\n';
 	    	out += '  "build": {\n';
 	    	out += '	    "filename": "' + filename + '",\n';
 	    	out += '	    "minFilename": "' + minFilename + '",\n';
-	    	out += '	    "outputDirectory": "../../dist/preview release",\n';
+	    	out += '	    "outputDirectory":  "' + directory + '",\n';
 	    	out += '	    "srcOutputDirectory": "../../src/"\n';
 	    	out += '	  },\n';
 	    	out += '	  "core": {\n';

@@ -779,9 +779,6 @@
                 Engine.audioEngine = new AudioEngine();
             }
 
-            //default loading screen
-            this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
-
             //Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
@@ -3362,14 +3359,15 @@
 
         // Loading screen
         public displayLoadingUI(): void {
-            this._loadingScreen.displayLoadingUI();
+            this.loadingScreen.displayLoadingUI();
         }
 
         public hideLoadingUI(): void {
-            this._loadingScreen.hideLoadingUI();
+            this.loadingScreen.hideLoadingUI();
         }
 
         public get loadingScreen(): ILoadingScreen {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
 
@@ -3378,11 +3376,11 @@
         }
 
         public set loadingUIText(text: string) {
-            this._loadingScreen.loadingUIText = text;
+            this.loadingScreen.loadingUIText = text;
         }
 
         public set loadingUIBackgroundColor(color: string) {
-            this._loadingScreen.loadingUIBackgroundColor = color;
+            this.loadingScreen.loadingUIBackgroundColor = color;
         }
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
