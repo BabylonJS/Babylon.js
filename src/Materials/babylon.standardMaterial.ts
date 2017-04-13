@@ -780,6 +780,8 @@ module BABYLON {
             this._uniformBuffer.addUniform("vEmissiveColor", 3);
             this._uniformBuffer.addUniform("vDiffuseColor", 4);
             this._uniformBuffer.addUniform("pointSize", 1);
+
+            this._uniformBuffer.create();
         }
 
         public unbind(): void {
@@ -813,6 +815,8 @@ module BABYLON {
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
+                this._uniformBuffer.bindToEffect(effect, "Material");
+                
                 if (!this.isFrozen || !this._uniformBuffer.isSync) {
 
                     if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
@@ -907,8 +911,6 @@ module BABYLON {
                     }
                     this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
                 }
-
-                effect.bindUniformBuffer(this._uniformBuffer.getBuffer(), "Material");
                 
                 // Textures     
                 if (scene.texturesEnabled) {

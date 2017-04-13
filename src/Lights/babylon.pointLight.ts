@@ -33,6 +33,7 @@
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.create();
         }
 
         /**

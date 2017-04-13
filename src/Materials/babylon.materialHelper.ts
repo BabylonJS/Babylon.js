@@ -308,6 +308,7 @@
             var depthValuesAlreadySet = false;
 
             for (var light of mesh._lightSources) {
+                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
@@ -323,7 +324,6 @@
                     depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 light._uniformBuffer.update();
-                effect.bindUniformBuffer(light._uniformBuffer.getBuffer(), "Light" + lightIndex);
                 lightIndex++;
 
                 if (lightIndex === maxSimultaneousLights)

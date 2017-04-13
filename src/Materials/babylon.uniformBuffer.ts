@@ -15,10 +15,12 @@ module BABYLON {
         private _uniformLocationPointer: number;
         private _needSync: boolean;
         private _cache: Float32Array;
+        private _noUbo: boolean;
+        private _currentEffect: Effect;
 
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
-
+            this._noUbo = engine.webGLVersion === 1;
             this._dynamic = dynamic;
 
             this._data = data || [];
@@ -27,8 +29,16 @@ module BABYLON {
             this._uniformSizes = {};
             this._uniformLocationPointer = 0;
             this._needSync = false;
+
+            if (this._noUbo) {
+                this._backPort();
+            }
         }
 
+        private _backPort(): void {
+            
+        }
+        
         public get isSync(): boolean {
             return !this._needSync;
         }
@@ -72,6 +82,10 @@ module BABYLON {
         }
 
         public addUniform(name: string, size: number | number[]) {
+            if (this._noUbo) {
+                return;
+            }
+
             if (this._uniformLocations[name] !== undefined) {
                 // Already existing uniform
                 return;
@@ -152,7 +166,7 @@ module BABYLON {
                 this._buffer = this._engine.createUniformBuffer(this._bufferData);
             }
 
-            this._needSync = false;
+            this._needSync = true;
         } 
 
         public update(): void {
@@ -207,17 +221,32 @@ module BABYLON {
         }
 
         public updateFloat(name: string, x: number) {
+            if (this._noUbo) {
+                this._currentEffect.setFloat(name, x);
+                return;
+            }
+
             _tempBuffer[0] = x;
             this.updateUniform(name, _tempBuffer, 1);
         }
 
         public updateFloat2(name: string, x: number, y: number) {
+            if (this._noUbo) {
+                this._currentEffect.setFloat2(name, x, y);
+                return;
+            }
+
             _tempBuffer[0] = x;
             _tempBuffer[1] = y;
             this.updateUniform(name, _tempBuffer, 2);
         }
 
         public updateFloat3(name: string, x: number, y: number, z: number) {
+            if (this._noUbo) {
+                this._currentEffect.setFloat3(name, x, y, z);
+                return;
+            }
+
             _tempBuffer[0] = x;
             _tempBuffer[1] = y;
             _tempBuffer[2] = z;
@@ -225,6 +254,11 @@ module BABYLON {
         }
 
         public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
+            if (this._noUbo) {
+                this._currentEffect.setFloat4(name, x, y, z, w);
+                return;
+            }
+
             _tempBuffer[0] = x;
             _tempBuffer[1] = y;
             _tempBuffer[2] = z;
@@ -233,20 +267,37 @@ module BABYLON {
         }
 
         public updateMatrix(name: string, mat: Matrix) {
+            if (this._noUbo) {
+                this._currentEffect.setMatrix(name, mat);
+                return;
+            }
+
             this.updateUniform(name, mat.toArray(), 16);
         }
 
         public updateVector3(name: string, vector: Vector3) {
+            if (this._noUbo) {
+                this._currentEffect.setVector3(name, vector);
+                return;
+            }
             vector.toArray(_tempBuffer);
             this.updateUniform(name, _tempBuffer, 3);
         }
 
         public updateColor3(name: string, color: Color3) {
+            if (this._noUbo) {
+                this._currentEffect.setColor3(name, color);
+                return;
+            }
             color.toArray(_tempBuffer);
             this.updateUniform(name, _tempBuffer, 3);
         }
 
         public updateColor4(name: string, color: Color3, alpha: number) {
+            if (this._noUbo) {
+                this._currentEffect.setColor4(name, color, alpha);
+                return;
+            }
             color.toArray(_tempBuffer);
             _tempBuffer[3] = alpha;
             this.updateUniform(name, _tempBuffer, 4);
@@ -256,6 +307,11 @@ module BABYLON {
             this.updateUniform(uniformName, data, data.length);
 
             this.update();
+        }
+
+        public bindToEffect(effect: Effect, name: string): void {
+            this._currentEffect = effect;
+            effect.bindUniformBuffer(this._buffer, name);
         }
 
         public dispose(): void {
