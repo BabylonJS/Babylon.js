@@ -338,7 +338,6 @@
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var center = impostor.getObjectCenter();
-            var extendSize = impostor.getObjectExtendSize();
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;

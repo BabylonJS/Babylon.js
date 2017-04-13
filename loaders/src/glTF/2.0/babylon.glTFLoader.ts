@@ -911,7 +911,7 @@ module BABYLON.GLTF2 {
                 GLTFLoader.LoadTextureAsync(runtime, properties.metallicRoughnessTexture,
                     texture => {
                         material.babylonMaterial.metallicTexture = texture;
-                        material.babylonMaterial.useMetallicFromMetallicTextureBlue = true;
+                        material.babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                         material.babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
                         material.babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
                     },
@@ -934,7 +934,7 @@ module BABYLON.GLTF2 {
             if (material.occlusionTexture) {
                 GLTFLoader.LoadTextureAsync(runtime, material.occlusionTexture, babylonTexture => {
                     material.babylonMaterial.ambientTexture = babylonTexture;
-                    material.babylonMaterial.useAmbientFromAmbientTextureRed = true;
+                    material.babylonMaterial.useAmbientOcclusionFromMetallicTextureRed = true;
                     if (material.occlusionTexture.strength !== undefined) {
                         material.babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
                     }

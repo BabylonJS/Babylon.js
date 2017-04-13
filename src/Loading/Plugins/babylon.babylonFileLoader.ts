@@ -191,6 +191,7 @@
                         }
                     }
                 }
+
                 return true;
 
             } catch (err) {
@@ -306,6 +307,13 @@
                         var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                         log += (index === 0 ? "\n\tMultiMaterials:" : "");
                         log += "\n\t\t" + mmat.toString(fullDetails);
+                    }
+                }
+
+                // Morph targets
+                if (parsedData.morphTargetManagers) {
+                    for (var managerData of parsedData.morphTargetManagers) {
+                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
                     }
                 }
     
@@ -499,6 +507,36 @@
                     for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
                         ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                    }
+                }
+                
+                // Lights exclusions / inclusions
+                for (index = 0, cache = scene.lights.length; index < cache; index++) {
+                    var light = scene.lights[index];
+                    // Excluded check
+                    if (light._excludedMeshesIds.length > 0) {
+                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
+                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
+
+                            if (excludedMesh) {
+                                light.excludedMeshes.push(excludedMesh);
+                            }
+                        }
+
+                        light._excludedMeshesIds = [];
+                    }
+
+                    // Included check
+                    if (light._includedOnlyMeshesIds.length > 0) {
+                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
+                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
+
+                            if (includedOnlyMesh) {
+                                light.includedOnlyMeshes.push(includedOnlyMesh);
+                            }
+                        }
+
+                        light._includedOnlyMeshesIds = [];
                     }
                 }
     

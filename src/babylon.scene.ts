@@ -190,7 +190,18 @@
         public ambientColor = new Color3(0, 0, 0);
 
         public forceWireframe = false;
-        public forcePointsCloud = false;
+        private _forcePointsCloud = false;
+        public set forcePointsCloud(value : boolean) {
+            if (this._forcePointsCloud === value) {
+                return;
+            }
+            this._forcePointsCloud = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forcePointsCloud(): boolean {
+            return this._forcePointsCloud;
+        }   
+
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
@@ -395,6 +406,7 @@
         private _previousStartingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         private _previousStartingPointerTime = 0;
+        
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -407,8 +419,30 @@
         * is fog enabled on this scene.
         * @type {boolean}
         */
-        public fogEnabled = true;
-        public fogMode = Scene.FOGMODE_NONE;
+        private _fogEnabled = true;
+        public set fogEnabled(value : boolean) {
+            if (this._fogEnabled === value) {
+                return;
+            }
+            this._fogEnabled = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogEnabled(): boolean {
+            return this._fogEnabled;
+        }   
+
+        private _fogMode = Scene.FOGMODE_NONE;
+        public set fogMode(value : number) {
+            if (this._fogMode === value) {
+                return;
+            }
+            this._fogMode = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogMode(): number {
+            return this._fogMode;
+        }  
+
         public fogColor = new Color3(0.2, 0.2, 0.3);
         public fogDensity = 0.1;
         public fogStart = 0;
@@ -419,12 +453,35 @@
         * is shadow enabled on this scene.
         * @type {boolean}
         */
-        public shadowsEnabled = true;
+        private _shadowsEnabled = true;
+        public set shadowsEnabled(value : boolean) {
+            if (this._shadowsEnabled === value) {
+                return;
+            }
+            this._shadowsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+        }
+        public get shadowsEnabled(): boolean {
+            return this._shadowsEnabled;
+        }       
+
         /**
         * is light enabled on this scene.
         * @type {boolean}
         */
-        public lightsEnabled = true;
+        private _lightsEnabled = true;
+        public set lightsEnabled(value : boolean) {
+            if (this._lightsEnabled === value) {
+                return;
+            }
+            this._lightsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+        }
+
+        public get lightsEnabled(): boolean {
+            return this._lightsEnabled;
+        }    
+
         /**
         * All of the lights added to this scene.
         * @see BABYLON.Light
@@ -466,7 +523,19 @@
         }
 
         // Textures
-        public texturesEnabled = true;
+        private _texturesEnabled = true;
+        public set texturesEnabled(value : boolean) {
+            if (this._texturesEnabled === value) {
+                return;
+            }
+            this._texturesEnabled = value;
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
+        public get texturesEnabled(): boolean {
+            return this._texturesEnabled;
+        }     
+
         public textures = new Array<BaseTexture>();
 
         // Particles
@@ -482,8 +551,23 @@
         public highlightLayers = new Array<HighlightLayer>();
 
         // Skeletons
-        public skeletonsEnabled = true;
+        private _skeletonsEnabled = true;
+        public set skeletonsEnabled(value : boolean) {
+            if (this._skeletonsEnabled === value) {
+                return;
+            }
+            this._skeletonsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.AttributesDirtyFlag);
+        }
+
+        public get skeletonsEnabled(): boolean {
+            return this._skeletonsEnabled;
+        }       
+
         public skeletons = new Array<Skeleton>();
+
+        // Morph targets
+        public morphTargetManagers = new Array<MorphTargetManager>();
 
         // Lens flares
         public lensFlaresEnabled = true;
@@ -566,10 +650,14 @@
         public animationTimeScale: number = 1;
 
         public _cachedMaterial: Material;
+        public _cachedEffect: Effect;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
         private _intermediateRendering = false;
+
+        private _viewUpdateFlag = -1;
+        private _projectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
         private _pendingData = [];//ANY
@@ -683,7 +771,7 @@
             return this._workerCollisions;
         }
 
-        public get SelectionOctree(): Octree<AbstractMesh> {
+        public get selectionOctree(): Octree<AbstractMesh> {
             return this._selectionOctree;
         }
 
@@ -713,6 +801,10 @@
 
         public getCachedMaterial(): Material {
             return this._cachedMaterial;
+        }
+
+         public getCachedEffect(): Effect {
+            return this._cachedEffect;
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
@@ -1370,6 +1462,10 @@
                     continue;
                 }
 
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
+
                 if (!mesh.isReady()) {
                     return false;
                 }
@@ -1387,6 +1483,7 @@
 
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
+            this._cachedEffect = null;
         }
 
         public registerBeforeRender(func: () => void): void {
@@ -1564,6 +1661,12 @@
         }
 
         public setTransformMatrix(view: Matrix, projection: Matrix): void {
+            if (this._viewUpdateFlag === view.updateFlag && this._projectionUpdateFlag === projection.updateFlag) {
+                return;
+            }
+
+            this._viewUpdateFlag = view.updateFlag;
+            this._projectionUpdateFlag = projection.updateFlag;
             this._viewMatrix = view;
             this._projectionMatrix = projection;
 
@@ -1579,8 +1682,14 @@
 
         // Methods
 
+        public getUniqueId() {
+            var result = this._uniqueIdCounter;
+            this._uniqueIdCounter++;
+            return result;
+        }
+
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this._uniqueIdCounter++;
+            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
@@ -1606,8 +1715,18 @@
         public removeSkeleton(toRemove: Skeleton): number {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if found 
                 this.skeletons.splice(index, 1);
+            }
+
+            return index;
+        }
+
+        public removeMorphTargetManager(toRemove: MorphTargetManager): number {
+            var index = this.morphTargetManagers.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found 
+                this.morphTargetManagers.splice(index, 1);
             }
 
             return index;
@@ -1648,13 +1767,13 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this._uniqueIdCounter++;
+            newLight.uniqueId = this.getUniqueId();
             var position = this.lights.push(newLight);
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this._uniqueIdCounter++;
+            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
@@ -2131,6 +2250,16 @@
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].name === name) {
                     return this.skeletons[index];
+                }
+            }
+
+            return null;
+        }
+
+        public getMorphTargetManagerById(id: number): MorphTargetManager {
+            for (var index = 0; index < this.morphTargetManagers.length; index++) {
+                if (this.morphTargetManagers[index].uniqueId === id) {
+                    return this.morphTargetManagers[index];
                 }
             }
 
@@ -2936,6 +3065,7 @@
             this.afterRender = null;
 
             this.skeletons = [];
+            this.morphTargetManagers = [];
 
             this._boundingBoxRenderer.dispose();
 
@@ -3464,6 +3594,19 @@
             depth = true,
             stencil = true): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
+        }
+
+        /**
+         * Will flag all materials as dirty to trigger new shader compilation
+         * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
+         */
+        public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+            for (var material of this.materials) {
+                if (predicate && !predicate(material)) {
+                    continue;
+                }
+                material.markAsDirty(flag);
+            }
         }
     }
 }

@@ -324,7 +324,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(18, 92);
+            this.label6.Location = new System.Drawing.Point(18, 91);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(34, 13);
             this.label6.TabIndex = 8;
@@ -342,13 +342,12 @@
             // cbCameraType
             // 
             this.cbCameraType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbCameraType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cbCameraType.FormattingEnabled = true;
             this.cbCameraType.Items.AddRange(new object[] {
             "Hard shadows",
             "Poisson Sampling",
-            "Variance",
-            "Blurred Variance"});
+            "ESM",
+            "Blurred ESM"});
             this.cbCameraType.Location = new System.Drawing.Point(21, 108);
             this.cbCameraType.Name = "cbCameraType";
             this.cbCameraType.Size = new System.Drawing.Size(289, 21);

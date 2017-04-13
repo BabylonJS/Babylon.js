@@ -516,7 +516,7 @@
          * Returns the updated Color4.  
          */
         public set(r: number, g: number, b: number, a: number): Color4 {
-            return this.copyFromFloats(r, g, b,a);
+            return this.copyFromFloats(r, g, b, a);
         }
         /**
          * Returns a string containing the hexadecimal Color4 code.  
@@ -2144,7 +2144,7 @@
         /**
          * Returns a new Vector4 set from the starting index of the passed array.  
          */
-        public static FromArray(array: number[]  | Float32Array, offset?: number): Vector4 {
+        public static FromArray(array: number[] | Float32Array, offset?: number): Vector4 {
             if (!offset) {
                 offset = 0;
             }
@@ -2328,7 +2328,7 @@
          */
         public set(width: number, height: number): Size {
             return this.copyFromFloats(width, height);
-        }        
+        }
         /**
          * Returns a new Size set with the multiplication result of the current Size and the passed floats.  
          */
@@ -2465,7 +2465,7 @@
          */
         public set(x: number, y: number, z: number, w: number): Quaternion {
             return this.copyFromFloats(x, y, z, w);
-        }        
+        }
         /**
          * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.  
          */
@@ -2631,6 +2631,8 @@
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
+
+            result._markAsUpdated();
             return this;
         }
         /**
@@ -2864,8 +2866,18 @@
         private static _xAxis: Vector3 = Vector3.Zero();
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
+        private static _updateFlagSeed = 0;
 
+        public updateFlag: number;
         public m: Float32Array = new Float32Array(16);
+
+        public _markAsUpdated() {
+            this.updateFlag = Matrix._updateFlagSeed++;
+        }
+
+        public constructor() {
+            this._markAsUpdated();
+        }
 
         // Properties
         /**
@@ -2929,6 +2941,7 @@
                 this.m[index] = 0.0;
             }
 
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -2947,6 +2960,7 @@
             for (var index = 0; index < 16; index++) {
                 result.m[index] = this.m[index] + other.m[index];
             }
+            result._markAsUpdated();
             return this;
         }
         /**
@@ -2957,6 +2971,7 @@
             for (var index = 0; index < 16; index++) {
                 this.m[index] += other.m[index];
             }
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -3021,6 +3036,7 @@
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
 
+            other._markAsUpdated();
             return this;
         }
         /**
@@ -3031,6 +3047,8 @@
             this.m[12] = x;
             this.m[13] = y;
             this.m[14] = z;
+
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -3041,6 +3059,8 @@
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
+
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -3085,6 +3105,8 @@
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
+
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -3102,6 +3124,8 @@
          */
         public multiplyToRef(other: Matrix, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
+
+            result._markAsUpdated();
             return this;
         }
         /**
@@ -3161,7 +3185,6 @@
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
-
             return this;
         }
         /**
@@ -3265,6 +3288,7 @@
                 m[4] / sy, m[5] / sy, m[6] / sy, 0,
                 m[8] / sz, m[9] / sz, m[10] / sz, 0,
                 0, 0, 0, 1, result);
+
             return this;
         }
 
@@ -3288,6 +3312,7 @@
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
             }
+            result._markAsUpdated();
         }
         /**
          * Sets the passed "result" matrix from the starting index of the passed Float32Array by multiplying each element by the float "scale".  
@@ -3296,6 +3321,8 @@
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset] * scale;
             }
+
+            result._markAsUpdated();
         }
         /**
          * Sets the passed matrix "result" with the 16 passed floats.  
@@ -3321,6 +3348,8 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+
+            result._markAsUpdated();
         }
         /**
          * Returns the index-th row of the current matrix as a new Vector4.  
@@ -3345,6 +3374,9 @@
             this.m[i + 1] = row.y;
             this.m[i + 2] = row.z;
             this.m[i + 3] = row.w;
+
+            this._markAsUpdated();
+
             return this;
         }
 
@@ -3361,6 +3393,8 @@
             this.m[i + 1] = y;
             this.m[i + 2] = z;
             this.m[i + 3] = w;
+
+            this._markAsUpdated();
             return this;
         }
         /**
@@ -3484,6 +3518,8 @@
             result.m[12] = 0.0;
             result.m[13] = 0.0;
             result.m[14] = 0.0;
+
+            result._markAsUpdated();
         }
         /**
          * Returns a new rotation matrix for "angle" radians around the Y axis.  
@@ -3518,6 +3554,8 @@
             result.m[12] = 0.0;
             result.m[13] = 0.0;
             result.m[14] = 0.0;
+
+            result._markAsUpdated();
         }
         /**
          * Returns a new rotation matrix for "angle" radians around the Z axis.  
@@ -3552,6 +3590,8 @@
             result.m[12] = 0.0;
             result.m[13] = 0.0;
             result.m[14] = 0.0;
+
+            result._markAsUpdated();
         }
         /**
          * Returns a new rotation matrix for "angle" radians around the passed axis.  
@@ -3587,6 +3627,8 @@
             result.m[11] = 0.0;
 
             result.m[15] = 1.0;
+
+            result._markAsUpdated();
         }
         /**
          * Returns a new Matrix as a rotation matrix from the Euler angles (y, x, z). 
@@ -3631,6 +3673,8 @@
             result.m[13] = 0.0;
             result.m[14] = 0.0;
             result.m[15] = 1.0;
+
+            result._markAsUpdated();
         }
         /**
          * Returns a new Matrix as a translation matrix from the passed floats (x, y, z). 
@@ -3657,6 +3701,7 @@
             for (var index = 0; index < 16; index++) {
                 result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
             }
+            result._markAsUpdated();
             return result;
         }
 
@@ -3949,14 +3994,16 @@
             result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
             result.m[5] = yScale;
             result.m[6] = result.m[7] = 0.0;
-            result.m[8] = ((leftTan - rightTan) * xScale * 0.5) * rightHandedFactor;
-            result.m[9] = -((upTan - downTan) * yScale * 0.5) * rightHandedFactor;
-            result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
-            // result.m[10] = -zfar / (znear - zfar);
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5)// * rightHandedFactor;
+            result.m[9] = -((upTan - downTan) * yScale * 0.5)// * rightHandedFactor;
+            //result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
+            result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0 * rightHandedFactor;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
             // result.m[14] = (znear * zfar) / (znear - zfar);
+
+            result._markAsUpdated();
         }
 
         /**
@@ -4062,37 +4109,40 @@
             result.m[13] = temp2 * plane.d;
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
+
+            result._markAsUpdated();
         }
 
         /**
          * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.  
          */
-        public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
+        public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix) {
 
-            mat.m[0] = xaxis.x;
-            mat.m[1] = xaxis.y;
-            mat.m[2] = xaxis.z;
+            result.m[0] = xaxis.x;
+            result.m[1] = xaxis.y;
+            result.m[2] = xaxis.z;
 
-            mat.m[3] = 0.0;
+            result.m[3] = 0.0;
 
-            mat.m[4] = yaxis.x;
-            mat.m[5] = yaxis.y;
-            mat.m[6] = yaxis.z;
+            result.m[4] = yaxis.x;
+            result.m[5] = yaxis.y;
+            result.m[6] = yaxis.z;
 
-            mat.m[7] = 0.0;
+            result.m[7] = 0.0;
 
-            mat.m[8] = zaxis.x;
-            mat.m[9] = zaxis.y;
-            mat.m[10] = zaxis.z;
+            result.m[8] = zaxis.x;
+            result.m[9] = zaxis.y;
+            result.m[10] = zaxis.z;
 
-            mat.m[11] = 0.0;
+            result.m[11] = 0.0;
 
-            mat.m[12] = 0.0;
-            mat.m[13] = 0.0;
-            mat.m[14] = 0.0;
+            result.m[12] = 0.0;
+            result.m[13] = 0.0;
+            result.m[14] = 0.0;
 
-            mat.m[15] = 1.0;
+            result.m[15] = 1.0;
 
+            result._markAsUpdated();
         }
 
         /**
@@ -4128,6 +4178,8 @@
             result.m[14] = 0.0;
 
             result.m[15] = 1.0;
+
+            result._markAsUpdated();
         }
     }
 
