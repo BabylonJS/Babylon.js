@@ -245,6 +245,9 @@ void main(void) {
 
 #ifdef AMBIENT
 	vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	#ifdef AMBIENTINGRAYSCALE			
+		ambientOcclusionColorMap = vec3(ambientOcclusionColorMap.r, ambientOcclusionColorMap.r, ambientOcclusionColorMap.r);
+	#endif
 	ambientOcclusionColor = mix(ambientOcclusionColor, ambientOcclusionColorMap, vAmbientInfos.z);
 
 	#ifdef OVERLOADEDVALUES
