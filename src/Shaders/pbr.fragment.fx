@@ -89,8 +89,14 @@ uniform sampler2D lightmapSampler;
 
 #if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec2 vReflectivityInfos;
+uniform vec3 vReflectivityInfos;
 uniform sampler2D reflectivitySampler;
+#endif
+
+#ifdef MICROSURFACEMAP
+varying vec2 vMicroSurfaceSamplerUV;
+uniform vec2 vMicroSurfaceSamplerInfos;
+uniform sampler2D microSurfaceSampler;
 #endif
 
 // Fresnel
@@ -135,7 +141,7 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
@@ -157,7 +163,7 @@ uniform mat4 reflectionMatrix;
 #endif
 
 // PBR
-#include<pbrShadowFunctions>
+#include<shadowsFragmentFunctions>
 #include<pbrFunctions>
 
 #ifdef CAMERACOLORGRADING
@@ -208,16 +214,16 @@ void main(void) {
 	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 	surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
-#ifndef LINKREFRACTIONTOTRANSPARENCY
-#ifdef ALPHATEST
-	if (surfaceAlbedo.a < 0.4)
-		discard;
-#endif
-#endif
+	#ifndef LINKREFRACTIONTOTRANSPARENCY
+		#ifdef ALPHATEST
+			if (surfaceAlbedo.a < 0.4)
+				discard;
+		#endif
+	#endif
 
-#ifdef ALPHAFROMALBEDO
-	alpha *= surfaceAlbedo.a;
-#endif
+	#ifdef ALPHAFROMALBEDO
+		alpha *= surfaceAlbedo.a;
+	#endif
 
 	surfaceAlbedo.rgb *= vAlbedoInfos.y;
 #else
@@ -235,69 +241,77 @@ void main(void) {
 #endif
 
 	// Ambient color
-	vec3 ambientColor = vec3(1., 1., 1.);
+	vec3 ambientOcclusionColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
-#ifdef AMBIENTSTOREINRED
-	ambientColor *= texture2D(ambientSampler, vAmbientUV + uvOffset).r * vAmbientInfos.y;
-#else
-	ambientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
-#endif
+	vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	ambientOcclusionColor = mix(ambientOcclusionColor, ambientOcclusionColorMap, vAmbientInfos.z);
 
-	ambientColor = vec3(1., 1., 1.) - ((vec3(1., 1., 1.) - ambientColor) * vAmbientInfos.z);
-
-#ifdef OVERLOADEDVALUES
-	ambientColor.rgb = mix(ambientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
-#endif
+	#ifdef OVERLOADEDVALUES
+		ambientOcclusionColor.rgb = mix(ambientOcclusionColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
+	#endif
 #endif
 
 	// Reflectivity map
 	float microSurface = vReflectivityColor.a;
 	vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
 
-#ifdef OVERLOADEDVALUES
-	surfaceReflectivityColor.rgb = mix(surfaceReflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
-#endif
-
 #ifdef REFLECTIVITY
 	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 	surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
 	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
+	surfaceReflectivityColor *= vReflectivityInfos.y;
 
 	#ifdef OVERLOADEDVALUES
 		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
 	#endif
 
 	#ifdef MICROSURFACEFROMREFLECTIVITYMAP
-		microSurface = surfaceReflectivityColorMap.a;
+		microSurface = surfaceReflectivityColorMap.a * vReflectivityInfos.z;
 	#else
 		#ifdef MICROSURFACEAUTOMATIC
 			microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
 		#endif
+	#endif
+#else
+	#ifdef OVERLOADEDVALUES
+		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
 	#endif
 #endif
 
 #ifdef METALLICWORKFLOW
 	vec2 metallicRoughness = surfaceReflectivityColor.rg;
 
-	#ifdef METALLICROUGHNESSMAP
+	#ifdef METALLICMAP
 		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 
-		// No gamma space from the metallic map in metallic workflow.
-		#ifdef METALLICSTOREINBLUE
+		#ifdef AOSTOREINMETALMAPRED			
+			vec3 aoStoreInMetalMap = vec3(surfaceMetallicColorMap.r, surfaceMetallicColorMap.r, surfaceMetallicColorMap.r);
+			ambientOcclusionColor = mix(ambientOcclusionColor, aoStoreInMetalMap, vReflectivityInfos.z);
+		#endif
+
+		#ifdef METALLNESSSTOREINMETALMAPBLUE
 			metallicRoughness.r *= surfaceMetallicColorMap.b;
 		#else
 			metallicRoughness.r *= surfaceMetallicColorMap.r;
 		#endif
 
-		#ifdef ROUGHNESSGSTOREINALPHA
+		#ifdef ROUGHNESSSTOREINMETALMAPALPHA
 			metallicRoughness.g *= surfaceMetallicColorMap.a;
 		#else
-			#ifdef ROUGHNESSGSTOREINGREEN
+			#ifdef ROUGHNESSSTOREINMETALMAPGREEN
 				metallicRoughness.g *= surfaceMetallicColorMap.g;
 			#endif
 		#endif
 	#endif
+
+	#ifdef MICROSURFACEMAP
+		vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+		metallicRoughness.g *= microSurfaceTexel.r;
+	#endif
+
+	// Compute microsurface form roughness.
+	microSurface = 1.0 - metallicRoughness.g;
 
 	// Diffuse is used as the base of the reflectivity.
 	vec3 baseColor = surfaceAlbedo.rgb;
@@ -315,8 +329,11 @@ void main(void) {
 	#ifdef OVERLOADEDVALUES
 		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
 	#endif
-
-	microSurface = 1.0 - metallicRoughness.g;
+#else
+	#ifdef MICROSURFACEMAP
+		vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+		microSurface = microSurfaceTexel.r;
+	#endif
 #endif
 
 #ifdef OVERLOADEDVALUES
@@ -370,13 +387,12 @@ void main(void) {
 #ifdef OPACITY
 	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 
-#ifdef OPACITYRGB
-	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
-#else
-	alpha *= opacityMap.a * vOpacityInfos.y;
-#endif
-
+	#ifdef OPACITYRGB
+		opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
+		alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
+	#else
+		alpha *= opacityMap.a * vOpacityInfos.y;
+	#endif
 #endif
 
 #ifdef VERTEXALPHA
@@ -400,59 +416,59 @@ void main(void) {
 #ifdef REFRACTION
 	vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
 
-#ifdef LODBASEDMICROSFURACE
-#ifdef USEPMREMREFRACTION
-	float lodRefraction = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.y, alphaG);
-#else
-	float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
-#endif
-#else
-	float biasRefraction = (vMicrosurfaceTextureLods.y + 2.) * (1.0 - microSurface);
-#endif
+	#ifdef LODBASEDMICROSFURACE
+		#ifdef USEPMREMREFRACTION
+			float lodRefraction = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.y, alphaG);
+		#else
+			float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
+		#endif
+	#else
+		float biasRefraction = (vMicrosurfaceTextureLods.y + 2.) * (1.0 - microSurface);
+	#endif
 
-#ifdef REFRACTIONMAP_3D
-	refractionVector.y = refractionVector.y * vRefractionInfos.w;
+	#ifdef REFRACTIONMAP_3D
+		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
-	if (dot(refractionVector, viewDirectionW) < 1.0)
-	{
-#ifdef LODBASEDMICROSFURACE
-#ifdef USEPMREMREFRACTION
-		// Empiric Threshold
-		if ((vMicrosurfaceTextureLods.y - lodRefraction) > 4.0)
+		if (dot(refractionVector, viewDirectionW) < 1.0)
 		{
-			// Bend to not reach edges.
-			float scaleRefraction = 1. - exp2(lodRefraction) / exp2(vMicrosurfaceTextureLods.y); // CubemapSize is the size of the base mipmap
-			float maxRefraction = max(max(abs(refractionVector.x), abs(refractionVector.y)), abs(refractionVector.z));
-			if (abs(refractionVector.x) != maxRefraction) refractionVector.x *= scaleRefraction;
-			if (abs(refractionVector.y) != maxRefraction) refractionVector.y *= scaleRefraction;
-			if (abs(refractionVector.z) != maxRefraction) refractionVector.z *= scaleRefraction;
+		#ifdef LODBASEDMICROSFURACE
+			#ifdef USEPMREMREFRACTION
+					// Empiric Threshold
+					if ((vMicrosurfaceTextureLods.y - lodRefraction) > 4.0)
+					{
+						// Bend to not reach edges.
+						float scaleRefraction = 1. - exp2(lodRefraction) / exp2(vMicrosurfaceTextureLods.y); // CubemapSize is the size of the base mipmap
+						float maxRefraction = max(max(abs(refractionVector.x), abs(refractionVector.y)), abs(refractionVector.z));
+						if (abs(refractionVector.x) != maxRefraction) refractionVector.x *= scaleRefraction;
+						if (abs(refractionVector.y) != maxRefraction) refractionVector.y *= scaleRefraction;
+						if (abs(refractionVector.z) != maxRefraction) refractionVector.z *= scaleRefraction;
+					}
+			#endif
+
+				surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
+		#else
+				surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, biasRefraction).rgb * vRefractionInfos.x;
+		#endif
 		}
-#endif
 
-		surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
-#else
-		surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, biasRefraction).rgb * vRefractionInfos.x;
-#endif
-	}
+		#ifndef REFRACTIONMAPINLINEARSPACE
+			surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb);
+		#endif
+	#else
+		vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
 
-#ifndef REFRACTIONMAPINLINEARSPACE
-	surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb);
-#endif
-#else
-	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+		vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
 
-	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+		refractionCoords.y = 1.0 - refractionCoords.y;
 
-	refractionCoords.y = 1.0 - refractionCoords.y;
+		#ifdef LODBASEDMICROSFURACE
+			surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
+		#else
+			surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, biasRefraction).rgb * vRefractionInfos.x;
+		#endif    
 
-#ifdef LODBASEDMICROSFURACE
-	surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
-#else
-	surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, biasRefraction).rgb * vRefractionInfos.x;
-#endif    
-
-	surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb);
-#endif
+		surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb);
+	#endif
 #endif
 
 	// Reflection
@@ -462,68 +478,68 @@ void main(void) {
 #ifdef REFLECTION
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
-#ifdef LODBASEDMICROSFURACE
-#ifdef USEPMREMREFLECTION
-	float lodReflection = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.x, alphaG);
-#else
-	float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
-#endif
-#else
-	float biasReflection = (vMicrosurfaceTextureLods.x + 2.) * (1.0 - microSurface);
-#endif
+	#ifdef LODBASEDMICROSFURACE
+		#ifdef USEPMREMREFLECTION
+			float lodReflection = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.x, alphaG);
+		#else
+			float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
+		#endif
+	#else
+		float biasReflection = (vMicrosurfaceTextureLods.x + 2.) * (1.0 - microSurface);
+	#endif
 
-#ifdef REFLECTIONMAP_3D
+	#ifdef REFLECTIONMAP_3D
 
-#ifdef LODBASEDMICROSFURACE
-#ifdef USEPMREMREFLECTION
-	// Empiric Threshold
-	if ((vMicrosurfaceTextureLods.y - lodReflection) > 4.0)
-	{
-		// Bend to not reach edges.
-		float scaleReflection = 1. - exp2(lodReflection) / exp2(vMicrosurfaceTextureLods.x); // CubemapSize is the size of the base mipmap
-		float maxReflection = max(max(abs(vReflectionUVW.x), abs(vReflectionUVW.y)), abs(vReflectionUVW.z));
-		if (abs(vReflectionUVW.x) != maxReflection) vReflectionUVW.x *= scaleReflection;
-		if (abs(vReflectionUVW.y) != maxReflection) vReflectionUVW.y *= scaleReflection;
-		if (abs(vReflectionUVW.z) != maxReflection) vReflectionUVW.z *= scaleReflection;
-	}
-#endif
+		#ifdef LODBASEDMICROSFURACE
+			#ifdef USEPMREMREFLECTION
+				// Empiric Threshold
+				if ((vMicrosurfaceTextureLods.y - lodReflection) > 4.0)
+				{
+					// Bend to not reach edges.
+					float scaleReflection = 1. - exp2(lodReflection) / exp2(vMicrosurfaceTextureLods.x); // CubemapSize is the size of the base mipmap
+					float maxReflection = max(max(abs(vReflectionUVW.x), abs(vReflectionUVW.y)), abs(vReflectionUVW.z));
+					if (abs(vReflectionUVW.x) != maxReflection) vReflectionUVW.x *= scaleReflection;
+					if (abs(vReflectionUVW.y) != maxReflection) vReflectionUVW.y *= scaleReflection;
+					if (abs(vReflectionUVW.z) != maxReflection) vReflectionUVW.z *= scaleReflection;
+				}
+			#endif
 
-	environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
-#else
-	environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, biasReflection).rgb * vReflectionInfos.x;
-#endif
+			environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
+		#else
+			environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, biasReflection).rgb * vReflectionInfos.x;
+		#endif
 
-#ifdef USESPHERICALFROMREFLECTIONMAP
-#ifndef REFLECTIONMAP_SKYBOX
-	vec3 normalEnvironmentSpace = (reflectionMatrix * vec4(normalW, 1)).xyz;
-	environmentIrradiance = EnvironmentIrradiance(normalEnvironmentSpace);
-#endif
-#else
-	environmentRadiance = toLinearSpace(environmentRadiance.rgb);
+		#ifdef USESPHERICALFROMREFLECTIONMAP
+			#ifndef REFLECTIONMAP_SKYBOX
+				vec3 normalEnvironmentSpace = (reflectionMatrix * vec4(normalW, 1)).xyz;
+				environmentIrradiance = EnvironmentIrradiance(normalEnvironmentSpace);
+			#endif
+		#else
+			environmentRadiance = toLinearSpace(environmentRadiance.rgb);
 
-	environmentIrradiance = textureCube(reflectionCubeSampler, normalW, 20.).rgb * vReflectionInfos.x;
-	environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
-	environmentIrradiance *= 0.2; // Hack in case of no hdr cube map use for environment.
-#endif
-#else
-	vec2 coords = vReflectionUVW.xy;
+			environmentIrradiance = textureCube(reflectionCubeSampler, normalW, 20.).rgb * vReflectionInfos.x;
+			environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
+			environmentIrradiance *= 0.2; // Hack in case of no hdr cube map use for environment.
+		#endif
+	#else
+		vec2 coords = vReflectionUVW.xy;
 
-#ifdef REFLECTIONMAP_PROJECTION
-	coords /= vReflectionUVW.z;
-#endif
+		#ifdef REFLECTIONMAP_PROJECTION
+			coords /= vReflectionUVW.z;
+		#endif
 
-	coords.y = 1.0 - coords.y;
-#ifdef LODBASEDMICROSFURACE
-	environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
-#else
-	environmentRadiance = texture2D(reflection2DSampler, coords, biasReflection).rgb * vReflectionInfos.x;
-#endif
+		coords.y = 1.0 - coords.y;
+		#ifdef LODBASEDMICROSFURACE
+			environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
+		#else
+			environmentRadiance = texture2D(reflection2DSampler, coords, biasReflection).rgb * vReflectionInfos.x;
+		#endif
 
-	environmentRadiance = toLinearSpace(environmentRadiance.rgb);
+		environmentRadiance = toLinearSpace(environmentRadiance.rgb);
 
-	environmentIrradiance = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
-	environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
-#endif
+		environmentIrradiance = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
+		environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
+	#endif
 #endif
 
 #ifdef OVERLOADEDVALUES
@@ -601,51 +617,59 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
+	vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution;
 
-#ifdef OVERLOADEDSHADOWVALUES
-	shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
-#endif
+	#ifdef OVERLOADEDSHADOWVALUES
+		shadowedOnlyLightDiffuseContribution = shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution;
+	#endif
 #else
-#ifdef LINKEMISSIVEWITHALBEDO
-	vec3 finalDiffuse = max((lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
+	#ifdef LINKEMISSIVEWITHALBEDO
+		vec3 finalDiffuse = (lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution;
+
+		#ifdef OVERLOADEDSHADOWVALUES
+			shadowedOnlyLightDiffuseContribution = (shadowedOnlyLightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution;
+		#endif
+	#else
+		vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor;
+
+		#ifdef OVERLOADEDSHADOWVALUES
+			shadowedOnlyLightDiffuseContribution = shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor;
+		#endif
+	#endif
+#endif
+
+finalDiffuse.rgb += vAmbientColor;
+finalDiffuse *= surfaceAlbedo.rgb;
+finalDiffuse = max(finalDiffuse, 0.0);
 
 #ifdef OVERLOADEDSHADOWVALUES
-	shadowedOnlyLightDiffuseContribution = max((shadowedOnlyLightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
-#endif
-#else
-	vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
-
-#ifdef OVERLOADEDSHADOWVALUES
-	shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
-#endif
-#endif
-#endif
-
-#ifdef OVERLOADEDSHADOWVALUES
+	shadowedOnlyLightDiffuseContribution += vAmbientColor;
+	shadowedOnlyLightDiffuseContribution *= surfaceAlbedo.rgb;
+	shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution, 0.0);
 	finalDiffuse = mix(finalDiffuse, shadowedOnlyLightDiffuseContribution, (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
+finalDiffuse = (finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientOcclusionColor;
+
 #ifdef SPECULARTERM
 	vec3 finalSpecular = lightSpecularContribution * surfaceReflectivityColor;
+	#ifdef SPECULAROVERALPHA
+		alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
+	#endif
 #else
 	vec3 finalSpecular = vec3(0.0);
-#endif
-
-#ifdef SPECULAROVERALPHA
-	alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
 #endif
 
 #ifdef RADIANCEOVERALPHA
 	alpha = clamp(alpha + getLuminance(environmentRadiance), 0., 1.);
 #endif
 
-	// Composition
-	// Reflection already includes the environment intensity.
+// Composition
+// Reflection already includes the environment intensity.
+vec4 finalColor = vec4(finalDiffuse + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
+
 #ifdef EMISSIVEASILLUMINATION
-	vec4 finalColor = vec4((finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientColor + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y + refractance, alpha);
-#else
-	vec4 finalColor = vec4((finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientColor + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
+	finalColor.rgb += (surfaceEmissiveColor * vLightingIntensity.y);
 #endif
 
 #ifdef LIGHTMAP

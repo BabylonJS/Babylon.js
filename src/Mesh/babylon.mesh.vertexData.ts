@@ -715,11 +715,14 @@
 
             // Result
             var vertexData = new VertexData();
-
+            var positions32 = new Float32Array(positions);
+            var normals32 = new Float32Array(normals);
+            var uvs32 = new Float32Array(uvs);
+            
             vertexData.indices = indices;
-            vertexData.positions = positions;
-            vertexData.normals = normals;
-            vertexData.uvs = uvs;
+            vertexData.positions = positions32;
+            vertexData.normals = normals32;
+            vertexData.uvs = uvs32;
             if (customColors) {
                 vertexData.set(colors, VertexBuffer.ColorKind);
             }

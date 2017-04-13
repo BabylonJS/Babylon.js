@@ -1,13 +1,14 @@
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
-@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
 
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
-@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
 .insp-wrapper {
   user-select: none;
   display: flex;
   font-size: 0.9em;
   font-family: "Inconsolata", sans-serif;
+  background-color: #242424;
   /**
  * A tool contained in the tree panel (available for each item of the tree)
  */

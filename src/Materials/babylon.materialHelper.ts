@@ -1,142 +1,187 @@
 ﻿module BABYLON {
     export class MaterialHelper {
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4): boolean {
+
+        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
+            if (defines._areMiscDirty) {
+                defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
+                defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
+                defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
+            }
+        }
+
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void {
+            var changed = false;
+
+            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
+                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+                changed = true;
+            }
+
+            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+                defines["ALPHATEST"] = !defines["ALPHATEST"];
+                changed = true;
+            }
+
+            if (defines["INSTANCES"] !== useInstances) {
+                defines["INSTANCES"] = useInstances;
+                changed = true;
+            }
+            
+            if (changed) {
+                defines.markAsUnprocessed();
+            }
+        }
+
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): void {
+            if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
+                return;
+            }               
+
+            defines._normals = defines._needNormals;
+            defines._uvs = defines._needUVs;
+            
+            defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+
+            if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                defines["TANGENT"] = true;
+            }
+
+            if (defines._needUVs) {
+                defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+                defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
+            } else {
+                defines["UV1"] = false;
+                defines["UV2"] = false;
+            }
+
+            if (useVertexColor) {
+                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+            }
+
+            if (useBones) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                } else {
+                    defines["NUM_BONE_INFLUENCERS"] = 0;
+                    defines["BonesPerMesh"] = 0;
+                }           
+            }
+
+            if (useMorphTargets) {
+                if ((<any>mesh).morphTargetManager) {
+                    var manager = (<Mesh>mesh).morphTargetManager;
+                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
+                    defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
+                    defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+                } else {
+                    defines["MORPHTARGETS_NORMAL"] = false;
+                    defines["MORPHTARGETS"] = false;
+                    defines["NUM_MORPH_INFLUENCERS"] = 0;
+                }
+            }
+        }
+
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
+            if (!defines._areLightsDirty) {
+                return defines._needNormals;
+            }
+
             var lightIndex = 0;
             var needNormals = false;
             var needRebuild = false;
-            var needShadows = false;
             var lightmapMode = false;
+            var shadowEnabled = false;
+            var specularEnabled = false;
 
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
+            if (scene.lightsEnabled && !disableLighting) {
+                for (var light of mesh._lightSources) {
+                    needNormals = true;
 
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                // Excluded check
-                if (light._excludedMeshesIds.length > 0) {
-                    for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                        var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                        if (excludedMesh) {
-                            light.excludedMeshes.push(excludedMesh);
-                        }
-                    }
-
-                    light._excludedMeshesIds = [];
-                }
-
-                // Included check
-                if (light._includedOnlyMeshesIds.length > 0) {
-                    for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                        var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                        if (includedOnlyMesh) {
-                            light.includedOnlyMeshes.push(includedOnlyMesh);
-                        }
-                    }
-
-                    light._includedOnlyMeshesIds = [];
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-                needNormals = true;
-
-                if (defines["LIGHT" + lightIndex] === undefined) {
-                    needRebuild = true;
-                }
-
-                defines["LIGHT" + lightIndex] = true;
-
-                var type;
-                if (light instanceof SpotLight) {
-                    type = "SPOTLIGHT" + lightIndex;
-                } else if (light instanceof HemisphericLight) {
-                    type = "HEMILIGHT" + lightIndex;
-                } else if (light instanceof PointLight) {
-                    type = "POINTLIGHT" + lightIndex;
-                } else {
-                    type = "DIRLIGHT" + lightIndex;
-                }
-
-                if (defines[type] === undefined) {
-                    needRebuild = true;
-                }
-
-                defines[type] = true;
-
-                // Specular
-                if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
-                    defines["SPECULARTERM"] = true;
-                }
-
-                // Shadows
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        if (defines["SHADOW" + lightIndex] === undefined) {
-                            needRebuild = true;
-                        }
-                        defines["SHADOW" + lightIndex] = true;
-
-                        defines["SHADOWS"] = true;
-
-                        if (shadowGenerator.usePoissonSampling) {
-                            if (defines["SHADOWPCF" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
-
-                            defines["SHADOWPCF" + lightIndex] = true;
-                        } 
-                        else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
-                            if (defines["SHADOWESM" + lightIndex] === undefined) {
-                                needRebuild = true;
-                            }
-
-                            defines["SHADOWESM" + lightIndex] = true;
-                        }
-
-                        needShadows = true;
-                    }
-                }
-
-                if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
-                    lightmapMode = true;
-                    if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
+                    if (defines["LIGHT" + lightIndex] === undefined) {
                         needRebuild = true;
                     }
-                    if (defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
-                        needRebuild = true;
-                    }
-                    defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-                    if (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY) {
-                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = true;
-                    }
-                }
 
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
-                    break;
+                    defines["LIGHT" + lightIndex] = true;
+                    
+                    defines["SPOTLIGHT" + lightIndex] = false;
+                    defines["HEMILIGHT" + lightIndex] = false;
+                    defines["POINTLIGHT" + lightIndex] = false;
+                    defines["DIRLIGHT" + lightIndex] = false;
+
+                    var type;
+                    if (light.getTypeID() === 2) {
+                        type = "SPOTLIGHT" + lightIndex;
+                    } else if (light.getTypeID() === 3) {
+                        type = "HEMILIGHT" + lightIndex;
+                    } else if (light.getTypeID() === 0) {
+                        type = "POINTLIGHT" + lightIndex;
+                    } else {
+                        type = "DIRLIGHT" + lightIndex;
+                    }
+
+                    defines[type] = true;
+
+                    // Specular
+                    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
+                        specularEnabled = true;
+                    }
+
+                    // Shadows
+                    defines["SHADOW" + lightIndex] = false;
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
+                        if (mesh && mesh.receiveShadows && shadowGenerator) {
+                            defines["SHADOW" + lightIndex] = true;
+
+                            shadowEnabled = true;
+
+                            defines["SHADOWPCF" + lightIndex] = false;
+                            defines["SHADOWESM" + lightIndex] = false;
+
+                            if (shadowGenerator.usePoissonSampling) {
+                                defines["SHADOWPCF" + lightIndex] = true;
+                            } 
+                            else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
+                                defines["SHADOWESM" + lightIndex] = true;
+                            }
+                        }
+                    }
+
+                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
+                        lightmapMode = true;
+                        defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
+                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
+                    } else {
+                        defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
+                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
+                    }
+
+                    lightIndex++;
+                    if (lightIndex === maxSimultaneousLights)
+                        break;
+                }
+            }
+
+            defines["SPECULARTERM"] = specularEnabled;
+            defines["SHADOWS"] = shadowEnabled;
+
+            // Resetting all other lights if any
+            for (var index = lightIndex; index < maxSimultaneousLights; index++) {
+                if (defines["LIGHT" + index] !== undefined) {
+                    defines["LIGHT" + index] = false;
+                }
             }
 
             let caps = scene.getEngine().getCaps();
-            if (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
-                if (defines["SHADOWFULLFLOAT"] === undefined) {
-                    needRebuild = true;
-                }
 
-                defines["SHADOWFULLFLOAT"] = true;
-            }
-
-            if (defines["LIGHTMAPEXCLUDED"] === undefined) {
+            if (defines["SHADOWFULLFLOAT"] === undefined) {
                 needRebuild = true;
             }
-            if (lightmapMode) {
-                defines["LIGHTMAPEXCLUDED"] = true;
-            }
+
+            defines["SHADOWFULLFLOAT"] = (shadowEnabled && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
+            defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
                 defines.rebuild();
@@ -163,9 +208,17 @@
 
                 samplersList.push("shadowSampler" + lightIndex);
             }
+
+            if (defines["NUM_MORPH_INFLUENCERS"]) {
+                uniformsList.push("morphTargetInfluences");
+            }
         }
 
         public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
+            if (!defines["SHADOWS"]) {
+                return;
+            }
+
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
@@ -185,6 +238,27 @@
 
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
+                }
+            }
+        }
+
+        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines): void {
+            var influencers = defines["NUM_MORPH_INFLUENCERS"];
+
+            if (influencers > 0) {
+                var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
+                var manager = (<Mesh>mesh).morphTargetManager;
+                var normal = manager.supportsNormals && defines["NORMAL"];
+                for (var index = 0; index < influencers; index++) {
+                    attribs.push(VertexBuffer.PositionKind + index);
+
+                    if (normal) {
+                        attribs.push(VertexBuffer.NormalKind + index);
+                    }
+
+                    if (attribs.length > maxAttributesCount) {
+                        Tools.Error("Cannot add more vertex attributes for mesh " + mesh.name);
+                    }
                 }
             }
         }
@@ -224,23 +298,23 @@
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                effect.setFloat2("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width);
+                effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
             }
 
             return depthValuesAlreadySet;
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-            if (light instanceof PointLight) {
+            if (light.getTypeID() === 0) {
                 // Point Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light instanceof DirectionalLight) {
+            } else if (light.getTypeID() === 1) {
                 // Directional Light
                 light.transferToEffect(effect, "vLightData" + lightIndex);
-            } else if (light instanceof SpotLight) {
+            } else if (light.getTypeID() === 2) {
                 // Spot Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-            } else if (light instanceof HemisphericLight) {
+            } else if (light.getTypeID() === 3) {
                 // Hemispheric Light
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
             }
@@ -249,16 +323,8 @@
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
 
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
+            for (var light of mesh._lightSources) {
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
@@ -296,6 +362,14 @@
                     effect.setMatrices("mBones", matrices);
                 }
             }
+        }
+
+        public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
+            if (!abstractMesh || !(<Mesh>abstractMesh).morphTargetManager) {
+                return;
+            }
+
+            effect.setFloatArray("morphTargetInfluences", (<Mesh>abstractMesh).morphTargetManager.influences);
         }
 
         public static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void {

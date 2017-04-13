@@ -190,6 +190,13 @@
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
 
+            // Textures
+            for (var name in this._textures) {
+                if (!this._textures[name].isReady()) {
+                    return false;
+                }
+            }
+
             // Alpha test
             if (engine.getAlphaTesting()) {
                 defines.push("#define ALPHATEST");
@@ -322,7 +329,7 @@
                 }
             }
 
-            super.bind(world, mesh);
+            this._afterBind(mesh);
         }
 
         public clone(name: string): ShaderMaterial {

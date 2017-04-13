@@ -25,6 +25,7 @@ interface Window {
     Float32Array: Float32ArrayConstructor;
     mozURL: any;
     msURL: any;
+    VRFrameData: any; // WebVR, from specs 1.1
 }
 
 interface WebGLVertexArrayObject {

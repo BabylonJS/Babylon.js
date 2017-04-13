@@ -65,8 +65,8 @@
 
             // applyToMesh
             if (mesh) {
-                if (mesh instanceof LinesMesh) {
-                    this.boundingBias = new Vector2(0, mesh.intersectionThreshold);
+                if (mesh.getClassName() === "LinesMesh") {
+                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 
@@ -110,6 +110,13 @@
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
+        }
+
+        public removeVerticesData(kind: string) {
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
+            }
         }
 
         public setVerticesBuffer(buffer: VertexBuffer): void {
@@ -432,6 +439,10 @@
         private notifyUpdate(kind?: string) {
             if (this.onGeometryUpdated) {
                 this.onGeometryUpdated(this, kind);
+            }
+
+            for (var mesh of this._meshes) {
+                mesh._markSubMeshesAsAttributesDirty();
             }
         }
 

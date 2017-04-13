@@ -51,6 +51,7 @@
                 <label class="btn btn-sm active">
                     <input type="checkbox" autocomplete="off" id='safemodeToggle' style="margin-top:-0.1em;margin-right:4px">Safe Mode
                 </label>
+                <button class="btn btn-sm" id="metadataButton">+Meta data</button>
                 <button class="btn btn-sm" id="editorButton">-Editor</button>
                 <button class="btn btn-sm" id="debugButton">+Debug layer</button>
             </div>
@@ -64,6 +65,9 @@
                 </a>
                 <ul class="dropdown-menu" id="scriptsList"></ul>
             </div>
+        </div>
+        <div class="save-message" id="saveMessage">
+            This PG has no metadata. Click save to add them.
         </div>
     </div>
 
@@ -90,7 +94,26 @@
                 <li><a href="http://www.babylonjs.com/sandbox">Sandbox</a></li>
                 <li><a href="https://github.com/BabylonJS/Babylon.js/wiki">Wiki</a></li>
                 <li><a href="https://doc.babylonjs.com">Documentation</a></li>
+                <li><a href="https://doc.babylonjs.com/playground">Playground Search</a></li>
             </ul>
+        </div>
+    </div>
+
+    <div id="saveLayer" class="save-layer">
+        <div class="save-form">
+            <label for="saveFormTitle">TITLE</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="saveFormTitle" class="save-form-title">
+            <label for="saveFormDescription">DESCRIPTION</label>
+            <div class="separator"></div>
+            <textarea id="saveFormDescription" rows="4" cols="10"></textarea>
+            <label for="saveFormTags">TAGS (separated by comma)</label>
+            <div class="separator"></div>
+            <textarea id="saveFormTags" rows="4" cols="10"></textarea>
+            <div class="save-form-buttons" id="saveFormButtons">
+                <button class="btn save-form-button" id="saveFormButtonOk">OK</button>
+                <button class="btn save-form-button" id="saveFormButtonCancel">Cancel</button>
+            </div>
         </div>
     </div>
 

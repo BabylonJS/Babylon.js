@@ -11,6 +11,5 @@ declare module BABYLON {
         private _diffusePart;
         private _vertexPositionPart;
         constructor(name: string, builder: ICustomMaterialBuilder, scene: Scene);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
     }
 }

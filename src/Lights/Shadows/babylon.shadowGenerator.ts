@@ -34,6 +34,7 @@
         private _blurBoxOffset = 0;
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
+        private _depthScale: number;
 
         public forceBackFacesOnly = false;
 
@@ -44,6 +45,7 @@
         public set bias(bias: number) {
             this._bias = bias;
         }
+
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
@@ -74,6 +76,14 @@
             });
         }
 
+        public get depthScale(): number {
+            return this._depthScale !== undefined ? this._depthScale : this._light.getDepthScale();
+        }
+
+        public set depthScale(value: number) {
+            this._depthScale = value;
+        }
+
         public get filter(): number {
             return this._filter;
         }
@@ -92,6 +102,8 @@
                 this._shadowMap.anisotropicFilteringLevel = 1;
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             }
+
+            this._light._markMeshesAsLightDirty();
         }
 
         public get useVarianceShadowMap(): boolean {
@@ -177,6 +189,7 @@
             this._mapSize = mapSize;
 
             light._shadowGenerator = this;
+            light._markMeshesAsLightDirty();
 
             // Texture type fallback from float to int if not supported.
             var textureType: number;
@@ -247,7 +260,7 @@
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
                     var material = subMesh.getMaterial();
 
-                    this._effect.setFloat("bias", this.bias);
+                    this._effect.setFloat2("biasAndScale", this.bias, this.depthScale);
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
                     this._effect.setVector3("lightPosition", this.getLight().position);
@@ -305,11 +318,7 @@
 
             this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-                    if (this._useFullFloat) {
-                        engine.clear(new Color4(0, 0, 0, 0), true, true, true);
-                    } else {
-                        engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
-                    }
+                    engine.clear(new Color4(0, 0, 0, 0), true, true, true);
                 } else {
                     engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
                 }
@@ -384,7 +393,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "bias"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"],
                     ["diffuseSampler"], join);
             }
 
@@ -506,6 +515,7 @@
             }
 
             this._light._shadowGenerator = null;
+            this._light._markMeshesAsLightDirty();
         }
         /**
          * Serializes the ShadowGenerator and returns a serializationObject.  
@@ -519,6 +529,7 @@
             serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
             serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+            serializationObject.depthScale = this.depthScale;
             serializationObject.darkness = this.getDarkness();
 
             serializationObject.renderList = [];
@@ -553,6 +564,17 @@
             }
             else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
                 shadowGenerator.useBlurExponentialShadowMap = true;
+            }            
+            // Backward compat
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useExponentialShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurExponentialShadowMap = true;
+            }
+
+            if (parsedShadowGenerator.depthScale) {
+                shadowGenerator.depthScale = parsedShadowGenerator.depthScale;
             }
 
             if (parsedShadowGenerator.blurScale) {

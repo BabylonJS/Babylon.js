@@ -100,6 +100,21 @@
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
+        // Morph
+        private _morphTargetManager: MorphTargetManager;
+
+        public get morphTargetManager(): MorphTargetManager {
+            return this._morphTargetManager;
+        }
+
+        public set morphTargetManager(value: MorphTargetManager) {
+            if (this._morphTargetManager === value) {
+                return;
+            }
+            this._morphTargetManager = value;
+            this._syncGeometryWithMorphTargetManager();
+        }
+
         // Private
         public _geometry: Geometry;
         public _delayInfo; //ANY
@@ -788,7 +803,6 @@
             return this;
         }
 
-
         /**
          * Creates a un-shared specific occurence of the geometry for the mesh.  
          * Returns the Mesh.  
@@ -1096,7 +1110,15 @@
             // Material
             var effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial || !effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            if (!effectiveMaterial) {
+                return this;
+            }
+
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
 
@@ -1108,16 +1130,26 @@
                 engine.setDepthWrite(savedDepthWrite);
             }
 
-            effectiveMaterial._preBind();
-            var effect = effectiveMaterial.getEffect();
+            var effect: Effect;
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effect = subMesh.effect;
+            } else {
+                effect = effectiveMaterial.getEffect();
+            }
+
+            effectiveMaterial._preBind(effect);
 
             // Bind
             var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
-
-            effectiveMaterial.bind(world, this);
+            
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            } else {
+                effectiveMaterial.bind(world, this);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {
@@ -1399,6 +1431,8 @@
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
         public dispose(doNotRecurse?: boolean): void {
+            this.morphTargetManager = undefined;
+
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
@@ -1893,6 +1927,11 @@
                 this.material = null;
             }
 
+            // Morph targets
+            if (this.morphTargetManager) {
+                serializationObject.morphTargetManagerId = this.morphTargetManager.uniqueId;
+            }
+
             // Skeleton
             if (this.skeleton) {
                 serializationObject.skeletonId = this.skeleton.id;
@@ -1934,6 +1973,8 @@
                 serializationInstance.ranges = instance.serializeAnimationRanges();
             }
 
+            // 
+
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -1956,6 +1997,45 @@
             // Action Manager
             if (this.actionManager) {
                 serializationObject.actions = this.actionManager.serialize(this.name);
+            }
+        }
+        
+        public _syncGeometryWithMorphTargetManager() {
+            if (!this.geometry) {
+                return;
+            }
+
+            this._markSubMeshesAsAttributesDirty();
+
+            if (this._morphTargetManager && this._morphTargetManager.vertexCount) {
+                if (this._morphTargetManager.vertexCount !== this.getTotalVertices()) {
+                    Tools.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
+                    this.morphTargetManager = undefined;
+                    return;
+                }
+
+                for (var index = 0; index < this.morphTargetManager.numInfluencers; index++) {
+                    var morphTarget = this.morphTargetManager.getActiveTarget(index);
+                    this.geometry.setVerticesData(VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
+
+                    if (morphTarget.hasNormals) {
+                        this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
+                    }
+                }
+            } else {
+                var index = 0;
+                
+                // Positions
+                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index))
+                {
+                    this.geometry.removeVerticesData(VertexBuffer.PositionKind + index);
+                    
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
+                    {
+                        this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
+                    }
+                    index++;
+                }    
             }
         }
 
@@ -2124,6 +2204,11 @@
                 mesh.setMaterialByID(parsedMesh.materialId);
             } else {
                 mesh.material = null;
+            }
+
+            // Morph targets
+            if (parsedMesh.morphTargetManagerId > -1) {
+                mesh.morphTargetManager = scene.getMorphTargetManagerById(parsedMesh.morphTargetManagerId);
             }
 
             // Skeleton

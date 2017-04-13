@@ -27,7 +27,11 @@
 
 		if (depth > shadow)
 		{
-			return darkness;
+			#ifdef OVERLOADEDSHADOWVALUES
+                return mix(1.0, darkness, vOverloadedShadowIntensity.x);
+            #else
+                return darkness;
+            #endif
 		}
 		return 1.0;
 	}
@@ -65,10 +69,14 @@
 			if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) visibility -= 0.25;
 		#endif
 
-		return  min(1.0, visibility + darkness);
+		#ifdef OVERLOADEDSHADOWVALUES
+            return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
+        #else
+            return  min(1.0, visibility + darkness);
+        #endif
 	}
 
-	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness)
+	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
@@ -84,8 +92,12 @@
 			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
 		#endif
 
-		const float shadowStrength = 30.;
-		return 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);	
+		#ifdef OVERLOADEDSHADOWVALUES
+			return mix(1.0, esm, vOverloadedShadowIntensity.x);
+		#else
+			return esm;
+		#endif
 	}
 
 	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
@@ -107,7 +119,11 @@
 
 		if (depth.z > shadow)
 		{
-			return darkness;
+			#ifdef OVERLOADEDSHADOWVALUES
+                return mix(1.0, darkness, vOverloadedShadowIntensity.x);
+            #else
+                return darkness;
+            #endif
 		}
 		return 1.;
 	}
@@ -144,11 +160,15 @@
 			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < depth.z) visibility -= 0.25;
 			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < depth.z) visibility -= 0.25;
 		#endif
-
-		return  min(1.0, visibility + darkness);
+		
+        #ifdef OVERLOADEDSHADOWVALUES
+            return  mix(1.0, min(1.0, visibility + darkness), vOverloadedShadowIntensity.x);
+        #else
+            return  min(1.0, visibility + darkness);
+        #endif
 	}
 
-	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
+	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float depthScale)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
 		vec3 depth = 0.5 * clipSpace + vec3(0.5);
@@ -160,22 +180,25 @@
 			return 1.0;
 		}
 	
-		const float shadowStrength = 30.;
 		#ifndef SHADOWFULLFLOAT
 			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
-			float esm = clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
 		#else
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
-			float esm = 1.0 - clamp(exp(-shadowStrength * shadowPixelDepth) * shadowMapSample - darkness, 0., 1.);
 		#endif
+		
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);		
 
 		// Apply fade out at frustum edge
 		// const float fadeDistance = 0.07;
 		// vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
 		// float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
 
-		// return mix(1.0, esm, mask);
+		// esm = mix(1.0, esm, mask);
 
-		return esm;
+		#ifdef OVERLOADEDSHADOWVALUES
+            return mix(1.0, esm, vOverloadedShadowIntensity.x);
+        #else
+            return esm;
+        #endif
 	}
 #endif

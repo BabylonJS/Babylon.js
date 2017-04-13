@@ -26,12 +26,14 @@ var zip = require('gulp-zip');
 var config = require("./config.json");
 var customConfig = require("./custom.config.json");
 
+var del = require('del');
+
 var debug = require('gulp-debug');
 var includeShadersStream;
 var shadersStream;
 var workersStream;
 
-var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
+var extendsSearchRegex = /var\s__extends[\s\S]+?\}\)\(\);/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
 /**
@@ -393,3 +395,9 @@ gulp.task("zip-blender" , function() {
     .pipe(zip('Blender2Babylon-5.2.zip'))
     .pipe(gulp.dest('../../Exporters/Blender'));
 });
+
+gulp.task('clean-JS-MAP', function () {
+	  return del([
+		  '../../src/**/*.js.map','../../src/**/*.js'
+	  ], {force: true});
+	});

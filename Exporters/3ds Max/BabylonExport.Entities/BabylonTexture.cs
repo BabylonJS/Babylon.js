@@ -71,6 +71,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public string[] extensions { get; set; }
 
+        [DataMember]
+        public int samplingMode { get; set; }
+
         public BabylonTexture()
         {
             level = 1.0f;
@@ -85,6 +88,7 @@ namespace BabylonExport.Entities
             wrapV = 1;
             hasAlpha = false;
             coordinatesIndex = 0;
+            samplingMode = 3;
         }
     }
 }
