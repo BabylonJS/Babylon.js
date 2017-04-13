@@ -71,6 +71,17 @@
         }
     }
 
+    export class EffectCreationOptions {
+        public attributes: string[];
+        public uniformsNames: string[];
+        public samplers: string[];
+        public defines: string;
+        public fallbacks: EffectFallbacks;
+        public onCompiled: (effect: Effect) => void;
+        public onError: (effect: Effect, errors: string) => void;
+        public indexParameters: any;
+    }
+
     export class Effect {
         public name: any;
         public defines: string;
@@ -90,23 +101,40 @@
         private _uniforms: WebGLUniformLocation[];
         public _key: string;
         private _indexParameters: any;
+        private _fallbacks: EffectFallbacks;
 
         private _program: WebGLProgram;
         private _valueCache: { [key: string]: any } = {};
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
-            this._engine = engine;
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this.name = baseName;
-            this.defines = defines;
-            this._uniformsNames = uniformsNames.concat(samplers);
-            this._samplers = samplers;
-            this._attributesNames = attributesNames;
 
-            this.onError = onError;
-            this.onCompiled = onCompiled;
+            if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
+                var options = <EffectCreationOptions>attributesNamesOrOptions;
+                this._engine = <Engine>uniformsNamesOrEngine;
 
-            this._indexParameters = indexParameters;
+                this._attributesNames = options.attributes;
+                this._uniformsNames = options.uniformsNames.concat(options.samplers);
+                this._samplers = options.samplers;
+                this.defines = options.defines;
+                this.onError = options.onError;
+                this.onCompiled = options.onCompiled;
+                this._fallbacks = options.fallbacks;
+                this._indexParameters = options.indexParameters;                
+            } else {
+                this._engine = engine;
+                this.defines = defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
+                this._samplers = samplers;
+                this._attributesNames = (<string[]>attributesNamesOrOptions);
 
+                this.onError = onError;
+                this.onCompiled = onCompiled;
+
+                this._indexParameters = indexParameters;
+                this._fallbacks = fallbacks;
+            }
+        
             this.uniqueId = Effect._uniqueIdSeed++;
 
             var vertexSource;
@@ -138,7 +166,7 @@
                         this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, attributesNames, defines, fallbacks);
+                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks);
                                 });
                             });
                         });
