@@ -2,6 +2,7 @@
     class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public AMBIENT = false;
+        public AMBIENTINGRAYSCALE = false;
         public OPACITY = false;
         public OPACITYRGB = false;
         public REFLECTION = false;
@@ -443,6 +444,12 @@
          */
         @serialize()
         public useAmbientOcclusionFromMetallicTextureRed = false;
+
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        @serialize()
+        public useAmbientInGrayScale = false;
         
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -701,6 +708,7 @@
                     
                     needUVs = true;
                     this._defines.AMBIENT = true;
+                    this._defines.AMBIENTINGRAYSCALE = this.useAmbientInGrayScale;
                 }
 
                 if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
