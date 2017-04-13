@@ -1,15 +1,10 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON {
+module BABYLON.GLTF1 {
     const BinaryExtensionBufferName = "binary_glTF";
 
     enum EContentFormat {
         JSON = 0
-    };
-
-    interface IGLTFBinaryExtension {
-        content: Object;
-        body: Uint8Array;
     };
 
     interface IGLTFBinaryExtensionShader {
@@ -23,35 +18,21 @@ module BABYLON {
         width: number;
     };
 
-    export class GLTFBinaryExtension extends GLTFFileLoaderExtension {
-        private _binary: IGLTFBinaryExtension;
+    export class GLTFBinaryExtension extends GLTFLoaderExtension {
+        private _bin : ArrayBufferView;
 
         public constructor() {
             super("KHR_binary_glTF");
         }
 
-        public loadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
-            if (!(data instanceof ArrayBuffer)) {
+        public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
+            var extensionsUsed = (<any>data.json).extensionsUsed;
+            if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1) {
                 return false;
             }
 
-            setTimeout(() => {
-                this._binary = this._parseBinary(<ArrayBuffer>data);
-                if (!this._binary) {
-                    onError();
-                    return true;
-                }
-
-                var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
-
-                if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
-                    Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
-                    gltfRuntime.extensionsUsed.push(this.name);
-                }
-
-                onSuccess(gltfRuntime);
-            });
-
+            this._bin = data.bin;
+            onSuccess(GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
             return true;
         }
 
@@ -64,7 +45,7 @@ module BABYLON {
                 return false;
             }
 
-            onSuccess(this._binary.body);
+            onSuccess(this._bin);
             return true;
         }
 
@@ -99,50 +80,6 @@ module BABYLON {
 
             return true;
         }
-
-        // Parses a glTF binary array buffer into its content and body
-        private _parseBinary(data: ArrayBuffer): IGLTFBinaryExtension {
-            var binaryReader = new BinaryReader(data);
-
-            var magic = GLTFUtils.DecodeBufferToText(binaryReader.getUint8Array(4));
-            if (magic != "glTF") {
-                Tools.Error("Unexpected magic: " + magic);
-                return null;
-            }
-
-            var version = binaryReader.getUint32();
-            if (version != 1) {
-                Tools.Error("Unsupported version: " + version);
-                return null;
-            }
-
-            var length = binaryReader.getUint32();
-            if (length != data.byteLength) {
-                Tools.Error("Length in header does not match actual data length: " + length + " != " + data.byteLength);
-                return null;
-            }
-
-            var contentLength = binaryReader.getUint32();
-            var contentFormat = <EContentFormat>binaryReader.getUint32();
-
-            var content: Object;
-            switch (contentFormat) {
-                case EContentFormat.JSON:
-                    var jsonText = GLTFUtils.DecodeBufferToText(binaryReader.getUint8Array(contentLength));
-                    content = JSON.parse(jsonText);
-                    break;
-                default:
-                    Tools.Error("Unexpected content format: " + contentFormat);
-                    return null;
-            }
-
-            var body = binaryReader.getUint8Array();
-
-            return {
-                content: content,
-                body: body
-            };
-        };
     }
 
     class BinaryReader {
@@ -173,5 +110,5 @@ module BABYLON {
         }
     }
 
-    GLTFFileLoader.RegisterExtension(new GLTFBinaryExtension());
+    GLTFLoader.RegisterExtension(new GLTFBinaryExtension());
 }
