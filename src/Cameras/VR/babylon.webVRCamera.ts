@@ -42,6 +42,7 @@ module BABYLON {
         public _vrDevice = null;
         public rawPose: DevicePose = null;
         private _vrEnabled = false;
+        private _specsVersion: number = 1.1;
         private _attached: boolean = false;
 
         private _oldSize: BABYLON.Size;
@@ -98,7 +99,15 @@ module BABYLON {
             if (!this.getEngine().vrDisplaysPromise) {
                 Tools.Error("WebVR is not enabled on your browser");
             } else {
-                this._frameData = new VRFrameData();
+                //check specs version
+                if (!window.VRFrameData) {
+                    this._specsVersion = 1.0;
+                    this._frameData = {
+                    };
+                } else {
+                    this._frameData = new VRFrameData();
+                }
+
                 this.getEngine().vrDisplaysPromise.then((devices) => {
                     if (devices.length > 0) {
                         this._vrEnabled = true;
@@ -121,7 +130,7 @@ module BABYLON {
                         }
 
                         //reset the rig parameters.
-                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData });
+                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
                         if (this._attached) {
                             this.getEngine().enableVR(this._vrDevice)
@@ -170,9 +179,17 @@ module BABYLON {
         }
 
         public _checkInputs(): void {
-            if (this._vrEnabled && this._vrDevice.getFrameData(this._frameData)) {
-                var currentPose = this._frameData.pose;
-                this.updateFromDevice(currentPose);
+            if (this._vrEnabled) {
+                if (this._specsVersion === 1.1) {
+                    this._vrDevice.getFrameData(this._frameData);
+                } else {
+                    //backwards comp
+                    let pose = this._vrDevice.getPose();
+                    this._frameData.pose = pose;
+                    // calculate view and projection matrix
+                }
+
+                this.updateFromDevice(this._frameData.pose);
             }
 
             super._checkInputs();
@@ -251,15 +268,51 @@ module BABYLON {
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
          */
         protected _getWebVRViewMatrix(): Matrix {
-            var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+            //WebVR 1.0
+            if (this._cameraRigParams["specs"] === 1.0) {
+                this._updateCameraRotationMatrix();
 
-            Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
+                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
-            if (!this.getScene().useRightHandedSystem) {
-                [2, 6, 8, 9, 14].forEach((num) => {
-                    this._webvrViewMatrix.m[num] *= -1;
-                });
+                // Computing target and final matrix
+                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+
+                if (this.getScene().useRightHandedSystem) {
+                    Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._webvrViewMatrix);
+                } else {
+                    Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._webvrViewMatrix);
+                }
+
+                //now move the eye in the right direction
+                var eyeParams = this._cameraRigParams["eyeParameters"];
+                let offset = eyeParams.offset;
+                // it will actually always be 0, but just in case
+                if (this.getScene().useRightHandedSystem) {
+                    offset[2] *= -1;
+                }
+                Matrix.TranslationToRef(-offset[0], offset[1], -offset[2], Tmp.Matrix[0]);
+
+                this._webvrViewMatrix.multiplyToRef(Tmp.Matrix[0], this._webvrViewMatrix);
+
+            } else /* WebVR 1.1 */ {
+                var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+
+                Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
+
+                if (!this.getScene().useRightHandedSystem) {
+                    [2, 6, 8, 9, 14].forEach((num) => {
+                        this._webvrViewMatrix.m[num] *= -1;
+                    });
+                }
+
+                // update the camera rotation matrix
+                this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
+                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+                // Computing target and final matrix
+                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             }
+
 
             let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
@@ -276,25 +329,26 @@ module BABYLON {
                 this._webvrViewMatrix.invert();
             }
 
-            // update the camera rotation matrix
-            this._webvrViewMatrix.getRotationMatrixToRef(this._cameraRotationMatrix);
-            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-
-            // Computing target and final matrix
-            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             return this._webvrViewMatrix;
         }
 
         protected _getWebVRProjectionMatrix(): Matrix {
-            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
-            Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
+            if (this._cameraRigParams["specs"] === 1.0) {
+                var eyeParams = this._cameraRigParams["eyeParameters"];
+                // deprecated!!
+                Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, 0.1, 1000, this._projectionMatrix, this.getScene().useRightHandedSystem);
+            } else /*WebVR 1.1*/ {
+                var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+                Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
 
-            //babylon compatible matrix
-            if (!this.getScene().useRightHandedSystem) {
-                [8, 9, 10, 11].forEach((num) => {
-                    this._projectionMatrix.m[num] *= -1;
-                });
+                //babylon compatible matrix
+                if (!this.getScene().useRightHandedSystem) {
+                    [8, 9, 10, 11].forEach((num) => {
+                        this._projectionMatrix.m[num] *= -1;
+                    });
+                }
             }
+
             return this._projectionMatrix;
         }
 

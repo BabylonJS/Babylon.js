@@ -57,15 +57,27 @@ module BABYLON {
             serializationObject.name = this.name;
             serializationObject.influence = this.influence;
 
-            serializationObject.positions = this.getPositions();
+            serializationObject.positions = Array.prototype.slice.call(this.getPositions());
             if (this.hasNormals) {
-                serializationObject.normals = this.getNormals();
+                serializationObject.normals = Array.prototype.slice.call(this.getNormals());
             }
 
             return serializationObject;
         }
 
         // Statics
+        public static Parse(serializationObject: any): MorphTarget {
+            var result = new MorphTarget(serializationObject.name , serializationObject.influence);
+
+            result.setPositions(serializationObject.positions);
+
+            if (serializationObject.normals) {
+                result.setNormals(serializationObject.normals);
+            }
+
+            return result;
+        }
+
         public static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget {
             if (!name) {
                 name = mesh.name;

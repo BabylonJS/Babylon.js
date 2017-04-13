@@ -273,7 +273,14 @@
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
             if (parsedTexture.customType) { 
                 var customTexture = Tools.Instantiate(parsedTexture.customType);
-                return customTexture.Parse(parsedTexture, scene, rootUrl);
+                // Update Sampling Mode
+                var parsedCustomTexture:any = customTexture.Parse(parsedTexture, scene, rootUrl);
+                if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
+                    if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
+                        parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
+                    }
+                }
+                return parsedCustomTexture;
             }
 
             if (parsedTexture.isCube) {
@@ -307,6 +314,14 @@
                     return texture;
                 }
             }, parsedTexture, scene);
+
+            // Update Sampling Mode
+            if (parsedTexture.samplingMode) {
+                var sampling:number = parsedTexture.samplingMode;
+                if (texture._samplingMode !== sampling) {
+                    texture.updateSamplingMode(sampling);
+                }
+            }
 
             // Animations
             if (parsedTexture.animations) {

@@ -10,6 +10,9 @@
         public _areFresnelDirty = true;
         public _areMiscDirty = true;    
 
+        public _normals = false;
+        public _uvs = false;
+
         public _needNormals = false;
         public _needUVs = false;
 
@@ -27,6 +30,15 @@
         }
 
         public markAsUnprocessed() {
+            this._isDirty = true;
+        }
+
+        public markAllAsDirty() {
+            this._areTexturesDirty = true;
+            this._areAttributesDirty = true;
+            this._areLightsDirty = true;
+            this._areFresnelDirty = true;
+            this._areMiscDirty = true;
             this._isDirty = true;
         }
 
