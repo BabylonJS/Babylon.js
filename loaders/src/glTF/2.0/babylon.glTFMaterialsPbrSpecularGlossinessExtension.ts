@@ -1,6 +1,6 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON {
+module BABYLON.GLTF2 {
     interface IGLTFMaterialsPbrSpecularGlossiness {
         diffuseFactor: number[];
         diffuseTexture: IGLTFTextureInfo;
@@ -9,13 +9,13 @@ module BABYLON {
         specularGlossinessTexture: IGLTFTextureInfo;
     }
 
-    export class GLTFMaterialsPbrSpecularGlossinessExtension extends GLTFFileLoaderExtension {
+    export class GLTFMaterialsPbrSpecularGlossinessExtension extends GLTFLoaderExtension {
         constructor() {
             super("KHR_materials_pbrSpecularGlossiness");
         }
 
         protected loadMaterial(runtime: IGLTFRuntime, index: number): boolean {
-            var material = GLTFFileLoader.LoadMaterial(runtime, index);
+            var material = GLTFLoader.LoadMaterial(runtime, index);
             if (!material || !material.extensions) return false;
 
             var properties: IGLTFMaterialsPbrSpecularGlossiness = material.extensions[this.name];
@@ -26,10 +26,10 @@ module BABYLON {
             material.babylonMaterial.microSurface = properties.glossinessFactor === undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                GLTFFileLoader.LoadTextureAsync(runtime, properties.diffuseTexture,
+                GLTFLoader.LoadTextureAsync(runtime, properties.diffuseTexture,
                     texture => {
                         material.babylonMaterial.albedoTexture = texture;
-                        GLTFFileLoader.LoadAlphaProperties(runtime, material);
+                        GLTFLoader.LoadAlphaProperties(runtime, material);
                     },
                     () => {
                         Tools.Warn("Failed to load diffuse texture");
@@ -37,7 +37,7 @@ module BABYLON {
             }
 
             if (properties.specularGlossinessTexture) {
-                GLTFFileLoader.LoadTextureAsync(runtime, properties.specularGlossinessTexture,
+                GLTFLoader.LoadTextureAsync(runtime, properties.specularGlossinessTexture,
                     texture => {
                         material.babylonMaterial.reflectivityTexture = texture;
                         material.babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
@@ -47,10 +47,10 @@ module BABYLON {
                     });
             }
 
-            GLTFFileLoader.LoadCommonMaterialProperties(runtime, material);
+            GLTFLoader.LoadCommonMaterialProperties(runtime, material);
             return true;
         }
     }
 
-    GLTFFileLoader.RegisterExtension(new GLTFMaterialsPbrSpecularGlossinessExtension());
+    GLTFLoader.RegisterExtension(new GLTFMaterialsPbrSpecularGlossinessExtension());
 }
