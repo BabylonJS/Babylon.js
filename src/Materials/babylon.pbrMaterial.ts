@@ -336,7 +336,7 @@
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Diffuse Color in other nomenclature.
          */
@@ -705,7 +705,7 @@
                     if (!this.ambientTexture.isReady()) {
                         return false;
                     }
-                    
+
                     needUVs = true;
                     this._defines.AMBIENT = true;
                     this._defines.AMBIENTINGRAYSCALE = this.useAmbientInGrayScale;
@@ -1297,7 +1297,7 @@
                         if (this.metallicTexture) {
                             this._effect.setTexture("reflectivitySampler", this.metallicTexture);
 
-                            this._effect.setFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.reflectivityTexture.level, this.ambientTextureStrength);
+                            this._effect.setFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level, this.ambientTextureStrength);
                             this._effect.setMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
                         }
                         else if (this.reflectivityTexture) {
