@@ -102,37 +102,54 @@ module BABYLON.GLTF2 {
         name?: string;
     }
 
-    export interface IGLTFAccessor extends IGLTFChildRootProperty {
+    export interface IGLTFAccessorSparseIndices extends IGLTFProperty {
         bufferView: number;
-        byteOffset: number;
-        byteStride?: number;
+        byteOffset?: number;
+        componentType: EComponentType;
+    }
+
+    export interface IGLTFAccessorSparseValues extends IGLTFProperty {
+        bufferView: number;
+        byteOffset?: number;
+    }
+
+    export interface IGLTFAccessorSparse extends IGLTFProperty {
+        count: number;
+        indices: IGLTFAccessorSparseIndices;
+        values: IGLTFAccessorSparseValues;
+    }
+
+    export interface IGLTFAccessor extends IGLTFChildRootProperty {
+        bufferView?: number;
+        byteOffset?: number;
         componentType: EComponentType;
         normalized?: boolean;
         count: number;
         type: string;
         max: number[];
         min: number[];
+        sparse?: IGLTFAccessorSparse;
     }
 
-    export interface IGLTFAnimationChannel {
+    export interface IGLTFAnimationChannel extends IGLTFProperty {
         sampler: number;
         target: IGLTFAnimationChannelTarget;
     }
 
-    export interface IGLTFAnimationChannelTarget {
-        id: number;
+    export interface IGLTFAnimationChannelTarget extends IGLTFProperty {
+        node: number;
         path: string;
     }
 
-    export interface IGLTFAnimationSampler {
+    export interface IGLTFAnimationSampler extends IGLTFProperty {
         input: number;
         interpolation?: string;
         output: number;
     }
 
     export interface IGLTFAnimation extends IGLTFChildRootProperty {
-        channels?: IGLTFAnimationChannel[];
-        samplers?: IGLTFAnimationSampler[];
+        channels: IGLTFAnimationChannel[];
+        samplers: IGLTFAnimationSampler[];
     }
 
     export interface IGLTFAssetProfile extends IGLTFProperty {
@@ -159,17 +176,18 @@ module BABYLON.GLTF2 {
         buffer: number;
         byteOffset: number;
         byteLength: number;
+        byteStride?: number;
         target?: EBufferViewTarget;
     }
 
-    export interface IGLTFCameraOrthographic {
+    export interface IGLTFCameraOrthographic extends IGLTFProperty {
         xmag: number;
         ymag: number;
         zfar: number;
         znear: number;
     }
 
-    export interface IGLTFCameraPerspective {
+    export interface IGLTFCameraPerspective extends IGLTFProperty {
         aspectRatio: number;
         yfov: number;
         zfar: number;
@@ -223,23 +241,24 @@ module BABYLON.GLTF2 {
         indices?: number;
         material?: number;
         mode?: EMeshPrimitiveMode;
+        targets?: number[];
     }
 
     export interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];
+        weights?: number[];
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: number;
         children?: number[];
-        skeletons?: number[];
         skin?: number;
-        jointName?: number;
-        matrix: number[];
+        matrix?: number[];
         mesh?: number;
         rotation?: number[];
         scale?: number[];
         translation?: number[];
+        weights?: number[];
 
         // Babylon.js values (optimize)
         babylonNode?: Node;
@@ -257,10 +276,11 @@ module BABYLON.GLTF2 {
     }
 
     export interface IGLTFSkin extends IGLTFChildRootProperty {
-        bindShapeMatrix?: number[];
         inverseBindMatrices?: number;
-        jointNames: number[];
+        skeleton?: number;
+        joints: number[];
 
+        // Babylon.js values (optimize)
         babylonSkeleton?: Skeleton;
     }
 
@@ -310,6 +330,8 @@ module BABYLON.GLTF2 {
 
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
+
+        defaultMaterial?: PBRMaterial;
     }
 
     /**
@@ -318,11 +340,11 @@ module BABYLON.GLTF2 {
     export interface INodeToRoot {
         bone: Bone;
         node: IGLTFNode;
-        id: string;
+        index: number;
     }
 
     export interface IJointNode {
         node: IGLTFNode;
-        id: string;
+        index: number;
     }
 }

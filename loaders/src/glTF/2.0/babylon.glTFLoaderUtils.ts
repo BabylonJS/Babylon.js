@@ -126,21 +126,16 @@ module BABYLON.GLTF2 {
          * Returns the default material of gltf.
          * @param scene: the Babylon.js scene
          */
-        public static GetDefaultMaterial(scene: Scene): PBRMaterial {
-            if (!GLTFUtils._DefaultMaterial) {
-                var material = new PBRMaterial("gltf_default", scene);
+        public static GetDefaultMaterial(runtime: IGLTFRuntime): PBRMaterial {
+            if (!runtime.defaultMaterial) {
+                var material = new PBRMaterial("gltf_default", runtime.babylonScene);
                 material.sideOrientation = Material.CounterClockWiseSideOrientation;
-                material.albedoColor = new Color3(0.5, 0.5, 0.5);
-                material.metallic = 0;
-                material.roughness = 0.5;
-
-                GLTFUtils._DefaultMaterial = material;
+                material.metallic = 1;
+                material.roughness = 1;
+                runtime.defaultMaterial = material;
             }
 
-            return GLTFUtils._DefaultMaterial;
+            return runtime.defaultMaterial;
         }
-
-        // The GLTF default material
-        private static _DefaultMaterial: PBRMaterial = null;
     }
 }
