@@ -197,7 +197,13 @@
                 }
 
                 uniformsList.push(
-                    "lightMatrix" + lightIndex
+                    "vLightData" + lightIndex,
+                    "vLightDiffuse" + lightIndex,
+                    "vLightSpecular" + lightIndex,
+                    "vLightDirection" + lightIndex,
+                    "vLightGround" + lightIndex,
+                    "lightMatrix" + lightIndex,
+                    "shadowsInfo" + lightIndex
                 );
                 uniformBuffersList.push("Light" + lightIndex);
 
@@ -300,7 +306,7 @@
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-                light.transferToEffect(effect);
+            light.transferToEffect(effect, lightIndex);
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
@@ -308,15 +314,17 @@
             var depthValuesAlreadySet = false;
 
             for (var light of mesh._lightSources) {
+                var useUbo = light._uniformBuffer.useUbo;
+
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range);
+                light._uniformBuffer.updateColor4(useUbo ? "vLightDiffuse" : "vLightDiffuse" + lightIndex, Tmp.Color3[0], light.range);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1]);
+                    light._uniformBuffer.updateColor3(useUbo ? "vLightSpecular" : "vLightSpecular" + lightIndex, Tmp.Color3[1]);
                 }
 
                 // Shadows

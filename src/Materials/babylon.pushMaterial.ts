@@ -32,6 +32,12 @@
             this._activeEffect.setMatrix("world", world);
         }
 
+        public bindViewProjection(effect: Effect): void {
+            if (this.getScene().getEngine().webGLVersion === 1) {
+                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            }
+        }
+
         public bind(world: Matrix, mesh?: Mesh): void {
             if (!mesh) {
                 return;
