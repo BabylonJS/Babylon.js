@@ -1,7 +1,7 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON {
-    export abstract class GLTFFileLoaderExtension {
+module BABYLON.GLTF2 {
+    export abstract class GLTFLoaderExtension {
         private _name: string;
 
         public constructor(name: string) {
@@ -22,24 +22,24 @@ module BABYLON {
         // ---------
 
         public static PostCreateRuntime(runtime: IGLTFRuntime): void {
-            for (var extensionName in GLTFFileLoader.Extensions) {
-                var extension = GLTFFileLoader.Extensions[extensionName];
+            for (var extensionName in GLTFLoader.Extensions) {
+                var extension = GLTFLoader.Extensions[extensionName];
                 extension.postCreateRuntime(runtime);
             }
         }
 
         public static LoadMaterial(runtime: IGLTFRuntime, index: number): void {
-            for (var extensionName in GLTFFileLoader.Extensions) {
-                var extension = GLTFFileLoader.Extensions[extensionName];
+            for (var extensionName in GLTFLoader.Extensions) {
+                var extension = GLTFLoader.Extensions[extensionName];
                 if (extension.loadMaterial(runtime, index)) {
                     return;
                 }
             }
 
-            var material = GLTFFileLoader.LoadMaterial(runtime, index);
+            var material = GLTFLoader.LoadMaterial(runtime, index);
             if (material) {
-                GLTFFileLoader.LoadMetallicRoughnessMaterialProperties(runtime, material);
-                GLTFFileLoader.LoadCommonMaterialProperties(runtime, material);
+                GLTFLoader.LoadMetallicRoughnessMaterialProperties(runtime, material);
+                GLTFLoader.LoadCommonMaterialProperties(runtime, material);
             }
         }
     }
