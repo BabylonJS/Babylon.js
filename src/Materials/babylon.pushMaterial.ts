@@ -25,7 +25,7 @@
         }
 
         public bindTransformMatrix(effect: Effect, transformMatrixBuffer: UniformBuffer): void {
-            effect.bindUniformBuffer(transformMatrixBuffer.getBuffer(), "Scene");
+            transformMatrixBuffer.bindToEffect(effect, "Scene");
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {

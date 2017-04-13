@@ -425,12 +425,13 @@
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
-                for (var i = 0; i < this._uniformBuffersNames.length; i++) {
-                    this.bindUniformBlock(this._uniformBuffersNames[i], i);
+                if (engine.webGLVersion > 1) {
+                    for (var i = 0; i < this._uniformBuffersNames.length; i++) {
+                        this.bindUniformBlock(this._uniformBuffersNames[i], i);
+                    }
                 }
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
-
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
                 var index: number;
