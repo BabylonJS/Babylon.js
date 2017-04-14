@@ -65,8 +65,8 @@
 
             // applyToMesh
             if (mesh) {
-                if (mesh instanceof LinesMesh) {
-                    this.boundingBias = new Vector2(0, mesh.intersectionThreshold);
+                if (mesh.getClassName() === "LinesMesh") {
+                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 

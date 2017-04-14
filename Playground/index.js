@@ -678,10 +678,12 @@
                                     }
                                 }
                             }
-                        }
+                        };
 
                         var hash = location.hash.substr(1);
                         currentSnippetToken = hash.split("#")[0];
+                        if(!hash.split("#")[1]) hash += "#0";
+
 
                         xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                         xmlHttp.send();

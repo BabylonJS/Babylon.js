@@ -111,11 +111,11 @@
                     defines["DIRLIGHT" + lightIndex] = false;
 
                     var type;
-                    if (light instanceof SpotLight) {
+                    if (light.getTypeID() === 2) {
                         type = "SPOTLIGHT" + lightIndex;
-                    } else if (light instanceof HemisphericLight) {
+                    } else if (light.getTypeID() === 3) {
                         type = "HEMILIGHT" + lightIndex;
-                    } else if (light instanceof PointLight) {
+                    } else if (light.getTypeID() === 0) {
                         type = "POINTLIGHT" + lightIndex;
                     } else {
                         type = "DIRLIGHT" + lightIndex;

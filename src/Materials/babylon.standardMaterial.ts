@@ -728,13 +728,19 @@ module BABYLON {
                     this.bindTransformMatrix(effect, scene.getTransformMatrixBuffer());
                 }.bind(this);
 
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms, uniformBuffers, samplers,
-                    join, fallbacks, onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }), defines);
-
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
+                }, engine), defines);
+                
                 this.buildUniformLayout();
-
-
             }
 
             if (!subMesh.effect.isReady()) {

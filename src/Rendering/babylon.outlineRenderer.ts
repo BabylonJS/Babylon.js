@@ -94,7 +94,6 @@
                 this._effect = this._scene.getEngine().createEffect("outline",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color"],
-                    [],
                     ["diffuseSampler"], join);
             }
 

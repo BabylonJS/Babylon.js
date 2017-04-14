@@ -2,6 +2,7 @@
     class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public AMBIENT = false;
+        public AMBIENTINGRAYSCALE = false;
         public OPACITY = false;
         public OPACITYRGB = false;
         public REFLECTION = false;
@@ -335,7 +336,7 @@
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Diffuse Color in other nomenclature.
          */
@@ -443,6 +444,12 @@
          */
         @serialize()
         public useAmbientOcclusionFromMetallicTextureRed = false;
+
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        @serialize()
+        public useAmbientInGrayScale = false;
         
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -698,9 +705,10 @@
                     if (!this.ambientTexture.isReady()) {
                         return false;
                     }
-                    
+
                     needUVs = true;
                     this._defines.AMBIENT = true;
+                    this._defines.AMBIENTINGRAYSCALE = this.useAmbientInGrayScale;
                 }
 
                 if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
@@ -1150,7 +1158,6 @@
                 
                 this._effect = scene.getEngine().createEffect("pbr",
                     attribs, uniforms, 
-                    [],
                     samplers,
                     join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: this._defines.NUM_MORPH_INFLUENCERS});
             }
@@ -1291,7 +1298,7 @@
                         if (this.metallicTexture) {
                             this._effect.setTexture("reflectivitySampler", this.metallicTexture);
 
-                            this._effect.setFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.reflectivityTexture.level, this.ambientTextureStrength);
+                            this._effect.setFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level, this.ambientTextureStrength);
                             this._effect.setMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
                         }
                         else if (this.reflectivityTexture) {

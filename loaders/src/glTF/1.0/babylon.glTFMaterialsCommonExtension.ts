@@ -1,7 +1,7 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON {
-    interface IGLTFMaterialCommonExtensionValues {
+module BABYLON.GLTF1 {
+    interface IGLTFMaterialsCommonExtensionValues {
         ambient?: number[] | string;
         diffuse?: number[] | string;
         emission?: number[] | string;
@@ -10,11 +10,11 @@ module BABYLON {
         transparency?: number;
     };
 
-    interface IGLTFMaterialCommonExtension {
+    interface IGLTFMaterialsCommonExtension {
         technique: string;
         transparent?: number;
         doubleSided?: boolean;
-        values: IGLTFMaterialCommonExtensionValues;
+        values: IGLTFMaterialsCommonExtensionValues;
     };
 
     interface IGLTFRuntimeCommonExtension {
@@ -55,7 +55,7 @@ module BABYLON {
         quadraticAttenuation: number;
     }
 
-    export class GLTFMaterialCommonExtension extends GLTFFileLoaderExtension {
+    export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
 
         constructor() {
             super("KHR_materials_common");
@@ -109,7 +109,7 @@ module BABYLON {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
             if (!material || !material.extensions) return false;
 
-            var extension: IGLTFMaterialCommonExtension = material.extensions[this.name];
+            var extension: IGLTFMaterialsCommonExtension = material.extensions[this.name];
             if (!extension) return false;
 
             var standardMaterial = new StandardMaterial(id, gltfRuntime.scene);
@@ -160,12 +160,12 @@ module BABYLON {
 
         private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: () => void): void {
             // Create buffer from texture url
-            GLTFFileLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
+            GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
                 // Create texture from buffer
-                GLTFFileLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => material[propertyPath] = texture, onError);
+                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => material[propertyPath] = texture, onError);
             }, onError);
         }
     }
 
-    GLTFFileLoader.RegisterExtension(new GLTFMaterialCommonExtension());
+    GLTFLoader.RegisterExtension(new GLTFMaterialsCommonExtension());
 }

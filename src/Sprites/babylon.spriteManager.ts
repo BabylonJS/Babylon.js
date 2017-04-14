@@ -96,13 +96,11 @@
             this._effectBase = this._scene.getEngine().createEffect("sprites",
                 [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest"],
-                [],
                 ["diffuseSampler"], "");
 
             this._effectFog = this._scene.getEngine().createEffect("sprites",
                 [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
-                [],
                 ["diffuseSampler"], "#define FOG");
         }
 
