@@ -31102,8 +31102,20 @@ var BABYLON;
             }
             return needNormals;
         };
-        MaterialHelper.PrepareUniformsAndSamplersList = function (uniformsList, uniformBuffersList, samplersList, defines, maxSimultaneousLights) {
+        MaterialHelper.PrepareUniformsAndSamplersList = function (uniformsListOrOptions, samplersList, defines, maxSimultaneousLights) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
+            var uniformsList, uniformBuffersList, samplersList, defines;
+            if (uniformsListOrOptions.uniformsNames) {
+                var options = uniformsListOrOptions;
+                uniformsList = options.uniformsNames;
+                uniformBuffersList = options.uniformBuffersNames;
+                samplersList = options.samplers;
+                defines = options.defines;
+                maxSimultaneousLights = options.maxSimultaneousLights;
+            }
+            else {
+                uniformsList = uniformsListOrOptions;
+            }
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
@@ -32457,7 +32469,13 @@ var BABYLON;
                 if (defines.CAMERACOLORGRADING) {
                     BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
-                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, uniformBuffers, samplers, defines, this._maxSimultaneousLights);
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: defines,
+                    maxSimultaneousLights: this._maxSimultaneousLights
+                });
                 var onCompiled = function (effect) {
                     if (this.onCompiled) {
                         this.onCompiled(effect);
@@ -61423,7 +61441,7 @@ var BABYLON;
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 BABYLON.ColorCurves.PrepareUniforms(uniforms);
                 BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
-                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, [], samplers, this._defines, this.maxSimultaneousLights);
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 this._effect = scene.getEngine().createEffect("pbr", attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: this._defines.NUM_MORPH_INFLUENCERS });
             }
             if (!this._effect.isReady()) {

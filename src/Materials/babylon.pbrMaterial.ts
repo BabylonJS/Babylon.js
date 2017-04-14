@@ -1154,7 +1154,7 @@
                 
                 ColorCurves.PrepareUniforms(uniforms); 
                 ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, [], samplers, this._defines, this.maxSimultaneousLights); 
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights); 
                 
                 this._effect = scene.getEngine().createEffect("pbr",
                     attribs, uniforms, 

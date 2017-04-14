@@ -190,7 +190,20 @@
             return needNormals;
         }
 
-        public static PrepareUniformsAndSamplersList(uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
+        public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: MaterialDefines, maxSimultaneousLights = 4): void {
+            var uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: MaterialDefines;
+
+            if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+                var options = <EffectCreationOptions>uniformsListOrOptions;
+                uniformsList = options.uniformsNames;
+                uniformBuffersList = options.uniformBuffersNames;
+                samplersList = options.samplers;
+                defines = options.defines;
+                maxSimultaneousLights = options.maxSimultaneousLights;
+            } else {
+                uniformsList = <string[]>uniformsListOrOptions;
+            }
+
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
