@@ -394,7 +394,6 @@
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"],
-                    [],
                     ["diffuseSampler"], join);
             }
 

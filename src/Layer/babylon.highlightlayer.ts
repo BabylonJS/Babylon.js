@@ -299,7 +299,6 @@ module BABYLON {
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
-                [],
                 ["textureSampler"], "");
 
             // Render target
@@ -583,7 +582,6 @@ module BABYLON {
                 this._glowMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix"],
-                    [],
                     ["diffuseSampler", "emissiveSampler"], join);
             }
 

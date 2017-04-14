@@ -52,7 +52,6 @@
             this._effect = engine.createEffect("lensFlare",
                 [VertexBuffer.PositionKind],
                 ["color", "viewportMatrix"],
-                [],
                 ["textureSampler"], "");
         }
 

@@ -206,12 +206,16 @@
             var previousEffect = this._effect;
             var join = defines.join("\n");
 
-            this._effect = engine.createEffect(this._shaderPath,
-                this._options.attributes,
-                this._options.uniforms,
-                this._options.uniformBuffers,
-                this._options.samplers,
-                join, fallbacks, this.onCompiled, this.onError);
+            this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
+                    attributes: this._options.attributes,
+                    uniformsNames: this._options.uniforms,
+                    uniformBuffersNames: this._options.uniformBuffers,
+                    samplers: this._options.samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError
+                }, engine);
 
             if (!this._effect.isReady()) {
                 return false;

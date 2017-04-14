@@ -107,7 +107,6 @@
             this._effect = engine.createEffect(shaders,
                 [VertexBuffer.PositionKind],
                 this._uniforms,
-                [],
                 this._samplers,
                 "", null, null, () => {
                     this.releaseInternalTexture();

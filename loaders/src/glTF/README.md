@@ -1,12 +1,28 @@
 # Babylon.js glTF File Loader
 
 # Usage
-The glTF file loader is a SceneLoader plugin.
-Just reference the loader in your HTML file:
+The glTF file loader is a SceneLoader plugin. The loader supports glTF version 1.0 and 2.0 and will use the correct loader based on the glTF version string. Include the version support that you want in any combination.
 
+Both versions:
 ```
-<script src="babylon.2.2.js"></script>
+<script src="babylon.js"></script>
 <script src="babylon.glTFFileLoader.js"></script>
+<script src="babylon.glTF1Loader.js"></script>
+<script src="babylon.glTF2Loader.js"></script>
+```
+
+Version 1 only:
+```
+<script src="babylon.js"></script>
+<script src="babylon.glTFFileLoader.js"></script>
+<script src="babylon.glTF1Loader.js"></script>
+```
+
+Version 2 only:
+```
+<script src="babylon.js"></script>
+<script src="babylon.glTFFileLoader.js"></script>
+<script src="babylon.glTF2Loader.js"></script>
 ```
 
 And then, call the scene loader:
@@ -24,19 +40,13 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
 });
 ```
 
-In order the fix the UP vector (Y with Babylon.js) if you want to play with physics, you can customize the loader:
-```
-BABYLON.GLTFFileLoader.MakeYUP = true; // false by default
-```
-
-If you want to disable incremental loading (which is the default behavior), you can set the property IncrementalLoading to false.
-Then, you'll be able to be called back with all geometries and shaders loaded.
-For example, you can retrieve the real bounding infos of a mesh loaded using the loader.
+If you want to disable incremental loading, you can set the property `IncrementalLoading` to false.
+Then, you'll be able to be called back with all geometries, shaders (V1), PBR materials (V2) loaded. Textures are always loaded asynchronously. For example, you can retrieve the real bounding infos of a mesh loaded when incremental loading is disabled.
 ```
 BABYLON.GLTFFileLoader.IncrementalLoading = false; // true by default
 ```
 
-In order to work with homogeneous coordinates (that can be available with some converters and exporters):
+(V1 only) In order to work with homogeneous coordinates (that can be available with some converters and exporters):
 ```
 BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
 ```
@@ -47,9 +57,9 @@ BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
 * Import geometries
     * From binary files
     * From base64 buffers
-* Import lights
+* Import lights (V1 only)
 * Import cameras
-* Import and set custom shaders
+* Import and set custom shaders (V1 only)
     * Automatically bind attributes
     * Automatically bind matrices
     * Set uniforms
@@ -59,6 +69,7 @@ BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
     * Hardware skinning (shaders support)
     * Bones import
 * Handle dummy nodes (empty nodes)
+* PBR materials (V2 only)
 
 ## To improve
 * Test on more geometries

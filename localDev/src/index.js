@@ -49,20 +49,20 @@ var createScene = function()
     sphere.subMeshes.push(new BABYLON.SubMesh(1, 0, verticesCount, 900, 900, sphere));
     sphere.subMeshes.push(new BABYLON.SubMesh(2, 0, verticesCount, 1800, 2088, sphere));
 
-  //  material0.diffuseTexture = new BABYLON.Texture("textures/misc.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE); 
+ //   material0.diffuseTexture = new BABYLON.Texture("/assets/textures/leopard_fur.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE); 
 
     scene.actionManager = new BABYLON.ActionManager(scene);
     scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
         if (evt.sourceEvent.key == "t")
         {
-          //  globals.multimat.subMaterials[0].diffuseColor = new BABYLON.Color3(1, 1, 1);
-            globals.multimat.subMaterials[0].diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            globals.multimat.subMaterials[0].diffuseColor = new BABYLON.Color3(1, 1, 1);
+            globals.multimat.subMaterials[0].diffuseTexture = new BABYLON.Texture("/assets/textures/leopard_fur.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
         }
         else if (evt.sourceEvent.key == "m")
         {
             var material0 = new BABYLON.StandardMaterial("mat0", scene);
-          //  material0.diffuseColor = new BABYLON.Color3(0, 1, 0);
-            material0.diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            material0.diffuseColor = new BABYLON.Color3(0, 1, 0);
+            material0.diffuseTexture = new BABYLON.Texture("/assets/textures/leopard_fur.jpg", scene, true, true, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
 
             globals.multimat.subMaterials[0] = material0; 
         }
