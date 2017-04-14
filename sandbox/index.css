@@ -191,7 +191,7 @@ a {
     background-position: center;
 }
 
-#btnFullscreen , #btnCamera {
+#btnFullscreen {
     margin-top: 10px;
     margin-right: 25px;
 }
@@ -253,12 +253,12 @@ li {
     -webkit-transform: translateX(120%);
 }
 
-#btnFullscreen, #btnCamera, #btnPerf, #btnFiles {
+#btnFullscreen, #btnPerf, #btnFiles {
      -webkit-transition: -webkit-transform 0.15s ease-in-out;
      transition: transform 0.15s ease-in-out;
 }
 
-#btnFullscreen:hover, #btnCamera:hover, #btnPerf:hover, #btnFiles:hover {
+#btnFullscreen:hover, #btnPerf:hover, #btnFiles:hover {
     -webkit-transform: scale(0.9);
     transform: scale(0.9);
 }

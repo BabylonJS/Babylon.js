@@ -17,9 +17,6 @@ if (BABYLON.Engine.isSupported()) {
     var currentHelpCounter;
     var currentScene;
     var enableDebugLayer = false;
-    var enableArcRotateCamera = false;
-    var arcRotateCamera;
-    var defaultCamera;
 
     currentHelpCounter = localStorage.getItem("helpcounter");
 
@@ -50,6 +47,13 @@ if (BABYLON.Engine.isSupported()) {
         document.title = "BabylonJS - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
+
+        // Attach camera to canvas inputs
+        if (!currentScene.activeCamera || currentScene.lights.length === 0) {     
+            currentScene.createDefaultCameraOrLight(true);
+        }
+        currentScene.activeCamera.attachControl(canvas);
+
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (currentScene.meshes.length === 0 && currentScene.clearColor.r === 1 && currentScene.clearColor.g === 0 && currentScene.clearColor.b === 0) {
             document.getElementById("logo").className = "";
@@ -71,19 +75,20 @@ if (BABYLON.Engine.isSupported()) {
                 currentScene.activeCamera.keysRight.push(69); // E
                 currentScene.activeCamera.keysRight.push(68); // D
             }
-            defaultCamera = currentScene.activeCamera;
-            var worldExtends = currentScene.getWorldExtends();
-            var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
-            arcRotateCamera = new BABYLON.ArcRotateCamera("arcRotateCamera", 0, 0, 10, BABYLON.Vector3.Zero(), currentScene);
-            arcRotateCamera.setPosition(new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
-            arcRotateCamera.setTarget(worldCenter);
-            arcRotateCamera.wheelPrecision = 100.0;
-            arcRotateCamera.minZ = 0.1;
-            arcRotateCamera.maxZ = 1000;
-            if(enableArcRotateCamera){
-                currentScene.activeCamera = arcRotateCamera;
-                currentScene.activeCamera.attachControl(canvas);
-            }
+
+            // defaultCamera = currentScene.activeCamera;
+            // var worldExtends = currentScene.getWorldExtends();
+            // var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+            // arcRotateCamera = new BABYLON.ArcRotateCamera("arcRotateCamera", 0, 0, 10, BABYLON.Vector3.Zero(), currentScene);
+            // arcRotateCamera.setPosition(new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+            // arcRotateCamera.setTarget(worldCenter);
+            // arcRotateCamera.wheelPrecision = 100.0;
+            // arcRotateCamera.minZ = 0.1;
+            // arcRotateCamera.maxZ = 1000;
+            // if(enableArcRotateCamera){
+            //     currentScene.activeCamera = arcRotateCamera;
+            //     currentScene.activeCamera.attachControl(canvas);
+            // }
         }
     };
 
@@ -98,25 +103,14 @@ if (BABYLON.Engine.isSupported()) {
     });
     htmlInput.addEventListener('change', function (event) {
         var filestoLoad;
-            // Handling data transfer via drag'n'drop
-            if (event && event.dataTransfer && event.dataTransfer.files) {
-                filesToLoad = event.dataTransfer.files;
-            }
-            // Handling files from input files
-            if (event && event.target && event.target.files) {
-                filesToLoad = event.target.files;
-            }
-            if (filesToLoad && filesToLoad.length > 0) {
-            enableArcRotateCamera= false;
-            for (var i = 0; i < filesToLoad.length; i++) {
-                    var extension = filesToLoad[i].name.split('.').pop();
-                    if (extension === "gltf" || extension === "glb")
-                    {       
-                         enableArcRotateCamera= true;
-                         break;
-                    }
-                }
-            }
+        // Handling data transfer via drag'n'drop
+        if (event && event.dataTransfer && event.dataTransfer.files) {
+            filesToLoad = event.dataTransfer.files;
+        }
+        // Handling files from input files
+        if (event && event.target && event.target.files) {
+            filesToLoad = event.target.files;
+        }
         filesInput.loadFiles(event);
     }, false);
     btnFullScreen.addEventListener('click', function () {
@@ -134,21 +128,6 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
     }, false);
-    btnCamera.addEventListener('click', function () {
-        if (currentScene) {
-            if (!enableArcRotateCamera) {
-                currentScene.activeCamera = arcRotateCamera;
-                currentScene.activeCamera.attachControl(canvas);
-                enableArcRotateCamera = true;
-            }
-            else {
-                currentScene.activeCamera = defaultCamera;
-                currentScene.activeCamera.attachControl(canvas);
-                enableArcRotateCamera = false;
-            }
-        }
-    }, false);
-
     // The help tips will be displayed only 5 times
     if (currentHelpCounter < 5) {
         help01.className = "help shown";
