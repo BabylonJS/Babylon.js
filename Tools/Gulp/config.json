@@ -509,12 +509,7 @@
             },
             {
                 "files": [
-                    "../../loaders/src/glTF/babylon.glTFFileLoader.ts"
-                ],
-                "output": "babylon.glTFFileLoader.js"
-            },
-            {
-                "files": [
+                    "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFLoaderUtils.ts",
@@ -522,17 +517,35 @@
                     "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts"
                 ],
-                "output": "babylon.glTF1Loader.js"
+                "output": "babylon.glTF1FileLoader.js"
             },
             {
                 "files": [
+                    "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFMaterialsPbrSpecularGlossinessExtension.ts"
                 ],
-                "output": "babylon.glTF2Loader.js"
+                "output": "babylon.glTF2FileLoader.js"
+            },
+            {
+                "files": [
+                    "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFLoaderInterfaces.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFLoader.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFLoaderUtils.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
+                    "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFMaterialsPbrSpecularGlossinessExtension.ts"
+                ],
+                "output": "babylon.glTFFileLoader.js"
             }
         ],
         "build": {
