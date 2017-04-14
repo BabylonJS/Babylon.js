@@ -1,5 +1,6 @@
 module BABYLON {
 
+    // Pool for avoiding memory leaks
     var MAX_UNIFORM_SIZE = 256;
     var _tempBuffer = new Float32Array(MAX_UNIFORM_SIZE);
 
@@ -18,6 +19,13 @@ module BABYLON {
         private _noUbo: boolean;
         private _currentEffect: Effect;
 
+        /**
+         * Uniform buffer objects.
+         * 
+         * Handles blocks of uniform on the GPU.
+         * For more information, please refer to : 
+         * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
+         */
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
             this._noUbo = engine.webGLVersion === 1;
@@ -32,33 +40,55 @@ module BABYLON {
 
         }
 
+        // Properties
+        /**
+         * Indicates if the buffer is using the WebGL2 UBO implementation,
+         * or just falling back on setUniformXXX calls.
+         */
         public get useUbo(): boolean {
             return !this._noUbo;
         }
         
+        /**
+         * Indicates if the WebGL underlying uniform buffer is in sync
+         * with the javascript cache data.
+         */
         public get isSync(): boolean {
             return !this._needSync;
         }
 
-        // Properties
+        /**
+         * Indicates if the WebGL underlying uniform buffer is dynamic.
+         * Also, a dynamic UniformBuffer will disable cache verification and always 
+         * update the underlying WebGL uniform buffer to the GPU.
+         */
         public isDynamic(): boolean {
             return this._dynamic;
         }
 
+        /**
+         * The data cache on JS side.
+         */
         public getData(): Float32Array {
             return this._bufferData;
         }
 
+        /**
+         * The underlying WebGL Uniform buffer.
+         */
         public getBuffer(): WebGLBuffer {
             return this._buffer;
         }
 
+        /**
+         * std140 layout specifies how to align data within an UBO structure.
+         * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
+         * for specs.
+         */
         private _fillAlignment(size: number) {
-            // std140 layout
-            // This computation is really simple because we only use floats, vectors of 1, 2, 3, 4 components
+            // This code has been simplified because we only use floats, vectors of 1, 2, 3, 4 components
             // and 4x4 matrices
             // TODO : change if other types are used
-            // See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
 
             var alignment;
             if (size <= 2) {
@@ -78,6 +108,13 @@ module BABYLON {
             }
         }
 
+        /**
+         * Adds an uniform in the buffer.
+         * Warning : the subsequents calls of this function must be in the same order as declared in the shader
+         * for the layout to be correct !
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number|number[]} size Data size, or data directly.
+         */
         public addUniform(name: string, size: number | number[]) {
             if (this._noUbo) {
                 return;
@@ -117,26 +154,55 @@ module BABYLON {
             this._needSync = true;
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Matrix} mat A 4x4 matrix.
+         */
         public addMatrix(name: string, mat: Matrix) {
             this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         */
         public addFloat2(name: string, x: number, y: number) {
             var temp = [x, y];
             this.addUniform(name, temp);
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         */
         public addFloat3(name: string, x: number, y: number, z: number) {
             var temp = [x, y, z];
             this.addUniform(name, temp);
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         */
         public addColor3(name: string, color: Color3) {
             var temp = [];
             color.toArray(temp);
             this.addUniform(name, temp);
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         * @param {number} alpha
+         */
         public addColor4(name: string, color: Color3, alpha: number) {
             var temp = [];
             color.toArray(temp);
@@ -144,12 +210,20 @@ module BABYLON {
             this.addUniform(name, temp);
         }
 
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector3} vector
+         */
         public addVector3(name: string, vector: Vector3) {
             var temp = [];
             vector.toArray(temp);
             this.addUniform(name, temp);
         }
 
+        /**
+         * Effectively creates the WebGL Uniform Buffer, once layout is completed with `addUniform`.
+         */
         public create(): void {
             if (this._noUbo) {
                 return;
@@ -169,6 +243,11 @@ module BABYLON {
             this._needSync = true;
         } 
 
+        /**
+         * Updates the WebGL Uniform Buffer on the GPU.
+         * If the `dynamic` flag is set to true, no cache comparison is done.
+         * Otherwise, the buffer will be updated only if the cache differs.
+         */
         public update(): void {
             if (!this._buffer) {
                 this.create();
@@ -184,13 +263,19 @@ module BABYLON {
             this._needSync = false;
         }
 
+        /**
+         * Updates the value of an uniform. The `update` method must be called afterwards to make it effective in the GPU.
+         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
+         * @param {number[]|Float32Array} data Flattened data
+         * @param {number} size Size of the data.
+         */
         public updateUniform(uniformName: string, data: number[] | Float32Array, size: number) {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
                 if (this._buffer) {
                     // Cannot add an uniform if the buffer is already created
-                    Tools.Error("Uniform buffer overflow.");
+                    Tools.Error("Cannot add an uniform after UBO has been created.");
                     return;
                 }
                 this.addUniform(uniformName, size);
@@ -220,6 +305,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         */
         public updateFloat(name: string, x: number) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -232,6 +322,12 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 1);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         */
         public updateFloat2(name: string, x: number, y: number) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -245,6 +341,13 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 2);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         */
         public updateFloat3(name: string, x: number, y: number, z: number) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -259,6 +362,14 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 3);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         * @param {number} w
+         */
         public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -274,6 +385,11 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 4);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Matrix} A 4x4 matrix.
+         */
         public updateMatrix(name: string, mat: Matrix) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -285,6 +401,11 @@ module BABYLON {
             this.updateUniform(name, mat.toArray(), 16);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector3} vector
+         */
         public updateVector3(name: string, vector: Vector3) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -296,6 +417,11 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 3);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         */
         public updateColor3(name: string, color: Color3) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -307,6 +433,12 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 3);
         }
 
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         * @param {number} alpha
+         */
         public updateColor4(name: string, color: Color3, alpha: number) {
             if (this._noUbo) {
                 if (this._currentEffect) {
@@ -319,12 +451,22 @@ module BABYLON {
             this.updateUniform(name, _tempBuffer, 4);
         }
 
-        public updateUniformDirectly(uniformName: string, data: number[]) {
+        /**
+         * Directly updates the value of the uniform in the cache AND on the GPU.
+         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
+         * @param {number[]|Float32Array} data Flattened data
+         */
+        public updateUniformDirectly(uniformName: string, data: number[] | Float32Array) {
             this.updateUniform(uniformName, data, data.length);
 
             this.update();
         }
 
+        /**
+         * Binds this uniform buffer to an effect.
+         * @param {Effect} effect
+         * @param {string} name Name of the uniform block in the shader.
+         */
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
 
@@ -335,6 +477,9 @@ module BABYLON {
             effect.bindUniformBuffer(this._buffer, name);
         }
 
+        /**
+         * Disposes the uniform buffer.
+         */
         public dispose(): void {
             if (!this._buffer) {
                 return;
