@@ -116,11 +116,6 @@
 
                     // Wait for textures and shaders to be ready
                     that._currentScene.executeWhenReady(() => {
-                        // Attach camera to canvas inputs
-                        if (!that._currentScene.activeCamera || that._currentScene.lights.length === 0) {     
-                            that._currentScene.createDefaultCameraOrLight();
-                        }
-                        that._currentScene.activeCamera.attachControl(that._canvas);
 
                         if (that._sceneLoadedCallback) {
                             that._sceneLoadedCallback(this._sceneFileToLoad, that._currentScene);

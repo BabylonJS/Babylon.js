@@ -3510,8 +3510,8 @@
 
                 if (createArcRotateCamera) {
                     camera = new ArcRotateCamera("default camera", 0, 0, 10, Vector3.Zero(), this);
-
                     camera.setPosition(new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+                    camera.lowerRadiusLimit = 0.5;
                     camera.setTarget(worldCenter);
                 } else {
                     camera = new FreeCamera("default camera", Vector3.Zero(), this);
@@ -3519,7 +3519,9 @@
                     camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
                     camera.setTarget(worldCenter);
                 }
-
+                camera.minZ = 0.1;
+                var maxDist = worldExtends.max.subtract(worldExtends.min).length();
+                camera.wheelPrecision = 100.0 / maxDist;
                 this.activeCamera = camera;
             }
         }
