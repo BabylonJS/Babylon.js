@@ -1447,6 +1447,8 @@
                 return false;
             }
             var index: number;
+
+            // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
 
@@ -1455,6 +1457,7 @@
                 }
             }
 
+            // Meshes
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 

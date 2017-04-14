@@ -244,6 +244,7 @@ var BABYLON;
             EComponentType[EComponentType["UNSIGNED_BYTE"] = 5121] = "UNSIGNED_BYTE";
             EComponentType[EComponentType["SHORT"] = 5122] = "SHORT";
             EComponentType[EComponentType["UNSIGNED_SHORT"] = 5123] = "UNSIGNED_SHORT";
+            EComponentType[EComponentType["UNSIGNED_INT"] = 5125] = "UNSIGNED_INT";
             EComponentType[EComponentType["FLOAT"] = 5126] = "FLOAT";
         })(EComponentType = GLTF2.EComponentType || (GLTF2.EComponentType = {}));
         var EMeshPrimitiveMode;
@@ -1402,6 +1403,7 @@ var BABYLON;
                     case GLTF2.EComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, byteLength);
                     case GLTF2.EComponentType.SHORT: return new Int16Array(buffer, byteOffset, byteLength);
                     case GLTF2.EComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, byteLength);
+                    case GLTF2.EComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, byteLength);
                     default: return new Float32Array(buffer, byteOffset, byteLength);
                 }
             };

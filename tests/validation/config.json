@@ -1,0 +1,101 @@
+﻿{
+  "root": "https://cdn.rawgit.com/BabylonJS/Website/06ecbea7",
+  "tests": [  
+   {
+      "title": "Sponza",
+      "sceneFolder": "/Scenes/Sponza/",
+      "sceneFilename": "Sponza.babylon",
+      "referenceImage": "Sponza.png"
+    },    
+    {
+      "title": "Windows cafe",
+      "sceneFolder": "/Scenes/WCafe/",
+      "sceneFilename": "WCafe.babylon",
+      "referenceImage": "WCafe.png"
+    },
+    {
+      "title": "Espilit",
+      "sceneFolder": "/Scenes/Espilit/",
+      "sceneFilename": "Espilit.binary.babylon",
+      "referenceImage": "Espilit.png"
+    },
+    {
+      "title": "The car",
+      "sceneFolder": "/Scenes/TheCar/",
+      "sceneFilename": "TheCar.binary.babylon",
+      "referenceImage": "TheCar.png"
+    },
+    {
+      "title": "Viper",
+      "sceneFolder": "/Scenes/Viper/",
+      "sceneFilename": "Viper.babylon",
+      "referenceImage": "Viper.png"
+    },
+    {
+      "title": "Retail",
+      "sceneFolder": "/Scenes/Retail/",
+      "sceneFilename": "Retail.babylon",
+      "referenceImage": "Retail.png"
+    },
+    {
+      "title": "Hill Valley",
+      "sceneFolder": "/Scenes/hillvalley/",
+      "sceneFilename": "HillValley.incremental.babylon",
+      "referenceImage": "HillValley.png"
+    },
+    {
+      "title": "Heart",
+      "sceneFolder": "/Scenes/Heart/",
+      "sceneFilename": "Heart.babylon",
+      "referenceImage": "heart.png"
+    },
+    {
+      "title": "Mansion",
+      "sceneFolder": "/Scenes/Mansion/",
+      "sceneFilename": "Mansion.babylon",
+      "referenceImage": "Mansion.png"
+    },
+    {
+      "title": "SpaceDeK",
+      "sceneFolder": "/Scenes/SpaceDek/",
+      "sceneFilename": "SpaceDek.babylon",
+      "referenceImage": "SpaceDeK.png"
+    },
+    {
+      "title": "Flat2009",
+      "sceneFolder": "/Scenes/Flat2009/",
+      "sceneFilename": "Flat2009.babylon",
+      "referenceImage": "Flat2009.png"
+    },
+    {
+      "title": "CSG",
+      "scriptToRun": "/Demos/CSG/csg.js",
+      "functionToCall": "CreateCSGTestScene",
+      "referenceImage": "csg.png"
+    },
+    {
+      "title": "Charting",
+      "scriptToRun": "/Demos/Charting/charting.js",
+      "functionToCall": "CreateChartingTestScene",
+      "referenceImage": "charting.png"
+    },
+    {
+      "title": "Fog",
+      "scriptToRun": "/Demos/Fog/fog.js",
+      "functionToCall": "CreateFogScene",
+      "referenceImage": "fog.png"
+    },
+    {
+      "title": "Polygon",
+      "scriptToRun": "/Demos/Polygon/polygon.js",
+      "functionToCall": "CreatePolygonScene",
+      "referenceImage": "polygon.png"
+    },      
+    {
+      "title": "Lines",
+      "scriptToRun": "/Demos/Lines/lines.js",
+      "functionToCall": "CreateLinesTestScene",
+      "referenceImage": "lines.png"
+    }
+  ]
+}
