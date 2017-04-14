@@ -81,7 +81,7 @@
 
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
-        private _uniformBuffersNames: string[];
+        private _uniformBuffersNames: { [key: string]: number } = {};
         private _uniformsNames: string[];
         private _samplers: string[];
         private _isReady = false;
@@ -99,7 +99,10 @@
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
-            this._uniformBuffersNames = uniformBuffers;
+
+            for (var i = 0; i < uniformBuffers.length; i++) {
+                this._uniformBuffersNames[uniformBuffers[i]] = i;
+            }
 
             this._uniformsNames = uniformsNames.concat(samplers);
             this._samplers = samplers;
@@ -438,8 +441,8 @@
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 if (engine.webGLVersion > 1) {
-                    for (var i = 0; i < this._uniformBuffersNames.length; i++) {
-                        this.bindUniformBlock(this._uniformBuffersNames[i], i);
+                    for (var name in this._uniformBuffersNames) {
+                        this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
                 }
 
@@ -600,7 +603,11 @@
         }
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
-            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames.indexOf(name));
+            if (this._valueCache[name] === buffer) {
+                return;
+            }
+            this._valueCache[name] = buffer;
+            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
         }
 
         public bindUniformBlock(blockName: string, index: number): void {
