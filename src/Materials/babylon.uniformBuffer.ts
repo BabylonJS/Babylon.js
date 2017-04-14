@@ -23,6 +23,9 @@ module BABYLON {
          * Uniform buffer objects.
          * 
          * Handles blocks of uniform on the GPU.
+         *
+         * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
+         *
          * For more information, please refer to : 
          * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
          */

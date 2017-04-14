@@ -108,6 +108,7 @@
 
         private _program: WebGLProgram;
         private _valueCache: { [key: string]: any } = {};
+        private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
         constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this.name = baseName;
@@ -634,10 +635,10 @@
         }
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
-            if (this._valueCache[name] === buffer) {
+            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
                 return;
             }
-            this._valueCache[name] = buffer;
+            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
             this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
         }
 
