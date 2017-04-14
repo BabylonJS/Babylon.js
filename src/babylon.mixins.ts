@@ -28,10 +28,6 @@ interface Window {
     VRFrameData: any; // WebVR, from specs 1.1
 }
 
-interface WebGLVertexArrayObject {
-
-}
-
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
