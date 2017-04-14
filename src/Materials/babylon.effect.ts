@@ -76,11 +76,12 @@
         public uniformsNames: string[];
         public uniformBuffersNames: string[];
         public samplers: string[];
-        public defines: string;
+        public defines: any;
         public fallbacks: EffectFallbacks;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public indexParameters: any;
+        public maxSimultaneousLights: number;
     }
 
     export class Effect {

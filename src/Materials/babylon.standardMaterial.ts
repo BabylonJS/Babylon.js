@@ -718,7 +718,13 @@ module BABYLON {
                 if (defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, uniformBuffers, samplers, defines, this._maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: this._maxSimultaneousLights
+                });
 
                 var onCompiled = function(effect) {
                     if (this.onCompiled) {
@@ -728,7 +734,7 @@ module BABYLON {
                     this.bindTransformMatrix(effect, scene.getTransformMatrixBuffer());
                 }.bind(this);
 
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
