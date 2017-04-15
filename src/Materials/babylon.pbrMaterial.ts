@@ -1360,8 +1360,8 @@
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
                 if (this._defines.METALLICWORKFLOW) {
-                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
-                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    PBRMaterial._scaledReflectivity.r = (this.metallic === undefined || this.metallic === null) ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = (this.roughness === undefined || this.roughness === null) ? 1 : this.roughness;
                     this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
                 }
                 else {

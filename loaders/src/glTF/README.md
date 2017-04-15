@@ -47,15 +47,15 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
 });
 ```
 
-## Step 3 (Optional) - Specify Flags
+## Step 3 (V1 Only) - Optionally Specify Flags
 
 If you want to disable incremental loading, you can set the property `IncrementalLoading` to false.
-Then, you'll be able to be called back with all geometries, shaders (V1), PBR materials (V2) loaded. Textures are always loaded asynchronously. For example, you can retrieve the real bounding infos of a mesh loaded when incremental loading is disabled.
+Then, you'll be able to be called back with all geometries and shaders loaded. Textures are always loaded asynchronously. For example, you can retrieve the real bounding infos of a mesh loaded when incremental loading is disabled.
 ```
 BABYLON.GLTFFileLoader.IncrementalLoading = false; // true by default
 ```
 
-(V1 only) In order to work with homogeneous coordinates (that can be available with some converters and exporters):
+In order to work with homogeneous coordinates (that can be available with some converters and exporters):
 ```
 BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
 ```
