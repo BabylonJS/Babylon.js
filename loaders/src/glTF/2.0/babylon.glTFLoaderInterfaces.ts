@@ -54,12 +54,12 @@ module BABYLON.GLTF2 {
 
     export enum ETextureMagFilter {
         NEAREST = 9728,
-        LINEAR = 9728,
+        LINEAR = 9729,
     }
 
     export enum ETextureMinFilter {
         NEAREST = 9728,
-        LINEAR = 9728,
+        LINEAR = 9729,
         NEAREST_MIPMAP_NEAREST = 9984,
         LINEAR_MIPMAP_NEAREST = 9985,
         NEAREST_MIPMAP_LINEAR = 9986,
@@ -293,8 +293,9 @@ module BABYLON.GLTF2 {
         target?: ETextureTarget;
         type?: ETextureType;
 
-        // Babylon.js values (optimize)
-        babylonTexture?: Texture;
+        // Babylon.js values (optimize, one per coordinate index)
+        babylonTextures: Texture[];
+        blobURL: string;
     }
 
     export interface IGLTFTextureInfo {
