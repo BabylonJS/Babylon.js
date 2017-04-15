@@ -15,7 +15,7 @@ module BABYLON.GLTF2 {
         protected postCreateRuntime(runtime: IGLTFRuntime): void {}
 
         // Return true to stop other extensions from loading materials.
-        protected loadMaterial(runtime: IGLTFRuntime, index: number): boolean { return false; }
+        protected loadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): boolean { return false; }
 
         // ---------
         // Utilities
@@ -28,19 +28,38 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public static LoadMaterial(runtime: IGLTFRuntime, index: number): void {
+        public static LoadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): void {
             for (var extensionName in GLTFLoader.Extensions) {
                 var extension = GLTFLoader.Extensions[extensionName];
-                if (extension.loadMaterial(runtime, index)) {
+                if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
                     return;
                 }
             }
 
             var material = GLTFLoader.LoadMaterial(runtime, index);
-            if (material) {
-                GLTFLoader.LoadMetallicRoughnessMaterialProperties(runtime, material);
-                GLTFLoader.LoadCommonMaterialProperties(runtime, material);
+            if (!material) {
+                onSuccess();
+                return;
             }
+
+            var metallicRoughnessPropertiesSuccess = false;
+            var commonPropertiesSuccess = false;
+
+            var checkSuccess = () => {
+                if (metallicRoughnessPropertiesSuccess && commonPropertiesSuccess) {
+                    onSuccess();
+                }
+            }
+
+            GLTFLoader.LoadMetallicRoughnessMaterialPropertiesAsync(runtime, material, () => {
+                metallicRoughnessPropertiesSuccess = true;
+                checkSuccess();
+            }, onError);
+
+            GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material, () => {
+                commonPropertiesSuccess = true;
+                checkSuccess();
+            }, onError);
         }
     }
 }
