@@ -461,12 +461,3 @@ body {
         display : none !important;
     }
 }
-
-@media (max-width: 850px) {    
-    #jsEditor {
-        width : 0px !important;
-    }
-    #canvasZone {
-        width : 100% !important;
-    }
-}

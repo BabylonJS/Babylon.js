@@ -1,6 +1,8 @@
-﻿(function () {
-    var jsEditor;
+﻿var jsEditor;
+(function () {
     var fontSize = 14;
+
+    var splitInstance = Split(['#jsEditor', '#canvasZone']);
 
     var elementToTheme = [
         '.wrapper .gutter',
@@ -134,6 +136,18 @@
                         // Restore theme
                         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
                         toggleTheme(theme);
+
+                        // Remove editor if window size is less than 850px
+                        var removeEditorForSmallScreen = function () {
+                            if (mq.matches) {
+                                splitInstance.collapse(0);
+                            } else {
+                                splitInstance.setSizes([50, 50]);
+                            }
+                        }
+                        var mq = window.matchMedia("(max-width: 850px)");
+                        mq.addListener(removeEditorForSmallScreen);
+
 
                     }
                 }
@@ -500,15 +514,12 @@
             // If the editor is present
             if (editorButton.classList.contains('checked')) {
                 editorButton.classList.remove('checked');
-                document.getElementById("jsEditor").style.display = "none";
+                splitInstance.collapse(0);
                 editorButton.innerHTML = 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>';
-                document.getElementById("canvasZone").style.width = "100%";
             } else {
                 editorButton.classList.add('checked');
+                splitInstance.setSizes([50, 50]);  // Reset
                 editorButton.innerHTML = 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>';
-                document.getElementById("jsEditor").style.display = "block";
-                document.getElementById("canvasZone").style.width = "50%";
-                // document.getElementById("canvasZone").style.flexBasis = undefined;
             }
             engine.resize();
 
