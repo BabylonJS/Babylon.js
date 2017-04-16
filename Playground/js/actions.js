@@ -26,12 +26,12 @@
     for (var s of allSelect) {
         // Get child called to display
         s.addEventListener('click', function (e) {
-            removeAllOptions();
             var toDisplay = this.querySelector('.toDisplay');
             if (toDisplay) {
                 if (toDisplay.style.display == 'block') {
                     toDisplay.style.display = 'none';
                 } else {
+                    removeAllOptions();
                     toDisplay.style.display = 'block';
                 }
             }
@@ -40,6 +40,7 @@
                 if (toDisplay.style.display == 'block') {
                     toDisplay.style.display = 'none';
                 } else {
+                    removeAllOptions();
                     toDisplay.style.display = 'block';
                 }
             }
