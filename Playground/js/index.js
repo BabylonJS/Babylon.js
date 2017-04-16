@@ -11,7 +11,8 @@
         '.navbar .select .toDisplayBig a',
         '.navbar .select .toDisplayBig ul li',
         '.navbarBottom',
-        '.navbarBottom .links .link'];
+        '.navbarBottom .links .link',
+        '.save-message'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -200,7 +201,7 @@
             document.getElementById("saveMessage").style.display = "block";
             document.getElementById("metadataButton").style.display = "none";
         };
-        // showNoMetadata();
+        showNoMetadata();
 
         var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
