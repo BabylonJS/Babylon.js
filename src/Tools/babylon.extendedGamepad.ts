@@ -59,12 +59,6 @@ module BABYLON {
 
         public update() {
             super.update();
-            // update this device's offset position from the attached camera, if provided
-            //if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
-            //this.position.copyFrom(this._poseControlledCamera.position);
-            //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
-            //this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
-            //}
             var pose: GamepadPose = this.vrGamepad.pose;
             this.updateFromDevice(pose);
 
@@ -85,12 +79,6 @@ module BABYLON {
 
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-
-                    // scale the position using the scale factor, add the device's position
-                    /*if (this._poseControlledCamera) {
-                        // this allows total positioning freedom - the device, the camera and the mesh can be individually controlled.
-                        this._calculatedPosition.addInPlace(this._poseControlledCamera.position);
-                    }*/
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
@@ -105,24 +93,6 @@ module BABYLON {
 
                     // if the camera is set, rotate to the camera's rotation
                     this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
-
-                    /*if (this._poseControlledCamera) {
-                        Matrix.ScalingToRef(1, 1, 1, Tmp.Matrix[1]);
-                        this._calculatedRotation.toRotationMatrix(Tmp.Matrix[0]);
-                        Matrix.TranslationToRef(this._calculatedPosition.x, this._calculatedPosition.y, this._calculatedPosition.z, Tmp.Matrix[2]);
-
-                        //Matrix.Identity().multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-                        Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-                        this._poseControlledCamera.getWorldMatrix().getTranslationToRef(Tmp.Vector3[0])
-
-                        Matrix.ComposeToRef(new Vector3(this.deviceScaleFactor, this.deviceScaleFactor, this.deviceScaleFactor), this._poseControlledCamera.rotationQuaternion, Tmp.Vector3[0], Tmp.Matrix[4]);
-                        Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], Tmp.Matrix[1]);
-
-                        Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[4], Tmp.Matrix[2]);
-                        Tmp.Matrix[2].decompose(Tmp.Vector3[0], this._calculatedRotation, this._calculatedPosition);
-
-                    }*/
                 }
             }
         }
