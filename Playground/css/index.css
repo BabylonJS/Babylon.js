@@ -112,7 +112,7 @@ body {
     right: 0;
     top: 0;
 }
-.navbar .button {
+.button {
     display: inline-block;
     height: 25px;
     line-height: 25px;
@@ -124,10 +124,10 @@ body {
     border-radius: 3px;
 }
 
-.navbar .button i {
+.button i {
     margin-left: 10px;
 }
-.navbar .button:hover {
+.button:hover {
     cursor: pointer;
     background-color: #15A4FA;
 }
@@ -406,39 +406,34 @@ body {
     top: 150px;
     left: calc(50% - 205px);
     width: 410px;
-    height: 390px;
+    height: 370px;
     padding-top: 15px;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
     border-radius: 6px;
     background-color: rgba(27, 27, 27, 0.75);
-    /*#1b1b1b;*/
-    
-    background-image: -moz-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(34, 34, 34, .75)), to(rgba(17, 17, 17, .75)));
-    background-image: -webkit-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
-    background-image: -o-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
-    background-image: linear-gradient(to bottom, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
-    background-repeat: repeat-x;
     border-color: #252525;
     color: white;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Montserrat";
     font-size: 14px;
 }
 .save-layer .save-form .separator {
     width: 350px;
     border-bottom: 1px solid #999;
     margin: auto;
-    margin-top: -6px;
     margin-bottom: 10px;
-}
-.save-layer .save-form .save-form-buttons {
-    margin-top: 10px;
 }
 .save-layer .save-form input,
 .save-layer .save-form textarea {
+    display:block;
     width: 350px;
+    margin:auto;
+    margin-bottom: 20px;
+    font-family: "Montserrat";
+    padding:5px;
 }
+
+/*Media queries*/
 
 @media (max-width: 1600px) {
     .desktopOnly {
