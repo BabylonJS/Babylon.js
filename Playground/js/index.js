@@ -4,6 +4,7 @@
 
     var elementToTheme = [
         '.wrapper .gutter',
+        '.wrapper #jsEditor',
         '.navbar',
         '.navbar .select .toDisplay .option',
         '.navbar .select .toDisplayBig',
