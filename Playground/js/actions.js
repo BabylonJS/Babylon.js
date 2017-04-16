@@ -4,8 +4,7 @@
     var allToDisplay = document.querySelectorAll('.toDisplay');
     var allToDisplayBig = document.querySelectorAll('.toDisplayBig');
 
-    // Remove displayed options
-    window.addEventListener('click', function () {
+    var removeAllOptions = function () {
         for (var a of allToDisplay) {
             if (a.style.display == 'block') {
                 a.style.display = 'none';
@@ -16,12 +15,18 @@
                 b.style.display = 'none';
             }
         }
+    }
+
+    // Remove displayed options
+    window.addEventListener('click', function () {
+        removeAllOptions();
     });
 
     // Handle click on select elements
     for (var s of allSelect) {
         // Get child called to display
         s.addEventListener('click', function (e) {
+            removeAllOptions();
             var toDisplay = this.querySelector('.toDisplay');
             if (toDisplay) {
                 if (toDisplay.style.display == 'block') {
