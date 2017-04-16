@@ -78,7 +78,7 @@
         </div>
 
 
-        <div class="category">
+        <div class="category desktopOnly">
             <div class="button select"><span id="currentFontSize">Font: 14</span>
                 <div class="toDisplay">
                     <div class="option" onclick="setFontSize(12);">12</div>
@@ -95,8 +95,8 @@
                     <div class="option" id="lightTheme">Light</div>
                 </div>
             </div>
-
-
+        </div>
+        <div class="category desktopTabletOnly">
             <div class="button select">Settings
                 <div class="toDisplay">
                     <div class="option" id='safemodeToggle'>Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
@@ -111,8 +111,9 @@
         </div>
 
 
+
         <div class="category right">
-            <div class="button select"><span id="currentVersion">Version: Latest</span>
+            <div class="button select desktopTabletOnly"><span id="currentVersion">Version: Latest</span>
                 <div class="toDisplay">
                     <div class="option" onclick="setVersion('latest');">Latest</div>
                     <div class="option" onclick="setVersion('2.5');">2.5</div>
