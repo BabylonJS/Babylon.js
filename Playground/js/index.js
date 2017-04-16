@@ -1,5 +1,8 @@
 ﻿(function () {
     var jsEditor;
+    var fontSize = 14;
+
+    var elementToTheme = ['.wrapper .gutter', '.navbar', '.navbar .select .toDisplay .option', '.navbar .select .toDisplayBig', '.navbar .select .toDisplayBig a', '.navbar .select .toDisplayBig ul li', '.navbarBottom'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -463,6 +466,7 @@
 
         // Fonts
         setFontSize = function (size) {
+            fontSize = size;
             document.querySelector(".view-lines").style.fontSize = size + "px";
             document.getElementById("currentFontSize").innerHTML = "Font: " + size;
         };
@@ -499,6 +503,37 @@
             }
         }
 
+        /**
+         * Toggle the dark theme
+         */
+        var toggleTheme = function (theme) {
+            // Monaco
+            let oldCode = jsEditor.getValue();
+            jsEditor.dispose();
+            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
+                value: "",
+                language: "javascript",
+                lineNumbers: true,
+                tabSize: "auto",
+                insertSpaces: "auto",
+                roundedSelection: true,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                readOnly: false,
+                theme: "vs-" + theme,
+                contextmenu: false
+            });
+            jsEditor.setValue(oldCode);
+            setFontSize(fontSize);
+
+            for (var obj of elementToTheme) {
+                let domObjArr = document.querySelectorAll(obj);
+                for (let domObj of domObjArr) {
+                    domObj.classList.add(theme);
+                }
+            }
+        }
+
         var toggleDebug = function () {
             var debugButton = document.getElementById("debugButton");
             var scene = engine.scenes[0];
@@ -528,6 +563,9 @@
         document.getElementById("editorButton").addEventListener("click", toggleEditor);
         document.getElementById("debugButton").addEventListener("click", toggleDebug);
         document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
+        document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
+        document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
+        // document.getElementById("lightTheme").addEventListener("click", toggleLightTheme);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {
