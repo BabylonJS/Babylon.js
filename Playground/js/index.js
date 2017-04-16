@@ -2,7 +2,15 @@
     var jsEditor;
     var fontSize = 14;
 
-    var elementToTheme = ['.wrapper .gutter', '.navbar', '.navbar .select .toDisplay .option', '.navbar .select .toDisplayBig', '.navbar .select .toDisplayBig a', '.navbar .select .toDisplayBig ul li', '.navbarBottom'];
+    var elementToTheme = [
+        '.wrapper .gutter',
+        '.navbar',
+        '.navbar .select .toDisplay .option',
+        '.navbar .select .toDisplayBig',
+        '.navbar .select .toDisplayBig a',
+        '.navbar .select .toDisplayBig ul li',
+        '.navbarBottom',
+        '.navbarBottom .links .link'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -120,6 +128,11 @@
                                 loadScript("scripts/basic scene.js", "Basic scene");
                             }
                         }
+
+                        // Restore theme
+                        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+                        toggleTheme(theme);
+
                     }
                 }
             };

@@ -10,7 +10,7 @@ body {
     font-family: sans-serif;
 }
 .wrapper {
-    height: calc(100% - 60px - 30px); /* nvabar top and bottom*/
+    height: calc(100% - 40px - 30px); /* nvabar top and bottom*/
     width: 100%;
     display: -ms-flexbox;
     display: flex;
@@ -62,7 +62,7 @@ body {
     font-family: 'Montserrat'
 }
 .navbar {
-    height: 60px;
+    height: 40px;
     width: 100%;
     font-family: "Montserrat";
     font-weight: 400;
@@ -79,15 +79,15 @@ body {
     background-color: #efefef;
 }
 .navbar .title {
-    height: 60px;
+    height: 40px;
     padding-left: 10px;
-    line-height: 60px;
+    line-height: 40px;
     color: #15A4FA;
     display: inline-block;
 }
 .navbar .version {
-    height: 60px;
-    line-height: 60px;
+    height: 40px;
+    line-height: 40px;
     display: inline-block;
     color: #7283a0;
     margin-right: 20px;
@@ -99,12 +99,12 @@ body {
 .navbar .category.right {
     position: absolute;
     right: 0;
-    top: 15px;
+    top: 8px;
 }
 .navbar .button {
     display: inline-block;
-    height: 30px;
-    line-height: 30px;
+    height: 25px;
+    line-height: 25px;
     color: white;
     background-color: #7283a0;
     margin: 0 2px 0 2px;
@@ -121,8 +121,8 @@ body {
     background-color: #15A4FA;
 }
 .navbar .button.run {
-    height: 40px;
-    line-height: 40px;
+    height: 30px;
+    line-height: 30px;
     background-color: #15A4FA;
     font-size: 1.0em;
 }
@@ -135,11 +135,10 @@ body {
 }
 .navbar .select .toDisplay {
     border: 1px solid #7283a0;
-    border-radius: 5px;
     position: absolute;
     z-index: 10;
     left: 0;
-    top: 32px;
+    top: 25px;
     min-width: 100%;
     display: none;
 }
@@ -149,6 +148,7 @@ body {
     line-height: 35px;
     padding: 0px 5px 0px 5px;
     text-align: center;
+    border-bottom : 1px solid rgba(0,0,0,0.1);
 }
 
 .navbar .select .toDisplay .option.light:hover {
@@ -156,13 +156,14 @@ body {
     background-color: #d9d9d9;
 }
 
+
 .navbar .select .toDisplay .option.dark {
     background-color: #333;
     color: white;
 }
 .navbar .select .toDisplay .option.light {
     background-color: white;
-    color: #15A4FA;
+    color: #7283a0;
 }
 .navbar .select .toDisplay .option.dark:hover {
     cursor: pointer;
@@ -224,7 +225,7 @@ body {
 }
 
 .navbar .select .toDisplayBig a.light {
-    color: #15A4FA;
+    color: #7283a0;
 }
 
 
@@ -306,9 +307,13 @@ body {
     margin : 0 5px 0 5px;
     font-size:0.8em;
 }
-.navbarBottom .links .link:hover{
+.navbarBottom .links .link.light:hover{
     color:#999;
     background-color:#333;
+}
+.navbarBottom .links .link.dark:hover{
+    color:#333;
+    background-color:#eee;
 }
 .navbarBottom .links .link a{
     text-decoration: none;
@@ -414,3 +419,9 @@ body {
 .save-layer .save-form textarea {
     width: 350px;
 }
+
+/*@media (max-width: 800px) {
+    .desktopOnly {
+        display: none !important;
+    }
+}*/
