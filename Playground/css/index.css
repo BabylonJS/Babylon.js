@@ -1,0 +1,362 @@
+﻿@import url("https://fonts.googleapis.com/css?family=Montserrat:300,400");
+@import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css");
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+.wrapper {
+    height: calc(100% - 60px - 30px); /* nvabar top and bottom*/
+    width: 100%;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+}
+.wrapper .gutter {
+    background-color: #f7f7f7;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+.wrapper .gutter:hover {
+    cursor: ew-resize;
+}
+.wrapper .gutter.gutter-vertical {
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=");
+}
+.wrapper .gutter.gutter-horizontal {
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==");
+}
+.wrapper #jsEditor {
+    height: 100%;
+}
+.wrapper #canvasZone {
+    height: 100%;
+}
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+#fpsLabel {
+    position: absolute;
+    right: 10px;
+    top: 80px;
+    cursor: default;
+    z-index:10;
+    background-color: #7283a0;
+    color:white;
+    padding:5px;
+    border-radius: 3px;
+    font-family: 'Montserrat'
+}
+.navbar {
+    height: 60px;
+    width: 100%;
+    background-color: #efefef;
+    font-family: "Montserrat";
+    font-weight: 400;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: relative;
+}
+.navbar .title {
+    height: 60px;
+    padding-left: 10px;
+    line-height: 60px;
+    color: #15A4FA;
+    display: inline-block;
+}
+.navbar .version {
+    height: 60px;
+    line-height: 60px;
+    display: inline-block;
+    color: #7283a0;
+    margin-right: 20px;
+}
+.navbar .category {
+    margin: 0 15px 0 15px;
+    display: inline-block;
+}
+.navbar .category.right {
+    position: absolute;
+    right: 0;
+    top: 15px;
+}
+.navbar .button {
+    display: inline-block;
+    height: 30px;
+    line-height: 30px;
+    color: white;
+    background-color: #7283a0;
+    margin: 0 2px 0 2px;
+    padding: 0 10px 0 10px;
+    font-size: 0.85em;
+    border-radius: 3px;
+}
+.navbar .button i {
+    margin-left: 10px;
+}
+.navbar .button:hover {
+    cursor: pointer;
+    background-color: #15A4FA;
+}
+.navbar .button.run {
+    height: 40px;
+    line-height: 40px;
+    background-color: #15A4FA;
+    font-size: 1.0em;
+}
+.navbar .select {
+    position: relative;
+}
+.navbar .select:after {
+    font-family: 'FontAwesome', sans-serif;
+    content: "\00a0 \00a0 \00a0 \f078";
+}
+.navbar .select .toDisplay {
+    border: 1px solid #7283a0;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    top: 32px;
+    min-width: 100%;
+    display: none;
+}
+.navbar .select .toDisplay .option {
+    font-size: 0.9em;
+    height: 35px;
+    line-height: 35px;
+    padding: 0px 5px 0px 5px;
+    background-color: white;
+    text-align: center;
+    color: #15A4FA;
+}
+.navbar .select .toDisplay .option:hover {
+    cursor: pointer;
+    background-color: #d9d9d9;
+}
+
+.navbar .select .toDisplayBig {
+    border: 1px solid #7283a0;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 10;
+    top: 32px;
+    width:550px;
+    max-height:350px;
+    background-color: white;
+    right:0;
+    position:absolute;
+    font-size:0.8em;
+    display: none;
+    
+}
+.navbar .select .toDisplayBig ul {
+    column-count: 3;        
+    padding:0;
+    margin:0;
+}
+
+.navbar .select .toDisplayBig ul li {
+    padding:0 5px 0 5px;
+}
+
+.navbar .select .toDisplayBig ul li:hover {
+    cursor: pointer;
+    background-color: #d9d9d9;
+}
+.navbar .select .toDisplayBig a {
+    text-decoration: none;
+    color: #15A4FA;
+}
+
+
+
+.navbar .check:after {
+    font-family: 'FontAwesome', sans-serif;
+    content: "\00a0 \00a0 \00a0 \f14a";
+}
+.navbar .check.uncheck {
+    background-color: #8290aa;
+}
+.navbar .check.uncheck:after {
+    font-family: 'FontAwesome', sans-serif;
+    content: "\00a0 \00a0 \00a0 \f096";
+}
+#errorZone {
+    display:none;
+    position: absolute;
+    width: 50%;
+    left: 25%;
+    bottom: 40px;
+    background-color: #C73228;
+    padding:20px;
+    border-radius: 5px;
+    color:white;
+    font-family: 'Inconsolata';
+}
+#errorZone button {
+    position:absolute;
+    top : 3px;
+    right: 10px;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: .4;
+    font-size: 1.8em;
+}
+
+/* Navbar bottom */
+
+.navbarBottom {
+    height:30px;
+    width:100%;
+    background-color: #efefef;
+    line-height:30px;
+    position:relative;
+    font-family: 'Montserrat';
+}
+
+.navbarBottom #statusBar {
+    line-height:30px;
+    color: #999;
+    font-family: 'Inconsolata';
+    padding-left:20px;
+}
+
+
+.navbarBottom .links {
+    position:absolute;
+    right : 0;
+    top:-1px;
+    height:30px;
+    padding-right:20px;
+}
+.navbarBottom .links .link{
+    height:30px;
+    display:inline-block;
+    color:#999;
+    padding: 0 10px 0 10px;
+    margin : 0 5px 0 5px;
+    font-size:0.8em;
+}
+.navbarBottom .links .link:hover{
+    color:#999;
+    background-color:#333;
+}
+.navbarBottom .links .link a{
+    text-decoration: none;
+    color:#999;
+    display: inline-block;
+}
+
+/* MONACO */
+
+.monaco-editor .container:before,
+.monaco-editor .row:before {
+    content: "";
+    display: inherit;
+}
+.monaco-editor .container:after,
+.monaco-editor .row:after {
+    clear: inherit;
+}
+.monaco-editor .container {
+    width: auto;
+    margin: inherit;
+    padding: inherit;
+}
+.monaco-editor .close {
+    float: none;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-shadow: inherit;
+    opacity: inherit;
+    filter: inherit;
+}
+.monaco-editor .row {
+    margin: inherit;
+}
+.monaco-editor .invisible {
+    visibility: visible;
+}
+.monaco-editor .view-lines {
+    font-family: 'Inconsolata' !important;
+}
+/* Save form & co */
+
+.save-message {
+    display: none;
+    position:absolute;
+    top:60px; /* navbar top */
+    width: 100%;
+    z-index:30;
+    text-align: center;
+    color: #7283a0;
+    font-size: 0.8em;
+    line-height: 2em;
+    background-color: rgba(239, 239, 239, 0.9);
+    cursor:pointer;
+}
+.save-layer {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(120, 120, 120, .5);
+    text-align: center;
+}
+.save-layer .save-form {
+    position: absolute;
+    top: 150px;
+    left: calc(50% - 205px);
+    width: 410px;
+    height: 390px;
+    padding-top: 15px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    background-color: rgba(27, 27, 27, 0.75);
+    /*#1b1b1b;*/
+    
+    background-image: -moz-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(34, 34, 34, .75)), to(rgba(17, 17, 17, .75)));
+    background-image: -webkit-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
+    background-image: -o-linear-gradient(top, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
+    background-image: linear-gradient(to bottom, rgba(34, 34, 34, .75), rgba(17, 17, 17, .75));
+    background-repeat: repeat-x;
+    border-color: #252525;
+    color: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+.save-layer .save-form .separator {
+    width: 350px;
+    border-bottom: 1px solid #999;
+    margin: auto;
+    margin-top: -6px;
+    margin-bottom: 10px;
+}
+.save-layer .save-form .save-form-buttons {
+    margin-top: 10px;
+}
+.save-layer .save-form input,
+.save-layer .save-form textarea {
+    width: 350px;
+}
