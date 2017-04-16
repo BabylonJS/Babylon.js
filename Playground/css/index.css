@@ -22,6 +22,12 @@ body {
     background-repeat: no-repeat;
     background-position: 50%;
 }
+.wrapper .gutter.dark {
+    background-color: #333;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
 .wrapper .gutter:hover {
     cursor: ew-resize;
 }
@@ -66,6 +72,9 @@ body {
     user-select: none;
     position: relative;
 }
+.navbar.dark {
+    background-color: #333;
+}
 .navbar .title {
     height: 60px;
     padding-left: 10px;
@@ -100,6 +109,7 @@ body {
     font-size: 0.85em;
     border-radius: 3px;
 }
+
 .navbar .button i {
     margin-left: 10px;
 }
@@ -139,9 +149,18 @@ body {
     text-align: center;
     color: #15A4FA;
 }
+
 .navbar .select .toDisplay .option:hover {
     cursor: pointer;
     background-color: #d9d9d9;
+}
+
+.navbar .select .toDisplay .option.dark {
+    background-color: #333;
+    color: white;
+}
+.navbar .select .toDisplay .option.dark:hover {
+    background-color: #555;
 }
 
 .navbar .select .toDisplayBig {
@@ -159,6 +178,12 @@ body {
     display: none;
     
 }
+
+.navbar .select .toDisplayBig.dark {
+    background-color: #333;    
+    color:white;
+}
+
 .navbar .select .toDisplayBig ul {
     column-count: 3;        
     padding:0;
@@ -173,9 +198,18 @@ body {
     cursor: pointer;
     background-color: #d9d9d9;
 }
+.navbar .select .toDisplayBig ul li.dark:hover {
+    background-color: #555;
+}
+
+
 .navbar .select .toDisplayBig a {
     text-decoration: none;
     color: #15A4FA;
+}
+
+.navbar .select .toDisplayBig a.dark {
+    color: white;
 }
 
 
@@ -227,6 +261,9 @@ body {
     line-height:30px;
     position:relative;
     font-family: 'Montserrat';
+}
+.navbarBottom.dark {
+    background-color: #333;
 }
 
 .navbarBottom #statusBar {
