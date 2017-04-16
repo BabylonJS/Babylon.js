@@ -508,6 +508,13 @@
          */
         var toggleTheme = function (theme) {
             // Monaco
+            var vsTheme;
+            if (theme == 'dark') {
+                vsTheme = 'vs-dark'
+            } else {
+                vsTheme = 'vs'
+            }
+
             let oldCode = jsEditor.getValue();
             jsEditor.dispose();
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
@@ -520,7 +527,7 @@
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
                 readOnly: false,
-                theme: "vs-" + theme,
+                theme: vsTheme,
                 contextmenu: false
             });
             jsEditor.setValue(oldCode);
@@ -529,9 +536,14 @@
             for (var obj of elementToTheme) {
                 let domObjArr = document.querySelectorAll(obj);
                 for (let domObj of domObjArr) {
+                    domObj.classList.remove('light');
+                    domObj.classList.remove('dark');
                     domObj.classList.add(theme);
                 }
             }
+
+            localStorage.setItem("bjs-playground-theme", theme);
+
         }
 
         var toggleDebug = function () {
@@ -565,7 +577,10 @@
         document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
         document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
         document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
-        // document.getElementById("lightTheme").addEventListener("click", toggleLightTheme);
+
+        // Restore theme
+        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+        toggleTheme(theme);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {

@@ -22,10 +22,11 @@ body {
     background-repeat: no-repeat;
     background-position: 50%;
 }
+.wrapper .gutter.light {
+    background-color: #f7f7f7;
+}
 .wrapper .gutter.dark {
     background-color: #333;
-    background-repeat: no-repeat;
-    background-position: 50%;
 }
 
 .wrapper .gutter:hover {
@@ -63,7 +64,6 @@ body {
 .navbar {
     height: 60px;
     width: 100%;
-    background-color: #efefef;
     font-family: "Montserrat";
     font-weight: 400;
     -webkit-user-select: none;
@@ -74,6 +74,9 @@ body {
 }
 .navbar.dark {
     background-color: #333;
+}
+.navbar.light {
+    background-color: #efefef;
 }
 .navbar .title {
     height: 60px;
@@ -145,12 +148,10 @@ body {
     height: 35px;
     line-height: 35px;
     padding: 0px 5px 0px 5px;
-    background-color: white;
     text-align: center;
-    color: #15A4FA;
 }
 
-.navbar .select .toDisplay .option:hover {
+.navbar .select .toDisplay .option.light:hover {
     cursor: pointer;
     background-color: #d9d9d9;
 }
@@ -159,7 +160,12 @@ body {
     background-color: #333;
     color: white;
 }
+.navbar .select .toDisplay .option.light {
+    background-color: white;
+    color: #15A4FA;
+}
 .navbar .select .toDisplay .option.dark:hover {
+    cursor: pointer;
     background-color: #555;
 }
 
@@ -171,12 +177,16 @@ body {
     top: 32px;
     width:550px;
     max-height:350px;
-    background-color: white;
     right:0;
     position:absolute;
     font-size:0.8em;
     display: none;
     
+}
+
+.navbar .select .toDisplayBig.light {
+    background-color: white;    
+    color: #15A4FA;
 }
 
 .navbar .select .toDisplayBig.dark {
@@ -196,6 +206,8 @@ body {
 
 .navbar .select .toDisplayBig ul li:hover {
     cursor: pointer;
+}
+.navbar .select .toDisplayBig ul li.light:hover {
     background-color: #d9d9d9;
 }
 .navbar .select .toDisplayBig ul li.dark:hover {
@@ -205,11 +217,14 @@ body {
 
 .navbar .select .toDisplayBig a {
     text-decoration: none;
-    color: #15A4FA;
 }
 
 .navbar .select .toDisplayBig a.dark {
     color: white;
+}
+
+.navbar .select .toDisplayBig a.light {
+    color: #15A4FA;
 }
 
 
@@ -257,13 +272,15 @@ body {
 .navbarBottom {
     height:30px;
     width:100%;
-    background-color: #efefef;
     line-height:30px;
     position:relative;
     font-family: 'Montserrat';
 }
 .navbarBottom.dark {
     background-color: #333;
+}
+.navbarBottom.light {
+    background-color: #efefef;
 }
 
 .navbarBottom #statusBar {
