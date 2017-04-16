@@ -46,7 +46,11 @@ module BABYLON {
 
         public hide() {
             if (this._inspector) {
-                this._inspector.dispose();
+                try {
+                    this._inspector.dispose();
+                } catch (e) {
+                    // If the inspector has been removed directly from the inspector tool
+                }
                 this._inspector = null;
             }
         }
