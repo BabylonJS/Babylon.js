@@ -3311,6 +3311,14 @@
             }
         }
 
+        public releaseEffects() {
+            for (var name in this._compiledEffects) {
+                this._gl.deleteProgram(this._compiledEffects[name]._program);
+            }
+
+            this._compiledEffects = {};
+        }
+
         // Dispose
         public dispose(): void {
             this.hideLoadingUI();
@@ -3326,9 +3334,7 @@
             Engine.audioEngine.dispose();
 
             // Release effects
-            for (var name in this._compiledEffects) {
-                this._gl.deleteProgram(this._compiledEffects[name]._program);
-            }
+            this.releaseEffects();
 
             // Unbind
             this.unbindAllAttributes();

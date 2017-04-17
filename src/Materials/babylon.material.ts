@@ -488,12 +488,6 @@
                 this._scene.materials.splice(index, 1);
             }
 
-            // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-            if (forceDisposeEffect && this._effect) {
-                this._scene.getEngine()._releaseEffect(this._effect);
-                this._effect = null;
-            }
-
             // Remove from meshes
             for (index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
@@ -501,8 +495,33 @@
                 if (mesh.material === this) {
                     mesh.material = null;
                 }
+
+                if ((<Mesh>mesh).geometry) {
+                    var geometry = (<Mesh>mesh).geometry;
+
+                    if (this.storeEffectOnSubMeshes) {
+                        for (var subMesh of mesh.subMeshes) {
+                            geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        }
+                    } else {
+                        geometry._releaseVertexArrayObject(this._effect)
+                    }
+                }
             }
 
+            // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
+            if (forceDisposeEffect && this._effect) {
+                    if (this.storeEffectOnSubMeshes) {
+                        for (var subMesh of mesh.subMeshes) {
+                            this._scene.getEngine()._releaseEffect(subMesh._materialEffect); 
+                        }
+                    } else {
+                        this._scene.getEngine()._releaseEffect(this._effect);                    
+                    }
+
+                this._effect = null;
+            }
+            
             // Callback
             this.onDisposeObservable.notifyObservers(this);
 
