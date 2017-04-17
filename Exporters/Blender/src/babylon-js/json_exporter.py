@@ -66,6 +66,7 @@ class JsonExporter:
             self.materials = []
             self.multiMaterials = []
             self.sounds = []
+            self.needPhysics = False
 
             # Scene level sound
             if scene.attachedSound != '':
@@ -102,6 +103,8 @@ class JsonExporter:
                             Logger.log(self.fatalError)
                             return
 
+                        if hasattr(mesh, 'physicsImpostor'): self.needPhysics = True
+                        
                         if hasattr(mesh, 'instances'):
                             self.meshesAndNodes.append(mesh)
                         else:
@@ -161,7 +164,7 @@ class JsonExporter:
         file_handler = open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
         file_handler.write('"producer":{"name":"Blender","version":"' + bpy.app.version_string + '","exporter_version":"' + format_exporter_version() + '","file":"' + JsonExporter.nameSpace + '.babylon"},\n')
-        self.world.to_scene_file(file_handler)
+        self.world.to_scene_file(file_handler, self.needPhysics)
 
         # Materials
         file_handler.write(',\n"materials":[')
