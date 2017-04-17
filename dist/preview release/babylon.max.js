@@ -12703,7 +12703,7 @@ var BABYLON;
             if (index === -1) {
                 return;
             }
-            this._lightSources.slice(index, 1);
+            this._lightSources.splice(index, 1);
         };
         AbstractMesh.prototype._markSubMeshesAsDirty = function (func) {
             if (!this.subMeshes) {
