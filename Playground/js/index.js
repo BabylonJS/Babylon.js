@@ -213,7 +213,7 @@
             document.getElementById("saveFormTags").readOnly = false;
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveMessage").style.display = "block";
-            document.getElementById("metadataButton").style.display = "none";
+            // document.getElementById("metadataButton").style.display = "none";
         };
         showNoMetadata();
 
@@ -221,9 +221,9 @@
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
-            document.getElementById("saveFormButtons").style.display = "none";
+            document.getElementById("saveFormButtonOk").style.display = "none";
             document.getElementById("saveMessage").style.display = "none";
-            document.getElementById("metadataButton").style.display = "inline-block";
+            document.getElementById("metadataButton").style.display = "block";
         };
 
         compileAndRun = function () {
@@ -586,9 +586,9 @@
         }
 
         var toggleMetadata = function () {
-            var metadataButton = document.getElementById("metadataButton");
+            // var metadataButton = document.getElementById("metadataButton");
             var scene = engine.scenes[0];
-            metadataButton.classList.add('checked');
+            // metadataButton.classList.add('checked');
             document.getElementById("saveLayer").style.display = "block";
         }
 
