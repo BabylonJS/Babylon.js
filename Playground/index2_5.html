@@ -3,6 +3,8 @@
 
 <head>
     <title>Babylon.js Playground</title>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
     <!--For canvas/code separator-->
     <script src="js/libs/split.js"></script>
@@ -165,8 +167,9 @@
             <div class="separator"></div>
             <textarea id="saveFormTags" rows="4" cols="10"></textarea>
             <div class="save-form-buttons" id="saveFormButtons">
-                <button class="btn save-form-button" id="saveFormButtonOk">OK</button>
-                <button class="btn save-form-button" id="saveFormButtonCancel">Cancel</button>
+
+                <div id="saveFormButtonOk" class="button">OK</div>
+                <div id="saveFormButtonCancel" class="button">Cancel</div>
             </div>
         </div>
     </div>
