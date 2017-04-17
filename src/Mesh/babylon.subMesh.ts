@@ -16,7 +16,7 @@
         public _id: number;
 
         public _materialDefines: MaterialDefines;
-        private _materialEffect: Effect;
+        public _materialEffect: Effect;
         private _currentMaterial: Material;
 
         public get effect(): Effect {
