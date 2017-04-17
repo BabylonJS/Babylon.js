@@ -60,7 +60,7 @@ body {
 #fpsLabel {
     position: absolute;
     right: 10px;
-    top: 80px;
+    top: 50px;
     cursor: default;
     z-index:10;
     background-color: #7283a0;
