@@ -23,7 +23,8 @@
     });
 
     // Handle click on select elements
-    for (var s of allSelect) {
+    for (var index = 0; index < allSelect.length; index++) {
+        var s = allSelect[index];
         // Get child called to display
         s.addEventListener('click', function (e) {
             var toDisplay = this.querySelector('.toDisplay');
