@@ -441,6 +441,22 @@
         public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
+        public bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
+            sceneUbo.bindToEffect(effect, "Scene");
+        }
+
+        public bindView(effect: Effect): void {
+            if (this.getScene().getEngine().webGLVersion === 1) {
+                effect.setMatrix("view", this.getScene().getViewMatrix());
+            }
+        }
+
+        public bindViewProjection(effect: Effect): void {
+            if (this.getScene().getEngine().webGLVersion === 1) {
+                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            }
+        }
+
         protected _afterBind(mesh: Mesh): void {
             this._scene._cachedMaterial = this;
 

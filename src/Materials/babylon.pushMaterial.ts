@@ -24,18 +24,8 @@
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         }
 
-        public bindTransformMatrix(effect: Effect, transformMatrixBuffer: UniformBuffer): void {
-            transformMatrixBuffer.bindToEffect(effect, "Scene");
-        }
-
         public bindOnlyWorldMatrix(world: Matrix): void {
             this._activeEffect.setMatrix("world", world);
-        }
-
-        public bindViewProjection(effect: Effect): void {
-            if (this.getScene().getEngine().webGLVersion === 1) {
-                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
-            }
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {

@@ -423,6 +423,22 @@ module BABYLON {
         /**
          * Wrapper for updateUniform.
          * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector4} vector
+         */
+        public updateVector4(name: string, vector: Vector4) {
+            if (this._noUbo) {
+                if (this._currentEffect) {
+                    this._currentEffect.setVector4(name, vector);
+                }
+                return;
+            }
+            vector.toArray(_tempBuffer);
+            this.updateUniform(name, _tempBuffer, 4);
+        }
+
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
          * @param {Color3} color
          */
         public updateColor3(name: string, color: Color3) {
@@ -452,6 +468,15 @@ module BABYLON {
             color.toArray(_tempBuffer);
             _tempBuffer[3] = alpha;
             this.updateUniform(name, _tempBuffer, 4);
+        }
+
+        /**
+         * Sets a sampler uniform on the effect.
+         * @param {string} name Name of the sampler.
+         * @param {Texture} texture
+         */
+        public setTexture(name: string, texture: BaseTexture) {
+            this._currentEffect.setTexture(name, texture);
         }
 
         /**

@@ -675,7 +675,7 @@
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
-        private _transformMatrixBuffer: UniformBuffer;
+        private _sceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
 
@@ -746,8 +746,8 @@
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
 
-            // Transform Buffer
-            this._transformMatrixBuffer = new UniformBuffer(this._engine, null, true);
+            // Uniform Buffer
+            this._createUbo();
         }
 
         // Properties
@@ -930,6 +930,12 @@
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
             }
+        }
+
+        private _createUbo(): void {
+            this._sceneUbo = new UniformBuffer(this._engine, null, true);
+            this._sceneUbo.addUniform("viewProjection", 16);
+            this._sceneUbo.addUniform("view", 16);
         }
 
         // Pointers handling
@@ -1683,12 +1689,13 @@
             } else {
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
-            this._transformMatrixBuffer.updateMatrix("viewProjection", this._transformMatrix);
-            this._transformMatrixBuffer.update();
+            this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+            this._sceneUbo.updateMatrix("view", this._viewMatrix);
+            this._sceneUbo.update();
         }
 
-        public getTransformMatrixBuffer(): UniformBuffer {
-            return this._transformMatrixBuffer;
+        public getSceneUniformBuffer(): UniformBuffer {
+            return this._sceneUbo;
         }
 
         // Methods
@@ -3170,7 +3177,7 @@
             }
 
             // Release UBO
-            this._transformMatrixBuffer.dispose();
+            this._sceneUbo.dispose();
 
             // Post-processes
             this.postProcessManager.dispose();
