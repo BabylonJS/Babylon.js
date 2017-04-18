@@ -5,12 +5,14 @@
     var allToDisplayBig = document.querySelectorAll('.toDisplayBig');
 
     var removeAllOptions = function () {
-        for (var a of allToDisplay) {
+        for (var index = 0; index < allToDisplay.length; index++) {
+            var a = allToDisplay[index];
             if (a.style.display == 'block') {
                 a.style.display = 'none';
             }
         }
-        for (var b of allToDisplayBig) {
+        for (var index = 0; index < allToDisplayBig.length; index++) {
+            var b = allToDisplayBig[index];
             if (b.style.display == 'block') {
                 b.style.display = 'none';
             }
