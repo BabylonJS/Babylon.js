@@ -1,11 +1,8 @@
-uniform vec3 vEyePosition;
-uniform vec3 vAmbientColor;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
-uniform vec4 vCameraInfos;
 
 #ifdef OVERLOADEDVALUES
 uniform vec4 vOverloadedIntensity;

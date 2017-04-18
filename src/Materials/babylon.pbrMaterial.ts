@@ -1218,12 +1218,9 @@
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
-            this._uniformBuffer.addUniform("vEyePosition", 3);
-            this._uniformBuffer.addUniform("vAmbientColor", 3);
             this._uniformBuffer.addUniform("vReflectionColor", 3);
             this._uniformBuffer.addUniform("vAlbedoColor", 4);
             this._uniformBuffer.addUniform("vLightingIntensity", 4);
-            this._uniformBuffer.addUniform("vCameraInfos", 4);
 
             this._uniformBuffer.addUniform("vMicrosurfaceTextureLods", 2);
             this._uniformBuffer.addUniform("vReflectivityColor", 4);
@@ -1279,147 +1276,245 @@
 
                 this.bindViewProjection(effect);
 
-                if (StandardMaterial.FresnelEnabled) {
-                    if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
+
+                    // Fresnel
+                    if (StandardMaterial.FresnelEnabled) {
+                        if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                        }
+
+                        if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                            this._uniformBuffer.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                        }
                     }
 
-                    if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                        this._uniformBuffer.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                    // Texture uniforms      
+                    if (this._myScene.texturesEnabled) {
+                        if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vAlbedoInfos", this.albedoTexture.coordinatesIndex, this.albedoTexture.level);
+                            this._uniformBuffer.updateMatrix("albedoMatrix", this.albedoTexture.getTextureMatrix());
+                        }
+
+                        if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                            this._uniformBuffer.updateFloat3("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level, this.ambientTextureStrength);
+                            this._uniformBuffer.updateMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
+                        }
+
+                        if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
+                            this._uniformBuffer.updateMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
+                        }
+
+                        if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                            this._microsurfaceTextureLods.x = Math.round(Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E);
+                            this._uniformBuffer.updateMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
+                            this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
+
+                            if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
+                                this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.z);
+                                this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.z);
+                                this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.z);
+                                this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.z);
+                                this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.z);
+                                this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.z);
+                                this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.z);
+                                this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.z);
+                                this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.x,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.y,
+                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.z);
+                            }
+                        }
+
+                        if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
+                            this._uniformBuffer.updateMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                        }
+
+                        if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
+                            this._uniformBuffer.updateMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
+                        }
+
+                        if (StandardMaterial.SpecularTextureEnabled) {
+                            if (this.metallicTexture) {
+                                this._uniformBuffer.updateFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level, this.ambientTextureStrength);
+                                this._uniformBuffer.updateMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
+                            }
+                            else if (this.reflectivityTexture) {
+                                this._uniformBuffer.updateFloat3("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level, 1.0);
+                                this._uniformBuffer.updateMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                            }
+
+                            if (this.microSurfaceTexture) {
+                                this._uniformBuffer.updateFloat2("vMicroSurfaceSamplerInfos", this.microSurfaceTexture.coordinatesIndex, this.microSurfaceTexture.level);
+                                this._uniformBuffer.updateMatrix("microSurfaceSamplerMatrix", this.microSurfaceTexture.getTextureMatrix());
+                            }
+                        }
+
+                        if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
+                            this._uniformBuffer.updateFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
+                            this._uniformBuffer.updateMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                        }
+
+                        if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                            this._microsurfaceTextureLods.y = Math.round(Math.log(this.refractionTexture.getSize().width) * Math.LOG2E);
+
+                            var depth = 1.0;
+                            if (!this.refractionTexture.isCube) {
+                                this._uniformBuffer.updateMatrix("refractionMatrix", this.refractionTexture.getReflectionTextureMatrix());
+
+                                if ((<any>this.refractionTexture).depth) {
+                                    depth = (<any>this.refractionTexture).depth;
+                                }
+                            }
+                            this._uniformBuffer.updateFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+                        }
+
+                        if ((this.reflectionTexture || this.refractionTexture)) {
+                            this._uniformBuffer.updateFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
+                        }
                     }
+
+                    // Point size
+                    if (this.pointsCloud) {
+                        this._uniformBuffer.updateFloat("pointSize", this.pointSize);
+                    }
+
+                    // Colors
+                    if (this._defines.METALLICWORKFLOW) {
+                        PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
+                        PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                        this._uniformBuffer.updateColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
+                    }
+                    else {
+                        // GAMMA CORRECTION.
+                        this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+                        this._uniformBuffer.updateColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
+                    }
+
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
+                    this._uniformBuffer.updateColor3("vEmissiveColor", PBRMaterial._scaledEmissive);
+
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.reflectionColor, PBRMaterial._scaledReflection);
+                    this._uniformBuffer.updateColor3("vReflectionColor", PBRMaterial._scaledReflection);
+
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.albedoColor, PBRMaterial._scaledAlbedo);
+                    this._uniformBuffer.updateColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
+
+
+                    // Misc
+                    this._lightingInfos.x = this.directIntensity;
+                    this._lightingInfos.y = this.emissiveIntensity;
+                    this._lightingInfos.z = this.environmentIntensity;
+                    this._lightingInfos.w = this.specularIntensity;
+
+                    this._uniformBuffer.updateVector4("vLightingIntensity", this._lightingInfos);
+
+                    // Overloaded params
+
+                    this._overloadedShadowInfos.x = this.overloadedShadowIntensity;
+                    this._overloadedShadowInfos.y = this.overloadedShadeIntensity;
+                    this._uniformBuffer.updateVector4("vOverloadedShadowIntensity", this._overloadedShadowInfos);
+
+                    this._overloadedIntensity.x = this.overloadedAmbientIntensity;
+                    this._overloadedIntensity.y = this.overloadedAlbedoIntensity;
+                    this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
+                    this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
+                    this._uniformBuffer.updateVector4("vOverloadedIntensity", this._overloadedIntensity);
+
+                    this._uniformBuffer.updateColor3("vOverloadedAmbient", this.overloadedAmbient);
+                    this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
+                    this._uniformBuffer.updateColor3("vOverloadedAlbedo", this._tempColor);
+                    this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
+                    this._uniformBuffer.updateColor3("vOverloadedReflectivity", this._tempColor);
+                    this.convertColorToLinearSpaceToRef(this.overloadedEmissive, this._tempColor);
+                    this._uniformBuffer.updateColor3("vOverloadedEmissive", this._tempColor);
+                    this.convertColorToLinearSpaceToRef(this.overloadedReflection, this._tempColor);
+                    this._uniformBuffer.updateColor3("vOverloadedReflection", this._tempColor);
+
+                    this._overloadedMicroSurface.x = this.overloadedMicroSurface;
+                    this._overloadedMicroSurface.y = this.overloadedMicroSurfaceIntensity;
+                    this._overloadedMicroSurface.z = this.overloadedReflectionIntensity;
+                    this._uniformBuffer.updateVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
+
                 }
 
                 // Textures        
                 if (this._myScene.texturesEnabled) {
                     if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                         this._uniformBuffer.setTexture("albedoSampler", this.albedoTexture);
-
-                        this._uniformBuffer.updateFloat2("vAlbedoInfos", this.albedoTexture.coordinatesIndex, this.albedoTexture.level);
-                        this._uniformBuffer.updateMatrix("albedoMatrix", this.albedoTexture.getTextureMatrix());
                     }
 
                     if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         this._uniformBuffer.setTexture("ambientSampler", this.ambientTexture);
-
-                        this._uniformBuffer.updateFloat3("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level, this.ambientTextureStrength);
-                        this._uniformBuffer.updateMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
                     }
 
                     if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         this._uniformBuffer.setTexture("opacitySampler", this.opacityTexture);
-
-                        this._uniformBuffer.updateFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                        this._uniformBuffer.updateMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
                     }
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        this._microsurfaceTextureLods.x = Math.round(Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E);
-
                         if (this.reflectionTexture.isCube) {
                             this._uniformBuffer.setTexture("reflectionCubeSampler", this.reflectionTexture);
                         } else {
                             this._uniformBuffer.setTexture("reflection2DSampler", this.reflectionTexture);
                         }
-
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
-
-                        if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                            this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.z);
-                            this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.z);
-                            this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.z);
-                            this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.z);
-                            this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.z);
-                            this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.z);
-                            this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.z);
-                            this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.z);
-                            this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.x,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.y,
-                                (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.z);
-                        }
                     }
 
                     if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         this._uniformBuffer.setTexture("emissiveSampler", this.emissiveTexture);
-
-                        this._uniformBuffer.updateFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                        this._uniformBuffer.updateMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
                     }
 
                     if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         this._uniformBuffer.setTexture("lightmapSampler", this.lightmapTexture);
-
-                        this._uniformBuffer.updateFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
-                        this._uniformBuffer.updateMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                     }
 
                     if (StandardMaterial.SpecularTextureEnabled) {
                         if (this.metallicTexture) {
                             this._uniformBuffer.setTexture("reflectivitySampler", this.metallicTexture);
-
-                            this._uniformBuffer.updateFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level, this.ambientTextureStrength);
-                            this._uniformBuffer.updateMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
                         }
                         else if (this.reflectivityTexture) {
                             this._uniformBuffer.setTexture("reflectivitySampler", this.reflectivityTexture);
-
-                            this._uniformBuffer.updateFloat3("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level, 1.0);
-                            this._uniformBuffer.updateMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
                         }
 
                         if (this.microSurfaceTexture) {
                             this._uniformBuffer.setTexture("microSurfaceSampler", this.microSurfaceTexture);
-
-                            this._uniformBuffer.updateFloat2("vMicroSurfaceSamplerInfos", this.microSurfaceTexture.coordinatesIndex, this.microSurfaceTexture.level);
-                            this._uniformBuffer.updateMatrix("microSurfaceSamplerMatrix", this.microSurfaceTexture.getTextureMatrix());
                         }
                     }
 
                     if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                         this._uniformBuffer.setTexture("bumpSampler", this.bumpTexture);
-
-                        this._uniformBuffer.updateFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
-                        this._uniformBuffer.updateMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        this._microsurfaceTextureLods.y = Math.round(Math.log(this.refractionTexture.getSize().width) * Math.LOG2E);
-
-                        var depth = 1.0;
                         if (this.refractionTexture.isCube) {
                             this._uniformBuffer.setTexture("refractionCubeSampler", this.refractionTexture);
                         } else {
                             this._uniformBuffer.setTexture("refraction2DSampler", this.refractionTexture);
-                            this._uniformBuffer.updateMatrix("refractionMatrix", this.refractionTexture.getReflectionTextureMatrix());
-
-                            if ((<any>this.refractionTexture).depth) {
-                                depth = (<any>this.refractionTexture).depth;
-                            }
                         }
-                        this._uniformBuffer.updateFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
 
-                    if ((this.reflectionTexture || this.refractionTexture)) {
-                        this._uniformBuffer.updateFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
-                    }
-                    
                     if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
                         ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
                     }
@@ -1428,41 +1523,14 @@
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._effect, this._myScene);
 
-                // Point size
-                if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
-                }
-
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                if (this._defines.METALLICWORKFLOW) {
-                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
-                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
-                    this._uniformBuffer.updateColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
-                }
-                else {
-                    // GAMMA CORRECTION.
-                    this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
-                    this._uniformBuffer.updateColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
-                }
-
-                this._uniformBuffer.updateVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
-                this._uniformBuffer.updateColor3("vAmbientColor", this._globalAmbientColor);
-
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
-                this._uniformBuffer.updateColor3("vEmissiveColor", PBRMaterial._scaledEmissive);
-
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.reflectionColor, PBRMaterial._scaledReflection);
-                this._uniformBuffer.updateColor3("vReflectionColor", PBRMaterial._scaledReflection);
+                effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
+                effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
             if (this._myScene.getCachedMaterial() !== this || !this.isFrozen) {
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.albedoColor, PBRMaterial._scaledAlbedo);
-                this._uniformBuffer.updateColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
@@ -1482,49 +1550,18 @@
                     MaterialHelper.BindMorphTargetParameters(mesh, this._effect);                
                 }
 
-                this._lightingInfos.x = this.directIntensity;
-                this._lightingInfos.y = this.emissiveIntensity;
-                this._lightingInfos.z = this.environmentIntensity;
-                this._lightingInfos.w = this.specularIntensity;
-
-                this._uniformBuffer.updateVector4("vLightingIntensity", this._lightingInfos);
-
-                this._overloadedShadowInfos.x = this.overloadedShadowIntensity;
-                this._overloadedShadowInfos.y = this.overloadedShadeIntensity;
-                this._uniformBuffer.updateVector4("vOverloadedShadowIntensity", this._overloadedShadowInfos);
-
                 this._cameraInfos.x = this.cameraExposure;
                 this._cameraInfos.y = this.cameraContrast;
-                this._uniformBuffer.updateVector4("vCameraInfos", this._cameraInfos);
+                effect.setVector4("vCameraInfos", this._cameraInfos);
                 
                 if (this.cameraColorCurves) {
                     ColorCurves.Bind(this.cameraColorCurves, this._effect);
                 }
 
-                this._overloadedIntensity.x = this.overloadedAmbientIntensity;
-                this._overloadedIntensity.y = this.overloadedAlbedoIntensity;
-                this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
-                this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
-                this._uniformBuffer.updateVector4("vOverloadedIntensity", this._overloadedIntensity);
-
-                this._uniformBuffer.updateColor3("vOverloadedAmbient", this.overloadedAmbient);
-                this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
-                this._uniformBuffer.updateColor3("vOverloadedAlbedo", this._tempColor);
-                this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
-                this._uniformBuffer.updateColor3("vOverloadedReflectivity", this._tempColor);
-                this.convertColorToLinearSpaceToRef(this.overloadedEmissive, this._tempColor);
-                this._uniformBuffer.updateColor3("vOverloadedEmissive", this._tempColor);
-                this.convertColorToLinearSpaceToRef(this.overloadedReflection, this._tempColor);
-                this._uniformBuffer.updateColor3("vOverloadedReflection", this._tempColor);
-
-                this._overloadedMicroSurface.x = this.overloadedMicroSurface;
-                this._overloadedMicroSurface.y = this.overloadedMicroSurfaceIntensity;
-                this._overloadedMicroSurface.z = this.overloadedReflectionIntensity;
-                this._uniformBuffer.updateVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
-
                 // Log. depth
                 MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
+
             this._uniformBuffer.update();
 
             this._afterBind(mesh);
