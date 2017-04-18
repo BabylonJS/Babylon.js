@@ -1114,8 +1114,6 @@ module BABYLON {
                 }
             }
 
-            this._uniformBuffer.dispose();
-
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
 

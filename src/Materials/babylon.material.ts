@@ -522,6 +522,8 @@
                 }
             }
 
+            this._uniformBuffer.dispose();
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
 

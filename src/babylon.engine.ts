@@ -581,7 +581,7 @@
                 try {
                     this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
-                        this._webGLVersion = 2.0;
+                        this._webGLVersion = 1.0//2.0;
                     }
                 } catch (e) {
                     // Do nothing
