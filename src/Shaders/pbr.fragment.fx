@@ -12,35 +12,7 @@
 
 precision highp float;
 
-uniform vec3 vEyePosition;
-uniform vec3 vAmbientColor;
-uniform vec3 vReflectionColor;
-uniform vec4 vAlbedoColor;
-
-// CUSTOM CONTROLS
-uniform vec4 vLightingIntensity;
-uniform vec4 vCameraInfos;
-
-#ifdef OVERLOADEDVALUES
-uniform vec4 vOverloadedIntensity;
-uniform vec3 vOverloadedAmbient;
-uniform vec3 vOverloadedAlbedo;
-uniform vec3 vOverloadedReflectivity;
-uniform vec3 vOverloadedEmissive;
-uniform vec3 vOverloadedReflection;
-uniform vec3 vOverloadedMicroSurface;
-#endif
-
-#ifdef OVERLOADEDSHADOWVALUES
-uniform vec4 vOverloadedShadowIntensity;
-#endif
-
-#if defined(REFLECTION) || defined(REFRACTION)
-uniform vec2 vMicrosurfaceTextureLods;
-#endif
-
-uniform vec4 vReflectivityColor;
-uniform vec3 vEmissiveColor;
+#include<__decl__pbrFragment>
 
 // Input
 varying vec3 vPositionW;
@@ -60,77 +32,54 @@ varying vec4 vColor;
 #ifdef ALBEDO
 varying vec2 vAlbedoUV;
 uniform sampler2D albedoSampler;
-uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
 uniform sampler2D ambientSampler;
-uniform vec3 vAmbientInfos;
 #endif
 
 #ifdef OPACITY	
 varying vec2 vOpacityUV;
 uniform sampler2D opacitySampler;
-uniform vec2 vOpacityInfos;
 #endif
 
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
-uniform vec2 vEmissiveInfos;
 uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
 #if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec3 vReflectivityInfos;
 uniform sampler2D reflectivitySampler;
 #endif
 
 #ifdef MICROSURFACEMAP
 varying vec2 vMicroSurfaceSamplerUV;
-uniform vec2 vMicroSurfaceSamplerInfos;
 uniform sampler2D microSurfaceSampler;
 #endif
 
 // Fresnel
 #include<fresnelFunction>
 
-#ifdef OPACITYFRESNEL
-uniform vec4 opacityParts;
-#endif
-
-#ifdef EMISSIVEFRESNEL
-uniform vec4 emissiveLeftColor;
-uniform vec4 emissiveRightColor;
-#endif
-
-// Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
-uniform mat4 view;
-#endif
-
 // Refraction
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
+
 
 #ifdef REFRACTIONMAP_3D
 uniform samplerCube refractionCubeSampler;
 #else
 uniform sampler2D refraction2DSampler;
-uniform mat4 refractionMatrix;
 #endif
 #endif
 
 // Reflection
 #ifdef REFLECTION
-uniform vec2 vReflectionInfos;
 
 #ifdef REFLECTIONMAP_3D
 uniform samplerCube reflectionCubeSampler;
@@ -145,9 +94,6 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
 #endif
 
 #include<reflectionFunction>

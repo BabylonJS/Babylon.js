@@ -1,5 +1,7 @@
 ﻿precision highp float;
 
+#include<__decl__pbrVertex>
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -24,58 +26,37 @@ attribute vec4 color;
 #include<instancesDeclaration>
 
 uniform mat4 view;
-uniform mat4 viewProjection;
 
 #ifdef ALBEDO
 varying vec2 vAlbedoUV;
-uniform mat4 albedoMatrix;
-uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
-uniform mat4 ambientMatrix;
-uniform vec3 vAmbientInfos;
 #endif
 
 #ifdef OPACITY
 varying vec2 vOpacityUV;
-uniform mat4 opacityMatrix;
-uniform vec2 vOpacityInfos;
 #endif
 
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
-uniform vec2 vEmissiveInfos;
-uniform mat4 emissiveMatrix;
 #endif
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec2 vLightmapInfos;
-uniform mat4 lightmapMatrix;
 #endif
 
 #if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec3 vReflectivityInfos;
-uniform mat4 reflectivityMatrix;
 #endif
 
 #ifdef MICROSURFACEMAP
 varying vec2 vMicroSurfaceSamplerUV;
-uniform vec2 vMicroSurfaceSamplerInfos;
-uniform mat4 microSurfaceSamplerMatrix;
 #endif
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec3 vBumpInfos;
-uniform mat4 bumpMatrix;
-#endif
-
-#ifdef POINTSIZE
-uniform float pointSize;
 #endif
 
 // Output
@@ -87,7 +68,6 @@ varying vec3 vNormalW;
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
 #endif
-
 
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
