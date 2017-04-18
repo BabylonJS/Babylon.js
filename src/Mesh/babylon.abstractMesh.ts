@@ -419,7 +419,7 @@
             if (index === -1) {
                 return;
             }
-            this._lightSources.slice(index, 1);       
+            this._lightSources.splice(index, 1);       
         }
 
         private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {

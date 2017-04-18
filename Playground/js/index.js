@@ -559,9 +559,11 @@
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
-            for (var obj of elementToTheme) {
+            for (var index = 0; index < elementToTheme.length; index++) {
+                var obj = elementToTheme[index];
                 let domObjArr = document.querySelectorAll(obj);
-                for (let domObj of domObjArr) {
+                for (var domObjIndex = 0; domObjIndex < domObjArr.length; domObjIndex++) {
+                    var domObj = domObjArr[domObjIndex];
                     domObj.classList.remove('light');
                     domObj.classList.remove('dark');
                     domObj.classList.add(theme);

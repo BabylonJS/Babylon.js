@@ -97,11 +97,16 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     currentScene.executeWhenReady(function () {
         var renderCount = test.renderCount || 1;
 
-        for (var renderIndex = 0; renderIndex < renderCount; renderIndex++) {
+        engine.runRenderLoop(function() {
             currentScene.render();
-        }
+            renderCount--;
 
-        evaluate(resultCanvas, result, renderImage, index, waitRing);
+            if (renderCount === 0) {
+                engine.stopRenderLoop();
+                evaluate(resultCanvas, result, renderImage, index, waitRing);
+            }
+        });
+
     });
 }
 
@@ -163,24 +168,29 @@ function runTest(index) {
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
         });
     } else {
-        var script = document.createElement("script");
-        script.setAttribute("type", "text/javascript")
-
-        var runScript = function () {
-            currentScene = eval(test.functionToCall + "(engine)");
-            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+        // Fix references
+        if (test.specificRoot) {
+            BABYLON.Tools.BaseUrl = config.root + test.specificRoot;
         }
 
-        script.onreadystatechange = function () {
-            if (this.readyState == 'complete') {
-                runScript();
+        var request = new XMLHttpRequest();
+        request.open('GET', config.root + test.scriptToRun, true);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === 4) {
+                request.onreadystatechange = null; 
+
+                var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+
+                console.log(scriptToRun);
+
+                currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
+                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
             }
-        }
+        };
 
-        script.onload = runScript;
-        script.setAttribute("src", config.root + test.scriptToRun);
-
-        document.getElementsByTagName("head")[0].appendChild(script);
+        request.send(null);
+        
     }
 }
 

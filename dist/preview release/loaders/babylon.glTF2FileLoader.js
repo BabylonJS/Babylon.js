@@ -986,10 +986,12 @@ var BABYLON;
                 runtime.babylonScene.beginAnimation(skeleton, 0, Number.MAX_VALUE, true, 1.0);
             }
             // Revoke object urls created during load
-            for (var i = 0; i < runtime.gltf.textures.length; i++) {
-                var texture = runtime.gltf.textures[i];
-                if (texture.blobURL) {
-                    URL.revokeObjectURL(texture.blobURL);
+            if (runtime.gltf.textures) {
+                for (var i = 0; i < runtime.gltf.textures.length; i++) {
+                    var texture = runtime.gltf.textures[i];
+                    if (texture.blobURL) {
+                        URL.revokeObjectURL(texture.blobURL);
+                    }
                 }
             }
         };

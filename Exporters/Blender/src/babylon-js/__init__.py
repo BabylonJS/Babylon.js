@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (5, 2, 0),
+    'version': (5, 2, 1),
     'blender': (2, 76, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -11,7 +11,7 @@ bl_info = {
 
 # allow module to be changed during a session (dev purposes)
 if "bpy" in locals():
-    print('Reloading TOB exporter')
+    print('Reloading .babylon exporter')
     import imp
     imp.reload(animation)
     imp.reload(armature)
