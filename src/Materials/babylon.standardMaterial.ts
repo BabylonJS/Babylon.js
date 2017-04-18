@@ -731,7 +731,7 @@ module BABYLON {
                         this.onCompiled(effect);
                     }
 
-                    this.bindTransformMatrix(effect, scene.getTransformMatrixBuffer());
+                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
                 }.bind(this);
 
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{

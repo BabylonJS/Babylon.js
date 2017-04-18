@@ -25,8 +25,6 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
-uniform mat4 view;
-
 #ifdef ALBEDO
 varying vec2 vAlbedoUV;
 #endif
