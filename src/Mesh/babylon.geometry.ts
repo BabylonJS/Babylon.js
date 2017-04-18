@@ -349,6 +349,10 @@
         }
 
         public _releaseVertexArrayObject(effect: Effect) {
+            if (!effect) {
+                return;
+            }
+            
             if (this._vertexArrayObjects[effect.key]) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
                 delete this._vertexArrayObjects[effect.key];
