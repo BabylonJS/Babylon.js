@@ -31,12 +31,15 @@ class World:
 
         Logger.log('Python World class constructor completed')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def to_scene_file(self, file_handler):
+    def to_scene_file(self, file_handler, needPhysics):
         write_bool(file_handler, 'autoClear', self.autoClear, True)
         write_color(file_handler, 'clearColor', self.clear_color)
         write_color(file_handler, 'ambientColor', self.ambient_color)
         write_vector(file_handler, 'gravity', self.gravity)
-
+        
+        if needPhysics:
+            write_bool(file_handler, 'physicsEnabled', True)
+            
         if hasattr(self, 'fogMode'):
             write_int(file_handler, 'fogMode', self.fogMode)
             write_color(file_handler, 'fogColor', self.fogColor)
