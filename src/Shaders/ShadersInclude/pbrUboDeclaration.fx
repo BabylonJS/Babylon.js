@@ -23,12 +23,9 @@ uniform Material
 	uniform mat4 refractionMatrix;
 	uniform mat4 reflectionMatrix;
 
-	uniform vec3 vEyePosition;
-	uniform vec3 vAmbientColor;
 	uniform vec3 vReflectionColor;
 	uniform vec4 vAlbedoColor;
 	uniform vec4 vLightingIntensity;
-	uniform vec4 vCameraInfos;
 
 	uniform vec2 vMicrosurfaceTextureLods;
 	uniform vec4 vReflectivityColor;

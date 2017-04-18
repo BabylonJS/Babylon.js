@@ -14,6 +14,10 @@ precision highp float;
 
 #include<__decl__pbrFragment>
 
+uniform vec3 vEyePosition;
+uniform vec3 vAmbientColor;
+uniform vec4 vCameraInfos;
+
 // Input
 varying vec3 vPositionW;
 
