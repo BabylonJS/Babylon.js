@@ -635,25 +635,30 @@
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var light of mesh._lightSources) {
+                var useUbo = light._uniformBuffer.useUbo;
+
+                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
 
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
-                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
+                light._uniformBuffer.updateColor4(useUbo ? "vLightDiffuse" : "vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
 
                 if (defines["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
 
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
-                    effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
+                    light._uniformBuffer.updateColor3(useUbo ? "vLightSpecular" : "vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
                     depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
+
+                light._uniformBuffer.update();
 
                 lightIndex++;
 
