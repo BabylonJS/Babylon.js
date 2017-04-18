@@ -494,17 +494,17 @@
 
                 if (mesh.material === this) {
                     mesh.material = null;
-                }
+                
+                    if ((<Mesh>mesh).geometry) {
+                        var geometry = (<Mesh>mesh).geometry;
 
-                if ((<Mesh>mesh).geometry) {
-                    var geometry = (<Mesh>mesh).geometry;
-
-                    if (this.storeEffectOnSubMeshes) {
-                        for (var subMesh of mesh.subMeshes) {
-                            geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        if (this.storeEffectOnSubMeshes) {
+                            for (var subMesh of mesh.subMeshes) {
+                                geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                            }
+                        } else {
+                            geometry._releaseVertexArrayObject(this._effect)
                         }
-                    } else {
-                        geometry._releaseVertexArrayObject(this._effect)
                     }
                 }
             }

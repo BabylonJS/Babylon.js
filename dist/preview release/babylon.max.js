@@ -31606,17 +31606,17 @@ var BABYLON;
                 var mesh = this._scene.meshes[index];
                 if (mesh.material === this) {
                     mesh.material = null;
-                }
-                if (mesh.geometry) {
-                    var geometry = mesh.geometry;
-                    if (this.storeEffectOnSubMeshes) {
-                        for (var _i = 0, _a = mesh.subMeshes; _i < _a.length; _i++) {
-                            var subMesh = _a[_i];
-                            geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                    if (mesh.geometry) {
+                        var geometry = mesh.geometry;
+                        if (this.storeEffectOnSubMeshes) {
+                            for (var _i = 0, _a = mesh.subMeshes; _i < _a.length; _i++) {
+                                var subMesh = _a[_i];
+                                geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                            }
                         }
-                    }
-                    else {
-                        geometry._releaseVertexArrayObject(this._effect);
+                        else {
+                            geometry._releaseVertexArrayObject(this._effect);
+                        }
                     }
                 }
             }
@@ -43036,6 +43036,9 @@ var BABYLON;
             return this._indexBuffer;
         };
         Geometry.prototype._releaseVertexArrayObject = function (effect) {
+            if (!effect) {
+                return;
+            }
             if (this._vertexArrayObjects[effect.key]) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
                 delete this._vertexArrayObjects[effect.key];
