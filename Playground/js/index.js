@@ -216,6 +216,7 @@
             // document.getElementById("metadataButton").style.display = "none";
         };
         showNoMetadata();
+        document.getElementById("saveMessage").style.display = "none";
 
         var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
