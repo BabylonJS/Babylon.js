@@ -10757,6 +10757,12 @@ var BABYLON;
                 this._currentBufferPointers[i] = null;
             }
         };
+        Engine.prototype.releaseEffects = function () {
+            for (var name in this._compiledEffects) {
+                this._gl.deleteProgram(this._compiledEffects[name]._program);
+            }
+            this._compiledEffects = {};
+        };
         // Dispose
         Engine.prototype.dispose = function () {
             this.hideLoadingUI();
@@ -10768,9 +10774,7 @@ var BABYLON;
             // Release audio engine
             Engine.audioEngine.dispose();
             // Release effects
-            for (var name in this._compiledEffects) {
-                this._gl.deleteProgram(this._compiledEffects[name]._program);
-            }
+            this.releaseEffects();
             // Unbind
             this.unbindAllAttributes();
             this._gl = null;
@@ -12699,7 +12703,7 @@ var BABYLON;
             if (index === -1) {
                 return;
             }
-            this._lightSources.slice(index, 1);
+            this._lightSources.splice(index, 1);
         };
         AbstractMesh.prototype._markSubMeshesAsDirty = function (func) {
             if (!this.subMeshes) {
@@ -21699,12 +21703,14 @@ var BABYLON;
                 return false;
             }
             var index;
+            // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
                 if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                     return false;
                 }
             }
+            // Meshes
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
                 if (!mesh.isEnabled()) {
@@ -31595,17 +31601,37 @@ var BABYLON;
             if (index >= 0) {
                 this._scene.materials.splice(index, 1);
             }
-            // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-            if (forceDisposeEffect && this._effect) {
-                this._scene.getEngine()._releaseEffect(this._effect);
-                this._effect = null;
-            }
             // Remove from meshes
             for (index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
                 if (mesh.material === this) {
                     mesh.material = null;
                 }
+                if (mesh.geometry) {
+                    var geometry = mesh.geometry;
+                    if (this.storeEffectOnSubMeshes) {
+                        for (var _i = 0, _a = mesh.subMeshes; _i < _a.length; _i++) {
+                            var subMesh = _a[_i];
+                            geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        }
+                    }
+                    else {
+                        geometry._releaseVertexArrayObject(this._effect);
+                    }
+                }
+            }
+            // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
+            if (forceDisposeEffect && this._effect) {
+                if (this.storeEffectOnSubMeshes) {
+                    for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                        var subMesh = _c[_b];
+                        this._scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                    }
+                }
+                else {
+                    this._scene.getEngine()._releaseEffect(this._effect);
+                }
+                this._effect = null;
             }
             // Callback
             this.onDisposeObservable.notifyObservers(this);
@@ -43009,6 +43035,12 @@ var BABYLON;
             }
             return this._indexBuffer;
         };
+        Geometry.prototype._releaseVertexArrayObject = function (effect) {
+            if (this._vertexArrayObjects[effect.key]) {
+                this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
+                delete this._vertexArrayObjects[effect.key];
+            }
+        };
         Geometry.prototype.releaseForMesh = function (mesh, shouldDispose) {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
@@ -53484,12 +53516,6 @@ var BABYLON;
         }
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
-            // update this device's offset position from the attached camera, if provided
-            //if (this._poseControlledCamera && this._poseControlledCamera.deviceScaleFactor) {
-            //this.position.copyFrom(this._poseControlledCamera.position);
-            //this.rotationQuaternion.copyFrom(this._poseControlledCamera.rotationQuaternion);
-            //this.deviceScaleFactor = this._poseControlledCamera.deviceScaleFactor;
-            //}
             var pose = this.vrGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
@@ -53507,11 +53533,6 @@ var BABYLON;
                     }
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-                    // scale the position using the scale factor, add the device's position
-                    /*if (this._poseControlledCamera) {
-                        // this allows total positioning freedom - the device, the camera and the mesh can be individually controlled.
-                        this._calculatedPosition.addInPlace(this._poseControlledCamera.position);
-                    }*/
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
@@ -53526,23 +53547,6 @@ var BABYLON;
                     }
                     // if the camera is set, rotate to the camera's rotation
                     this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
-                    /*if (this._poseControlledCamera) {
-                        Matrix.ScalingToRef(1, 1, 1, Tmp.Matrix[1]);
-                        this._calculatedRotation.toRotationMatrix(Tmp.Matrix[0]);
-                        Matrix.TranslationToRef(this._calculatedPosition.x, this._calculatedPosition.y, this._calculatedPosition.z, Tmp.Matrix[2]);
-
-                        //Matrix.Identity().multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-                        Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-                        this._poseControlledCamera.getWorldMatrix().getTranslationToRef(Tmp.Vector3[0])
-
-                        Matrix.ComposeToRef(new Vector3(this.deviceScaleFactor, this.deviceScaleFactor, this.deviceScaleFactor), this._poseControlledCamera.rotationQuaternion, Tmp.Vector3[0], Tmp.Matrix[4]);
-                        Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], Tmp.Matrix[1]);
-
-                        Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[4], Tmp.Matrix[2]);
-                        Tmp.Matrix[2].decompose(Tmp.Vector3[0], this._calculatedRotation, this._calculatedPosition);
-
-                    }*/
                 }
             }
         };
@@ -61042,8 +61046,8 @@ var BABYLON;
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 if (this._defines.METALLICWORKFLOW) {
-                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
-                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    PBRMaterial._scaledReflectivity.r = (this.metallic === undefined || this.metallic === null) ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = (this.roughness === undefined || this.roughness === null) ? 1 : this.roughness;
                     this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
                 }
                 else {
@@ -61456,7 +61460,12 @@ var BABYLON;
         };
         DebugLayer.prototype.hide = function () {
             if (this._inspector) {
-                this._inspector.dispose();
+                try {
+                    this._inspector.dispose();
+                }
+                catch (e) {
+                    // If the inspector has been removed directly from the inspector tool
+                }
                 this._inspector = null;
             }
         };

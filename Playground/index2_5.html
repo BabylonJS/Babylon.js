@@ -1,28 +1,27 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <title>Babylon.js Playground</title>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
-    <script src="https://babylonjs.azurewebsites.net/poly2tri.js"></script>
+    <!--For canvas/code separator-->
+    <script src="js/libs/split.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
-    <!--x-tag-->
-    <script src="xtag.min.js"></script>
-    <script src="splitbox.js"></script>
-    <link href="splitbox.css" rel="stylesheet" />
     <!-- jszip -->
-    <script src="jszip.min.js"></script>
-    <script src="fileSaver.js"></script>
-    <!-- Bootstrap -->
-    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/libs/jszip.min.js"></script>
+    <script src="js/libs/fileSaver.js"></script>
+    <!--Monaco-->
     <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
     <!-- Babylon.js -->
     <script src="https://babylonjs.azurewebsites.net/cannon.js"></script>
     <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
-    <!--<script src="../babylon.js"></script>-->
     <script src="https://babylonjs.azurewebsites.net/versions/babylon.2.5.js"></script>
     <script src="https://babylonjs.azurewebsites.net/versions/babylon.2.5.canvas2d.js"></script>
     <script src="https://babylonjs.azurewebsites.net/babylon.inspector.bundle.js"></script>
-    
+
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.fireMaterial.min.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.waterMaterial.min.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.lavaMaterial.min.js"></script>
@@ -33,6 +32,7 @@
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.gradientMaterial.min.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.furMaterial.min.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.gridMaterial.min.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.shadowOnlyMaterial.min.js"></script>
 
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.brickProceduralTexture.min.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.cloudProceduralTexture.min.js"></script>
@@ -49,92 +49,109 @@
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.glTFFileLoader.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.objFileLoader.js"></script>
     <script src="https://babylonjs.azurewebsites.net/lib/babylon.stlFileLoader.js"></script>
-    <link href="index.css" rel="stylesheet" />
+
+    <script src="https://rawgit.com/BabylonJS/Extensions/master/ClonerSystem/src/babylonx.cloner.js"></script>
+    <link href="css/index.css" rel="stylesheet" />
 </head>
+
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner" id="topbar">
-            <a class="brand largeOnly" href="#" id="mainTitle">Babylon.js Playground</a>
-            <div class="btn-group">
-                <button class="btn" id="runButton">Run</button>
-                <button class="btn" id="saveButton">Save</button>
-                <button class="btn desktopOnly" id="zipButton">Get .zip</button>
-                <button class="btn desktopOnly" id="newButton">New</button>
-                <button class="btn desktopOnly" id="clearButton">Clear</button>
+    <div class="navbar">
+        <div class="title">
+            Babylon.js Playground
+        </div>
+        <div class="version" id="mainTitle">
+            v3.0-alpha
+        </div>
+
+        <div class="category">
+            <div class="button run" id="runButton">Run <i class="fa fa-play" aria-hidden="true"></i></div>
+        </div>
+
+
+        <div class="category">
+            <div class="button" id="newButton">New<i class="fa fa-file" aria-hidden="true"></i></div>
+            <div class="button" id="clearButton">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
+        </div>
+
+        <div class="category">
+            <div class="button" id="saveButton">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
+            <div class="button" id="zipButton">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
+        </div>
+
+
+        <div class="category desktopOnly">
+            <div class="button select"><span id="currentFontSize">Font: 14</span>
+                <div class="toDisplay">
+                    <div class="option" onclick="setFontSize(12);">12</div>
+                    <div class="option" onclick="setFontSize(14);">14</div>
+                    <div class="option" onclick="setFontSize(16);">16</div>
+                    <div class="option" onclick="setFontSize(18);">18</div>
+                    <div class="option" onclick="setFontSize(20);">20</div>
+                    <div class="option" onclick="setFontSize(22);">22</div>
+                </div>
             </div>
-            <div class="btn-group desktopOnly">
-                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                    <span id="currentFontSize">Font: 12</span>
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu" id="sizeList">
-                    <li><a href="#" onclick="setFontSize(12);">12</a></li>
-                    <li><a href="#" onclick="setFontSize(14);">14</a></li>
-                    <li><a href="#" onclick="setFontSize(16);">16</a></li>
-                    <li><a href="#" onclick="setFontSize(18);">18</a></li>
-                    <li><a href="#" onclick="setFontSize(20);">20</a></li>
-                    <li><a href="#" onclick="setFontSize(22);">22</a></li>
-                </ul>
+            <div class="button select">Theme
+                <div class="toDisplay">
+                    <div class="option" id="darkTheme">Dark</div>
+                    <div class="option" id="lightTheme">Light</div>
+                </div>
             </div>
-            <div class="btn-group desktopOnly">
-                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                    <span id="currentVersion">Version: Latest</span>
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu" id="versionList">
-                    <li><a href="#" onclick="setVersion('latest');">Latest</a></li>
-                    <li><a href="#" onclick="setVersion('2.5');">2.5</a></li>
-                </ul>
-            </div>            
-            <div class="btn-group">
-                <label class="btn btn-sm active">
-                    <input type="checkbox" autocomplete="off" id='safemodeToggle' style="margin-top:-0.1em;margin-right:4px">Safe Mode
-                </label>
-                <button class="btn btn-sm" id="metadataButton">+Meta data</button>
-                <button class="btn btn-sm" id="editorButton">-Editor</button>
-                <button class="btn btn-sm" id="debugButton">+Debug layer</button>
+        </div>
+        <div class="category desktopTabletOnly">
+            <div class="button select">Settings
+                <div class="toDisplay">
+                    <div class="option" id='safemodeToggle'>Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
+                    <div class="option checked" id="editorButton">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="fullscreenButton">Fullscreen</div>
+                    <div class="option" id="metadataButton">Metadata</div>
+                </div>
             </div>
-            <div class="btn-group pull-right">
-                <button class="btn" id="fullscreenButton">Fullscreen</button>
+
+            <div class="button check uncheck" id="debugButton">Debug layer</div>
+        </div>
+
+
+
+        <div class="category right">
+            <div class="button select desktopTabletOnly"><span id="currentVersion">Version: Latest</span>
+                <div class="toDisplay">
+                    <div class="option" onclick="setVersion('latest');">Latest</div>
+                    <div class="option" onclick="setVersion('2.5');">2.5</div>
+                </div>
             </div>
-            <div class="btn-group pull-right">
-                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                    <span id="currentScript">Predefined scripts</span>
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu" id="scriptsList"></ul>
+            <div class="button select"> <span id="currentScript">Scenes</span>
+                <div class="toDisplayBig">
+                    <ul id="scriptsList">
+                    </ul>
+                </div>
             </div>
-            <div class="save-message" id="saveMessage">
-                Be the first to fill this playground metadata!
-            </div>
+        </div>
+        <div class="save-message" id="saveMessage">
+            This PG has no metadata. Click save to add them.
         </div>
     </div>
 
-    <x-splitbox>
+    <div class="wrapper">
         <div id="jsEditor"></div>
-        <div splitter></div>
         <div id="canvasZone">
             <canvas touch-action="none" id="renderCanvas"></canvas>
         </div>
-    </x-splitbox>
+    </div>
 
     <span class="label" id="fpsLabel">FPS</span>
 
     <div id="errorZone">
     </div>
 
-    <div class="navbar navbar-inverse navbar-fixed-bottom">
-        <div class="navbar-inner">
-            <ul class="nav pull-left">
-                <li id="statusBar"></li>
-            </ul>
-            <ul class="nav pull-right">
-                <li><a href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a></li>
-                <li><a href="https://babylonjs.azurewebsites.net/sandbox">Sandbox</a></li>
-                <li><a href="https://github.com/BabylonJS/Babylon.js/wiki">Wiki</a></li>
-                <li><a href="https://doc.babylonjs.com">Documentation</a></li>
-                <li><a href="https://doc.babylonjs.com/playground">Playground Search</a></li>
-            </ul>
+    <div class="navbarBottom">
+        <div id="statusBar"></div>
+        <div class="links">
+            <div class='link'> <a target='_new' href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a></div>
+            <div class='link'><a target='_new' href="https://babylonjs.azurewebsites.net/sandbox">Sandbox</a></div>
+            <div class='link'><a target='_new' href="https://github.com/BabylonJS/Babylon.js/wiki">Wiki</a></div>
+            <div class='link'><a target='_new' href="https://doc.babylonjs.com">Documentation</a></div>
+            <div class='link'><a target='_new' href="https://doc.babylonjs.com/playground">Playground Search</a></div>
         </div>
     </div>
 
@@ -150,14 +167,21 @@
             <div class="separator"></div>
             <textarea id="saveFormTags" rows="4" cols="10"></textarea>
             <div class="save-form-buttons" id="saveFormButtons">
-                <button class="btn save-form-button" id="saveFormButtonOk">OK</button>
-                <button class="btn save-form-button" id="saveFormButtonCancel">Cancel</button>
+
+                <div id="saveFormButtonOk" class="button">OK</div>
+                <div id="saveFormButtonCancel" class="button">Cancel</div>
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery.js"></script>
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-    <script src="index.js"></script>
+
+    <script>
+        Split(['#jsEditor', '#canvasZone']);
+    </script>
+
+    <script src="js/actions.js"></script>
+    <script src="js/index.js"></script>
 </body>
+
 </html>

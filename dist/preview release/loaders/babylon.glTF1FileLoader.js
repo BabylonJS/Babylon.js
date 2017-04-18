@@ -12,15 +12,17 @@ var BABYLON;
             var loaderData = GLTFFileLoader._parse(data);
             var loader = this._getLoader(loaderData);
             if (!loader) {
-                return false;
+                onError();
+                return;
             }
-            return loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onError);
+            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onError);
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onError) {
             var loaderData = GLTFFileLoader._parse(data);
             var loader = this._getLoader(loaderData);
             if (!loader) {
-                return false;
+                onError();
+                return;
             }
             return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onError);
         };
@@ -1662,7 +1664,6 @@ var BABYLON;
                         }
                     }, onError);
                 }, onError);
-                return true;
             };
             GLTFLoader.prototype._loadShadersAsync = function (gltfRuntime, onload) {
                 var hasShaders = false;

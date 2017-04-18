@@ -1,7 +1,7 @@
 ﻿{
   "root": "https://cdn.rawgit.com/BabylonJS/Website/06ecbea7",
-  "tests": [  
-   {
+  "tests": [   
+ {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
       "sceneFilename": "Sponza.babylon",
@@ -90,7 +90,20 @@
       "scriptToRun": "/Demos/Polygon/polygon.js",
       "functionToCall": "CreatePolygonScene",
       "referenceImage": "polygon.png"
-    },      
+    },        
+    {
+      "title": "Soft Shadows",
+      "renderCount": 5,
+      "scriptToRun": "/Demos/SoftShadows/softShadows.js",
+      "functionToCall": "CreateSoftShadowsTestScene",
+      "referenceImage": "softShadows.png"
+    },
+    {
+      "title": "Fresnel",
+      "scriptToRun": "/Demos/Fresnel/fresnel.js",
+      "functionToCall": "CreateFresnelTestScene",
+      "referenceImage": "fresnel.png"
+    },
     {
       "title": "Lines",
       "scriptToRun": "/Demos/Lines/lines.js",
