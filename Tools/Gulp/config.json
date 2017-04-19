@@ -18,7 +18,8 @@
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
                 "additionalCameras", "postProcesses", "renderingPipeline", "depthRenderer", "additionalPostProcesses",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
-                "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations"
+                "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
+                "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
         ],
         "minimal": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
     },
@@ -370,7 +371,8 @@
                 "../../src/Materials/Textures/babylon.mirrorTexture.js",
                 "../../src/Materials/Textures/babylon.refractionTexture.js",
                 "../../src/Materials/Textures/babylon.dynamicTexture.js",
-                "../../src/Materials/Textures/babylon.videoTexture.js"
+                "../../src/Materials/Textures/babylon.videoTexture.js",
+                "../../src/Materials/Textures/babylon.rawTexture.js"
             ],
             "dependUpon" : [
                 "core"
@@ -393,8 +395,10 @@
         "loader" : 
         {
             "files": [
+                "../../src/Tools/babylon.loadingScreen.js",
                 "../../src/Loading/babylon.sceneLoader.js",
-                "../../src/Loading/Plugins/babylon.babylonFileLoader.js"
+                "../../src/Loading/Plugins/babylon.babylonFileLoader.js",
+                "../../src/Tools/babylon.filesInput.js"
             ],
             "dependUpon" : [
                 "core"
@@ -740,37 +744,85 @@
         "optimizations" : 
         {
             "files": [
-                "../../src/Mesh/babylon.meshSimplification.js",
+                "../../src/Mesh/babylon.meshSimplification.js",        
+                "../../src/Mesh/babylon.meshLODLevel.js",
                 "../../src/Tools/babylon.sceneOptimizer.js"
             ],
             "dependUpon" : [
                 "core"
             ]
-        }      
+        }, 
+        "highlights" : 
+        {
+            "files": [
+                "../../src/Rendering/babylon.outlineRenderer.js",
+                "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Layer/babylon.highlightlayer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "assetsManager" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.assetsManager.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "mapTexture" : 
+        {
+            "files": [
+                "../../src/Materials/Textures/babylon.mapTexture.js",  
+                "../../src/Tools/babylon.rectPackingMap.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "dynamicFloatArray" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.dynamicFloatArray.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "serialization" : 
+        {
+            "files": [                              
+                "../../src/Tools/babylon.sceneSerializer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "probes" : 
+        {
+            "files": [                                                      
+                "../../src/Probes/babylon.reflectionProbe.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }, 
+        "layer" : 
+        {
+            "files": [                                                      
+                "../../src/Layer/babylon.layer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }
     },
-    "core": {
-        "typescript": [
-            "../../src/**/*.ts",
-            "!../../src/**/*.d.ts"
-        ],
-        "files": [                        
-            "../../src/Tools/babylon.loadingScreen.js",
-            "../../src/Tools/babylon.filesInput.js",
-            "../../src/Layer/babylon.layer.js",
-            "../../src/Layer/babylon.highlightlayer.js",
-            "../../src/Tools/babylon.rectPackingMap.js",
-            "../../src/Tools/babylon.dynamicFloatArray.js",
-            "../../src/Materials/Textures/babylon.mapTexture.js",
-            
-            "../../src/Tools/babylon.sceneSerializer.js",
-            "../../src/Rendering/babylon.outlineRenderer.js",
-            "../../src/Tools/babylon.assetsManager.js",            
-            "../../src/Mesh/babylon.meshLODLevel.js",
-            "../../src/Materials/Textures/babylon.rawTexture.js",            
-            "../../src/Rendering/babylon.edgesRenderer.js",
-            "../../src/Probes/babylon.reflectionProbe.js"
-        ]
-    },
+    "typescript": [
+        "../../src/**/*.ts",
+        "!../../src/**/*.d.ts"
+    ],
     "workers": [
         {
             "variable": "BABYLON.CollisionWorker",

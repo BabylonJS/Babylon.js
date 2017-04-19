@@ -202,7 +202,7 @@ gulp.task("build", ["shaders"], function () {
 * Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task('typescript-compile', function () {
-    var tsResult = gulp.src(config.core.typescript)
+    var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
 
@@ -346,7 +346,7 @@ gulp.task("typescript-all", function (cb) {
  * Watch ts files and fire repective tasks.
  */
 gulp.task('watch', [], function () {
-    var tasks = [gulp.watch(config.core.typescript, ['typescript-compile'])];
+    var tasks = [gulp.watch(config.typescript, ['typescript-compile'])];
 
     config.modules.map(function (module) { 
         config[module].libraries.map(function (library) {            
