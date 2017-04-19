@@ -31204,6 +31204,7 @@ var BABYLON;
         // Bindings
         MaterialHelper.BindLightShadow = function (light, scene, mesh, lightIndex, effect, depthValuesAlreadySet) {
             var shadowGenerator = light.getShadowGenerator();
+            var useUbo = light._uniformBuffer.useUbo;
             if (mesh.receiveShadows && shadowGenerator) {
                 if (!light.needCube()) {
                     effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
@@ -31215,7 +31216,7 @@ var BABYLON;
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                light._uniformBuffer.updateFloat3("shadowsInfo", shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
+                light._uniformBuffer.updateFloat3(useUbo ? "shadowsInfo" : "shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
             }
             return depthValuesAlreadySet;
         };
