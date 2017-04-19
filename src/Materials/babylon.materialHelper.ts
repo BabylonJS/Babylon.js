@@ -302,6 +302,8 @@
         // Bindings
         public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean {
             var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
+            var useUbo = light._uniformBuffer.useUbo;
+
             if (mesh.receiveShadows && shadowGenerator) {
                 if (!(<any>light).needCube()) {
                     effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
@@ -312,7 +314,7 @@
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                light._uniformBuffer.updateFloat3("shadowsInfo", shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
+                light._uniformBuffer.updateFloat3(useUbo ? "shadowsInfo" : "shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
             }
 
             return depthValuesAlreadySet;
