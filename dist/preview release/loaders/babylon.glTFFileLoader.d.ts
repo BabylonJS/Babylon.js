@@ -3,8 +3,6 @@ declare module BABYLON {
     interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
-<<<<<<< HEAD
-=======
     }
     interface IGLTFLoader {
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
@@ -40,30 +38,11 @@ declare module BABYLON.GLTF1 {
         SHORT = 5122,
         UNSIGNED_SHORT = 5123,
         FLOAT = 5126,
->>>>>>> upstream/master
     }
-    interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => boolean;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+    enum EShaderType {
+        FRAGMENT = 35632,
+        VERTEX = 35633,
     }
-<<<<<<< HEAD
-    class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        static GLTFLoaderV1: IGLTFLoader;
-        static GLTFLoaderV2: IGLTFLoader;
-        static HomogeneousCoordinates: boolean;
-        static IncrementalLoading: boolean;
-        extensions: ISceneLoaderPluginExtensions;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean;
-        private static _parse(data);
-        private _getLoader(loaderData);
-        private static _parseBinary(data);
-        private static _parseV1(binaryReader);
-        private static _parseV2(binaryReader);
-        private static _parseVersion(version);
-        private static _compareVersion(a, b);
-        private static _decodeBufferToText(view);
-=======
     enum EParameterType {
         BYTE = 5120,
         UNSIGNED_BYTE = 5121,
@@ -540,7 +519,6 @@ declare module BABYLON.GLTF1 {
         loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): boolean;
         loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean;
         private _loadTexture(gltfRuntime, id, material, propertyPath, onError);
->>>>>>> upstream/master
     }
 }
 
