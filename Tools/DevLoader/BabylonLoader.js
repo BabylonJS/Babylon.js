@@ -234,7 +234,7 @@ var BABYLONDEVTOOLS;
             // Modules
             if (loadModules) {
                 for (var i = 0; i< settings.modules.length; i++) {
-               //     this.loadModule(settings[settings.modules[i]]);
+                    this.loadModule(settings[settings.modules[i]]);
                 }
             }
         }
