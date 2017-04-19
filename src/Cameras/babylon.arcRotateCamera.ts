@@ -187,7 +187,7 @@ module BABYLON {
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
         public collisionRadius = new Vector3(0.5, 0.5, 0.5);
-        private _collider = new Collider();
+        private _collider: Collider;
         private _previousPosition = Vector3.Zero();
         private _collisionVelocity = Vector3.Zero();
         private _newPosition = Vector3.Zero();
@@ -214,7 +214,7 @@ module BABYLON {
 
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
+            this.inputs.addKeyboard().addMouseWheel().addPointers();
         }      
 
         // Cache
@@ -437,6 +437,9 @@ module BABYLON {
             var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
+                if (!this._collider) {
+                    this._collider = new Collider();
+                }
                 this._collider.radius = this.collisionRadius;
                 this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;

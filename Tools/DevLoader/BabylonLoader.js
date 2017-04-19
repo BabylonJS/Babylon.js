@@ -185,11 +185,44 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadBJSScripts = function (settings) {
+        Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
+            if (dependency.dependencies) {
+                for (var i = 0; i < dependency.dependencies.length; i++ ) {
+                    var dependencyName = dependency.dependencies[i];
+                    var parent = settings.dependencies[dependencyName];
+                    this.processDependency(settings, parent, filesToLoad);
+                }
+            }
 
+            for (var i = 0; i< dependency.files.length; i++) {
+                var file = dependency.files[i];
+
+                if (filesToLoad.indexOf(file) === -1) {
+                    filesToLoad.push(file);
+                }
+            }
+        }
+
+        Loader.prototype.loadBJSScripts = function (settings) {
+            var loadModules = true;
+
+            // Main bjs files
             if (!useDist) {
-                this.loadScripts(settings.core.files);
-                this.loadScripts(settings.extras.files);
+                var currentConfig = settings.build.currentConfig;
+                var buildConfiguration = settings.buildConfigurations[currentConfig];
+                var filesToLoad = [];
+
+                for (var index = 0; index < buildConfiguration.length; index++) {
+                    var dependencyName = buildConfiguration[index];
+                    var dependency = settings.dependencies[dependencyName];
+                    this.processDependency(settings, dependency, filesToLoad);
+                }
+
+                this.loadScripts(filesToLoad);
+
+                if (currentConfig !== "all") {
+                    loadModules = false;
+                }
             }
             else if (min) {
                 this.loadScript('/dist/preview release/babylon.js');
@@ -198,8 +231,11 @@ var BABYLONDEVTOOLS;
                 this.loadScript('/dist/preview release/babylon.max.js');
             }
 
-            for (var i = 0; i< settings.modules.length; i++) {
-                this.loadModule(settings[settings.modules[i]]);
+            // Modules
+            if (loadModules) {
+                for (var i = 0; i< settings.modules.length; i++) {
+               //     this.loadModule(settings[settings.modules[i]]);
+                }
             }
         }
 
