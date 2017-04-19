@@ -225,6 +225,22 @@ module BABYLON {
         }
 
         /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         */
+        public addMatrix3x3(name: string) {
+            this.addUniform(name, 12);
+        }
+
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         */
+        public addMatrix2x2(name: string) {
+            this.addUniform(name, 8);
+        }
+
+        /**
          * Effectively creates the WebGL Uniform Buffer, once layout is completed with `addUniform`.
          */
         public create(): void {
@@ -306,6 +322,54 @@ module BABYLON {
                     this._bufferData[location + i] = data[i];
                 }
             }
+        }
+
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Float32Array} matrix
+         */
+        public updateMatrix3x3(name: string, matrix: Float32Array): Effect {
+            if (this._noUbo) {
+                if (this._currentEffect) {
+                    this._currentEffect.setMatrix3x3(name, matrix);
+                }
+                return;
+            }
+
+            // To match std140, matrix must be realigned
+            for (var i = 0; i < 3; i++) {
+                _tempBuffer[i * 4] = matrix[i * 3];
+                _tempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
+                _tempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
+                _tempBuffer[i * 4 + 3] = 0.0;
+            }
+
+            this.updateUniform(name, _tempBuffer, 12);
+        }
+
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Float32Array} matrix
+         */
+        public updateMatrix2x2(name: string, matrix: Float32Array): Effect {
+            if (this._noUbo) {
+                if (this._currentEffect) {
+                    this._currentEffect.setMatrix2x2(name, matrix);
+                }
+                return;
+            }
+
+            // To match std140, matrix must be realigned
+            for (var i = 0; i < 2; i++) {
+                _tempBuffer[i * 4] = matrix[i * 2];
+                _tempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
+                _tempBuffer[i * 4 + 2] = 0.0;
+                _tempBuffer[i * 4 + 3] = 0.0;
+            }
+
+            this.updateUniform(name, _tempBuffer, 8);
         }
 
         /**
