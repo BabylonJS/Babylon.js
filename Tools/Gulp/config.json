@@ -101,8 +101,7 @@
         {
             "files": [
                 "../../src/Collisions/babylon.pickingInfo.js",
-                "../../src/Culling/babylon.ray.js",
-                "../../src/Debug/babylon.rayHelper.js"
+                "../../src/Culling/babylon.ray.js"                
             ],
             "dependUpon" : [
                 "core"
@@ -668,6 +667,7 @@
                 "../../src/Debug/babylon.skeletonViewer.js",
                 "../../src/Debug/babylon.axesViewer.js",
                 "../../src/Debug/babylon.boneAxesViewer.js",
+                "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],

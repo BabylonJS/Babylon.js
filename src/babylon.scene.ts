@@ -2325,6 +2325,9 @@
          * @return true if no such key were already present and the data was added successfully, false otherwise
          */
         public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return this._externalData.add(key, data);
         }
 
@@ -2334,6 +2337,9 @@
          * @return the associated data, if present (can be null), or undefined if not present
          */
         public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                return null;
+            }
             return <T>this._externalData.get(key);
         }
 
@@ -2344,6 +2350,9 @@
          * @return the associated data, can be null if the factory returned null.
          */
         public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.getOrAddWithFactory(key, factory);
         }
 
