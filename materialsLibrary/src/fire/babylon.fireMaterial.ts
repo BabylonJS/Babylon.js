@@ -146,20 +146,26 @@ module BABYLON {
                 
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        // Fire
-                        "time", "speed"
-                    ],
-                    ["diffuseSampler",
-                        // Fire
-                        "distortionSampler", "opacitySampler"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError), defines);
+                    <EffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
+                                "vFogInfos", "vFogColor", "pointSize",
+                                "vDiffuseInfos", 
+                                "mBones",
+                                "vClipPlane", "diffuseMatrix",
+                                // Fire
+                                "time", "speed"
+                            ],
+                        uniformBuffersNames: [],
+                        samplers: ["diffuseSampler",
+                                // Fire
+                                "distortionSampler", "opacitySampler"
+                            ],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError
+                    }, engine), defines);
             }
             
             if (!subMesh.effect.isReady()) {

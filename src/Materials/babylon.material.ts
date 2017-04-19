@@ -448,12 +448,16 @@
         public bindView(effect: Effect): void {
             if (this.getScene().getEngine().webGLVersion === 1) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
+            } else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }
 
         public bindViewProjection(effect: Effect): void {
             if (this.getScene().getEngine().webGLVersion === 1) {
                 effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            } else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }
 

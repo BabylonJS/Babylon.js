@@ -31135,7 +31135,9 @@ var BABYLON;
                     break;
                 }
                 uniformsList.push("vLightData" + lightIndex, "vLightDiffuse" + lightIndex, "vLightSpecular" + lightIndex, "vLightDirection" + lightIndex, "vLightGround" + lightIndex, "lightMatrix" + lightIndex, "shadowsInfo" + lightIndex);
-                uniformBuffersList.push("Light" + lightIndex);
+                if (uniformBuffersList) {
+                    uniformBuffersList.push("Light" + lightIndex);
+                }
                 samplersList.push("shadowSampler" + lightIndex);
             }
             if (defines["NUM_MORPH_INFLUENCERS"]) {
@@ -31240,7 +31242,7 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
+                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet, disableUbo);
                 }
                 light._uniformBuffer.update();
                 lightIndex++;
