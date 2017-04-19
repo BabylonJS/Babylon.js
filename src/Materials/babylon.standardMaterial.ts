@@ -1118,7 +1118,12 @@ module BABYLON {
         }
 
         public clone(name: string): StandardMaterial {
-            return SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
+            var result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
+
+            result.name = name;
+            result.id = name;
+
+            return result;
         }
 
         public serialize(): any {

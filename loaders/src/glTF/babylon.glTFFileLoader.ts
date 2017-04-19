@@ -7,8 +7,8 @@ module BABYLON {
     }
 
     export interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => boolean;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
     }
 
     export class GLTFFileLoader implements ISceneLoaderPluginAsync {
@@ -23,21 +23,23 @@ module BABYLON {
             ".glb": { isBinary: true }
         };
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
             var loaderData = GLTFFileLoader._parse(data);
             var loader = this._getLoader(loaderData);
             if (!loader) {
-                return false;
+                onError();
+                return;
             }
 
-            return loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onError);
+            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onError);
         }
 
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void {
             var loaderData = GLTFFileLoader._parse(data);
             var loader = this._getLoader(loaderData);
             if (!loader) {
-                return false;
+                onError();
+                return;
             }
 
             return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onError);

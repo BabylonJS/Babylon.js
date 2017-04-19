@@ -2,6 +2,7 @@
     export interface IShadowGenerator {
         getShadowMap(): RenderTargetTexture;
  
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
         dispose(): void;
     }
  

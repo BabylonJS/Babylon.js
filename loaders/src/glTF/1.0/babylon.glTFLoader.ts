@@ -1,5 +1,4 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../../../../dist/preview release/loaders/babylon.glTFFileLoader.d.ts"/>
 
 module BABYLON.GLTF1 {
     /**
@@ -1603,7 +1602,7 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1629,8 +1628,6 @@ module BABYLON.GLTF1 {
                     }
                 }, onError);
             }, onError);
-
-            return true;
         }
 
         private _loadShadersAsync(gltfRuntime: IGLTFRuntime, onload: () => void): void {
