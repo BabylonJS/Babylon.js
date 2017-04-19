@@ -60,10 +60,6 @@ varying vec2 vLightmapUV;
 uniform sampler2D lightmapSampler;
 #endif
 
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
-uniform mat4 view;
-#endif
-
 #ifdef REFRACTION
 
 #ifdef REFRACTIONMAP_3D

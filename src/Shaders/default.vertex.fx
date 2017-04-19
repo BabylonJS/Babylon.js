@@ -23,8 +23,6 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
-uniform mat4 view;
-
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
 #endif
