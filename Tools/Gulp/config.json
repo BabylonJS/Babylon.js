@@ -17,7 +17,8 @@
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
                 "additionalCameras", "postProcesses", "renderingPipeline", "depthRenderer", "additionalPostProcesses",
-                "bones", "hdr", "polygonMesh", "csg", "lensFlares"
+                "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
+                "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations"
         ],
         "minimal": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
     },
@@ -69,6 +70,10 @@
             ],
             "dependUpon" : [
                 "core"
+            ],
+            "shaders" : [
+                "particles.vertex",
+                "particles.fragment"
             ]
         }, 
         "solidParticles" : 
@@ -110,6 +115,10 @@
             ],
             "dependUpon" : [
                 "core"
+            ],
+            "shaders" : [
+                "sprites.vertex",
+                "sprites.fragment"
             ]
         },         
         "animations" : 
@@ -521,7 +530,8 @@
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
                 "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
-                "../../src/PostProcess/babylon.tonemapPostProcess.js"                                      
+                "../../src/PostProcess/babylon.tonemapPostProcess.js",
+                "../../src/PostProcess/babylon.displayPassPostProcess.js"                                
             ],
             "dependUpon" : [
                 "postProcesses"
@@ -538,7 +548,8 @@
                 "volumetricLightScatteringPass.fragment",
                 "stereoscopicInterlace.fragment",
                 "colorCorrection.fragment",
-                "tonemap.fragment"
+                "tonemap.fragment",
+                "displayPass.fragment"
             ]
         },                         
         "renderingPipeline" : 
@@ -620,65 +631,144 @@
             "dependUpon" : [
                 "core"
             ]
-        }                         
+        },
+        "physics" : 
+        {
+            "files": [
+                "../../src/Physics/babylon.physicsJoint.js",
+                "../../src/Physics/babylon.physicsImpostor.js",
+                "../../src/Physics/babylon.physicsEngine.js",
+                "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
+                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "textureFormats" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.tga.js",
+                "../../src/Physics/babylon.physicsImpostor.js",
+                "../../src/Physics/babylon.physicsEngine.js",
+                "../../src/Tools/babylon.dds.js",
+                "../../src/Tools/babylon.khronosTextureContainer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "debug" : 
+        {
+            "files": [
+                "../../src/Debug/babylon.skeletonViewer.js",
+                "../../src/Debug/babylon.axesViewer.js",
+                "../../src/Debug/babylon.boneAxesViewer.js",
+                "../../src/Debug/babylon.debugLayer.js",
+                "../../src/Rendering/babylon.boundingBoxRenderer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "morphTargets" : 
+        {
+            "files": [
+                "../../src/Morph/babylon.morphTarget.js",
+                "../../src/Morph/babylon.morphTargetManager.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "colorCurves" : 
+        {
+            "files": [
+                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
+                "../../src/Materials/babylon.colorCurves.js"                       
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "octrees" : 
+        {
+            "files": [
+                "../../src/Culling/Octrees/babylon.octree.js",
+                "../../src/Culling/Octrees/babylon.octreeBlock.js"                       
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "simd" : 
+        {
+            "files": [
+                "../../src/Math/babylon.math.SIMD.js"                      
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "vr" : 
+        {
+            "files": [
+                "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
+                "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
+                "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
+                "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
+                "../../src/Cameras/VR/babylon.webVRCamera.js",
+                "../../src/Cameras/babylon.deviceOrientationCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",            
+                "../../src/Cameras/babylon.stereoscopicCameras.js"                
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "virtualJoystick" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.virtualJoystick.js",
+                "../../src/Cameras/babylon.virtualJoysticksCamera.js",
+                "../../src/Cameras/Inputs/babylon.freeCameraVirtualJoystickInput.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "optimizations" : 
+        {
+            "files": [
+                "../../src/Mesh/babylon.meshSimplification.js",
+                "../../src/Tools/babylon.sceneOptimizer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }      
     },
     "core": {
         "typescript": [
             "../../src/**/*.ts",
             "!../../src/**/*.d.ts"
         ],
-        "files": [            
-                "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
-
-            "../../src/Tools/babylon.tga.js",
+        "files": [                        
             "../../src/Tools/babylon.loadingScreen.js",
             "../../src/Tools/babylon.filesInput.js",
-            "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
-            "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
-            "../../src/Rendering/babylon.boundingBoxRenderer.js",
             "../../src/Layer/babylon.layer.js",
-            "../../src/Physics/babylon.physicsJoint.js",
-            "../../src/Physics/babylon.physicsImpostor.js",
-            "../../src/Physics/babylon.physicsEngine.js",
             "../../src/Layer/babylon.highlightlayer.js",
-                        "../../src/Math/babylon.math.SIMD.js",
             "../../src/Tools/babylon.rectPackingMap.js",
             "../../src/Tools/babylon.dynamicFloatArray.js",
             "../../src/Materials/Textures/babylon.mapTexture.js",
-            "../../src/Tools/babylon.dds.js",
-            "../../src/Tools/babylon.khronosTextureContainer.js",
-            "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
-            "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
-            "../../src/PostProcess/babylon.displayPassPostProcess.js",
-            "../../src/Mesh/babylon.meshSimplification.js",
+            
             "../../src/Tools/babylon.sceneSerializer.js",
-            "../../src/Tools/babylon.virtualJoystick.js",
-            "../../src/Cameras/babylon.virtualJoysticksCamera.js",
-            "../../src/Cameras/Inputs/babylon.freeCameraVirtualJoystickInput.js",
             "../../src/Rendering/babylon.outlineRenderer.js",
-            "../../src/Tools/babylon.assetsManager.js",
-            "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
-            "../../src/Cameras/VR/babylon.webVRCamera.js",
-            "../../src/Tools/babylon.sceneOptimizer.js",
+            "../../src/Tools/babylon.assetsManager.js",            
             "../../src/Mesh/babylon.meshLODLevel.js",
             "../../src/Materials/Textures/babylon.rawTexture.js",            
-            "../../src/Culling/Octrees/babylon.octree.js",
-            "../../src/Culling/Octrees/babylon.octreeBlock.js",
-            "../../src/Cameras/babylon.deviceOrientationCamera.js",
-            "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",            
-            "../../src/Cameras/babylon.stereoscopicCameras.js",
             "../../src/Rendering/babylon.edgesRenderer.js",
-            "../../src/Probes/babylon.reflectionProbe.js",
-            "../../src/Debug/babylon.skeletonViewer.js",
-            "../../src/Debug/babylon.axesViewer.js",
-            "../../src/Debug/babylon.boneAxesViewer.js",
-            "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-            "../../src/Materials/babylon.colorCurves.js",
-            "../../src/Materials/babylon.pbrMaterial.js",
-            "../../src/Debug/babylon.debugLayer.js",
-            "../../src/Morph/babylon.morphTarget.js",
-            "../../src/Morph/babylon.morphTargetManager.js"
-
+            "../../src/Probes/babylon.reflectionProbe.js"
         ]
     },
     "workers": [
