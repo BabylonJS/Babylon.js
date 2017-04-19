@@ -1689,9 +1689,12 @@
             } else {
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
-            this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
-            this._sceneUbo.updateMatrix("view", this._viewMatrix);
-            this._sceneUbo.update();
+
+            if (this._sceneUbo.useUbo) {
+                this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+                this._sceneUbo.updateMatrix("view", this._viewMatrix);
+                this._sceneUbo.update();
+            }
         }
 
         public getSceneUniformBuffer(): UniformBuffer {
