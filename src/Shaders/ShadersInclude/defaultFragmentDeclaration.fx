@@ -25,6 +25,10 @@ uniform vec2 vEmissiveInfos;
 uniform vec2 vLightmapInfos;
 #endif
 
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+uniform mat4 view;
+#endif
+
 #ifdef REFRACTION
 uniform vec4 vRefractionInfos;
 
