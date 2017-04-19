@@ -65,8 +65,8 @@
 
             // applyToMesh
             if (mesh) {
-                if (mesh instanceof LinesMesh) {
-                    this.boundingBias = new Vector2(0, mesh.intersectionThreshold);
+                if (mesh.getClassName() === "LinesMesh") {
+                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 
@@ -110,6 +110,13 @@
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
+        }
+
+        public removeVerticesData(kind: string) {
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
+            }
         }
 
         public setVerticesBuffer(buffer: VertexBuffer): void {
@@ -341,6 +348,17 @@
             return this._indexBuffer;
         }
 
+        public _releaseVertexArrayObject(effect: Effect) {
+            if (!effect) {
+                return;
+            }
+            
+            if (this._vertexArrayObjects[effect.key]) {
+                this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
+                delete this._vertexArrayObjects[effect.key];
+            }
+        }
+
         public releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
@@ -401,7 +419,9 @@
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
                 }
-                this._vertexBuffers[kind].getBuffer().references = numOfMeshes;
+                var buffer = this._vertexBuffers[kind].getBuffer();
+                if (buffer)
+                    buffer.references = numOfMeshes;
 
                 if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
@@ -430,6 +450,10 @@
         private notifyUpdate(kind?: string) {
             if (this.onGeometryUpdated) {
                 this.onGeometryUpdated(this, kind);
+            }
+
+            for (var mesh of this._meshes) {
+                mesh._markSubMeshesAsAttributesDirty();
             }
         }
 

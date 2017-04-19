@@ -14,6 +14,7 @@
         public static INVCUBIC_MODE = 6;
         public static EQUIRECTANGULAR_MODE = 7;
         public static FIXED_EQUIRECTANGULAR_MODE = 8;
+        public static FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
 
         public static CLAMP_ADDRESSMODE = 0;
         public static WRAP_ADDRESSMODE = 1;
@@ -73,7 +74,7 @@
         private _delayedOnError: () => void;
         private _onLoadObservarble: Observable<boolean>;
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format: number = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url;
@@ -272,7 +273,14 @@
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
             if (parsedTexture.customType) { 
                 var customTexture = Tools.Instantiate(parsedTexture.customType);
-                return customTexture.Parse(parsedTexture, scene, rootUrl);
+                // Update Sampling Mode
+                var parsedCustomTexture:any = customTexture.Parse(parsedTexture, scene, rootUrl);
+                if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
+                    if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
+                        parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
+                    }
+                }
+                return parsedCustomTexture;
             }
 
             if (parsedTexture.isCube) {
@@ -306,6 +314,14 @@
                     return texture;
                 }
             }, parsedTexture, scene);
+
+            // Update Sampling Mode
+            if (parsedTexture.samplingMode) {
+                var sampling:number = parsedTexture.samplingMode;
+                if (texture._samplingMode !== sampling) {
+                    texture.updateSamplingMode(sampling);
+                }
+            }
 
             // Animations
             if (parsedTexture.animations) {

@@ -18,11 +18,21 @@ declare module INSPECTOR {
         private _popupMode;
         /** The original canvas style, before applying the inspector*/
         private _canvasStyle;
+        private _initialTab;
+        private _parentElement;
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean);
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+            backgroundColor?: string;
+            backgroundColorLighter?: string;
+            backgroundColorLighter2?: string;
+            backgroundColorLighter3?: string;
+            color?: string;
+            colorTop?: string;
+            colorBot?: string;
+        });
         /**
          * If the given element has a position 'asbolute' or 'relative',
          * returns the first parent of the given element that has a position 'relative' or 'absolute'.
@@ -90,8 +100,31 @@ declare module INSPECTOR {
             properties: string[];
             format: (tex: BABYLON.Texture) => string;
         };
+        'MapTexture': {
+            type: typeof BABYLON.MapTexture;
+        };
+        'RenderTargetTexture': {
+            type: typeof BABYLON.RenderTargetTexture;
+        };
+        'DynamicTexture': {
+            type: typeof BABYLON.DynamicTexture;
+        };
+        'BaseTexture': {
+            type: typeof BABYLON.BaseTexture;
+        };
+        'FontTexture': {
+            type: typeof BABYLON.FontTexture;
+        };
+        'Sound': {
+            type: typeof BABYLON.Sound;
+            properties: string[];
+        };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
+            properties: string[];
+        };
+        'FreeCamera': {
+            type: typeof BABYLON.FreeCamera;
             properties: string[];
         };
         'Scene': {
@@ -131,6 +164,96 @@ declare module INSPECTOR {
         'PBRMaterial': {
             type: typeof BABYLON.PBRMaterial;
             properties: string[];
+        };
+        'Canvas2D': {
+            type: typeof BABYLON.Canvas2D;
+        };
+        'Canvas2DEngineBoundData': {
+            type: typeof BABYLON.Canvas2DEngineBoundData;
+        };
+        'Ellipse2D': {
+            type: typeof BABYLON.Ellipse2D;
+        };
+        'Ellipse2DInstanceData': {
+            type: typeof BABYLON.Ellipse2DInstanceData;
+        };
+        'Ellipse2DRenderCache': {
+            type: typeof BABYLON.Ellipse2DRenderCache;
+        };
+        'Group2D': {
+            type: typeof BABYLON.Group2D;
+        };
+        'IntersectInfo2D': {
+            type: typeof BABYLON.IntersectInfo2D;
+        };
+        'Lines2D': {
+            type: typeof BABYLON.Lines2D;
+        };
+        'Lines2DInstanceData': {
+            type: typeof BABYLON.Lines2DInstanceData;
+        };
+        'Lines2DRenderCache': {
+            type: typeof BABYLON.Lines2DRenderCache;
+        };
+        'PrepareRender2DContext': {
+            type: typeof BABYLON.PrepareRender2DContext;
+        };
+        'Prim2DBase': {
+            type: typeof BABYLON.Prim2DBase;
+        };
+        'Prim2DClassInfo': {
+            type: typeof BABYLON.Prim2DClassInfo;
+        };
+        'Prim2DPropInfo': {
+            type: typeof BABYLON.Prim2DPropInfo;
+        };
+        'Rectangle2D': {
+            type: typeof BABYLON.Rectangle2D;
+        };
+        'Rectangle2DInstanceData': {
+            type: typeof BABYLON.Rectangle2DInstanceData;
+        };
+        'Rectangle2DRenderCache': {
+            type: typeof BABYLON.Rectangle2DRenderCache;
+        };
+        'Render2DContext': {
+            type: typeof BABYLON.Render2DContext;
+        };
+        'RenderablePrim2D': {
+            type: typeof BABYLON.RenderablePrim2D;
+        };
+        'ScreenSpaceCanvas2D': {
+            type: typeof BABYLON.ScreenSpaceCanvas2D;
+        };
+        'Shape2D': {
+            type: typeof BABYLON.Shape2D;
+        };
+        'Shape2DInstanceData': {
+            type: typeof BABYLON.Shape2DInstanceData;
+        };
+        'Sprite2D': {
+            type: typeof BABYLON.Sprite2D;
+        };
+        'Sprite2DInstanceData': {
+            type: typeof BABYLON.Sprite2DInstanceData;
+        };
+        'Sprite2DRenderCache': {
+            type: typeof BABYLON.Sprite2DRenderCache;
+        };
+        'Text2D': {
+            type: typeof BABYLON.Text2D;
+        };
+        'Text2DInstanceData': {
+            type: typeof BABYLON.Text2DInstanceData;
+        };
+        'Text2DRenderCache': {
+            type: typeof BABYLON.Text2DRenderCache;
+        };
+        'WorldSpaceCanvas2D': {
+            type: typeof BABYLON.WorldSpaceCanvas2D;
+        };
+        'WorldSpaceCanvas2DNode': {
+            type: typeof BABYLON.WorldSpaceCanvas2DNode;
         };
     };
 }
@@ -177,10 +300,55 @@ declare module INSPECTOR {
         correspondsTo(obj: any): boolean;
         /** Returns the adapter unique name */
         readonly name: string;
+        /**
+         * Returns the actual object used for this adapter
+         */
+        readonly object: any;
         /** Returns the list of tools available for this adapter */
         abstract getTools(): Array<AbstractTreeTool>;
         /** Should be overriden in subclasses */
         highlight(b: boolean): void;
+    }
+}
+
+declare module INSPECTOR {
+    class CameraAdapter extends Adapter implements ICameraPOV {
+        constructor(obj: BABYLON.Camera);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class SoundAdapter extends Adapter implements ISoundInteractions {
+        constructor(obj: BABYLON.Sound);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setPlaying(callback: Function): void;
+    }
+}
+
+declare module INSPECTOR {
+    class TextureAdapter extends Adapter {
+        constructor(obj: BABYLON.BaseTexture);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
     }
 }
 
@@ -354,6 +522,8 @@ declare module INSPECTOR {
         private _displayInputHandler;
         /** Handler used to validate the input by pressing 'enter' */
         private _validateInputHandler;
+        /** Handler used to validate the input by pressing 'esc' */
+        private _escapeInputHandler;
         constructor(prop: Property, parent?: PropertyLine, level?: number);
         /**
          * Init the input element and al its handler :
@@ -366,6 +536,10 @@ declare module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e);
+        /**
+         * On escape : removes the input
+         */
+        private _escapeInput(e);
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating();
         /** Replaces the default display with an input */
@@ -596,6 +770,10 @@ declare module INSPECTOR {
         filter(str: string): void;
         /** Dispose properly this tab */
         abstract dispose(): any;
+        /** Select an item in the tree */
+        select(item: TreeItem): void;
+        /** Highlight the given node, and downplay all others */
+        highlightNode(item?: TreeItem): void;
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -635,6 +813,42 @@ declare module INSPECTOR {
         filter(filter: string): void;
         /** Builds the tree panel */
         protected abstract _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class CameraTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class SoundTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class TextureTab extends Tab {
+        private _inspector;
+        /** The panel containing a list of items */
+        protected _treePanel: HTMLElement;
+        protected _treeItems: Array<TreeItem>;
+        private _imagePanel;
+        constructor(tabbar: TabBar, inspector: Inspector);
+        dispose(): void;
+        update(_items?: Array<TreeItem>): void;
+        private _getTree();
+        /** Display the details of the given item */
+        displayDetails(item: TreeItem): void;
+        /** Select an item in the tree */
+        select(item: TreeItem): void;
+        /** Set the given item as active in the tree */
+        activateNode(item: TreeItem): void;
+        /** Highlight the given node, and downplay all others */
+        highlightNode(item?: TreeItem): void;
     }
 }
 
@@ -769,7 +983,7 @@ declare module INSPECTOR {
         private _invisibleTabs;
         /** The list of tabs visible, displayed in the tab bar */
         private _visibleTabs;
-        constructor(inspector: Inspector);
+        constructor(inspector: Inspector, initialTab?: number);
         update(): void;
         protected _build(): void;
         /**
@@ -909,11 +1123,15 @@ declare module INSPECTOR {
         private _tools;
         children: Array<TreeItem>;
         private _lineContent;
-        constructor(tab: PropertyTab, obj: Adapter);
+        constructor(tab: Tab, obj: Adapter);
         /** Returns the item ID == its adapter ID */
         readonly id: string;
         /** Add the given item as a child of this one */
         add(child: TreeItem): void;
+        /**
+         * Returns the original adapter
+         */
+        readonly adapter: Adapter;
         /**
          * Function used to compare this item to another tree item.
          * Returns the alphabetical sort of the adapter ID
@@ -979,6 +1197,37 @@ declare module INSPECTOR {
         constructor(obj: IToolBoundingBox);
         protected action(): void;
         private _check();
+    }
+}
+
+declare module INSPECTOR {
+    interface ICameraPOV {
+        setPOV: () => void;
+    }
+    /**
+     *
+     */
+    class CameraPOV extends AbstractTreeTool {
+        private cameraPOV;
+        constructor(camera: ICameraPOV);
+        protected action(): void;
+        private _gotoPOV();
+    }
+}
+
+declare module INSPECTOR {
+    interface ISoundInteractions {
+        setPlaying: (callback: Function) => void;
+    }
+    /**
+     *
+     */
+    class SoundInteractions extends AbstractTreeTool {
+        private playSound;
+        private b;
+        constructor(playSound: ISoundInteractions);
+        protected action(): void;
+        private _playSound();
     }
 }
 

@@ -20,7 +20,7 @@ namespace Max2Babylon
             babylonShadowGenerator.bias = lightNode.GetFloatProperty("babylonjs_shadows_bias", 0.00005f);
             babylonShadowGenerator.forceBackFacesOnly = lightNode.GetBoolProperty("babylonjs_forcebackfaces");
 
-            var shadowsType = lightNode.GetStringProperty("babylonjs_shadows_type", "Blurred Variance");
+            var shadowsType = lightNode.GetStringProperty("babylonjs_shadows_type", "Blurred ESM");
 
             switch (shadowsType)
             {
@@ -29,11 +29,11 @@ namespace Max2Babylon
                 case "Poisson Sampling":
                     babylonShadowGenerator.usePoissonSampling = true;
                     break;
-                case "Variance":
-                    babylonShadowGenerator.useVarianceShadowMap = true;
+                case "ESM":
+                    babylonShadowGenerator.useExponentialShadowMap = true;
                     break;
-                case"Blurred Variance":
-                    babylonShadowGenerator.useBlurVarianceShadowMap = true;
+                case"Blurred ESM":
+                    babylonShadowGenerator.useBlurExponentialShadowMap = true;
                     babylonShadowGenerator.blurScale = lightNode.GetFloatProperty("babylonjs_shadows_blurScale", 2);
                     babylonShadowGenerator.blurBoxOffset = lightNode.GetFloatProperty("babylonjs_shadows_blurBoxOffset", 1);
                     break;

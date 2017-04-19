@@ -1,9 +1,14 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -46,10 +51,10 @@ var BABYLON;
             _this.SHADOW2 = false;
             _this.SHADOW3 = false;
             _this.SHADOWS = false;
-            _this.SHADOWVSM0 = false;
-            _this.SHADOWVSM1 = false;
-            _this.SHADOWVSM2 = false;
-            _this.SHADOWVSM3 = false;
+            _this.SHADOWESM0 = false;
+            _this.SHADOWESM1 = false;
+            _this.SHADOWESM2 = false;
+            _this.SHADOWESM3 = false;
             _this.SHADOWPCF0 = false;
             _this.SHADOWPCF1 = false;
             _this.SHADOWPCF2 = false;
@@ -62,7 +67,7 @@ var BABYLON;
             _this.NUM_BONE_INFLUENCERS = 0;
             _this.BonesPerMesh = 0;
             _this.INSTANCES = false;
-            _this._keys = Object.keys(_this);
+            _this.rebuild();
             return _this;
         }
         return LavaMaterialDefines;
@@ -77,13 +82,10 @@ var BABYLON;
             _this.fogDensity = 0.15;
             _this._lastTime = 0;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            _this.disableLighting = false;
-            _this.maxSimultaneousLights = 4;
+            _this._disableLighting = false;
+            _this._maxSimultaneousLights = 4;
             _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
-            _this._defines = new LavaMaterialDefines();
-            _this._cachedDefines = new LavaMaterialDefines();
-            _this._cachedDefines.BonesPerMesh = -1;
             return _this;
         }
         LavaMaterial.prototype.needAlphaBlending = function () {
@@ -96,130 +98,83 @@ var BABYLON;
             return null;
         };
         // Methods   
-        LavaMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
-            if (!mesh) {
-                return true;
-            }
-            if (this._defines.INSTANCES !== useInstances) {
-                return false;
-            }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-            return false;
-        };
-        LavaMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        LavaMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new LavaMaterialDefines();
+            }
+            var defines = subMesh._materialDefines;
             var scene = this.getScene();
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
             var engine = scene.getEngine();
-            var needUVs = false;
-            this._defines.reset();
             // Textures
-            if (scene.texturesEnabled) {
-                if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this.diffuseTexture.isReady()) {
-                        return false;
-                    }
-                    else {
-                        needUVs = true;
-                        this._defines.DIFFUSE = true;
+            if (defines._areTexturesDirty) {
+                defines._needUVs = false;
+                if (scene.texturesEnabled) {
+                    if (this._diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
+                        if (!this._diffuseTexture.isReady()) {
+                            return false;
+                        }
+                        else {
+                            defines._needUVs = true;
+                            defines.DIFFUSE = true;
+                        }
                     }
                 }
             }
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-            if (engine.getAlphaTesting()) {
-                this._defines.ALPHATEST = true;
-            }
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
-            if (scene.lightsEnabled && !this.disableLighting) {
-                BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
-            }
+            // Misc.
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            // Lights
+            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+            // Values that need to be evaluated on every frame
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             // Attribs
-            if (mesh) {
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
-                if (needUVs) {
-                    if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                        this._defines.UV1 = true;
-                    }
-                    if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                        this._defines.UV2 = true;
-                    }
-                }
-                if (mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                    this._defines.VERTEXCOLOR = true;
-                    if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true;
-                    }
-                }
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                }
-                // Instances
-                if (useInstances) {
-                    this._defines.INSTANCES = true;
-                }
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks);
+                if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
-                if (this._defines.NORMAL) {
+                if (defines.NORMAL) {
                     attribs.push(BABYLON.VertexBuffer.NormalKind);
                 }
-                if (this._defines.UV1) {
+                if (defines.UV1) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                 }
-                if (this._defines.UV2) {
+                if (defines.UV2) {
                     attribs.push(BABYLON.VertexBuffer.UV2Kind);
                 }
-                if (this._defines.VERTEXCOLOR) {
+                if (defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 // Legacy browser patch
                 var shaderName = "lava";
-                var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                    "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                    "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                    "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                    "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                var join = defines.toString();
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
+                    "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
+                    "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
+                    "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
@@ -229,69 +184,66 @@ var BABYLON;
                     "fogColor", "fogDensity", "lowFrequencySpeed"
                 ], ["diffuseSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
-                ], join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+                ], join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 }), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new LavaMaterialDefines();
-                }
-                this._defines.cloneTo(mesh._materialDefines);
-            }
             return true;
         };
-        LavaMaterial.prototype.bindOnlyWorldMatrix = function (world) {
-            this._effect.setMatrix("world", world);
-        };
-        LavaMaterial.prototype.bind = function (world, mesh) {
+        LavaMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
+            var defines = subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
-            if (scene.getCachedMaterial() !== this) {
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+            if (this._mustRebind(scene, effect)) {
                 // Textures        
                 if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                    this._activeEffect.setTexture("diffuseSampler", this.diffuseTexture);
+                    this._activeEffect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                    this._activeEffect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                 }
                 if (this.noiseTexture) {
-                    this._effect.setTexture("noiseTexture", this.noiseTexture);
+                    this._activeEffect.setTexture("noiseTexture", this.noiseTexture);
                 }
                 // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
+                BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
             }
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
             if (scene.lightsEnabled && !this.disableLighting) {
-                BABYLON.MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);
+                BABYLON.MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines);
             }
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
             this._lastTime += scene.getEngine().getDeltaTime();
-            this._effect.setFloat("time", this._lastTime * this.speed / 1000);
+            this._activeEffect.setFloat("time", this._lastTime * this.speed / 1000);
             if (!this.fogColor) {
                 this.fogColor = BABYLON.Color3.Black();
             }
-            this._effect.setColor3("fogColor", this.fogColor);
-            this._effect.setFloat("fogDensity", this.fogDensity);
-            this._effect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
-            this._effect.setFloat("movingSpeed", this.movingSpeed);
-            _super.prototype.bind.call(this, world, mesh);
+            this._activeEffect.setColor3("fogColor", this.fogColor);
+            this._activeEffect.setFloat("fogDensity", this.fogDensity);
+            this._activeEffect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
+            this._activeEffect.setFloat("movingSpeed", this.movingSpeed);
+            this._afterBind(mesh, this._activeEffect);
         };
         LavaMaterial.prototype.getAnimatables = function () {
             var results = [];
@@ -326,9 +278,12 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new LavaMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         return LavaMaterial;
-    }(BABYLON.Material));
+    }(BABYLON.PushMaterial));
     __decorate([
-        BABYLON.serializeAsTexture()
+        BABYLON.serializeAsTexture("diffuseTexture")
+    ], LavaMaterial.prototype, "_diffuseTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
     ], LavaMaterial.prototype, "diffuseTexture", void 0);
     __decorate([
         BABYLON.serializeAsTexture()
@@ -352,10 +307,16 @@ var BABYLON;
         BABYLON.serializeAsColor3()
     ], LavaMaterial.prototype, "diffuseColor", void 0);
     __decorate([
-        BABYLON.serialize()
+        BABYLON.serialize("disableLighting")
+    ], LavaMaterial.prototype, "_disableLighting", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
     ], LavaMaterial.prototype, "disableLighting", void 0);
     __decorate([
-        BABYLON.serialize()
+        BABYLON.serialize("maxSimultaneousLights")
+    ], LavaMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
     ], LavaMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.LavaMaterial = LavaMaterial;
 })(BABYLON || (BABYLON = {}));

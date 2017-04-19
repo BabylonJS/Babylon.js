@@ -406,11 +406,6 @@
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
-
-            if (part.id === WireFrame2D.WIREFRAME2D_MAINPARTID) {
-                let d = <WireFrame2DInstanceData>this._instanceDataParts[0];
-                d.properties = new Vector3(this.alignToPixel ? 1 : 0, 2/this.renderGroup.actualWidth, 2/this.renderGroup.actualHeight);
-            }
             return true;
         }
 
@@ -451,14 +446,6 @@
     export class WireFrame2DInstanceData extends InstanceDataBase {
         constructor(partId: number) {
             super(partId, 1);
-        }
-
-        // the properties is for now the alignedToPixel value
-        @instanceData()
-        get properties(): Vector3 {
-            return null;
-        }
-        set properties(value: Vector3) {
         }
     }
 }

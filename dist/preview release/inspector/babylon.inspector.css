@@ -1,13 +1,14 @@
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
-@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
 
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
-@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
 .insp-wrapper {
   user-select: none;
   display: flex;
   font-size: 0.9em;
   font-family: "Inconsolata", sans-serif;
+  background-color: #242424;
   /**
  * A tool contained in the tree panel (available for each item of the tree)
  */
@@ -86,6 +87,8 @@
     height: 100%; }
     .insp-wrapper .tab-panel.searchable {
       height: calc(100% - 30px - 10px); }
+    .insp-wrapper .tab-panel .texture-image {
+      max-height: 400px; }
     .insp-wrapper .tab-panel .scene-actions {
       overflow-y: auto; }
       .insp-wrapper .tab-panel .scene-actions .actions-title {
@@ -243,6 +246,7 @@
     overflow-x: hidden;
     height: calc(50% - 32px - 30px); }
     .insp-wrapper .insp-tree .line {
+      padding: 3px;
       cursor: pointer; }
       .insp-wrapper .insp-tree .line:hover {
         background-color: #2c2c2c; }

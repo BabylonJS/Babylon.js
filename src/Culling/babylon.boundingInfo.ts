@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     var computeBoxExtents = (axis: Vector3, box: BoundingBox) => {
-        var p = Vector3.Dot(box.center, axis);
+        var p = Vector3.Dot(box.centerWorld, axis);
 
         var r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
         var r1 = Math.abs(Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;

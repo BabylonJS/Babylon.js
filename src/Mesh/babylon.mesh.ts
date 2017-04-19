@@ -100,6 +100,21 @@
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
+        // Morph
+        private _morphTargetManager: MorphTargetManager;
+
+        public get morphTargetManager(): MorphTargetManager {
+            return this._morphTargetManager;
+        }
+
+        public set morphTargetManager(value: MorphTargetManager) {
+            if (this._morphTargetManager === value) {
+                return;
+            }
+            this._morphTargetManager = value;
+            this._syncGeometryWithMorphTargetManager();
+        }
+
         // Private
         public _geometry: Geometry;
         public _delayInfo; //ANY
@@ -151,7 +166,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
 
                 // Parent
                 this.parent = source.parent;
@@ -707,6 +722,14 @@
             return this;
         }
 
+        public markVerticesDataAsUpdatable(kind: string, updatable = true) {
+            if (this.getVertexBuffer(kind).isUpdatable() === updatable) {
+                return;
+            }
+
+            this.setVerticesData(kind, this.getVerticesData(kind), updatable);
+        }
+
         /**
          * Sets the mesh VertexBuffer.  
          * Returns the Mesh.  
@@ -761,24 +784,6 @@
         }
 
         /**
-         * Deprecated since BabylonJS v2.3
-         */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
-            Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
-
-            if (!this._geometry) {
-                return;
-            }
-            if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data, offset);
-            }
-            else {
-                this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, offset, false);
-            }
-        }
-
-        /**
          * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions  
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
@@ -797,7 +802,6 @@
             }
             return this;
         }
-
 
         /**
          * Creates a un-shared specific occurence of the geometry for the mesh.  
@@ -1106,7 +1110,15 @@
             // Material
             var effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial || !effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            if (!effectiveMaterial) {
+                return this;
+            }
+
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
 
@@ -1118,16 +1130,26 @@
                 engine.setDepthWrite(savedDepthWrite);
             }
 
-            effectiveMaterial._preBind();
-            var effect = effectiveMaterial.getEffect();
+            var effect: Effect;
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effect = subMesh.effect;
+            } else {
+                effect = effectiveMaterial.getEffect();
+            }
+
+            effectiveMaterial._preBind(effect);
 
             // Bind
             var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
-
-            effectiveMaterial.bind(world, this);
+            
+            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            } else {
+                effectiveMaterial.bind(world, this);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {
@@ -1409,6 +1431,8 @@
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
         public dispose(doNotRecurse?: boolean): void {
+            this.morphTargetManager = undefined;
+
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
@@ -1837,6 +1861,184 @@
             return this;
         }
 
+        public serialize(serializationObject: any): void {
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+
+            if (Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.position = this.position.asArray();
+
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            } else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isVisible = this.isVisible;
+            serializationObject.infiniteDistance = this.infiniteDistance;
+            serializationObject.pickable = this.isPickable;
+
+            serializationObject.receiveShadows = this.receiveShadows;
+
+            serializationObject.billboardMode = this.billboardMode;
+            serializationObject.visibility = this.visibility;
+
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.isBlocker = this.isBlocker;
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            // Geometry
+            var geometry = this._geometry;
+            if (geometry) {
+                var geometryId = geometry.id;
+                serializationObject.geometryId = geometryId;
+
+                // SubMeshes
+                serializationObject.subMeshes = [];
+                for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+                    var subMesh = this.subMeshes[subIndex];
+
+                    serializationObject.subMeshes.push({
+                        materialIndex: subMesh.materialIndex,
+                        verticesStart: subMesh.verticesStart,
+                        verticesCount: subMesh.verticesCount,
+                        indexStart: subMesh.indexStart,
+                        indexCount: subMesh.indexCount
+                    });
+                }
+            }
+
+            // Material
+            if (this.material) {
+                serializationObject.materialId = this.material.id;
+            } else {
+                this.material = null;
+            }
+
+            // Morph targets
+            if (this.morphTargetManager) {
+                serializationObject.morphTargetManagerId = this.morphTargetManager.uniqueId;
+            }
+
+            // Skeleton
+            if (this.skeleton) {
+                serializationObject.skeletonId = this.skeleton.id;
+            }
+
+            // Physics
+            //TODO implement correct serialization for physics impostors.
+            if (this.getPhysicsImpostor()) {
+                var impostor = this.getPhysicsImpostor();
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = this.getPhysicsImpostor().type;
+            }
+
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+
+            // Instances
+            serializationObject.instances = [];
+            for (var index = 0; index < this.instances.length; index++) {
+                var instance = this.instances[index];
+                var serializationInstance: any = {
+                    name: instance.name,
+                    position: instance.position.asArray(),
+                    scaling: instance.scaling.asArray()
+                };
+                if (instance.rotationQuaternion) {
+                    serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
+                } else if (instance.rotation) {
+                    serializationInstance.rotation = instance.rotation.asArray();
+                }
+                serializationObject.instances.push(serializationInstance);
+
+                // Animations
+                Animation.AppendSerializedAnimations(instance, serializationInstance);
+                serializationInstance.ranges = instance.serializeAnimationRanges();
+            }
+
+            // 
+
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
+
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+
+            // Alpha
+            serializationObject.alphaIndex = this.alphaIndex;
+            serializationObject.hasVertexAlpha = this.hasVertexAlpha;
+            
+            // Overlay
+            serializationObject.overlayAlpha = this.overlayAlpha;
+            serializationObject.overlayColor = this.overlayColor.asArray();
+            serializationObject.renderOverlay = this.renderOverlay;
+
+            // Fog
+            serializationObject.applyFog = this.applyFog;
+
+            // Action Manager
+            if (this.actionManager) {
+                serializationObject.actions = this.actionManager.serialize(this.name);
+            }
+        }
+        
+        public _syncGeometryWithMorphTargetManager() {
+            if (!this.geometry) {
+                return;
+            }
+
+            this._markSubMeshesAsAttributesDirty();
+
+            if (this._morphTargetManager && this._morphTargetManager.vertexCount) {
+                if (this._morphTargetManager.vertexCount !== this.getTotalVertices()) {
+                    Tools.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
+                    this.morphTargetManager = undefined;
+                    return;
+                }
+
+                for (var index = 0; index < this.morphTargetManager.numInfluencers; index++) {
+                    var morphTarget = this.morphTargetManager.getActiveTarget(index);
+                    this.geometry.setVerticesData(VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
+
+                    if (morphTarget.hasNormals) {
+                        this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
+                    }
+                }
+            } else {
+                var index = 0;
+                
+                // Positions
+                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index))
+                {
+                    this.geometry.removeVerticesData(VertexBuffer.PositionKind + index);
+                    
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
+                    {
+                        this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
+                    }
+                    index++;
+                }    
+            }
+        }
+
         // Statics
         /**
          * Returns a new Mesh object what is a deep copy of the passed mesh.   
@@ -1844,7 +2046,13 @@
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
-            var mesh = new Mesh(parsedMesh.name, scene);
+            var mesh : Mesh;
+
+            if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+                mesh = GroundMesh.Parse(parsedMesh, scene);
+            } else {
+                mesh = new Mesh(parsedMesh.name, scene);
+            }
             mesh.id = parsedMesh.id;
 
             Tags.AddTagsTo(mesh, parsedMesh.tags);
@@ -1998,6 +2206,11 @@
                 mesh.material = null;
             }
 
+            // Morph targets
+            if (parsedMesh.morphTargetManagerId > -1) {
+                mesh.morphTargetManager = scene.getMorphTargetManagerById(parsedMesh.morphTargetManagerId);
+            }
+
             // Skeleton
             if (parsedMesh.skeletonId > -1) {
                 mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
@@ -2028,7 +2241,7 @@
             }
 
 
-            //(Deprecated) physics
+            // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,

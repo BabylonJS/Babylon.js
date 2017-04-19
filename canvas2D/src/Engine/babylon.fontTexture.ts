@@ -26,12 +26,13 @@
      */
     export abstract class BaseFontTexture extends Texture {
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, premultipliedAlpha: boolean = false) {
 
             super(url, scene, noMipmap, invertY, samplingMode);
 
             this._cachedFontId = null;
             this._charInfos = new StringDictionary<CharInfo>();
+            this._isPremultipliedAlpha = premultipliedAlpha;
         }
 
         /**
@@ -47,6 +48,13 @@
          */
         public get isSignedDistanceField(): boolean {
             return this._signedDistanceField;
+        }
+
+        /**
+         * True if the font was drawn using multiplied alpha
+         */
+        public get isPremultipliedAlpha(): boolean {
+            return this._isPremultipliedAlpha;
         }
 
         /**
@@ -148,6 +156,7 @@
         protected _spaceWidth;
         protected _superSample: boolean;
         protected _signedDistanceField: boolean;
+        protected _isPremultipliedAlpha: boolean;
         protected _cachedFontId: string;
     }
 
@@ -174,11 +183,12 @@
                             textureUrl: string = null,
                             noMipmap: boolean = false,
                             invertY: boolean = true,
-                            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
+                            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+                            premultipliedAlpha: boolean = false,
                             onLoad: () => void = null,
                             onError: (msg: string, code: number) => void = null)
         {
-            super(null, scene, noMipmap, invertY, samplingMode);
+            super(null, scene, noMipmap, invertY, samplingMode, premultipliedAlpha);
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = () => {
@@ -351,30 +361,30 @@
             return true;
         }
 
-        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false): FontTexture {
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false): FontTexture {
             let dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", () => new StringDictionary<FontTexture>());
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             let ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
 
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample, signedDistanceField);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, (signedDistanceField || bilinearFiltering) ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, supersample, signedDistanceField);
             ft._cachedFontId = lfn;
             dic.add(lfn, ft);
 
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false, bilinearFiltering: boolean=false) {
             let dic = scene.getExternalData<StringDictionary<FontTexture>>("FontTextureCache");
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF") + (bilinearFiltering ? "_+BF" : "_-BF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -404,6 +414,8 @@
             this._sdfScale = 8;
             this._signedDistanceField = signedDistanceField;
             this._superSample = false;
+            this._isPremultipliedAlpha = !signedDistanceField;
+            this.name = `FontTexture ${font}`;
 
             // SDF will use super sample no matter what, the resolution is otherwise too poor to produce correct result
             if (superSample || signedDistanceField) {
@@ -478,13 +490,50 @@
 
             this._currentFreePosition = Vector2.Zero();
 
-            // Add the basic ASCII based characters
+            // Add the basic ASCII based characters                                                               
             for (let i = 0x20; i < 0x7F; i++) {
                 var c = String.fromCharCode(i);
                 this.getChar(c);
             }
 
             this.update();
+
+            //this._saveToImage("");
+            
+        }
+
+        private _saveToImage(url: string) {
+            let base64Image = this._canvas.toDataURL("image/png");
+
+            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = base64Image;
+                var date = new Date();
+                var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) +
+                    "-" +
+                    date.getDate() +
+                    "_" +
+                    date.getHours() +
+                    "-" +
+                    ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
+
+                window.document.body.appendChild(a);
+
+                a.addEventListener("click",
+                    () => {
+                        a.parentElement.removeChild(a);
+                    });
+                a.click();
+
+                //Or opening a new tab with the image if it is not possible to automatically start download.
+            } else {
+                var newWindow = window.open("");
+                var img = newWindow.document.createElement("img");
+                img.src = base64Image;
+                newWindow.document.body.appendChild(img);
+            }
         }
 
         /**
@@ -508,7 +557,7 @@
             var textureSize = this.getSize();
 
             // we reached the end of the current line?
-            let width = Math.ceil(measure.width);
+            let width = Math.ceil(measure.width + 0.5);
             if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
                 this._currentFreePosition.y += Math.ceil(this._lineHeightSuper + this._yMargin*2);
@@ -561,12 +610,27 @@
 
                 // Draw the character in the HTML canvas
                 this._context.fillText(char, curPosXMargin, curPosYMargin - this._offset);
+
+                // Premul Alpha manually
+                let id = this._context.getImageData(curPosXMargin, curPosYMargin, width, this._lineHeightSuper);
+                for (let i = 0; i < id.data.length; i += 4) {
+                    let v = id.data[i + 3];
+                    if (v > 0 && v < 255) {
+                        id.data[i + 0] = v;
+                        id.data[i + 1] = v;
+                        id.data[i + 2] = v;
+                        id.data[i + 3] = v;
+                    }
+
+                }
+                this._context.putImageData(id, curPosXMargin, curPosYMargin);
             }
 
             // Fill the CharInfo object
-            info.topLeftUV = new Vector2((curPosXMargin) / textureSize.width, (this._currentFreePosition.y + this._yMargin) / textureSize.height);
-            info.bottomRightUV = new Vector2((curPosXMargin + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + this._yMargin) / textureSize.height));
+            info.topLeftUV = new Vector2((curPosXMargin-0.5) / textureSize.width, (this._currentFreePosition.y-0.5 + this._yMargin) / textureSize.height);
+            info.bottomRightUV = new Vector2((curPosXMargin-0.5 + width) / textureSize.width, info.topLeftUV.y + (this._lineHeightSuper / textureSize.height));
             info.yOffset = info.xOffset = 0;
+            //console.log(`Char: ${char}, Offset: ${curPosX}, ${this._currentFreePosition.y + this._yMargin}, Size: ${width}, ${this._lineHeightSuper}, UV: ${info.topLeftUV}, ${info.bottomRightUV}`);
 
             if (this._signedDistanceField) {
                 let off = 1/textureSize.width;
@@ -765,12 +829,14 @@
             ctx.font = font;
             ctx.fillText(chars, 0, 0);
             var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
+
             var start = -1;
             var end = -1;
             for (var row = 0; row < fontDraw.height; row++) {
                 for (var column = 0; column < fontDraw.width; column++) {
                     var index = (row * fontDraw.width + column) * 4;
-                    if (pixels[index] === 0) {
+                    let pix = pixels[index];
+                    if (pix === 0) {
                         if (column === fontDraw.width - 1 && start !== -1) {
                             end = row;
                             row = fontDraw.height;

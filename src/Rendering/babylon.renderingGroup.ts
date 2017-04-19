@@ -103,6 +103,8 @@
                 engine.setAlphaTesting(false);
             }
 
+            var stencilState = engine.getStencilBuffer();
+            engine.setStencilBuffer(false);
             // Sprites
             if (renderSprites) {
                 this._renderSprites();
@@ -122,6 +124,7 @@
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
+            engine.setStencilBuffer(stencilState);
         }
 
         /**
@@ -254,6 +257,14 @@
             this._alphaTestSubMeshes.reset();
             this._particleSystems.reset();
             this._spriteManagers.reset();
+        }
+
+        public dispose(): void {
+            this._opaqueSubMeshes.dispose();
+            this._transparentSubMeshes.dispose();
+            this._alphaTestSubMeshes.dispose();
+            this._particleSystems.dispose();
+            this._spriteManagers.dispose();
         }
 
         /**

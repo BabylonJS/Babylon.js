@@ -13,8 +13,8 @@
 
     export interface ISceneLoaderPluginAsync {
         extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
     }
 
     interface IRegisteredPlugin {
@@ -135,7 +135,7 @@
             }
         }
 
-        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {            
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -162,6 +162,13 @@
                     var meshes = [];
                     var particleSystems = [];
                     var skeletons = [];
+
+                    if (scene.isDisposed) {
+                        if (onerror) {
+                            onerror(scene, 'Scene was disposed before being able to load ' + rootUrl + sceneFilename);
+                        }
+                        return;
+                    }
 
                     try {
                         if ((<any>plugin).importMesh) {
@@ -209,7 +216,11 @@
 
                 Tools.LoadFile(rootUrl + sceneFilename, data => {
                     importMeshFromData(data);
-                }, progressCallBack, database, useArrayBuffer);
+                }, progressCallBack, database, useArrayBuffer, () => {
+                    if (onerror) {
+                        onerror(scene, 'Unable to load file ' + rootUrl + sceneFilename)
+                    }
+                });
             };
 
             if (scene.getEngine().enableOfflineSupport && !directLoad) {

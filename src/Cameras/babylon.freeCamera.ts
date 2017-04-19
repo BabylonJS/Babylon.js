@@ -181,7 +181,7 @@
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
             } else {
-                this.position.addInPlace(this.cameraDirection);
+                super._updatePosition();
             }
         }
 

@@ -64,9 +64,15 @@ var BABYLON;
             }
             if (m.diffuseTexture) {
                 output.push("  map_Kd " + uvscale + m.diffuseTexture.name);
+                //TODO: alpha testing, opacity in diffuse texture alpha channel (diffuseTexture.hasAlpha -> map_d)
             }
             if (m.specularTexture) {
                 output.push("  map_Ks " + uvscale + m.specularTexture.name);
+                /* TODO: glossiness = specular highlight component is in alpha channel of specularTexture. (???)
+                if (m.useGlossinessFromSpecularMapAlpha)  {
+                    output.push("  map_Ns "+uvscale + m.specularTexture.name);
+                }
+                */
             }
             /* TODO: emissive texture not in .MAT format (???)
             if (m.emissiveTexture) {

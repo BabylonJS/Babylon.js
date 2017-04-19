@@ -1,0 +1,240 @@
+<html>
+<head>
+    <title>Customize BJS for a specific Scene</title>
+    <meta charset="UTF-8">
+    <script src="../../dist/preview release/babylon.js"></script>
+    <style>
+    input.path {width:600px;}
+    input.filename {width:200px;}
+    em {color:red;}
+    </style>
+    
+</head>
+<body onload="readConfigFile()">
+Obtain a FireFox performance file by:
+<ol>
+	<li>Make sure scene uses Babylon MAX.</li>
+	<li>Add the temporary Javascript line <em>window.alert('Turn on Performance Recording')</em> just prior to Engine Instancing line.
+	<li>Load the scene, turn on performance profiling, &amp; click ok to the temporary alert.</li>
+	<li>Do anything that might call code in babylon.js not yet encountered.</li>
+	<li>Stop recording, and save the data as a file.</li>
+</ol>
+On this page:
+<ol>
+	<li>Select File with 'Browse' button below, and pick the file saved from above.</li>
+	<li>Make any changes of name to babylon file names &amp; directory..</li>
+	<li>Click Generate. Tip: change Firefox Option for Downloads to <em>Always ask me where to save files</em> to avoid having to move custom config to Gulp Directory.</li>
+	<li>Copy the 'custom.cofig.json' file generated in Downloads directory to the Gulp directory.</li>
+	<li>Run: 'Gulp build-custom' then test with scene.  Tip: test with the max version generated.</li>
+	<li>If need stuff did not get recorded in performance file, then select file(s) &amp; click Generate again.</li>
+</ol>
+	<form>
+		<input type="radio" name="browser" id="firefox" checked="checked"><label for="firefox"> Firefox</label>
+		<input type="radio" name="browser" id="chrome" disabled data-toggle="tooltip" title="Not yet implemented, Go for it!"><label for="chrome"> Chrome</label>
+		<input type="radio" name="browser" id="edge"   disabled data-toggle="tooltip" title="Not yet implemented, Go for it!"><label for="edge"> Edge</label><br>
+		
+		<label>Profiling file: <input type="file" id="upload_file" name="upload" accept="text/*" multiple="" onchange="assignProfile(this.files[0])"/></label><br><br>
+		
+		Output Directory: <input class="path"     type="text" id="directory"   maxlength="256" value="C:/"> (clear for default of <em>../../dist/preview release</em>)<br>
+		Filename:         <input class="filename" type="text" id="filename"    maxlength="32"  value="babylon.custom.max.js">         
+		minFilename:      <input class="filename" type="text" id="minFilename" maxlength="32"  value="babylon.custom.js"><br>         
+        Files Not In Recording: (Select those to still keep)
+			<input type="button" value="Generate Custom Config" onclick="generate()"><br>
+        <select id="discards" multiple size="50">
+        </select>
+
+	</form>
+	<script>
+	    //  each "File" is a: [keep: boolean, fullPath: string, search]
+	    //  search is initially the file name without the .js.  
+	    var files;
+    	var reg = new RegExp('babylon\\.\\w+');
+	
+	    var FIRE_FOX = 0;
+	    var CHROME   = 1;
+	    var EDGE     = 3;
+	    
+	    function readConfigFile() {
+	    	// read the regular config file, not custom, in-case custom has already been reduced
+	    	// the regular config file has files in 2 separate sections
+	        BABYLON.Tools.LoadFile("./config.json",
+	                function(data){
+	        	        var startInd = data.indexOf('"files": [') + 11; // 11 for "files": [
+	        	        var endInd = data.indexOf(']', startInd);
+	        	        var fileNames = data.substring(startInd, endInd);
+	        	        fileNames += ","; // for spliting once glued to part 2
+	        	        
+	        	        var extras = data.indexOf('"extras"');
+	        	        startInd = data.indexOf('"files": [', extras) + 11; // 11 for "files": [
+	        	        endInd = data.indexOf(']', startInd);
+	        	        fileNames += data.substring(startInd, endInd);
+	        	        
+	        	        fileNames = fileNames.replace(/(\r\n|\n|\r)/gm,""); // strip all line breaks
+	        	        fileNames = fileNames.replace(/\s+/g, ""); // strip all whitespace
+	        	        fileNames = fileNames.split(',');
+
+	        	        var len = fileNames.length;
+                        files = new Array(len);
+                        for (var i = 0; i < len; i++) {
+                        	var name = fileNames[i].match(reg)[0].substring(8);  // remove the babylon.
+                        	files[i] = [false, fileNames[i], name];
+                        }
+						appendSecondarySearches("math.js", "mathtools|color3|color4|vector2|vector3|vector4|size|quaternion|matrix|plane|viewport|frustum|space|axis|bezierCurve|orientation|angle|arc2|path2|path3d|curve3|sphericalHarmonics|mathTmp");
+
+						// force stuff to always be added
+						appendSecondarySearches("decorators.js", "engine"); //needed for Serialize
+						appendSecondarySearches("stringDictionary.js", "engine"); //needed in Engine Constructor
+						appendSecondarySearches("postProcessRenderPipelineManager.js", "scene"); //needed in Scene Constructor		
+						appendSecondarySearches("boundingBoxRenderer.js", "scene"); //needed in Scene Constructor		
+						appendSecondarySearches("collisionCoordinator.js", "scene"); //needed in Scene Constructor, from a called set of this.workerCollisions = false;
+						appendSecondarySearches("collider.js", "abstractMesh"); // needed in abstractMesh constructor
+						appendSecondarySearches("videoTexture.js", "engine"); //needed in Engine._setTexture()	
+						
+						// there should always some detection of FreeCamera or ArcRotateCamera, but maybe not all inputs got recorded
+						appendSecondarySearches("cameraInputsManager.js", "freeCamera\\w+|arcRotateCamera\\w+");
+						
+						appendSecondarySearches("freeCamera.js", "freeCamera\\w+");
+						appendSecondarySearches("freeCameraInputsManager.js", "freeCamera\\w+");
+						appendSecondarySearches("freeCameraMouseInput.js"            , "freeCamera\\w+");
+						appendSecondarySearches("freeCameraKeyboardMoveInput.js"     , "freeCamera\\w+");
+						appendSecondarySearches("freeCameraTouchInput.js"            , "freeCamera\\w+");
+						appendSecondarySearches("freeCameraDeviceOrientationInput.js", "freeCamera\\w+");
+						appendSecondarySearches("freeCameraGamepadInput.js"          , "freeCamera\\w+");
+						appendSecondarySearches("freeCameraVirtualJoystickInput.js"  , "freeCamera\\w+");
+						
+						appendSecondarySearches("arcRotateCamera.js", "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraInputsManager.js", "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraKeyboardMoveInput.js"       , "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraMouseWheelInput.js"         , "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraPointersInput.js"           , "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraGamepadInput.js"            , "arcRotateCamera\\w+");
+						appendSecondarySearches("arcRotateCameraVRDeviceOrientationInput.js", "arcRotateCamera\\w+");
+						
+						// these are internal classes where class name has a leading '_'
+						appendSecondarySearches("alphaCullingState.js"   , "engine");
+						appendSecondarySearches("depthCullingState.js"   , "_depthCullingState");
+						appendSecondarySearches("stencilState.js"        , "_stencilState");
+						
+						// dependencies with few / no methods, so no performance to record.
+						appendSecondarySearches("pushMaterial.js", "standardMaterial");
+                        
+	                }, null, true
+	        );
+	    }
+	    
+	    // add addition conditions to match a file to.
+	    // additionals is a string with all separated with a '|'
+	    function appendSecondarySearches(baseFilename, additionals) {
+	    	for (var i = 0, len = files.length; i < len; i++) {
+	    		if (files[i][1].indexOf(baseFilename) !== -1) {
+	    			files[i][2] += "|" + additionals;
+	    			return;
+	    		}
+	    	}
+	    	throw "'" + baseFilename + "' not found as a base file name";
+	    }
+	
+	    function assignProfile(file) {
+	        BABYLON.Tools.ReadFile(file, analyse, null, false);
+	    }
+	    
+	    function analyse(data){
+	    	// make sure max was used
+	    	if (!data.match('\\.max\\.js')) {
+	    		alert('babylon.max not detected. File rejected');
+	    		return;
+	    	}
+	    	var browser;
+	    	if (document.getElementById("firefox").checked) browser = FIRE_FOX;
+	    	if (document.getElementById("chrome" ).checked) browser = CHROME;
+	    	if (document.getElementById("edge"   ).checked) browser = EDGE;
+	    	
+			var discards = document.getElementById("discards");
+			discards.options.length = 0;
+	    	
+	    	for (var i = 0, len = files.length; i < len; i++) {
+	    		files[i][0] = false; // clean out boolean for additional runs
+    			switch(browser) {
+    			case FIRE_FOX:
+	     			var exp = new RegExp('"(' + files[i][2] + ')(\\.prototype|\\.\\w)', 'i');
+    				if (data.match(exp) ) {
+    					files[i][0] = true;
+    				}
+    				break;
+    			case CHROME:
+    			case EDGE:
+    				window.alert("Code from your PR goes here!");
+    				return;
+    			}
+	    		
+	    		// add onto the discard select when not found
+	    		if (!files[i][0]){
+	    			var option = document.createElement("option");
+	    			option.text = files[i][1];
+	    			discards.add(option);
+	    		}
+	    	}
+	    }
+	    
+	    function generate() {
+	    	// get all the ones from select
+			var discards = document.getElementById("discards");
+			var opt;
+			var asText = "";
+			for (var i = 0, len = discards.options.length; i < len; i++) {
+				opt = discards.options[i];
+                if (opt.selected) {	
+                	asText += opt.text;
+                }
+			}
+
+			var directory   = document.getElementById("directory"  ).value;
+			var filename    = document.getElementById("filename"   ).value;
+			var minFilename = document.getElementById("minFilename").value;
+			
+			if (directory.length === 0) directory = "../../dist/preview release";
+	    	var out = '';
+	    	out += '{\n';
+	    	out += '  "build": {\n';
+	    	out += '	    "filename": "' + filename + '",\n';
+	    	out += '	    "minFilename": "' + minFilename + '",\n';
+	    	out += '	    "outputDirectory":  "' + directory + '",\n';
+	    	out += '	    "srcOutputDirectory": "../../src/"\n';
+	    	out += '	  },\n';
+	    	out += '	  "core": {\n';
+	    	out += '	    "typescript": [\n';
+	    	out += '	      "../../src/**/*.ts",\n';
+	    	out += '	      "!../../src/**/*.d.ts"\n';
+	    	out += '	    ],\n';
+	    	out += '	    "files": [\n';
+	    		
+	    	var isFirst = true;
+		    for (var i = 0, len = files.length; i < len; i++) {
+		    	if (files[i][0] || asText.indexOf(files[i][1]) !== -1) {
+		    		if (!isFirst) {
+		    			out += ',';
+		    		}
+	    			isFirst = false;
+		    		out += '\n      ' + files[i][1];
+		    	}
+		    }
+		    out += '\n    ]\n';
+		    out += '  }\n';
+		    out += '}\n';
+		    
+            var blob = new Blob ( [ out ], { type : 'text/plain;charset=utf-8' } );
+
+            // turn blob into an object URL;
+            var objectUrl = (window.webkitURL || window.URL).createObjectURL(blob);
+
+            var link = window.document.createElement("a");
+            link.href = objectUrl;
+            link.download = "custom.config.json";
+            var click = document.createEvent("MouseEvents");
+            click.initEvent("click", true, false);
+            link.dispatchEvent(click);	            
+	    }
+
+	</script>
+</body>
+</html>

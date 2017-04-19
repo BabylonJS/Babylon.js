@@ -15,6 +15,7 @@ module BABYLON {
         parent?: any;
         getBoundingInfo?(): BoundingInfo;
         computeWorldMatrix?(force: boolean): void;
+        getWorldMatrix?(): Matrix;
         getChildMeshes?(): Array<AbstractMesh>;
         getVerticesData?(kind: string): Array<number> | Float32Array;
         getIndices?(): IndicesArray;
@@ -24,6 +25,8 @@ module BABYLON {
     export class PhysicsImpostor {
 
         public static DEFAULT_OBJECT_SIZE: Vector3 = new BABYLON.Vector3(1, 1, 1);
+
+        public static IDENTITY_QUATERNION = Quaternion.Identity();
 
         private _physicsEngine: PhysicsEngine;
         //The native cannon/oimo/energy physics body object.
@@ -168,8 +171,18 @@ module BABYLON {
 
         public getObjectExtendSize(): Vector3 {
             if (this.object.getBoundingInfo) {
+                let q = this.object.rotationQuaternion;
+                //reset rotation
+                this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
+                //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                return this.object.getBoundingInfo().boundingBox.extendSize.scale(2).multiply(this.object.scaling)
+                let size = this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2)
+                //bring back the rotation
+                this.object.rotationQuaternion = q;
+                //calculate the world matrix with the new rotation
+                this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+
+                return size;
             } else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
             }
@@ -177,7 +190,7 @@ module BABYLON {
 
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
-                return this.object.getBoundingInfo().boundingBox.center;
+                return this.object.getBoundingInfo().boundingBox.centerWorld;
             } else {
                 return this.object.position;
             }
@@ -327,7 +340,7 @@ module BABYLON {
         /**
          * Legacy collision detection event support
          */
-        public onCollideEvent: (collider:BABYLON.PhysicsImpostor, collidedWith:BABYLON.PhysicsImpostor) => void = null;
+        public onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void = null;
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {

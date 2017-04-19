@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class AbstractMesh extends Node implements IDisposable, ICullable {
+    export class AbstractMesh extends Node implements IDisposable, ICullable, IGetSetVerticesData {
         // Statics
         private static _BILLBOARDMODE_NONE = 0;
         private static _BILLBOARDMODE_X = 1;
@@ -128,20 +128,110 @@
         public showSubMeshesBoundingBox = false;
         public isBlocker = false;
         public renderingGroupId = 0;
-        public material: Material;
-        public receiveShadows = false;
+        private _material: Material
+        public get material(): Material {
+            return this._material;
+        }
+        public set material(value: Material) {
+            if (this._material === value) {
+                return;
+            }
+
+            this._material = value;
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                subMesh.setEffect(null);
+            }
+        }
+
+        private _receiveShadows = false;
+        public get receiveShadows(): boolean {
+            return this._receiveShadows;
+        }
+        public set receiveShadows(value: boolean) {
+            if (this._receiveShadows === value) {
+                return;
+            }
+
+            this._receiveShadows = value;
+            this._markSubMeshesAsLightDirty();
+        }
+
         public renderOutline = false;
         public outlineColor = Color3.Red();
         public outlineWidth = 0.02;
         public renderOverlay = false;
         public overlayColor = Color3.Red();
         public overlayAlpha = 0.5;
-        public hasVertexAlpha = false;
-        public useVertexColors = true;
-        public applyFog = true;
-        public computeBonesUsingShaders = true;
+        private _hasVertexAlpha = false;
+        public get hasVertexAlpha(): boolean {
+            return this._hasVertexAlpha;
+        }
+        public set hasVertexAlpha(value: boolean) {
+            if (this._hasVertexAlpha === value) {
+                return;
+            }
+
+            this._hasVertexAlpha = value;
+            this._markSubMeshesAsAttributesDirty();
+        }        
+
+        private _useVertexColors = true;
+        public get useVertexColors(): boolean {
+            return this._useVertexColors;
+        }
+        public set useVertexColors(value: boolean) {
+            if (this._useVertexColors === value) {
+                return;
+            }
+
+            this._useVertexColors = value;
+            this._markSubMeshesAsAttributesDirty();
+        }         
+
+        private _computeBonesUsingShaders = true;
+        public get computeBonesUsingShaders(): boolean {
+            return this._computeBonesUsingShaders;
+        }
+        public set computeBonesUsingShaders(value: boolean) {
+            if (this._computeBonesUsingShaders === value) {
+                return;
+            }
+
+            this._computeBonesUsingShaders = value;
+            this._markSubMeshesAsAttributesDirty();
+        }                
+
+        private _numBoneInfluencers = 4;
+        public get numBoneInfluencers(): number {
+            return this._numBoneInfluencers;
+        }
+        public set numBoneInfluencers(value: number) {
+            if (this._numBoneInfluencers === value) {
+                return;
+            }
+
+            this._numBoneInfluencers = value;
+            this._markSubMeshesAsAttributesDirty();
+        }           
+
+        private _applyFog = true;
+        public get applyFog(): boolean {
+            return this._applyFog;
+        }
+        public set applyFog(value: boolean) {
+            if (this._applyFog === value) {
+                return;
+            }
+
+            this._applyFog = value;
+            this._markSubMeshesAsMiscDirty();
+        }  
+
         public scalingDeterminant = 1;
-        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -161,8 +251,6 @@
 
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;
-        //Deprecated, Legacy support
-        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void;
 
         // Collisions
         private _checkCollisions = false;
@@ -209,7 +297,6 @@
         public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
-        public _materialDefines: MaterialDefines;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();
@@ -225,6 +312,8 @@
         public _unIndexed = false;
 
         public _poseMatrix: Matrix;
+
+        public _lightSources = new Array<Light>();
 
         // Loading properties
         public _waitingActions: any;
@@ -248,6 +337,8 @@
             if (!this._skeleton) {
                 this._bonesTransformMatrices = null;
             }
+
+            this._markSubMeshesAsAttributesDirty();
         }
 
         public get skeleton(): Skeleton {
@@ -259,6 +350,8 @@
             super(name, scene);
 
             this.getScene().addMesh(this);
+
+            this._resyncLightSources();
         }
 
         /**
@@ -282,6 +375,84 @@
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
+        }
+
+        public _resyncLightSources(): void {
+            this._lightSources.length = 0;
+
+            for (var light of this.getScene().lights) {
+                if (!light.isEnabled()) {
+                    continue;
+                }
+
+                if (light.canAffectMesh(this)) {
+                    this._lightSources.push(light);
+                }
+            }
+
+            this._markSubMeshesAsLightDirty();
+        }
+
+        public _resyncLighSource(light: Light): void {
+            var isIn = light.isEnabled() && light.canAffectMesh(this);
+
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                if (!isIn) {
+                    return;
+                }
+                this._lightSources.push(light);
+            } else {
+                if (isIn) {
+                    return;
+                }
+                this._lightSources.splice(index, 1);            
+            }
+
+            this._markSubMeshesAsLightDirty();
+        }
+
+        public _removeLightSource(light: Light): void {
+            var index = this._lightSources.indexOf(light);
+
+            if (index === -1) {
+                return;
+            }
+            this._lightSources.splice(index, 1);       
+        }
+
+        private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                if (subMesh._materialDefines) {
+                    func(subMesh._materialDefines);
+                }
+            }
+        }
+
+        public _markSubMeshesAsLightDirty() {
+            this._markSubMeshesAsDirty(defines => defines.markAsLightDirty());
+        }
+
+        public _markSubMeshesAsAttributesDirty() {
+            this._markSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
+        }
+
+        public _markSubMeshesAsMiscDirty() {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                var material = subMesh.getMaterial();
+                if (material) {
+                    material.markAsDirty(Material.MiscDirtyFlag);
+                }
+            }
         }
 
         /**
@@ -408,6 +579,73 @@
         public getVerticesData(kind: string): number[] | Float32Array {
             return null;
         }
+        /**
+         * Sets the vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.  
+         * The `data` are either a numeric array either a Float32Array. 
+         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater. 
+         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).  
+         * Note that a new underlying VertexBuffer object is created each call. 
+         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed. 
+         *
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind  
+         * 
+         * Returns the Mesh.  
+         */
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+            return null;
+        }
+
+        /**
+         * Updates the existing vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, it is simply returned as it is.  
+         * The `data` are either a numeric array either a Float32Array. 
+         * No new underlying VertexBuffer object is created. 
+         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.  
+         * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
+         *
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         * 
+         * Returns the Mesh.  
+         */
+        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+            return null;
+        }
+
+        /**
+         * Sets the mesh indices.  
+         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
+         * This method creates a new index buffer each call.  
+         * Returns the Mesh.  
+         */
+        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+            return null;
+        }
 
         /** Returns false by default, used by the class Mesh.  
          *  Returns a boolean
@@ -462,7 +700,8 @@
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
+            
+            if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
@@ -815,7 +1054,7 @@
                 return this._worldMatrix;
             }
 
-            if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+            if (!force && this.isSynchronized(true)) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
@@ -867,13 +1106,7 @@
             // Composing transformations
             this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-            // Mesh referal
-            var completeMeshReferalMatrix = Tmp.Matrix[6];
-            if (this._meshToBoneReferal && this.parent && this.parent.getWorldMatrix) {
-                this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), completeMeshReferalMatrix);
-            }
-
+            
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
@@ -882,7 +1115,8 @@
 
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._meshToBoneReferal) {
-                            Vector3.TransformCoordinatesToRef(this.position, completeMeshReferalMatrix, currentPosition);
+                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                            Vector3.TransformCoordinatesToRef(this.position, Tmp.Matrix[6], currentPosition);
                         } else {
                             Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
                         }
@@ -929,7 +1163,8 @@
 
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
-                        Tmp.Matrix[5].copyFrom(completeMeshReferalMatrix);
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                        Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
                     } else {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
@@ -941,7 +1176,8 @@
                     
                 } else {
                     if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(completeMeshReferalMatrix, this._worldMatrix);
+                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                        Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                     } else {
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }
@@ -1100,43 +1336,8 @@
             return this._boundingInfo.intersectsPoint(point);
         }
 
-        // Physics
-        /**
-         *  @Deprecated. Use new PhysicsImpostor instead.
-         * */
-        public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
-            //legacy support
-            if (impostor.impostor) {
-                options = impostor;
-                impostor = impostor.impostor;
-            }
-            this.physicsImpostor = new PhysicsImpostor(this, impostor, options, this.getScene());
-            return this.physicsImpostor.physicsBody;
-        }
-
         public getPhysicsImpostor(): PhysicsImpostor {
             return this.physicsImpostor;
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
-         */
-        public getPhysicsMass(): number {
-            return this.physicsImpostor.getParam("mass")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
-         */
-        public getPhysicsFriction(): number {
-            return this.physicsImpostor.getParam("friction")
-        }
-
-        /**
-         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
-         */
-        public getPhysicsRestitution(): number {
-            return this.physicsImpostor.getParam("restitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
@@ -1177,24 +1378,6 @@
             });
             return this;
         }
-
-        /**
-         * @Deprecated
-         */
-        public updatePhysicsBodyPosition(): void {
-            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
-            this.updatePhysicsBody();
-        }
-
-        /**
-         * @Deprecated
-         * Calling this function is not needed anymore. 
-         * The physics engine takes care of transofmration automatically.
-         */
-        public updatePhysicsBody(): void {
-            //Unneeded
-        }
-
 
         // Collisions
 
@@ -1503,6 +1686,16 @@
             // SubMeshes
             if (this.getClassName() !== "InstancedMesh"){
                 this.releaseSubMeshes();
+            }
+
+            // Octree
+            var sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree) {
+                var index = sceneOctree.dynamicContent.indexOf(this);
+
+                if (index !== -1) {
+                    sceneOctree.dynamicContent.splice(index, 1);
+                }
             }
 
             // Engine
@@ -1976,6 +2169,25 @@
                 this._facetParameters = null;
             }
             return this;
+        }
+
+        /**
+         * Creates new normals data for the mesh.
+         * @param updatable.
+         */
+        public createNormals(updatable: boolean) {
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
+            var indices = this.getIndices();
+            var normals: number[] | Float32Array;
+            
+            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                normals = this.getVerticesData(VertexBuffer.NormalKind);
+            } else {
+                normals = [];
+            }
+            
+            VertexData.ComputeNormals(positions, indices, normals);
+            this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
         } 
 
     }

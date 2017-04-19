@@ -94,6 +94,8 @@
                 return;
             }
 
+            this.renderList.dispose();
+
             this._colorShader.dispose();
 
             var buffer = this._vertexBuffers[VertexBuffer.PositionKind];

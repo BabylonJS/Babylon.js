@@ -264,16 +264,7 @@ module BABYLON {
             this._getDescendants(results, directDescendantsOnly, predicate);
 
             return results;
-        }
-        
-        /**
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
-         * @Deprecated, legacy support.
-         * use getDecendants instead.
-         */
-        public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            return this.getDescendants(true, predicate);
-        }
+        }    
         
         /**
          * Get all child-meshes of this node.
@@ -284,6 +275,13 @@ module BABYLON {
                 return ((!predicate || predicate(node)) && (node instanceof AbstractMesh));
             });
             return results;
+        }
+
+        /**
+         * Get all direct children of this node.
+        */
+        public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            return this.getDescendants(true, predicate);
         }
 
         public _setReady(state: boolean): void {

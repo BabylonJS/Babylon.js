@@ -36,7 +36,7 @@ namespace Max2Babylon
             Tools.PrepareNumericUpDown(nupBias, lights, "babylonjs_shadows_bias", 0.00005f);
             Tools.PrepareNumericUpDown(nupBlurScale, lights, "babylonjs_shadows_blurScale", 2);
             Tools.PrepareNumericUpDown(nupBlurBoxOffset, lights, "babylonjs_shadows_blurBoxOffset", 1);
-            Tools.PrepareComboBox(cbCameraType, lights[0], "babylonjs_shadows_type", "Blurred Variance");
+            Tools.PrepareComboBox(cbCameraType, lights[0], "babylonjs_shadows_type", "Blurred ESM");
         }
 
         private void butOK_Click(object sender, EventArgs e)

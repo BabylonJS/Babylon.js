@@ -5,6 +5,9 @@ attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
 #endif
+#ifdef TANGENT
+attribute vec4 tangent;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -55,8 +58,14 @@ uniform mat4 lightmapMatrix;
 
 #if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec2 vReflectivityInfos;
+uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
+#endif
+
+#ifdef MICROSURFACEMAP
+varying vec2 vMicroSurfaceSamplerUV;
+uniform vec2 vMicroSurfaceSamplerInfos;
+uniform mat4 microSurfaceSamplerMatrix;
 #endif
 
 #ifdef BUMP
@@ -80,39 +89,50 @@ varying vec4 vColor;
 #endif
 
 
+#include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
+
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
 
 void main(void) {
+	vec3 positionUpdated = position;
+#ifdef NORMAL	
+	vec3 normalUpdated = normal;
+#endif
+
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
 #ifdef REFLECTIONMAP_SKYBOX
-    vPositionUVW = position;
+    vPositionUVW = positionUpdated;
 #endif 
 
 #include<instancesVertex>
 #include<bonesVertex>
 
-    gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+    gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
-    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-    vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+    vNormalW = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-    vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+    vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));
 #endif
 
     // Texture coordinates
@@ -189,6 +209,17 @@ void main(void) {
     }
 #endif
 
+#ifdef MICROSURFACEMAP
+    if (vMicroSurfaceSamplerInfos.x == 0.)
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv, 1.0, 0.0));
+    }
+    else
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
 #ifdef BUMP
     if (vBumpInfos.x == 0.)
     {
@@ -199,6 +230,9 @@ void main(void) {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
+
+    // TBN
+#include<bumpVertex>
 
     // Clip plane
 #include<clipPlaneVertex>
