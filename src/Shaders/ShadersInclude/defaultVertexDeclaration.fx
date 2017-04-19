@@ -1,5 +1,6 @@
 // Uniforms
 uniform mat4 viewProjection;
+uniform mat4 view;
 
 #ifdef DIFFUSE
 uniform mat4 diffuseMatrix;
