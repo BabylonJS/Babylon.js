@@ -2,9 +2,6 @@
     #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
-        #ifndef SPECULARTERM
-            vec3 light{X}.vLightSpecular = vec3(0.0);
-        #endif
         #ifdef SPOTLIGHT{X}
             info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR90, NdotL);
         #endif
