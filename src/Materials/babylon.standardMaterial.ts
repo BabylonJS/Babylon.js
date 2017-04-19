@@ -726,14 +726,6 @@ module BABYLON {
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
-                var onCompiled = function(effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
-                    }
-
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
-
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -741,7 +733,7 @@ module BABYLON {
                     samplers: samplers,
                     defines: join,
                     fallbacks: fallbacks,
-                    onCompiled: onCompiled,
+                    onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);

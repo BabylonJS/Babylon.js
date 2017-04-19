@@ -218,7 +218,10 @@
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex
                 );
-                uniformBuffersList.push("Light" + lightIndex);
+
+                if (uniformBuffersList) {
+                    uniformBuffersList.push("Light" + lightIndex);
+                }
 
                 samplersList.push("shadowSampler" + lightIndex);
             }
