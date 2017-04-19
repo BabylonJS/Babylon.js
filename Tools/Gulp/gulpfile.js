@@ -24,7 +24,6 @@ var webpack = require('webpack-stream');
 var zip = require('gulp-zip');
 
 var config = require("./config.json");
-var customConfig = require("./custom.config.json");
 
 var del = require('del');
 
@@ -58,6 +57,54 @@ var externalTsConfig = {
     isolatedModules: false
 };
 
+function processDependency(kind, dependency, filesToLoad) {
+    if (dependency.dependencies) {
+        for (var i = 0; i < dependency.dependencies.length; i++ ) {
+            var dependencyName = dependency.dependencies[i];
+            var parent = config.dependencies[dependencyName];
+            processDependency(kind, parent, filesToLoad);
+        }
+    }
+
+    var content = dependency[kind];
+    if (!content) {
+        return;
+    }
+
+    for (var i = 0; i< content.length; i++) {
+        var file = content[i];
+
+        if (filesToLoad.indexOf(file) === -1) {
+            filesToLoad.push(file);
+        }
+    }
+}
+
+function determineFilesToProcess(kind) {
+    var currentConfig = config.build.currentConfig;
+    var buildConfiguration = config.buildConfigurations[currentConfig];
+    var filesToLoad = [];
+
+    for (var index = 0; index < buildConfiguration.length; index++) {
+        var dependencyName = buildConfiguration[index];
+        var dependency = config.dependencies[dependencyName];
+        processDependency(kind, dependency, filesToLoad);
+    }
+
+    if (kind === "shaderIncludes") {
+        for (var index = 0; index < filesToLoad.length; index++) {
+            filesToLoad[index] = "../../src/Shaders/ShadersInclude/" + filesToLoad[index] + ".fx";
+        }
+    } else if (kind === "shaders") {
+        for (var index = 0; index < filesToLoad.length; index++) {
+            var name = filesToLoad[index];
+            filesToLoad[index] = "../../src/Shaders/" + filesToLoad[index] + ".fx";
+        }
+    }
+
+    return filesToLoad;
+}
+
 /*
  * Shader Management.
  */
@@ -76,26 +123,24 @@ function includeShadersName(filename) {
  * Main necessary files stream Management.
  */
 gulp.task("includeShaders", function (cb) {
-    includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).
-            pipe(expect.real({ errorOnFailure: true }, shadersDef.files)).
-            pipe(uncommentShader()).
-            pipe(srcToVariable({
-            variableName: shadersDef.variable, asMap: true, namingCallback: includeShadersName
-        }));
-    });
+    var filesToProcess = determineFilesToProcess("shaderIncludes");
+    includeShadersStream = gulp.src(filesToProcess).
+        pipe(expect.real({ errorOnFailure: true }, filesToProcess)).
+        pipe(uncommentShader()).
+        pipe(srcToVariable({
+            variableName: "BABYLON.Effect.IncludesShadersStore", asMap: true, namingCallback: includeShadersName
+    }));
     cb();
 });
 
 gulp.task("shaders", ["includeShaders"], function (cb) {
-    shadersStream = config.shadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).
-            pipe(expect.real({ errorOnFailure: true }, shadersDef.files)).
-            pipe(uncommentShader()).
-            pipe(srcToVariable({
-            variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
-        }));
-    });
+    var filesToProcess = determineFilesToProcess("shaders");
+    shadersStream = gulp.src(filesToProcess).
+        pipe(expect.real({ errorOnFailure: true}, filesToProcess)).
+        pipe(uncommentShader()).
+        pipe(srcToVariable({
+            variableName: "BABYLON.Effect.ShadersStore", asMap: true, namingCallback: shadersName
+    }));
     cb();
 });
 
@@ -114,51 +159,32 @@ gulp.task("workers", function (cb) {
 /**
  * Build tasks to concat minify uflify optimise the BJS js in different flavor (workers...).
  */
-gulp.task("buildCore", ["shaders"], function () {
+gulp.task("buildWorker", ["workers", "shaders"], function () {
+    var filesToProcess = determineFilesToProcess("files");
     return merge2(
-        gulp.src(config.core.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
-        shadersStream,
-        includeShadersStream
-        )
-        .pipe(concat(config.build.minCoreFilename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
-});
-
-gulp.task("buildNoWorker", ["shaders"], function () {
-    return merge2(
-        gulp.src(config.core.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
-        gulp.src(config.extras.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.extras.files)),
-        shadersStream,
-        includeShadersStream
-        )
-        .pipe(concat(config.build.minNoWorkerFilename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
-});
-
-gulp.task("build", ["workers", "shaders"], function () {
-    return merge2(
-        gulp.src(config.core.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
-        gulp.src(config.extras.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.extras.files)),   
+        gulp.src(filesToProcess).        
+            pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
         includeShadersStream,
         workersStream
+        )
+        .pipe(concat(config.build.minWorkerFilename))
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
+        .pipe(addModuleExports("BABYLON"))
+        .pipe(uglify())
+        .pipe(optimisejs())
+        .pipe(gulp.dest(config.build.outputDirectory));
+});
+
+gulp.task("build", ["shaders"], function () {
+    var filesToProcess = determineFilesToProcess("files");
+    return merge2(
+        gulp.src(filesToProcess).        
+            pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
+        shadersStream,
+        includeShadersStream
         )
         .pipe(concat(config.build.filename))
         .pipe(cleants())
@@ -171,26 +197,6 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
-
-gulp.task("build-custom", ["shaders"], function () {
-    return merge2(
-        gulp.src(customConfig.core.files).        
-            pipe(expect.real({ errorOnFailure: true }, customConfig.core.files)),  
-        shadersStream,
-        includeShadersStream
-        )
-        .pipe(concat(customConfig.build.filename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
-        .pipe(gulp.dest(customConfig.build.outputDirectory))
-        .pipe(rename(customConfig.build.minFilename))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(customConfig.build.outputDirectory));
-});
-
 
 /*
 * Compiles all typescript files and creating a js and a declaration file.
@@ -307,7 +313,7 @@ var buildExternalLibrary= function(library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task('default', function (cb) {
-    runSequence("buildNoWorker", "build", "buildCore", cb);
+    runSequence("buildWorker", "build", cb);
 });
 
 /**
