@@ -186,10 +186,10 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
-            if (dependency.dependencies) {
-                for (var i = 0; i < dependency.dependencies.length; i++ ) {
-                    var dependencyName = dependency.dependencies[i];
-                    var parent = settings.dependencies[dependencyName];
+            if (dependency.dependUpon) {
+                for (var i = 0; i < dependency.dependUpon.length; i++ ) {
+                    var dependencyName = dependency.dependUpon[i];
+                    var parent = settings.workloads[dependencyName];
                     this.processDependency(settings, parent, filesToLoad);
                 }
             }
@@ -214,7 +214,7 @@ var BABYLONDEVTOOLS;
 
                 for (var index = 0; index < buildConfiguration.length; index++) {
                     var dependencyName = buildConfiguration[index];
-                    var dependency = settings.dependencies[dependencyName];
+                    var dependency = settings.workloads[dependencyName];
                     this.processDependency(settings, dependency, filesToLoad);
                 }
 

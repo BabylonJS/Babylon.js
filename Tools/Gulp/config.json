@@ -17,11 +17,11 @@
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
                 "additionalCameras", "postProcesses", "renderingPipeline", "depthRenderer", "additionalPostProcesses",
-                "bones", "hdr"
+                "bones", "hdr", "polygonMesh", "csg", "lensFlares"
         ],
         "minimal": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
     },
-    "dependencies" :
+    "workloads" :
     {
         "core" :
         {
@@ -67,7 +67,7 @@
                 "../../src/Particles/babylon.particle.js",
                 "../../src/Particles/babylon.particleSystem.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         }, 
@@ -77,7 +77,7 @@
                 "../../src/Particles/babylon.solidParticle.js",
                 "../../src/Particles/babylon.solidParticleSystem.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },         
@@ -87,7 +87,7 @@
                 "../../src/Collisions/babylon.collider.js",
                 "../../src/Collisions/babylon.collisionCoordinator.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },  
@@ -98,7 +98,7 @@
                 "../../src/Culling/babylon.ray.js",
                 "../../src/Debug/babylon.rayHelper.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },   
@@ -108,7 +108,7 @@
                 "../../src/Sprites/babylon.spriteManager.js",
                 "../../src/Sprites/babylon.sprite.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },         
@@ -119,7 +119,7 @@
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },   
@@ -132,7 +132,7 @@
                 "../../src/Actions/babylon.interpolateValueAction.js",
                 "../../src/Actions/babylon.directActions.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },                             
@@ -143,7 +143,7 @@
                 "../../src/Mesh/babylon.instancedMesh.js",
                 "../../src/Mesh/babylon.linesMesh.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ],
             "shaders": [
@@ -156,7 +156,7 @@
             "files": [
                 "../../src/Mesh/babylon.meshBuilder.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core",
                 "shaderMaterial"
             ]
@@ -166,7 +166,7 @@
             "files": [
                 "../../src/Materials/babylon.shaderMaterial.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -175,7 +175,7 @@
             "files": [
                 "../../src/Materials/babylon.standardMaterial.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ],
             "shaders": [
@@ -228,7 +228,7 @@
             "files": [
                 "../../src/Materials/babylon.pbrMaterial.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ],
             "shaders": [
@@ -255,7 +255,25 @@
                 "logDepthVertex",
                 "lightFragmentDeclaration",
                 "fresnelFunction",
-                "reflectionFunction",
+                "reflectionFunction",                
+                "colorGradingDefinition",
+                "colorCurvesDefinition",
+                "shadowsFragmentFunctions",
+                "pbrFunctions",
+                "colorGrading",
+                "colorCurves",
+                "harmonicsFunctions",
+                "pbrLightFunctions",
+                "helperFunctions",
+                "bumpFragmentFunctions",
+                "clipPlaneFragmentDeclaration",
+                "logDepthDeclaration",
+                "fogFragmentDeclaration",
+                "clipPlaneFragment",
+                "bumpFragment",
+                "pbrLightFunctionsCall",
+                "logDepthFragment",
+                "fogFragment"
             ]
         },
         "freeCamera" : 
@@ -268,7 +286,7 @@
                 "../../src/Cameras/babylon.targetCamera.js",
                 "../../src/Cameras/babylon.freeCamera.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -283,7 +301,7 @@
                 "../../src/Cameras/babylon.arcRotateCamera.js",
                 "../../src/Cameras/babylon.arcRotateCameraInputsManager.js"                
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -292,7 +310,7 @@
             "files": [
                 "../../src/Lights/babylon.hemisphericLight.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -301,7 +319,7 @@
             "files": [
                 "../../src/Lights/babylon.pointLight.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -310,7 +328,7 @@
             "files": [
                 "../../src/Lights/babylon.directionalLight.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -319,7 +337,7 @@
             "files": [
                 "../../src/Lights/babylon.spotLight.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -331,7 +349,7 @@
                 "../../src/Audio/babylon.soundtrack.js",
                 "../../src/Audio/babylon.analyser.js"                
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -345,7 +363,7 @@
                 "../../src/Materials/Textures/babylon.dynamicTexture.js",
                 "../../src/Materials/Textures/babylon.videoTexture.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -354,7 +372,7 @@
             "files": [
                 "../../src/Lights/Shadows/babylon.shadowGenerator.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "postProcesses"
             ],
             "shaders" : [
@@ -369,7 +387,7 @@
                 "../../src/Loading/babylon.sceneLoader.js",
                 "../../src/Loading/Plugins/babylon.babylonFileLoader.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -380,7 +398,7 @@
                 "../../src/Tools/babylon.tags.js",
                 "../../src/Tools/babylon.andOrNotEvaluator.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -389,7 +407,7 @@
             "files": [
                 "../../src/Tools/babylon.database.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -398,7 +416,7 @@
             "files": [
                 "../../src/Materials/babylon.fresnelParameters.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -407,7 +425,7 @@
             "files": [
                 "../../src/Materials/babylon.multiMaterial.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -417,7 +435,7 @@
                 "../../src/Cameras/Inputs/babylon.freeCameraTouchInput.js",
                 "../../src/Cameras/babylon.touchCamera.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -427,7 +445,7 @@
                 "../../src/Materials/Textures/Procedurals/babylon.proceduralTexture.js",
                 "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ],
             "shaders": [
@@ -442,7 +460,7 @@
                 "../../src/Tools/babylon.gamepads.js",
                 "../../src/Tools/babylon.extendedGamepad.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },        
@@ -453,7 +471,7 @@
                 "../../src/Cameras/babylon.universalCamera.js",
                 "../../src/Cameras/babylon.gamepadCamera.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "gamepad"
             ]
         },  
@@ -462,7 +480,7 @@
             "files": [
                 "../../src/Rendering/babylon.depthRenderer.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ], 
             "shaders" : [
@@ -482,7 +500,7 @@
                 "../../src/PostProcess/babylon.postProcess.js",
                 "../../src/PostProcess/babylon.passPostProcess.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ], 
             "shaders" : [
@@ -505,7 +523,7 @@
                 "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
                 "../../src/PostProcess/babylon.tonemapPostProcess.js"                                      
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "postProcesses"
             ], 
             "shaders" : [
@@ -535,7 +553,7 @@
                 "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "depthRenderer",
                 "postProcesses"
             ], 
@@ -557,7 +575,7 @@
                 "../../src/Bones/babylon.boneLookController.js",
                 "../../src/Bones/babylon.skeleton.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
         },
@@ -570,10 +588,39 @@
                 "../../src/Tools/HDR/babylon.pmremgenerator.js",
                 "../../src/Materials/Textures/babylon.hdrCubeTexture.js"
             ],
-            "dependencies" : [
+            "dependUpon" : [
                 "core"
             ]
-        }                            
+        },
+        "csg" : 
+        {
+            "files": [
+                "../../src/Mesh/babylon.csg.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "polygonMesh" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.earcut.js",
+                "../../src/Mesh/babylon.polygonMesh.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
+        "lensFlares" : 
+        {
+            "files": [
+                "../../src/LensFlare/babylon.lensFlare.js",
+                "../../src/LensFlare/babylon.lensFlareSystem.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        }                         
     },
     "core": {
         "typescript": [
@@ -605,8 +652,6 @@
             "../../src/PostProcess/babylon.displayPassPostProcess.js",
             "../../src/Mesh/babylon.meshSimplification.js",
             "../../src/Tools/babylon.sceneSerializer.js",
-            "../../src/Tools/babylon.earcut.js",
-            "../../src/Mesh/babylon.csg.js",
             "../../src/Tools/babylon.virtualJoystick.js",
             "../../src/Cameras/babylon.virtualJoysticksCamera.js",
             "../../src/Cameras/Inputs/babylon.freeCameraVirtualJoystickInput.js",
@@ -616,12 +661,9 @@
             "../../src/Cameras/VR/babylon.webVRCamera.js",
             "../../src/Tools/babylon.sceneOptimizer.js",
             "../../src/Mesh/babylon.meshLODLevel.js",
-            "../../src/Materials/Textures/babylon.rawTexture.js",
-            "../../src/Mesh/babylon.polygonMesh.js",
+            "../../src/Materials/Textures/babylon.rawTexture.js",            
             "../../src/Culling/Octrees/babylon.octree.js",
             "../../src/Culling/Octrees/babylon.octreeBlock.js",
-            "../../src/LensFlare/babylon.lensFlare.js",
-            "../../src/LensFlare/babylon.lensFlareSystem.js",
             "../../src/Cameras/babylon.deviceOrientationCamera.js",
             "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",            
             "../../src/Cameras/babylon.stereoscopicCameras.js",

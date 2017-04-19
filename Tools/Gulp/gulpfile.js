@@ -58,10 +58,10 @@ var externalTsConfig = {
 };
 
 function processDependency(kind, dependency, filesToLoad) {
-    if (dependency.dependencies) {
-        for (var i = 0; i < dependency.dependencies.length; i++ ) {
-            var dependencyName = dependency.dependencies[i];
-            var parent = config.dependencies[dependencyName];
+    if (dependency.dependUpon) {
+        for (var i = 0; i < dependency.dependUpon.length; i++ ) {
+            var dependencyName = dependency.dependUpon[i];
+            var parent = config.workloads[dependencyName];
             processDependency(kind, parent, filesToLoad);
         }
     }
@@ -87,7 +87,7 @@ function determineFilesToProcess(kind) {
 
     for (var index = 0; index < buildConfiguration.length; index++) {
         var dependencyName = buildConfiguration[index];
-        var dependency = config.dependencies[dependencyName];
+        var dependency = config.workloads[dependencyName];
         processDependency(kind, dependency, filesToLoad);
     }
 
