@@ -92,6 +92,7 @@ module BABYLON.GLTF2 {
                 case EComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, byteLength);
                 case EComponentType.SHORT: return new Int16Array(buffer, byteOffset, byteLength);
                 case EComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, byteLength);
+                case EComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, byteLength);
                 default: return new Float32Array(buffer, byteOffset, byteLength);
             }
         }

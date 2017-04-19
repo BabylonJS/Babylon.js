@@ -1458,6 +1458,8 @@
                 return false;
             }
             var index: number;
+
+            // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
 
@@ -1466,6 +1468,7 @@
                 }
             }
 
+            // Meshes
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
@@ -3534,8 +3537,8 @@
 
                 if (createArcRotateCamera) {
                     camera = new ArcRotateCamera("default camera", 0, 0, 10, Vector3.Zero(), this);
-
                     camera.setPosition(new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+                    camera.lowerRadiusLimit = 0.5;
                     camera.setTarget(worldCenter);
                 } else {
                     camera = new FreeCamera("default camera", Vector3.Zero(), this);
@@ -3543,7 +3546,9 @@
                     camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
                     camera.setTarget(worldCenter);
                 }
-
+                camera.minZ = 0.1;
+                var maxDist = worldExtends.max.subtract(worldExtends.min).length();
+                camera.wheelPrecision = 100.0 / maxDist;
                 this.activeCamera = camera;
             }
         }

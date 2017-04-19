@@ -165,3 +165,4 @@ node_modules
 localDev/src/*
 /dist/preview release/babylon.custom.js
 /dist/preview release/babylon.custom.max.js
+/localDev/src/index.js

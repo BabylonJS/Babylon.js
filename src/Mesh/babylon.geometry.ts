@@ -348,6 +348,17 @@
             return this._indexBuffer;
         }
 
+        public _releaseVertexArrayObject(effect: Effect) {
+            if (!effect) {
+                return;
+            }
+            
+            if (this._vertexArrayObjects[effect.key]) {
+                this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
+                delete this._vertexArrayObjects[effect.key];
+            }
+        }
+
         public releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);

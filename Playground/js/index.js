@@ -1,5 +1,20 @@
-﻿(function () {
-    var jsEditor;
+﻿var jsEditor;
+(function () {
+    var fontSize = 14;
+
+    var splitInstance = Split(['#jsEditor', '#canvasZone']);
+
+    var elementToTheme = [
+        '.wrapper .gutter',
+        '.wrapper #jsEditor',
+        '.navbar',
+        '.navbar .select .toDisplay .option',
+        '.navbar .select .toDisplayBig',
+        '.navbar .select .toDisplayBig a',
+        '.navbar .select .toDisplayBig ul li',
+        '.navbarBottom',
+        '.navbarBottom .links .link',
+        '.save-message'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -13,7 +28,7 @@
             }
 
             document.getElementById("currentScript").innerHTML = "Custom";
-            document.getElementById('safemodeToggle').checked = true;
+            document.getElementById('safemodeToggle').classList.add('checked');
         });
 
         var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
@@ -90,17 +105,15 @@
                         var ul = document.getElementById("scriptsList");
                         var index;
                         for (index = 0; index < scripts.length; index++) {
-                            var li = document.createElement("li");
+                            var option = document.createElement("li");
                             var a = document.createElement("a");
-
-                            li.class = "scriptsListEntry";
                             a.href = "#";
                             a.innerHTML = (index + 1) + " - " + scripts[index];
                             a.scriptLinkIndex = index + 1;
                             a.onclick = onScriptClick;
 
-                            li.appendChild(a);
-                            ul.appendChild(li);
+                            option.appendChild(a);
+                            ul.appendChild(option);
                         }
 
                         if (!location.hash) {
@@ -119,6 +132,23 @@
                                 loadScript("scripts/basic scene.js", "Basic scene");
                             }
                         }
+
+                        // Restore theme
+                        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+                        toggleTheme(theme);
+
+                        // Remove editor if window size is less than 850px
+                        var removeEditorForSmallScreen = function () {
+                            if (mq.matches) {
+                                splitInstance.collapse(0);
+                            } else {
+                                splitInstance.setSizes([50, 50]);
+                            }
+                        }
+                        var mq = window.matchMedia("(max-width: 850px)");
+                        mq.addListener(removeEditorForSmallScreen);
+
+
                     }
                 }
             };
@@ -149,7 +179,7 @@
 
         var showError = function (errorMessage, errorEvent) {
             var errorContent =
-                '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><h4>Compilation error</h4>'
+                '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>';
             if (errorEvent) {
                 var regEx = /\(.+:(\d+):(\d+)\)\n/g;
 
@@ -165,10 +195,16 @@
 
             errorContent += errorMessage + '</div>';
 
+            document.getElementById("errorZone").style.display = 'block';
             document.getElementById("errorZone").innerHTML = errorContent;
+
+            // Close button error
+            document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+                document.getElementById("errorZone").style.display = 'none';
+            });
         }
 
-        var showNoMetadata = function() {
+        var showNoMetadata = function () {
             document.getElementById("saveFormTitle").value = '';
             document.getElementById("saveFormTitle").readOnly = false;
             document.getElementById("saveFormDescription").value = '';
@@ -177,17 +213,18 @@
             document.getElementById("saveFormTags").readOnly = false;
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveMessage").style.display = "block";
-            document.getElementById("metadataButton").style.display = "none";
+            // document.getElementById("metadataButton").style.display = "none";
         };
         showNoMetadata();
+        document.getElementById("saveMessage").style.display = "none";
 
-        var hideNoMetadata = function() {
+        var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
-            document.getElementById("saveFormButtons").style.display = "none";
+            document.getElementById("saveFormButtonOk").style.display = "none";
             document.getElementById("saveMessage").style.display = "none";
-            document.getElementById("metadataButton").style.display = "inline-block";
+            document.getElementById("metadataButton").style.display = "block";
         };
 
         compileAndRun = function () {
@@ -205,6 +242,7 @@
 
                 var canvas = document.getElementById("renderCanvas");
                 engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                document.getElementById("errorZone").style.display = 'none';
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
 
@@ -458,7 +496,8 @@
 
         // Fonts
         setFontSize = function (size) {
-            document.querySelector(".monaco-editor").style.fontSize = size + "px";
+            fontSize = size;
+            document.querySelector(".view-lines").style.fontSize = size + "px";
             document.getElementById("currentFontSize").innerHTML = "Font: " + size;
         };
 
@@ -473,14 +512,15 @@
             var editorButton = document.getElementById("editorButton");
             var scene = engine.scenes[0];
 
-            if (editorButton.innerHTML === "-Editor") {
-                editorButton.innerHTML = "+Editor";
-                document.getElementById("jsEditor").style.display = "none";
-                document.getElementById("canvasZone").style.flexBasis = "100%";
+            // If the editor is present
+            if (editorButton.classList.contains('checked')) {
+                editorButton.classList.remove('checked');
+                splitInstance.collapse(0);
+                editorButton.innerHTML = 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>';
             } else {
-                editorButton.innerHTML = "-Editor";
-                document.getElementById("jsEditor").style.display = "block";
-                document.getElementById("canvasZone").style.flexBasis = undefined;
+                editorButton.classList.add('checked');
+                splitInstance.setSizes([50, 50]);  // Reset
+                editorButton.innerHTML = 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>';
             }
             engine.resize();
 
@@ -490,30 +530,69 @@
             }
         }
 
+        /**
+         * Toggle the dark theme
+         */
+        var toggleTheme = function (theme) {
+            // Monaco
+            var vsTheme;
+            if (theme == 'dark') {
+                vsTheme = 'vs-dark'
+            } else {
+                vsTheme = 'vs'
+            }
+
+            let oldCode = jsEditor.getValue();
+            jsEditor.dispose();
+            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
+                value: "",
+                language: "javascript",
+                lineNumbers: true,
+                tabSize: "auto",
+                insertSpaces: "auto",
+                roundedSelection: true,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                readOnly: false,
+                theme: vsTheme,
+                contextmenu: false
+            });
+            jsEditor.setValue(oldCode);
+            setFontSize(fontSize);
+
+            for (var index = 0; index < elementToTheme.length; index++) {
+                var obj = elementToTheme[index];
+                let domObjArr = document.querySelectorAll(obj);
+                for (var domObjIndex = 0; domObjIndex < domObjArr.length; domObjIndex++) {
+                    var domObj = domObjArr[domObjIndex];
+                    domObj.classList.remove('light');
+                    domObj.classList.remove('dark');
+                    domObj.classList.add(theme);
+                }
+            }
+
+            localStorage.setItem("bjs-playground-theme", theme);
+
+        }
+
         var toggleDebug = function () {
             var debugButton = document.getElementById("debugButton");
             var scene = engine.scenes[0];
 
-            if (debugButton.innerHTML === "+Debug layer") {
-                debugButton.innerHTML = "-Debug layer";
+            if (debugButton.classList.contains('uncheck')) {
+                debugButton.classList.remove('uncheck');
                 scene.debugLayer.show();
             } else {
-                debugButton.innerHTML = "+Debug layer";
+                debugButton.classList.add('uncheck');
                 scene.debugLayer.hide();
             }
         }
 
-        var toggleMetadata = function() {
-            var metadataButton = document.getElementById("metadataButton");
+        var toggleMetadata = function () {
+            // var metadataButton = document.getElementById("metadataButton");
             var scene = engine.scenes[0];
-
-            if (metadataButton.innerHTML === "+Meta data") {
-                metadataButton.innerHTML = "-Meta data";
-                document.getElementById("saveLayer").style.display = "block";
-            } else {
-                metadataButton.innerHTML = "+Meta data";
-                document.getElementById("saveLayer").style.display = "none";
-            }
+            // metadataButton.classList.add('checked');
+            document.getElementById("saveLayer").style.display = "block";
         }
 
         // UI
@@ -525,11 +604,17 @@
         document.getElementById("editorButton").addEventListener("click", toggleEditor);
         document.getElementById("debugButton").addEventListener("click", toggleDebug);
         document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
+        document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
+        document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
+
+        // Restore theme
+        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+        toggleTheme(theme);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {
             var safeToggle = document.getElementById("safemodeToggle");
-            if (safeToggle.checked) {
+            if (safeToggle.classList.contains('checked')) {
                 e = e || window.event;
                 var message =
                     'This page is asking you to confirm that you want to leave - data you have entered may not be saved.';
@@ -609,7 +694,7 @@
         document.getElementById("saveMessage").addEventListener("click", function () {
             document.getElementById("saveMessage").style.display = "none";
         });
-        document.getElementById("mainTitle").innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " Playground";
+        document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
 
         var previousHash = "";
 
@@ -682,7 +767,7 @@
 
                         var hash = location.hash.substr(1);
                         currentSnippetToken = hash.split("#")[0];
-                        if(!hash.split("#")[1]) hash += "#0";
+                        if (!hash.split("#")[1]) hash += "#0";
 
 
                         xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
