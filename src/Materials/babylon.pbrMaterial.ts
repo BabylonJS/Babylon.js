@@ -2,6 +2,7 @@
     class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public AMBIENT = false;
+        public AMBIENTINGRAYSCALE = false;
         public OPACITY = false;
         public OPACITYRGB = false;
         public REFLECTION = false;
@@ -21,6 +22,7 @@
         public EMISSIVEFRESNEL = false;
         public FRESNEL = false;
         public NORMAL = false;
+        public TANGENT = false;
         public UV1 = false;
         public UV2 = false;
         public VERTEXCOLOR = false;
@@ -41,7 +43,9 @@
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
-        public REFLECTIONMAP_EQUIRECTANGULAR = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR = false;        
+        public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public CAMERATONEMAP = false;
@@ -60,15 +64,22 @@
         public RADIANCEOVERALPHA = false;
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
-        public OPENGLNORMALMAP = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
+        public TWOSIDEDLIGHTING = false;
         public SHADOWFULLFLOAT = false;
 
         public METALLICWORKFLOW = false;
-        public METALLICROUGHNESSMAP = false;
-        public METALLICROUGHNESSGSTOREINALPHA = false;
-        public METALLICROUGHNESSGSTOREINGREEN = false;
+        public METALLICMAP = false;
+        public ROUGHNESSSTOREINMETALMAPALPHA = false;
+        public ROUGHNESSSTOREINMETALMAPGREEN = false;
+        public METALLNESSSTOREINMETALMAPBLUE = false;
+        public AOSTOREINMETALMAPRED = false;
+        public MICROSURFACEMAP = false;
+
+        public MORPHTARGETS = false;
+        public MORPHTARGETS_NORMAL = false;
+        public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {
             super();
@@ -203,7 +214,7 @@
          * This as to be use with the overloadedReflectivityIntensity parameter.
          */
         @serializeAsColor3()
-        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.3, 0.3, 0.3);
+        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.0, 0.0, 0.0);
         
         /**
          * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
@@ -307,6 +318,13 @@
         @serialize()
         public roughness: number;
 
+        /**
+         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         */
+        @serializeAsTexture()
+        public microSurfaceTexture: BaseTexture;
+
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
 
@@ -318,7 +336,7 @@
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Diffuse Color in other nomenclature.
          */
@@ -332,7 +350,7 @@
         public reflectivityColor = new Color3(1, 1, 1);
 
         @serializeAsColor3("reflection")
-        public reflectionColor = new Color3(0.5, 0.5, 0.5);
+        public reflectionColor = new Color3(0.0, 0.0, 0.0);
 
         @serializeAsColor3("emissive")
         public emissiveColor = new Color3(0, 0, 0);
@@ -414,6 +432,24 @@
          */
         @serialize()
         public useRoughnessFromMetallicTextureGreen = false;
+
+        /**
+         * Specifies if the metallic texture contains the metallness information in its blue channel.
+         */
+        @serialize()
+        public useMetallnessFromMetallicTextureBlue = false;
+
+        /**
+         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+         */
+        @serialize()
+        public useAmbientOcclusionFromMetallicTextureRed = false;
+
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        @serialize()
+        public useAmbientInGrayScale = false;
         
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -485,6 +521,12 @@
          */
         @serialize()
         public invertNormalMapY = false;
+
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        @serialize()
+        public twoSidedLighting = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -567,10 +609,6 @@
                 return false;
             }
 
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
             return false;
         }
 
@@ -596,17 +634,7 @@
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-
+            for (var light of mesh._lightSources) {
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
@@ -643,13 +671,12 @@
 
             var scene = this.getScene();
             var engine = scene.getEngine();
-            var needNormals = false;
             var needUVs = false;
 
             this._defines.reset();
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
+                MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
 
             if (!this.checkReadyOnEveryCall) {
@@ -668,79 +695,84 @@
                 if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this.albedoTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.ALBEDO = true;
                     }
+
+                    needUVs = true;
+                    this._defines.ALBEDO = true;
                 }
 
                 if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                     if (!this.ambientTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.AMBIENT = true;
                     }
+
+                    needUVs = true;
+                    this._defines.AMBIENT = true;
+                    this._defines.AMBIENTINGRAYSCALE = this.useAmbientInGrayScale;
                 }
 
                 if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                     if (!this.opacityTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.OPACITY = true;
+                    }
+                    
+                    needUVs = true;
+                    this._defines.OPACITY = true;
 
-                        if (this.opacityTexture.getAlphaFromRGB) {
-                            this._defines.OPACITYRGB = true;
-                        }
+                    if (this.opacityTexture.getAlphaFromRGB) {
+                        this._defines.OPACITYRGB = true;
                     }
                 }
 
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (!this.reflectionTexture.isReady()) {
                         return false;
-                    } else {
-                        needNormals = true;
-                        this._defines.REFLECTION = true;
+                    }
+                    
+                    this._defines.REFLECTION = true;
 
-                        if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
-                            this._defines.INVERTCUBICMAP = true;
-                        }
+                    if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
+                        this._defines.INVERTCUBICMAP = true;
+                    }
 
-                        this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
+                    this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
 
-                        switch (this.reflectionTexture.coordinatesMode) {
-                            case Texture.CUBIC_MODE:
-                            case Texture.INVCUBIC_MODE:
-                                this._defines.REFLECTIONMAP_CUBIC = true;
-                                break;
-                            case Texture.EXPLICIT_MODE:
-                                this._defines.REFLECTIONMAP_EXPLICIT = true;
-                                break;
-                            case Texture.PLANAR_MODE:
-                                this._defines.REFLECTIONMAP_PLANAR = true;
-                                break;
-                            case Texture.PROJECTION_MODE:
-                                this._defines.REFLECTIONMAP_PROJECTION = true;
-                                break;
-                            case Texture.SKYBOX_MODE:
-                                this._defines.REFLECTIONMAP_SKYBOX = true;
-                                break;
-                            case Texture.SPHERICAL_MODE:
-                                this._defines.REFLECTIONMAP_SPHERICAL = true;
-                                break;
-                            case Texture.EQUIRECTANGULAR_MODE:
-                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
-                                break;
-                        }
+                    switch (this.reflectionTexture.coordinatesMode) {
+                        case Texture.CUBIC_MODE:
+                        case Texture.INVCUBIC_MODE:
+                            this._defines.REFLECTIONMAP_CUBIC = true;
+                            break;
+                        case Texture.EXPLICIT_MODE:
+                            this._defines.REFLECTIONMAP_EXPLICIT = true;
+                            break;
+                        case Texture.PLANAR_MODE:
+                            this._defines.REFLECTIONMAP_PLANAR = true;
+                            break;
+                        case Texture.PROJECTION_MODE:
+                            this._defines.REFLECTIONMAP_PROJECTION = true;
+                            break;
+                        case Texture.SKYBOX_MODE:
+                            this._defines.REFLECTIONMAP_SKYBOX = true;
+                            break;
+                        case Texture.SPHERICAL_MODE:
+                            this._defines.REFLECTIONMAP_SPHERICAL = true;
+                            break;
+                        case Texture.EQUIRECTANGULAR_MODE:
+                            this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                            break;
+                        case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                            this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                            break;
+                        case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                            this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                            break;                                
+                    }
 
-                        if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
-                            this._defines.USESPHERICALFROMREFLECTIONMAP = true;
-                            needNormals = true;
+                    if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
+                        this._defines.USESPHERICALFROMREFLECTIONMAP = true;
 
-                            if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
-                                this._defines.USEPMREMREFLECTION = true;
-                            }
+                        if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
+                            this._defines.USEPMREMREFLECTION = true;
                         }
                     }
                 }
@@ -748,92 +780,103 @@
                 if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                     if (!this.lightmapTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.LIGHTMAP = true;
-                        this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                     }
+
+                    needUVs = true;
+                    this._defines.LIGHTMAP = true;
+                    this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                 }
 
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     if (!this.emissiveTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.EMISSIVE = true;
                     }
+
+                    needUVs = true;
+                    this._defines.EMISSIVE = true;
                 }
 
                 if (StandardMaterial.SpecularTextureEnabled) {
                     if (this.metallicTexture) {
                         if (!this.metallicTexture.isReady()) {
                             return false;
-                        } else {
-                            needUVs = true;
-                            this._defines.METALLICWORKFLOW = true;
-                            this._defines.METALLICROUGHNESSMAP = true;
-                            this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
-                            this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
                         }
+
+                        needUVs = true;
+                        this._defines.METALLICWORKFLOW = true;
+                        this._defines.METALLICMAP = true;
+                        this._defines.ROUGHNESSSTOREINMETALMAPALPHA = this.useRoughnessFromMetallicTextureAlpha;
+                        this._defines.ROUGHNESSSTOREINMETALMAPGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;                            
+                        this._defines.METALLNESSSTOREINMETALMAPBLUE = this.useMetallnessFromMetallicTextureBlue;                            
+                        this._defines.AOSTOREINMETALMAPRED = this.useAmbientOcclusionFromMetallicTextureRed;
                     }
                     else if (this.reflectivityTexture) {
                         if (!this.reflectivityTexture.isReady()) {
                             return false;
-                        } else {
-                            needUVs = true;
-                            this._defines.REFLECTIVITY = true;
-                            this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
-                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
                         }
+
+                        needUVs = true;
+                        this._defines.REFLECTIVITY = true;
+                        this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                        this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
+                    }
+
+                    if (this.microSurfaceTexture) {
+                        if (!this.microSurfaceTexture.isReady()) {
+                            return false;
+                        }
+
+                        needUVs = true;
+                        this._defines.MICROSURFACEMAP = true;
                     }
                 }
 
                 if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                     if (!this.bumpTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.BUMP = true;
+                    }
+                    
+                    needUVs = true;
+                    this._defines.BUMP = true;
 
-                        if (this.useParallax && this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
-                            this._defines.PARALLAX = true;
-                            if (this.useParallaxOcclusion) {
-                                this._defines.PARALLAXOCCLUSION = true;
-                            }
-                        }
-
-                        if (this.invertNormalMapX) {
-                            this._defines.INVERTNORMALMAPX = true;
-                        }
-
-                        if (this.invertNormalMapY) {
-                            this._defines.INVERTNORMALMAPY = true;
-                        }
-
-                        if (scene._mirroredCameraPosition) {
-                            this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
-                            this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
+                    if (this.useParallax && this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        this._defines.PARALLAX = true;
+                        if (this.useParallaxOcclusion) {
+                            this._defines.PARALLAXOCCLUSION = true;
                         }
                     }
+
+                    if (this.invertNormalMapX) {
+                        this._defines.INVERTNORMALMAPX = true;
+                    }
+
+                    if (this.invertNormalMapY) {
+                        this._defines.INVERTNORMALMAPY = true;
+                    }
+
+                    if (scene._mirroredCameraPosition) {
+                        this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
+                        this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
+                    }                        
                 }
 
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                     if (!this.refractionTexture.isReady()) {
                         return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.REFRACTION = true;
-                        this._defines.REFRACTIONMAP_3D = this.refractionTexture.isCube;
+                    }
+                    
+                    needUVs = true;
+                    this._defines.REFRACTION = true;
+                    this._defines.REFRACTIONMAP_3D = this.refractionTexture.isCube;
 
-                        if (this.linkRefractionWithTransparency) {
-                            this._defines.LINKREFRACTIONTOTRANSPARENCY = true;
-                        }
-                        if (this.refractionTexture instanceof HDRCubeTexture) {
-                            this._defines.REFRACTIONMAPINLINEARSPACE = true;
+                    if (this.linkRefractionWithTransparency) {
+                        this._defines.LINKREFRACTIONTOTRANSPARENCY = true;
+                    }
+                    if (this.refractionTexture instanceof HDRCubeTexture) {
+                        this._defines.REFRACTIONMAPINLINEARSPACE = true;
 
-                            if ((<HDRCubeTexture>this.refractionTexture).isPMREM) {
-                                this._defines.USEPMREMREFRACTION = true;
-                            }
+                        if ((<HDRCubeTexture>this.refractionTexture).isPMREM) {
+                            this._defines.USEPMREMREFRACTION = true;
                         }
                     }
                 }
@@ -841,9 +884,13 @@
                 if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
                     if (!this.cameraColorGradingTexture.isReady()) {
                         return false;
-                    } else {
-                        this._defines.CAMERACOLORGRADING = true;
                     }
+                    
+                    this._defines.CAMERACOLORGRADING = true;
+                }
+
+                if (!this.backFaceCulling && this.twoSidedLighting) {
+                    this._defines.TWOSIDEDLIGHTING = true;
                 }
             }
 
@@ -921,7 +968,6 @@
                         this._defines.EMISSIVEFRESNEL = true;
                     }
 
-                    needNormals = true;
                     this._defines.FRESNEL = true;
                 }
             }
@@ -944,8 +990,16 @@
 
             // Attribs
             if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                if (!mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                    mesh.createNormals(true);
+                    Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
+                }
+
+                if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
+                    if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                        this._defines.TANGENT = true;
+                    }
                 }
                 if (needUVs) {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -970,6 +1024,13 @@
                 // Instances
                 if (useInstances) {
                     this._defines.INSTANCES = true;
+                }
+
+               if ((<any>mesh).morphTargetManager) {
+                    var manager = (<Mesh>mesh).morphTargetManager;
+                    this._defines.MORPHTARGETS_NORMAL = manager.supportsNormals && this._defines.NORMAL;
+                    this._defines.MORPHTARGETS = (manager.numInfluencers > 0);
+                    this._defines.NUM_MORPH_INFLUENCERS = manager.numInfluencers;
                 }
             }
 
@@ -1050,6 +1111,10 @@
                     attribs.push(VertexBuffer.NormalKind);
                 }
 
+                if (this._defines.TANGENT) {
+                    attribs.push(VertexBuffer.TangentKind);
+                }
+
                 if (this._defines.UV1) {
                     attribs.push(VertexBuffer.UVKind);
                 }
@@ -1064,15 +1129,16 @@
 
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
 
                 // Legacy browser patch
                 var join = this._defines.toString();
                 
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                        "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
-                        "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                        "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                         "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
                         "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
@@ -1084,7 +1150,7 @@
                         "vCameraInfos"
                 ];
 
-                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 
                 ColorCurves.PrepareUniforms(uniforms); 
                 ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
@@ -1092,7 +1158,7 @@
                 
                 this._effect = scene.getEngine().createEffect("pbr",
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
+                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: this._defines.NUM_MORPH_INFLUENCERS});
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -1100,14 +1166,6 @@
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new PBRMaterialDefines();
-                }
-
-                this._defines.cloneTo(mesh._materialDefines);
-            }
 
             return true;
         }
@@ -1239,14 +1297,21 @@
                         if (this.metallicTexture) {
                             this._effect.setTexture("reflectivitySampler", this.metallicTexture);
 
-                            this._effect.setFloat2("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level);
+                            this._effect.setFloat3("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level, this.ambientTextureStrength);
                             this._effect.setMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
                         }
                         else if (this.reflectivityTexture) {
                             this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
 
-                            this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
+                            this._effect.setFloat3("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level, 1.0);
                             this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                        }
+
+                        if (this.microSurfaceTexture) {
+                            this._effect.setTexture("microSurfaceSampler", this.microSurfaceTexture);
+
+                            this._effect.setFloat2("vMicroSurfaceSamplerInfos", this.microSurfaceTexture.coordinatesIndex, this.microSurfaceTexture.level);
+                            this._effect.setMatrix("microSurfaceSamplerMatrix", this.microSurfaceTexture.getTextureMatrix());
                         }
                     }
 
@@ -1295,8 +1360,8 @@
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
                 if (this._defines.METALLICWORKFLOW) {
-                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
-                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    PBRMaterial._scaledReflectivity.r = (this.metallic === undefined || this.metallic === null) ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = (this.roughness === undefined || this.roughness === null) ? 1 : this.roughness;
                     this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
                 }
                 else {
@@ -1334,6 +1399,11 @@
 
                 // Fog
                 MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
+
+                // Morph targets
+                if (this._defines.NUM_MORPH_INFLUENCERS) {
+                    MaterialHelper.BindMorphTargetParameters(mesh, this._effect);                
+                }
 
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;
@@ -1378,7 +1448,7 @@
                 // Log. depth
                 MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
-            super.bind(world, mesh);
+            this._afterBind(mesh);
 
             this._myScene = null;
         }
@@ -1478,6 +1548,8 @@
                     this.cameraColorGradingTexture.dispose();
                 }
             }
+
+            this._renderTargets.dispose();
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }

@@ -47,24 +47,9 @@
             return this._physicsPlugin.name;
         }
 
-        // Statics, Legacy support.
-        /**
-         * @Deprecated
-         *  
-         */
-        public static NoImpostor = PhysicsImpostor.NoImpostor;
-        public static SphereImpostor = PhysicsImpostor.SphereImpostor;
-        public static BoxImpostor = PhysicsImpostor.BoxImpostor;
-        public static PlaneImpostor = PhysicsImpostor.PlaneImpostor;
-        public static MeshImpostor = PhysicsImpostor.MeshImpostor;
-        public static CylinderImpostor = PhysicsImpostor.CylinderImpostor;
-        public static HeightmapImpostor = PhysicsImpostor.HeightmapImpostor;
-        public static CapsuleImpostor = -1;
-        public static ConeImpostor = -1;
-        public static ConvexHullImpostor = -1;
-
+        // Statics
         public static Epsilon = 0.001;
-        
+
         //new methods and parameters
         
         private _impostors: Array<PhysicsImpostor> = [];

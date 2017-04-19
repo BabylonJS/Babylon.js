@@ -46,6 +46,9 @@
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
+        if (!engine) {
+            return;
+        }
         var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
 
@@ -154,6 +157,7 @@
 
     export class EngineCapabilities {
         public maxTexturesImageUnits: number;
+        public maxVertexTextureImageUnits: number;
         public maxTextureSize: number;
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
@@ -167,7 +171,6 @@
         public etc1: any; //WEBGL_compressed_texture_etc1;
         public etc2: any; //WEBGL_compressed_texture_etc;
         public astc: any; //WEBGL_compressed_texture_astc;
-        public atc: any; //WEBGL_compressed_texture_atc;
         public textureFloat: boolean;
         public vertexArrayObject: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
@@ -190,6 +193,7 @@
         limitDeviceRatio?: number;
         autoEnableWebVR?: boolean;
         disableWebGL2Support?: boolean;
+        audioEngine?: boolean;
     }
 
     /**
@@ -211,12 +215,25 @@
             if (!lastCreatedEngine) {
                 return null;
             }
-            
+
             if (lastCreatedEngine.scenes.length === 0) {
                 return null;
             }
 
             return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
+        }
+
+        /**
+         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+         */
+        public static MarkAllMaterialsAsDirty(flag:number, predicate?: (mat: Material) => boolean): void {
+            for (var engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
+                var engine = Engine.Instances[engineIndex];
+
+                for (var sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+                    engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
+                }
+            }
         }
 
         // Const statics
@@ -408,7 +425,7 @@
         }
 
         public static get Version(): string {
-            return "2.6-alpha";
+            return "3.0-alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -421,6 +438,7 @@
         public isPointerLock = false;
         public cullBackFaces = true;
         public renderEvenInBackground = true;
+        public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
         public enableOfflineSupport = true;
         public scenes = new Array<Scene>();
@@ -514,19 +532,19 @@
 
         private _vaoRecordInProgress = false;
         private _mustWipeVertexAttributes = false;
-        
+
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
-        private _textureFormatInUse : string; 
-        
+        private _textureFormatInUse: string;
+
         public get texturesSupported(): Array<string> {
             return this._texturesSupported;
         }
-        
+
         public get textureFormatInUse(): string {
             return this._textureFormatInUse;
         }
-        
+
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
@@ -550,6 +568,14 @@
                 options.preserveDrawingBuffer = false;
             }
 
+            if (options.audioEngine === undefined) {
+                options.audioEngine = true;
+            }
+
+            if (options.stencil === undefined) {
+                options.stencil = true;
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -558,8 +584,8 @@
                         this._webGLVersion = 2.0;
                     }
                 } catch (e) {
-                // Do nothing
-                }  
+                    // Do nothing
+                }
             }
 
             if (!this._gl) {
@@ -576,7 +602,7 @@
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
-            
+
             this._onBlur = () => {
                 this._windowIsBackground = true;
             };
@@ -597,6 +623,7 @@
             this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+            this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
@@ -624,15 +651,14 @@
 
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
-            
-            this._caps.astc  = this._gl.getExtension('WEBGL_compressed_texture_astc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc' );
-            this._caps.s3tc  = this._gl.getExtension('WEBGL_compressed_texture_s3tc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc' );
+
+            this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc');
+            this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
             this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
             this._caps.etc1  = this._gl.getExtension('WEBGL_compressed_texture_etc1' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1' );
             this._caps.etc2  = this._gl.getExtension('WEBGL_compressed_texture_etc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc'  ) ||
                                this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
-            this._caps.atc   = this._gl.getExtension('WEBGL_compressed_texture_atc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc'  );
-            
+
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
@@ -645,58 +671,56 @@
 
             this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
             this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear');
-            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();            
+            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();
 
             this._caps.textureHalfFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float');
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'));
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
-            
+
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
 
             // Vertex array object 
-            if ( this._webGLVersion > 1) {
+            if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
-            } else{
+            } else {
                 var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
 
                 if (vertexArrayObjectExtension != null) {
-                    this._caps.vertexArrayObject =  true;
+                    this._caps.vertexArrayObject = true;
                     this._gl.createVertexArray = vertexArrayObjectExtension.createVertexArrayOES.bind(vertexArrayObjectExtension);
                     this._gl.bindVertexArray = vertexArrayObjectExtension.bindVertexArrayOES.bind(vertexArrayObjectExtension);
                     this._gl.deleteVertexArray = vertexArrayObjectExtension.deleteVertexArrayOES.bind(vertexArrayObjectExtension);
-                } else{
+                } else {
                     this._caps.vertexArrayObject = false;
                 }
             }
             // Instances count            
-            if ( this._webGLVersion > 1) {
+            if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
-            } else{
+            } else {
                 var instanceExtension = <ANGLE_instanced_arrays>this._gl.getExtension('ANGLE_instanced_arrays');
 
                 if (instanceExtension != null) {
-                    this._caps.instancedArrays =  true;
+                    this._caps.instancedArrays = true;
                     this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE.bind(instanceExtension);
                     this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE.bind(instanceExtension);
                     this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE.bind(instanceExtension);
-                } else{
+                } else {
                     this._caps.instancedArrays = false;
                 }
             }
-            
+
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
             // Next PVRTC & DXT, which are probably superior to ETC1/2.  
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-            // ATC before ETC1, since both old (widely supported), but ATC supports alpha, but ETC1 does not
             if (this._caps.astc ) this.texturesSupported.push('-astc.ktx');
             if (this._caps.s3tc ) this.texturesSupported.push('-dxt.ktx');
             if (this._caps.pvrtc) this.texturesSupported.push('-pvrtc.ktx');
             if (this._caps.etc2 ) this.texturesSupported.push('-etc2.ktx');
-            if (this._caps.atc  ) this.texturesSupported.push('-atc.ktx');
             if (this._caps.etc1 ) this.texturesSupported.push('-etc1.ktx');
-            
+
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -751,12 +775,9 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            if (AudioEngine && !Engine.audioEngine) {
+            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
-
-            //default loading screen
-            this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             //Load WebVR Devices
             if (options.autoEnableWebVR) {
@@ -1126,10 +1147,13 @@
          *   });
          */
         public resize(): void {
-            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+            // We're not resizing the size of the canvas while in VR mode & presenting
+            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
 
-            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+                this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            }
         }
 
         /**
@@ -1178,10 +1202,6 @@
                 this._oldSize = new BABYLON.Size(this.getRenderWidth(), this.getRenderHeight());
                 this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
 
-                //according to the WebVR specs, requestAnimationFrame should be triggered only once.
-                //But actually, no browser follow the specs...
-                //this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
-
                 //get the width and height, change the render size
                 var leftEye = this._vrDisplayEnabled.getEyeParameters('left');
                 var width, height;
@@ -1216,10 +1236,9 @@
 
         public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
             this._currentRenderTarget = texture;
-            this.bindUnboundFramebuffer(texture._framebuffer);
+            this.bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
             var gl = this._gl;
             if (texture.isCube) {
-
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
 
@@ -1235,13 +1254,32 @@
             }
         }
 
-        public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
+        public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
+
+            // If MSAA, we need to bitblt back to main texture
+            var gl = this._gl;
+
+            if (texture._MSAAFramebuffer) {
+                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
+                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
+                gl.blitFramebuffer(0, 0, texture._width, texture._height,
+                    0, 0, texture._width, texture._height,
+                    gl.COLOR_BUFFER_BIT, gl.NEAREST);
+            }
+
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
-                var gl = this._gl;
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            }
+
+            if (onBeforeUnbind) {
+                if (texture._MSAAFramebuffer) {
+                    // Bind the correct framebuffer
+                    this.bindUnboundFramebuffer(texture._framebuffer);
+                }
+                onBeforeUnbind();
             }
 
             this.bindUnboundFramebuffer(null);
@@ -1376,14 +1414,14 @@
         public bindArrayBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
                 this._unBindVertexArrayObject();
-            }   
+            }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
                 this._unBindVertexArrayObject();
-            }            
+            }
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         }
 
@@ -1391,7 +1429,7 @@
             if (this._vaoRecordInProgress || this._currentBoundBuffer[target] !== buffer) {
                 this._gl.bindBuffer(target, buffer);
                 this._currentBoundBuffer[target] = buffer;
-           }
+            }
         }
 
         public updateArrayBuffer(data: Float32Array): void {
@@ -1420,7 +1458,7 @@
             }
         }
 
-        private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {            
+        private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {
             if (indexBuffer == null) {
                 return;
             }
@@ -1472,10 +1510,10 @@
         public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
-            this._vaoRecordInProgress = true;                
-            
+            this._vaoRecordInProgress = true;
+
             this._gl.bindVertexArray(vao);
-            
+
             this._mustWipeVertexAttributes = true;
             this._bindVertexBuffersAttributes(vertexBuffers, effect);
 
@@ -1495,7 +1533,7 @@
                 this._cachedVertexBuffers = null;
                 this._cachedIndexBuffer = null;
 
-                this._uintIndicesCurrentlySet = indexBuffer != null && indexBuffer.is32Bits; 
+                this._uintIndicesCurrentlySet = indexBuffer != null && indexBuffer.is32Bits;
                 this._mustWipeVertexAttributes = true;
             }
         }
@@ -1544,7 +1582,7 @@
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
-                
+
                 this._bindVertexBuffersAttributes(vertexBuffers, effect);
             }
 
@@ -1662,7 +1700,7 @@
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            this._drawCalls.addCount(1, false); 
+            this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
                 this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
@@ -1695,17 +1733,18 @@
             }
         }
 
-        public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
+        
+        public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
-            var name = vertex + "+" + fragment + "@" + defines;
+            var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
                 return this._compiledEffects[name];
             }
 
-            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
+            var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1995,7 +2034,7 @@
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_PREMULTIPLIED:
-                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_COMBINE:
@@ -2038,11 +2077,14 @@
         }
 
         public getAlphaTesting(): boolean {
-            return this._alphaTest;
+            return !!this._alphaTest;
         }
 
         // Textures
         public wipeCaches(): void {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
             this.resetTextureCache();
             this._currentEffect = null;
 
@@ -2076,10 +2118,10 @@
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
          * 
-         * Current families are astc, dxt, pvrtc, etc2, atc, & etc1.
+         * Current families are astc, dxt, pvrtc, etc2, & etc1.
          * @returns The extension selected.
          */
-        public setTextureFormatToUse(formatsAvailable : Array<string>) : string {
+        public setTextureFormatToUse(formatsAvailable: Array<string>): string {
             for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
                 for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
                     if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
@@ -2092,35 +2134,48 @@
             return this._textureFormatInUse = null;
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
+        /**
+         * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
+         * @param {string} urlArg- This contains one of the following:
+         *                         1. A conventional http URL, e.g. 'http://...' or 'file://...'
+         *                         2. A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         *                         3. An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         *
+         * @param {boolean} noMipmap- When true, no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file.
+         * @param {boolean} invertY- When true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file.
+         * @param {Scene} scene- Needed for loading to the correct scene.
+         * @param {number} samplingMode- Mode with should be used sample / access the texture.  Default: TRILINEAR
+         * @param {callback} onLoad- Optional callback to be called upon successful completion.
+         * @param {callback} onError- Optional callback to be called upon failure.
+         * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
+         * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
+         * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
+         * 
+         * @returns {WebGLTexture} for assignment back into BABYLON.Texture
+         */
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
             var texture = fallBack ? fallBack : this._gl.createTexture();
 
-            var extension: string;
-            var isKTX = false;
-            var fromData: any = false;
-            var url = String(urlArg);
-            if (url.substr(0, 5) === "data:") {
-                fromData = true;
-            }
 
-            if (!fromData) {
-                var lastDot = url.lastIndexOf('.')
-                extension = url.substring(lastDot).toLowerCase();
-                if (this._textureFormatInUse && !fromData && !fallBack) {
-                    extension = this._textureFormatInUse;
-                    url = url.substring(0, lastDot) + this._textureFormatInUse;
-                    isKTX = true;
-                    
-                }
-            } else {
-                var oldUrl = url;
-                fromData = oldUrl.split(':');
-                url = oldUrl;
-                extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
-            }
+            var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
+            var fromData = url.substr(0, 5) === "data:";
+            var isBase64 = fromData && url.indexOf("base64") !== -1;
 
+            // establish the file extension, if possible
+            var lastDot = url.lastIndexOf('.');
+            var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            if (isDDS) {
+                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            }
             var isTGA = (extension === ".tga");
+            
+            // determine if a ktx file should be substituted
+            var isKTX = false;
+            if (this._textureFormatInUse && !isBase64 && !fallBack) {
+                url = url.substring(0, lastDot) + this._textureFormatInUse;
+                isKTX = true;
+            }
 
             scene._addPendingData(texture);
             texture.url = url;
@@ -2128,6 +2183,7 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
+            
             if (onLoad) {
                 texture.onLoadedCallbacks.push(onLoad);
             }
@@ -2138,17 +2194,20 @@
 
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
-                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, texture);
+                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 } else if (onError) {
                     onError();
                 }
             };
+            
             var callback: (arrayBuffer: any) => void;
-            if (isKTX || isTGA || isDDS){
+
+            // processing for non-image formats
+            if (isKTX || isTGA || isDDS) {
                 if (isKTX) {
                     callback = (data) => {
                         var ktx = new Internals.KhronosTextureContainer(data, 1);
-    
+
                         prepareWebGLTexture(texture, this._gl, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
                             ktx.uploadLevels(this._gl, !noMipmap);
                         }, samplingMode);
@@ -2174,15 +2233,16 @@
                             Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
                         }, samplingMode);
                     };
-            }
+                }
 
-            if (!(fromData instanceof Array))
+            if (!buffer) {
                 Tools.LoadFile(url, data => {
                     callback(data);
                 }, null, scene.database, true, onerror);
-            else
+            } else {
                 callback(buffer);
-
+            }
+            // image format processing
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
@@ -2211,16 +2271,18 @@
                             }
                         }
 
-                        let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+                        let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? this._gl.RGB :this._gl.RGBA);
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
                     }, samplingMode);
                 };
 
 
-                if (!(fromData instanceof Array))
+                if (!fromData || isBase64)
                     Tools.LoadImage(url, onload, onerror, scene.database);
-                else
+                else if (buffer instanceof Array || typeof buffer === "string")
                     Tools.LoadImage(buffer, onload, onerror, scene.database);
+                else
+                    onload(buffer);                
             }
 
             return texture;
@@ -2329,7 +2391,7 @@
 
         public updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
- 
+
             if (texture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
 
@@ -2344,7 +2406,7 @@
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
 
-             texture.samplingMode = samplingMode;
+            texture.samplingMode = samplingMode;
         }
 
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
@@ -2467,32 +2529,12 @@
 
             gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-            var depthStencilBuffer: WebGLRenderbuffer;
-
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -2504,24 +2546,107 @@
             this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._baseWidth = width;
             texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
+            texture.samples = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.type = type;
+            texture._generateDepthBuffer = generateDepthBuffer;
+            texture._generateStencilBuffer = generateStencilBuffer;
 
             this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);
 
             return texture;
+        }
+
+        private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): WebGLRenderbuffer {
+            var depthStencilBuffer: WebGLRenderbuffer = null;
+            var gl = this._gl;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_STENCIL, width, height);
+                } else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+                }
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+                if (samples > 1) {
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
+                } else {
+                    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+                }
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+
+            return depthStencilBuffer;
+        }
+
+        public updateRenderTargetTextureSampleCount(texture: WebGLTexture, samples: number): number {
+            if (this.webGLVersion < 2) {
+                return 1;
+            }
+
+            if (texture.samples === samples) {
+                return samples;
+            }
+
+            var gl = this._gl;
+
+            samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+
+            // Dispose previous render buffers
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
+            }
+
+            if (samples > 1) {
+                texture._MSAAFramebuffer = gl.createFramebuffer();
+                this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
+
+                var colorRenderbuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture._width, texture._height);
+
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+
+                texture._MSAARenderBuffer = colorRenderbuffer;
+            } else {
+                this.bindUnboundFramebuffer(texture._framebuffer);
+            }
+
+            texture.samples = samples;
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture._width, texture._height, samples);
+
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+
+            return samples;
         }
 
         public createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture {
@@ -2548,6 +2673,7 @@
             texture.references = 1;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samples = 1;
             texture.samplingMode = samplingMode;
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
@@ -2563,32 +2689,11 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            // Create the depth buffer
-            var depthStencilBuffer: WebGLRenderbuffer;
-
-            // Create the depth/stencil buffer
-            if (generateStencilBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
-            }
-            else if (generateDepthBuffer) {
-                depthStencilBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
-            }
-
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            // Manage attachments
-            if (generateStencilBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
-            else if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-            }
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
 
             // Mipmaps
             if (texture.generateMipMaps) {
@@ -2602,9 +2707,6 @@
             this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            if (generateDepthBuffer) {
-                texture._depthBuffer = depthStencilBuffer;
-            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
@@ -2634,6 +2736,9 @@
                 isKTX = true;
             }
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            if (isDDS) {
+                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            }
 
             if (isKTX) {
                 Tools.LoadFile(rootUrl, data => {
@@ -2643,7 +2748,7 @@
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    
+
                     ktx.uploadLevels(this._gl, !noMipmap);
 
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -2782,7 +2887,7 @@
 
             var onerror = () => {
                 scene._removePendingData(texture);
-                if (onError){
+                if (onError) {
                     onError();
                 }
             };
@@ -2829,7 +2934,7 @@
                         }
                     }
                 }
-                else {                    
+                else {
                     // Data are known to be in +X +Y +Z -X -Y -Z
                     for (let index = 0; index < facesIndex.length; index++) {
                         let faceData = rgbeDataArrays[index];
@@ -2918,8 +3023,16 @@
                 gl.deleteFramebuffer(texture._framebuffer);
             }
 
-            if (texture._depthBuffer) {
-                gl.deleteRenderbuffer(texture._depthBuffer);
+            if (texture._depthStencilBuffer) {
+                gl.deleteRenderbuffer(texture._depthStencilBuffer);
+            }
+
+            if (texture._MSAAFramebuffer) {
+                gl.deleteFramebuffer(texture._MSAAFramebuffer);
+            }
+
+            if (texture._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(texture._MSAARenderBuffer);
             }
 
             gl.deleteTexture(texture);
@@ -3198,6 +3311,14 @@
             }
         }
 
+        public releaseEffects() {
+            for (var name in this._compiledEffects) {
+                this._gl.deleteProgram(this._compiledEffects[name]._program);
+            }
+
+            this._compiledEffects = {};
+        }
+
         // Dispose
         public dispose(): void {
             this.hideLoadingUI();
@@ -3213,9 +3334,7 @@
             Engine.audioEngine.dispose();
 
             // Release effects
-            for (var name in this._compiledEffects) {
-                this._gl.deleteProgram(this._compiledEffects[name]._program);
-            }
+            this.releaseEffects();
 
             // Unbind
             this.unbindAllAttributes();
@@ -3247,14 +3366,15 @@
 
         // Loading screen
         public displayLoadingUI(): void {
-            this._loadingScreen.displayLoadingUI();
+            this.loadingScreen.displayLoadingUI();
         }
 
         public hideLoadingUI(): void {
-            this._loadingScreen.hideLoadingUI();
+            this.loadingScreen.hideLoadingUI();
         }
 
         public get loadingScreen(): ILoadingScreen {
+            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
 
@@ -3263,11 +3383,11 @@
         }
 
         public set loadingUIText(text: string) {
-            this._loadingScreen.loadingUIText = text;
+            this.loadingScreen.loadingUIText = text;
         }
 
         public set loadingUIBackgroundColor(color: string) {
-            this._loadingScreen.loadingUIBackgroundColor = color;
+            this.loadingScreen.loadingUIBackgroundColor = color;
         }
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
@@ -3330,10 +3450,10 @@
             return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_FLOAT);
         }
 
-        private _canRenderToHalfFloatFramebuffer(): boolean {       
+        private _canRenderToHalfFloatFramebuffer(): boolean {
             if (this._webGLVersion > 1) {
                 return this._caps.colorBufferFloat;
-            }     
+            }
             return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
         }
 
@@ -3342,7 +3462,7 @@
             let gl = this._gl;
 
             //clear existing errors
-            while(gl.getError() !== gl.NO_ERROR){}
+            while (gl.getError() !== gl.NO_ERROR) { }
 
             let successful = true;
 
@@ -3361,13 +3481,13 @@
             successful = successful && (gl.getError() === gl.NO_ERROR);
 
             //try render by clearing frame buffer's color buffer
-            if(successful){
+            if (successful) {
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 successful = successful && (gl.getError() === gl.NO_ERROR);
             }
 
             //try reading from frame to ensure render occurs (just creating the FBO is not sufficient to determine if rendering is supported)
-            if(successful){
+            if (successful) {
                 //in practice it's sufficient to just read from the backbuffer rather than handle potentially issues reading from the texture
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 let readFormat = gl.RGBA;
@@ -3383,12 +3503,12 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
             //clear accumulated errors
-            while(!successful && (gl.getError() !== gl.NO_ERROR)) { }
+            while (!successful && (gl.getError() !== gl.NO_ERROR)) { }
 
             return successful;
         }
 
-        private _getWebGLTextureType(type: number) : number {
+        private _getWebGLTextureType(type: number): number {
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 return this._gl.FLOAT;
             }
@@ -3400,7 +3520,7 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
-        private _getRGBABufferInternalSizedFormat(type: number) : number {
+        private _getRGBABufferInternalSizedFormat(type: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }

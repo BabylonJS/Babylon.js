@@ -28,6 +28,9 @@
             this._meshRank = rank;
             this._mesh = mesh;
 
+            if (rank < this._currentRank) {
+                this._currentRank = rank;
+            }
             if (rank > this._maxRank) {
                 this._maxRank = rank;
             }
@@ -38,23 +41,45 @@
         }
 
         public reduce(currentDefines: string): string {
-
-            var currentFallbacks = this._defines[this._currentRank];
-
-            for (var index = 0; index < currentFallbacks.length; index++) {
-                currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
-            }
-
-            if (this._mesh && this._currentRank === this._meshRank) {
+            // First we try to switch to CPU skinning
+            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
-            }
 
-            this._currentRank++;
+                var scene = this._mesh.getScene();
+                for (var index = 0; index < scene.meshes.length; index++) {
+                    var otherMesh = scene.meshes[index];
+
+                    if (otherMesh.material === this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
+                }
+            }
+            else {
+                var currentFallbacks = this._defines[this._currentRank];
+                if (currentFallbacks) {
+                    for (var index = 0; index < currentFallbacks.length; index++) {
+                        currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+                    }
+                }
+
+                this._currentRank++;
+            }
 
             return currentDefines;
         }
+    }
+
+    export class EffectCreationOptions {
+        public attributes: string[];
+        public uniformsNames: string[];
+        public samplers: string[];
+        public defines: string;
+        public fallbacks: EffectFallbacks;
+        public onCompiled: (effect: Effect) => void;
+        public onError: (effect: Effect, errors: string) => void;
+        public indexParameters: any;
     }
 
     export class Effect {
@@ -76,23 +101,40 @@
         private _uniforms: WebGLUniformLocation[];
         public _key: string;
         private _indexParameters: any;
+        private _fallbacks: EffectFallbacks;
 
         private _program: WebGLProgram;
         private _valueCache: { [key: string]: any } = {};
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
-            this._engine = engine;
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this.name = baseName;
-            this.defines = defines;
-            this._uniformsNames = uniformsNames.concat(samplers);
-            this._samplers = samplers;
-            this._attributesNames = attributesNames;
 
-            this.onError = onError;
-            this.onCompiled = onCompiled;
+            if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
+                var options = <EffectCreationOptions>attributesNamesOrOptions;
+                this._engine = <Engine>uniformsNamesOrEngine;
 
-            this._indexParameters = indexParameters;
+                this._attributesNames = options.attributes;
+                this._uniformsNames = options.uniformsNames.concat(options.samplers);
+                this._samplers = options.samplers;
+                this.defines = options.defines;
+                this.onError = options.onError;
+                this.onCompiled = options.onCompiled;
+                this._fallbacks = options.fallbacks;
+                this._indexParameters = options.indexParameters;                
+            } else {
+                this._engine = engine;
+                this.defines = defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
+                this._samplers = samplers;
+                this._attributesNames = (<string[]>attributesNamesOrOptions);
 
+                this.onError = onError;
+                this.onCompiled = onCompiled;
+
+                this._indexParameters = indexParameters;
+                this._fallbacks = fallbacks;
+            }
+        
             this.uniqueId = Effect._uniqueIdSeed++;
 
             var vertexSource;
@@ -124,7 +166,7 @@
                         this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, attributesNames, defines, fallbacks);
+                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks);
                                 });
                             });
                         });
@@ -300,6 +342,7 @@
             result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
+                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
                 result = result.replace(/texture2D\(/g, "texture(");
                 result = result.replace(/textureCube\(/g, "texture(");
@@ -348,7 +391,7 @@
                                 maxIndex = this._indexParameters[indexSplits[1]];
                             }
 
-                            for (var i = minIndex; i <= maxIndex; i++) {
+                            for (var i = minIndex; i < maxIndex; i++) {
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {
@@ -466,24 +509,15 @@
         }
 
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
-            var changed = false;
-            var cache: Matrix = this._valueCache[uniformName];
-            if (!cache || !(cache instanceof Matrix)) {
-                changed = true;
-                cache = new Matrix();
+            var cache = this._valueCache[uniformName];
+            var flag = matrix.updateFlag;
+            if (cache !== undefined && cache === flag) {
+                return false;
             }
 
-            var tm = cache.m;
-            var om = matrix.m;
-            for (var index = 0; index < 16; index++) {
-                if (tm[index] !== om[index]) {
-                    tm[index] = om[index];
-                    changed = true;
-                }
-            }
+            this._valueCache[uniformName] = flag;
 
-            this._valueCache[uniformName] = cache;
-            return changed;
+            return true;
         }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): boolean {

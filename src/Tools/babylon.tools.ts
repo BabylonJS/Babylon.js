@@ -1,4 +1,4 @@
-﻿﻿module BABYLON {
+﻿module BABYLON {
     export interface IAnimatable {
         animations: Array<Animation>;
     }
@@ -298,13 +298,13 @@
             }
         }
 
-        public static SetCorsBehavior(url: string, img: HTMLImageElement): string {
+        public static SetCorsBehavior(url: string, img: HTMLImageElement): void {
             if (Tools.CorsBehavior) {
                 switch (typeof (Tools.CorsBehavior)) {
                     case "function":
                         var result = Tools.CorsBehavior(url);
                         if (result) {
-                            return result;
+                            img.crossOrigin = result;
                         }
                         break;
                     case "string":
@@ -368,15 +368,15 @@
                 }
                 else {
                     var textureName = url.substring(5).toLowerCase();
-                    if (FilesInput.FilesTextures[textureName]) {
+                    if (FilesInput.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
                             try {
-                                blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
+                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName], { oneTimeOnly: true });
                             }
                             catch (ex) {
                                 // Chrome doesn't support oneTimeOnly parameter
-                                blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName]);
+                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
                             }
                             img.src = blobURL;
                         }
@@ -745,7 +745,7 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
-        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1): void {
             var width: number;
             var height: number;
 
@@ -792,6 +792,7 @@
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
+            texture.samples = samples;
 
             texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
@@ -1183,6 +1184,8 @@
      * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
      */
     export class PerfCounter {
+        public static Enabled = true;
+
         /**
          * Returns the smallest value ever
          */
@@ -1252,6 +1255,9 @@
          * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
          */
         public addCount(newCount: number, fetchResult: boolean) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._current += newCount;
             if (fetchResult) {
                 this._fetchResult();
@@ -1262,6 +1268,9 @@
          * Start monitoring this performance counter
          */
         public beginMonitoring() {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
             this._startMonitoringTime = Tools.Now;
         }
 
@@ -1270,6 +1279,10 @@
          * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
          */
         public endMonitoring(newFrame: boolean = true) {
+            if (!PerfCounter.Enabled) {
+                return;
+            }
+                        
             if (newFrame) {
                 this.fetchNewFrame();
             }

@@ -6,9 +6,6 @@ namespace BabylonExport.Entities
     public class BabylonMesh : BabylonAbstractMesh
     {
         [DataMember]
-        public string id { get; set; }
-
-        [DataMember]
         public string materialId { get; set; }
 
         [DataMember]

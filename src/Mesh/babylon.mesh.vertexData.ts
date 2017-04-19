@@ -14,6 +14,7 @@
     export class VertexData {
         public positions: number[] | Float32Array;
         public normals: number[] | Float32Array;
+        public tangents: number[] | Float32Array;
         public uvs: number[] | Float32Array;
         public uvs2: number[] | Float32Array;
         public uvs3: number[] | Float32Array;
@@ -34,6 +35,9 @@
                     break;
                 case VertexBuffer.NormalKind:
                     this.normals = data;
+                    break;
+                case VertexBuffer.TangentKind:
+                    this.tangents = data;
                     break;
                 case VertexBuffer.UVKind:
                     this.uvs = data;
@@ -118,6 +122,10 @@
                 meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
             }
 
+            if (this.tangents) {
+                meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
+            }
+
             if (this.uvs) {
                 meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
             }
@@ -175,6 +183,10 @@
 
             if (this.normals) {
                 meshOrGeometry.updateVerticesData(VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+            }
+
+            if (this.tangents) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.TangentKind, this.tangents, updateExtends, makeItUnique);
             }
 
             if (this.uvs) {
@@ -259,6 +271,22 @@
                     this.normals[index + 2] = transformed.z;
                 }
             }
+
+            if (this.tangents) {
+                var tangent = Vector4.Zero();
+                var tangentTransformed = Vector4.Zero();
+
+                for (index = 0; index < this.tangents.length; index += 4) {
+                    Vector4.FromArrayToRef(this.tangents, index, tangent);
+
+                    Vector4.TransformNormalToRef(tangent, matrix, tangentTransformed);
+                    this.tangents[index] = tangentTransformed.x;
+                    this.tangents[index + 1] = tangentTransformed.y;
+                    this.tangents[index + 2] = tangentTransformed.z;
+                    this.tangents[index + 3] = tangentTransformed.w;
+                }
+            }
+
             return this;
         }
 
@@ -281,6 +309,7 @@
 
             this.positions = this._mergeElement(this.positions, other.positions);
             this.normals = this._mergeElement(this.normals, other.normals);
+            this.tangents = this._mergeElement(this.tangents, other.tangents);
             this.uvs = this._mergeElement(this.uvs, other.uvs);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
@@ -337,6 +366,10 @@
 
             if (this.normals) {
                 serializationObject.normals = this.normals;
+            }
+
+            if (this.tangents) {
+                serializationObject.tangents = this.tangents;
             }
 
             if (this.uvs) {
@@ -416,6 +449,10 @@
                 result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared);
             }
 
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                result.tangents = meshOrGeometry.getVerticesData(VertexBuffer.TangentKind, copyWhenShared);
+            }
+
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared);
             }
@@ -468,7 +505,7 @@
         /**
          * Creates the vertexData of the Ribbon.  
          */
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
@@ -477,6 +514,8 @@
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var customUV = options.uvs;
+            var customColors = options.colors;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -507,7 +546,7 @@
 
             // positions and horizontal distances (u)
             var idc: number = 0;
-            var closePathCorr: number = (closePath) ? 1 : 0;
+            var closePathCorr: number = (closePath) ? 1 : 0;    // the final index will be +1 if closePath
             var path: Vector3[];
             var l: number;
             minlg = pathArray[0].length;
@@ -532,7 +571,7 @@
                     j++;
                 }
 
-                if (closePath) {
+                if (closePath) {        // an extra hidden vertex is added in the "positions" array
                     j--;
                     positions.push(path[0].x, path[0].y, path[0].z);
                     vectlg = path[j].subtract(path[0]).length();
@@ -586,14 +625,21 @@
             // uvs
             var u: number;
             var v: number;
-            for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
-                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
-                    if (invertUV) {
-                        uvs.push(v, u);
-                    } else {
-                        uvs.push(u, v);
+            if (customUV) {
+                for (p = 0; p < customUV.length; p++) {
+                    uvs.push(customUV[p].x, customUV[p].y);
+                }
+            }
+            else {
+                for (p = 0; p < pathArray.length; p++) {
+                    for (i = 0; i < minlg + closePathCorr; i++) {
+                        u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                        v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                        if (invertUV) {
+                            uvs.push(v, u);
+                        } else {
+                            uvs.push(u, v);
+                        }
                     }
                 }
             }
@@ -633,7 +679,7 @@
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
 
-            if (closePath) {
+            if (closePath) {        // update both the first and last vertex normals to their average value
                 var indexFirst: number = 0;
                 var indexLast: number = 0;
                 for (p = 0; p < pathArray.length; p++) {
@@ -656,13 +702,30 @@
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
+            // Colors
+            if (customColors) {
+                var colors = new Float32Array(customColors.length * 4);
+                for (var c = 0; c < customColors.length; c++) {
+                    colors[c * 4] = customColors[c].r;
+                    colors[c * 4 + 1] = customColors[c].g;
+                    colors[c * 4 + 2] = customColors[c].b;
+                    colors[c * 4 + 3] = customColors[c].a;
+                }
+            }
+
             // Result
             var vertexData = new VertexData();
-
+            var positions32 = new Float32Array(positions);
+            var normals32 = new Float32Array(normals);
+            var uvs32 = new Float32Array(uvs);
+            
             vertexData.indices = indices;
-            vertexData.positions = positions;
-            vertexData.normals = normals;
-            vertexData.uvs = uvs;
+            vertexData.positions = positions32;
+            vertexData.normals = normals32;
+            vertexData.uvs = uvs32;
+            if (customColors) {
+                vertexData.set(colors, VertexBuffer.ColorKind);
+            }
 
             if (closePath) {
                 (<any>vertexData)._idx = idx;
@@ -2062,7 +2125,7 @@
          * bbSize : optional bounding box size data, required for facetPartitioning computation
          * bInfo : optional bounding info, required for facetPartitioning computation
          */
-        public static ComputeNormals(positions: any, indices: any, normals: any, 
+        public static ComputeNormals(positions: any, indices: any, normals: any,
             options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any}): void {
 
             // temporary scalar variables
@@ -2096,7 +2159,7 @@
             }
 
             // facetPartitioning reinit if needed
-            if (computeFacetPartitioning) {  
+            if (computeFacetPartitioning) {
                 var ox = 0;                 // X partitioning index for facet position
                 var oy = 0;                 // Y partinioning index for facet position
                 var oz = 0;                 // Z partinioning index for facet position
@@ -2122,7 +2185,7 @@
                 var subSq = options.subDiv.max * options.subDiv.max;
                 options.facetPartitioning.length = 0;
             }
-        
+
             // reset the normals
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
@@ -2141,7 +2204,7 @@
                 v2z = v2x + 2;
                 v3x = indices[index * 3 + 2] * 3;
                 v3y = v3x + 1;
-                v3z = v3x + 2;        
+                v3z = v3x + 2;
 
                 p1p2x = positions[v1x] - positions[v2x];          // compute two vectors per facet : p1p2 and p3p2
                 p1p2y = positions[v1y] - positions[v2y];
@@ -2152,7 +2215,7 @@
                 p3p2z = positions[v3z] - positions[v2z];
 
                 // compute the face normal with the cross product
-                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;            
+                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;
                 faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
                 faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
                 // normalize this normal and store it in the array facetData
@@ -2163,7 +2226,7 @@
                 faceNormalz /= length;
 
                 if (computeFacetNormals) {
-                    options.facetNormals[index].x = faceNormalx;                                  
+                    options.facetNormals[index].x = faceNormalx;
                     options.facetNormals[index].y = faceNormaly;
                     options.facetNormals[index].z = faceNormalz;
                 }
@@ -2190,7 +2253,7 @@
                     b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
                     b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
-                    
+
                     block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
                     block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
                     block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
@@ -2210,7 +2273,7 @@
                         options.facetPartitioning[block_idx_v3].push(index);
                     }
                     if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
-                        options.facetPartitioning[block_idx_o].push(index); 
+                        options.facetPartitioning[block_idx_o].push(index);
                     }
                 }
 
@@ -2313,6 +2376,12 @@
             var normals = parsedVertexData.normals;
             if (normals) {
                 vertexData.set(normals, VertexBuffer.NormalKind);
+            }
+
+            // tangents
+            var tangents = parsedVertexData.tangents;
+            if (tangents) {
+                vertexData.set(tangents, VertexBuffer.TangentKind);
             }
 
             // uvs

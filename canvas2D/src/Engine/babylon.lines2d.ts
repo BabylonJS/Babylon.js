@@ -315,9 +315,6 @@
         }
 
         protected updateLevelBoundingInfo(): boolean {
-            if (!this._size) {
-                return false;
-            }
             if (!this._boundingMin) {
                 this._computeLines2D();
             }
@@ -336,6 +333,7 @@
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -380,6 +378,7 @@
             scaleX                ?: number,
             scaleY                ?: number,
             dontInheritParentScale?: boolean,
+            alignToPixel          ?: boolean,
             opacity               ?: number,
             zOrder                ?: number, 
             origin                ?: Vector2,
@@ -422,8 +421,6 @@
             this._fillIB   = null;
             this._borderVB = null;
             this._borderIB = null;
-
-            this._size = Size.Zero();
 
             this._boundingMin = null;
             this._boundingMax = null;
@@ -1152,12 +1149,12 @@
                 let pta = this._primTriArray;
                 let l = this.closed ? pl + 1 : pl;
 
-                this.transformPointWithOriginToRef(contour[0], null, Lines2D._prevA);
-                this.transformPointWithOriginToRef(contour[1], null, Lines2D._prevB);
+                Lines2D._prevA.copyFrom(contour[0]);
+                Lines2D._prevB.copyFrom(contour[1]);
                 let si = 0;
                 for (let i = 1; i < l; i++) {
-                    this.transformPointWithOriginToRef(contour[(i % pl) * 2 + 0], null, Lines2D._curA);
-                    this.transformPointWithOriginToRef(contour[(i % pl) * 2 + 1], null, Lines2D._curB);
+                    Lines2D._curA.copyFrom(contour[(i % pl) * 2 + 0]);
+                    Lines2D._curB.copyFrom(contour[(i % pl) * 2 + 1]);
 
                     pta.storeTriangle(si++, Lines2D._prevA, Lines2D._prevB, Lines2D._curA);
                     pta.storeTriangle(si++, Lines2D._curA,  Lines2D._prevB, Lines2D._curB);
@@ -1173,15 +1170,15 @@
                     for (let i = 0; i < l; i += 3) {
                         Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
                         Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
-                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
+                        Lines2D._curB.copyFrom(Lines2D._curA);
 
                         Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
                         Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
-                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
+                        Lines2D._prevA.copyFrom(Lines2D._curA);
 
                         Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
                         Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
-                        this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
+                        Lines2D._prevB.copyFrom(Lines2D._curA);
 
                         pta.storeTriangle(si++, Lines2D._prevA, Lines2D._prevB, Lines2D._curB);
                     }
@@ -1200,8 +1197,16 @@
             }
 
             let bs = this._boundingMax.subtract(this._boundingMin);
+
+            // If the size is not size we were computing the first pass to determine the size took by the primitive
+            if (!this._size) {
+                // Set the size and compute a second time to consider the size while computing the points using the origin
+                this._size = new Size(bs.x, bs.y);
+                this._updatePositioningState();
+            }
             this._size.width = bs.x;
             this._size.height = bs.y;
+            this._actualSize = null;
         }
 
         public get size(): Size {

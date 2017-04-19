@@ -1,8 +1,6 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    var maxSimultaneousLights = 4;
-
     class TriPlanarMaterialDefines extends MaterialDefines {
         public DIFFUSEX = false;
         public DIFFUSEY = false;
@@ -30,28 +28,40 @@ module BABYLON {
         }
     }
 
-    export class TriPlanarMaterial extends Material {
+    export class TriPlanarMaterial extends PushMaterial {
         @serializeAsTexture()
         public mixTexture: BaseTexture;
         
-        @serializeAsTexture()
-        public diffuseTextureX: Texture;
+        @serializeAsTexture("diffuseTextureX")
+        private _diffuseTextureX: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public diffuseTextureX: BaseTexture;
         
-        @serializeAsTexture()
-        public diffuseTextureY: Texture;
+        @serializeAsTexture("diffuseTexturY")
+        private _diffuseTextureY: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public diffuseTextureY: BaseTexture;        
         
-        @serializeAsTexture()
-        public diffuseTextureZ: Texture;
+        @serializeAsTexture("diffuseTextureZ")
+        private _diffuseTextureZ: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public diffuseTextureZ: BaseTexture;        
         
-        @serializeAsTexture()
-        public normalTextureX: Texture;
+        @serializeAsTexture("normalTextureX")
+        private _normalTextureX: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public normalTextureX: BaseTexture;        
         
-        @serializeAsTexture()
-        public normalTextureY: Texture;
+        @serializeAsTexture("normalTextureY")
+        private _normalTextureY: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public normalTextureY: BaseTexture;        
         
-        @serializeAsTexture()
-        public normalTextureZ: Texture;
-        
+        @serializeAsTexture("normalTextureZ")
+        private _normalTextureZ: BaseTexture;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public normalTextureZ: BaseTexture;        
+               
         @serialize()
         public tileSize: number = 1;
         
@@ -64,22 +74,21 @@ module BABYLON {
         @serialize()
         public specularPower = 64;
         
-        @serialize()
-        public disableLighting = false;
+        @serialize("disableLighting")
+        private _disableLighting = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public disableLighting: boolean;   
         
-        @serialize()
-        public maxSimultaneousLights = 4;
+        @serialize("maxSimultaneousLights")
+        private _maxSimultaneousLights = 4;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public maxSimultaneousLights: number; 
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _renderId: number;
 
-        private _defines = new TriPlanarMaterialDefines();
-        private _cachedDefines = new TriPlanarMaterialDefines();
-
         constructor(name: string, scene: Scene) {
             super(name, scene);
-
-            this._cachedDefines.BonesPerMesh = -1;
         }
 
         public needAlphaBlending(): boolean {
@@ -95,159 +104,108 @@ module BABYLON {
         }
 
         // Methods   
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (!mesh) {
-                return true;
-            }
-
-            if (this._defines.INSTANCES !== useInstances) {
-                return false;
-            }
-
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
 
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new TriPlanarMaterialDefines();
+            }
+
+            var defines = <TriPlanarMaterialDefines>subMesh._materialDefines;
             var scene = this.getScene();
 
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             var engine = scene.getEngine();
-            var needNormals = false;
-
-            this._defines.reset();
 
             // Textures
-            if (scene.texturesEnabled) {
-                if (StandardMaterial.DiffuseTextureEnabled) {
-                    var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
-                    var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
-                    
-                    for (var i=0; i < textures.length; i++) {
-                        if (textures[i]) {
-                            if (!textures[i].isReady()) {
-                                return false;
-                            } else {
-                                this._defines[textureDefines[i]] = true;
+            if (defines._areTexturesDirty) {                
+                if (scene.texturesEnabled) {
+                    if (StandardMaterial.DiffuseTextureEnabled) {
+                        var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
+                        var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
+                        
+                        for (var i=0; i < textures.length; i++) {
+                            if (textures[i]) {
+                                if (!textures[i].isReady()) {
+                                    return false;
+                                } else {
+                                    defines[textureDefines[i]] = true;
+                                }
+                            }
+                        }
+                    }
+                    if (StandardMaterial.BumpTextureEnabled) {
+                        var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
+                        var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
+                        
+                        for (var i=0; i < textures.length; i++) {
+                            if (textures[i]) {
+                                if (!textures[i].isReady()) {
+                                    return false;
+                                } else {
+                                    defines[textureDefines[i]] = true;
+                                }
                             }
                         }
                     }
                 }
-                if (StandardMaterial.BumpTextureEnabled) {
-                    var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
-                    var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
-                    
-                    for (var i=0; i < textures.length; i++) {
-                        if (textures[i]) {
-                            if (!textures[i].isReady()) {
-                                return false;
-                            } else {
-                                this._defines[textureDefines[i]] = true;
-                            }
-                        }
-                    }
-                }
             }
 
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-
-            if (engine.getAlphaTesting()) {
-                this._defines.ALPHATEST = true;
-            }
-
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
+            // Misc.
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
             // Lights
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
-            }
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
+            // Values that need to be evaluated on every frame
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            
             // Attribs
-            if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
-                if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    this._defines.VERTEXCOLOR = true;
-
-                    if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true;
-                    }
-                }
-                
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                }
-
-                // Instances
-                if (useInstances) {
-                    this._defines.INSTANCES = true;
-                }
-            }
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
-
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();             
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
+                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
              
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 
-                if (this._defines.NORMAL) {
+                if (defines.NORMAL) {
                     attribs.push(VertexBuffer.NormalKind);
                 }
 
-                if (this._defines.VERTEXCOLOR) {
+                if (defines.VERTEXCOLOR) {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
                 // Legacy browser patch
                 var shaderName = "triplanar";
-                var join = this._defines.toString();
+                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "mBones",
@@ -258,96 +216,92 @@ module BABYLON {
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
                 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
                 
-                this._effect = scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights }), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new TriPlanarMaterialDefines();
-                }
-
-                this._defines.cloneTo(mesh._materialDefines);
-            }
-
+            
             return true;
         }
 
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._effect.setMatrix("world", world);
-        }
-
-        public bind(world: Matrix, mesh?: Mesh): void {
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
+
+            var defines = <TriPlanarMaterialDefines>subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             
-            this._effect.setFloat("tileSize", this.tileSize);
+            this._activeEffect.setFloat("tileSize", this.tileSize);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
                 if (this.diffuseTextureX) {
-                    this._effect.setTexture("diffuseSamplerX", this.diffuseTextureX);
+                    this._activeEffect.setTexture("diffuseSamplerX", this.diffuseTextureX);
                 }
                 if (this.diffuseTextureY) {
-                    this._effect.setTexture("diffuseSamplerY", this.diffuseTextureY);
+                    this._activeEffect.setTexture("diffuseSamplerY", this.diffuseTextureY);
                 }
                 if (this.diffuseTextureZ) {
-                    this._effect.setTexture("diffuseSamplerZ", this.diffuseTextureZ);
+                    this._activeEffect.setTexture("diffuseSamplerZ", this.diffuseTextureZ);
                 }
                 if (this.normalTextureX) {
-                    this._effect.setTexture("normalSamplerX", this.normalTextureX);
+                    this._activeEffect.setTexture("normalSamplerX", this.normalTextureX);
                 }
                 if (this.normalTextureY) {
-                    this._effect.setTexture("normalSamplerY", this.normalTextureY);
+                    this._activeEffect.setTexture("normalSamplerY", this.normalTextureY);
                 }
                 if (this.normalTextureZ) {
-                    this._effect.setTexture("normalSamplerZ", this.normalTextureZ);
+                    this._activeEffect.setTexture("normalSamplerZ", this.normalTextureZ);
                 }
                 // Clip plane
-                MaterialHelper.BindClipPlane(this._effect, scene);
+                MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+            this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             
-            if (this._defines.SPECULARTERM) {
-                this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            if (defines.SPECULARTERM) {
+                this._activeEffect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
             }
 
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
-            super.bind(world, mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         public getAnimatables(): IAnimatable[] {

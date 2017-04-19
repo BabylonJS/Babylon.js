@@ -7,12 +7,12 @@
   ],
   "name": "babylonjs",
   "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-  "version": "2.5.0",
+  "version": "3.0.0-alpha",
   "repository": {
     "type": "git",
     "url": "https://github.com/BabylonJS/Babylon.js.git"
   },
-  "main": "babylon.js",
+  "main": "babylon.max.js",
   "files": [
     "babylon.d.ts",
     "babylon.module.d.ts",
@@ -21,6 +21,7 @@
     "babylon.noworker.js",
     "babylon.core.js",
     "babylon.canvas2d.js",
+    "babylon.canvas2d.d.ts",
     "Oimo.js",
     "package.json"
   ],

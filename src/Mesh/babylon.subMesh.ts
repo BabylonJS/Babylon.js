@@ -15,6 +15,22 @@
         public _distanceToCamera: number;
         public _id: number;
 
+        public _materialDefines: MaterialDefines;
+        public _materialEffect: Effect;
+        private _currentMaterial: Material;
+
+        public get effect(): Effect {
+            return this._materialEffect;
+        }
+
+        public setEffect(effect: Effect, defines?: MaterialDefines) {
+            if (this._materialEffect === effect) {
+                return;
+            }
+            this._materialDefines = defines;
+            this._materialEffect = effect;
+        }
+
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;
@@ -74,9 +90,18 @@
         public getMaterial(): Material {
             var rootMaterial = this._renderingMesh.material;
 
-            if (rootMaterial && rootMaterial instanceof MultiMaterial) {
+            if (rootMaterial && (<MultiMaterial>rootMaterial).getSubMaterial) {
                 var multiMaterial = <MultiMaterial>rootMaterial;
-                return multiMaterial.getSubMaterial(this.materialIndex);
+                var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
+
+                if (this._currentMaterial !== effectiveMaterial) {
+                    this._currentMaterial = effectiveMaterial;
+                    if (this._materialDefines) {
+                        this._materialDefines.markAllAsDirty();
+                    }
+                }
+
+                return effectiveMaterial;
             }
 
             if (!rootMaterial) {

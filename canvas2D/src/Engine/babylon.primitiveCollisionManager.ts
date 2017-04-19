@@ -640,7 +640,7 @@
             });
 
             if (!this._AABBRenderPrim) {
-                this._AABBRenderPrim = new WireFrame2D([g], { parent: this._owner, alignToPixel: false, id: "###DEBUG PCM AABB###" });
+                this._AABBRenderPrim = new WireFrame2D([g], { parent: this._owner, alignToPixel: true, id: "###DEBUG PCM AABB###" });
             } else {
                 this._AABBRenderPrim.wireFrameGroups.set("main", g);
                 this._AABBRenderPrim.wireFrameGroupsDirty();

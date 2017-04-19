@@ -124,7 +124,7 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
@@ -177,6 +177,10 @@ void main(void) {
 #endif
 
 #include<bumpFragment>
+
+#ifdef TWOSIDEDLIGHTING
+	normalW = gl_FrontFacing ? normalW : -normalW;
+#endif
 
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
@@ -368,12 +372,11 @@ void main(void) {
 
 #ifdef SPECULARTERM
 	vec3 finalSpecular = specularBase * specularColor;
+	#ifdef SPECULAROVERALPHA
+		alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
+	#endif
 #else
 	vec3 finalSpecular = vec3(0.0);
-#endif
-
-#ifdef SPECULAROVERALPHA
-	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
 #endif
 
 #ifdef REFLECTIONOVERALPHA
