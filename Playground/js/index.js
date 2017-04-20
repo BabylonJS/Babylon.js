@@ -212,6 +212,7 @@
             document.getElementById("saveFormTags").value = '';
             document.getElementById("saveFormTags").readOnly = false;
             document.getElementById("saveFormButtons").style.display = "block";
+            document.getElementById("saveFormButtonOk").style.display = "inline-block";
             document.getElementById("saveMessage").style.display = "block";
             // document.getElementById("metadataButton").style.display = "none";
         };
