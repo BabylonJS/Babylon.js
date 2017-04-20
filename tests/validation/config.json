@@ -103,12 +103,37 @@
       "scriptToRun": "/Demos/Fresnel/fresnel.js",
       "functionToCall": "CreateFresnelTestScene",
       "referenceImage": "fresnel.png"
+    }, 
+    {
+      "title": "Highlights",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Highlights/highlights.js",
+      "functionToCall": "CreateHighlightsScene",
+      "referenceImage": "highlights.png",
+      "rootPath": "/Demos/Highlights/",
+      "replaceUrl": "room.hdr, reflectivity.png, albedo.png"
     },
     {
       "title": "Lines",
       "scriptToRun": "/Demos/Lines/lines.js",
       "functionToCall": "CreateLinesTestScene",
-      "referenceImage": "lines.png"
+      "referenceImage": "lines.png",
+      "replace": "updateVerticesDataDirectly, updateVerticesData"
+    },
+    {
+      "title": "Bones",
+      "scriptToRun": "/Demos/Bones/bones.js",
+      "functionToCall": "CreateBonesTestScene",
+      "referenceImage": "bones.png",
+      "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "Lens",
+      "scriptToRun": "/Demos/Lens/lensFlares.js",
+      "functionToCall": "CreateLensFlaresTestScene",
+      "referenceImage": "lens.png",
+      "rootPath": "/Demos/Lens/",
+      "replaceUrl": "lens4.png, lens5.png"
     }
   ]
 }
