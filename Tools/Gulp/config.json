@@ -20,7 +20,8 @@
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
         ],
-        "minimal": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
+        "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
+        "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
     },
     "workloads" :
     {
@@ -673,7 +674,12 @@
                 "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon" : [
-                "core"
+                "shaderMaterial",
+                "additionalMeshes"
+            ],
+            "shaders" : [
+                "color.vertex",
+                "color.fragment"
             ]
         },
         "morphTargets" : 
@@ -768,7 +774,18 @@
                 "../../src/Layer/babylon.highlightlayer.js"
             ],
             "dependUpon" : [
-                "core"
+                "shaderMaterial"
+            ],
+            "shaders" : [
+                "glowBlurPostProcess.fragment",
+                "glowMapGeneration.fragment",
+                "glowMapGeneration.vertex",
+                "glowMapMerge.fragment",
+                "glowMapMerge.vertex",
+                "line.vertex",
+                "line.fragment",
+                "outline.vertex",
+                "outline.fragment"                
             ]
         }, 
         "assetsManager" : 
