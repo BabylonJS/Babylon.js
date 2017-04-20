@@ -91,7 +91,7 @@
 
         var onScriptClick = function (evt) {
             loadScriptFromIndex(evt.target.scriptLinkIndex);
-        }
+        };
 
         var loadScriptsList = function () {
             var xhr = new XMLHttpRequest();
@@ -111,6 +111,8 @@
                             a.innerHTML = (index + 1) + " - " + scripts[index];
                             a.scriptLinkIndex = index + 1;
                             a.onclick = onScriptClick;
+                            option.scriptLinkIndex = index + 1;
+                            option.onclick = onScriptClick;
 
                             option.appendChild(a);
                             ul.appendChild(option);
