@@ -72,18 +72,19 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(resultCanvas, result, renderImage, index, waitRing) {
+function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
+    if (!test.onlyVisual) {
 
-    if (compare(renderData, resultCanvas) !== 0) {
-        result.classList.add("failed");
-        result.innerHTML = "×";
-        console.log("failed");
-    } else {
-        result.innerHTML = "✔";
-        console.log("validated");
+        if (compare(renderData, resultCanvas) !== 0) {
+            result.classList.add("failed");
+            result.innerHTML = "×";
+            console.log("failed");
+        } else {
+            result.innerHTML = "✔";
+            console.log("validated");
+        }
     }
-
     waitRing.classList.add("hidden");
 
     renderImage.src = saveRenderImage(renderData, canvas);
@@ -103,7 +104,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
             if (renderCount === 0) {
                 engine.stopRenderLoop();
-                evaluate(resultCanvas, result, renderImage, index, waitRing);
+                evaluate(test, resultCanvas, result, renderImage, index, waitRing);
             }
         });
 
@@ -181,7 +182,9 @@ function runTest(index) {
                 request.onreadystatechange = null; 
 
                 var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
-                var scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
                 if (test.replace) {
                     var split = test.replace.split(",");
