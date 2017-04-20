@@ -152,7 +152,7 @@ interface Screen {
 }
 
 interface HTMLMediaElement {
-    crossOrigin: string;
+    crossOrigin: string | null;
 }
 
 interface Math {
