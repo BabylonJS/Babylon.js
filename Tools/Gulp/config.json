@@ -16,7 +16,7 @@
                 "pointLight", "directionalLight", "spotLight", "animations", "actions", "sprites", "picking", "collisions",
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
-                "additionalCameras", "postProcesses", "renderingPipeline", "depthRenderer", "additionalPostProcesses",
+                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "additionalPostProcesses",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
@@ -523,7 +523,6 @@
         "additionalPostProcesses" : 
         {
             "files": [
-                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
                 "../../src/PostProcess/babylon.blurPostProcess.js",
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
                 "../../src/PostProcess/babylon.blackAndWhitePostProcess.js",
@@ -531,7 +530,6 @@
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
-                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
                 "../../src/PostProcess/babylon.tonemapPostProcess.js",
                 "../../src/PostProcess/babylon.displayPassPostProcess.js"                                
@@ -540,7 +538,6 @@
                 "postProcesses"
             ], 
             "shaders" : [
-                "anaglyph.fragment",
                 "blur.fragment",
                 "refraction.fragment",
                 "blackAndWhite.fragment",
@@ -549,7 +546,6 @@
                 "fxaa.fragment",
                 "volumetricLightScattering.fragment",
                 "volumetricLightScatteringPass.fragment",
-                "stereoscopicInterlace.fragment",
                 "colorCorrection.fragment",
                 "tonemap.fragment",
                 "displayPass.fragment"
@@ -561,15 +557,23 @@
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPass.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js",
-                "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js",           
+                "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js"
+            ],
+            "dependUpon" : [
+                "postProcesses"
+            ]
+        },                         
+        "additionalRenderingPipeline" : 
+        {
+            "files": [
                 "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
                 "../../src/PostProcess/babylon.lensRenderingPipeline.js",
                 "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
             ],
             "dependUpon" : [
-                "depthRenderer",
-                "postProcesses"
+                "renderingPipeline", 
+                "depthRenderer"
             ], 
             "shaders" : [
                 "ssao.fragment",
@@ -652,8 +656,6 @@
         {
             "files": [
                 "../../src/Tools/babylon.tga.js",
-                "../../src/Physics/babylon.physicsImpostor.js",
-                "../../src/Physics/babylon.physicsEngine.js",
                 "../../src/Tools/babylon.dds.js",
                 "../../src/Tools/babylon.khronosTextureContainer.js"
             ],
@@ -718,6 +720,8 @@
         {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
+                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
+                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
                 "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
@@ -728,6 +732,11 @@
             ],
             "dependUpon" : [
                 "core"
+            ],
+            "shaders" :[
+                "anaglyph.fragment",
+                "stereoscopicInterlace.fragment",
+                "vrDistortionCorrection.fragment"
             ]
         },
         "virtualJoystick" : 
