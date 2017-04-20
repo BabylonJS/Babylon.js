@@ -1158,8 +1158,12 @@
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 var uniformBuffers = ["Material", "Scene"];
 
-                ColorCurves.PrepareUniforms(uniforms); 
-                ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
+                if (this._defines.CAMERACOLORCURVES) {
+                    ColorCurves.PrepareUniforms(uniforms);
+                }
+                if (this._defines.CAMERACOLORGRADING) {
+                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+é                }
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
                     uniformBuffersNames: uniformBuffers,

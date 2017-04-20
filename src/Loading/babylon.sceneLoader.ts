@@ -146,7 +146,7 @@
                 return;
             }
 
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+            var directLoad =SceneLoader._getDirectLoad(sceneFilename);
 
             var loadingToken = {};
             scene._addPendingData(loadingToken);
