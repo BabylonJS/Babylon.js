@@ -31242,7 +31242,7 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet, disableUbo);
+                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 light._uniformBuffer.update();
                 lightIndex++;
@@ -31737,10 +31737,16 @@ var BABYLON;
             if (this.getScene().getEngine().webGLVersion === 1) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
             }
+            else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            }
         };
         Material.prototype.bindViewProjection = function (effect) {
             if (this.getScene().getEngine().webGLVersion === 1) {
                 effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            }
+            else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         };
         Material.prototype._afterBind = function (mesh) {
@@ -32519,12 +32525,6 @@ var BABYLON;
                     defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
-                var onCompiled = function (effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
-                    }
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -32532,7 +32532,7 @@ var BABYLON;
                     samplers: samplers,
                     defines: join,
                     fallbacks: fallbacks,
-                    onCompiled: onCompiled,
+                    onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);

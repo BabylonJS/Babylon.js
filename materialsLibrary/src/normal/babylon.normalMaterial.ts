@@ -186,23 +186,38 @@ module BABYLON {
 
                 var shaderName = "normal";
                 var join = defines.toString();
+
+                var uniformBuffers = [];
+                for (var i = 0; i < 4; i++) {
+                    if (defines["LIGHT" + i]) {
+                        uniformBuffers.push("Light" + i);
+                    }
+                }
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                        "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
-                    ],
-                    ["diffuseSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: 4 }), defines);
+                    <EffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                            "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
+                            "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
+                            "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
+                            "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                            "vFogInfos", "vFogColor", "pointSize",
+                            "vDiffuseInfos", 
+                            "mBones",
+                            "vClipPlane", "diffuseMatrix",
+                            "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
+                        ],
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: ["diffuseSampler",
+                            "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
+                        ],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 }
+                    }, engine), defines);
             }
             if (!subMesh.effect.isReady()) {
                 return false;
