@@ -13,8 +13,14 @@ module BABYLON {
         public gaussianBlurVPostProcesses: PostProcess[] = [];
         public textureAdderPostProcess: PostProcess = null;
 
+        public luminancePostProcess: PostProcess = null;
+        public luminanceDownSamplePostProcesses: PostProcess[] = [];
+        public hdrPostProcess: PostProcess = null;
+
         public textureAdderFinalPostProcess: PostProcess = null;
         public lensFlareFinalPostProcess: PostProcess = null;
+
+        public hdrFinalPostProcess: PostProcess = null;
 
         public lensFlarePostProcess: PostProcess = null;
         public lensFlareComposePostProcess: PostProcess = null;
@@ -40,6 +46,13 @@ module BABYLON {
         public exposure: number = 1.0;
         @serializeAsTexture("lensTexture")
         public lensTexture: Texture = null;
+
+        @serialize()
+        public hdrMinimumLuminance: number = 1.0;
+        @serialize()
+        public hdrDecreaseRate: number = 0.5;
+        @serialize()
+        public hdrIncreaseRate: number = 0.5;
 
         @serializeAsTexture("lensColorTexture")
         public lensColorTexture: Texture = null;
@@ -69,21 +82,24 @@ module BABYLON {
         * Private members
         */
         private _scene: Scene;
-
         private _depthRenderer: DepthRenderer = null;
         private _currentDepthOfFieldSource: PostProcess = null;
+
+        private _currentHDRSource: PostProcess = null;
+        private _hdrCurrentLuminance: number = 1.0;
 
         // Getters and setters
         private _depthOfFieldEnabled: boolean = true;
         private _lensFlareEnabled: boolean = true;
+        private _hdrEnabled: boolean = true;
 
         public set DepthOfFieldEnabled(enabled: boolean) {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 1;
 
             if (enabled && !this._depthOfFieldEnabled) {
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
                 this._depthRenderer = this._scene.enableDepthRenderer();
             }
             else if (!enabled && this._depthOfFieldEnabled) {
@@ -104,22 +120,20 @@ module BABYLON {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 2;
 
             if (enabled && !this._lensFlareEnabled) {
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
-
-                this._setDepthOfFieldSavePostProcess("HDRPostLensFlareDepthOfFieldSource");
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._scene.cameras);
             }
             else if (!enabled && this._lensFlareEnabled) {
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._cameras);
-                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._cameras);
-
-                this._setDepthOfFieldSavePostProcess("HDRBaseDepthOfFieldSource");
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareShift", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._scene.cameras);
             }
 
             this._lensFlareEnabled = enabled;
@@ -128,6 +142,32 @@ module BABYLON {
         @serialize()
         public get LensFlareEnabled(): boolean {
             return this._lensFlareEnabled;
+        }
+
+        public set HDREnabled(enabled: boolean) {
+            if (enabled && !this._hdrEnabled) {
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLuminance", this._scene.cameras);
+                for (var i = 0; i < this.luminanceDownSamplePostProcesses.length; i++) {
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLuminanceDownSample" + i, this._scene.cameras);
+                }
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDR", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRPostHDReDepthOfFieldSource", this._scene.cameras);
+            }
+            else if (!enabled && this._hdrEnabled) {
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLuminance", this._scene.cameras);
+                for (var i = 0; i < this.luminanceDownSamplePostProcesses.length; i++) {
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLuminanceDownSample" + i, this._scene.cameras);
+                }
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDR", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostHDReDepthOfFieldSource", this._scene.cameras);
+            }
+
+            this._hdrEnabled = enabled;
+        }
+
+        @serialize()
+        public get HDREnabled(): boolean {
+            return this._hdrEnabled;
         }
 
         /**
@@ -181,6 +221,16 @@ module BABYLON {
             this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
 
+            // Create luminance
+            this._createLuminancePostProcesses(scene);
+
+            // Create HDR
+            this._createHdrPostProcess(scene, ratio);
+
+            // Create depth-of-field source post-process post lens-flare and disable it now
+            this.hdrFinalPostProcess = new PostProcess("HDRPostHDReDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostHDReDepthOfFieldSource", () => { return this.hdrFinalPostProcess; }, true));
+
             // Create gaussian blur used by depth-of-field
             this._createGaussianBlurPostProcesses(scene, ratio / 2, 5, "depthOfFieldBlurWidth");
 
@@ -197,20 +247,7 @@ module BABYLON {
             // Deactivate
             this.LensFlareEnabled = false;
             this.DepthOfFieldEnabled = false;
-        }
-
-        // Sets depth-of-field save post-process
-        private _setDepthOfFieldSavePostProcess(name: string): void {
-            
-            this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRPostLensFlareDepthOfFieldSource", this._cameras);
-
-            this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, name, this._cameras);
-
-            switch (name) {
-                case "HDRBaseDepthOfFieldSource": this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess; break;
-                case "HDRPostLensFlareDepthOfFieldSource": this._currentDepthOfFieldSource = this.lensFlareFinalPostProcess; break;
-                default: break;
-            }
+            this.HDREnabled = false;
         }
 
         // Down Sample X4 Post-Processs
@@ -327,10 +364,131 @@ module BABYLON {
                 effect.setTexture("lensSampler", this.lensTexture);
 
                 effect.setFloat("exposure", this.exposure);
+
+                this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess;
+                this._currentHDRSource = this.textureAdderFinalPostProcess;
             };
 
             // Add to pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRTextureAdder", () => { return this.textureAdderPostProcess; }, true));
+        }
+
+        // Create luminance
+        private _createLuminancePostProcesses(scene: Scene): void {
+            // Create luminance
+            var size = Math.pow(3, StandardRenderingPipeline.LuminanceSteps);
+            this.luminancePostProcess = new PostProcess("HDRLuminance", "standard", ["lumOffsets"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LUMINANCE", Engine.TEXTURETYPE_FLOAT);
+
+            var offsets: number[] = [];
+            this.luminancePostProcess.onApply = (effect: Effect) => {
+                var sU = (1.0 / this.luminancePostProcess.width);
+                var sV = (1.0 / this.luminancePostProcess.height);
+
+                offsets[0] = -0.5 * sU;
+                offsets[1] = 0.5 * sV;
+                offsets[2] = 0.5 * sU;
+                offsets[3] = 0.5 * sV;
+                offsets[4] = -0.5 * sU;
+                offsets[5] = -0.5 * sV;
+                offsets[6] = 0.5 * sU;
+                offsets[7] = -0.5 * sV;
+
+                effect.setArray2("lumOffsets", offsets);
+            };
+
+            // Add to pipeline
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLuminance", () => { return this.luminancePostProcess; }, true));
+
+            // Create down sample luminance
+            for (var i = StandardRenderingPipeline.LuminanceSteps - 1; i >= 0; i--) {
+                var size = Math.pow(3, i);
+
+                var defines = "#define LUMINANCE_DOWN_SAMPLE\n";
+                if (i === 0) {
+                    defines += "#define FINAL_DOWN_SAMPLER";
+                }
+
+                var postProcess = new PostProcess("HDRLuminanceDownSample" + i, "standard", ["dsOffsets", "halfDestPixelSize"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines, Engine.TEXTURETYPE_FLOAT);
+                this.luminanceDownSamplePostProcesses.push(postProcess);
+            }
+
+            // Create callbacks and add effects
+            var lastLuminance = this.luminancePostProcess;
+
+            this.luminanceDownSamplePostProcesses.forEach((pp, index) => {
+                var downSampleOffsets = new Array<number>(18);
+
+                pp.onApply = (effect: Effect) => {
+                    var id = 0;
+                    for (var x = -1; x < 2; x++) {
+                        for (var y = -1; y < 2; y++) {
+                            downSampleOffsets[id] = x / lastLuminance.width;
+                            downSampleOffsets[id + 1] = y / lastLuminance.height;
+                            id += 2;
+                        }
+                    }
+
+                    effect.setArray2("dsOffsets", downSampleOffsets);
+                    effect.setFloat("halfDestPixelSize", 0.5 / lastLuminance.width);
+
+                    if (index === this.luminanceDownSamplePostProcesses.length - 1) {
+                        lastLuminance = this.luminancePostProcess;
+                    } else {
+                        lastLuminance = pp;
+                    }
+                };
+
+                if (index === this.luminanceDownSamplePostProcesses.length - 1) {
+                    pp.onAfterRender = (effect: Effect) => {
+                        var pixel = scene.getEngine().readPixels(0, 0, 1, 1);
+                        var bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+                        this._hdrCurrentLuminance = (pixel[0] * bit_shift.x + pixel[1] * bit_shift.y + pixel[2] * bit_shift.z + pixel[3] * bit_shift.w) / 100.0;
+                    };
+                }
+
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLuminanceDownSample" + index, () => { return pp; }, true));
+            });
+        }
+
+        // Create HDR post-process
+        private _createHdrPostProcess(scene: Scene, ratio: number): void {
+            this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define HDR", Engine.TEXTURETYPE_UNSIGNED_INT);
+
+            var outputLiminance = 1;
+            var time = 0;
+            var lastTime = 0;
+
+            this.hdrPostProcess.onApply = (effect: Effect) => {
+                effect.setTextureFromPostProcess("textureAdderSampler", this._currentHDRSource);
+
+                time += scene.getEngine().getDeltaTime();
+
+                if (outputLiminance < 0) {
+                    outputLiminance = this._hdrCurrentLuminance;
+                } else {
+                    var dt = (lastTime - time) / 1000.0;
+
+                    if (this._hdrCurrentLuminance < outputLiminance + this.hdrDecreaseRate * dt) {
+                        outputLiminance += this.hdrDecreaseRate * dt;
+                    }
+                    else if (this._hdrCurrentLuminance > outputLiminance - this.hdrIncreaseRate * dt) {
+                        outputLiminance -= this.hdrIncreaseRate * dt;
+                    }
+                    else {
+                        outputLiminance = this._hdrCurrentLuminance;
+                    }
+                }
+
+                outputLiminance = MathTools.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
+
+                effect.setFloat("averageLuminance", outputLiminance);
+
+                lastTime = time;
+
+                this._currentDepthOfFieldSource = this.hdrFinalPostProcess;
+            };
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDR", () => { return this.hdrPostProcess; }, true));
         }
 
         // Create lens flare post-process
@@ -397,6 +555,9 @@ module BABYLON {
                 var lensStarMatrix = scaleBias2.multiply(starRotation).multiply(scaleBias1);
 
                 effect.setMatrix("lensStarMatrix", lensStarMatrix);
+
+                this._currentDepthOfFieldSource = this.lensFlareFinalPostProcess;
+                this._currentHDRSource = this.lensFlareFinalPostProcess;
             };
         }
 
@@ -455,5 +616,8 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline {
             return SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
+
+        // Luminance steps
+        public static LuminanceSteps: number = 6;
     }
 }
