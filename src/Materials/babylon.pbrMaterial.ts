@@ -1163,7 +1163,7 @@
                 }
                 if (this._defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
-é                }
+                }
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
                     uniformBuffersNames: uniformBuffers,
