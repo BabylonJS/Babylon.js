@@ -424,7 +424,7 @@
                         } else {
                             if (this._engine.webGLVersion === 1) {
                                 // Ubo replacement
-                                sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                     return p1 + "{X}";
                                 });
                             }
