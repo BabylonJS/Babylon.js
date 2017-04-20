@@ -306,13 +306,15 @@
             // Rebuild shaders source code
             var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
             var prefix = shaderVersion + (defines ? defines + "\n" : "");
+            vertexCode = prefix + vertexCode;
+            fragmentCode = prefix + fragmentCode;
 
             // Number lines of shaders source code
             var i = 2;
             var regex = /\n/gm;
-            var formattedVertexCode = prefix + "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
             i = 2;
-            var formattedFragmentCode = prefix + "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
