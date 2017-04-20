@@ -302,13 +302,17 @@
             Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
-        private _dumpShadersSource(vertexCode: string, fragmentCode: string): void {
+        private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
+            // Rebuild shaders source code
+            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
+            var prefix = shaderVersion + (defines ? defines + "\n" : "");
+
             // Number lines of shaders source code
             var i = 2;
             var regex = /\n/gm;
-            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedVertexCode = prefix + "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
             i = 2;
-            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedFragmentCode = prefix + "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
@@ -481,10 +485,7 @@
                 BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
                     return " " + attribute;
                 }));
-                // Rebuild shader source code
-                var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
-                var prefix = shaderVersion + (defines ? defines + "\n" : "");
-                this._dumpShadersSource(prefix + vertexSourceCode, prefix + fragmentSourceCode);
+                this._dumpShadersSource(vertexSourceCode, fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
