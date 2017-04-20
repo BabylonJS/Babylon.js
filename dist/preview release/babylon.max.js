@@ -30493,7 +30493,7 @@ var BABYLON;
                         else {
                             if (this._engine.webGLVersion === 1) {
                                 // Ubo replacement
-                                sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
+                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
                                     return p1 + "{X}";
                                 });
                             }
