@@ -181,8 +181,25 @@ function runTest(index) {
                 request.onreadystatechange = null; 
 
                 var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+                var scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
 
-                console.log(scriptToRun);
+                if (test.replace) {
+                    var split = test.replace.split(",");
+                    for (var i = 0; i < split.length; i+= 2) {
+                        var source = split[i].trim();
+                        var destination = split[i + 1].trim();
+                        scriptToRun = scriptToRun.replace(source, destination);
+                    }
+                }
+
+                if (test.replaceUrl) {
+                    var split = test.replaceUrl.split(",");
+                    for (var i = 0; i < split.length; i++) {
+                        var source = split[i].trim();
+                        var regex = new RegExp(source, "g");
+                        scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                    }
+                }
 
                 currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
                 processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
