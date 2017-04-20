@@ -76,7 +76,7 @@
         
         public onCollide: (collidedMesh: AbstractMesh) => void;
         
-        private _collider = new Collider();
+        private _collider: Collider;
         private _needMoveForGravity = false;
         private _oldPosition = Vector3.Zero();
         private _diffPosition = Vector3.Zero();
@@ -124,6 +124,11 @@
             }
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
+
+            if (!this._collider) {
+                this._collider = new Collider();
+            }
+
             this._collider.radius = this.ellipsoid;
             this._collider.collisionMask = this._collisionMask;
 		

@@ -582,7 +582,14 @@
         // Postprocesses
         public postProcessesEnabled = true;
         public postProcessManager: PostProcessManager;
-        public postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
+        private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
+        public get postProcessRenderPipelineManager(): PostProcessRenderPipelineManager {
+            if (!this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
+            }
+
+            return this._postProcessRenderPipelineManager;
+        }
 
         // Customs render targets
         public renderTargetsEnabled = true;
@@ -714,17 +721,11 @@
             this._engine = engine || Engine.LastCreatedEngine;
 
             this._engine.scenes.push(this);
-
-            this._externalData = new StringDictionary<Object>();
             this._uid = null;
 
             this._renderingManager = new RenderingManager(this);
 
             this.postProcessManager = new PostProcessManager(this);
-
-            this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
-
-            this._boundingBoxRenderer = new BoundingBoxRenderer(this);
 
             if (OutlineRenderer) {
                 this._outlineRenderer = new OutlineRenderer(this);
@@ -754,6 +755,9 @@
         }
 
         public set workerCollisions(enabled: boolean) {
+            if (!BABYLON.CollisionCoordinatorLegacy) {
+                return;
+            }
 
             enabled = (enabled && !!Worker);
 
@@ -808,6 +812,10 @@
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
+            if (!this._boundingBoxRenderer) {
+                this._boundingBoxRenderer = new BoundingBoxRenderer(this);
+            }
+
             return this._boundingBoxRenderer;
         }
 
@@ -940,7 +948,9 @@
                 if (!this._meshPickProceed) {
                     let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
                     this._currentPickResult = pickResult;
-                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    if (pickResult) {
+                        act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    }
                     this._meshPickProceed = true;
                 }
                 return act;
@@ -965,7 +975,7 @@
                     let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
                                     || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
                                     || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                    if (!checkPicking && ActionManager.HasPickTriggers) {
+                    if (!checkPicking && BABYLON.ActionManager && ActionManager.HasPickTriggers) {
                         act = this._initActionManager(act, clickInfo);
                         if (act)
                             checkPicking = act.hasPickTriggers;
@@ -1097,7 +1107,7 @@
                 // Meshes
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit && pickResult.pickedMesh) {
+                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -1116,7 +1126,7 @@
                     // Sprites
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
-                    if (pickResult.hit && pickResult.pickedSprite) {
+                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         this.setPointerOverSprite(pickResult.pickedSprite);
                         if (this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
                             canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
@@ -1176,7 +1186,7 @@
                 this._pickedDownMesh = null;
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit && pickResult.pickedMesh) {
+                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                     this._pickedDownMesh = pickResult.pickedMesh;
                     var actionManager = pickResult.pickedMesh.actionManager;
                     if (actionManager) {
@@ -1201,7 +1211,7 @@
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh,
                                     false, this.cameraToUseForPointers);
 
-                                if (pickResult.hit && pickResult.pickedMesh) {
+                                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                                     if (this._isButtonPressed &&
                                         ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                         (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
@@ -1230,7 +1240,7 @@
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
-                    if (pickResult.hit && pickResult.pickedSprite) {
+                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             this._pickedDownSprite = pickResult.pickedSprite;
                             switch (evt.button) {
@@ -1303,14 +1313,14 @@
                     }
 
                     // Meshes
-                    if (!this._meshPickProceed && (ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
+                    if (!this._meshPickProceed && (BABYLON.ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
                         pickResult = this._currentPickResult;
                     }
 
-                    if (pickResult && pickResult.pickedMesh) {
+                    if (pickResult && pickResult && pickResult.pickedMesh) {
                         this._pickedUpMesh = pickResult.pickedMesh;
                         if (this._pickedDownMesh === this._pickedUpMesh) {
                             if (this.onPointerPick) {
@@ -1696,7 +1706,9 @@
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
-            this.collisionCoordinator.onMeshAdded(newMesh);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onMeshAdded(newMesh);
+            }
 
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
@@ -1708,7 +1720,9 @@
                 this.meshes.splice(index, 1);
             }
             //notify the collision coordinator
-            this.collisionCoordinator.onMeshRemoved(toRemove);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onMeshRemoved(toRemove);
+            }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
 
@@ -2040,7 +2054,9 @@
             this._geometries.push(geometry);
 
             //notify the collision coordinator
-            this.collisionCoordinator.onGeometryAdded(geometry);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onGeometryAdded(geometry);
+            }
 
             this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
@@ -2059,7 +2075,9 @@
                 this._geometries.splice(index, 1);
 
                 //notify the collision coordinator
-                this.collisionCoordinator.onGeometryDeleted(geometry);
+                if (this.collisionCoordinator) {
+                    this.collisionCoordinator.onGeometryDeleted(geometry);
+                }
 
                 this.onGeometryRemovedObservable.notifyObservers(geometry);
                 return true;
@@ -2307,6 +2325,9 @@
          * @return true if no such key were already present and the data was added successfully, false otherwise
          */
         public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return this._externalData.add(key, data);
         }
 
@@ -2316,6 +2337,9 @@
          * @return the associated data, if present (can be null), or undefined if not present
          */
         public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                return null;
+            }
             return <T>this._externalData.get(key);
         }
 
@@ -2326,6 +2350,9 @@
          * @return the associated data, can be null if the factory returned null.
          */
         public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.getOrAddWithFactory(key, factory);
         }
 
@@ -2343,7 +2370,7 @@
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
-                    this._boundingBoxRenderer.renderList.push(subMesh.getBoundingInfo().boundingBox);
+                    this.getBoundingBoxRenderer().renderList.push(subMesh.getBoundingInfo().boundingBox);
                 }
 
                 if (material) {
@@ -2375,7 +2402,9 @@
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
-            this._boundingBoxRenderer.reset();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.reset();
+            }
             this._edgesRenderers.reset();
 
             // Meshes
@@ -2464,7 +2493,7 @@
             }
 
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                this._boundingBoxRenderer.renderList.push(sourceMesh.getBoundingInfo().boundingBox);
+                this.getBoundingBoxRenderer().renderList.push(sourceMesh.getBoundingInfo().boundingBox);
             }
 
             if (sourceMesh._edgesRenderer) {
@@ -2628,7 +2657,9 @@
             Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
-            this._boundingBoxRenderer.render();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.render();
+            }
 
             // Edges
             for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
@@ -2860,7 +2891,9 @@
             }
 
             // RenderPipeline
-            this.postProcessRenderPipelineManager.update();
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager.update();
+            }
 
             // Multi-cameras?
             if (this.activeCameras.length > 0) {
@@ -3070,8 +3103,6 @@
             this.skeletons = [];
             this.morphTargetManagers = [];
 
-            this._boundingBoxRenderer.dispose();
-
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
@@ -3087,7 +3118,9 @@
             this._activeParticleSystems.dispose();
             this._activeSkeletons.dispose();
             this._softwareSkinnedMeshes.dispose();
-            this._boundingBoxRenderer.dispose();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.dispose();
+            }
             this._edgesRenderers.dispose();
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
@@ -3249,6 +3282,10 @@
         }
 
         public createPickingRayInCameraSpace(x: number, y: number, camera: Camera): Ray {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var engine = this._engine;
 
             if (!camera) {
@@ -3269,6 +3306,10 @@
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): PickingInfo {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var pickingInfo = null;
 
             for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -3303,6 +3344,9 @@
         }
 
         private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean): PickingInfo[] {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }            
             var pickingInfos = new Array<PickingInfo>();
 
             for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -3331,6 +3375,10 @@
 
 
         private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var pickingInfo = null;
 
             camera = camera || this.activeCamera;

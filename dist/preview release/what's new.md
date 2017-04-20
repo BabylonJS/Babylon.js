@@ -16,6 +16,7 @@
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's [Doc](http://doc.babylonjs.com/tutorials/multi-platform_compressed_textures) ([jcpalmer](https://github.com/Palmer-JC))
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
+ - New build system based on workloads. [More info here](DOC TO DO) ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
 - Added `FIXED_EQUIRECTANGULAR_MIRRORED_MODE` mode for reflection texture. [Demo here](http://www.babylonjs-playground.com/#11GAIH#22) ([deltakosh](https://github.com/deltakosh))

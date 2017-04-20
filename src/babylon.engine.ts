@@ -440,7 +440,7 @@
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
-        public enableOfflineSupport = true;
+        public enableOfflineSupport = BABYLON.Database;
         public scenes = new Array<Scene>();
 
         //WebVR 
@@ -554,9 +554,7 @@
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
 
-            Engine.Instances.push(this);
-
-            this._externalData = new StringDictionary<Object>();
+            Engine.Instances.push(this);            
 
             options = options || {};
 
@@ -3121,10 +3119,10 @@
 
             // Video
             var alreadyActivated = false;
-            if (texture instanceof VideoTexture) {
+            if ((<VideoTexture>texture).video) {
                 this.activateTexture(this._gl["TEXTURE" + channel]);
                 alreadyActivated = true;
-                texture.update();
+                (<VideoTexture>texture).update();
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
                 return;
@@ -3237,6 +3235,9 @@
          * @return true if no such key were already present and the data was added successfully, false otherwise
          */
         public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return this._externalData.add(key, data);
         }
 
@@ -3246,6 +3247,9 @@
          * @return the associated data, if present (can be null), or undefined if not present
          */
         public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.get(key);
         }
 
@@ -3256,6 +3260,9 @@
          * @return the associated data, can be null if the factory returned null.
          */
         public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.getOrAddWithFactory(key, factory);
         }
 
@@ -3265,6 +3272,10 @@
          * @return true if the data was successfully removed, false if it doesn't exist
          */
         public removeExternalData(key): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            
             return this._externalData.remove(key);
         }
 
