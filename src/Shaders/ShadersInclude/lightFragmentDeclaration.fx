@@ -3,6 +3,8 @@
 	uniform vec4 vLightDiffuse{X};
 	#ifdef SPECULARTERM
 		uniform vec3 vLightSpecular{X};
+	#else
+		vec3 vLightSpecular{X} = vec3(0.);
 	#endif
 	#ifdef SHADOW{X}
 		#if defined(SPOTLIGHT{X}) || defined(DIRLIGHT{X})

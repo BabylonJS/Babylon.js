@@ -88,7 +88,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[], index?: number): Color3 {
+        public toArray(array: number[] | Float32Array, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -1834,7 +1834,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[], index?: number): Vector4 {
+        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
