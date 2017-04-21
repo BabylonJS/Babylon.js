@@ -130,8 +130,6 @@
          * Return the SpotLight.   
          */
         public transferToEffect(effect: Effect, lightIndex: number): SpotLight {
-            var useUbo = this._uniformBuffer.useUbo;
-
             var normalizeDirection;
 
             if (this.parent && this.parent.getWorldMatrix) {
@@ -143,28 +141,31 @@
                 
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
-                    this.exponent);
+                    this.exponent,
+                    lightIndex);
 
                 normalizeDirection = Vector3.Normalize(this._transformedDirection);
             } else {
-                this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.position.x,
                     this.position.y,
                     this.position.z,
-                    this.exponent);                    
+                    this.exponent,
+                    lightIndex);                    
 
                 normalizeDirection = Vector3.Normalize(this.direction);
             }
 
-            this._uniformBuffer.updateFloat4(useUbo ? "vLightDirection" : "vLightDirection" + lightIndex,
+            this._uniformBuffer.updateFloat4("vLightDirection",
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,
-                Math.cos(this.angle * 0.5));
+                Math.cos(this.angle * 0.5),
+                lightIndex);
             return this;
         }
 

@@ -52,15 +52,14 @@
          * Returns the HemisphericLight.  
          */
         public transferToEffect(effect: Effect, lightIndex: number): HemisphericLight {
-            var useUbo = this._uniformBuffer.useUbo;
-
             var normalizeDirection = Vector3.Normalize(this.direction);
-            this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex,
+            this._uniformBuffer.updateFloat4("vLightData",
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,
-                0.0);
-            this._uniformBuffer.updateColor3(useUbo ? "vLightGround" : "vLightGround" + lightIndex, this.groundColor.scale(this.intensity));
+                0.0,
+                lightIndex);
+            this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
             return this;
         }
 

@@ -332,6 +332,7 @@
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
+        private _useUBO: boolean;
         private _scene: Scene;
         private _fillMode = Material.TriangleFillMode;
         private _cachedDepthWriteState: boolean;
@@ -351,6 +352,7 @@
             }
 
             this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
+            this._useUBO = this.getScene().getEngine().webGLVersion > 1;
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);
@@ -446,7 +448,7 @@
         }
 
         public bindView(effect: Effect): void {
-            if (this.getScene().getEngine().webGLVersion === 1) {
+            if (!this._useUBO) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
             } else {
                 this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
@@ -454,7 +456,7 @@
         }
 
         public bindViewProjection(effect: Effect): void {
-            if (this.getScene().getEngine().webGLVersion === 1) {
+            if (!this._useUBO) {
                 effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
             } else {
                 this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());

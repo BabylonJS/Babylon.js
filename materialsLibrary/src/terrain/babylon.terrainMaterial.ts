@@ -198,7 +198,6 @@ module BABYLON {
                     "vTextureInfos", 
                     "mBones",
                     "vClipPlane", "textureMatrix",
-                    
                     "diffuse1Infos", "diffuse2Infos", "diffuse3Infos"
                 ];
                 var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",
