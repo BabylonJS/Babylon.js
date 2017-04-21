@@ -227,7 +227,7 @@
             document.getElementById("saveFormTags").readOnly = true;
             document.getElementById("saveFormButtonOk").style.display = "none";
             document.getElementById("saveMessage").style.display = "none";
-            document.getElementById("metadataButton").style.display = "block";
+            document.getElementById("metadataButton").style.display = "inline-block";
         };
 
         compileAndRun = function () {
