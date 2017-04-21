@@ -183,31 +183,30 @@ module BABYLON {
                 var shaderName = "gradient";
                 var join = defines.toString();
 
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos", 
+                    "mBones",
+                    "vClipPlane", "diffuseMatrix",
+                    "depthValues", "topColor", "bottomColor", "offset", "smoothness"
+                ];
+                var samplers = ["diffuseSampler"];
                 var uniformBuffers = [];
-                for (var i = 0; i < 4; i++) {
-                    if (defines["LIGHT" + i]) {
-                        uniformBuffers.push("Light" + i);
-                    }
-                }
+
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: 4
+                });
                 
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     <EffectCreationOptions>{
                         attributes: attribs,
-                        uniformsNames: ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                            "vLightData0", "vLightDiffuse0","vLightDirection0", "vLightGround0", "lightMatrix0",
-                            "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                            "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                            "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                            "vFogInfos", "vFogColor", "pointSize",
-                            "vDiffuseInfos", 
-                            "mBones",
-                            "vClipPlane", "diffuseMatrix",
-                            "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", "topColor", "bottomColor", "offset", "smoothness"
-                        ],
+                        uniformsNames: uniforms,
                         uniformBuffersNames: uniformBuffers,
-                        samplers: ["diffuseSampler",
-                            "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                        ],
+                        samplers: samplers,
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
