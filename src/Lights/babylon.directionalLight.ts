@@ -174,7 +174,7 @@ module BABYLON {
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
          * Returns the DirectionalLight.  
          */
-        public transferToEffect(effect: Effect, lightIndex: number): DirectionalLight {
+        public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
                     this._transformedDirection = Vector3.Zero();

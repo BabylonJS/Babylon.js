@@ -129,7 +129,7 @@
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.  
          * Return the SpotLight.   
          */
-        public transferToEffect(effect: Effect, lightIndex: number): SpotLight {
+        public transferToEffect(effect: Effect, lightIndex: string): SpotLight {
             var normalizeDirection;
 
             if (this.parent && this.parent.getWorldMatrix) {

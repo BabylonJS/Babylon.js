@@ -69,7 +69,7 @@
          * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
          * Returns the PointLight.  
          */
-        public transferToEffect(effect: Effect, lightIndex: number): PointLight {
+        public transferToEffect(effect: Effect, lightIndex: string): PointLight {
 
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();

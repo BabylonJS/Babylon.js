@@ -303,7 +303,7 @@
         }
 
         // Bindings
-        public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean {
+        public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect, depthValuesAlreadySet: boolean): boolean {
             var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
 
             if (mesh.receiveShadows && shadowGenerator) {
@@ -323,7 +323,7 @@
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-            light.transferToEffect(effect, lightIndex);
+            light.transferToEffect(effect, lightIndex + "");
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
@@ -336,15 +336,15 @@
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range, lightIndex);
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range, lightIndex + "");
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex);
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
+                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex + "", effect, depthValuesAlreadySet);
                 }
                 light._uniformBuffer.update();
                 lightIndex++;

@@ -51,7 +51,7 @@
          * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).  
          * Returns the HemisphericLight.  
          */
-        public transferToEffect(effect: Effect, lightIndex: number): HemisphericLight {
+        public transferToEffect(effect: Effect, lightIndex: string): HemisphericLight {
             var normalizeDirection = Vector3.Normalize(this.direction);
             this._uniformBuffer.updateFloat4("vLightData",
                 normalizeDirection.x,
