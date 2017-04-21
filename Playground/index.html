@@ -72,17 +72,18 @@
 
         <div class="category">
             <div class="button" id="newButton">New<i class="fa fa-file" aria-hidden="true"></i></div>
-            <div class="button" id="clearButton">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
+            <div class="button removeOnPhone" id="clearButton">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
         </div>
 
         <div class="category">
             <div class="button" id="saveButton">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-            <div class="button" id="zipButton">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
+            <div class="button removeOnPhone" id="zipButton">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
         </div>
 
 
-        <div class="category desktopOnly">
-            <div class="button select"><span id="currentFontSize">Font: 14</span>
+        <!--<div class="category desktopOnly">-->
+
+        <!--<div class="button select"><span id="currentFontSize">Font: 14</span>
                 <div class="toDisplay">
                     <div class="option" onclick="setFontSize(12);">12</div>
                     <div class="option" onclick="setFontSize(14);">14</div>
@@ -91,26 +92,43 @@
                     <div class="option" onclick="setFontSize(20);">20</div>
                     <div class="option" onclick="setFontSize(22);">22</div>
                 </div>
-            </div>
-            <div class="button select">Theme
+            </div>-->
+
+        <!--<div class="button select">Theme
                 <div class="toDisplay">
                     <div class="option" id="darkTheme">Dark</div>
                     <div class="option" id="lightTheme">Light</div>
                 </div>
-            </div>
-        </div>
+            </div>-->
+        <!--</div>-->
         <div class="category desktopTabletOnly">
             <div class="button select">Settings
                 <div class="toDisplay">
+                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <div class="toDisplaySub">
+                            <div class="option" id="darkTheme">Dark</div>
+                            <div class="option" id="lightTheme">Light</div>
+                        </div>
+                    </div>
+                    <div class="option subSelect"><span id="currentFontSize">Font: 14</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <div class="toDisplaySub">
+                            <div class="option" onclick="setFontSize(12);">12</div>
+                            <div class="option" onclick="setFontSize(14);">14</div>
+                            <div class="option" onclick="setFontSize(16);">16</div>
+                            <div class="option" onclick="setFontSize(18);">18</div>
+                            <div class="option" onclick="setFontSize(20);">20</div>
+                            <div class="option" onclick="setFontSize(22);">22</div>
+                        </div>
+                    </div>
                     <div class="option" id='safemodeToggle'>Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
                     <div class="option checked" id="editorButton">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
                     <div class="option" id="fullscreenButton">Fullscreen</div>
-                    <div class="option" id="metadataButton">Metadata</div>
                 </div>
             </div>
 
             <div class="button check uncheck" id="debugButton">Debug layer</div>
+            <div class="button" id="metadataButton">Metadata</div>
         </div>
 
 
@@ -151,7 +169,7 @@
         <div class="links">
             <div class='link'><a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a></div>
             <div class='link'> <a target='_new' href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a></div>
-            <div class='link'><a target='_new' href="https://www.babylonjs.com/sandbox">Sandbox</a></div>            
+            <div class='link'><a target='_new' href="https://www.babylonjs.com/sandbox">Sandbox</a></div>
             <div class='link'><a target='_new' href="https://doc.babylonjs.com">Documentation</a></div>
             <div class='link'><a target='_new' href="https://doc.babylonjs.com/playground">Search</a></div>
         </div>
