@@ -207,7 +207,7 @@
             return Vector3.Zero();
         }
 
-        public transferToEffect(effect: Effect, lightIndex: number): void {
+        public transferToEffect(effect: Effect, lightIndex: string): void {
         }
 
         public _getWorldMatrix(): Matrix {

@@ -655,7 +655,7 @@
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
+                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex + "", effect, depthValuesAlreadySet);
                 }
 
                 light._uniformBuffer.update();
