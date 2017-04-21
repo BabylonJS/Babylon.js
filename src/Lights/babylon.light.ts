@@ -135,6 +135,9 @@
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
+        // Light uniform buffer
+        public _uniformBuffer: UniformBuffer;
+
         /**
          * Creates a Light object in the scene.  
          * Documentation : http://doc.babylonjs.com/tutorials/lights  
@@ -142,12 +145,19 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
             this.getScene().addLight(this);
+            this._uniformBuffer = new UniformBuffer(scene.getEngine());
+            this._buildUniformLayout();
 
             this.includedOnlyMeshes = new Array<AbstractMesh>();
             this.excludedMeshes = new Array<AbstractMesh>();
 
             this._resyncMeshes();
         }
+
+        protected _buildUniformLayout(): void {
+            // Overridden
+        }
+
         /**
          * Returns the string "Light".  
          */
@@ -197,7 +207,7 @@
             return Vector3.Zero();
         }
 
-        public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
+        public transferToEffect(effect: Effect, lightIndex: string): void {
         }
 
         public _getWorldMatrix(): Matrix {
@@ -270,6 +280,8 @@
             for (var mesh of this.getScene().meshes) {
                 mesh._removeLightSource(this);
             }
+
+            this._uniformBuffer.dispose();
 
             // Remove from scene
             this.getScene().removeLight(this);

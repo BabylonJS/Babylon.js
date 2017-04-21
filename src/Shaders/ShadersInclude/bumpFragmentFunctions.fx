@@ -1,6 +1,5 @@
 ﻿#ifdef BUMP
 	varying vec2 vBumpUV;
-	uniform vec3 vBumpInfos;
 	uniform sampler2D bumpSampler;
 #if defined(TANGENT) && defined(NORMAL) 
 	varying mat3 vTBN;
