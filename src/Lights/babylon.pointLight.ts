@@ -70,20 +70,20 @@
          * Returns the PointLight.  
          */
         public transferToEffect(effect: Effect, lightIndex: number): PointLight {
-            var useUbo = this._uniformBuffer.useUbo;
 
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
 
-                this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
-                    0.0); 
+                    0.0,
+                    lightIndex); 
                 return this;
             }
 
-            this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex, this.position.x, this.position.y, this.position.z, 0);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             return this;
         }
         /**

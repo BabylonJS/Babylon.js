@@ -175,17 +175,15 @@ module BABYLON {
          * Returns the DirectionalLight.  
          */
         public transferToEffect(effect: Effect, lightIndex: number): DirectionalLight {
-            var useUbo = this._uniformBuffer.useUbo;
-
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
                     this._transformedDirection = Vector3.Zero();
                 }
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
+                this._uniformBuffer.updateFloat4("vLightData", this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1, lightIndex);
                 return this;
             }
-            this._uniformBuffer.updateFloat4(useUbo ? "vLightData" : "vLightData" + lightIndex, this.direction.x, this.direction.y, this.direction.z, 1);
+            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
             return this;
         }
 

@@ -1,9 +1,5 @@
 module BABYLON {
 
-    // Pool for avoiding memory leaks
-    var MAX_UNIFORM_SIZE = 256;
-    var _tempBuffer = new Float32Array(MAX_UNIFORM_SIZE);
-
     export class UniformBuffer {
         private _engine: Engine;
         private _buffer: WebGLBuffer;
@@ -16,8 +12,12 @@ module BABYLON {
         private _uniformLocationPointer: number;
         private _needSync: boolean;
         private _cache: Float32Array;
-        private _noUbo: boolean;
+        private _noUBO: boolean;
         private _currentEffect: Effect;
+
+        // Pool for avoiding memory leaks
+        private static _MAX_UNIFORM_SIZE = 256;
+        private static _tempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
 
         /**
          * Uniform buffer objects.
@@ -31,7 +31,7 @@ module BABYLON {
          */
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
-            this._noUbo = engine.webGLVersion === 1;
+            this._noUBO = engine.webGLVersion === 1;
             this._dynamic = dynamic;
 
             this._data = data || [];
@@ -49,7 +49,7 @@ module BABYLON {
          * or just falling back on setUniformXXX calls.
          */
         public get useUbo(): boolean {
-            return !this._noUbo;
+            return !this._noUBO;
         }
         
         /**
@@ -119,7 +119,7 @@ module BABYLON {
          * @param {number|number[]} size Data size, or data directly.
          */
         public addUniform(name: string, size: number | number[]) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 return;
             }
 
@@ -244,7 +244,7 @@ module BABYLON {
          * Effectively creates the WebGL Uniform Buffer, once layout is completed with `addUniform`.
          */
         public create(): void {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 return;
             }
             if (this._buffer) {
@@ -330,7 +330,7 @@ module BABYLON {
          * @param {Float32Array} matrix
          */
         public updateMatrix3x3(name: string, matrix: Float32Array): Effect {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setMatrix3x3(name, matrix);
                 }
@@ -339,13 +339,13 @@ module BABYLON {
 
             // To match std140, matrix must be realigned
             for (var i = 0; i < 3; i++) {
-                _tempBuffer[i * 4] = matrix[i * 3];
-                _tempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
-                _tempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
-                _tempBuffer[i * 4 + 3] = 0.0;
+                UniformBuffer._tempBuffer[i * 4] = matrix[i * 3];
+                UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
+                UniformBuffer._tempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
+                UniformBuffer._tempBuffer[i * 4 + 3] = 0.0;
             }
 
-            this.updateUniform(name, _tempBuffer, 12);
+            this.updateUniform(name, UniformBuffer._tempBuffer, 12);
         }
 
         /**
@@ -354,7 +354,7 @@ module BABYLON {
          * @param {Float32Array} matrix
          */
         public updateMatrix2x2(name: string, matrix: Float32Array): Effect {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setMatrix2x2(name, matrix);
                 }
@@ -363,13 +363,13 @@ module BABYLON {
 
             // To match std140, matrix must be realigned
             for (var i = 0; i < 2; i++) {
-                _tempBuffer[i * 4] = matrix[i * 2];
-                _tempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
-                _tempBuffer[i * 4 + 2] = 0.0;
-                _tempBuffer[i * 4 + 3] = 0.0;
+                UniformBuffer._tempBuffer[i * 4] = matrix[i * 2];
+                UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
+                UniformBuffer._tempBuffer[i * 4 + 2] = 0.0;
+                UniformBuffer._tempBuffer[i * 4 + 3] = 0.0;
             }
 
-            this.updateUniform(name, _tempBuffer, 8);
+            this.updateUniform(name, UniformBuffer._tempBuffer, 8);
         }
 
         /**
@@ -378,15 +378,15 @@ module BABYLON {
          * @param {number} x
          */
         public updateFloat(name: string, x: number) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setFloat(name, x);
                 }
                 return;
             }
 
-            _tempBuffer[0] = x;
-            this.updateUniform(name, _tempBuffer, 1);
+            UniformBuffer._tempBuffer[0] = x;
+            this.updateUniform(name, UniformBuffer._tempBuffer, 1);
         }
 
         /**
@@ -396,16 +396,16 @@ module BABYLON {
          * @param {number} y
          */
         public updateFloat2(name: string, x: number, y: number) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setFloat2(name, x, y);
                 }
                 return;
             }
 
-            _tempBuffer[0] = x;
-            _tempBuffer[1] = y;
-            this.updateUniform(name, _tempBuffer, 2);
+            UniformBuffer._tempBuffer[0] = x;
+            UniformBuffer._tempBuffer[1] = y;
+            this.updateUniform(name, UniformBuffer._tempBuffer, 2);
         }
 
         /**
@@ -414,19 +414,20 @@ module BABYLON {
          * @param {number} x
          * @param {number} y
          * @param {number} z
+         * @param {string|number} [suffix] Suffix to add to the uniform name.
          */
-        public updateFloat3(name: string, x: number, y: number, z: number) {
-            if (this._noUbo) {
+        public updateFloat3(name: string, x: number, y: number, z: number, suffix?: string | number) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
-                    this._currentEffect.setFloat3(name, x, y, z);
+                    this._currentEffect.setFloat3(name + suffix, x, y, z);
                 }
                 return;
             }
 
-            _tempBuffer[0] = x;
-            _tempBuffer[1] = y;
-            _tempBuffer[2] = z;
-            this.updateUniform(name, _tempBuffer, 3);
+            UniformBuffer._tempBuffer[0] = x;
+            UniformBuffer._tempBuffer[1] = y;
+            UniformBuffer._tempBuffer[2] = z;
+            this.updateUniform(name, UniformBuffer._tempBuffer, 3);
         }
 
         /**
@@ -436,20 +437,21 @@ module BABYLON {
          * @param {number} y
          * @param {number} z
          * @param {number} w
+         * @param {string|number} [suffix] Suffix to add to the uniform name.
          */
-        public updateFloat4(name: string, x: number, y: number, z: number, w: number) {
-            if (this._noUbo) {
+        public updateFloat4(name: string, x: number, y: number, z: number, w: number, suffix?: string | number) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
-                    this._currentEffect.setFloat4(name, x, y, z, w);
+                    this._currentEffect.setFloat4(name + suffix, x, y, z, w);
                 }
                 return;
             }
 
-            _tempBuffer[0] = x;
-            _tempBuffer[1] = y;
-            _tempBuffer[2] = z;
-            _tempBuffer[3] = w;
-            this.updateUniform(name, _tempBuffer, 4);
+            UniformBuffer._tempBuffer[0] = x;
+            UniformBuffer._tempBuffer[1] = y;
+            UniformBuffer._tempBuffer[2] = z;
+            UniformBuffer._tempBuffer[3] = w;
+            this.updateUniform(name, UniformBuffer._tempBuffer, 4);
         }
 
         /**
@@ -458,7 +460,7 @@ module BABYLON {
          * @param {Matrix} A 4x4 matrix.
          */
         public updateMatrix(name: string, mat: Matrix) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setMatrix(name, mat);
                 }
@@ -474,14 +476,14 @@ module BABYLON {
          * @param {Vector3} vector
          */
         public updateVector3(name: string, vector: Vector3) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setVector3(name, vector);
                 }
                 return;
             }
-            vector.toArray(_tempBuffer);
-            this.updateUniform(name, _tempBuffer, 3);
+            vector.toArray(UniformBuffer._tempBuffer);
+            this.updateUniform(name, UniformBuffer._tempBuffer, 3);
         }
 
         /**
@@ -490,30 +492,31 @@ module BABYLON {
          * @param {Vector4} vector
          */
         public updateVector4(name: string, vector: Vector4) {
-            if (this._noUbo) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
                     this._currentEffect.setVector4(name, vector);
                 }
                 return;
             }
-            vector.toArray(_tempBuffer);
-            this.updateUniform(name, _tempBuffer, 4);
+            vector.toArray(UniformBuffer._tempBuffer);
+            this.updateUniform(name, UniformBuffer._tempBuffer, 4);
         }
 
         /**
          * Wrapper for updateUniform.
          * @param {string} name Name of the uniform, as used in the uniform block in the shader.
          * @param {Color3} color
+         * @param {string|number} [suffix] Suffix to add to the uniform name.
          */
-        public updateColor3(name: string, color: Color3) {
-            if (this._noUbo) {
+        public updateColor3(name: string, color: Color3, suffix?: string | number) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
-                    this._currentEffect.setColor3(name, color);
+                    this._currentEffect.setColor3(name + suffix, color);
                 }
                 return;
             }
-            color.toArray(_tempBuffer);
-            this.updateUniform(name, _tempBuffer, 3);
+            color.toArray(UniformBuffer._tempBuffer);
+            this.updateUniform(name, UniformBuffer._tempBuffer, 3);
         }
 
         /**
@@ -521,17 +524,18 @@ module BABYLON {
          * @param {string} name Name of the uniform, as used in the uniform block in the shader.
          * @param {Color3} color
          * @param {number} alpha
+         * @param {string|number} [suffix] Suffix to add to the uniform name.
          */
-        public updateColor4(name: string, color: Color3, alpha: number) {
-            if (this._noUbo) {
+        public updateColor4(name: string, color: Color3, alpha: number, suffix?: string | number) {
+            if (this._noUBO) {
                 if (this._currentEffect) {
-                    this._currentEffect.setColor4(name, color, alpha);
+                    this._currentEffect.setColor4(name + suffix, color, alpha);
                 }
                 return;
             }
-            color.toArray(_tempBuffer);
-            _tempBuffer[3] = alpha;
-            this.updateUniform(name, _tempBuffer, 4);
+            color.toArray(UniformBuffer._tempBuffer);
+            UniformBuffer._tempBuffer[3] = alpha;
+            this.updateUniform(name, UniformBuffer._tempBuffer, 4);
         }
 
         /**
@@ -562,7 +566,7 @@ module BABYLON {
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
 
-            if (this._noUbo) {
+            if (this._noUBO) {
                 return;
             }
             

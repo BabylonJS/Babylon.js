@@ -305,7 +305,6 @@
         // Bindings
         public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean {
             var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
-            var useUbo = light._uniformBuffer.useUbo;
 
             if (mesh.receiveShadows && shadowGenerator) {
                 if (!(<any>light).needCube()) {
@@ -317,7 +316,7 @@
                     }
                 }
                 effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                light._uniformBuffer.updateFloat3(useUbo ? "shadowsInfo" : "shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale);
+                light._uniformBuffer.updateFloat3("shadowsInfo", shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale, lightIndex);
             }
 
             return depthValuesAlreadySet;
@@ -332,17 +331,15 @@
             var depthValuesAlreadySet = false;
 
             for (var light of mesh._lightSources) {
-                var useUbo = light._uniformBuffer.useUbo;
-
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4(useUbo ? "vLightDiffuse" : "vLightDiffuse" + lightIndex, Tmp.Color3[0], light.range);
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range, lightIndex);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3(useUbo ? "vLightSpecular" : "vLightSpecular" + lightIndex, Tmp.Color3[1]);
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex);
                 }
 
                 // Shadows
