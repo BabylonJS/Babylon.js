@@ -31353,8 +31353,8 @@ var BABYLON;
             this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         };
         ArcRotateCamera.prototype._getTargetPosition = function () {
-            if (this.target.getAbsolutePosition) {
-                var pos = this.target.getAbsolutePosition();
+            if (this._targetHost && this._targetHost.getAbsolutePosition) {
+                var pos = this._targetHost.getAbsolutePosition();
                 return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
             }
             return this.target;
@@ -31499,16 +31499,24 @@ var BABYLON;
         ArcRotateCamera.prototype.setTarget = function (target, toBoundingCenter, allowSamePosition) {
             if (toBoundingCenter === void 0) { toBoundingCenter = false; }
             if (allowSamePosition === void 0) { allowSamePosition = false; }
-            if (!allowSamePosition && this._getTargetPosition().equals(target)) {
-                return;
-            }
-            if (toBoundingCenter && target.getBoundingInfo) {
-                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.centerWorld.clone();
+            if (target.getBoundingInfo) {
+                if (toBoundingCenter) {
+                    this._targetBoundingCenter = target.getBoundingInfo().boundingBox.centerWorld.clone();
+                }
+                else {
+                    this._targetBoundingCenter = null;
+                }
+                this._targetHost = target;
+                this.target = this._getTargetPosition();
             }
             else {
+                var newTarget = target;
+                if (!allowSamePosition && this._getTargetPosition().equals(newTarget)) {
+                    return;
+                }
+                this.target = newTarget;
                 this._targetBoundingCenter = null;
             }
-            this.target = target;
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {
