@@ -27,10 +27,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<__decl__lightFragment>[0]
+#include<__decl__lightFragment>[1]
+#include<__decl__lightFragment>[2]
+#include<__decl__lightFragment>[3]
 
 
 #include<lightsFragmentFunctions>

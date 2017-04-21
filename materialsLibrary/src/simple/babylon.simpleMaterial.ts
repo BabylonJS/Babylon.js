@@ -159,12 +159,28 @@ module BABYLON {
                                 "vClipPlane", "diffuseMatrix", "depthValues"
                 ];
                 var samplers = ["diffuseSampler"];
-                    
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
-                
+                var uniformBuffers = [];
+
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: this.maxSimultaneousLights
+                });
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this._maxSimultaneousLights - 1 }), defines);
+                    <EffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 }
+                    }, engine), defines);
+
             }
             if (!subMesh.effect.isReady()) {
                 return false;

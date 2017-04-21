@@ -246,11 +246,28 @@ module BABYLON {
                     "heightTexture", "furTexture"
                 ];
                 
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this.maxSimultaneousLights);
+                var uniformBuffers = [];
+
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: this.maxSimultaneousLights
+                });
                 
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms, samplers,
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights }), defines);
+                    <EffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
+                    }, engine), defines);
             }
             if (!subMesh.effect.isReady()) {
                 return false;
