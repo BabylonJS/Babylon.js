@@ -312,18 +312,34 @@
             Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
-        private _dumpShadersName(): void {
+        private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
+            // Rebuild shaders source code
+            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
+            var prefix = shaderVersion + (defines ? defines + "\n" : "");
+            vertexCode = prefix + vertexCode;
+            fragmentCode = prefix + fragmentCode;
+
+            // Number lines of shaders source code
+            var i = 2;
+            var regex = /\n/gm;
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            i = 2;
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+
+            // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                Tools.Error("Vertex shader:" + this.name.vertexElement);
-                Tools.Error("Fragment shader:" + this.name.fragmentElement);
-            } else if (this.name.vertex) {
-                Tools.Error("Vertex shader:" + this.name.vertex);
-                Tools.Error("Fragment shader:" + this.name.fragment);
-            } else {
-                Tools.Error("Vertex shader:" + this.name);
-                Tools.Error("Fragment shader:" + this.name);
+                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
-        }
+            else if (this.name.vertex) {
+                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+            }
+            else {
+                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+            }
+        };
 
         private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
 
@@ -502,10 +518,15 @@
                 this._compilationError = e.message;
 
                 // Let's go through fallbacks then
-                Tools.Error("Unable to compile effect: ");
-                Tools.Error("Defines: " + defines);
+                Tools.Error("Unable to compile effect:");
+                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+                    return " " + uniform;
+                }));
+                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
+                    return " " + attribute;
+                }));
+                this._dumpShadersSource(vertexSourceCode, fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
-                this._dumpShadersName();
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
