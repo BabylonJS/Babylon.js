@@ -76,7 +76,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
     if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas) !== 0) {
+        if (compare(renderData, resultCanvas) > 50) {
             result.classList.add("failed");
             result.innerHTML = "×";
             console.log("failed");
