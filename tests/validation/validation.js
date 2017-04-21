@@ -30,7 +30,7 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
-    return differencesCount;
+    return (differencesCount * 100) / (width * height);
 }
 
 function getRenderData(canvas, engine) {
@@ -76,7 +76,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
     if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas) > 50) {
+        if (compare(renderData, resultCanvas) > 5) { // More than 5% of pixels are different
             result.classList.add("failed");
             result.innerHTML = "×";
             console.log("failed");
