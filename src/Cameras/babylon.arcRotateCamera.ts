@@ -14,6 +14,7 @@ module BABYLON {
 
         @serializeAsVector3()
         public target: Vector3;
+        private _targetHost: AbstractMesh;
 
         @serialize()
         public inertialAlphaOffset = 0;
@@ -240,8 +241,8 @@ module BABYLON {
         }
 
         private _getTargetPosition(): Vector3 {
-            if ((<any>this.target).getAbsolutePosition) {
-                var pos : Vector3 = (<any>this.target).getAbsolutePosition();
+            if (this._targetHost && (<any>this._targetHost).getAbsolutePosition) {
+                var pos : Vector3 = (<any>this._targetHost).getAbsolutePosition();
                 return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
             }
 
@@ -409,17 +410,25 @@ module BABYLON {
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: Vector3, toBoundingCenter = false, allowSamePosition = false): void {            
-            if (!allowSamePosition && this._getTargetPosition().equals(target)) {
-                return;
-            }
-            
-            if (toBoundingCenter && (<any>target).getBoundingInfo){
-                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
-            }else{
+        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {                        
+
+            if ((<any>target).getBoundingInfo){
+                if (toBoundingCenter){
+                    this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
+                } else {
+                    this._targetBoundingCenter = null;
+                }
+                this._targetHost = <AbstractMesh>target;
+                this.target = this._getTargetPosition();
+            } else {
+                var newTarget = <Vector3>target;
+                if (!allowSamePosition && this._getTargetPosition().equals(newTarget)) {
+                   return;
+                }
+                this.target = newTarget;
                 this._targetBoundingCenter = null;
             }
-            this.target = target;
+
             this.rebuildAnglesAndRadius();
         }
 
