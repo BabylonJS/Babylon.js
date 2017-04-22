@@ -600,8 +600,6 @@
 
         var formatCode = function () {
             jsEditor.getAction('editor.action.format').run();
-            var actions = jsEditor.getActions();
-            console.table(actions);
         }
 
         // UI
