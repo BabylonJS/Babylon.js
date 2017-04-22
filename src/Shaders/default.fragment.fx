@@ -1,4 +1,6 @@
-﻿#ifdef BUMP
+﻿#include<__decl__defaultFragment>
+
+#ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -11,11 +13,6 @@
 
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
-uniform vec4 vDiffuseColor;
-#ifdef SPECULARTERM
-uniform vec4 vSpecularColor;
-#endif
-uniform vec3 vEmissiveColor;
 
 // Input
 varying vec3 vPositionW;
@@ -32,7 +29,7 @@ varying vec4 vColor;
 #include<helperFunctions>
 
 // Lights
-#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -41,80 +38,48 @@ varying vec4 vColor;
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
 uniform sampler2D diffuseSampler;
-uniform vec2 vDiffuseInfos;
 #endif
 
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
 uniform sampler2D ambientSampler;
-uniform vec2 vAmbientInfos;
 #endif
 
 #ifdef OPACITY	
 varying vec2 vOpacityUV;
 uniform sampler2D opacitySampler;
-uniform vec2 vOpacityInfos;
 #endif
 
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
-uniform vec2 vEmissiveInfos;
 uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
-uniform mat4 view;
-#endif
-
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
 
 #ifdef REFRACTIONMAP_3D
 uniform samplerCube refractionCubeSampler;
 #else
 uniform sampler2D refraction2DSampler;
-uniform mat4 refractionMatrix;
 #endif
 
-#ifdef REFRACTIONFRESNEL
-uniform vec4 refractionLeftColor;
-uniform vec4 refractionRightColor;
-#endif
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
-uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
 #endif
 
 // Fresnel
 #include<fresnelFunction>
 
-#ifdef DIFFUSEFRESNEL
-uniform vec4 diffuseLeftColor;
-uniform vec4 diffuseRightColor;
-#endif
-
-#ifdef OPACITYFRESNEL
-uniform vec4 opacityParts;
-#endif
-
-#ifdef EMISSIVEFRESNEL
-uniform vec4 emissiveLeftColor;
-uniform vec4 emissiveRightColor;
-#endif
-
 // Reflection
 #ifdef REFLECTION
-uniform vec2 vReflectionInfos;
-
 #ifdef REFLECTIONMAP_3D
 uniform samplerCube reflectionCubeSampler;
 #else
@@ -128,17 +93,9 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
 #endif
 
 #include<reflectionFunction>
-
-#ifdef REFLECTIONFRESNEL
-uniform vec4 reflectionLeftColor;
-uniform vec4 reflectionRightColor;
-#endif
 
 #endif
 
@@ -411,6 +368,5 @@ void main(void) {
 #ifdef CAMERACOLORCURVES
 	color.rgb = applyColorCurves(color.rgb);
 #endif
-
 	gl_FragColor = color;
 }

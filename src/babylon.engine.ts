@@ -440,7 +440,7 @@
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
-        public enableOfflineSupport = true;
+        public enableOfflineSupport = BABYLON.Database;
         public scenes = new Array<Scene>();
 
         //WebVR 
@@ -554,9 +554,7 @@
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
 
-            Engine.Instances.push(this);
-
-            this._externalData = new StringDictionary<Object>();
+            Engine.Instances.push(this);            
 
             options = options || {};
 
@@ -579,7 +577,7 @@
             // GL
             if (!options.disableWebGL2Support) {
                 try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
                     }
@@ -1307,6 +1305,64 @@
             this.wipeCaches();
         }
 
+        // UBOs
+        public createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.STATIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+
+            ubo.references = 1;
+            return ubo;
+        }
+
+        public createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.DYNAMIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.DYNAMIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+
+            ubo.references = 1;
+            return ubo;
+        }
+
+        public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void {
+            this.bindUniformBuffer(uniformBuffer);
+
+            if (offset === undefined) {
+                offset = 0;
+            }
+
+            if (count === undefined) {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
+                }
+            } else {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
+                }
+            }
+
+            this.bindUniformBuffer(null);
+        }
+
+
         // VBOs
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
@@ -1417,6 +1473,20 @@
             }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
+
+        public bindUniformBuffer(buffer?: WebGLBuffer): void {
+            this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer);
+        }
+
+        public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
+            this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
+        }
+
+        public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
+            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
+
+            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
+        };
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
@@ -3121,10 +3191,10 @@
 
             // Video
             var alreadyActivated = false;
-            if (texture instanceof VideoTexture) {
+            if ((<VideoTexture>texture).video) {
                 this.activateTexture(this._gl["TEXTURE" + channel]);
                 alreadyActivated = true;
-                texture.update();
+                (<VideoTexture>texture).update();
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
                 return;
@@ -3237,6 +3307,9 @@
          * @return true if no such key were already present and the data was added successfully, false otherwise
          */
         public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return this._externalData.add(key, data);
         }
 
@@ -3246,6 +3319,9 @@
          * @return the associated data, if present (can be null), or undefined if not present
          */
         public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.get(key);
         }
 
@@ -3256,6 +3332,9 @@
          * @return the associated data, can be null if the factory returned null.
          */
         public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
             return <T>this._externalData.getOrAddWithFactory(key, factory);
         }
 
@@ -3265,6 +3344,10 @@
          * @return true if the data was successfully removed, false if it doesn't exist
          */
         public removeExternalData(key): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            
             return this._externalData.remove(key);
         }
 

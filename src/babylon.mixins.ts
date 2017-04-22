@@ -28,10 +28,6 @@ interface Window {
     VRFrameData: any; // WebVR, from specs 1.1
 }
 
-interface WebGLVertexArrayObject {
-
-}
-
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
@@ -44,10 +40,16 @@ interface WebGLRenderingContext {
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
     renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
 
+    bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
+    getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
+    uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
+
     MAX_SAMPLES: number;
     RGBA8: number;
     READ_FRAMEBUFFER: number;
     DRAW_FRAMEBUFFER: number;
+    UNIFORM_BUFFER: number;
+
 }
 
 interface HTMLURL {
@@ -152,7 +154,7 @@ interface Screen {
 }
 
 interface HTMLMediaElement {
-    crossOrigin: string;
+    crossOrigin: string | null;
 }
 
 interface Math {

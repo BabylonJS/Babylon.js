@@ -103,12 +103,101 @@
       "scriptToRun": "/Demos/Fresnel/fresnel.js",
       "functionToCall": "CreateFresnelTestScene",
       "referenceImage": "fresnel.png"
+    }, 
+    {
+      "title": "Highlights",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Highlights/highlights.js",
+      "functionToCall": "CreateHighlightsScene",
+      "referenceImage": "highlights.png",
+      "rootPath": "/Demos/Highlights/",
+      "replaceUrl": "room.hdr, reflectivity.png, albedo.png"
     },
     {
       "title": "Lines",
       "scriptToRun": "/Demos/Lines/lines.js",
       "functionToCall": "CreateLinesTestScene",
-      "referenceImage": "lines.png"
+      "referenceImage": "lines.png",
+      "replace": "updateVerticesDataDirectly, updateVerticesData"
+    },
+    {
+      "title": "Bones",
+      "scriptToRun": "/Demos/Bones/bones.js",
+      "functionToCall": "CreateBonesTestScene",
+      "referenceImage": "bones.png",
+      "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "LOD",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/LOD/lod.js",
+      "functionToCall": "CreateLODTestScene",
+      "referenceImage": "lod.png"
+    },
+    {
+      "title": "Lens",
+      "scriptToRun": "/Demos/Lens/lensFlares.js",
+      "functionToCall": "CreateLensFlaresTestScene",
+      "referenceImage": "lens.png",
+      "rootPath": "/Demos/Lens/",
+      "replaceUrl": "lens4.png, lens5.png"
+    },
+    {
+      "title": "Self shadowing",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/SelfShadowing/shadows.js",
+      "functionToCall": "CreateShadowsTestScene",
+      "referenceImage": "selfShadowing.png"
+    },
+    {
+      "title": "Advanced shadows",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
+      "functionToCall": "CreateAdvancedShadowsTestScene",
+      "referenceImage": "advancedShadows.png",
+      "replace": "/ground, /Ground"
+    },
+    {
+      "title": "Displacement map",
+      "scriptToRun": "/Demos/DisplacementMap/displacementMap.js",
+      "functionToCall": "CreateDisplacementTestScene",
+      "referenceImage": "displacementMap.png",
+      "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
+    },
+    {
+      "title": "Water material (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/WaterMaterial/water.js",
+      "functionToCall": "CreateWaterTestScene",
+      "referenceImage": "waterMaterial.png",
+      "onlyVisual": true 
+    },
+    {
+      "title": "Instances (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Instances/instances.js",
+      "functionToCall": "CreateInstancesTestScene",
+      "referenceImage": "instances.png",
+      "replace": "ground., Ground.",
+      "onlyVisual": true
+    },
+    {
+      "title": "Procedural textures (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
+      "functionToCall": "CreateProceduralTextureTestScene",
+      "referenceImage": "procedural.png",
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
+      "onlyVisual": true
+    },
+    {
+      "title": "Instanced Bones (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/InstancedBones/bones2.js",
+      "functionToCall": "CreateBones2TestScene",
+      "referenceImage": "instancedBones.png",
+      "replace": "Dude.babylon, dude.babylon",
+      "onlyVisual": true
     }
   ]
 }

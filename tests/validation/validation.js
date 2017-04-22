@@ -30,7 +30,7 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
-    return differencesCount;
+    return (differencesCount * 100) / (width * height);
 }
 
 function getRenderData(canvas, engine) {
@@ -72,18 +72,19 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(resultCanvas, result, renderImage, index, waitRing) {
+function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
+    if (!test.onlyVisual) {
 
-    if (compare(renderData, resultCanvas) !== 0) {
-        result.classList.add("failed");
-        result.innerHTML = "×";
-        console.log("failed");
-    } else {
-        result.innerHTML = "✔";
-        console.log("validated");
+        if (compare(renderData, resultCanvas) > 5) { // More than 5% of pixels are different
+            result.classList.add("failed");
+            result.innerHTML = "×";
+            console.log("failed");
+        } else {
+            result.innerHTML = "✔";
+            console.log("validated");
+        }
     }
-
     waitRing.classList.add("hidden");
 
     renderImage.src = saveRenderImage(renderData, canvas);
@@ -103,7 +104,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
             if (renderCount === 0) {
                 engine.stopRenderLoop();
-                evaluate(resultCanvas, result, renderImage, index, waitRing);
+                evaluate(test, resultCanvas, result, renderImage, index, waitRing);
             }
         });
 
@@ -181,8 +182,27 @@ function runTest(index) {
                 request.onreadystatechange = null; 
 
                 var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
-                console.log(scriptToRun);
+                if (test.replace) {
+                    var split = test.replace.split(",");
+                    for (var i = 0; i < split.length; i+= 2) {
+                        var source = split[i].trim();
+                        var destination = split[i + 1].trim();
+                        scriptToRun = scriptToRun.replace(source, destination);
+                    }
+                }
+
+                if (test.replaceUrl) {
+                    var split = test.replaceUrl.split(",");
+                    for (var i = 0; i < split.length; i++) {
+                        var source = split[i].trim();
+                        var regex = new RegExp(source, "g");
+                        scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                    }
+                }
 
                 currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
                 processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);

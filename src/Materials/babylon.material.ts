@@ -332,10 +332,12 @@
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
+        private _useUBO: boolean;
         private _scene: Scene;
         private _fillMode = Material.TriangleFillMode;
         private _cachedDepthWriteState: boolean;
 
+        protected _uniformBuffer: UniformBuffer;
 
         constructor(name: string, scene: Scene, doNotAdd?: boolean) {
             this.name = name;
@@ -348,6 +350,9 @@
             } else {
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
             }
+
+            this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
+            this._useUBO = this.getScene().getEngine().webGLVersion > 1;
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);
@@ -438,6 +443,26 @@
         public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
+        public bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
+            sceneUbo.bindToEffect(effect, "Scene");
+        }
+
+        public bindView(effect: Effect): void {
+            if (!this._useUBO) {
+                effect.setMatrix("view", this.getScene().getViewMatrix());
+            } else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            }
+        }
+
+        public bindViewProjection(effect: Effect): void {
+            if (!this._useUBO) {
+                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            } else {
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            }
+        }
+
         protected _afterBind(mesh: Mesh): void {
             this._scene._cachedMaterial = this;
 
@@ -508,6 +533,8 @@
                     }
                 }
             }
+
+            this._uniformBuffer.dispose();
 
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
