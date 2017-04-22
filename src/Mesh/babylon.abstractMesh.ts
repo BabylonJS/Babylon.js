@@ -258,7 +258,7 @@
         private _collisionGroup = -1;
         public ellipsoid = new Vector3(0.5, 1, 0.5);
         public ellipsoidOffset = new Vector3(0, 0, 0);
-        private _collider = new Collider();
+        private _collider: Collider;
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
@@ -1401,6 +1401,11 @@
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
+
+            if (!this._collider) {
+                this._collider = new Collider();
+            }
+
             this._collider.radius = this.ellipsoid;
 
             this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
