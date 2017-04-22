@@ -598,6 +598,12 @@
             document.getElementById("saveLayer").style.display = "block";
         }
 
+        var formatCode = function () {
+            jsEditor.getAction('editor.action.format').run();
+            var actions = jsEditor.getActions();
+            console.table(actions);
+        }
+
         // UI
         document.getElementById("runButton").addEventListener("click", compileAndRun);
         document.getElementById("zipButton").addEventListener("click", getZip);
@@ -609,6 +615,7 @@
         document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
         document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
         document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
+        document.getElementById("formatButton").addEventListener("click", formatCode);
 
         // Restore theme
         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
