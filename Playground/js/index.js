@@ -207,12 +207,30 @@
         }
 
         var showNoMetadata = function () {
-            document.getElementById("saveFormTitle").value = '';
-            document.getElementById("saveFormTitle").readOnly = false;
-            document.getElementById("saveFormDescription").value = '';
-            document.getElementById("saveFormDescription").readOnly = false;
-            document.getElementById("saveFormTags").value = '';
-            document.getElementById("saveFormTags").readOnly = false;
+            if (currentSnippetTitle) {
+                document.getElementById("saveFormTitle").value = currentSnippetTitle;
+                document.getElementById("saveFormTitle").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormTitle").value = '';
+                document.getElementById("saveFormTitle").readOnly = false;
+            }
+            if (currentSnippetDescription) {
+                document.getElementById("saveFormDescription").value = currentSnippetDescription;
+                document.getElementById("saveFormDescription").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormDescription").value = '';
+                document.getElementById("saveFormDescription").readOnly = false;
+            }
+            if (currentSnippetTags) {
+                document.getElementById("saveFormTags").value = currentSnippetTags;
+                document.getElementById("saveFormTags").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormTags").value = '';
+                document.getElementById("saveFormTags").readOnly = false;
+            }
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveFormButtonOk").style.display = "inline-block";
             document.getElementById("saveMessage").style.display = "block";
@@ -683,8 +701,8 @@
 
         document.getElementById("saveButton").addEventListener("click", function () {
             if (currentSnippetTitle == null
-                && currentSnippetDescription == null
-                && currentSnippetTags == null) {
+                || currentSnippetDescription == null
+                || currentSnippetTags == null) {
 
                 document.getElementById("saveLayer").style.display = "block";
             }
@@ -734,15 +752,23 @@
                                     jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
 
                                     // Check if title / descr / tags are already set
-                                    if ((snippet.name != null && snippet.name != "")
-                                        || (snippet.description != null && snippet.description != "")
-                                        || (snippet.tags != null && snippet.tags != "")) {
+                                    if (snippet.name != null && snippet.name != "") {
                                         currentSnippetTitle = snippet.name;
-                                        currentSnippetDescription = snippet.description;
-                                        currentSnippetTags = snippet.tags;
+                                    }
+                                    else currentSnippetTitle = null;
 
+                                    if (snippet.description != null && snippet.description != "") {
+                                        currentSnippetDescription = snippet.description;
+                                    }
+                                    else currentSnippetDescription = null;
+
+                                    if (snippet.tags != null && snippet.tags != "") {
+                                        currentSnippetTags = snippet.tags;
+                                    }
+                                    else currentSnippetTags = null;
+
+                                    if (currentSnippetTitle != null && currentSnippetTags != null && currentSnippetDescription) {
                                         if (document.getElementById("saveLayer")) {
-                                            var elem = document.getElementById("saveLayer");
 
                                             document.getElementById("saveFormTitle").value = currentSnippetTitle;
                                             document.getElementById("saveFormDescription").value = currentSnippetDescription;
@@ -752,10 +778,6 @@
                                         }
                                     }
                                     else {
-                                        currentSnippetTitle = null;
-                                        currentSnippetDescription = null;
-                                        currentSnippetTags = null;
-
                                         showNoMetadata();
                                     }
 
