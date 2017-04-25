@@ -23387,6 +23387,8 @@ var BABYLON;
             if (this._buffer) {
                 return; // nothing to do
             }
+            // See spec, alignment must be filled as a vec4
+            this._fillAlignment(4);
             this._bufferData = new Float32Array(this._data);
             if (this._dynamic) {
                 this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
