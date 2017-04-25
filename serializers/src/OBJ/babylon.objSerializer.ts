@@ -64,7 +64,6 @@ module BABYLON {
 		var text = output.join("\n");
 		return (text);
         }
-
         //Exports the material(s) of a mesh in .MTL file format (text)
         //TODO: Export the materials of mesh array
         public static MTL(mesh: Mesh): string {
