@@ -15,7 +15,7 @@ module BABYLON {
 		for (var j = 0; j < mesh.length; j++) {
 			output.push("g object" + j);
 			output.push("o object_" + j);
-			
+
 			//Uses the position of the item in the scene, to the file (this back to normal in the end)
 			if(globalposition){
 				var newMatrix = BABYLON.Matrix.Translation(mesh[j].position.x,mesh[j].position.y,mesh[j].position.z);
@@ -39,7 +39,7 @@ module BABYLON {
 				output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
 				curV++;
 			}
-			
+
 			for (i = 0; i < trunkNormals.length; i += 3) {
 				output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
 			}
@@ -47,7 +47,7 @@ module BABYLON {
 			for (i = 0; i < trunkUV.length; i += 2) {
 				output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
 			}
-         
+
 			for (i = 0; i < trunkFaces.length; i += 3) {
 				output.push(
 					"f " + (trunkFaces[i + 2] +  v) + "/" + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) +
