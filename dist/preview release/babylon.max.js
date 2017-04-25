@@ -23387,6 +23387,8 @@ var BABYLON;
             if (this._buffer) {
                 return; // nothing to do
             }
+            // See spec, alignment must be filled as a vec4
+            this._fillAlignment(4);
             this._bufferData = new Float32Array(this._data);
             if (this._dynamic) {
                 this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
@@ -46185,6 +46187,7 @@ var BABYLON;
         */
         OculusTouchController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
             var notifyObject = state; //{ state: state, changes: changes };
+            var triggerDirection = this.hand === 'right' ? -1 : 1;
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
@@ -46199,7 +46202,7 @@ var BABYLON;
                     return;
                 case 2:
                     if (this._defaultModel) {
-                        (this._defaultModel.getChildren()[4]).position.x = notifyObject.value * 0.0035;
+                        (this._defaultModel.getChildren()[4]).position.x = triggerDirection * notifyObject.value * 0.0035;
                     }
                     this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;
