@@ -22032,6 +22032,9 @@ var BABYLON;
             return this;
         };
         Effect.prototype.setMatrices = function (uniformName, matrices) {
+            if (!matrices) {
+                return;
+            }
             this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
             return this;
