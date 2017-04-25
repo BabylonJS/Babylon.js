@@ -2636,6 +2636,103 @@
             return texture;
         }
 
+        public createMultipleRenderTarget(size: any, options): WebGLTexture[] {
+            var generateMipMaps = false;
+            var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+            var textureCount = 1;
+
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            if (options !== undefined) {
+                generateMipMaps = options.generateMipMaps;
+                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = options.generateStencilBuffer;
+                textureCount = options.textureCount || 1;
+
+                type = options.type === undefined ? type : options.type;
+                if (options.samplingMode !== undefined) {
+                    samplingMode = options.samplingMode;
+                }
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+            }
+            var gl = this._gl;
+            // Create the framebuffer
+            var framebuffer = gl.createFramebuffer();
+            this.bindUnboundFramebuffer(framebuffer);
+
+            var width = size.width || size;
+            var height = size.height || size;
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+            
+            var textures = [];
+            var attachments = []
+            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
+            for (var i = 0; i < textureCount; i++) {
+                var texture = gl.createTexture();
+                var attachment = gl["COLOR_ATTACHMENT" + i];
+                textures.push(texture);
+                attachments.push(attachment);
+
+                gl.activeTexture(gl["TEXTURE" + i]);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            
+                gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
+
+                texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
+
+                if (generateMipMaps) {
+                    this._gl.generateMipmap(this._gl.TEXTURE_2D);
+                }
+
+                // Unbind
+                this._bindTextureDirectly(gl.TEXTURE_2D, null);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                this.bindUnboundFramebuffer(null);
+
+                texture._framebuffer = framebuffer;
+                texture._baseWidth = width;
+                texture._baseHeight = height;
+                texture._width = width;
+                texture._height = height;
+                texture.isReady = true;
+                texture.samples = 1;
+                texture.generateMipMaps = generateMipMaps;
+                texture.references = 1;
+                texture.samplingMode = samplingMode;
+                texture.type = type;
+                texture._generateDepthBuffer = generateDepthBuffer;
+                texture._generateStencilBuffer = generateStencilBuffer;
+            }
+
+            gl.drawBuffers(attachments);
+
+            this.resetTextureCache();
+
+            // To keep ?
+            //this._loadedTexturesCache.push(texture);
+
+            return textures;
+        }
+
         private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): WebGLRenderbuffer {
             var depthStencilBuffer: WebGLRenderbuffer = null;
             var gl = this._gl;
