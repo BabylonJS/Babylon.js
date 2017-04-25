@@ -26080,7 +26080,7 @@ var BABYLON;
             return this._indexBuffer;
         };
         Geometry.prototype._releaseVertexArrayObject = function (effect) {
-            if (!effect) {
+            if (!effect || !this._vertexArrayObjects) {
                 return;
             }
             if (this._vertexArrayObjects[effect.key]) {
