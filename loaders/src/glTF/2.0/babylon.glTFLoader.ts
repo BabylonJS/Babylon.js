@@ -508,6 +508,8 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
+        var morphTargetManager;
+
         // Positions, normals and UVs
         for (var index = 0; index < mesh.primitives.length; index++) {
             // Temporary vertex data
@@ -594,6 +596,70 @@ module BABYLON.GLTF2 {
             var material = getMaterial(runtime, primitive.material);
             multiMat.subMaterials.push(material);
 
+            // Morph Targets
+            if (primitive.targets !== undefined) {
+                morphTargetManager = new BABYLON.MorphTargetManager();
+
+                for (var index2 = 0; index2 < primitive.targets.length; index2++) {
+                    var target = primitive.targets[index2];
+
+                    var weight = 0.0;
+                    if (node.weights !== undefined) {
+                        weight = node.weights[index2];
+                    }
+                    else if (mesh.weights !== undefined) {
+                        weight = mesh.weights[index2];
+                    }
+
+                    var morph = new BABYLON.MorphTarget("morph" + index2, weight);
+
+                    for (var semantic in target) {
+                        // Link accessor and buffer view
+                        accessor = runtime.gltf.accessors[target[semantic]];
+                        buffer = GLTFUtils.GetBufferFromAccessor(runtime, accessor);
+
+                        // glTF stores morph target information as deltas
+                        // while babylon.js expects the final data.
+                        // As a result we have to add the original data to the delta to calculate
+                        // the final data.
+                        if (semantic.toUpperCase() === "NORMAL") {
+                            var normals = new Float32Array(buffer.length);
+                            normals.set(buffer);
+                            for (var index3 = 0; index3 < normals.length; index3++) {
+                                normals[index3] += (<Float32Array>vertexData.normals)[index3];
+                            }
+                            morph.setNormals(normals);
+                        }
+                        else if (semantic.toUpperCase() === "POSITION") {
+                            var positions = new Float32Array(buffer.length);
+                            positions.set(buffer);
+                            for (var index3 = 0; index3 < positions.length; index3++) {
+                                positions[index3] += (<Float32Array>vertexData.positions)[index3];
+                            }
+                            morph.setPositions(positions);
+                        }
+                        else if (semantic.toUpperCase() === "TANGENT") {
+                            var tangents = new Float32Array(buffer.length);
+                            tangents.set(buffer);
+                            // Tangent data for morph targets is stored as xyz delta.
+                            // The vertexData.tangent is stored as xyzw.
+                            // So we need to skip every fourth vertexData.tangent.
+                            for (var index3 = 0, index4 = 0; index3 < tangents.length; index3++, index4++) {
+                                tangents[index3] += (<Float32Array>vertexData.tangents)[index4];
+                                if ((index3 + 1) % 3 == 0) {
+                                    index4++;
+                                }
+                            }
+                            morph.setTangents(tangents);
+                        }
+                        else {
+                            Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
+                        }
+                    }
+                    morphTargetManager.addTarget(morph);
+                }
+            }
+
             // Update vertices start and index start
             verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
             indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
@@ -602,6 +668,9 @@ module BABYLON.GLTF2 {
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
         babylonMesh.computeWorldMatrix(true);
+
+        // Set morph target manager after all vertices data has been processed
+        babylonMesh.morphTargetManager = morphTargetManager;
 
         // Apply submeshes
         babylonMesh.subMeshes = [];
