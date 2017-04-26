@@ -72,10 +72,12 @@
             if (useMorphTargets) {
                 if ((<any>mesh).morphTargetManager) {
                     var manager = (<Mesh>mesh).morphTargetManager;
+                    defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
                     defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
                     defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
                     defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
                 } else {
+                    defines["MORPHTARGETS_TANGENT"] = false;
                     defines["MORPHTARGETS_NORMAL"] = false;
                     defines["MORPHTARGETS"] = false;
                     defines["NUM_MORPH_INFLUENCERS"] = 0;
@@ -266,11 +268,16 @@
                 var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
                 var normal = manager.supportsNormals && defines["NORMAL"];
+                var tangent = manager.supportsTangents && defines["TANGENT"];
                 for (var index = 0; index < influencers; index++) {
                     attribs.push(VertexBuffer.PositionKind + index);
 
                     if (normal) {
                         attribs.push(VertexBuffer.NormalKind + index);
+                    }
+
+                    if (tangent) {
+                        attribs.push(VertexBuffer.TangentKind + index);
                     }
 
                     if (attribs.length > maxAttributesCount) {
