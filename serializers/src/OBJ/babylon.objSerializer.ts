@@ -28,7 +28,7 @@ module BABYLON {
                 if (materials) {
                     output.push("usemtl " + mesh[j].material.id);
                 }
-                var g = mesh[j].Geometry;
+                var g = mesh[j].geometry;
                 var trunkVerts = g.getVerticesData('position');
                 var trunkNormals = g.getVerticesData('normal');
                 var trunkUV = g.getVerticesData('uv');
