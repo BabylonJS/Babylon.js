@@ -61,6 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
+        public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {

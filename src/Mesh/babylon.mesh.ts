@@ -2021,6 +2021,9 @@
                     if (morphTarget.hasNormals) {
                         this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
                     }
+                    if (morphTarget.hasTangents) {
+                        this.geometry.setVerticesData(VertexBuffer.TangentKind + index, morphTarget.getTangents(), false, 3);
+                    }
                 }
             } else {
                 var index = 0;
@@ -2033,6 +2036,10 @@
                     if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
                     {
                         this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
+                    }
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index))
+                    {
+                        this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
                     }
                     index++;
                 }    
