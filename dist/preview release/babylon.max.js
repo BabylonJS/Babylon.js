@@ -31194,10 +31194,10 @@ var BABYLON;
                 _this._collisionTriggered = false;
             };
             if (!target) {
-                _this.target = BABYLON.Vector3.Zero();
+                _this._target = BABYLON.Vector3.Zero();
             }
             else {
-                _this.target = target;
+                _this._target = target;
             }
             _this.alpha = alpha;
             _this.beta = beta;
@@ -31207,6 +31207,16 @@ var BABYLON;
             _this.inputs.addKeyboard().addMouseWheel().addPointers();
             return _this;
         }
+        Object.defineProperty(ArcRotateCamera.prototype, "target", {
+            get: function () {
+                return this._target;
+            },
+            set: function (value) {
+                this.setTarget(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibilityX", {
             //-- begin properties for backward compatibility for inputs       
             get: function () {
@@ -31341,7 +31351,7 @@ var BABYLON;
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
-            this._cache.target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache._target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
@@ -31351,7 +31361,7 @@ var BABYLON;
             if (!ignoreParentClass) {
                 _super.prototype._updateCache.call(this);
             }
-            this._cache.target.copyFrom(this._getTargetPosition());
+            this._cache._target.copyFrom(this._getTargetPosition());
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
@@ -31360,15 +31370,20 @@ var BABYLON;
         ArcRotateCamera.prototype._getTargetPosition = function () {
             if (this._targetHost && this._targetHost.getAbsolutePosition) {
                 var pos = this._targetHost.getAbsolutePosition();
-                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
+                if (this._targetBoundingCenter) {
+                    pos.addToRef(this._targetBoundingCenter, this._target);
+                }
+                else {
+                    this._target.copyFrom(pos);
+                }
             }
-            return this.target;
+            return this._target;
         };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this.target)
+            return this._cache._target.equals(this._target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -31440,8 +31455,8 @@ var BABYLON;
                 if (!this.panningAxis.y) {
                     this._transformedDirection.y = 0;
                 }
-                if (!this.target.getAbsolutePosition) {
-                    this.target.addInPlace(this._transformedDirection);
+                if (!this._targetHost) {
+                    this._target.addInPlace(this._transformedDirection);
                 }
             }
             // Limits
@@ -31512,14 +31527,15 @@ var BABYLON;
                     this._targetBoundingCenter = null;
                 }
                 this._targetHost = target;
-                this.target = this._getTargetPosition();
+                this._target = this._getTargetPosition();
             }
             else {
                 var newTarget = target;
-                if (!allowSamePosition && this._getTargetPosition().equals(newTarget)) {
+                var currentTarget = this._getTargetPosition();
+                if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                     return;
                 }
-                this.target = newTarget;
+                this._target = newTarget;
                 this._targetBoundingCenter = null;
             }
             this.rebuildAnglesAndRadius();
@@ -31584,7 +31600,7 @@ var BABYLON;
                 meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
                 distance = meshesOrMinMaxVectorAndDistance.distance;
             }
-            this.target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
+            this._target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
             if (!doNotUpdateMaxZ) {
                 this.maxZ = distance * 2;
             }
@@ -31606,7 +31622,7 @@ var BABYLON;
                     alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                     break;
             }
-            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
             rigCam._cameraRigParams = {};
             return rigCam;
         };
@@ -31653,8 +31669,8 @@ var BABYLON;
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "radius", void 0);
     __decorate([
-        BABYLON.serializeAsVector3()
-    ], ArcRotateCamera.prototype, "target", void 0);
+        BABYLON.serializeAsVector3("target")
+    ], ArcRotateCamera.prototype, "_target", void 0);
     __decorate([
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "inertialAlphaOffset", void 0);
@@ -58745,6 +58761,29 @@ var BABYLON;
             });
             return _this;
         }
+        Object.defineProperty(WebVRFreeCamera.prototype, "onControllersAttached", {
+            set: function (callback) {
+                this._onControllersAttached = callback;
+                // after setting - if the controllers are already set, execute the callback.
+                if (this.controllers.length >= 2) {
+                    callback(this.controllers);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        WebVRFreeCamera.prototype.getLeftCamera = function () {
+            return this._rigCameras[0];
+        };
+        WebVRFreeCamera.prototype.getRightCamera = function () {
+            return this._rigCameras[1];
+        };
+        WebVRFreeCamera.prototype.getLeftTarget = function () {
+            return this._rigCameras[0].getTarget();
+        };
+        WebVRFreeCamera.prototype.getRightTarget = function () {
+            return this._rigCameras[1].getTarget();
+        };
         WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {
                 if (this._specsVersion === 1.1) {
@@ -58916,8 +58955,8 @@ var BABYLON;
                         //add to the controllers array
                         _this.controllers.push(webVrController);
                         //did we find enough controllers? Great! let the developer know.
-                        if (_this.onControllersAttached && _this.controllers.length === 2) {
-                            _this.onControllersAttached(_this.controllers);
+                        if (_this._onControllersAttached && _this.controllers.length >= 2) {
+                            _this._onControllersAttached(_this.controllers);
                         }
                     }
                 }
