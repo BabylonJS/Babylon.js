@@ -508,12 +508,14 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
+        var morphTargetManager = new BABYLON.MorphTargetManager();
+
         // Positions, normals and UVs
-        for (var index = 0; index < mesh.primitives.length; index++) {
+        for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
             // Temporary vertex data
             var tempVertexData = new VertexData();
 
-            var primitive = mesh.primitives[index];
+            var primitive = mesh.primitives[primitiveIndex];
             if (primitive.mode !== EMeshPrimitiveMode.TRIANGLES) {
                 // continue;
             }
@@ -579,8 +581,8 @@ module BABYLON.GLTF2 {
             else {
                 // Set indices on the fly
                 var indices: number[] = [];
-                for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
-                    indices.push(j);
+                for (var index = 0; index < tempVertexData.positions.length / 3; index++) {
+                    indices.push(index);
                 }
 
                 tempVertexData.indices = new Int32Array(indices);
@@ -594,6 +596,72 @@ module BABYLON.GLTF2 {
             var material = getMaterial(runtime, primitive.material);
             multiMat.subMaterials.push(material);
 
+            // Morph Targets
+            if (primitive.targets !== undefined) {
+                for (var targetsIndex = 0; targetsIndex < primitive.targets.length; targetsIndex++) {
+                    var target = primitive.targets[targetsIndex];
+
+                    var weight = 0.0;
+                    if (node.weights !== undefined) {
+                        weight = node.weights[targetsIndex];
+                    }
+                    else if (mesh.weights !== undefined) {
+                        weight = mesh.weights[targetsIndex];
+                    }
+
+                    var morph = new BABYLON.MorphTarget("morph" + targetsIndex, weight);
+
+                    for (var semantic in target) {
+                        // Link accessor and buffer view
+                        accessor = runtime.gltf.accessors[target[semantic]];
+                        buffer = GLTFUtils.GetBufferFromAccessor(runtime, accessor);
+
+                        if (accessor.name !== undefined) {
+                            morph.name = accessor.name;
+                        }
+
+                        // glTF stores morph target information as deltas
+                        // while babylon.js expects the final data.
+                        // As a result we have to add the original data to the delta to calculate
+                        // the final data.
+                        if (semantic === "NORMAL") {
+                            for (var bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
+                                buffer[bufferIndex] += (<Float32Array>vertexData.normals)[bufferIndex];
+                            }
+                            morph.setNormals(buffer);
+                        }
+                        else if (semantic === "POSITION") {
+                            for (var bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
+                                buffer[bufferIndex] += (<Float32Array>vertexData.positions)[bufferIndex];
+                            }
+                            morph.setPositions(buffer);
+                        }
+                        else if (semantic === "TANGENT") {
+                            // Tangent data for morph targets is stored as xyz delta.
+                            // The vertexData.tangent is stored as xyzw.
+                            // So we need to skip every fourth vertexData.tangent.
+                            for (var bufferIndex = 0, tangentsIndex = 0; bufferIndex < buffer.length; bufferIndex++, tangentsIndex++) {
+                                buffer[bufferIndex] += (<Float32Array>vertexData.tangents)[tangentsIndex];
+                                if ((bufferIndex + 1) % 3 == 0) {
+                                    tangentsIndex++;
+                                }
+                            }
+                            morph.setTangents(buffer);
+                        }
+                        else {
+                            Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
+                        }
+                    }
+                    
+                    if (morph.getPositions() !== undefined) {
+                        morphTargetManager.addTarget(morph);
+                    }
+                    else {
+                        Tools.Warn("Not adding morph target '" + morph.name + "' because it has no position data");
+                    }
+                }
+            }
+
             // Update vertices start and index start
             verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
             indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
@@ -603,14 +671,19 @@ module BABYLON.GLTF2 {
         geometry.setAllVerticesData(vertexData, false);
         babylonMesh.computeWorldMatrix(true);
 
+        // Set morph target manager after all vertices data has been processed
+        if (morphTargetManager !== undefined && morphTargetManager.numInfluencers > 0) {
+            babylonMesh.morphTargetManager = morphTargetManager;
+        }
+
         // Apply submeshes
         babylonMesh.subMeshes = [];
-        for (var index = 0; index < mesh.primitives.length; index++) {
-            if (mesh.primitives[index].mode !== EMeshPrimitiveMode.TRIANGLES) {
+        for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
+            if (mesh.primitives[primitiveIndex].mode !== EMeshPrimitiveMode.TRIANGLES) {
                 //continue;
             }
 
-            var subMesh = new SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], babylonMesh, babylonMesh, true);
+            var subMesh = new SubMesh(primitiveIndex, verticesStarts[primitiveIndex], verticesCounts[primitiveIndex], indexStarts[primitiveIndex], indexCounts[primitiveIndex], babylonMesh, babylonMesh, true);
         }
 
         // Finish
