@@ -581,8 +581,8 @@ module BABYLON.GLTF2 {
             else {
                 // Set indices on the fly
                 var indices: number[] = [];
-                for (var positionsIndex = 0; positionsIndex < tempVertexData.positions.length / 3; positionsIndex++) {
-                    indices.push(positionsIndex);
+                for (var index = 0; index < tempVertexData.positions.length / 3; index++) {
+                    indices.push(index);
                 }
 
                 tempVertexData.indices = new Int32Array(indices);
