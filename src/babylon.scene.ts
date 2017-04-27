@@ -706,6 +706,7 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
+        private _geometryRenderer: GeometryRenderer;
 
         private _uniqueIdCounter = 0;
 
@@ -2911,6 +2912,11 @@
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
             }
 
+            // Geometry renderer
+            if (this._geometryRenderer) {
+                this._renderTargets.push(this._geometryRenderer.getGBuffer());
+            }
+
             // RenderPipeline
             if (this._postProcessRenderPipelineManager) {
                 this._postProcessRenderPipelineManager.update();
@@ -3103,6 +3109,25 @@
 
             this._depthRenderer.dispose();
             this._depthRenderer = null;
+        }
+
+        public enableGeometryRenderer(): GeometryRenderer {
+            if (this._geometryRenderer) {
+                return this._geometryRenderer;
+            }
+
+            this._geometryRenderer = new GeometryRenderer(this);
+
+            return this._geometryRenderer;
+        }
+
+        public disableGeometryRenderer(): void {
+            if (!this._geometryRenderer) {
+                return;
+            }
+
+            this._geometryRenderer.dispose();
+            this._geometryRenderer = null;
         }
 
         public freezeMaterials(): void {
