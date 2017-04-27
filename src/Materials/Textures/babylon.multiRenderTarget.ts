@@ -12,6 +12,10 @@ module BABYLON {
         private _doNotChangeAspectRatio: boolean;
         private _size: number;
 
+        private _shouldRender(): boolean {
+            return true;
+        }
+
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
         constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
@@ -36,6 +40,9 @@ module BABYLON {
                 type: type,
                 textureCount: count
             });
+
+            // Rendering groups
+            this._renderingManager = new RenderingManager(scene);
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
