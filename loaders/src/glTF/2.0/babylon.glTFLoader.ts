@@ -508,7 +508,7 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
-        var morphTargetManager;
+        var morphTargetManager = new BABYLON.MorphTargetManager();
 
         // Positions, normals and UVs
         for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
@@ -598,8 +598,6 @@ module BABYLON.GLTF2 {
 
             // Morph Targets
             if (primitive.targets !== undefined) {
-                morphTargetManager = new BABYLON.MorphTargetManager();
-
                 for (var targetsIndex = 0; targetsIndex < primitive.targets.length; targetsIndex++) {
                     var target = primitive.targets[targetsIndex];
 
@@ -674,7 +672,7 @@ module BABYLON.GLTF2 {
         babylonMesh.computeWorldMatrix(true);
 
         // Set morph target manager after all vertices data has been processed
-        if (morphTargetManager !== undefined && (<MorphTargetManager>morphTargetManager).numInfluencers != 0) {
+        if (morphTargetManager !== undefined && morphTargetManager.numInfluencers > 0) {
             babylonMesh.morphTargetManager = morphTargetManager;
         }
 
