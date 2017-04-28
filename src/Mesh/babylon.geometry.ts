@@ -349,7 +349,7 @@
         }
 
         public _releaseVertexArrayObject(effect: Effect) {
-            if (!effect) {
+            if (!effect || !this._vertexArrayObjects) {
                 return;
             }
             
