@@ -996,11 +996,6 @@
 
             // Attribs
             if (mesh) {
-                if (!mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    mesh.createNormals(true);
-                    Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
-                }
-
                 if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
                     if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
