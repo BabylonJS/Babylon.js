@@ -31196,7 +31196,7 @@ var BABYLON;
                 _this._target = BABYLON.Vector3.Zero();
             }
             else {
-                _this._target = target;
+                _this.setTarget(target);
             }
             _this.alpha = alpha;
             _this.beta = beta;
