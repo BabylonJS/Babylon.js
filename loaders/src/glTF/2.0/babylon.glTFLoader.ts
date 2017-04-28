@@ -1154,7 +1154,7 @@ module BABYLON.GLTF2 {
         }
 
         private static _createTextureAsync(runtime: IGLTFRuntime, texture: IGLTFTexture, texCoord: number, url: string, onSuccess: (babylonTexture: Texture) => void, onError: () => void): void {
-            var sampler: IGLTFSampler = texture.sampler ? runtime.gltf.samplers[texture.sampler] : {};
+            var sampler: IGLTFSampler = (texture.sampler === undefined ? {} : runtime.gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
             var samplingMode = GLTFUtils.GetTextureFilterMode(sampler.minFilter);
 
