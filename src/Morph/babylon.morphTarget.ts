@@ -2,6 +2,7 @@ module BABYLON {
     export class MorphTarget {
         private _positions: Float32Array;
         private _normals: Float32Array;
+        private _tangents: Float32Array;
         private _influence: number;
 
         public onInfluenceChanged = new Observable<boolean>();
@@ -31,6 +32,10 @@ module BABYLON {
             return this._normals !== undefined;
         }
 
+        public get hasTangents(): boolean {
+            return this._tangents !== undefined;
+        }
+
         public setPositions(data: Float32Array | number[]) {
             this._positions = new Float32Array(data);
         }
@@ -47,6 +52,14 @@ module BABYLON {
             return this._normals;
         }
 
+        public setTangents(data: Float32Array | number[]) {
+            this._tangents = new Float32Array(data);
+        }
+
+        public getTangents(): Float32Array {
+            return this._tangents;
+        }
+
         /**
          * Serializes the current target into a Serialization object.  
          * Returns the serialized object.  
@@ -61,6 +74,9 @@ module BABYLON {
             if (this.hasNormals) {
                 serializationObject.normals = Array.prototype.slice.call(this.getNormals());
             }
+            if (this.hasTangents) {
+                serializationObject.tangents = Array.prototype.slice.call(this.getTangents());
+            }
 
             return serializationObject;
         }
@@ -73,6 +89,9 @@ module BABYLON {
 
             if (serializationObject.normals) {
                 result.setNormals(serializationObject.normals);
+            }
+            if (serializationObject.tangents) {
+                result.setTangents(serializationObject.tangents);
             }
 
             return result;
@@ -89,6 +108,9 @@ module BABYLON {
 
             if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 result.setNormals(mesh.getVerticesData(VertexBuffer.NormalKind));
+            }
+            if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                result.setTangents(mesh.getVerticesData(VertexBuffer.TangentKind));
             }
 
             return result;
