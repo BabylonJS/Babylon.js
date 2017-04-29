@@ -7016,7 +7016,7 @@ var BABYLON;
             this.isPointerLock = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
-            this.preventCacheWipeBetweenFrames = false;
+            this.preventCacheWipeBetweenFrames = true;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = BABYLON.Database;
             this.scenes = new Array();
