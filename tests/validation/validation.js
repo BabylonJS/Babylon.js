@@ -222,6 +222,7 @@ canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";
 document.body.appendChild(canvas);
 engine = new BABYLON.Engine(canvas, false);
+engine.setDitheringState(false);
 
 // Loading tests
 var xhr = new XMLHttpRequest();
