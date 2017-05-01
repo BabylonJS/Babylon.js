@@ -1663,7 +1663,7 @@
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
                 var instancesBuffer = this._currentInstanceBuffers[i];
-                if (boundBuffer != instancesBuffer) {
+                if (boundBuffer != instancesBuffer && instancesBuffer.references) {
                     boundBuffer = instancesBuffer;
                     this.bindArrayBuffer(instancesBuffer);
                 }
