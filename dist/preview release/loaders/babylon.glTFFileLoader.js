@@ -2385,11 +2385,6 @@ var BABYLON;
         /**
         * Enums
         */
-        var EBufferViewTarget;
-        (function (EBufferViewTarget) {
-            EBufferViewTarget[EBufferViewTarget["ARRAY_BUFFER"] = 34962] = "ARRAY_BUFFER";
-            EBufferViewTarget[EBufferViewTarget["ELEMENT_ARRAY_BUFFER"] = 34963] = "ELEMENT_ARRAY_BUFFER";
-        })(EBufferViewTarget = GLTF2.EBufferViewTarget || (GLTF2.EBufferViewTarget = {}));
         var EComponentType;
         (function (EComponentType) {
             EComponentType[EComponentType["BYTE"] = 5120] = "BYTE";
@@ -2409,30 +2404,6 @@ var BABYLON;
             EMeshPrimitiveMode[EMeshPrimitiveMode["TRIANGLE_STRIP"] = 5] = "TRIANGLE_STRIP";
             EMeshPrimitiveMode[EMeshPrimitiveMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
         })(EMeshPrimitiveMode = GLTF2.EMeshPrimitiveMode || (GLTF2.EMeshPrimitiveMode = {}));
-        var EParameterType;
-        (function (EParameterType) {
-            EParameterType[EParameterType["BYTE"] = 5120] = "BYTE";
-            EParameterType[EParameterType["UNSIGNED_BYTE"] = 5121] = "UNSIGNED_BYTE";
-            EParameterType[EParameterType["SHORT"] = 5122] = "SHORT";
-            EParameterType[EParameterType["UNSIGNED_SHORT"] = 5123] = "UNSIGNED_SHORT";
-            EParameterType[EParameterType["INT"] = 5124] = "INT";
-            EParameterType[EParameterType["UNSIGNED_INT"] = 5125] = "UNSIGNED_INT";
-            EParameterType[EParameterType["FLOAT"] = 5126] = "FLOAT";
-            EParameterType[EParameterType["FLOAT_VEC2"] = 35664] = "FLOAT_VEC2";
-            EParameterType[EParameterType["FLOAT_VEC3"] = 35665] = "FLOAT_VEC3";
-            EParameterType[EParameterType["FLOAT_VEC4"] = 35666] = "FLOAT_VEC4";
-            EParameterType[EParameterType["INT_VEC2"] = 35667] = "INT_VEC2";
-            EParameterType[EParameterType["INT_VEC3"] = 35668] = "INT_VEC3";
-            EParameterType[EParameterType["INT_VEC4"] = 35669] = "INT_VEC4";
-            EParameterType[EParameterType["BOOL"] = 35670] = "BOOL";
-            EParameterType[EParameterType["BOOL_VEC2"] = 35671] = "BOOL_VEC2";
-            EParameterType[EParameterType["BOOL_VEC3"] = 35672] = "BOOL_VEC3";
-            EParameterType[EParameterType["BOOL_VEC4"] = 35673] = "BOOL_VEC4";
-            EParameterType[EParameterType["FLOAT_MAT2"] = 35674] = "FLOAT_MAT2";
-            EParameterType[EParameterType["FLOAT_MAT3"] = 35675] = "FLOAT_MAT3";
-            EParameterType[EParameterType["FLOAT_MAT4"] = 35676] = "FLOAT_MAT4";
-            EParameterType[EParameterType["SAMPLER_2D"] = 35678] = "SAMPLER_2D";
-        })(EParameterType = GLTF2.EParameterType || (GLTF2.EParameterType = {}));
         var ETextureMagFilter;
         (function (ETextureMagFilter) {
             ETextureMagFilter[ETextureMagFilter["NEAREST"] = 9728] = "NEAREST";
@@ -2447,25 +2418,6 @@ var BABYLON;
             ETextureMinFilter[ETextureMinFilter["NEAREST_MIPMAP_LINEAR"] = 9986] = "NEAREST_MIPMAP_LINEAR";
             ETextureMinFilter[ETextureMinFilter["LINEAR_MIPMAP_LINEAR"] = 9987] = "LINEAR_MIPMAP_LINEAR";
         })(ETextureMinFilter = GLTF2.ETextureMinFilter || (GLTF2.ETextureMinFilter = {}));
-        var ETextureFormat;
-        (function (ETextureFormat) {
-            ETextureFormat[ETextureFormat["ALPHA"] = 6406] = "ALPHA";
-            ETextureFormat[ETextureFormat["RGB"] = 6407] = "RGB";
-            ETextureFormat[ETextureFormat["RGBA"] = 6408] = "RGBA";
-            ETextureFormat[ETextureFormat["LUMINANCE"] = 6409] = "LUMINANCE";
-            ETextureFormat[ETextureFormat["LUMINANCE_ALPHA"] = 6410] = "LUMINANCE_ALPHA";
-        })(ETextureFormat = GLTF2.ETextureFormat || (GLTF2.ETextureFormat = {}));
-        var ETextureTarget;
-        (function (ETextureTarget) {
-            ETextureTarget[ETextureTarget["TEXTURE_2D"] = 3553] = "TEXTURE_2D";
-        })(ETextureTarget = GLTF2.ETextureTarget || (GLTF2.ETextureTarget = {}));
-        var ETextureType;
-        (function (ETextureType) {
-            ETextureType[ETextureType["UNSIGNED_BYTE"] = 5121] = "UNSIGNED_BYTE";
-            ETextureType[ETextureType["UNSIGNED_SHORT_5_6_5"] = 33635] = "UNSIGNED_SHORT_5_6_5";
-            ETextureType[ETextureType["UNSIGNED_SHORT_4_4_4_4"] = 32819] = "UNSIGNED_SHORT_4_4_4_4";
-            ETextureType[ETextureType["UNSIGNED_SHORT_5_5_5_1"] = 32820] = "UNSIGNED_SHORT_5_5_5_1";
-        })(ETextureType = GLTF2.ETextureType || (GLTF2.ETextureType = {}));
         var ETextureWrapMode;
         (function (ETextureWrapMode) {
             ETextureWrapMode[ETextureWrapMode["CLAMP_TO_EDGE"] = 33071] = "CLAMP_TO_EDGE";
@@ -2890,11 +2842,12 @@ var BABYLON;
             var verticesCounts = [];
             var indexStarts = [];
             var indexCounts = [];
+            var morphTargetManager = new BABYLON.MorphTargetManager();
             // Positions, normals and UVs
-            for (var index = 0; index < mesh.primitives.length; index++) {
+            for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
                 // Temporary vertex data
                 var tempVertexData = new BABYLON.VertexData();
-                var primitive = mesh.primitives[index];
+                var primitive = mesh.primitives[primitiveIndex];
                 if (primitive.mode !== GLTF2.EMeshPrimitiveMode.TRIANGLES) {
                     // continue;
                 }
@@ -2954,8 +2907,8 @@ var BABYLON;
                 else {
                     // Set indices on the fly
                     var indices = [];
-                    for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
-                        indices.push(j);
+                    for (var index = 0; index < tempVertexData.positions.length / 3; index++) {
+                        indices.push(index);
                     }
                     tempVertexData.indices = new Int32Array(indices);
                     indexCounts.push(tempVertexData.indices.length);
@@ -2965,6 +2918,65 @@ var BABYLON;
                 // Sub material
                 var material = getMaterial(runtime, primitive.material);
                 multiMat.subMaterials.push(material);
+                // Morph Targets
+                if (primitive.targets !== undefined) {
+                    for (var targetsIndex = 0; targetsIndex < primitive.targets.length; targetsIndex++) {
+                        var target = primitive.targets[targetsIndex];
+                        var weight = 0.0;
+                        if (node.weights !== undefined) {
+                            weight = node.weights[targetsIndex];
+                        }
+                        else if (mesh.weights !== undefined) {
+                            weight = mesh.weights[targetsIndex];
+                        }
+                        var morph = new BABYLON.MorphTarget("morph" + targetsIndex, weight);
+                        for (var semantic in target) {
+                            // Link accessor and buffer view
+                            accessor = runtime.gltf.accessors[target[semantic]];
+                            buffer = GLTF2.GLTFUtils.GetBufferFromAccessor(runtime, accessor);
+                            if (accessor.name !== undefined) {
+                                morph.name = accessor.name;
+                            }
+                            // glTF stores morph target information as deltas
+                            // while babylon.js expects the final data.
+                            // As a result we have to add the original data to the delta to calculate
+                            // the final data.
+                            if (semantic === "NORMAL") {
+                                for (var bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
+                                    buffer[bufferIndex] += vertexData.normals[bufferIndex];
+                                }
+                                morph.setNormals(buffer);
+                            }
+                            else if (semantic === "POSITION") {
+                                for (var bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
+                                    buffer[bufferIndex] += vertexData.positions[bufferIndex];
+                                }
+                                morph.setPositions(buffer);
+                            }
+                            else if (semantic === "TANGENT") {
+                                // Tangent data for morph targets is stored as xyz delta.
+                                // The vertexData.tangent is stored as xyzw.
+                                // So we need to skip every fourth vertexData.tangent.
+                                for (var bufferIndex = 0, tangentsIndex = 0; bufferIndex < buffer.length; bufferIndex++, tangentsIndex++) {
+                                    buffer[bufferIndex] += vertexData.tangents[tangentsIndex];
+                                    if ((bufferIndex + 1) % 3 == 0) {
+                                        tangentsIndex++;
+                                    }
+                                }
+                                morph.setTangents(buffer);
+                            }
+                            else {
+                                BABYLON.Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
+                            }
+                        }
+                        if (morph.getPositions() !== undefined) {
+                            morphTargetManager.addTarget(morph);
+                        }
+                        else {
+                            BABYLON.Tools.Warn("Not adding morph target '" + morph.name + "' because it has no position data");
+                        }
+                    }
+                }
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                 indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
@@ -2972,13 +2984,17 @@ var BABYLON;
             // Apply geometry
             geometry.setAllVerticesData(vertexData, false);
             babylonMesh.computeWorldMatrix(true);
+            // Set morph target manager after all vertices data has been processed
+            if (morphTargetManager !== undefined && morphTargetManager.numInfluencers > 0) {
+                babylonMesh.morphTargetManager = morphTargetManager;
+            }
             // Apply submeshes
             babylonMesh.subMeshes = [];
-            for (var index = 0; index < mesh.primitives.length; index++) {
-                if (mesh.primitives[index].mode !== GLTF2.EMeshPrimitiveMode.TRIANGLES) {
+            for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
+                if (mesh.primitives[primitiveIndex].mode !== GLTF2.EMeshPrimitiveMode.TRIANGLES) {
                     //continue;
                 }
-                var subMesh = new BABYLON.SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], babylonMesh, babylonMesh, true);
+                var subMesh = new BABYLON.SubMesh(primitiveIndex, verticesStarts[primitiveIndex], verticesCounts[primitiveIndex], indexStarts[primitiveIndex], indexCounts[primitiveIndex], babylonMesh, babylonMesh, true);
             }
             // Finish
             return babylonMesh;
@@ -3367,9 +3383,9 @@ var BABYLON;
                 GLTFLoader._createTextureAsync(runtime, texture, texCoord, sourceURL, onSuccess, onError);
             };
             GLTFLoader._createTextureAsync = function (runtime, texture, texCoord, url, onSuccess, onError) {
-                var sampler = texture.sampler ? runtime.gltf.samplers[texture.sampler] : {};
+                var sampler = (texture.sampler === undefined ? {} : runtime.gltf.samplers[texture.sampler]);
                 var noMipMaps = (sampler.minFilter === GLTF2.ETextureMinFilter.NEAREST || sampler.minFilter === GLTF2.ETextureMinFilter.LINEAR);
-                var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
+                var samplingMode = GLTF2.GLTFUtils.GetTextureFilterMode(sampler.minFilter);
                 var babylonTexture = new BABYLON.Texture(url, runtime.babylonScene, noMipMaps, true, samplingMode, function () {
                     onSuccess(babylonTexture);
                 }, onError);
@@ -3611,7 +3627,7 @@ var BABYLON;
                 }
             };
             GLTFUtils.GetBufferFromBufferView = function (runtime, bufferView, byteOffset, byteLength, componentType) {
-                var byteOffset = bufferView.byteOffset + byteOffset;
+                byteOffset += (bufferView.byteOffset || 0);
                 var loadedBufferView = runtime.gltf.buffers[bufferView.buffer].loadedBufferView;
                 if (byteOffset + byteLength > loadedBufferView.byteLength) {
                     throw new Error("Buffer access is out of range");
@@ -3634,8 +3650,9 @@ var BABYLON;
              */
             GLTFUtils.GetBufferFromAccessor = function (runtime, accessor) {
                 var bufferView = runtime.gltf.bufferViews[accessor.bufferView];
+                var byteOffset = accessor.byteOffset || 0;
                 var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
-                return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
+                return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, byteOffset, byteLength, accessor.componentType);
             };
             /**
              * Decodes a buffer view into a string
