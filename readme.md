@@ -13,6 +13,12 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 - http://cdn.babylonjs.com/2-5/babylon.noworker.js 
 - http://cdn.babylonjs.com/2-5/babylon.core.js 
 
+For preview release you can use the following ones:
+
+- http://preview.babylonjs.com/babylon.js 
+- http://preview.babylonjs.com/babylon.max.js 
+- http://preview.babylonjs.com/babylon.worker.js
+
 ## Preview release
 
 **3.0-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)

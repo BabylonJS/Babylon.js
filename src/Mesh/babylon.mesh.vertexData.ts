@@ -2126,7 +2126,7 @@
          * bInfo : optional bounding info, required for facetPartitioning computation
          */
         public static ComputeNormals(positions: any, indices: any, normals: any,
-            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any}): void {
+            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any, useRightHandedSystem?: boolean }): void {
 
             // temporary scalar variables
             var index = 0;                      // facet index     
@@ -2152,10 +2152,12 @@
             var computeFacetNormals = false;
             var computeFacetPositions = false;
             var computeFacetPartitioning = false;
+            var faceNormalSign = 1;
             if (options) {
                 computeFacetNormals = (options.facetNormals) ? true : false;
                 computeFacetPositions = (options.facetPositions) ? true : false;
                 computeFacetPartitioning = (options.facetPartitioning) ? true : false;
+                faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
             }
 
             // facetPartitioning reinit if needed
@@ -2215,9 +2217,9 @@
                 p3p2z = positions[v3z] - positions[v2z];
 
                 // compute the face normal with the cross product
-                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;
-                faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
-                faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
+                faceNormalx = faceNormalSign * (p1p2y * p3p2z - p1p2z * p3p2y);
+                faceNormaly = faceNormalSign * (p1p2z * p3p2x - p1p2x * p3p2z);
+                faceNormalz = faceNormalSign * (p1p2x * p3p2y - p1p2y * p3p2x);
                 // normalize this normal and store it in the array facetData
                 length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
                 length = (length === 0) ? 1.0 : length;
