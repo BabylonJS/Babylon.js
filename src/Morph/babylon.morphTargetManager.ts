@@ -53,6 +53,10 @@ module BABYLON {
         public getActiveTarget(index: number): MorphTarget {
             return this._activeTargets.data[index];
         }
+
+        public getTarget(index: number): MorphTarget {
+            return this._targets[index];
+        }
        
         public addTarget(target: MorphTarget): void {
             if (this._vertexCount) {
