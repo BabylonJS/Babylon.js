@@ -236,7 +236,9 @@ declare module BABYLON.GLTF2 {
         indices?: number;
         material?: number;
         mode?: EMeshPrimitiveMode;
-        targets?: number[];
+        targets?: [{
+            [name: string]: number;
+        }];
     }
     interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];

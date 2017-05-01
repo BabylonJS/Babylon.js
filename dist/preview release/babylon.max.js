@@ -7016,7 +7016,7 @@ var BABYLON;
             this.isPointerLock = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
-            this.preventCacheWipeBetweenFrames = true;
+            this.preventCacheWipeBetweenFrames = false;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = BABYLON.Database;
             this.scenes = new Array();
@@ -7734,6 +7734,14 @@ var BABYLON;
         Engine.prototype.setStencilOperationPass = function (operation) {
             this._stencilState.stencilOpStencilDepthPass = operation;
         };
+        Engine.prototype.setDitheringState = function (value) {
+            if (value) {
+                this._gl.enable(this._gl.DITHER);
+            }
+            else {
+                this._gl.disable(this._gl.DITHER);
+            }
+        };
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -8314,7 +8322,7 @@ var BABYLON;
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
                 var instancesBuffer = this._currentInstanceBuffers[i];
-                if (boundBuffer != instancesBuffer) {
+                if (boundBuffer != instancesBuffer && instancesBuffer.references) {
                     boundBuffer = instancesBuffer;
                     this.bindArrayBuffer(instancesBuffer);
                 }
@@ -31192,10 +31200,8 @@ var BABYLON;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
             };
-            if (!target) {
-                _this._target = BABYLON.Vector3.Zero();
-            }
-            else {
+            _this._target = BABYLON.Vector3.Zero();
+            if (target) {
                 _this.setTarget(target);
             }
             _this.alpha = alpha;
