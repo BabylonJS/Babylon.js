@@ -38,6 +38,10 @@ module BABYLON {
             return this._supportsTangents;
         }
 
+        public get numTargets(): number {
+            return this._targets.length;
+        }
+
         public get numInfluencers(): number {
             return this._activeTargets.length;
         }

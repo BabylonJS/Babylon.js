@@ -712,7 +712,7 @@ module BABYLON.GLTF2 {
         babylonMesh.computeWorldMatrix(true);
 
         // Set morph target manager after all vertices data has been processed
-        if (morphTargetManager !== undefined && morphTargetManager.numInfluencers > 0) {
+        if (morphTargetManager !== undefined && morphTargetManager.numTargets > 0) {
             babylonMesh.morphTargetManager = morphTargetManager;
         }
 
