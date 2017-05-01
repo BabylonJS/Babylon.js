@@ -175,6 +175,7 @@
 
             // Instances
             var defines = [];
+            var attribs = [];
             var fallbacks = new EffectFallbacks();
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -184,12 +185,29 @@
                 defines.push(this._options.defines[index]);
             }
 
+            for (var index = 0; index < this._options.attributes.length; index++) {
+                attribs.push(this._options.attributes[index]);
+            }
+
+            if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                attribs.push(VertexBuffer.ColorKind);
+                defines.push("#define VERTEXCOLOR");
+            }
+            
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
-            }
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }  
 
             // Textures
             for (var name in this._textures) {
@@ -207,7 +225,7 @@
             var join = defines.join("\n");
 
             this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
-                    attributes: this._options.attributes,
+                    attributes: attribs,
                     uniformsNames: this._options.uniforms,
                     uniformBuffersNames: this._options.uniformBuffers,
                     samplers: this._options.samplers,
