@@ -213,7 +213,7 @@ module BABYLON {
             if (!target) {
                 this._target = Vector3.Zero();
             } else {
-                this._target = target;
+                this.setTarget(target);
             }
 
             this.alpha = alpha;

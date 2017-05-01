@@ -854,6 +854,10 @@
             ],
             "dependUpon" : [
                 "core"
+            ],
+            "shaders" : [
+                "layer.vertex",
+                "layer.fragment"
             ]
         }
     },
