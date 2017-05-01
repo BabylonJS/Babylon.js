@@ -2180,8 +2180,8 @@
             } else {
                 normals = [];
             }
-            
-            VertexData.ComputeNormals(positions, indices, normals);
+
+            VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
         } 
 
