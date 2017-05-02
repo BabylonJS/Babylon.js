@@ -1900,6 +1900,16 @@
 
             this._currentEffect = effect;
 
+            //disable attributes that we know the effect doesn't require
+            for(let i = 0; i < this._vertexAttribArraysEnabled.length; i++){
+                let attributeEnabled = this._vertexAttribArraysEnabled[i];
+                //check attribute is enabled but not used in this effect
+                if(attributeEnabled && !effect.usesAttributeLocation(i)){
+                    this._gl.disableVertexAttribArray(i);
+                    this._vertexAttribArraysEnabled[i] = false;
+                }
+            } 
+
             if (effect.onBind) {
                 effect.onBind(effect);
             }

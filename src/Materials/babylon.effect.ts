@@ -216,6 +216,10 @@
             return this._attributes.length;
         }
 
+        public usesAttributeLocation(location:number){
+            return this._attributes.indexOf(location) !== -1;
+        }
+
         public getUniformIndex(uniformName: string): number {
             return this._uniformsNames.indexOf(uniformName);
         }
