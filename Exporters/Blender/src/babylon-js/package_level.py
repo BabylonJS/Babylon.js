@@ -19,7 +19,10 @@ def format_exporter_version(bl_info = None):
     if bl_info is None:
         bl_info = get_bl_info()
     exporterVersion = bl_info['version']
-    return str(exporterVersion[0]) + '.' + str(exporterVersion[1]) +  '.' + str(exporterVersion[2])
+    if exporterVersion[2] >= 0:
+        return str(exporterVersion[0]) + '.' + str(exporterVersion[1]) +  '.' + str(exporterVersion[2])
+    else:
+        return str(exporterVersion[0]) + '.' + str(exporterVersion[1]) +  '-beta'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def blenderMajorMinorVersion():
     # in form of '2.77 (sub 0)'
@@ -123,16 +126,18 @@ def format_matrix4(matrix):
 def format_array3(array):
     return format_f(array[0]) + ',' + format_f(array[1]) + ',' + format_f(array[2])
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-def format_array(array, indent = ''):
+def format_array(array, indent = '', beginIdx = 0, firstNotIncludedIdx = -1):
     ret = ''
     first = True
     nOnLine = 0
-    for element in array:
+    
+    endIdx = len(array) if firstNotIncludedIdx == -1 else firstNotIncludedIdx
+    for idx in range(beginIdx, endIdx):
         if (first != True):
             ret +=','
         first = False;
 
-        ret += format_f(element)
+        ret += format_f(array[idx])
         nOnLine += 1
 
         if nOnLine >= VERTEX_OUTPUT_PER_LINE:
@@ -147,7 +152,7 @@ def format_color(color):
 def format_vector(vector, switchYZ = True):
     return format_f(vector.x) + ',' + format_f(vector.z) + ',' + format_f(vector.y) if switchYZ else format_f(vector.x) + ',' + format_f(vector.y) + ',' + format_f(vector.z)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-def format_vector_array(vectorArray, indent = ''):
+def format_vector_array(vectorArray, indent = '', switchYZ = True):
     ret = ''
     first = True
     nOnLine = 0
@@ -156,7 +161,7 @@ def format_vector_array(vectorArray, indent = ''):
             ret +=','
         first = False;
 
-        ret += format_vector(vector)
+        ret += format_vector(vector, switchYZ)
         nOnLine += 3
 
         if nOnLine >= VERTEX_OUTPUT_PER_LINE:
@@ -216,6 +221,16 @@ def same_vertex(vertA, vertB):
 
     return True
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+def similar_vertex(vertA, vertB, tolerance = 0.00015):
+    if vertA is None or vertB is None: return False
+
+    if (abs(vertA.x - vertB.x) > tolerance or
+        abs(vertA.y - vertB.y) > tolerance or
+        abs(vertA.z - vertB.z) > tolerance ):
+        return False
+
+    return True
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def same_array(arrayA, arrayB):
     if(arrayA is None or arrayB is None): return False
     if len(arrayA) != len(arrayB): return False
@@ -241,8 +256,8 @@ def write_color(file_handler, name, color):
 def write_vector(file_handler, name, vector, switchYZ = True):
     file_handler.write(',"' + name + '":[' + format_vector(vector, switchYZ) + ']')
 
-def write_vector_array(file_handler, name, vectorArray):
-    file_handler.write('\n,"' + name + '":[' + format_vector_array(vectorArray) + ']')
+def write_vector_array(file_handler, name, vectorArray, switchYZ = True):
+    file_handler.write('\n,"' + name + '":[' + format_vector_array(vectorArray, '', switchYZ) + ']')
 
 def write_quaternion(file_handler, name, quaternion):
     file_handler.write(',"' + name  +'":[' + format_quaternion(quaternion) + ']')

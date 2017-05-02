@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (5, 2, 1),
+    'version': (5, 3, -1),
     'blender': (2, 76, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -24,6 +24,7 @@ if "bpy" in locals():
     imp.reload(material)
     imp.reload(mesh)
     imp.reload(package_level)
+    imp.reload(shape_key_group)
     imp.reload(sound)
     imp.reload(world)
 else:
@@ -38,6 +39,7 @@ else:
     from . import material
     from . import mesh
     from . import package_level
+    from . import shape_key_group
     from . import sound
     from . import world
 
