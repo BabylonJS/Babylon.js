@@ -38526,7 +38526,7 @@ var BABYLON;
             for (var index = 0; index < this._options.attributes.length; index++) {
                 attribs.push(this._options.attributes[index]);
             }
-            if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
+            if (mesh && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                 attribs.push(BABYLON.VertexBuffer.ColorKind);
                 defines.push("#define VERTEXCOLOR");
             }
@@ -57104,6 +57104,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(MorphTargetManager.prototype, "numTargets", {
+            get: function () {
+                return this._targets.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(MorphTargetManager.prototype, "numInfluencers", {
             get: function () {
                 return this._activeTargets.length;
@@ -57120,6 +57127,9 @@ var BABYLON;
         });
         MorphTargetManager.prototype.getActiveTarget = function (index) {
             return this._activeTargets.data[index];
+        };
+        MorphTargetManager.prototype.getTarget = function (index) {
+            return this._targets[index];
         };
         MorphTargetManager.prototype.addTarget = function (target) {
             var _this = this;
