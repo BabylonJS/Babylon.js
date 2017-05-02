@@ -2668,6 +2668,14 @@
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
+            var colorRenderbuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 16, gl.RGBA8, width, height);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.RENDERBUFFER, colorRenderbuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, colorRenderbuffer);
+
             var width = size.width || size;
             var height = size.height || size;
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
@@ -2697,7 +2705,7 @@
             
                 gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
 
-                texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
+                // texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
                 if (generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -2705,8 +2713,6 @@
 
                 // Unbind
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
-                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-                this.bindUnboundFramebuffer(null);
 
                 texture._framebuffer = framebuffer;
                 texture._baseWidth = width;
@@ -2723,7 +2729,56 @@
                 texture._generateStencilBuffer = generateStencilBuffer;
             }
 
+            if (generateDepthBuffer) {
+                // Depth texture
+                var depthTexture = gl.createTexture();
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.DEPTH_COMPONENT16,
+                    width,
+                    height,
+                    0,
+                    gl.DEPTH_COMPONENT,
+                    gl.UNSIGNED_SHORT,
+                    null
+                );
+
+                gl.framebufferTexture2D(
+                    gl.FRAMEBUFFER,
+                    gl.DEPTH_ATTACHMENT,
+                    gl.TEXTURE_2D,
+                    depthTexture,
+                    0
+                );
+
+                depthTexture._framebuffer = framebuffer;
+                depthTexture._baseWidth = width;
+                depthTexture._baseHeight = height;
+                depthTexture._width = width;
+                depthTexture._height = height;
+                depthTexture.isReady = true;
+                depthTexture.samples = 1;
+                depthTexture.generateMipMaps = generateMipMaps;
+                depthTexture.references = 1;
+                depthTexture.samplingMode = gl.NEAREST;
+                // depthTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                depthTexture._generateDepthBuffer = generateDepthBuffer;
+                depthTexture._generateStencilBuffer = generateStencilBuffer;
+
+                textures.push(depthTexture)
+            }
+
             gl.drawBuffers(attachments);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             this.resetTextureCache();
 

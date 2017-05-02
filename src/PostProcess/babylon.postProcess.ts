@@ -180,8 +180,8 @@
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = { 
                     generateMipMaps: false, 
-                    generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
-                    generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                    generateDepthBuffer: false, //camera._postProcesses.indexOf(this) === 0, 
+                    generateStencilBuffer: false, //camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode, 
                     type: this._textureType 
                 };
@@ -191,15 +191,18 @@
                 if (this._reusable) {
                     this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                 }
+ 
+                //Debug
+                this._engine.updateRenderTargetTextureSampleCount(this._textures.data[this._textures.length - 1], 64);
 
                 this.onSizeChangedObservable.notifyObservers(this);
             }
 
-            this._textures.forEach(texture => {
-                if (texture.samples !== this.samples) {
-                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
-                }
-            });
+            // this._textures.forEach(texture => {
+            //     if (texture.samples !== this.samples) {
+            //         this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
+            //     }
+            // });
 
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
