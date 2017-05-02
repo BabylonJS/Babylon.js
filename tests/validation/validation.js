@@ -5,7 +5,10 @@ var canvas;
 var currentScene;
 var config;
 
-function compare(renderData, referenceCanvas, threshold) {
+var thresold = 25;
+var errorRatio = 5;
+
+function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
     var size = width * height * 4;
@@ -30,7 +33,7 @@ function compare(renderData, referenceCanvas, threshold) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
-    return differencesCount;
+    return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
 function getRenderData(canvas, engine) {
@@ -76,7 +79,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
     if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas, 25)) { 
+        if (compare(renderData, resultCanvas)) { 
             result.classList.add("failed");
             result.innerHTML = "×";
             console.log("failed");
