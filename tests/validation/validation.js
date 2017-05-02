@@ -5,7 +5,7 @@ var canvas;
 var currentScene;
 var config;
 
-function compare(renderData, referenceCanvas) {
+function compare(renderData, referenceCanvas, threshold) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
     var size = width * height * 4;
@@ -16,9 +16,9 @@ function compare(renderData, referenceCanvas) {
 
     var differencesCount = 0;
     for (var index = 0; index < size; index += 4) {
-        if (renderData[index] === referenceData.data[index] &&
-            renderData[index + 1] === referenceData.data[index + 1] &&
-            renderData[index + 2] === referenceData.data[index + 2]) {
+        if (Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
+            Math.abs(renderData[index + 1] - referenceData.data[index + 1]) < threshold &&
+            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold) {
             continue;
         }
 
@@ -30,7 +30,7 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
-    return (differencesCount * 100) / (width * height);
+    return differencesCount;
 }
 
 function getRenderData(canvas, engine) {
@@ -76,7 +76,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
     if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas) > 5) { // More than 5% of pixels are different
+        if (compare(renderData, resultCanvas, 25)) { 
             result.classList.add("failed");
             result.innerHTML = "×";
             console.log("failed");
