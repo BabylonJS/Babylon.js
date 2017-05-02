@@ -1945,11 +1945,10 @@
                     return this.cameras[index];
                 }
             }
-
             return null;
         }
 
-        /**
+       /**
          * get a bone using its id
          * @param {string} the bone's id
          * @return {BABYLON.Bone|null} the bone or null if not found
@@ -1983,6 +1982,21 @@
             }
 
             return null;
+        }
+
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @param {Skeleton} the skeleton 
+        * @return {number} the indice of bone on
+        */
+        public searchIndexOnSkeletonByName(skeleton: Skeleton, name: string): number {
+                for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return boneIndex;
+                    }
+                }
+                return null;
         }
 
         /**
@@ -2210,7 +2224,7 @@
 
             var bone = this.getBoneByID(id);
 
-            return bone;
+             return bone;
         }
 
         public getNodeByName(name: string): Node {
@@ -2231,10 +2245,9 @@
             if (camera) {
                 return camera;
             }
-
             var bone = this.getBoneByName(name);
-
-            return bone;
+	     
+             return bone;
         }
 
         public getMeshByName(name: string): AbstractMesh {
