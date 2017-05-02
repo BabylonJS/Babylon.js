@@ -33134,6 +33134,8 @@ var BABYLON;
             this.loopAnimation = loopAnimation;
             this.speedRatio = speedRatio;
             this.onAnimationEnd = onAnimationEnd;
+            this._localDelayOffset = null;
+            this._pausedDelay = null;
             this._animations = new Array();
             this._paused = false;
             this.animationStarted = false;
@@ -33243,15 +33245,15 @@ var BABYLON;
         Animatable.prototype._animate = function (delay) {
             if (this._paused) {
                 this.animationStarted = false;
-                if (!this._pausedDelay) {
+                if (this._pausedDelay === null) {
                     this._pausedDelay = delay;
                 }
                 return true;
             }
-            if (!this._localDelayOffset) {
+            if (this._localDelayOffset === null) {
                 this._localDelayOffset = delay;
             }
-            else if (this._pausedDelay) {
+            else if (this._pausedDelay !== null) {
                 this._localDelayOffset += delay - this._pausedDelay;
                 this._pausedDelay = null;
             }
