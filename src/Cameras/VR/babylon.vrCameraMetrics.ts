@@ -14,6 +14,8 @@
         public lensCenterOffset: number;
         public compensateDistortion = true;
 
+        private static defaultCameraMetrics:VRCameraMetrics = null;
+
         public get aspectRatio(): number {
             return this.hResolution / (2 * this.vResolution);
         }
@@ -44,7 +46,15 @@
             return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
         }
 
+        public static SetDefault(defaults:VRCameraMetrics): void {
+            VRCameraMetrics.defaultCameraMetrics = defaults;
+        }
+
         public static GetDefault(): VRCameraMetrics {
+            if (VRCameraMetrics.defaultCameraMetrics != null) {
+                return VRCameraMetrics.defaultCameraMetrics;
+            }
+            
             var result = new VRCameraMetrics();
 
             result.hResolution = 1280;
