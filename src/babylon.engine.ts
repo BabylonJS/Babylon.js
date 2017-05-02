@@ -966,6 +966,14 @@
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
 
+        public setDitheringState(value: boolean): void {
+            if (value) {
+                this._gl.enable(this._gl.DITHER);
+            } else {
+                this._gl.disable(this._gl.DITHER);
+            }
+        }
+
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -1663,7 +1671,7 @@
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
                 var instancesBuffer = this._currentInstanceBuffers[i];
-                if (boundBuffer != instancesBuffer) {
+                if (boundBuffer != instancesBuffer && instancesBuffer.references) {
                     boundBuffer = instancesBuffer;
                     this.bindArrayBuffer(instancesBuffer);
                 }
