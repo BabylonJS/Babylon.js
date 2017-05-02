@@ -18,6 +18,11 @@ class ExporterSettingsPanel(bpy.types.Panel):
         description='Use face normals on all meshes.  Increases vertices.',
         default = False,
         )
+    bpy.types.Scene.force64Kmeshes = bpy.props.BoolProperty(
+        name='Force 64k per Mesh Vertex Limit',
+        description='When true, break up meshes with > 64k vertices for older\nhardware.  No effect when no qualifying meshes.',
+        default = True,
+        )
     bpy.types.Scene.attachedSound = bpy.props.StringProperty(
         name='Sound',
         description='',
@@ -55,6 +60,7 @@ class ExporterSettingsPanel(bpy.types.Panel):
         scene = context.scene
         layout.prop(scene, 'export_onlySelectedLayer')
         layout.prop(scene, 'export_flatshadeScene')
+        layout.prop(scene, 'force64Kmeshes')
         layout.prop(scene, 'ignoreIKBones')
 
         box = layout.box()
