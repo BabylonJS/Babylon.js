@@ -4,6 +4,7 @@ from .package_level import *
 from .f_curve_animatable import *
 from .armature import *
 from .material import *
+from .shape_key_group import *
 
 import bpy
 import math
@@ -13,7 +14,7 @@ import shutil
 # output related constants
 MAX_VERTEX_ELEMENTS = 65535
 MAX_VERTEX_ELEMENTS_32Bit = 16777216
-COMPRESS_MATRIX_INDICES = True # this is True for .babylon exporter & False for TOB
+COMPRESS_MATRIX_INDICES = True
 
 # used in Mesh & Node constructors, defined in BABYLON.AbstractMesh
 BILLBOARDMODE_NONE = 0
@@ -31,6 +32,8 @@ CAPSULE_IMPOSTER = 5
 CONE_IMPOSTER = 6
 CYLINDER_IMPOSTER = 7
 CONVEX_HULL_IMPOSTER = 8
+
+SHAPE_KEY_GROUPS_ALLOWED = False
 #===============================================================================
 class Mesh(FCurveAnimatable):
     def __init__(self, object, scene, startFace, forcedParent, nameID, exporter):
@@ -141,7 +144,7 @@ class Mesh(FCurveAnimatable):
             self.physicsRestitution = object.rigid_body.restitution
 
         # process all of the materials required
-        maxVerts = MAX_VERTEX_ELEMENTS # change for multi-materials
+        maxVerts = MAX_VERTEX_ELEMENTS if scene.force64Kmeshes else MAX_VERTEX_ELEMENTS_32Bit # change for multi-materials or shapekeys
         recipe = BakingRecipe(object)
         self.billboardMode = BILLBOARDMODE_ALL if recipe.isBillboard else BILLBOARDMODE_NONE
 
@@ -211,6 +214,19 @@ class Mesh(FCurveAnimatable):
             influenceCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0] # 9, so accessed orign 1; 0 used for all those greater than 8
             totalInfluencers = 0
             highestInfluenceObserved = 0
+
+        hasShapeKeys = False
+        if object.data.shape_keys:
+            for block in object.data.shape_keys.key_blocks:
+                if (block.name == 'Basis'):
+                    hasShapeKeys = True
+                    keyOrderMap = []
+                    basis = block
+                    maxVerts = MAX_VERTEX_ELEMENTS_32Bit
+                    break
+
+            if not hasShapeKeys:
+                Logger.warn('Basis key missing, shape-key processing NOT performed', 2)
 
         # used tracking of vertices as they are received
         alreadySavedVertices = []
@@ -370,6 +386,9 @@ class Mesh(FCurveAnimatable):
                             weightsPerVertex.append(matricesWeights)
                             indicesPerVertex.append(matricesIndices)
 
+                        if hasShapeKeys:
+                            keyOrderMap.append([vertex_index, len(self.positions)]) # use len positions before it is append to convert from 1 to 0 origin
+
                         vertices_indices[vertex_index].append(index)
 
                         self.positions.append(position)
@@ -381,7 +400,7 @@ class Mesh(FCurveAnimatable):
             self.subMeshes.append(SubMesh(materialIndex, subMeshVerticesStart, subMeshIndexStart, verticesCount - subMeshVerticesStart, indicesCount - subMeshIndexStart))
 
         if verticesCount > MAX_VERTEX_ELEMENTS:
-            Logger.warn('Due to multi-materials / Shapekeys & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
+            Logger.warn('Due to multi-materials, Shapekeys, or exporter settings & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
 
         BakedMaterial.meshBakingClean(object)
 
@@ -411,11 +430,56 @@ class Mesh(FCurveAnimatable):
         numZeroAreaFaces = self.find_zero_area_faces()
         if numZeroAreaFaces > 0:
             Logger.warn('# of 0 area faces found:  ' + str(numZeroAreaFaces), 2)
+
+        # shape keys for mesh
+        if hasShapeKeys:
+            Mesh.sort(keyOrderMap)
+            self.rawShapeKeys = []
+            groupNames = []
+            Logger.log('Shape Keys:', 2)
+
+            # process the keys in the .blend
+            for block in object.data.shape_keys.key_blocks:
+                # perform name format validation, before processing
+                keyName = block.name
+
+                # the Basis shape key is a member of all groups, processed in 2nd pass
+                if keyName == 'Basis': continue
+
+                if keyName.find('-') <= 0 and SHAPE_KEY_GROUPS_ALLOWED:
+                    if object.data.defaultShapeKeyGroup != DEFAULT_SHAPE_KEY_GROUP:
+                        keyName = object.data.defaultShapeKeyGroup + '-' + keyName
+                    else: continue
+                
+                group = None
+                state = keyName
+                if SHAPE_KEY_GROUPS_ALLOWED:
+                    temp = keyName.upper().partition('-')
+                    group = temp[0]
+                    state = temp[2]
+                self.rawShapeKeys.append(RawShapeKey(block, group, state, keyOrderMap, basis))
+
+                if SHAPE_KEY_GROUPS_ALLOWED:
+                    # check for a new group, add to groupNames if so
+                    newGroup = True
+                    for group in groupNames:
+                        if temp[0] == group:
+                            newGroup = False
+                            break
+                    if newGroup:
+                       groupNames.append(temp[0])
+
+            # process into ShapeKeyGroups, when rawShapeKeys found and groups allowed (implied)
+            if len(groupNames) > 0:
+                self.shapeKeyGroups = []
+                basis = RawShapeKey(basis, None, 'BASIS', keyOrderMap, basis)
+                for group in groupNames:
+                    self.shapeKeyGroups.append(ShapeKeyGroup(group,self.rawShapeKeys, basis.vertices))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def find_zero_area_faces(self):
         nFaces = int(len(self.indices) / 3)
         nZeroAreaFaces = 0
-        for f in range(0, nFaces):
+        for f in range(nFaces):
             faceOffset = f * 3
             p1 = self.positions[self.indices[faceOffset    ]]
             p2 = self.positions[self.indices[faceOffset + 1]]
@@ -424,6 +488,19 @@ class Mesh(FCurveAnimatable):
             if same_vertex(p1, p2) or same_vertex(p1, p3) or same_vertex(p2, p3): nZeroAreaFaces += 1
 
         return nZeroAreaFaces
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    @staticmethod
+    # ShapeKeyGroup depends on AffectedIndices being in asending order, so sort it, probably nothing to do
+    def sort(keyOrderMap):
+        notSorted = True
+        while(notSorted):
+            notSorted = False
+            for idx in range(1, len(keyOrderMap)):
+                if keyOrderMap[idx - 1][1] > keyOrderMap[idx][1]:
+                    tmp = keyOrderMap[idx]
+                    keyOrderMap[idx    ] = keyOrderMap[idx - 1]
+                    keyOrderMap[idx - 1] = tmp
+                    notSorted = True
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     @staticmethod
     def mesh_triangulate(mesh):
@@ -596,6 +673,21 @@ class Mesh(FCurveAnimatable):
 
             first = False
         file_handler.write(']')
+        
+        # Shape Keys
+        if hasattr(self, 'rawShapeKeys'):
+            first = True
+            file_handler.write('\n,"MorphTargetManager":{')
+            write_string(file_handler, 'id', self.name, True)
+            file_handler.write('\n,"targets":[')
+            for key in self.rawShapeKeys:
+                if first == False:
+                    file_handler.write(',')
+
+                key.to_scene_file(file_handler)
+
+                first = False
+            file_handler.write(']}')
 
         # Close mesh
         file_handler.write('}\n')
