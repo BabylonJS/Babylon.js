@@ -5,12 +5,35 @@ module BABYLON {
             return this._scene;
         }
 
-        private _textures: WebGLTexture[];
+        private _webGLTextures: WebGLTexture[];
+        private _textures: Texture[];
         private _count: number;
         private _scene: Scene;
         private _renderingManager: RenderingManager;
         private _doNotChangeAspectRatio: boolean;
         private _size: number;
+
+        /**
+        * An event triggered after the texture clear
+        * @type {BABYLON.Observable}
+        */
+        public onClearObservable = new Observable<Engine>();
+
+        private _onClearObserver: Observer<Engine>;
+        public set onClear(callback: (Engine: Engine) => void) {
+            if (this._onClearObserver) {
+                this.onClearObservable.remove(this._onClearObserver);
+            }
+            this._onClearObserver = this.onClearObservable.add(callback);
+        }
+
+        public get textures(): Texture[] {
+            return this._textures;
+        }
+
+        public get depthTexture(): Texture {
+            return this._textures[this._textures.length - 1];
+        }
 
         private _shouldRender(): boolean {
             return true;
@@ -21,9 +44,9 @@ module BABYLON {
         constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
             options = options || {};
 
-            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps[0] : true;
-            var doNotChangeAspectRatio = options.doNotChangeAspectRatio;
-            var type = options.types ? options.types[0] : Engine.TEXTURETYPE_UNSIGNED_INT;
+            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps[0] : false;
+            var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
+            var type = options.types ? options.types[0] : Engine.TEXTURETYPE_FLOAT;
             var samplingMode = options.samplingModes ? options.samplingModes[0] : Texture.TRILINEAR_SAMPLINGMODE;
             var generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             var generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
@@ -32,7 +55,7 @@ module BABYLON {
             this._scene = scene;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             this._size = size;
-            this._textures = scene.getEngine().createMultipleRenderTarget(size, {
+            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, {
                 samplingMode: samplingMode,
                 generateMipMaps: generateMipMaps,
                 generateDepthBuffer: generateDepthBuffer,
@@ -40,6 +63,13 @@ module BABYLON {
                 type: type,
                 textureCount: count
             });
+
+            this._textures = [];
+            for (var i = 0; i < this._webGLTextures.length; i++) {
+                var texture = new BABYLON.Texture(null, scene);
+                texture._texture = this._webGLTextures[i];
+                this._textures.push(texture);
+            }
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
@@ -87,8 +117,14 @@ module BABYLON {
             var engine = scene.getEngine();
 
             // Bind
-            engine.bindFramebuffer(this._textures[0]);
-            engine.clear(scene.clearColor, true, true, true);
+            engine.bindFramebuffer(this._webGLTextures[0]);
+
+            // Clear
+            if (this.onClearObservable.hasObservers()) {
+                this.onClearObservable.notifyObservers(engine);
+            } else {
+                engine.clear(scene.clearColor, true, true, true);
+            }
 
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -107,7 +143,7 @@ module BABYLON {
             }
 
             // Unbind
-            engine.unBindFramebuffer(this._textures[0]);
+            engine.unBindFramebuffer(this._webGLTextures[0]);
         }
 
 
@@ -118,10 +154,10 @@ module BABYLON {
             // Remove from scene
             this._scene._removePendingData(this);
 
-            for (var i = this._textures.length - 1; i >= 0; i--) {
-                if (this._textures[i] !== undefined) {
-                    this._scene.getEngine().releaseInternalTexture(this._textures[i]);
-                    this._textures.splice(i, 1);
+            for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
+                if (this._webGLTextures[i] !== undefined) {
+                    this._scene.getEngine().releaseInternalTexture(this._webGLTextures[i]);
+                    this._webGLTextures.splice(i, 1);
                 }
             }
         }

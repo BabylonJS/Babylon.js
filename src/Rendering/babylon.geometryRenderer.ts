@@ -16,8 +16,12 @@ module BABYLON {
             var engine = scene.getEngine();
 
             // Render target
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 2, this._scene);
-            
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 2, this._scene, {generateMipMaps : [true]});
+            // set default depth value to 1.0 (far away)
+            this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+            });
+
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
                 var mesh = subMesh.getRenderingMesh();
@@ -42,6 +46,7 @@ module BABYLON {
                     var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                    this._effect.setMatrix("view", scene.getViewMatrix());
 
                     this._effect.setFloat("far", scene.activeCamera.maxZ);
 
@@ -74,7 +79,7 @@ module BABYLON {
 
             var defines = [];
 
-            var attribs = [VertexBuffer.PositionKind];
+            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
@@ -90,7 +95,7 @@ module BABYLON {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
-                    ["world", "viewProjection", "far"],
+                    ["world", "viewProjection", "view", "far"],
                     [], join);
             }
 

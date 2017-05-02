@@ -69,7 +69,8 @@
         public base: number = 0.5;
 
         private _scene: Scene;
-        private _depthTexture: RenderTargetTexture;
+        private _depthTexture: Texture;
+        private _normalTexture: Texture;
         private _randomTexture: DynamicTexture;
 
         private _originalColorPostProcess: PassPostProcess;
@@ -97,7 +98,9 @@
 
             // Set up assets
             this._createRandomTexture();
-            this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
+            this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture; 
+            // this._depthTexture = scene.enableGeometryRenderer().getGBuffer().textures[0]; // Force depth renderer "on"
+            this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1]; // Force depth renderer "on"
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
@@ -112,12 +115,11 @@
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
-
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -214,9 +216,9 @@
             this._ssaoPostProcess = new PostProcess("ssao", "ssao",
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "area", "fallOff", "base", "range", "viewport"
+                                                        "area", "fallOff", "base", "range", "viewport", "width", "height"
                                                     ],
-                                                    ["randomSampler"],
+                                                    ["randomSampler", "normalSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false,
                                                     "#define SAMPLES " + numSamples + "\n#define SSAO");
@@ -235,8 +237,11 @@
                 effect.setFloat("area", this.area);
                 effect.setFloat("fallOff", this.fallOff);
                 effect.setFloat("base", this.base);
+                effect.setFloat("width", this._scene.getEngine().getRenderWidth());
+                effect.setFloat("height", this._scene.getEngine().getRenderHeight());
 
                 effect.setTexture("textureSampler", this._depthTexture);
+                effect.setTexture("normalSampler", this._normalTexture);
                 effect.setTexture("randomSampler", this._randomTexture);
             };
         }
