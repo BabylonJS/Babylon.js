@@ -210,10 +210,9 @@ module BABYLON {
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
-            if (!target) {
-                this._target = Vector3.Zero();
-            } else {
-                this._target = target;
+            this._target = Vector3.Zero();
+            if (target) {
+                this.setTarget(target);
             }
 
             this.alpha = alpha;

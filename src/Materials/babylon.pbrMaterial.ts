@@ -996,7 +996,7 @@
 
             // Attribs
             if (mesh) {
-                if (!mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     mesh.createNormals(true);
                     Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
                 }
