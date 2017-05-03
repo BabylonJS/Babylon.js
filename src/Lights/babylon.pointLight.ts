@@ -27,6 +27,15 @@
             super(name, scene);
             this.position = position;
         }
+
+        protected _buildUniformLayout(): void {
+            this._uniformBuffer.addUniform("vLightData", 4);
+            this._uniformBuffer.addUniform("vLightDiffuse", 4);
+            this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.create();
+        }
+
         /**
          * Returns the string "PointLight"
          */
@@ -60,19 +69,21 @@
          * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
          * Returns the PointLight.  
          */
-        public transferToEffect(effect: Effect, positionUniformName: string): PointLight {
+        public transferToEffect(effect: Effect, lightIndex: string): PointLight {
+
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
 
-                effect.setFloat4(positionUniformName,
+                this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
                     this.transformedPosition.z,
-                    0.0); 
+                    0.0,
+                    lightIndex); 
                 return this;
             }
 
-            effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             return this;
         }
         /**

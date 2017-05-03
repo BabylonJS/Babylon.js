@@ -5,6 +5,9 @@ var canvas;
 var currentScene;
 var config;
 
+var thresold = 25;
+var errorRatio = 5;
+
 function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
@@ -16,9 +19,9 @@ function compare(renderData, referenceCanvas) {
 
     var differencesCount = 0;
     for (var index = 0; index < size; index += 4) {
-        if (renderData[index] === referenceData.data[index] &&
-            renderData[index + 1] === referenceData.data[index + 1] &&
-            renderData[index + 2] === referenceData.data[index + 2]) {
+        if (Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
+            Math.abs(renderData[index + 1] - referenceData.data[index + 1]) < threshold &&
+            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold) {
             continue;
         }
 
@@ -30,7 +33,7 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
-    return differencesCount;
+    return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
 function getRenderData(canvas, engine) {
@@ -72,18 +75,19 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(resultCanvas, result, renderImage, index, waitRing) {
+function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
+    if (!test.onlyVisual) {
 
-    if (compare(renderData, resultCanvas) !== 0) {
-        result.classList.add("failed");
-        result.innerHTML = "×";
-        console.log("failed");
-    } else {
-        result.innerHTML = "✔";
-        console.log("validated");
+        if (compare(renderData, resultCanvas)) { 
+            result.classList.add("failed");
+            result.innerHTML = "×";
+            console.log("failed");
+        } else {
+            result.innerHTML = "✔";
+            console.log("validated");
+        }
     }
-
     waitRing.classList.add("hidden");
 
     renderImage.src = saveRenderImage(renderData, canvas);
@@ -103,7 +107,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
             if (renderCount === 0) {
                 engine.stopRenderLoop();
-                evaluate(resultCanvas, result, renderImage, index, waitRing);
+                evaluate(test, resultCanvas, result, renderImage, index, waitRing);
             }
         });
 
@@ -181,7 +185,9 @@ function runTest(index) {
                 request.onreadystatechange = null; 
 
                 var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
-                var scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
+                scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
                 if (test.replace) {
                     var split = test.replace.split(",");
@@ -219,6 +225,7 @@ canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";
 document.body.appendChild(canvas);
 engine = new BABYLON.Engine(canvas, false);
+engine.setDitheringState(false);
 
 // Loading tests
 var xhr = new XMLHttpRequest();

@@ -682,6 +682,8 @@
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
+        private _sceneUbo: UniformBuffer;
+
         private _pickWithRayInverseMatrix: Matrix;
 
         private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
@@ -744,6 +746,9 @@
 
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
+
+            // Uniform Buffer
+            this._createUbo();
         }
 
         // Properties
@@ -933,6 +938,12 @@
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
             }
+        }
+
+        private _createUbo(): void {
+            this._sceneUbo = new UniformBuffer(this._engine, null, true);
+            this._sceneUbo.addUniform("viewProjection", 16);
+            this._sceneUbo.addUniform("view", 16);
         }
 
         // Pointers handling
@@ -1691,6 +1702,16 @@
             } else {
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
+
+            if (this._sceneUbo.useUbo) {
+                this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+                this._sceneUbo.updateMatrix("view", this._viewMatrix);
+                this._sceneUbo.update();
+            }
+        }
+
+        public getSceneUniformBuffer(): UniformBuffer {
+            return this._sceneUbo;
         }
 
         // Methods
@@ -3193,6 +3214,9 @@
             while (this.textures.length) {
                 this.textures[0].dispose();
             }
+
+            // Release UBO
+            this._sceneUbo.dispose();
 
             // Post-processes
             this.postProcessManager.dispose();

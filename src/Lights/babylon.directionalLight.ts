@@ -42,6 +42,15 @@ module BABYLON {
             this.position = direction.scale(-1.0);
             this.direction = direction;
         }
+
+        protected _buildUniformLayout(): void {
+             this._uniformBuffer.addUniform("vLightData", 4);
+             this._uniformBuffer.addUniform("vLightDiffuse", 4);
+             this._uniformBuffer.addUniform("vLightSpecular", 3);
+             this._uniformBuffer.addUniform("shadowsInfo", 3);
+             this._uniformBuffer.create();
+        }
+
         /**
          * Returns the string "DirectionalLight".  
          */
@@ -165,16 +174,16 @@ module BABYLON {
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
          * Returns the DirectionalLight.  
          */
-        public transferToEffect(effect: Effect, directionUniformName: string): DirectionalLight {
+        public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
                     this._transformedDirection = Vector3.Zero();
                 }
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                effect.setFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
+                this._uniformBuffer.updateFloat4("vLightData", this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1, lightIndex);
                 return this;
             }
-            effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
             return this;
         }
 

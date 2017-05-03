@@ -61,6 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
+        public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {
@@ -710,6 +711,7 @@ module BABYLON {
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+                var uniformBuffers = ["Material", "Scene"];
 
                 if (defines.CAMERACOLORCURVES) {
                     ColorCurves.PrepareUniforms(uniforms);
@@ -717,11 +719,18 @@ module BABYLON {
                 if (defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
-                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, defines, this._maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: this._maxSimultaneousLights
+                });
 
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
                     samplers: samplers,
                     defines: join,
                     fallbacks: fallbacks,
@@ -729,6 +738,8 @@ module BABYLON {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);
+                
+                this.buildUniformLayout();
             }
 
             if (!subMesh.effect.isReady()) {
@@ -739,6 +750,45 @@ module BABYLON {
             this._wasPreviouslyReady = true;
 
             return true;
+        }
+
+        public buildUniformLayout(): void {
+            // Order is important !
+            this._uniformBuffer.addUniform("diffuseLeftColor", 4);
+            this._uniformBuffer.addUniform("diffuseRightColor", 4);
+            this._uniformBuffer.addUniform("opacityParts", 4);
+            this._uniformBuffer.addUniform("reflectionLeftColor", 4);
+            this._uniformBuffer.addUniform("reflectionRightColor", 4);
+            this._uniformBuffer.addUniform("refractionLeftColor", 4);
+            this._uniformBuffer.addUniform("refractionRightColor", 4);
+            this._uniformBuffer.addUniform("emissiveLeftColor", 4);
+            this._uniformBuffer.addUniform("emissiveRightColor", 4);
+
+            this._uniformBuffer.addUniform("vDiffuseInfos", 2);
+            this._uniformBuffer.addUniform("vAmbientInfos", 2);
+            this._uniformBuffer.addUniform("vOpacityInfos", 2);
+            this._uniformBuffer.addUniform("vReflectionInfos", 2);
+            this._uniformBuffer.addUniform("vEmissiveInfos", 2);
+            this._uniformBuffer.addUniform("vLightmapInfos", 2);
+            this._uniformBuffer.addUniform("vSpecularInfos", 2);
+            this._uniformBuffer.addUniform("vBumpInfos", 3);
+
+            this._uniformBuffer.addUniform("diffuseMatrix", 16);
+            this._uniformBuffer.addUniform("ambientMatrix", 16);
+            this._uniformBuffer.addUniform("opacityMatrix", 16);
+            this._uniformBuffer.addUniform("reflectionMatrix", 16);
+            this._uniformBuffer.addUniform("emissiveMatrix", 16);
+            this._uniformBuffer.addUniform("lightmapMatrix", 16);
+            this._uniformBuffer.addUniform("specularMatrix", 16);
+            this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("refractionMatrix", 16);
+            this._uniformBuffer.addUniform("vRefractionInfos", 4);
+            this._uniformBuffer.addUniform("vSpecularColor", 4);
+            this._uniformBuffer.addUniform("vEmissiveColor", 3);
+            this._uniformBuffer.addUniform("vDiffuseColor", 4);
+            this._uniformBuffer.addUniform("pointSize", 1);
+
+            this._uniformBuffer.create();
         }
 
         public unbind(): void {
@@ -771,58 +821,119 @@ module BABYLON {
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
-
             if (this._mustRebind(scene, effect)) {
-                effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                this._uniformBuffer.bindToEffect(effect, "Material");
+                
+                this.bindViewProjection(effect);
+                if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
-                if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
-                    // Fresnel
-                    if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                        effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
-                        effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
+                    if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
+                        // Fresnel
+                        if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
+                            this._uniformBuffer.updateColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
+                        }
+
+                        if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                        }
+
+                        if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
+                            this._uniformBuffer.updateColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                        }
+
+                        if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
+                            this._uniformBuffer.updateColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
+                        }
+
+                        if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                            this._uniformBuffer.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                            this._uniformBuffer.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                        }
                     }
 
-                    if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        effect.setColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                    // Textures     
+                    if (scene.texturesEnabled) {
+                        if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
+                            this._uniformBuffer.updateMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
+                        }
+
+                        if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
+                            this._uniformBuffer.updateMatrix("ambientMatrix", this._ambientTexture.getTextureMatrix());
+                        }
+
+                        if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
+                            this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
+                        }
+
+                        if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
+                            this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
+                        }
+
+                        if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
+                            this._uniformBuffer.updateMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
+                        }
+
+                        if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
+                            this._uniformBuffer.updateMatrix("lightmapMatrix", this._lightmapTexture.getTextureMatrix());
+                        }
+
+                        if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
+                            this._uniformBuffer.updateMatrix("specularMatrix", this._specularTexture.getTextureMatrix());
+                        }
+
+                        if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                            this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
+                            this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
+                        }
+
+                        if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                            var depth = 1.0;
+                            if (!this._refractionTexture.isCube) {
+                                this._uniformBuffer.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
+
+                                if ((<any>this._refractionTexture).depth) {
+                                    depth = (<any>this._refractionTexture).depth;
+                                }
+                            }
+                            this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+                        }                    
                     }
 
-                    if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                        effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
-                        effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                    // Point size
+                    if (this.pointsCloud) {
+                        this._uniformBuffer.updateFloat("pointSize", this.pointSize);
                     }
 
-                    if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
-                        effect.setColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
-                        effect.setColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
+                    if (defines.SPECULARTERM) {
+                        this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                     }
-
-                    if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                        effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                        effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
-                    }
+                    this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
+                    // Diffuse
+                    this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }
-
+                
                 // Textures     
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         effect.setTexture("diffuseSampler", this._diffuseTexture);
-
-                        effect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                        effect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         effect.setTexture("ambientSampler", this._ambientTexture);
-
-                        effect.setFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                        effect.setMatrix("ambientMatrix", this._ambientTexture.getTextureMatrix());
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         effect.setTexture("opacitySampler", this._opacityTexture);
-
-                        effect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        effect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -831,37 +942,22 @@ module BABYLON {
                         } else {
                             effect.setTexture("reflection2DSampler", this._reflectionTexture);
                         }
-
-                        effect.setMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
-                        effect.setFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         effect.setTexture("emissiveSampler", this._emissiveTexture);
-
-                        effect.setFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        effect.setMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         effect.setTexture("lightmapSampler", this._lightmapTexture);
-
-                        effect.setFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        effect.setMatrix("lightmapMatrix", this._lightmapTexture.getTextureMatrix());
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
                         effect.setTexture("specularSampler", this._specularTexture);
-
-                        effect.setFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                        effect.setMatrix("specularMatrix", this._specularTexture.getTextureMatrix());
                     }
 
                     if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         effect.setTexture("bumpSampler", this._bumpTexture);
-
-                        effect.setFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                        effect.setMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -870,13 +966,7 @@ module BABYLON {
                             effect.setTexture("refractionCubeSampler", this._refractionTexture);
                         } else {
                             effect.setTexture("refraction2DSampler", this._refractionTexture);
-                            effect.setMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
-
-                            if ((<any>this._refractionTexture).depth) {
-                                depth = (<any>this._refractionTexture).depth;
-                            }
                         }
-                        effect.setFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                     
                     if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
@@ -887,37 +977,24 @@ module BABYLON {
                 // Clip plane
                 MaterialHelper.BindClipPlane(effect, scene);
 
-                // Point size
-                if (this.pointsCloud) {
-                    effect.setFloat("pointSize", this.pointSize);
-                }
-
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
                 effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
-
-                if (defines.SPECULARTERM) {
-                    effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
-                }
-                effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
 
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
-                // Diffuse
-                effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-
                 // Lights
-                if (scene.lightsEnabled && !this.disableLighting) {
+                if (scene.lightsEnabled && !this._disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
                 }
 
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
-                    effect.setMatrix("view", scene.getViewMatrix());
+                    this.bindView(effect);
                 }
-
+                
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
 
@@ -930,11 +1007,13 @@ module BABYLON {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
                 // Color Curves
-                if (this.cameraColorCurves) {
-                    ColorCurves.Bind(this.cameraColorCurves, effect);
+                if (this._cameraColorCurves) {
+                    ColorCurves.Bind(this._cameraColorCurves, effect);
                 }
+
             }
 
+            this._uniformBuffer.update();
             this._afterBind(mesh, this._activeEffect);
         }
 

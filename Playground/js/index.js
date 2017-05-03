@@ -19,16 +19,19 @@
     var run = function () {
         var blockEditorChange = false;
 
-        jsEditor.onKeyDown(function (evt) {
-        });
-
-        jsEditor.onKeyUp(function (evt) {
+        var markDirty = function() {
             if (blockEditorChange) {
                 return;
             }
 
             document.getElementById("currentScript").innerHTML = "Custom";
             document.getElementById('safemodeToggle').classList.add('checked');
+
+            document.getElementById('safemodeToggle').innerHTML = 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>';
+        }
+
+        jsEditor.onKeyUp(function (evt) {
+            markDirty();
         });
 
         var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
@@ -207,12 +210,30 @@
         }
 
         var showNoMetadata = function () {
-            document.getElementById("saveFormTitle").value = '';
-            document.getElementById("saveFormTitle").readOnly = false;
-            document.getElementById("saveFormDescription").value = '';
-            document.getElementById("saveFormDescription").readOnly = false;
-            document.getElementById("saveFormTags").value = '';
-            document.getElementById("saveFormTags").readOnly = false;
+            if (currentSnippetTitle) {
+                document.getElementById("saveFormTitle").value = currentSnippetTitle;
+                document.getElementById("saveFormTitle").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormTitle").value = '';
+                document.getElementById("saveFormTitle").readOnly = false;
+            }
+            if (currentSnippetDescription) {
+                document.getElementById("saveFormDescription").value = currentSnippetDescription;
+                document.getElementById("saveFormDescription").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormDescription").value = '';
+                document.getElementById("saveFormDescription").readOnly = false;
+            }
+            if (currentSnippetTags) {
+                document.getElementById("saveFormTags").value = currentSnippetTags;
+                document.getElementById("saveFormTags").readOnly = true;
+            }
+            else {
+                document.getElementById("saveFormTags").value = '';
+                document.getElementById("saveFormTags").readOnly = false;
+            }
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveFormButtonOk").style.display = "inline-block";
             document.getElementById("saveMessage").style.display = "block";
@@ -227,7 +248,7 @@
             document.getElementById("saveFormTags").readOnly = true;
             document.getElementById("saveFormButtonOk").style.display = "none";
             document.getElementById("saveMessage").style.display = "none";
-            document.getElementById("metadataButton").style.display = "block";
+            document.getElementById("metadataButton").style.display = "inline-block";
         };
 
         compileAndRun = function () {
@@ -371,6 +392,7 @@
         }
 
         var addTexturesToZip = function (zip, index, textures, folder, then) {
+
             if (index === textures.length) {
                 then();
                 return;
@@ -403,20 +425,26 @@
             if (textures[index].video) {
                 url = textures[index].video.currentSrc;
             } else {
-                url = textures[index].name;
+                // url = textures[index].name;
+                url = textures[index].url;
             }
 
-            var name = url.substr(url.lastIndexOf("/") + 1);
+            var name = textures[index].name;
+            // var name = url.substr(url.lastIndexOf("/") + 1);
 
-
-            addContentToZip(folder,
-                name,
-                url,
-                null,
-                true,
-                function () {
-                    addTexturesToZip(zip, index + 1, textures, folder, then);
-                });
+            if(url != null) {
+                addContentToZip(folder,
+                    name,
+                    url,
+                    null,
+                    true,
+                    function () {
+                        addTexturesToZip(zip, index + 1, textures, folder, then);
+                    });
+            }
+            else {
+                addTexturesToZip(zip, index + 1, textures, folder, then);
+            }
         }
 
         var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
@@ -563,6 +591,10 @@
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
+            jsEditor.onKeyUp(function (evt) {
+                markDirty();
+            });
+
             for (var index = 0; index < elementToTheme.length; index++) {
                 var obj = elementToTheme[index];
                 let domObjArr = document.querySelectorAll(obj);
@@ -598,6 +630,10 @@
             document.getElementById("saveLayer").style.display = "block";
         }
 
+        var formatCode = function () {
+            jsEditor.getAction('editor.action.format').run();
+        }
+
         // UI
         document.getElementById("runButton").addEventListener("click", compileAndRun);
         document.getElementById("zipButton").addEventListener("click", getZip);
@@ -609,6 +645,7 @@
         document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
         document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
         document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
+        document.getElementById("formatButton").addEventListener("click", formatCode);
 
         // Restore theme
         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
@@ -678,8 +715,8 @@
 
         document.getElementById("saveButton").addEventListener("click", function () {
             if (currentSnippetTitle == null
-                && currentSnippetDescription == null
-                && currentSnippetTags == null) {
+                || currentSnippetDescription == null
+                || currentSnippetTags == null) {
 
                 document.getElementById("saveLayer").style.display = "block";
             }
@@ -729,15 +766,23 @@
                                     jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
 
                                     // Check if title / descr / tags are already set
-                                    if ((snippet.name != null && snippet.name != "")
-                                        || (snippet.description != null && snippet.description != "")
-                                        || (snippet.tags != null && snippet.tags != "")) {
+                                    if (snippet.name != null && snippet.name != "") {
                                         currentSnippetTitle = snippet.name;
-                                        currentSnippetDescription = snippet.description;
-                                        currentSnippetTags = snippet.tags;
+                                    }
+                                    else currentSnippetTitle = null;
 
+                                    if (snippet.description != null && snippet.description != "") {
+                                        currentSnippetDescription = snippet.description;
+                                    }
+                                    else currentSnippetDescription = null;
+
+                                    if (snippet.tags != null && snippet.tags != "") {
+                                        currentSnippetTags = snippet.tags;
+                                    }
+                                    else currentSnippetTags = null;
+
+                                    if (currentSnippetTitle != null && currentSnippetTags != null && currentSnippetDescription) {
                                         if (document.getElementById("saveLayer")) {
-                                            var elem = document.getElementById("saveLayer");
 
                                             document.getElementById("saveFormTitle").value = currentSnippetTitle;
                                             document.getElementById("saveFormDescription").value = currentSnippetDescription;
@@ -747,10 +792,6 @@
                                         }
                                     }
                                     else {
-                                        currentSnippetTitle = null;
-                                        currentSnippetDescription = null;
-                                        currentSnippetTags = null;
-
                                         showNoMetadata();
                                     }
 

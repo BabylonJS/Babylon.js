@@ -140,6 +140,10 @@ body {
 .navbar .select {
     position: relative;
 }
+
+.navbar .select .subSelect {
+    position: relative; 
+}
 .navbar .select:after {
     font-family: 'FontAwesome', sans-serif;
     content: "\00a0 \00a0 \00a0 \f078";
@@ -153,6 +157,17 @@ body {
     min-width: 100%;
     display: none;
 }
+
+.navbar .select .subSelect .toDisplaySub {
+    border: 1px solid #7283a0;
+    position: absolute;
+    z-index: 10;
+    left: 100%;
+    top: 0;
+    min-width: 100%;
+    display: none;
+}
+
 .navbar .select .toDisplay .option {
     font-size: 0.9em;
     height: 35px;
@@ -441,7 +456,7 @@ body {
         display: none !important;
     }
 }
-@media (max-width: 1375px) {
+@media (max-width: 1475px) {
     .desktopOnly {
         display: none !important;
     }
@@ -455,5 +470,13 @@ body {
     }
     .version {
         display : none !important;
+    }
+}
+@media (max-width: 660px) {
+    .removeOnPhone {
+        display : none !important;
+    }
+    .category {
+        margin:0 !important;
     }
 }

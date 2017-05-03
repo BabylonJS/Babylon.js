@@ -88,7 +88,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[], index?: number): Color3 {
+        public toArray(array: number[] | Float32Array, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -315,9 +315,9 @@
         }
 
         /**
-         * Creates a new Vector3 from the startind index of the passed array.  
+         * Creates a new Vector3 from the startind index of the passed array.
          */
-        public static FromArray(array: number[], offset: number = 0): Color3 {
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Color3 {
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -566,9 +566,9 @@
         }
 
         /**
-         * Creates a new Color4 from the starting index element of the passed array.  
+         * Creates a new Color4 from the starting index element of the passed array.
          */
-        public static FromArray(array: number[], offset: number = 0): Color4 {
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
@@ -850,16 +850,15 @@
             return new Vector2(0, 0);
         }
         /**
-         * Returns a new Vector2 set from the passed index element of the passed array or Float32Array.  
+         * Returns a new Vector2 set from the passed index element of the passed array.
          */
-        public static FromArray(array: number[] | Float32Array, offset: number = 0): Vector2 {
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
         /**
-         * Sets "result" from the passed index element of the passed array or Float32Array.  
-         * Returns the Vector2.  
+         * Sets "result" from the passed index element of the passed array.
          */
-        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void {
+        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void {
             result.x = array[offset];
             result.y = array[offset + 1];
         }
@@ -1396,9 +1395,9 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed array or Float32Array.  
+         * Returns a new Vector3 set from the index "offset" of the passed array.
          */
-        public static FromArray(array: number[] | Float32Array, offset?: number): Vector3 {
+        public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
             if (!offset) {
                 offset = 0;
             }
@@ -1406,20 +1405,17 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.  
+         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArray instead.
          */
         public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
-            if (!offset) {
-                offset = 0;
-            }
-
-            return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+            return Vector3.FromArray(array, offset);
         }
 
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array or Float32Array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
          */
-        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector3): void {
+        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
@@ -1427,11 +1423,10 @@
 
         /**
          * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArrayToRef instead.
          */
         public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
-            result.x = array[offset];
-            result.y = array[offset + 1];
-            result.z = array[offset + 2];
+            return Vector3.FromArrayToRef(array, offset, result);
         }
 
         /**
@@ -1834,7 +1829,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[], index?: number): Vector4 {
+        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -2142,18 +2137,18 @@
 
         // Statics
         /**
-         * Returns a new Vector4 set from the starting index of the passed array.  
+         * Returns a new Vector4 set from the starting index of the passed array.
          */
-        public static FromArray(array: number[] | Float32Array, offset?: number): Vector4 {
+        public static FromArray(array: ArrayLike<number>, offset?: number): Vector4 {
             if (!offset) {
                 offset = 0;
             }
             return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
         /**
-         * Updates the passed vector "result" from the starting index of the passed array.  
+         * Updates the passed vector "result" from the starting index of the passed array.
          */
-        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector4): void {
+        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
@@ -2163,10 +2158,7 @@
          * Updates the passed vector "result" from the starting index of the passed Float32Array.
          */
         public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void {
-            result.x = array[offset];
-            result.y = array[offset + 1];
-            result.z = array[offset + 2];
-            result.w = array[offset + 3];
+            Vector4.FromArrayToRef(array, offset, result);
         }
         /**
          * Updates the passed vector "result" coordinates from the passed floats.  
@@ -2739,9 +2731,9 @@
             return result;
         }
         /**
-         * Retuns a new Quaternion set from the starting index of the passed array.  
+         * Retuns a new Quaternion set from the starting index of the passed array.
          */
-        public static FromArray(array: number[], offset?: number): Quaternion {
+        public static FromArray(array: ArrayLike<number>, offset?: number): Quaternion {
             if (!offset) {
                 offset = 0;
             }
@@ -3294,9 +3286,9 @@
 
         // Statics
         /**
-         * Returns a new Matrix set from the starting index of the passed array.  
+         * Returns a new Matrix set from the starting index of the passed array.
          */
-        public static FromArray(array: number[], offset?: number): Matrix {
+        public static FromArray(array: ArrayLike<number>, offset?: number): Matrix {
             var result = new Matrix();
 
             if (!offset) {
@@ -3306,9 +3298,9 @@
             return result;
         }
         /**
-         * Sets the passed "result" matrix from the starting index of the passed array.  
+         * Sets the passed "result" matrix from the starting index of the passed array.
          */
-        public static FromArrayToRef(array: number[], offset: number, result: Matrix) {
+        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
             }
@@ -4315,7 +4307,7 @@
         /**
          * Returns a new Plane from the passed array.  
          */
-        static FromArray(array: number[]): Plane {
+        static FromArray(array: ArrayLike<number>): Plane {
             return new Plane(array[0], array[1], array[2], array[3]);
         }
         /**

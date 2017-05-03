@@ -577,7 +577,7 @@
             // GL
             if (!options.disableWebGL2Support) {
                 try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
                     }
@@ -966,6 +966,14 @@
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
 
+        public setDitheringState(value: boolean): void {
+            if (value) {
+                this._gl.enable(this._gl.DITHER);
+            } else {
+                this._gl.disable(this._gl.DITHER);
+            }
+        }
+
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -1305,6 +1313,64 @@
             this.wipeCaches();
         }
 
+        // UBOs
+        public createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.STATIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+
+            ubo.references = 1;
+            return ubo;
+        }
+
+        public createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+            var ubo = this._gl.createBuffer();
+            this.bindUniformBuffer(ubo);
+
+            if (elements instanceof Float32Array) {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.DYNAMIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.DYNAMIC_DRAW);
+            }
+
+            this.bindUniformBuffer(null);
+
+            ubo.references = 1;
+            return ubo;
+        }
+
+        public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void {
+            this.bindUniformBuffer(uniformBuffer);
+
+            if (offset === undefined) {
+                offset = 0;
+            }
+
+            if (count === undefined) {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
+                }
+            } else {
+                if (elements instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
+                } else {
+                    this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
+                }
+            }
+
+            this.bindUniformBuffer(null);
+        }
+
+
         // VBOs
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
@@ -1415,6 +1481,20 @@
             }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
+
+        public bindUniformBuffer(buffer?: WebGLBuffer): void {
+            this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer);
+        }
+
+        public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
+            this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
+        }
+
+        public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
+            var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
+
+            this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
+        };
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
@@ -1591,7 +1671,7 @@
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
                 var instancesBuffer = this._currentInstanceBuffers[i];
-                if (boundBuffer != instancesBuffer) {
+                if (boundBuffer != instancesBuffer && instancesBuffer.references) {
                     boundBuffer = instancesBuffer;
                     this.bindArrayBuffer(instancesBuffer);
                 }
