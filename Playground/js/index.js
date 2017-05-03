@@ -19,16 +19,19 @@
     var run = function () {
         var blockEditorChange = false;
 
-        jsEditor.onKeyDown(function (evt) {
-        });
-
-        jsEditor.onKeyUp(function (evt) {
+        var markDirty = function() {
             if (blockEditorChange) {
                 return;
             }
 
             document.getElementById("currentScript").innerHTML = "Custom";
             document.getElementById('safemodeToggle').classList.add('checked');
+
+            document.getElementById('safemodeToggle').innerHTML = 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>';
+        }
+
+        jsEditor.onKeyUp(function (evt) {
+            markDirty();
         });
 
         var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
@@ -587,6 +590,10 @@
             });
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
+
+            jsEditor.onKeyUp(function (evt) {
+                markDirty();
+            });
 
             for (var index = 0; index < elementToTheme.length; index++) {
                 var obj = elementToTheme[index];

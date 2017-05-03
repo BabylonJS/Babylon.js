@@ -1,50 +1,71 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
- export class OBJExport {
-        //Exports the geometry of a Mesh in .OBJ file format (text)
-        public static OBJ(mesh: Mesh, materials?: boolean, matlibname?: string): string {
+    export class OBJExport {
+        //Exports the geometrys of a Mesh array in .OBJ file format (text)
+        public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
             var output = [];
-            var g = mesh.geometry;
-            var trunkVerts = g.getVerticesData('position');
-            var trunkNormals = g.getVerticesData('normal');
-            var trunkUV = g.getVerticesData('uv');
-            var trunkFaces = g.getIndices();
+            var v = 1;
             if (materials) {
                 if (!matlibname) {
                     matlibname = 'mat';
                 }
                 output.push("mtllib " + matlibname + ".mtl");
             }
-            for (var i = 0; i < trunkVerts.length; i += 3) {
-                output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
-            }
-            for (i = 0; i < trunkNormals.length; i += 3) {
-                output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
-            }
-            for (i = 0; i < trunkUV.length; i += 2) {
-                output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
-            }
+            for (var j = 0; j < mesh.length; j++) {
+                output.push("g object" + j);
+                output.push("o object_" + j);
 
-            //TODO: submeshes (groups)
-            //TODO: smoothing groups (s 1, s off)
+                //Uses the position of the item in the scene, to the file (this back to normal in the end)
+                if (globalposition) {
+                    var newMatrix = BABYLON.Matrix.Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
+                    var lastMatrix = BABYLON.Matrix.Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
+                    mesh[j].bakeTransformIntoVertices(newMatrix);
+                }
 
-            output.push("g gr1");
-            if (materials) {
-                output.push("usemtl mat1");
-            }
-            for (i = 0; i < trunkFaces.length; i += 3) {
-                output.push(
-                    "f " + (trunkFaces[i + 2] + 1) + "/" + (trunkFaces[i + 2] + 1) + "/" + (trunkFaces[i + 2] + 1) +
-                    " " + (trunkFaces[i + 1] + 1) + "/" + (trunkFaces[i + 1] + 1) + "/" + (trunkFaces[i + 1] + 1) +
-                    " " + (trunkFaces[i] + 1) + "/" + (trunkFaces[i] + 1) + "/" + (trunkFaces[i] + 1)
-                );
+                //TODO: submeshes (groups)
+                //TODO: smoothing groups (s 1, s off);
+                if (materials) {
+                    output.push("usemtl " + mesh[j].material.id);
+                }
+                var g = mesh[j].geometry;
+                var trunkVerts = g.getVerticesData('position');
+                var trunkNormals = g.getVerticesData('normal');
+                var trunkUV = g.getVerticesData('uv');
+                var trunkFaces = g.getIndices();
+                var curV = 0;
+
+                for (var i = 0; i < trunkVerts.length; i += 3) {
+                    output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                    curV++;
+                }
+
+                for (i = 0; i < trunkNormals.length; i += 3) {
+                    output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                }
+
+                for (i = 0; i < trunkUV.length; i += 2) {
+                    output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                }
+
+                for (i = 0; i < trunkFaces.length; i += 3) {
+                    output.push(
+                        "f " + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) +
+                        " " + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) +
+                        " " + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v)
+                    );
+                }
+                //back de previous matrix, to not change the original mesh in the scene
+                if (globalposition) {
+                    mesh[j].bakeTransformIntoVertices(lastMatrix);
+                }
+                v += curV;
             }
             var text = output.join("\n");
             return (text);
         }
-
         //Exports the material(s) of a mesh in .MTL file format (text)
+        //TODO: Export the materials of mesh array
         public static MTL(mesh: Mesh): string {
             var output = [];
             var m = <StandardMaterial>mesh.material;

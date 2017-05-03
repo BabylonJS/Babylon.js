@@ -293,6 +293,7 @@ module BABYLON {
         */
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let notifyObject = state; //{ state: state, changes: changes };
+            let triggerDirection = this.hand === 'right' ? -1 : 1;
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
@@ -307,7 +308,7 @@ module BABYLON {
                     return;
                 case 2:  // secondary trigger
                     if (this._defaultModel) {
-                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = notifyObject.value * 0.0035;
+                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = triggerDirection * notifyObject.value * 0.0035;
                     }
                     this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;

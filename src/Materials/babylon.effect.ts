@@ -752,6 +752,10 @@
         }
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+            if (!matrices) {
+                return;
+            }
+
             this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
 
