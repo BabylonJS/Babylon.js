@@ -206,25 +206,42 @@ module BABYLON {
                 // Legacy browser patch
                 var shaderName = "lava";
                 var join = defines.toString();
+
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos",
+                    "mBones",
+                    "vClipPlane", "diffuseMatrix",
+                    "depthValues",
+                    "time", "speed","movingSpeed",
+                    "fogColor","fogDensity", "lowFrequencySpeed"
+                ];
+
+                var samplers = ["diffuseSampler",
+                    "noiseTexture"
+                ];
+                var uniformBuffers = [];
+
+                MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+                    uniformsNames: uniforms, 
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers, 
+                    defines: defines, 
+                    maxSimultaneousLights: this.maxSimultaneousLights
+                });
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                        "vLightData0", "vLightDiffuse0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos",
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
-                        "time", "speed","movingSpeed",
-                        "fogColor","fogDensity", "lowFrequencySpeed"
-                    ],
-                    ["diffuseSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 }), defines);
+                    <EffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
+                    }, engine), defines);
             }
             if (!subMesh.effect.isReady()) {
                 return false;

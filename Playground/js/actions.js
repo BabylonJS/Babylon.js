@@ -28,7 +28,7 @@
     for (var index = 0; index < allSelect.length; index++) {
         var s = allSelect[index];
         // Get child called to display
-        s.addEventListener('click', function (e) {
+        var displayItems = function (e) {
             var toDisplay = this.querySelector('.toDisplay');
             if (toDisplay) {
                 if (toDisplay.style.display == 'block') {
@@ -49,7 +49,36 @@
             }
             e.preventDefault();
             e.stopPropagation();
-        });
+        }
+        s.addEventListener('click', displayItems);
+    }
+
+    // Handle mouseover on subSelect
+    var allSubItems = document.querySelectorAll('.toDisplaySub');
+    var removeAllSubItems = function () {
+        for (var index = 0; index < allSubItems.length; index++) {
+            var tds = allSubItems[index];
+            if (tds.style.display == 'block') {
+                tds.style.display = 'none';
+            }
+        }
+    }
+
+    var allSubSelect = document.querySelectorAll('.subSelect');
+    for (var index = 0; index < allSubSelect.length; index++) {
+        var ss = allSubSelect[index];
+        ss.addEventListener('mouseenter', function () {
+            var toDisplay = this.querySelector('.toDisplaySub');
+            if (toDisplay) {
+                if (toDisplay.style.display == 'block') {
+                    toDisplay.style.display = 'none';
+                } else {
+                    removeAllSubItems();
+                    toDisplay.style.display = 'block';
+                }
+            }
+        })
+
     }
 
     document.querySelector('#safemodeToggle').addEventListener('click', function () {

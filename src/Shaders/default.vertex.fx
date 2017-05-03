@@ -1,4 +1,6 @@
-﻿// Attributes
+﻿#include<__decl__defaultVertex>
+
+// Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -21,52 +23,33 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
-uniform mat4 view;
-uniform mat4 viewProjection;
-
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
-uniform mat4 diffuseMatrix;
-uniform vec2 vDiffuseInfos;
 #endif
 
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
-uniform mat4 ambientMatrix;
-uniform vec2 vAmbientInfos;
 #endif
 
 #ifdef OPACITY
 varying vec2 vOpacityUV;
-uniform mat4 opacityMatrix;
-uniform vec2 vOpacityInfos;
 #endif
 
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
-uniform vec2 vEmissiveInfos;
-uniform mat4 emissiveMatrix;
 #endif
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec2 vLightmapInfos;
-uniform mat4 lightmapMatrix;
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
-uniform vec2 vSpecularInfos;
-uniform mat4 specularMatrix;
 #endif
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec3 vBumpInfos;
-uniform mat4 bumpMatrix;
 #endif
-
-#include<pointCloudVertexDeclaration>
 
 // Output
 varying vec3 vPositionW;
@@ -102,6 +85,9 @@ void main(void) {
 	vec3 positionUpdated = position;
 #ifdef NORMAL	
 	vec3 normalUpdated = normal;
+#endif
+#ifdef TANGENT
+	vec4 tangentUpdated = tangent;
 #endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]

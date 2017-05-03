@@ -14,14 +14,20 @@ module BABYLON {
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
             var matches;
 
+            if (typeof data !== "string") {
+                Tools.Error("STL format not recognized. Ensure it's ASCII formatted");
+                return false;
+            }
+
             while (matches = this.solidPattern.exec(data)) {
                 var meshName = matches[1];
                 var meshNameFromEnd = matches[3];
                 if (meshName != meshNameFromEnd) {
-                    console.log("error in stl, solid name != endsolid name");
+                    Tools.Error("Error in STL, solid name != endsolid name");
+                    return false;
                 }
 
-                //check meshesNames
+                // check meshesNames
                 if (meshesNames && meshName) {
                     if (meshesNames instanceof Array) {
                         if (!meshesNames.indexOf(meshName)) {
@@ -34,10 +40,12 @@ module BABYLON {
                     }
                 }
 
-                //stl mesh name can be empty as well
+                // stl mesh name can be empty as well
                 meshName = meshName || "stlmesh";
                 var babylonMesh = new Mesh(meshName, scene);
                 this.parseSolid(babylonMesh, matches[2]);
+
+                meshes.push(babylonMesh);
             }
 
             return true;

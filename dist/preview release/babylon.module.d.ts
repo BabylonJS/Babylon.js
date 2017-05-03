@@ -280,6 +280,7 @@ declare module BABYLON {
         setStencilOperationFail(operation: number): void;
         setStencilOperationDepthFail(operation: number): void;
         setStencilOperationPass(operation: number): void;
+        setDitheringState(value: boolean): void;
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -343,6 +344,9 @@ declare module BABYLON {
         generateMipMapsForCubemap(texture: WebGLTexture): void;
         flushFramebuffer(): void;
         restoreDefaultFramebuffer(): void;
+        createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer;
+        createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer;
+        updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void;
         private _resetVertexBufferBinding();
         createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer;
         createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer;
@@ -350,6 +354,9 @@ declare module BABYLON {
         private _resetIndexBufferBinding();
         createIndexBuffer(indices: IndicesArray): WebGLBuffer;
         bindArrayBuffer(buffer: WebGLBuffer): void;
+        bindUniformBuffer(buffer?: WebGLBuffer): void;
+        bindUniformBufferBase(buffer: WebGLBuffer, location: number): void;
+        bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void;
         private bindIndexBuffer(buffer);
         private bindBuffer(buffer, target);
         updateArrayBuffer(data: Float32Array): void;
@@ -565,8 +572,6 @@ interface Window {
     msURL: any;
     VRFrameData: any;
 }
-interface WebGLVertexArrayObject {
-}
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
@@ -576,10 +581,14 @@ interface WebGLRenderingContext {
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
     renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
+    bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
+    getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
+    uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
     MAX_SAMPLES: number;
     RGBA8: number;
     READ_FRAMEBUFFER: number;
     DRAW_FRAMEBUFFER: number;
+    UNIFORM_BUFFER: number;
 }
 interface HTMLURL {
     createObjectURL(param1: any, param2?: any): any;
@@ -1579,6 +1588,7 @@ declare module BABYLON {
         private _physicsEngine;
         _activeAnimatables: Animatable[];
         private _transformMatrix;
+        private _sceneUbo;
         private _pickWithRayInverseMatrix;
         private _edgesRenderers;
         private _boundingBoxRenderer;
@@ -1650,6 +1660,7 @@ declare module BABYLON {
         getRenderId(): number;
         incrementRenderId(): void;
         private _updatePointerPosition(evt);
+        private _createUbo();
         /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
@@ -1702,6 +1713,7 @@ declare module BABYLON {
         getProjectionMatrix(): Matrix;
         getTransformMatrix(): Matrix;
         setTransformMatrix(view: Matrix, projection: Matrix): void;
+        getSceneUniformBuffer(): UniformBuffer;
         getUniqueId(): number;
         addMesh(newMesh: AbstractMesh): void;
         removeMesh(toRemove: AbstractMesh): number;
@@ -1966,6 +1978,1004 @@ declare module BABYLON {
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
     }
 }
+
+interface HTMLCanvasElement extends HTMLElement {
+    getContext(contextId: "webgl2" | "experimental-webgl2", contextAttributes?: WebGLContextAttributes): WebGL2RenderingContext | null;
+}
+interface ImageBitmap {
+    readonly width: number;
+    readonly height: number;
+    close(): void;
+}
+interface WebGL2RenderingContext extends WebGLRenderingContext {
+    readonly READ_BUFFER: number;
+    readonly UNPACK_ROW_LENGTH: number;
+    readonly UNPACK_SKIP_ROWS: number;
+    readonly UNPACK_SKIP_PIXELS: number;
+    readonly PACK_ROW_LENGTH: number;
+    readonly PACK_SKIP_ROWS: number;
+    readonly PACK_SKIP_PIXELS: number;
+    readonly COLOR: number;
+    readonly DEPTH: number;
+    readonly STENCIL: number;
+    readonly RED: number;
+    readonly RGB8: number;
+    readonly RGBA8: number;
+    readonly RGB10_A2: number;
+    readonly TEXTURE_BINDING_3D: number;
+    readonly UNPACK_SKIP_IMAGES: number;
+    readonly UNPACK_IMAGE_HEIGHT: number;
+    readonly TEXTURE_3D: number;
+    readonly TEXTURE_WRAP_R: number;
+    readonly MAX_3D_TEXTURE_SIZE: number;
+    readonly UNSIGNED_INT_2_10_10_10_REV: number;
+    readonly MAX_ELEMENTS_VERTICES: number;
+    readonly MAX_ELEMENTS_INDICES: number;
+    readonly TEXTURE_MIN_LOD: number;
+    readonly TEXTURE_MAX_LOD: number;
+    readonly TEXTURE_BASE_LEVEL: number;
+    readonly TEXTURE_MAX_LEVEL: number;
+    readonly MIN: number;
+    readonly MAX: number;
+    readonly DEPTH_COMPONENT24: number;
+    readonly MAX_TEXTURE_LOD_BIAS: number;
+    readonly TEXTURE_COMPARE_MODE: number;
+    readonly TEXTURE_COMPARE_FUNC: number;
+    readonly CURRENT_QUERY: number;
+    readonly QUERY_RESULT: number;
+    readonly QUERY_RESULT_AVAILABLE: number;
+    readonly STREAM_READ: number;
+    readonly STREAM_COPY: number;
+    readonly STATIC_READ: number;
+    readonly STATIC_COPY: number;
+    readonly DYNAMIC_READ: number;
+    readonly DYNAMIC_COPY: number;
+    readonly MAX_DRAW_BUFFERS: number;
+    readonly DRAW_BUFFER0: number;
+    readonly DRAW_BUFFER1: number;
+    readonly DRAW_BUFFER2: number;
+    readonly DRAW_BUFFER3: number;
+    readonly DRAW_BUFFER4: number;
+    readonly DRAW_BUFFER5: number;
+    readonly DRAW_BUFFER6: number;
+    readonly DRAW_BUFFER7: number;
+    readonly DRAW_BUFFER8: number;
+    readonly DRAW_BUFFER9: number;
+    readonly DRAW_BUFFER10: number;
+    readonly DRAW_BUFFER11: number;
+    readonly DRAW_BUFFER12: number;
+    readonly DRAW_BUFFER13: number;
+    readonly DRAW_BUFFER14: number;
+    readonly DRAW_BUFFER15: number;
+    readonly MAX_FRAGMENT_UNIFORM_COMPONENTS: number;
+    readonly MAX_VERTEX_UNIFORM_COMPONENTS: number;
+    readonly SAMPLER_3D: number;
+    readonly SAMPLER_2D_SHADOW: number;
+    readonly FRAGMENT_SHADER_DERIVATIVE_HINT: number;
+    readonly PIXEL_PACK_BUFFER: number;
+    readonly PIXEL_UNPACK_BUFFER: number;
+    readonly PIXEL_PACK_BUFFER_BINDING: number;
+    readonly PIXEL_UNPACK_BUFFER_BINDING: number;
+    readonly FLOAT_MAT2x3: number;
+    readonly FLOAT_MAT2x4: number;
+    readonly FLOAT_MAT3x2: number;
+    readonly FLOAT_MAT3x4: number;
+    readonly FLOAT_MAT4x2: number;
+    readonly FLOAT_MAT4x3: number;
+    readonly SRGB: number;
+    readonly SRGB8: number;
+    readonly SRGB8_ALPHA8: number;
+    readonly COMPARE_REF_TO_TEXTURE: number;
+    readonly RGBA32F: number;
+    readonly RGB32F: number;
+    readonly RGBA16F: number;
+    readonly RGB16F: number;
+    readonly VERTEX_ATTRIB_ARRAY_INTEGER: number;
+    readonly MAX_ARRAY_TEXTURE_LAYERS: number;
+    readonly MIN_PROGRAM_TEXEL_OFFSET: number;
+    readonly MAX_PROGRAM_TEXEL_OFFSET: number;
+    readonly MAX_VARYING_COMPONENTS: number;
+    readonly TEXTURE_2D_ARRAY: number;
+    readonly TEXTURE_BINDING_2D_ARRAY: number;
+    readonly R11F_G11F_B10F: number;
+    readonly UNSIGNED_INT_10F_11F_11F_REV: number;
+    readonly RGB9_E5: number;
+    readonly UNSIGNED_INT_5_9_9_9_REV: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_MODE: number;
+    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: number;
+    readonly TRANSFORM_FEEDBACK_VARYINGS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_START: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_SIZE: number;
+    readonly TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: number;
+    readonly RASTERIZER_DISCARD: number;
+    readonly MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: number;
+    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: number;
+    readonly INTERLEAVED_ATTRIBS: number;
+    readonly SEPARATE_ATTRIBS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_BINDING: number;
+    readonly RGBA32UI: number;
+    readonly RGB32UI: number;
+    readonly RGBA16UI: number;
+    readonly RGB16UI: number;
+    readonly RGBA8UI: number;
+    readonly RGB8UI: number;
+    readonly RGBA32I: number;
+    readonly RGB32I: number;
+    readonly RGBA16I: number;
+    readonly RGB16I: number;
+    readonly RGBA8I: number;
+    readonly RGB8I: number;
+    readonly RED_INTEGER: number;
+    readonly RGB_INTEGER: number;
+    readonly RGBA_INTEGER: number;
+    readonly SAMPLER_2D_ARRAY: number;
+    readonly SAMPLER_2D_ARRAY_SHADOW: number;
+    readonly SAMPLER_CUBE_SHADOW: number;
+    readonly UNSIGNED_INT_VEC2: number;
+    readonly UNSIGNED_INT_VEC3: number;
+    readonly UNSIGNED_INT_VEC4: number;
+    readonly INT_SAMPLER_2D: number;
+    readonly INT_SAMPLER_3D: number;
+    readonly INT_SAMPLER_CUBE: number;
+    readonly INT_SAMPLER_2D_ARRAY: number;
+    readonly UNSIGNED_INT_SAMPLER_2D: number;
+    readonly UNSIGNED_INT_SAMPLER_3D: number;
+    readonly UNSIGNED_INT_SAMPLER_CUBE: number;
+    readonly UNSIGNED_INT_SAMPLER_2D_ARRAY: number;
+    readonly DEPTH_COMPONENT32F: number;
+    readonly DEPTH32F_STENCIL8: number;
+    readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+    readonly FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: number;
+    readonly FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_RED_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_GREEN_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_BLUE_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE: number;
+    readonly FRAMEBUFFER_DEFAULT: number;
+    readonly UNSIGNED_INT_24_8: number;
+    readonly DEPTH24_STENCIL8: number;
+    readonly UNSIGNED_NORMALIZED: number;
+    readonly DRAW_FRAMEBUFFER_BINDING: number;
+    readonly READ_FRAMEBUFFER: number;
+    readonly DRAW_FRAMEBUFFER: number;
+    readonly READ_FRAMEBUFFER_BINDING: number;
+    readonly RENDERBUFFER_SAMPLES: number;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: number;
+    readonly MAX_COLOR_ATTACHMENTS: number;
+    readonly COLOR_ATTACHMENT1: number;
+    readonly COLOR_ATTACHMENT2: number;
+    readonly COLOR_ATTACHMENT3: number;
+    readonly COLOR_ATTACHMENT4: number;
+    readonly COLOR_ATTACHMENT5: number;
+    readonly COLOR_ATTACHMENT6: number;
+    readonly COLOR_ATTACHMENT7: number;
+    readonly COLOR_ATTACHMENT8: number;
+    readonly COLOR_ATTACHMENT9: number;
+    readonly COLOR_ATTACHMENT10: number;
+    readonly COLOR_ATTACHMENT11: number;
+    readonly COLOR_ATTACHMENT12: number;
+    readonly COLOR_ATTACHMENT13: number;
+    readonly COLOR_ATTACHMENT14: number;
+    readonly COLOR_ATTACHMENT15: number;
+    readonly FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: number;
+    readonly MAX_SAMPLES: number;
+    readonly HALF_FLOAT: number;
+    readonly RG: number;
+    readonly RG_INTEGER: number;
+    readonly R8: number;
+    readonly RG8: number;
+    readonly R16F: number;
+    readonly R32F: number;
+    readonly RG16F: number;
+    readonly RG32F: number;
+    readonly R8I: number;
+    readonly R8UI: number;
+    readonly R16I: number;
+    readonly R16UI: number;
+    readonly R32I: number;
+    readonly R32UI: number;
+    readonly RG8I: number;
+    readonly RG8UI: number;
+    readonly RG16I: number;
+    readonly RG16UI: number;
+    readonly RG32I: number;
+    readonly RG32UI: number;
+    readonly VERTEX_ARRAY_BINDING: number;
+    readonly R8_SNORM: number;
+    readonly RG8_SNORM: number;
+    readonly RGB8_SNORM: number;
+    readonly RGBA8_SNORM: number;
+    readonly SIGNED_NORMALIZED: number;
+    readonly COPY_READ_BUFFER: number;
+    readonly COPY_WRITE_BUFFER: number;
+    readonly COPY_READ_BUFFER_BINDING: number;
+    readonly COPY_WRITE_BUFFER_BINDING: number;
+    readonly UNIFORM_BUFFER: number;
+    readonly UNIFORM_BUFFER_BINDING: number;
+    readonly UNIFORM_BUFFER_START: number;
+    readonly UNIFORM_BUFFER_SIZE: number;
+    readonly MAX_VERTEX_UNIFORM_BLOCKS: number;
+    readonly MAX_FRAGMENT_UNIFORM_BLOCKS: number;
+    readonly MAX_COMBINED_UNIFORM_BLOCKS: number;
+    readonly MAX_UNIFORM_BUFFER_BINDINGS: number;
+    readonly MAX_UNIFORM_BLOCK_SIZE: number;
+    readonly MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: number;
+    readonly MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: number;
+    readonly UNIFORM_BUFFER_OFFSET_ALIGNMENT: number;
+    readonly ACTIVE_UNIFORM_BLOCKS: number;
+    readonly UNIFORM_TYPE: number;
+    readonly UNIFORM_SIZE: number;
+    readonly UNIFORM_BLOCK_INDEX: number;
+    readonly UNIFORM_OFFSET: number;
+    readonly UNIFORM_ARRAY_STRIDE: number;
+    readonly UNIFORM_MATRIX_STRIDE: number;
+    readonly UNIFORM_IS_ROW_MAJOR: number;
+    readonly UNIFORM_BLOCK_BINDING: number;
+    readonly UNIFORM_BLOCK_DATA_SIZE: number;
+    readonly UNIFORM_BLOCK_ACTIVE_UNIFORMS: number;
+    readonly UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: number;
+    readonly UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: number;
+    readonly UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: number;
+    readonly INVALID_INDEX: number;
+    readonly MAX_VERTEX_OUTPUT_COMPONENTS: number;
+    readonly MAX_FRAGMENT_INPUT_COMPONENTS: number;
+    readonly MAX_SERVER_WAIT_TIMEOUT: number;
+    readonly OBJECT_TYPE: number;
+    readonly SYNC_CONDITION: number;
+    readonly SYNC_STATUS: number;
+    readonly SYNC_FLAGS: number;
+    readonly SYNC_FENCE: number;
+    readonly SYNC_GPU_COMMANDS_COMPLETE: number;
+    readonly UNSIGNALED: number;
+    readonly SIGNALED: number;
+    readonly ALREADY_SIGNALED: number;
+    readonly TIMEOUT_EXPIRED: number;
+    readonly CONDITION_SATISFIED: number;
+    readonly WAIT_FAILED: number;
+    readonly SYNC_FLUSH_COMMANDS_BIT: number;
+    readonly VERTEX_ATTRIB_ARRAY_DIVISOR: number;
+    readonly ANY_SAMPLES_PASSED: number;
+    readonly ANY_SAMPLES_PASSED_CONSERVATIVE: number;
+    readonly SAMPLER_BINDING: number;
+    readonly RGB10_A2UI: number;
+    readonly INT_2_10_10_10_REV: number;
+    readonly TRANSFORM_FEEDBACK: number;
+    readonly TRANSFORM_FEEDBACK_PAUSED: number;
+    readonly TRANSFORM_FEEDBACK_ACTIVE: number;
+    readonly TRANSFORM_FEEDBACK_BINDING: number;
+    readonly TEXTURE_IMMUTABLE_FORMAT: number;
+    readonly MAX_ELEMENT_INDEX: number;
+    readonly TEXTURE_IMMUTABLE_LEVELS: number;
+    readonly TIMEOUT_IGNORED: number;
+    readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
+    bufferData(target: number, size: number, usage: number): void;
+    bufferData(target: number, srcData: ArrayBuffer | ArrayBufferView | null, usage: number): void;
+    bufferSubData(target: number, dstByteOffset: number, srcData: ArrayBuffer | ArrayBufferView): void;
+    bufferData(target: number, srcData: ArrayBufferView, usage: number, srcOffset: number, length?: number): void;
+    bufferSubData(target: number, dstByteOffset: number, srcData: ArrayBufferView, srcOffset: number, length?: number): void;
+    copyBufferSubData(readTarget: number, writeTarget: number, readOffset: number, writeOffset: number, size: number): void;
+    getBufferSubData(target: number, srcByteOffset: number, dstBuffer: ArrayBufferView, dstOffset?: number, length?: number): void;
+    blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
+    framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
+    invalidateFramebuffer(target: number, attachments: number[]): void;
+    invalidateSubFramebuffer(target: number, attachments: number[], x: number, y: number, width: number, height: number): void;
+    readBuffer(src: number): void;
+    getInternalformatParameter(target: number, internalformat: number, pname: number): any;
+    renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
+    texStorage2D(target: number, levels: number, internalformat: number, width: number, height: number): void;
+    texStorage3D(target: number, levels: number, internalformat: number, width: number, height: number, depth: number): void;
+    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels?: ArrayBufferView): void;
+    texImage2D(target: number, level: number, internalformat: number, format: number, type: number, source: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texImage2D(target: number, level: number, internalformat: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels?: ArrayBufferView): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, source: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pboOffset: number): void;
+    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pboOffset: number): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, srcData: ArrayBufferView | null): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pboOffset: number): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
+    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, pboOffset: number): void;
+    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
+    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, srcData: ArrayBufferView | null, srcOffset?: number): void;
+    copyTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, x: number, y: number, width: number, height: number): void;
+    compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, imageSize: number, offset: number): void;
+    compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
+    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, imageSize: number, offset: number): void;
+    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
+    compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, imageSize: number, offset: number): void;
+    compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
+    compressedTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, imageSize: number, offset: number): void;
+    compressedTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
+    getFragDataLocation(program: WebGLProgram, name: string): number;
+    uniform1ui(location: WebGLUniformLocation | null, v0: number): void;
+    uniform2ui(location: WebGLUniformLocation | null, v0: number, v1: number): void;
+    uniform3ui(location: WebGLUniformLocation | null, v0: number, v1: number, v2: number): void;
+    uniform4ui(location: WebGLUniformLocation | null, v0: number, v1: number, v2: number, v3: number): void;
+    uniform1fv(location: WebGLUniformLocation | null, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform2fv(location: WebGLUniformLocation | null, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform3fv(location: WebGLUniformLocation | null, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform4fv(location: WebGLUniformLocation | null, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform1iv(location: WebGLUniformLocation | null, data: Int32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform2iv(location: WebGLUniformLocation | null, data: Int32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform3iv(location: WebGLUniformLocation | null, data: Int32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform4iv(location: WebGLUniformLocation | null, data: Int32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform1uiv(location: WebGLUniformLocation | null, data: Uint32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform2uiv(location: WebGLUniformLocation | null, data: Uint32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform3uiv(location: WebGLUniformLocation | null, data: Uint32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniform4uiv(location: WebGLUniformLocation | null, data: Uint32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix3x2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix4x2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix2x3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix4x3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix2x4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix3x4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    uniformMatrix4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | number[], srcOffset?: number, srcLength?: number): void;
+    vertexAttribI4i(index: number, x: number, y: number, z: number, w: number): void;
+    vertexAttribI4iv(index: number, values: Int32Array | number[]): void;
+    vertexAttribI4ui(index: number, x: number, y: number, z: number, w: number): void;
+    vertexAttribI4uiv(index: number, values: Uint32Array | number[]): void;
+    vertexAttribIPointer(index: number, size: number, type: number, stride: number, offset: number): void;
+    vertexAttribDivisor(index: number, divisor: number): void;
+    drawArraysInstanced(mode: number, first: number, count: number, instanceCount: number): void;
+    drawElementsInstanced(mode: number, count: number, type: number, offset: number, instanceCount: number): void;
+    drawRangeElements(mode: number, start: number, end: number, count: number, type: number, offset: number): void;
+    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView | null): void;
+    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, offset: number): void;
+    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView, dstOffset: number): void;
+    drawBuffers(buffers: number[]): void;
+    clearBufferfv(buffer: number, drawbuffer: number, values: Float32Array | number[], srcOffset?: number): void;
+    clearBufferiv(buffer: number, drawbuffer: number, values: Int32Array | number[], srcOffset?: number): void;
+    clearBufferuiv(buffer: number, drawbuffer: number, values: Uint32Array | number[], srcOffset?: number): void;
+    clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
+    createQuery(): WebGLQuery | null;
+    deleteQuery(query: WebGLQuery | null): void;
+    isQuery(query: WebGLQuery | null): boolean;
+    beginQuery(target: number, query: WebGLQuery): void;
+    endQuery(target: number): void;
+    getQuery(target: number, pname: number): WebGLQuery | null;
+    getQueryParameter(query: WebGLQuery, pname: number): any;
+    createSampler(): WebGLSampler | null;
+    deleteSampler(sampler: WebGLSampler | null): void;
+    isSampler(sampler: WebGLSampler | null): boolean;
+    bindSampler(unit: number, sampler: WebGLSampler | null): void;
+    samplerParameteri(sampler: WebGLSampler, pname: number, param: number): void;
+    samplerParameterf(sampler: WebGLSampler, pname: number, param: number): void;
+    getSamplerParameter(sampler: WebGLSampler, pname: number): any;
+    fenceSync(condition: number, flags: number): WebGLSync | null;
+    isSync(sync: WebGLSync | null): boolean;
+    deleteSync(sync: WebGLSync | null): void;
+    clientWaitSync(sync: WebGLSync, flags: number, timeout: number): number;
+    waitSync(sync: WebGLSync, flags: number, timeout: number): void;
+    getSyncParameter(sync: WebGLSync, pname: number): any;
+    createTransformFeedback(): WebGLTransformFeedback | null;
+    deleteTransformFeedback(tf: WebGLTransformFeedback | null): void;
+    isTransformFeedback(tf: WebGLTransformFeedback | null): boolean;
+    bindTransformFeedback(target: number, tf: WebGLTransformFeedback | null): void;
+    beginTransformFeedback(primitiveMode: number): void;
+    endTransformFeedback(): void;
+    transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+    getTransformFeedbackVarying(program: WebGLProgram, index: number): WebGLActiveInfo | null;
+    pauseTransformFeedback(): void;
+    resumeTransformFeedback(): void;
+    bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
+    bindBufferRange(target: number, index: number, buffer: WebGLBuffer | null, offset: number, size: number): void;
+    getIndexedParameter(target: number, index: number): any;
+    getUniformIndices(program: WebGLProgram, uniformNames: string[]): number[] | null;
+    getActiveUniforms(program: WebGLProgram, uniformIndices: number[], pname: number): any;
+    getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
+    getActiveUniformBlockParameter(program: WebGLProgram, uniformBlockIndex: number, pname: number): any;
+    getActiveUniformBlockName(program: WebGLProgram, uniformBlockIndex: number): string | null;
+    uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
+    createVertexArray(): WebGLVertexArrayObject | null;
+    deleteVertexArray(vertexArray: WebGLVertexArrayObject | null): void;
+    isVertexArray(vertexArray: WebGLVertexArrayObject | null): boolean;
+    bindVertexArray(array: WebGLVertexArrayObject | null): void;
+}
+declare var WebGL2RenderingContext: {
+    prototype: WebGL2RenderingContext;
+    new (): WebGL2RenderingContext;
+    readonly ACTIVE_ATTRIBUTES: number;
+    readonly ACTIVE_TEXTURE: number;
+    readonly ACTIVE_UNIFORMS: number;
+    readonly ALIASED_LINE_WIDTH_RANGE: number;
+    readonly ALIASED_POINT_SIZE_RANGE: number;
+    readonly ALPHA: number;
+    readonly ALPHA_BITS: number;
+    readonly ALWAYS: number;
+    readonly ARRAY_BUFFER: number;
+    readonly ARRAY_BUFFER_BINDING: number;
+    readonly ATTACHED_SHADERS: number;
+    readonly BACK: number;
+    readonly BLEND: number;
+    readonly BLEND_COLOR: number;
+    readonly BLEND_DST_ALPHA: number;
+    readonly BLEND_DST_RGB: number;
+    readonly BLEND_EQUATION: number;
+    readonly BLEND_EQUATION_ALPHA: number;
+    readonly BLEND_EQUATION_RGB: number;
+    readonly BLEND_SRC_ALPHA: number;
+    readonly BLEND_SRC_RGB: number;
+    readonly BLUE_BITS: number;
+    readonly BOOL: number;
+    readonly BOOL_VEC2: number;
+    readonly BOOL_VEC3: number;
+    readonly BOOL_VEC4: number;
+    readonly BROWSER_DEFAULT_WEBGL: number;
+    readonly BUFFER_SIZE: number;
+    readonly BUFFER_USAGE: number;
+    readonly BYTE: number;
+    readonly CCW: number;
+    readonly CLAMP_TO_EDGE: number;
+    readonly COLOR_ATTACHMENT0: number;
+    readonly COLOR_BUFFER_BIT: number;
+    readonly COLOR_CLEAR_VALUE: number;
+    readonly COLOR_WRITEMASK: number;
+    readonly COMPILE_STATUS: number;
+    readonly COMPRESSED_TEXTURE_FORMATS: number;
+    readonly CONSTANT_ALPHA: number;
+    readonly CONSTANT_COLOR: number;
+    readonly CONTEXT_LOST_WEBGL: number;
+    readonly CULL_FACE: number;
+    readonly CULL_FACE_MODE: number;
+    readonly CURRENT_PROGRAM: number;
+    readonly CURRENT_VERTEX_ATTRIB: number;
+    readonly CW: number;
+    readonly DECR: number;
+    readonly DECR_WRAP: number;
+    readonly DELETE_STATUS: number;
+    readonly DEPTH_ATTACHMENT: number;
+    readonly DEPTH_BITS: number;
+    readonly DEPTH_BUFFER_BIT: number;
+    readonly DEPTH_CLEAR_VALUE: number;
+    readonly DEPTH_COMPONENT: number;
+    readonly DEPTH_COMPONENT16: number;
+    readonly DEPTH_FUNC: number;
+    readonly DEPTH_RANGE: number;
+    readonly DEPTH_STENCIL: number;
+    readonly DEPTH_STENCIL_ATTACHMENT: number;
+    readonly DEPTH_TEST: number;
+    readonly DEPTH_WRITEMASK: number;
+    readonly DITHER: number;
+    readonly DONT_CARE: number;
+    readonly DST_ALPHA: number;
+    readonly DST_COLOR: number;
+    readonly DYNAMIC_DRAW: number;
+    readonly ELEMENT_ARRAY_BUFFER: number;
+    readonly ELEMENT_ARRAY_BUFFER_BINDING: number;
+    readonly EQUAL: number;
+    readonly FASTEST: number;
+    readonly FLOAT: number;
+    readonly FLOAT_MAT2: number;
+    readonly FLOAT_MAT3: number;
+    readonly FLOAT_MAT4: number;
+    readonly FLOAT_VEC2: number;
+    readonly FLOAT_VEC3: number;
+    readonly FLOAT_VEC4: number;
+    readonly FRAGMENT_SHADER: number;
+    readonly FRAMEBUFFER: number;
+    readonly FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
+    readonly FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
+    readonly FRAMEBUFFER_BINDING: number;
+    readonly FRAMEBUFFER_COMPLETE: number;
+    readonly FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
+    readonly FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
+    readonly FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
+    readonly FRAMEBUFFER_UNSUPPORTED: number;
+    readonly FRONT: number;
+    readonly FRONT_AND_BACK: number;
+    readonly FRONT_FACE: number;
+    readonly FUNC_ADD: number;
+    readonly FUNC_REVERSE_SUBTRACT: number;
+    readonly FUNC_SUBTRACT: number;
+    readonly GENERATE_MIPMAP_HINT: number;
+    readonly GEQUAL: number;
+    readonly GREATER: number;
+    readonly GREEN_BITS: number;
+    readonly HIGH_FLOAT: number;
+    readonly HIGH_INT: number;
+    readonly IMPLEMENTATION_COLOR_READ_FORMAT: number;
+    readonly IMPLEMENTATION_COLOR_READ_TYPE: number;
+    readonly INCR: number;
+    readonly INCR_WRAP: number;
+    readonly INT: number;
+    readonly INT_VEC2: number;
+    readonly INT_VEC3: number;
+    readonly INT_VEC4: number;
+    readonly INVALID_ENUM: number;
+    readonly INVALID_FRAMEBUFFER_OPERATION: number;
+    readonly INVALID_OPERATION: number;
+    readonly INVALID_VALUE: number;
+    readonly INVERT: number;
+    readonly KEEP: number;
+    readonly LEQUAL: number;
+    readonly LESS: number;
+    readonly LINEAR: number;
+    readonly LINEAR_MIPMAP_LINEAR: number;
+    readonly LINEAR_MIPMAP_NEAREST: number;
+    readonly LINES: number;
+    readonly LINE_LOOP: number;
+    readonly LINE_STRIP: number;
+    readonly LINE_WIDTH: number;
+    readonly LINK_STATUS: number;
+    readonly LOW_FLOAT: number;
+    readonly LOW_INT: number;
+    readonly LUMINANCE: number;
+    readonly LUMINANCE_ALPHA: number;
+    readonly MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
+    readonly MAX_CUBE_MAP_TEXTURE_SIZE: number;
+    readonly MAX_FRAGMENT_UNIFORM_VECTORS: number;
+    readonly MAX_RENDERBUFFER_SIZE: number;
+    readonly MAX_TEXTURE_IMAGE_UNITS: number;
+    readonly MAX_TEXTURE_SIZE: number;
+    readonly MAX_VARYING_VECTORS: number;
+    readonly MAX_VERTEX_ATTRIBS: number;
+    readonly MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
+    readonly MAX_VERTEX_UNIFORM_VECTORS: number;
+    readonly MAX_VIEWPORT_DIMS: number;
+    readonly MEDIUM_FLOAT: number;
+    readonly MEDIUM_INT: number;
+    readonly MIRRORED_REPEAT: number;
+    readonly NEAREST: number;
+    readonly NEAREST_MIPMAP_LINEAR: number;
+    readonly NEAREST_MIPMAP_NEAREST: number;
+    readonly NEVER: number;
+    readonly NICEST: number;
+    readonly NONE: number;
+    readonly NOTEQUAL: number;
+    readonly NO_ERROR: number;
+    readonly ONE: number;
+    readonly ONE_MINUS_CONSTANT_ALPHA: number;
+    readonly ONE_MINUS_CONSTANT_COLOR: number;
+    readonly ONE_MINUS_DST_ALPHA: number;
+    readonly ONE_MINUS_DST_COLOR: number;
+    readonly ONE_MINUS_SRC_ALPHA: number;
+    readonly ONE_MINUS_SRC_COLOR: number;
+    readonly OUT_OF_MEMORY: number;
+    readonly PACK_ALIGNMENT: number;
+    readonly POINTS: number;
+    readonly POLYGON_OFFSET_FACTOR: number;
+    readonly POLYGON_OFFSET_FILL: number;
+    readonly POLYGON_OFFSET_UNITS: number;
+    readonly RED_BITS: number;
+    readonly RENDERBUFFER: number;
+    readonly RENDERBUFFER_ALPHA_SIZE: number;
+    readonly RENDERBUFFER_BINDING: number;
+    readonly RENDERBUFFER_BLUE_SIZE: number;
+    readonly RENDERBUFFER_DEPTH_SIZE: number;
+    readonly RENDERBUFFER_GREEN_SIZE: number;
+    readonly RENDERBUFFER_HEIGHT: number;
+    readonly RENDERBUFFER_INTERNAL_FORMAT: number;
+    readonly RENDERBUFFER_RED_SIZE: number;
+    readonly RENDERBUFFER_STENCIL_SIZE: number;
+    readonly RENDERBUFFER_WIDTH: number;
+    readonly RENDERER: number;
+    readonly REPEAT: number;
+    readonly REPLACE: number;
+    readonly RGB: number;
+    readonly RGB565: number;
+    readonly RGB5_A1: number;
+    readonly RGBA: number;
+    readonly RGBA4: number;
+    readonly SAMPLER_2D: number;
+    readonly SAMPLER_CUBE: number;
+    readonly SAMPLES: number;
+    readonly SAMPLE_ALPHA_TO_COVERAGE: number;
+    readonly SAMPLE_BUFFERS: number;
+    readonly SAMPLE_COVERAGE: number;
+    readonly SAMPLE_COVERAGE_INVERT: number;
+    readonly SAMPLE_COVERAGE_VALUE: number;
+    readonly SCISSOR_BOX: number;
+    readonly SCISSOR_TEST: number;
+    readonly SHADER_TYPE: number;
+    readonly SHADING_LANGUAGE_VERSION: number;
+    readonly SHORT: number;
+    readonly SRC_ALPHA: number;
+    readonly SRC_ALPHA_SATURATE: number;
+    readonly SRC_COLOR: number;
+    readonly STATIC_DRAW: number;
+    readonly STENCIL_ATTACHMENT: number;
+    readonly STENCIL_BACK_FAIL: number;
+    readonly STENCIL_BACK_FUNC: number;
+    readonly STENCIL_BACK_PASS_DEPTH_FAIL: number;
+    readonly STENCIL_BACK_PASS_DEPTH_PASS: number;
+    readonly STENCIL_BACK_REF: number;
+    readonly STENCIL_BACK_VALUE_MASK: number;
+    readonly STENCIL_BACK_WRITEMASK: number;
+    readonly STENCIL_BITS: number;
+    readonly STENCIL_BUFFER_BIT: number;
+    readonly STENCIL_CLEAR_VALUE: number;
+    readonly STENCIL_FAIL: number;
+    readonly STENCIL_FUNC: number;
+    readonly STENCIL_INDEX: number;
+    readonly STENCIL_INDEX8: number;
+    readonly STENCIL_PASS_DEPTH_FAIL: number;
+    readonly STENCIL_PASS_DEPTH_PASS: number;
+    readonly STENCIL_REF: number;
+    readonly STENCIL_TEST: number;
+    readonly STENCIL_VALUE_MASK: number;
+    readonly STENCIL_WRITEMASK: number;
+    readonly STREAM_DRAW: number;
+    readonly SUBPIXEL_BITS: number;
+    readonly TEXTURE: number;
+    readonly TEXTURE0: number;
+    readonly TEXTURE1: number;
+    readonly TEXTURE10: number;
+    readonly TEXTURE11: number;
+    readonly TEXTURE12: number;
+    readonly TEXTURE13: number;
+    readonly TEXTURE14: number;
+    readonly TEXTURE15: number;
+    readonly TEXTURE16: number;
+    readonly TEXTURE17: number;
+    readonly TEXTURE18: number;
+    readonly TEXTURE19: number;
+    readonly TEXTURE2: number;
+    readonly TEXTURE20: number;
+    readonly TEXTURE21: number;
+    readonly TEXTURE22: number;
+    readonly TEXTURE23: number;
+    readonly TEXTURE24: number;
+    readonly TEXTURE25: number;
+    readonly TEXTURE26: number;
+    readonly TEXTURE27: number;
+    readonly TEXTURE28: number;
+    readonly TEXTURE29: number;
+    readonly TEXTURE3: number;
+    readonly TEXTURE30: number;
+    readonly TEXTURE31: number;
+    readonly TEXTURE4: number;
+    readonly TEXTURE5: number;
+    readonly TEXTURE6: number;
+    readonly TEXTURE7: number;
+    readonly TEXTURE8: number;
+    readonly TEXTURE9: number;
+    readonly TEXTURE_2D: number;
+    readonly TEXTURE_BINDING_2D: number;
+    readonly TEXTURE_BINDING_CUBE_MAP: number;
+    readonly TEXTURE_CUBE_MAP: number;
+    readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+    readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+    readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+    readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+    readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+    readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+    readonly TEXTURE_MAG_FILTER: number;
+    readonly TEXTURE_MIN_FILTER: number;
+    readonly TEXTURE_WRAP_S: number;
+    readonly TEXTURE_WRAP_T: number;
+    readonly TRIANGLES: number;
+    readonly TRIANGLE_FAN: number;
+    readonly TRIANGLE_STRIP: number;
+    readonly UNPACK_ALIGNMENT: number;
+    readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
+    readonly UNPACK_FLIP_Y_WEBGL: number;
+    readonly UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
+    readonly UNSIGNED_BYTE: number;
+    readonly UNSIGNED_INT: number;
+    readonly UNSIGNED_SHORT: number;
+    readonly UNSIGNED_SHORT_4_4_4_4: number;
+    readonly UNSIGNED_SHORT_5_5_5_1: number;
+    readonly UNSIGNED_SHORT_5_6_5: number;
+    readonly VALIDATE_STATUS: number;
+    readonly VENDOR: number;
+    readonly VERSION: number;
+    readonly VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
+    readonly VERTEX_ATTRIB_ARRAY_ENABLED: number;
+    readonly VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
+    readonly VERTEX_ATTRIB_ARRAY_POINTER: number;
+    readonly VERTEX_ATTRIB_ARRAY_SIZE: number;
+    readonly VERTEX_ATTRIB_ARRAY_STRIDE: number;
+    readonly VERTEX_ATTRIB_ARRAY_TYPE: number;
+    readonly VERTEX_SHADER: number;
+    readonly VIEWPORT: number;
+    readonly ZERO: number;
+    readonly READ_BUFFER: number;
+    readonly UNPACK_ROW_LENGTH: number;
+    readonly UNPACK_SKIP_ROWS: number;
+    readonly UNPACK_SKIP_PIXELS: number;
+    readonly PACK_ROW_LENGTH: number;
+    readonly PACK_SKIP_ROWS: number;
+    readonly PACK_SKIP_PIXELS: number;
+    readonly COLOR: number;
+    readonly DEPTH: number;
+    readonly STENCIL: number;
+    readonly RED: number;
+    readonly RGB8: number;
+    readonly RGBA8: number;
+    readonly RGB10_A2: number;
+    readonly TEXTURE_BINDING_3D: number;
+    readonly UNPACK_SKIP_IMAGES: number;
+    readonly UNPACK_IMAGE_HEIGHT: number;
+    readonly TEXTURE_3D: number;
+    readonly TEXTURE_WRAP_R: number;
+    readonly MAX_3D_TEXTURE_SIZE: number;
+    readonly UNSIGNED_INT_2_10_10_10_REV: number;
+    readonly MAX_ELEMENTS_VERTICES: number;
+    readonly MAX_ELEMENTS_INDICES: number;
+    readonly TEXTURE_MIN_LOD: number;
+    readonly TEXTURE_MAX_LOD: number;
+    readonly TEXTURE_BASE_LEVEL: number;
+    readonly TEXTURE_MAX_LEVEL: number;
+    readonly MIN: number;
+    readonly MAX: number;
+    readonly DEPTH_COMPONENT24: number;
+    readonly MAX_TEXTURE_LOD_BIAS: number;
+    readonly TEXTURE_COMPARE_MODE: number;
+    readonly TEXTURE_COMPARE_FUNC: number;
+    readonly CURRENT_QUERY: number;
+    readonly QUERY_RESULT: number;
+    readonly QUERY_RESULT_AVAILABLE: number;
+    readonly STREAM_READ: number;
+    readonly STREAM_COPY: number;
+    readonly STATIC_READ: number;
+    readonly STATIC_COPY: number;
+    readonly DYNAMIC_READ: number;
+    readonly DYNAMIC_COPY: number;
+    readonly MAX_DRAW_BUFFERS: number;
+    readonly DRAW_BUFFER0: number;
+    readonly DRAW_BUFFER1: number;
+    readonly DRAW_BUFFER2: number;
+    readonly DRAW_BUFFER3: number;
+    readonly DRAW_BUFFER4: number;
+    readonly DRAW_BUFFER5: number;
+    readonly DRAW_BUFFER6: number;
+    readonly DRAW_BUFFER7: number;
+    readonly DRAW_BUFFER8: number;
+    readonly DRAW_BUFFER9: number;
+    readonly DRAW_BUFFER10: number;
+    readonly DRAW_BUFFER11: number;
+    readonly DRAW_BUFFER12: number;
+    readonly DRAW_BUFFER13: number;
+    readonly DRAW_BUFFER14: number;
+    readonly DRAW_BUFFER15: number;
+    readonly MAX_FRAGMENT_UNIFORM_COMPONENTS: number;
+    readonly MAX_VERTEX_UNIFORM_COMPONENTS: number;
+    readonly SAMPLER_3D: number;
+    readonly SAMPLER_2D_SHADOW: number;
+    readonly FRAGMENT_SHADER_DERIVATIVE_HINT: number;
+    readonly PIXEL_PACK_BUFFER: number;
+    readonly PIXEL_UNPACK_BUFFER: number;
+    readonly PIXEL_PACK_BUFFER_BINDING: number;
+    readonly PIXEL_UNPACK_BUFFER_BINDING: number;
+    readonly FLOAT_MAT2x3: number;
+    readonly FLOAT_MAT2x4: number;
+    readonly FLOAT_MAT3x2: number;
+    readonly FLOAT_MAT3x4: number;
+    readonly FLOAT_MAT4x2: number;
+    readonly FLOAT_MAT4x3: number;
+    readonly SRGB: number;
+    readonly SRGB8: number;
+    readonly SRGB8_ALPHA8: number;
+    readonly COMPARE_REF_TO_TEXTURE: number;
+    readonly RGBA32F: number;
+    readonly RGB32F: number;
+    readonly RGBA16F: number;
+    readonly RGB16F: number;
+    readonly VERTEX_ATTRIB_ARRAY_INTEGER: number;
+    readonly MAX_ARRAY_TEXTURE_LAYERS: number;
+    readonly MIN_PROGRAM_TEXEL_OFFSET: number;
+    readonly MAX_PROGRAM_TEXEL_OFFSET: number;
+    readonly MAX_VARYING_COMPONENTS: number;
+    readonly TEXTURE_2D_ARRAY: number;
+    readonly TEXTURE_BINDING_2D_ARRAY: number;
+    readonly R11F_G11F_B10F: number;
+    readonly UNSIGNED_INT_10F_11F_11F_REV: number;
+    readonly RGB9_E5: number;
+    readonly UNSIGNED_INT_5_9_9_9_REV: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_MODE: number;
+    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: number;
+    readonly TRANSFORM_FEEDBACK_VARYINGS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_START: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_SIZE: number;
+    readonly TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: number;
+    readonly RASTERIZER_DISCARD: number;
+    readonly MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: number;
+    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: number;
+    readonly INTERLEAVED_ATTRIBS: number;
+    readonly SEPARATE_ATTRIBS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER_BINDING: number;
+    readonly RGBA32UI: number;
+    readonly RGB32UI: number;
+    readonly RGBA16UI: number;
+    readonly RGB16UI: number;
+    readonly RGBA8UI: number;
+    readonly RGB8UI: number;
+    readonly RGBA32I: number;
+    readonly RGB32I: number;
+    readonly RGBA16I: number;
+    readonly RGB16I: number;
+    readonly RGBA8I: number;
+    readonly RGB8I: number;
+    readonly RED_INTEGER: number;
+    readonly RGB_INTEGER: number;
+    readonly RGBA_INTEGER: number;
+    readonly SAMPLER_2D_ARRAY: number;
+    readonly SAMPLER_2D_ARRAY_SHADOW: number;
+    readonly SAMPLER_CUBE_SHADOW: number;
+    readonly UNSIGNED_INT_VEC2: number;
+    readonly UNSIGNED_INT_VEC3: number;
+    readonly UNSIGNED_INT_VEC4: number;
+    readonly INT_SAMPLER_2D: number;
+    readonly INT_SAMPLER_3D: number;
+    readonly INT_SAMPLER_CUBE: number;
+    readonly INT_SAMPLER_2D_ARRAY: number;
+    readonly UNSIGNED_INT_SAMPLER_2D: number;
+    readonly UNSIGNED_INT_SAMPLER_3D: number;
+    readonly UNSIGNED_INT_SAMPLER_CUBE: number;
+    readonly UNSIGNED_INT_SAMPLER_2D_ARRAY: number;
+    readonly DEPTH_COMPONENT32F: number;
+    readonly DEPTH32F_STENCIL8: number;
+    readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+    readonly FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: number;
+    readonly FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_RED_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_GREEN_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_BLUE_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE: number;
+    readonly FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE: number;
+    readonly FRAMEBUFFER_DEFAULT: number;
+    readonly UNSIGNED_INT_24_8: number;
+    readonly DEPTH24_STENCIL8: number;
+    readonly UNSIGNED_NORMALIZED: number;
+    readonly DRAW_FRAMEBUFFER_BINDING: number;
+    readonly READ_FRAMEBUFFER: number;
+    readonly DRAW_FRAMEBUFFER: number;
+    readonly READ_FRAMEBUFFER_BINDING: number;
+    readonly RENDERBUFFER_SAMPLES: number;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: number;
+    readonly MAX_COLOR_ATTACHMENTS: number;
+    readonly COLOR_ATTACHMENT1: number;
+    readonly COLOR_ATTACHMENT2: number;
+    readonly COLOR_ATTACHMENT3: number;
+    readonly COLOR_ATTACHMENT4: number;
+    readonly COLOR_ATTACHMENT5: number;
+    readonly COLOR_ATTACHMENT6: number;
+    readonly COLOR_ATTACHMENT7: number;
+    readonly COLOR_ATTACHMENT8: number;
+    readonly COLOR_ATTACHMENT9: number;
+    readonly COLOR_ATTACHMENT10: number;
+    readonly COLOR_ATTACHMENT11: number;
+    readonly COLOR_ATTACHMENT12: number;
+    readonly COLOR_ATTACHMENT13: number;
+    readonly COLOR_ATTACHMENT14: number;
+    readonly COLOR_ATTACHMENT15: number;
+    readonly FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: number;
+    readonly MAX_SAMPLES: number;
+    readonly HALF_FLOAT: number;
+    readonly RG: number;
+    readonly RG_INTEGER: number;
+    readonly R8: number;
+    readonly RG8: number;
+    readonly R16F: number;
+    readonly R32F: number;
+    readonly RG16F: number;
+    readonly RG32F: number;
+    readonly R8I: number;
+    readonly R8UI: number;
+    readonly R16I: number;
+    readonly R16UI: number;
+    readonly R32I: number;
+    readonly R32UI: number;
+    readonly RG8I: number;
+    readonly RG8UI: number;
+    readonly RG16I: number;
+    readonly RG16UI: number;
+    readonly RG32I: number;
+    readonly RG32UI: number;
+    readonly VERTEX_ARRAY_BINDING: number;
+    readonly R8_SNORM: number;
+    readonly RG8_SNORM: number;
+    readonly RGB8_SNORM: number;
+    readonly RGBA8_SNORM: number;
+    readonly SIGNED_NORMALIZED: number;
+    readonly COPY_READ_BUFFER: number;
+    readonly COPY_WRITE_BUFFER: number;
+    readonly COPY_READ_BUFFER_BINDING: number;
+    readonly COPY_WRITE_BUFFER_BINDING: number;
+    readonly UNIFORM_BUFFER: number;
+    readonly UNIFORM_BUFFER_BINDING: number;
+    readonly UNIFORM_BUFFER_START: number;
+    readonly UNIFORM_BUFFER_SIZE: number;
+    readonly MAX_VERTEX_UNIFORM_BLOCKS: number;
+    readonly MAX_FRAGMENT_UNIFORM_BLOCKS: number;
+    readonly MAX_COMBINED_UNIFORM_BLOCKS: number;
+    readonly MAX_UNIFORM_BUFFER_BINDINGS: number;
+    readonly MAX_UNIFORM_BLOCK_SIZE: number;
+    readonly MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: number;
+    readonly MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: number;
+    readonly UNIFORM_BUFFER_OFFSET_ALIGNMENT: number;
+    readonly ACTIVE_UNIFORM_BLOCKS: number;
+    readonly UNIFORM_TYPE: number;
+    readonly UNIFORM_SIZE: number;
+    readonly UNIFORM_BLOCK_INDEX: number;
+    readonly UNIFORM_OFFSET: number;
+    readonly UNIFORM_ARRAY_STRIDE: number;
+    readonly UNIFORM_MATRIX_STRIDE: number;
+    readonly UNIFORM_IS_ROW_MAJOR: number;
+    readonly UNIFORM_BLOCK_BINDING: number;
+    readonly UNIFORM_BLOCK_DATA_SIZE: number;
+    readonly UNIFORM_BLOCK_ACTIVE_UNIFORMS: number;
+    readonly UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: number;
+    readonly UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: number;
+    readonly UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: number;
+    readonly INVALID_INDEX: number;
+    readonly MAX_VERTEX_OUTPUT_COMPONENTS: number;
+    readonly MAX_FRAGMENT_INPUT_COMPONENTS: number;
+    readonly MAX_SERVER_WAIT_TIMEOUT: number;
+    readonly OBJECT_TYPE: number;
+    readonly SYNC_CONDITION: number;
+    readonly SYNC_STATUS: number;
+    readonly SYNC_FLAGS: number;
+    readonly SYNC_FENCE: number;
+    readonly SYNC_GPU_COMMANDS_COMPLETE: number;
+    readonly UNSIGNALED: number;
+    readonly SIGNALED: number;
+    readonly ALREADY_SIGNALED: number;
+    readonly TIMEOUT_EXPIRED: number;
+    readonly CONDITION_SATISFIED: number;
+    readonly WAIT_FAILED: number;
+    readonly SYNC_FLUSH_COMMANDS_BIT: number;
+    readonly VERTEX_ATTRIB_ARRAY_DIVISOR: number;
+    readonly ANY_SAMPLES_PASSED: number;
+    readonly ANY_SAMPLES_PASSED_CONSERVATIVE: number;
+    readonly SAMPLER_BINDING: number;
+    readonly RGB10_A2UI: number;
+    readonly INT_2_10_10_10_REV: number;
+    readonly TRANSFORM_FEEDBACK: number;
+    readonly TRANSFORM_FEEDBACK_PAUSED: number;
+    readonly TRANSFORM_FEEDBACK_ACTIVE: number;
+    readonly TRANSFORM_FEEDBACK_BINDING: number;
+    readonly TEXTURE_IMMUTABLE_FORMAT: number;
+    readonly MAX_ELEMENT_INDEX: number;
+    readonly TEXTURE_IMMUTABLE_LEVELS: number;
+    readonly TIMEOUT_IGNORED: number;
+    readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
+};
+interface WebGLQuery extends WebGLObject {
+}
+declare var WebGLQuery: {
+    prototype: WebGLQuery;
+    new (): WebGLQuery;
+};
+interface WebGLSampler extends WebGLObject {
+}
+declare var WebGLSampler: {
+    prototype: WebGLSampler;
+    new (): WebGLSampler;
+};
+interface WebGLSync extends WebGLObject {
+}
+declare var WebGLSync: {
+    prototype: WebGLSync;
+    new (): WebGLSync;
+};
+interface WebGLTransformFeedback extends WebGLObject {
+}
+declare var WebGLTransformFeedback: {
+    prototype: WebGLTransformFeedback;
+    new (): WebGLTransformFeedback;
+};
+interface WebGLVertexArrayObject extends WebGLObject {
+}
+declare var WebGLVertexArrayObject: {
+    prototype: WebGLVertexArrayObject;
+    new (): WebGLVertexArrayObject;
+};
 
 declare module BABYLON {
     class Action {
@@ -2306,188 +3316,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: AudioContext;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isLoaded;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
-        clone(): Sound;
-        getAudioBuffer(): AudioBuffer;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _inputAudioNode;
-        private _trackConvolver;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -2711,6 +3539,188 @@ declare module BABYLON {
         y2: number;
         constructor(x1?: number, y1?: number, x2?: number, y2?: number);
         easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: AudioContext;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isLoaded;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        clone(): Sound;
+        getAudioBuffer(): AudioBuffer;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _inputAudioNode;
+        private _trackConvolver;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
     }
 }
 
@@ -3191,6 +4201,8 @@ declare module BABYLON {
         alpha: number;
         beta: number;
         radius: number;
+        private _target;
+        private _targetHost;
         target: Vector3;
         inertialAlphaOffset: number;
         inertialBetaOffset: number;
@@ -3246,7 +4258,7 @@ declare module BABYLON {
         private _checkLimits();
         rebuildAnglesAndRadius(): void;
         setPosition(position: Vector3): void;
-        setTarget(target: Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
+        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
         _getViewMatrix(): Matrix;
         private _onCollisionPositionChange;
         zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ?: boolean): void;
@@ -4431,6 +5443,7 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, direction: Vector3, scene: Scene);
+        protected _buildUniformLayout(): void;
         /**
          * Returns the string "DirectionalLight".
          */
@@ -4473,7 +5486,7 @@ declare module BABYLON {
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
          * Returns the DirectionalLight.
          */
-        transferToEffect(effect: Effect, directionUniformName: string): DirectionalLight;
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
         _getWorldMatrix(): Matrix;
         /**
          * Returns the integer 1.
@@ -4494,6 +5507,7 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, direction: Vector3, scene: Scene);
+        protected _buildUniformLayout(): void;
         /**
          * Returns the string "HemisphericLight".
          */
@@ -4508,7 +5522,7 @@ declare module BABYLON {
          * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
          * Returns the HemisphericLight.
          */
-        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): HemisphericLight;
+        transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
         _getWorldMatrix(): Matrix;
         /**
          * Returns the integer 3.
@@ -4577,11 +5591,13 @@ declare module BABYLON {
         private _parentedWorldMatrix;
         _excludedMeshesIds: string[];
         _includedOnlyMeshesIds: string[];
+        _uniformBuffer: UniformBuffer;
         /**
          * Creates a Light object in the scene.
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, scene: Scene);
+        protected _buildUniformLayout(): void;
         /**
          * Returns the string "Light".
          */
@@ -4604,7 +5620,7 @@ declare module BABYLON {
          * Returns a Vector3, the absolute light position in the World.
          */
         getAbsolutePosition(): Vector3;
-        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
+        transferToEffect(effect: Effect, lightIndex: string): void;
         _getWorldMatrix(): Matrix;
         /**
          * Boolean : True if the light will affect the passed mesh.
@@ -4666,6 +5682,7 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, position: Vector3, scene: Scene);
+        protected _buildUniformLayout(): void;
         /**
          * Returns the string "PointLight"
          */
@@ -4682,7 +5699,7 @@ declare module BABYLON {
          * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
          * Returns the PointLight.
          */
-        transferToEffect(effect: Effect, positionUniformName: string): PointLight;
+        transferToEffect(effect: Effect, lightIndex: string): PointLight;
         /**
          * Boolean : returns true by default.
          */
@@ -4738,6 +5755,7 @@ declare module BABYLON {
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          */
         constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        protected _buildUniformLayout(): void;
         /**
          * Returns the string "SpotLight".
          */
@@ -4780,7 +5798,7 @@ declare module BABYLON {
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
          * Return the SpotLight.
          */
-        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): SpotLight;
+        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
         _getWorldMatrix(): Matrix;
         /**
          * Returns the integer 2.
@@ -5096,12 +6114,14 @@ declare module BABYLON {
     class EffectCreationOptions {
         attributes: string[];
         uniformsNames: string[];
+        uniformBuffersNames: string[];
         samplers: string[];
-        defines: string;
+        defines: any;
         fallbacks: EffectFallbacks;
         onCompiled: (effect: Effect) => void;
         onError: (effect: Effect, errors: string) => void;
         indexParameters: any;
+        maxSimultaneousLights: number;
     }
     class Effect {
         name: any;
@@ -5112,6 +6132,7 @@ declare module BABYLON {
         uniqueId: number;
         private static _uniqueIdSeed;
         private _engine;
+        private _uniformBuffersNames;
         private _uniformsNames;
         private _samplers;
         private _isReady;
@@ -5124,6 +6145,7 @@ declare module BABYLON {
         private _fallbacks;
         private _program;
         private _valueCache;
+        private static _baseCache;
         constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any);
         readonly key: string;
         isReady(): boolean;
@@ -5154,6 +6176,8 @@ declare module BABYLON {
         _cacheFloat2(uniformName: string, x: number, y: number): boolean;
         _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
         _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
+        bindUniformBuffer(buffer: WebGLBuffer, name: string): void;
+        bindUniformBlock(blockName: string, index: number): void;
         setIntArray(uniformName: string, array: Int32Array): Effect;
         setIntArray2(uniformName: string, array: Int32Array): Effect;
         setIntArray3(uniformName: string, array: Int32Array): Effect;
@@ -5295,9 +6319,11 @@ declare module BABYLON {
         fillMode: number;
         _effect: Effect;
         _wasPreviouslyReady: boolean;
+        private _useUBO;
         private _scene;
         private _fillMode;
         private _cachedDepthWriteState;
+        protected _uniformBuffer: UniformBuffer;
         constructor(name: string, scene: Scene, doNotAdd?: boolean);
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
@@ -5324,6 +6350,9 @@ declare module BABYLON {
         bind(world: Matrix, mesh?: Mesh): void;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         bindOnlyWorldMatrix(world: Matrix): void;
+        bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void;
+        bindView(effect: Effect): void;
+        bindViewProjection(effect: Effect): void;
         protected _afterBind(mesh: Mesh): void;
         unbind(): void;
         clone(name: string): Material;
@@ -5341,12 +6370,12 @@ declare module BABYLON {
         static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void;
         static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets?: boolean): void;
         static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights?: number, disableLighting?: boolean): boolean;
-        static PrepareUniformsAndSamplersList(uniformsList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights?: number): void;
+        static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: MaterialDefines, maxSimultaneousLights?: number): void;
         static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights?: number): void;
         static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines): void;
         static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void;
         static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void;
-        static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean;
+        static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect, depthValuesAlreadySet: boolean): boolean;
         static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void;
         static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights?: number): void;
         static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void;
@@ -5692,6 +6721,7 @@ declare module BABYLON {
         private static _scaledReflection;
         static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean): void;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        buildUniformLayout(): void;
         unbind(): void;
         bindOnlyWorldMatrix(world: Matrix): void;
         private _myScene;
@@ -5836,6 +6866,7 @@ declare module BABYLON {
         CAMERACOLORCURVES: boolean;
         MORPHTARGETS: boolean;
         MORPHTARGETS_NORMAL: boolean;
+        MORPHTARGETS_TANGENT: boolean;
         NUM_MORPH_INFLUENCERS: number;
         constructor();
         setReflectionMode(modeToEnable: string): void;
@@ -5948,6 +6979,7 @@ declare module BABYLON {
          * Child classes can use it to update shaders
          */
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        buildUniformLayout(): void;
         unbind(): void;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -5977,6 +7009,264 @@ declare module BABYLON {
         static ColorGradingTextureEnabled: boolean;
         static _FresnelEnabled: boolean;
         static FresnelEnabled: boolean;
+    }
+}
+
+declare module BABYLON {
+    class UniformBuffer {
+        private _engine;
+        private _buffer;
+        private _data;
+        private _bufferData;
+        private _dynamic;
+        private _uniformName;
+        private _uniformLocations;
+        private _uniformSizes;
+        private _uniformLocationPointer;
+        private _needSync;
+        private _cache;
+        private _noUBO;
+        private _currentEffect;
+        private static _MAX_UNIFORM_SIZE;
+        private static _tempBuffer;
+        /**
+         * Wrapper for updateUniform.
+         * @method updateMatrix3x3
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Float32Array} matrix
+         */
+        updateMatrix3x3: (name: string, matrix: Float32Array) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Float32Array} matrix
+         */
+        updateMatrix2x2: (name: string, matrix: Float32Array) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         */
+        updateFloat: (name: string, x: number) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         */
+        updateFloat2: (name: string, x: number, y: number) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         * @param {string} [suffix] Suffix to add to the uniform name.
+         */
+        updateFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         * @param {number} w
+         * @param {string} [suffix] Suffix to add to the uniform name.
+         */
+        updateFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Matrix} A 4x4 matrix.
+         */
+        updateMatrix: (name: string, mat: Matrix) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector3} vector
+         */
+        updateVector3: (name: string, vector: Vector3) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector4} vector
+         */
+        updateVector4: (name: string, vector: Vector4) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         * @param {string} [suffix] Suffix to add to the uniform name.
+         */
+        updateColor3: (name: string, color: Color3, suffix?: string) => void;
+        /**
+         * Wrapper for updateUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         * @param {number} alpha
+         * @param {string} [suffix] Suffix to add to the uniform name.
+         */
+        updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
+        /**
+         * Uniform buffer objects.
+         *
+         * Handles blocks of uniform on the GPU.
+         *
+         * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
+         *
+         * For more information, please refer to :
+         * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
+         */
+        constructor(engine: Engine, data?: number[], dynamic?: boolean);
+        /**
+         * Indicates if the buffer is using the WebGL2 UBO implementation,
+         * or just falling back on setUniformXXX calls.
+         */
+        readonly useUbo: boolean;
+        /**
+         * Indicates if the WebGL underlying uniform buffer is in sync
+         * with the javascript cache data.
+         */
+        readonly isSync: boolean;
+        /**
+         * Indicates if the WebGL underlying uniform buffer is dynamic.
+         * Also, a dynamic UniformBuffer will disable cache verification and always
+         * update the underlying WebGL uniform buffer to the GPU.
+         */
+        isDynamic(): boolean;
+        /**
+         * The data cache on JS side.
+         */
+        getData(): Float32Array;
+        /**
+         * The underlying WebGL Uniform buffer.
+         */
+        getBuffer(): WebGLBuffer;
+        /**
+         * std140 layout specifies how to align data within an UBO structure.
+         * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
+         * for specs.
+         */
+        private _fillAlignment(size);
+        /**
+         * Adds an uniform in the buffer.
+         * Warning : the subsequents calls of this function must be in the same order as declared in the shader
+         * for the layout to be correct !
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number|number[]} size Data size, or data directly.
+         */
+        addUniform(name: string, size: number | number[]): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Matrix} mat A 4x4 matrix.
+         */
+        addMatrix(name: string, mat: Matrix): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         */
+        addFloat2(name: string, x: number, y: number): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {number} x
+         * @param {number} y
+         * @param {number} z
+         */
+        addFloat3(name: string, x: number, y: number, z: number): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         */
+        addColor3(name: string, color: Color3): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Color3} color
+         * @param {number} alpha
+         */
+        addColor4(name: string, color: Color3, alpha: number): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * @param {Vector3} vector
+         */
+        addVector3(name: string, vector: Vector3): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         */
+        addMatrix3x3(name: string): void;
+        /**
+         * Wrapper for addUniform.
+         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         */
+        addMatrix2x2(name: string): void;
+        /**
+         * Effectively creates the WebGL Uniform Buffer, once layout is completed with `addUniform`.
+         */
+        create(): void;
+        /**
+         * Updates the WebGL Uniform Buffer on the GPU.
+         * If the `dynamic` flag is set to true, no cache comparison is done.
+         * Otherwise, the buffer will be updated only if the cache differs.
+         */
+        update(): void;
+        /**
+         * Updates the value of an uniform. The `update` method must be called afterwards to make it effective in the GPU.
+         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
+         * @param {number[]|Float32Array} data Flattened data
+         * @param {number} size Size of the data.
+         */
+        updateUniform(uniformName: string, data: number[] | Float32Array, size: number): void;
+        private _updateMatrix3x3ForUniform(name, matrix);
+        private _updateMatrix3x3ForEffect(name, matrix);
+        private _updateMatrix2x2ForEffect(name, matrix);
+        private _updateMatrix2x2ForUniform(name, matrix);
+        private _updateFloatForEffect(name, x);
+        private _updateFloatForUniform(name, x);
+        private _updateFloat2ForEffect(name, x, y);
+        private _updateFloat2ForUniform(name, x, y);
+        private _updateFloat3ForEffect(name, x, y, z, suffix?);
+        private _updateFloat3ForUniform(name, x, y, z, suffix?);
+        private _updateFloat4ForEffect(name, x, y, z, w, suffix?);
+        private _updateFloat4ForUniform(name, x, y, z, w, suffix?);
+        private _updateMatrixForEffect(name, mat);
+        private _updateMatrixForUniform(name, mat);
+        private _updateVector3ForEffect(name, vector);
+        private _updateVector3ForUniform(name, vector);
+        private _updateVector4ForEffect(name, vector);
+        private _updateVector4ForUniform(name, vector);
+        private _updateColor3ForEffect(name, color, suffix?);
+        private _updateColor3ForUniform(name, color, suffix?);
+        private _updateColor4ForEffect(name, color, alpha, suffix?);
+        private _updateColor4ForUniform(name, color, alpha, suffix?);
+        /**
+         * Sets a sampler uniform on the effect.
+         * @param {string} name Name of the sampler.
+         * @param {Texture} texture
+         */
+        setTexture(name: string, texture: BaseTexture): void;
+        /**
+         * Directly updates the value of the uniform in the cache AND on the GPU.
+         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
+         * @param {number[]|Float32Array} data Flattened data
+         */
+        updateUniformDirectly(uniformName: string, data: number[] | Float32Array): void;
+        /**
+         * Binds this uniform buffer to an effect.
+         * @param {Effect} effect
+         * @param {string} name Name of the uniform block in the shader.
+         */
+        bindToEffect(effect: Effect, name: string): void;
+        /**
+         * Disposes the uniform buffer.
+         */
+        dispose(): void;
     }
 }
 
@@ -6038,7 +7328,7 @@ declare module BABYLON {
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.
          * Returns the Color3.
          */
-        toArray(array: number[], index?: number): Color3;
+        toArray(array: number[] | Float32Array, index?: number): Color3;
         /**
          * Returns a new Color4 object from the current Color3 and the passed alpha.
          */
@@ -6145,7 +7435,7 @@ declare module BABYLON {
         /**
          * Creates a new Vector3 from the startind index of the passed array.
          */
-        static FromArray(array: number[], offset?: number): Color3;
+        static FromArray(array: ArrayLike<number>, offset?: number): Color3;
         /**
          * Creates a new Color3 from integer values ( < 256).
          */
@@ -6273,7 +7563,7 @@ declare module BABYLON {
         /**
          * Creates a new Color4 from the starting index element of the passed array.
          */
-        static FromArray(array: number[], offset?: number): Color4;
+        static FromArray(array: ArrayLike<number>, offset?: number): Color4;
         /**
          * Creates a new Color4 from the passed integers ( < 256 ).
          */
@@ -6425,14 +7715,13 @@ declare module BABYLON {
          */
         static Zero(): Vector2;
         /**
-         * Returns a new Vector2 set from the passed index element of the passed array or Float32Array.
+         * Returns a new Vector2 set from the passed index element of the passed array.
          */
-        static FromArray(array: number[] | Float32Array, offset?: number): Vector2;
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
         /**
-         * Sets "result" from the passed index element of the passed array or Float32Array.
-         * Returns the Vector2.
+         * Sets "result" from the passed index element of the passed array.
          */
-        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void;
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
         /**
          * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
          */
@@ -6672,19 +7961,21 @@ declare module BABYLON {
          */
         static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed array or Float32Array.
+         * Returns a new Vector3 set from the index "offset" of the passed array.
          */
-        static FromArray(array: number[] | Float32Array, offset?: number): Vector3;
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
         /**
          * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArray instead.
          */
         static FromFloatArray(array: Float32Array, offset?: number): Vector3;
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array or Float32Array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
          */
-        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector3): void;
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
         /**
          * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArrayToRef instead.
          */
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
         /**
@@ -6846,7 +8137,7 @@ declare module BABYLON {
          * Populates the passed array from the passed index with the Vector4 coordinates.
          * Returns the Vector4.
          */
-        toArray(array: number[], index?: number): Vector4;
+        toArray(array: number[] | Float32Array, index?: number): Vector4;
         /**
          * Adds the passed vector to the current Vector4.
          * Returns the updated Vector4.
@@ -6988,11 +8279,11 @@ declare module BABYLON {
         /**
          * Returns a new Vector4 set from the starting index of the passed array.
          */
-        static FromArray(array: number[] | Float32Array, offset?: number): Vector4;
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
         /**
          * Updates the passed vector "result" from the starting index of the passed array.
          */
-        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector4): void;
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
         /**
          * Updates the passed vector "result" from the starting index of the passed Float32Array.
          */
@@ -7259,7 +8550,7 @@ declare module BABYLON {
         /**
          * Retuns a new Quaternion set from the starting index of the passed array.
          */
-        static FromArray(array: number[], offset?: number): Quaternion;
+        static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
         /**
          * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
          */
@@ -7427,11 +8718,11 @@ declare module BABYLON {
         /**
          * Returns a new Matrix set from the starting index of the passed array.
          */
-        static FromArray(array: number[], offset?: number): Matrix;
+        static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
         /**
          * Sets the passed "result" matrix from the starting index of the passed array.
          */
-        static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix): void;
         /**
          * Sets the passed "result" matrix from the starting index of the passed Float32Array by multiplying each element by the float "scale".
          */
@@ -7703,7 +8994,7 @@ declare module BABYLON {
         /**
          * Returns a new Plane from the passed array.
          */
-        static FromArray(array: number[]): Plane;
+        static FromArray(array: ArrayLike<number>): Plane;
         /**
          * Returns a new Plane defined by the three passed points.
          */
@@ -8574,21 +9865,19 @@ declare module BABYLON {
         getAbsolutePivotPoint(): Vector3;
         /**
          * Defines the passed mesh as the parent of the current mesh.
-         * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
          * Returns the AbstractMesh.
          */
-        setParent(mesh: AbstractMesh, keepWorldPositionRotation?: boolean): AbstractMesh;
+        setParent(mesh: AbstractMesh): AbstractMesh;
         /**
          * Adds the passed mesh as a child to the current mesh.
-         * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.
          * Returns the AbstractMesh.
          */
-        addChild(mesh: AbstractMesh, keepWorldPositionRotation?: boolean): AbstractMesh;
+        addChild(mesh: AbstractMesh): AbstractMesh;
         /**
          * Removes the passed mesh from the current mesh children list.
          * Returns the AbstractMesh.
          */
-        removeChild(mesh: AbstractMesh, keepWorldPositionRotation?: boolean): AbstractMesh;
+        removeChild(mesh: AbstractMesh): AbstractMesh;
         /**
          * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
          * Returns the AbstractMesh.
@@ -9122,9 +10411,9 @@ declare module BABYLON {
 
 declare module BABYLON {
     class LinesMesh extends Mesh {
+        useVertexColor: boolean;
         color: Color3;
         alpha: number;
-        private _positionBuffer;
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
@@ -9139,7 +10428,7 @@ declare module BABYLON {
         intersectionThreshold: number;
         private _intersectionThreshold;
         private _colorShader;
-        constructor(name: string, scene: Scene, parent?: Node, source?: LinesMesh, doNotCloneChildren?: boolean);
+        constructor(name: string, scene: Scene, parent?: Node, source?: LinesMesh, doNotCloneChildren?: boolean, useVertexColor?: boolean);
         /**
          * Returns the string "LineMesh"
          */
@@ -10328,6 +11617,7 @@ declare module BABYLON {
             bInfo?: any;
             bbSize?: Vector3;
             subDiv?: any;
+            useRightHandedSystem?: boolean;
         }): void;
         private static _ComputeSides(sideOrientation, positions, indices, normals, uvs);
         /**
@@ -11219,381 +12509,23 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
-        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): any;
-        setTimeStep(timeStep: number): any;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        generatePhysicsBody(impostor: PhysicsImpostor): any;
-        removePhysicsBody(impostor: PhysicsImpostor): any;
-        generateJoint(joint: PhysicsImpostorJoint): any;
-        removeJoint(joint: PhysicsImpostorJoint): any;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
-        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
-        sleepBody(impostor: PhysicsImpostor): any;
-        wakeUpBody(impostor: PhysicsImpostor): any;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): any;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-        dispose(): any;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo?(): BoundingInfo;
-        computeWorldMatrix?(force: boolean): void;
-        getWorldMatrix?(): Matrix;
-        getChildMeshes?(): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): IndicesArray;
-        getScene?(): Scene;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        static IDENTITY_QUATERNION: Quaternion;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: PhysicsImpostor;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Vector3;
-        setLinearVelocity(velocity: Vector3): void;
-        getAngularVelocity(): Vector3;
-        setAngularVelocity(velocity: Vector3): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpPositionWithDelta;
-        private _tmpRotationWithDelta;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        /**
-         * Legacy collision detection event support
-         */
-        onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): void;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): void;
-        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
-    }
-}
-
-declare module BABYLON {
     class MorphTarget {
         name: string;
         private _positions;
         private _normals;
+        private _tangents;
         private _influence;
         onInfluenceChanged: Observable<boolean>;
         influence: number;
         constructor(name: string, influence?: number);
         readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
         setPositions(data: Float32Array | number[]): void;
         getPositions(): Float32Array;
         setNormals(data: Float32Array | number[]): void;
         getNormals(): Float32Array;
+        setTangents(data: Float32Array | number[]): void;
+        getTangents(): Float32Array;
         /**
          * Serializes the current target into a Serialization object.
          * Returns the serialized object.
@@ -11612,15 +12544,19 @@ declare module BABYLON {
         private _scene;
         private _influences;
         private _supportsNormals;
+        private _supportsTangents;
         private _vertexCount;
         private _uniqueId;
         constructor(scene?: Scene);
         readonly uniqueId: number;
         readonly vertexCount: number;
         readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
         readonly numInfluencers: number;
         readonly influences: Float32Array;
         getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
         addTarget(target: MorphTarget): void;
         removeTarget(target: MorphTarget): void;
         /**
@@ -11631,29 +12567,6 @@ declare module BABYLON {
         private _onInfluenceChanged(needUpdate);
         private _syncActiveTargets(needUpdate);
         static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
     }
 }
 
@@ -12109,6 +13022,368 @@ declare module BABYLON {
         * @param update the boolean update value actually passed to setParticles()
         */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
+        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): any;
+        setTimeStep(timeStep: number): any;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        generatePhysicsBody(impostor: PhysicsImpostor): any;
+        removePhysicsBody(impostor: PhysicsImpostor): any;
+        generateJoint(joint: PhysicsImpostorJoint): any;
+        removeJoint(joint: PhysicsImpostorJoint): any;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
+        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
+        sleepBody(impostor: PhysicsImpostor): any;
+        wakeUpBody(impostor: PhysicsImpostor): any;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): any;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+        dispose(): any;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo?(): BoundingInfo;
+        computeWorldMatrix?(force: boolean): void;
+        getWorldMatrix?(): Matrix;
+        getChildMeshes?(): Array<AbstractMesh>;
+        getVerticesData?(kind: string): Array<number> | Float32Array;
+        getIndices?(): IndicesArray;
+        getScene?(): Scene;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        static IDENTITY_QUATERNION: Quaternion;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: PhysicsImpostor;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Vector3;
+        setLinearVelocity(velocity: Vector3): void;
+        getAngularVelocity(): Vector3;
+        setAngularVelocity(velocity: Vector3): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpPositionWithDelta;
+        private _tmpRotationWithDelta;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        /**
+         * Legacy collision detection event support
+         */
+        onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): void;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): void;
+        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
     }
 }
 
@@ -12782,6 +14057,29 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
     }
 }
 
@@ -14487,129 +15785,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        readonly aspectRatio: number;
-        readonly aspectRatioFov: number;
-        readonly leftHMatrix: Matrix;
-        readonly rightHMatrix: Matrix;
-        readonly leftPreViewMatrix: Matrix;
-        readonly rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose.
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        readonly position?: Float32Array;
-        readonly linearVelocity?: Float32Array;
-        readonly linearAcceleration?: Float32Array;
-        readonly orientation?: Float32Array;
-        readonly angularVelocity?: Float32Array;
-        readonly angularAcceleration?: Float32Array;
-    }
-    interface PoseControlled {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        devicePosition?: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        rawPose: DevicePose;
-        deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose): any;
-    }
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-        controllerMeshes?: boolean;
-        defaultLightningOnControllers?: boolean;
-    }
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        _vrDevice: any;
-        rawPose: DevicePose;
-        private _vrEnabled;
-        private _specsVersion;
-        private _attached;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _frameData;
-        private _quaternionCache;
-        private _positionOffset;
-        protected _descendants: Array<Node>;
-        devicePosition: Vector3;
-        deviceRotationQuaternion: any;
-        deviceScaleFactor: number;
-        controllers: Array<WebVRController>;
-        onControllersAttached: (controllers: Array<WebVRController>) => void;
-        rigParenting: boolean;
-        private _lightOnControllers;
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        _checkInputs(): void;
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param {HTMLElement} element
-         * @param {boolean} [noPreventDefault]
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getClassName(): string;
-        resetToCurrentRotation(): void;
-        _updateRigCameras(): void;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
-        initControllers(): void;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -14816,6 +15991,134 @@ declare module BABYLON {
         detachControl(element: HTMLElement): void;
         getTypeName(): string;
         getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        readonly aspectRatio: number;
+        readonly aspectRatioFov: number;
+        readonly leftHMatrix: Matrix;
+        readonly rightHMatrix: Matrix;
+        readonly leftPreViewMatrix: Matrix;
+        readonly rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+    interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: DevicePose;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose): any;
+    }
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+        controllerMeshes?: boolean;
+        defaultLightningOnControllers?: boolean;
+    }
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        _vrDevice: any;
+        rawPose: DevicePose;
+        private _vrEnabled;
+        private _specsVersion;
+        private _attached;
+        private _oldSize;
+        private _oldHardwareScaleFactor;
+        private _frameData;
+        private _quaternionCache;
+        private _positionOffset;
+        protected _descendants: Array<Node>;
+        devicePosition: Vector3;
+        deviceRotationQuaternion: any;
+        deviceScaleFactor: number;
+        controllers: Array<WebVRController>;
+        private _onControllersAttached;
+        rigParenting: boolean;
+        private _lightOnControllers;
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        onControllersAttached: (controllers: Array<WebVRController>) => void;
+        getLeftCamera(): FreeCamera;
+        getRightCamera(): FreeCamera;
+        getLeftTarget(): Vector3;
+        getRightTarget(): Vector3;
+        _checkInputs(): void;
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param {HTMLElement} element
+         * @param {boolean} [noPreventDefault]
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getClassName(): string;
+        resetToCurrentRotation(): void;
+        _updateRigCameras(): void;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        protected _getWebVRProjectionMatrix(): Matrix;
+        initControllers(): void;
     }
 }
 

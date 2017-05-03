@@ -10,5 +10,8 @@
   "license": "(Apache-2.0)",
   "devDependencies": {
     "monaco-editor": "^0.7.0"
+  },
+  "scripts": {
+    "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html"
   }
 }

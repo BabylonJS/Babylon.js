@@ -32,10 +32,6 @@ declare module BABYLON.GLTF2 {
     /**
     * Enums
     */
-    enum EBufferViewTarget {
-        ARRAY_BUFFER = 34962,
-        ELEMENT_ARRAY_BUFFER = 34963,
-    }
     enum EComponentType {
         BYTE = 5120,
         UNSIGNED_BYTE = 5121,
@@ -53,29 +49,6 @@ declare module BABYLON.GLTF2 {
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
     }
-    enum EParameterType {
-        BYTE = 5120,
-        UNSIGNED_BYTE = 5121,
-        SHORT = 5122,
-        UNSIGNED_SHORT = 5123,
-        INT = 5124,
-        UNSIGNED_INT = 5125,
-        FLOAT = 5126,
-        FLOAT_VEC2 = 35664,
-        FLOAT_VEC3 = 35665,
-        FLOAT_VEC4 = 35666,
-        INT_VEC2 = 35667,
-        INT_VEC3 = 35668,
-        INT_VEC4 = 35669,
-        BOOL = 35670,
-        BOOL_VEC2 = 35671,
-        BOOL_VEC3 = 35672,
-        BOOL_VEC4 = 35673,
-        FLOAT_MAT2 = 35674,
-        FLOAT_MAT3 = 35675,
-        FLOAT_MAT4 = 35676,
-        SAMPLER_2D = 35678,
-    }
     enum ETextureMagFilter {
         NEAREST = 9728,
         LINEAR = 9729,
@@ -87,22 +60,6 @@ declare module BABYLON.GLTF2 {
         LINEAR_MIPMAP_NEAREST = 9985,
         NEAREST_MIPMAP_LINEAR = 9986,
         LINEAR_MIPMAP_LINEAR = 9987,
-    }
-    enum ETextureFormat {
-        ALPHA = 6406,
-        RGB = 6407,
-        RGBA = 6408,
-        LUMINANCE = 6409,
-        LUMINANCE_ALPHA = 6410,
-    }
-    enum ETextureTarget {
-        TEXTURE_2D = 3553,
-    }
-    enum ETextureType {
-        UNSIGNED_BYTE = 5121,
-        UNSIGNED_SHORT_5_6_5 = 33635,
-        UNSIGNED_SHORT_4_4_4_4 = 32819,
-        UNSIGNED_SHORT_5_5_5_1 = 32820,
     }
     enum ETextureWrapMode {
         CLAMP_TO_EDGE = 33071,
@@ -178,10 +135,9 @@ declare module BABYLON.GLTF2 {
     }
     interface IGLTFBufferView extends IGLTFChildRootProperty {
         buffer: number;
-        byteOffset: number;
+        byteOffset?: number;
         byteLength: number;
         byteStride?: number;
-        target?: EBufferViewTarget;
     }
     interface IGLTFCameraOrthographic extends IGLTFProperty {
         xmag: number;
@@ -236,7 +192,9 @@ declare module BABYLON.GLTF2 {
         indices?: number;
         material?: number;
         mode?: EMeshPrimitiveMode;
-        targets?: number[];
+        targets?: [{
+            [name: string]: number;
+        }];
     }
     interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];
@@ -270,12 +228,8 @@ declare module BABYLON.GLTF2 {
         babylonSkeleton?: Skeleton;
     }
     interface IGLTFTexture extends IGLTFChildRootProperty {
-        format?: ETextureFormat;
-        internalFormat?: ETextureFormat;
-        sampler: number;
+        sampler?: number;
         source: number;
-        target?: ETextureTarget;
-        type?: ETextureType;
         babylonTextures: Texture[];
         blobURL: string;
     }

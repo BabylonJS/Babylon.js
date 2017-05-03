@@ -26,6 +26,7 @@
             options.needAlphaTesting = options.needAlphaTesting || false;
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
+            options.uniformBuffers = options.uniformBuffers || [];
             options.samplers = options.samplers || [];
             options.defines = options.defines || [];
 
@@ -174,6 +175,7 @@
 
             // Instances
             var defines = [];
+            var attribs = [];
             var fallbacks = new EffectFallbacks();
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -183,12 +185,29 @@
                 defines.push(this._options.defines[index]);
             }
 
+            for (var index = 0; index < this._options.attributes.length; index++) {
+                attribs.push(this._options.attributes[index]);
+            }
+
+            if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                attribs.push(VertexBuffer.ColorKind);
+                defines.push("#define VERTEXCOLOR");
+            }
+            
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
-            }
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }  
 
             // Textures
             for (var name in this._textures) {
@@ -205,11 +224,16 @@
             var previousEffect = this._effect;
             var join = defines.join("\n");
 
-            this._effect = engine.createEffect(this._shaderPath,
-                this._options.attributes,
-                this._options.uniforms,
-                this._options.samplers,
-                join, fallbacks, this.onCompiled, this.onError);
+            this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: this._options.uniforms,
+                    uniformBuffersNames: this._options.uniformBuffers,
+                    samplers: this._options.samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError
+                }, engine);
 
             if (!this._effect.isReady()) {
                 return false;
