@@ -389,6 +389,7 @@
         }
 
         var addTexturesToZip = function (zip, index, textures, folder, then) {
+
             if (index === textures.length) {
                 then();
                 return;
@@ -421,20 +422,26 @@
             if (textures[index].video) {
                 url = textures[index].video.currentSrc;
             } else {
-                url = textures[index].name;
+                // url = textures[index].name;
+                url = textures[index].url;
             }
 
-            var name = url.substr(url.lastIndexOf("/") + 1);
+            var name = textures[index].name;
+            // var name = url.substr(url.lastIndexOf("/") + 1);
 
-
-            addContentToZip(folder,
-                name,
-                url,
-                null,
-                true,
-                function () {
-                    addTexturesToZip(zip, index + 1, textures, folder, then);
-                });
+            if(url != null) {
+                addContentToZip(folder,
+                    name,
+                    url,
+                    null,
+                    true,
+                    function () {
+                        addTexturesToZip(zip, index + 1, textures, folder, then);
+                    });
+            }
+            else {
+                addTexturesToZip(zip, index + 1, textures, folder, then);
+            }
         }
 
         var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
