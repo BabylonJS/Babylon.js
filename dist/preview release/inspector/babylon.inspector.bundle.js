@@ -43,15 +43,15 @@ var INSPECTOR =
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
 	module.exports = __webpack_require__(5);
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
@@ -65,8 +65,8 @@ var INSPECTOR =
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css", function() {
-				var newContent = require("!!./../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css");
+			module.hot.accept("!!../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css", function() {
+				var newContent = require("!!../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -75,9 +75,9 @@ var INSPECTOR =
 		module.hot.dispose(function() { update(); });
 	}
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(3)();
 	// imports
@@ -90,9 +90,9 @@ var INSPECTOR =
 	// exports
 
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -146,9 +146,9 @@ var INSPECTOR =
 	};
 
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -163,7 +163,7 @@ var INSPECTOR =
 			};
 		},
 		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+			return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
 		}),
 		getHeadElement = memoize(function () {
 			return document.head || document.getElementsByTagName("head")[0];
@@ -398,9 +398,9 @@ var INSPECTOR =
 	}
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
 	var Split = __webpack_require__(6);
@@ -413,9 +413,9 @@ var INSPECTOR =
 	module.exports = INSPECTOR;
 
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// The programming goals of Split.js are to deliver readable, understandable and
 	// maintainable code, while at the same time manually optimizing for tiny minified file size,
@@ -987,5 +987,5 @@ var INSPECTOR =
 	}).call(window);
 
 
-/***/ }
+/***/ })
 /******/ ]);
