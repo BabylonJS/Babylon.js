@@ -34,6 +34,10 @@ uniform vec2 vAlbedoInfos;
 uniform vec3 vAmbientInfos;
 #endif
 
+#ifdef BUMP
+uniform vec3 vBumpInfos;
+#endif
+
 #ifdef OPACITY	
 uniform vec2 vOpacityInfos;
 #endif
