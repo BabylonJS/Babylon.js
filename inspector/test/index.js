@@ -201,6 +201,8 @@ var Test = (function () {
 
         plane.material = materialPlane;
 
+        new BABYLON.Mesh('mesh_without_geometry', scene);
+
 
 
         var d = 50;

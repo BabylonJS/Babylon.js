@@ -1237,7 +1237,9 @@ var INSPECTOR;
             var tools = [];
             tools.push(new INSPECTOR.Checkbox(this));
             tools.push(new INSPECTOR.DebugArea(this));
-            tools.push(new INSPECTOR.BoundingBox(this));
+            if (this._obj.getTotalVertices() > 0) {
+                tools.push(new INSPECTOR.BoundingBox(this));
+            }
             tools.push(new INSPECTOR.Info(this));
             return tools;
         };

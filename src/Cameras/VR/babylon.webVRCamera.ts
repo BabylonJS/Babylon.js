@@ -61,7 +61,7 @@ module BABYLON {
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
-        public onControllersAttached: (controllers: Array<WebVRController>) => void;
+        private _onControllersAttached: (controllers: Array<WebVRController>) => void;
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -176,6 +176,30 @@ module BABYLON {
                     });
                 }
             });
+        }
+
+        public set onControllersAttached(callback: (controllers: Array<WebVRController>) => void) {
+            this._onControllersAttached = callback;
+            // after setting - if the controllers are already set, execute the callback.
+            if (this.controllers.length >= 2) {
+                callback(this.controllers);
+            }
+        }
+
+        public getLeftCamera() {
+            return (<FreeCamera>this._rigCameras[0]);
+        }
+
+        public getRightCamera() {
+            return (<FreeCamera>this._rigCameras[1]);
+        }
+
+        public getLeftTarget() {
+            return (<TargetCamera>this._rigCameras[0]).getTarget();
+        }
+
+        public getRightTarget() {
+            return (<TargetCamera>this._rigCameras[1]).getTarget();
         }
 
         public _checkInputs(): void {
@@ -377,8 +401,8 @@ module BABYLON {
                         this.controllers.push(webVrController);
 
                         //did we find enough controllers? Great! let the developer know.
-                        if (this.onControllersAttached && this.controllers.length === 2) {
-                            this.onControllersAttached(this.controllers);
+                        if (this._onControllersAttached && this.controllers.length >= 2) {
+                            this._onControllersAttached(this.controllers);
                         }
                     }
                 }
