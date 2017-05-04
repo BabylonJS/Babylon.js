@@ -13514,13 +13514,7 @@ var BABYLON;
         Camera.prototype.getForwardRay = function (length) {
             if (length === void 0) { length = 100; }
             var m = this.getWorldMatrix();
-            var origin;
-            if (this.devicePosition) {
-                origin = this.position.add(this.devicePosition);
-            }
-            else {
-                origin = this.position;
-            }
+            var origin = this.position;
             var forward = new BABYLON.Vector3(0, 0, 1);
             var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
             var direction = BABYLON.Vector3.Normalize(forwardWorld);
@@ -13541,7 +13535,39 @@ var BABYLON;
             }
             _super.prototype.dispose.call(this);
         };
-        // ---- Camera rigs section ----
+        Object.defineProperty(Camera.prototype, "leftCamera", {
+            // ---- Camera rigs section ----
+            get: function () {
+                if (this._rigCameras.length < 1) {
+                    return undefined;
+                }
+                return this._rigCameras[0];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "rightCamera", {
+            get: function () {
+                if (this._rigCameras.length < 2) {
+                    return undefined;
+                }
+                return this._rigCameras[1];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Camera.prototype.getLeftTarget = function () {
+            if (this._rigCameras.length < 1) {
+                return undefined;
+            }
+            return this._rigCameras[0].getTarget();
+        };
+        Camera.prototype.getRightTarget = function () {
+            if (this._rigCameras.length < 2) {
+                return undefined;
+            }
+            return this._rigCameras[1].getTarget();
+        };
         Camera.prototype.setCameraRigMode = function (mode, rigParams) {
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
@@ -59052,25 +59078,14 @@ var BABYLON;
             configurable: true
         });
         ;
-        Object.defineProperty(WebVRFreeCamera.prototype, "leftCamera", {
-            get: function () {
-                return this._rigCameras[0];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(WebVRFreeCamera.prototype, "rightCamera", {
-            get: function () {
-                return this._rigCameras[1];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        WebVRFreeCamera.prototype.getLeftTarget = function () {
-            return this._rigCameras[0].getTarget();
-        };
-        WebVRFreeCamera.prototype.getRightTarget = function () {
-            return this._rigCameras[1].getTarget();
+        WebVRFreeCamera.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            var m = this.getWorldMatrix();
+            var origin = this.position.add(this.devicePosition);
+            var forward = new BABYLON.Vector3(0, 0, 1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
         };
         WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {

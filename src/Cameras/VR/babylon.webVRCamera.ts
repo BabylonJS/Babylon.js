@@ -214,21 +214,18 @@ module BABYLON {
             return this._rightController;
         };
 
-        public get leftCamera():FreeCamera {
-            return (<FreeCamera>this._rigCameras[0]);
-        }
+        public getForwardRay(length = 100): Ray {
+            var m = this.getWorldMatrix();
 
-        public get rightCamera():FreeCamera {
-            return (<FreeCamera>this._rigCameras[1]);
-        }
+            var origin = this.position.add(this.devicePosition);
 
-        public getLeftTarget() {
-            return (<TargetCamera>this._rigCameras[0]).getTarget();
-        }
+            var forward = new BABYLON.Vector3(0, 0, 1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
 
-        public getRightTarget() {
-            return (<TargetCamera>this._rigCameras[1]).getTarget();
-        }
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+
+            return new Ray(origin, direction, length);
+        } 
 
         public _checkInputs(): void {
             if (this._vrEnabled) {

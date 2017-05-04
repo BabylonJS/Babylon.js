@@ -533,13 +533,7 @@
         public getForwardRay(length = 100): Ray {
             var m = this.getWorldMatrix();
 
-            var origin:Vector3;
-
-            if ((<any>this).devicePosition) {
-                origin = this.position.add((<any>this).devicePosition);
-            } else {
-                origin = this.position;
-            }
+            var origin = this.position;
 
             var forward = new BABYLON.Vector3(0, 0, 1);
             var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
@@ -569,6 +563,34 @@
         }
 
         // ---- Camera rigs section ----
+        public get leftCamera(): FreeCamera {
+            if (this._rigCameras.length < 1) {
+                return undefined;
+            }
+            return (<FreeCamera>this._rigCameras[0]);
+        }
+
+        public get rightCamera(): FreeCamera {
+            if (this._rigCameras.length < 2) {
+                return undefined;
+            }            
+            return (<FreeCamera>this._rigCameras[1]);
+        }
+
+        public getLeftTarget(): Vector3 {
+            if (this._rigCameras.length < 1) {
+                return undefined;
+            }             
+            return (<TargetCamera>this._rigCameras[0]).getTarget();
+        }
+
+        public getRightTarget(): Vector3 {
+            if (this._rigCameras.length < 2) {
+                return undefined;
+            }             
+            return (<TargetCamera>this._rigCameras[1]).getTarget();
+        }
+
         public setCameraRigMode(mode: number, rigParams: any): void {
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
