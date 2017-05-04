@@ -186,6 +186,36 @@ module BABYLON {
             }
         }
 
+        public getControllerByName(name: string): WebVRController {
+            var controller: WebVRController;
+
+            this.controllers.forEach(gp => {
+                if (gp.hand === name) {
+                    return gp;
+                }
+            })
+
+            return controller;
+        }
+
+        private _leftController: WebVRController;
+        public get leftController(): WebVRController {
+            if (!this._leftController) {
+                this._leftController = this.getControllerByName("left");
+            }
+
+            return this._leftController;
+        };
+
+        private _rightController: WebVRController;
+        public get rightController(): WebVRController {
+            if (!this._rightController) {
+                this._rightController = this.getControllerByName("right");
+            }
+
+            return this._rightController;
+        };
+
         public getLeftCamera() {
             return (<FreeCamera>this._rigCameras[0]);
         }

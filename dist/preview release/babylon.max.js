@@ -58990,6 +58990,37 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        WebVRFreeCamera.prototype.getControllerByName = function (name) {
+            var controller;
+            this.controllers.forEach(function (gp) {
+                if (gp.hand === name) {
+                    return gp;
+                }
+            });
+            return controller;
+        };
+        Object.defineProperty(WebVRFreeCamera.prototype, "leftController", {
+            get: function () {
+                if (!this._leftController) {
+                    this._leftController = this.getControllerByName("left");
+                }
+                return this._leftController;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        Object.defineProperty(WebVRFreeCamera.prototype, "rightController", {
+            get: function () {
+                if (!this._rightController) {
+                    this._rightController = this.getControllerByName("right");
+                }
+                return this._rightController;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
         WebVRFreeCamera.prototype.getLeftCamera = function () {
             return this._rigCameras[0];
         };
