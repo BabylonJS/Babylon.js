@@ -530,13 +530,16 @@
             return target.isCompletelyInFrustum(this._frustumPlanes);
         }
 
-        public getForwardRay(length = 100): Ray {
-            var m = this.getWorldMatrix();
+        public getForwardRay(length = 100, transform: Matrix, origin: Vector3): Ray {
+            if (!transform) {
+                transform = this.getWorldMatrix();
+            }
 
-            var origin = this.position;
-
+            if (!origin) {
+                origin = this.position;
+            }
             var forward = new BABYLON.Vector3(0, 0, 1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, transform);
 
             var direction = BABYLON.Vector3.Normalize(forwardWorld);
 
