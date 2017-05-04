@@ -3124,6 +3124,8 @@
             this.skeletons = [];
             this.morphTargetManagers = [];
 
+            this.importedMeshesFiles = new Array<string>();
+
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }

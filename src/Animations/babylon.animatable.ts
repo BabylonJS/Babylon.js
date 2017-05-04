@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Animatable {
-        private _localDelayOffset: number;
-        private _pausedDelay: number;
+        private _localDelayOffset: number = null;
+        private _pausedDelay: number = null;
         private _animations = new Array<Animation>();
         private _paused = false;
         private _scene: Scene;
@@ -149,15 +149,15 @@
         public _animate(delay: number): boolean {
             if (this._paused) {
                 this.animationStarted = false;
-                if (!this._pausedDelay) {
+                if (this._pausedDelay === null) {
                     this._pausedDelay = delay;
                 }
                 return true;
             }
 
-            if (!this._localDelayOffset) {
+            if (this._localDelayOffset === null) {
                 this._localDelayOffset = delay;
-            } else if (this._pausedDelay) {
+            } else if (this._pausedDelay !== null) {
                 this._localDelayOffset += delay - this._pausedDelay;
                 this._pausedDelay = null;
             }

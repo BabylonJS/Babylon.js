@@ -287,8 +287,8 @@ var BABYLON;
         /**
         * Values
         */
-        var glTFAnimationPaths = ["translation", "rotation", "scale"];
-        var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
+        var glTFAnimationPaths = ["translation", "rotation", "scale", "weights"];
+        var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling", "influence"];
         /**
         * Utils
         */
@@ -347,18 +347,24 @@ var BABYLON;
                         continue;
                     }
                     var isBone = targetNode instanceof BABYLON.Bone;
-                    // Get target path (position, rotation or scaling)
+                    var numTargets = 0;
+                    // Get target path (position, rotation, scaling, or weights)
                     var targetPath = channel.target.path;
                     var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
                     if (targetPathIndex !== -1) {
                         targetPath = babylonAnimationPaths[targetPathIndex];
                     }
+                    var isMorph = targetPath === "influence";
                     // Determine animation type
                     var animationType = BABYLON.Animation.ANIMATIONTYPE_MATRIX;
                     if (!isBone) {
                         if (targetPath === "rotationQuaternion") {
                             animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
                             targetNode.rotationQuaternion = new BABYLON.Quaternion();
+                        }
+                        else if (isMorph) {
+                            animationType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
+                            numTargets = targetNode.morphTargetManager.numTargets;
                         }
                         else {
                             animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
@@ -373,16 +379,27 @@ var BABYLON;
                         babylonAnimation = lastAnimation;
                         modifyKey = true;
                     }
-                    if (!modifyKey) {
-                        var animationName = animation.name || "anim" + animationIndex;
-                        babylonAnimation = new BABYLON.Animation(animationName, isBone ? "_matrix" : targetPath, 1, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    // Each morph animation may have more than one more, so we need a
+                    // multi dimensional array.
+                    if (isMorph) {
+                        for (var influence = 0; influence < numTargets; influence++) {
+                            keys[influence] = [];
+                        }
                     }
                     // For each frame
-                    for (var j = 0; j < bufferInput.length; j++) {
+                    for (var frameIndex = 0; frameIndex < bufferInput.length; frameIndex++) {
                         var value = null;
                         if (targetPath === "rotationQuaternion") {
                             value = BABYLON.Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
                             arrayOffset += 4;
+                        }
+                        else if (isMorph) {
+                            value = [];
+                            // There is 1 value for each morph target for each frame
+                            for (var influence = 0; influence < numTargets; influence++) {
+                                value.push(bufferOutput[arrayOffset + influence]);
+                            }
+                            arrayOffset += numTargets;
                         }
                         else {
                             value = BABYLON.Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
@@ -396,7 +413,7 @@ var BABYLON;
                             // Warning on decompose
                             var mat = bone.getBaseMatrix();
                             if (modifyKey) {
-                                mat = lastAnimation.getKeys()[j].value;
+                                mat = lastAnimation.getKeys()[frameIndex].value;
                             }
                             mat.decompose(scaling, rotationQuaternion, translation);
                             if (targetPath === "position") {
@@ -411,23 +428,58 @@ var BABYLON;
                             value = BABYLON.Matrix.Compose(scaling, rotationQuaternion, translation);
                         }
                         if (!modifyKey) {
-                            keys.push({
-                                frame: bufferInput[j],
-                                value: value
-                            });
+                            if (isMorph) {
+                                for (var influence = 0; influence < numTargets; influence++) {
+                                    keys[influence].push({
+                                        frame: bufferInput[frameIndex],
+                                        value: value[influence]
+                                    });
+                                }
+                            }
+                            else {
+                                keys.push({
+                                    frame: bufferInput[frameIndex],
+                                    value: value
+                                });
+                            }
                         }
                         else {
-                            lastAnimation.getKeys()[j].value = value;
+                            lastAnimation.getKeys()[frameIndex].value = value;
                         }
                     }
                     // Finish
                     if (!modifyKey) {
-                        babylonAnimation.setKeys(keys);
-                        targetNode.animations.push(babylonAnimation);
+                        if (isMorph) {
+                            for (var influence = 0; influence < numTargets; influence++) {
+                                var morphTarget = targetNode.morphTargetManager.getTarget(influence);
+                                if (morphTarget.animations === undefined) {
+                                    morphTarget.animations = [];
+                                }
+                                var animationName = (animation.name || "anim" + animationIndex) + "_" + influence;
+                                babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                                babylonAnimation.setKeys(keys[influence]);
+                                morphTarget.animations.push(babylonAnimation);
+                            }
+                        }
+                        else {
+                            var animationName = animation.name || "anim" + animationIndex;
+                            babylonAnimation = new BABYLON.Animation(animationName, isBone ? "_matrix" : targetPath, 1, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            babylonAnimation.setKeys(keys);
+                            targetNode.animations.push(babylonAnimation);
+                        }
                     }
                     lastAnimation = babylonAnimation;
-                    runtime.babylonScene.stopAnimation(targetNode);
-                    runtime.babylonScene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
+                    if (isMorph) {
+                        for (var influence = 0; influence < numTargets; influence++) {
+                            var morph = targetNode.morphTargetManager.getTarget(influence);
+                            runtime.babylonScene.stopAnimation(morph);
+                            runtime.babylonScene.beginAnimation(morph, 0, bufferInput[bufferInput.length - 1], true, 1.0);
+                        }
+                    }
+                    else {
+                        runtime.babylonScene.stopAnimation(targetNode);
+                        runtime.babylonScene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
+                    }
                 }
             }
         };
@@ -835,7 +887,7 @@ var BABYLON;
             geometry.setAllVerticesData(vertexData, false);
             babylonMesh.computeWorldMatrix(true);
             // Set morph target manager after all vertices data has been processed
-            if (morphTargetManager !== undefined && morphTargetManager.numInfluencers > 0) {
+            if (morphTargetManager !== undefined && morphTargetManager.numTargets > 0) {
                 babylonMesh.morphTargetManager = morphTargetManager;
             }
             // Apply submeshes

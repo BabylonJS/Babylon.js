@@ -53,4 +53,5 @@ class Logger:
             Logger.instance.log_handler.write('\t')
 
         Logger.instance.log_handler.write(msg)
+        print(msg) # for debugging / running Blender fron console
         if not noNewLine: Logger.instance.log_handler.write('\n')
