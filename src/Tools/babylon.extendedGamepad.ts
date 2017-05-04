@@ -121,6 +121,10 @@ module BABYLON {
         public detachMesh() {
             this._mesh = undefined;
         }
+
+        public get mesh(): AbstractMesh {
+            return this._mesh;
+        }
     }
 
     export interface GamepadButtonChanges {
