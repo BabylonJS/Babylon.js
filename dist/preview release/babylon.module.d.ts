@@ -4382,6 +4382,7 @@ declare module BABYLON {
         private updateFrustumPlanes();
         isInFrustum(target: ICullable): boolean;
         isCompletelyInFrustum(target: ICullable): boolean;
+        getForwardRay(length?: number): Ray;
         dispose(): void;
         setCameraRigMode(mode: number, rigParams: any): void;
         private _getVRProjectionMatrix();
@@ -14809,6 +14810,7 @@ declare module BABYLON {
         attachToPoseControlledCamera(camera: TargetCamera): void;
         detachMesh(): void;
         readonly mesh: AbstractMesh;
+        getForwardRay(length?: number): Ray;
     }
     interface GamepadButtonChanges {
         changed: boolean;
