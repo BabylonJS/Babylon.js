@@ -189,7 +189,7 @@
                 attribs.push(this._options.attributes[index]);
             }
 
-            if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+            if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                 attribs.push(VertexBuffer.ColorKind);
                 defines.push("#define VERTEXCOLOR");
             }
