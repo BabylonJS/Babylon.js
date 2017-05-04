@@ -530,6 +530,25 @@
             return target.isCompletelyInFrustum(this._frustumPlanes);
         }
 
+        public getForwardRay(length = 100): Ray {
+            var m = this.getWorldMatrix();
+
+            var origin:Vector3;
+
+            if ((<any>this).devicePosition) {
+                origin = this.position.add((<any>this).devicePosition);
+            } else {
+                origin = this.position;
+            }
+
+            var forward = new BABYLON.Vector3(0, 0, 1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+
+            return new Ray(origin, direction, length);
+        } 
+
         public dispose(): void {
             // Animations
             this.getScene().stopAnimation(this);
