@@ -127,6 +127,10 @@ module BABYLON {
         }
 
         public getForwardRay(length = 100): Ray {
+            if (!this.mesh) {
+                return new Ray(Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+            }
+
             var m = this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
 

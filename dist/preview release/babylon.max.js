@@ -46130,6 +46130,9 @@ var BABYLON;
         });
         PoseEnabledController.prototype.getForwardRay = function (length) {
             if (length === void 0) { length = 100; }
+            if (!this.mesh) {
+                return new BABYLON.Ray(BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+            }
             var m = this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
             var forward = new BABYLON.Vector3(0, 0, -1);
@@ -59080,7 +59083,7 @@ var BABYLON;
         ;
         WebVRFreeCamera.prototype.getForwardRay = function (length) {
             if (length === void 0) { length = 100; }
-            var m = this.getWorldMatrix();
+            var m = this.leftCamera.getWorldMatrix();
             var origin = this.position.add(this.devicePosition);
             var forward = new BABYLON.Vector3(0, 0, 1);
             var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
