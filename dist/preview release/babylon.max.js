@@ -13511,6 +13511,21 @@ var BABYLON;
             this.updateFrustumPlanes();
             return target.isCompletelyInFrustum(this._frustumPlanes);
         };
+        Camera.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            var m = this.getWorldMatrix();
+            var origin;
+            if (this.devicePosition) {
+                origin = this.position.add(this.devicePosition);
+            }
+            else {
+                origin = this.position;
+            }
+            var forward = new BABYLON.Vector3(0, 0, 1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
+        };
         Camera.prototype.dispose = function () {
             // Animations
             this.getScene().stopAnimation(this);
@@ -46087,6 +46102,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        PoseEnabledController.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            var m = this.mesh.getWorldMatrix();
+            var origin = m.getTranslation();
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
+        };
         return PoseEnabledController;
     }(BABYLON.Gamepad));
     BABYLON.PoseEnabledController = PoseEnabledController;
