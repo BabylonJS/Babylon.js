@@ -215,7 +215,7 @@ module BABYLON {
         };
 
         public getForwardRay(length = 100): Ray {
-            var m = this.leftCamera.getWorldMatrix();
+            var m = this.leftCamera.getWorldMatrix(); // Need the actual rendered camera
 
             var origin = this.position.add(this.devicePosition);
 
