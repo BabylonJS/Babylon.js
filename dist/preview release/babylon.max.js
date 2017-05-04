@@ -46080,6 +46080,13 @@ var BABYLON;
         PoseEnabledController.prototype.detachMesh = function () {
             this._mesh = undefined;
         };
+        Object.defineProperty(PoseEnabledController.prototype, "mesh", {
+            get: function () {
+                return this._mesh;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return PoseEnabledController;
     }(BABYLON.Gamepad));
     BABYLON.PoseEnabledController = PoseEnabledController;
@@ -58991,13 +58998,13 @@ var BABYLON;
             configurable: true
         });
         WebVRFreeCamera.prototype.getControllerByName = function (name) {
-            var controller;
-            this.controllers.forEach(function (gp) {
+            for (var _i = 0, _a = this.controllers; _i < _a.length; _i++) {
+                var gp = _a[_i];
                 if (gp.hand === name) {
                     return gp;
                 }
-            });
-            return controller;
+            }
+            return undefined;
         };
         Object.defineProperty(WebVRFreeCamera.prototype, "leftController", {
             get: function () {
@@ -59021,12 +59028,20 @@ var BABYLON;
             configurable: true
         });
         ;
-        WebVRFreeCamera.prototype.getLeftCamera = function () {
-            return this._rigCameras[0];
-        };
-        WebVRFreeCamera.prototype.getRightCamera = function () {
-            return this._rigCameras[1];
-        };
+        Object.defineProperty(WebVRFreeCamera.prototype, "leftCamera", {
+            get: function () {
+                return this._rigCameras[0];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebVRFreeCamera.prototype, "rightCamera", {
+            get: function () {
+                return this._rigCameras[1];
+            },
+            enumerable: true,
+            configurable: true
+        });
         WebVRFreeCamera.prototype.getLeftTarget = function () {
             return this._rigCameras[0].getTarget();
         };

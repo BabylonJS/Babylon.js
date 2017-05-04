@@ -187,15 +187,13 @@ module BABYLON {
         }
 
         public getControllerByName(name: string): WebVRController {
-            var controller: WebVRController;
-
-            this.controllers.forEach(gp => {
+            for (var gp of this.controllers) {
                 if (gp.hand === name) {
                     return gp;
                 }
-            })
+            }
 
-            return controller;
+            return undefined;
         }
 
         private _leftController: WebVRController;
@@ -216,11 +214,11 @@ module BABYLON {
             return this._rightController;
         };
 
-        public getLeftCamera() {
+        public get leftCamera():FreeCamera {
             return (<FreeCamera>this._rigCameras[0]);
         }
 
-        public getRightCamera() {
+        public get rightCamera():FreeCamera {
             return (<FreeCamera>this._rigCameras[1]);
         }
 
