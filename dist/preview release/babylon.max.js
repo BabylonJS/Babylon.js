@@ -32688,19 +32688,19 @@ var BABYLON;
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
-        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
             return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
-        Animation.prototype.vector3InterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+        Animation.prototype.vector3InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
             return BABYLON.Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
         };
-        Animation.prototype.vector2InterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+        Animation.prototype.vector2InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
             return BABYLON.Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.sizeInterpolateFunction = function (startValue, endValue, gradient) {
