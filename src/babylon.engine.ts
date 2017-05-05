@@ -443,6 +443,13 @@
         public enableOfflineSupport = BABYLON.Database;
         public scenes = new Array<Scene>();
 
+        // Observables
+
+        /**
+         * Observable event triggered each time the rendering canvas is resized
+         */
+        public onResizeObservable = new Observable<Engine>();
+
         //WebVR 
 
         //The new WebVR uses promises.
@@ -1168,6 +1175,10 @@
          * @param {number} height - the new canvas' height
          */
         public setSize(width: number, height: number): void {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
+
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
 
@@ -1179,6 +1190,10 @@
 
                     cam._currentRenderId = 0;
                 }
+            }
+
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
             }
         }
 
