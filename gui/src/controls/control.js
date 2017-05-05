@@ -7,8 +7,10 @@ var BABYLON;
             function Control(name) {
                 this.name = name;
                 this._zIndex = 0;
+                this._fontSize = 18;
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+                this.fontFamily = "Arial";
             }
             Object.defineProperty(Control.prototype, "horizontalAlignment", {
                 get: function () {
@@ -38,17 +40,30 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Control.prototype, "font", {
+            Object.defineProperty(Control.prototype, "fontFamily", {
                 get: function () {
-                    return this._font;
+                    return this._fontFamily;
                 },
                 set: function (value) {
-                    if (this._font === value) {
+                    if (this._fontFamily === value) {
                         return;
                     }
-                    this._font = value;
-                    this._fontHeight = Control._GetFontHeight(this._font);
-                    this._markAsDirty();
+                    this._fontFamily = value;
+                    this._prepareFont();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontSize", {
+                get: function () {
+                    return this._fontSize;
+                },
+                set: function (value) {
+                    if (this._fontSize === value) {
+                        return;
+                    }
+                    this._fontSize = value;
+                    this._prepareFont();
                 },
                 enumerable: true,
                 configurable: true
@@ -90,9 +105,30 @@ var BABYLON;
             Control.prototype._setRoot = function (root) {
                 this._root = root;
             };
+            Control.prototype.applyStates = function (context) {
+                if (this._font) {
+                    context.font = this._font;
+                }
+                if (this._color) {
+                    context.fillStyle = this._color;
+                }
+            };
             Control.prototype._draw = function (parentMeasure, context) {
                 this._currentMeasure = parentMeasure.copy();
                 // Do nothing
+            };
+            Control.prototype._rescale = function (scaleX, scaleY) {
+                this._scaleX = scaleX;
+                this._scaleY = scaleY;
+                this._prepareFont();
+            };
+            Control.prototype._prepareFont = function () {
+                if (!this._fontFamily) {
+                    return;
+                }
+                this._font = (this._fontSize * this._scaleX) + "px " + this._fontFamily;
+                this._fontOffset = Control._GetFontOffset(this._font);
+                this._markAsDirty();
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
@@ -136,7 +172,7 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Control._GetFontHeight = function (font) {
+            Control._GetFontOffset = function (font) {
                 if (Control._FontHeightSizes[font]) {
                     return Control._FontHeightSizes[font];
                 }
@@ -152,15 +188,19 @@ var BABYLON;
                 div.appendChild(text);
                 div.appendChild(block);
                 document.body.appendChild(div);
+                var fontAscent = 0;
                 var fontHeight = 0;
                 try {
                     fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+                    block.style.verticalAlign = "baseline";
+                    fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
                 }
                 finally {
                     div.remove();
                 }
-                Control._FontHeightSizes[font] = fontHeight;
-                return fontHeight;
+                var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+                Control._FontHeightSizes[font] = result;
+                return result;
             };
             ;
             return Control;

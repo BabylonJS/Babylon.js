@@ -24,8 +24,10 @@ module BABYLON.GUI {
         constructor(name: string, scene: Scene) {
             super(name, {}, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
 
-            this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._markAsDirty());
+            this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
             this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
+
+            this._onResize();
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
@@ -47,6 +49,26 @@ module BABYLON.GUI {
             super.dispose();
         }
 
+        private _onResize(): void {
+            // Check size
+            var engine = this.getScene().getEngine();
+            var textureSize = this.getSize();
+            var renderWidth = engine.getRenderWidth();
+            var renderHeight = engine.getRenderHeight();
+
+            if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
+                this.scaleTo(renderWidth, renderHeight);
+            }
+
+            // Update constant pixel resources            
+            var scaleX = renderWidth / 1000.0;
+            var scaleY = renderHeight / 1000.0;
+
+            this._rootContainer._rescale(scaleX, scaleY);
+
+            this._markAsDirty();
+        }
+
         public _markAsDirty() {
             this._dirty = true;
         }
@@ -62,15 +84,9 @@ module BABYLON.GUI {
         }
 
         private _render(): void {
-            // Check size
             var engine = this.getScene().getEngine();
-            var textureSize = this.getSize();
             var renderWidth = engine.getRenderWidth();
             var renderHeight = engine.getRenderHeight();
-
-            if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
-                this.scaleTo(renderWidth, renderHeight);
-            }
 
             // Clear
             var context = this.getContext();
