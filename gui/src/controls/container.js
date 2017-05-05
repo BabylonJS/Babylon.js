@@ -53,17 +53,19 @@ var BABYLON;
             Container.prototype._draw = function (parentMeasure, context) {
                 this._currentMeasure = parentMeasure.copy();
                 context.save();
-                if (this.font) {
-                    context.font = this.font;
-                }
-                if (this.color) {
-                    context.fillStyle = this.color;
-                }
+                this.applyStates(context);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     child._draw(this._currentMeasure, context);
                 }
                 context.restore();
+            };
+            Container.prototype._rescale = function (scaleX, scaleY) {
+                _super.prototype._rescale.call(this, scaleX, scaleY);
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    child._rescale(scaleX, scaleY);
+                }
             };
             return Container;
         }(GUI.Control));

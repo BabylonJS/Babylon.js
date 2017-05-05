@@ -2661,6 +2661,19 @@ var __extends = (this && this.__extends) || (function () {
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
         };
+        Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
+            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+            var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+            return new Quaternion(x, y, z, w);
+        };
         return Quaternion;
     }());
     BABYLON.Quaternion = Quaternion;
@@ -32675,11 +32688,20 @@ var BABYLON;
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
+        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
+        Animation.prototype.vector3InterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+            return BABYLON.Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.vector2InterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+            return BABYLON.Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.sizeInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Size.Lerp(startValue, endValue, gradient);
@@ -32722,18 +32744,21 @@ var BABYLON;
             }
             this.currentFrame = currentFrame;
             // Try to get a hash to find the right key
-            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
-            if (this._keys[startKey].frame >= currentFrame) {
-                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
-                    startKey--;
+            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            if (this._keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
                 }
             }
-            for (var key = startKey; key < this._keys.length; key++) {
-                if (this._keys[key + 1].frame >= currentFrame) {
-                    var startValue = this._getKeyValue(this._keys[key].value);
-                    var endValue = this._getKeyValue(this._keys[key + 1].value);
+            for (var key = startKeyIndex; key < this._keys.length; key++) {
+                var endKey = this._keys[key + 1];
+                if (endKey.frame >= currentFrame) {
+                    var startKey = this._keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+                    var useTangent = startKey.outTangent && endKey.inTangent;
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+                    var gradient = (currentFrame - startKey.frame) / (endKey.frame - startKey.frame);
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
                         gradient = this._easingFunction.ease(gradient);
@@ -32751,34 +32776,34 @@ var BABYLON;
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quaternion;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quaternion.add(offsetValue.scale(repeatCount));
                             }
                             return quaternion;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient);
+                                    return vec3Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                    return vec2Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
                             }
                         // Size
                         case Animation.ANIMATIONTYPE_SIZE:

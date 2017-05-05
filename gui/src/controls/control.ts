@@ -5,9 +5,13 @@ module BABYLON.GUI {
         private _zIndex = 0;
         public _root: Container;
         public _currentMeasure: Measure;
+        private _scaleX: number;
+        private _scaleY: number;
+        private _fontFamily: string;
+        private _fontSize = 18;
         private _font: string;
         private _lastMeasuredFont: string;
-        protected _fontHeight: number;
+        protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color: string;
         private _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
@@ -38,18 +42,30 @@ module BABYLON.GUI {
             this._markAsDirty();
         } 
 
-        public get font(): string {
-            return this._font;
+        public get fontFamily(): string {
+            return this._fontFamily;
         }
 
-        public set font(value: string) {
-            if (this._font === value) {
+        public set fontFamily(value: string) {
+            if (this._fontFamily === value) {
                 return;
             }
 
-            this._font = value;
-            this._fontHeight = Control._GetFontHeight(this._font);
-            this._markAsDirty();
+            this._fontFamily = value;
+            this._prepareFont();
+        }
+
+        public get fontSize(): number {
+            return this._fontSize;
+        }
+
+        public set fontSize(value: number) {
+            if (this._fontSize === value) {
+                return;
+            }
+
+            this._fontSize = value;
+            this._prepareFont();
         }
 
         public get color(): string {
@@ -79,6 +95,7 @@ module BABYLON.GUI {
         }
 
         constructor(public name: string) {
+            this.fontFamily = "Arial";
         }
 
         protected _markAsDirty(): void {
@@ -92,9 +109,35 @@ module BABYLON.GUI {
             this._root = root;
         }
 
+        protected applyStates(context: CanvasRenderingContext2D): void {
+            if (this._font) {
+                context.font = this._font;
+            }
+
+            if (this._color) {
+                context.fillStyle = this._color;
+            }
+        }
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             this._currentMeasure = parentMeasure.copy();
             // Do nothing
+        }
+
+        public _rescale(scaleX: number, scaleY: number) {
+            this._scaleX = scaleX;
+            this._scaleY = scaleY;
+
+            this._prepareFont();
+        }
+
+        private _prepareFont() {
+            if (!this._fontFamily) {
+                return;
+            }
+            this._font = (this._fontSize * this._scaleX) + "px " + this._fontFamily;
+            this._fontOffset = Control._GetFontOffset(this._font);
+            this._markAsDirty();
         }
 
         // Statics
@@ -131,7 +174,7 @@ module BABYLON.GUI {
 
         private static _FontHeightSizes = {};
 
-        public static _GetFontHeight(font: string): number {
+        public static _GetFontOffset(font: string): {ascent: number, height: number, descent: number} {
 
             if (Control._FontHeightSizes[font]) {
                 return Control._FontHeightSizes[font];
@@ -153,16 +196,19 @@ module BABYLON.GUI {
 
             document.body.appendChild(div);
 
+            var fontAscent = 0;
             var fontHeight = 0;
             try {
                 fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+                block.style.verticalAlign = "baseline";
+                fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
             } finally {
                 div.remove();
             }
+            var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+            Control._FontHeightSizes[font] = result;
 
-            Control._FontHeightSizes[font] = fontHeight;
-
-            return fontHeight;
+            return result;
         };
     }    
 }

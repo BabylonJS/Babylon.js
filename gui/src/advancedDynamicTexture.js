@@ -19,8 +19,9 @@ var BABYLON;
                 var _this = _super.call(this, name, {}, scene, false, BABYLON.Texture.NEAREST_SAMPLINGMODE, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
                 _this._dirty = false;
                 _this._rootContainer = new GUI.Container("root");
-                _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._markAsDirty(); });
+                _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._onResize(); });
                 _this._renderObserver = _this.getScene().onBeforeRenderObservable.add(function () { return _this._checkUpdate(); });
+                _this._onResize();
                 return _this;
             }
             Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
@@ -51,6 +52,21 @@ var BABYLON;
                 this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
                 _super.prototype.dispose.call(this);
             };
+            AdvancedDynamicTexture.prototype._onResize = function () {
+                // Check size
+                var engine = this.getScene().getEngine();
+                var textureSize = this.getSize();
+                var renderWidth = engine.getRenderWidth();
+                var renderHeight = engine.getRenderHeight();
+                if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
+                    this.scaleTo(renderWidth, renderHeight);
+                }
+                // Update constant pixel resources            
+                var scaleX = renderWidth / 1000.0;
+                var scaleY = renderHeight / 1000.0;
+                this._rootContainer._rescale(scaleX, scaleY);
+                this._markAsDirty();
+            };
             AdvancedDynamicTexture.prototype._markAsDirty = function () {
                 this._dirty = true;
             };
@@ -63,14 +79,9 @@ var BABYLON;
                 this.update();
             };
             AdvancedDynamicTexture.prototype._render = function () {
-                // Check size
                 var engine = this.getScene().getEngine();
-                var textureSize = this.getSize();
                 var renderWidth = engine.getRenderWidth();
                 var renderHeight = engine.getRenderHeight();
-                if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
-                    this.scaleTo(renderWidth, renderHeight);
-                }
                 // Clear
                 var context = this.getContext();
                 if (this._background) {

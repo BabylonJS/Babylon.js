@@ -89,7 +89,7 @@
     }
 
     export class Animation {
-        private _keys: Array<{frame:number, value: any}>;
+        private _keys: Array<{frame:number, value: any, inTangent?: any, outTangent?: any}>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
         private _stopped = false;
@@ -285,12 +285,24 @@
             return Quaternion.Slerp(startValue, endValue, gradient);
         }
 
+        public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, endValue: Quaternion, outTangent: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
+            return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        }
+
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
             return Vector3.Lerp(startValue, endValue, gradient);
         }
 
+        public vector3InterpolateFunctionWithTangents(startValue: Vector3, endValue: Vector3, outTangent: Vector3, inTangent: Vector3, gradient: number): Vector3 {
+            return Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        }
+
         public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
             return Vector2.Lerp(startValue, endValue, gradient);
+        }
+
+        public vector2InterpolateFunctionWithTangents(startValue: Vector2, endValue: Vector2, outTangent: Vector2, inTangent: Vector2, gradient: number): Vector2 {
+            return Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
         public sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size {
@@ -347,22 +359,27 @@
             this.currentFrame = currentFrame;
 
             // Try to get a hash to find the right key
-            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
 
-            if (this._keys[startKey].frame >= currentFrame) {
-                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
-                    startKey--;
+            if (this._keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
                 }
             }
 
-            for (var key = startKey; key < this._keys.length; key++) {
-                if (this._keys[key + 1].frame >= currentFrame) {
+            for (var key = startKeyIndex; key < this._keys.length; key++) {
+                var endKey = this._keys[key + 1];
 
-                    var startValue = this._getKeyValue(this._keys[key].value);
-                    var endValue = this._getKeyValue(this._keys[key + 1].value);
+                if (endKey.frame >= currentFrame) {
+
+                    var startKey = this._keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+
+                    var useTangent = startKey.outTangent && endKey.inTangent;
 
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+                    var gradient = (currentFrame - startKey.frame) / (endKey.frame - startKey.frame);
 
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
@@ -382,35 +399,35 @@
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quaternion;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quaternion.add(offsetValue.scale(repeatCount));
                             }
 
                             return quaternion;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient);
+                                    return vec3Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                    return vec2Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
                             }
                         // Size
                         case Animation.ANIMATIONTYPE_SIZE:
