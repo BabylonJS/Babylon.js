@@ -883,7 +883,8 @@
         "proceduralTexturesLibrary",
         "loaders",
         "serializers",
-        "inspector"
+        "inspector",
+        "gui"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1210,6 +1211,26 @@
             "distOutputDirectory": "/serializers/"
         }
     },
+    "gui": {
+        "libraries": [
+            {
+                "files": [
+                    "../../gui/src/advancedDynamicTexture.ts",
+                    "../../gui/src/measure.ts",
+                    "../../gui/src/controls/control.ts",
+                    "../../gui/src/controls/contentControl.ts",
+                    "../../gui/src/controls/container.ts",
+                    "../../gui/src/controls/rectangle.ts",
+                    "../../gui/src/controls/textBlock.ts"
+                ],
+                "output": "babylon.gui.js"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../gui/",
+            "distOutputDirectory": "/gui/"
+        }
+    },    
     "canvas2D": {
         "libraries": [
             {

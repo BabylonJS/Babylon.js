@@ -658,6 +658,7 @@
 
         public _cachedMaterial: Material;
         public _cachedEffect: Effect;
+        public _cachedVisibility: number;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
@@ -812,8 +813,16 @@
             return this._cachedMaterial;
         }
 
-         public getCachedEffect(): Effect {
+        public getCachedEffect(): Effect {
             return this._cachedEffect;
+        }
+
+        public getCachedVisibility(): number {
+            return this._cachedVisibility;
+        }
+
+        public isCachedMaterialValid(material: Material, effect: Effect, visibility: number = 0) {
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
@@ -1508,6 +1517,7 @@
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
             this._cachedEffect = null;
+            this._cachedVisibility = null;
         }
 
         public registerBeforeRender(func: () => void): void {

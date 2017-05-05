@@ -215,16 +215,7 @@ module BABYLON {
         };
 
         public getForwardRay(length = 100): Ray {
-            var m = this.leftCamera.getWorldMatrix();
-
-            var origin = this.position.add(this.devicePosition);
-
-            var forward = new BABYLON.Vector3(0, 0, 1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
-
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);
-
-            return new Ray(origin, direction, length);
+            return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
         } 
 
         public _checkInputs(): void {
