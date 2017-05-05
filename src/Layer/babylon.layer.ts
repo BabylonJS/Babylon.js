@@ -67,7 +67,7 @@
             this._scene = scene || Engine.LastCreatedScene;
             this._scene.layers.push(this);
 
-            var engine = scene.getEngine();
+            var engine = this._scene.getEngine();
 
             // VBO
             var vertices = [];

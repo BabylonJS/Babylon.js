@@ -16,7 +16,7 @@
          */
         constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
-            this.direction = direction;
+            this.direction = direction || Vector3.Up();
         }
 
         protected _buildUniformLayout(): void {
