@@ -7020,6 +7020,11 @@ var BABYLON;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = BABYLON.Database;
             this.scenes = new Array();
+            // Observables
+            /**
+             * Observable event triggered each time the rendering canvas is resized
+             */
+            this.onResizeObservable = new BABYLON.Observable();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -7908,6 +7913,9 @@ var BABYLON;
          * @param {number} height - the new canvas' height
          */
         Engine.prototype.setSize = function (width, height) {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
             for (var index = 0; index < this.scenes.length; index++) {
@@ -7916,6 +7924,9 @@ var BABYLON;
                     var cam = scene.cameras[camIndex];
                     cam._currentRenderId = 0;
                 }
+            }
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
             }
         };
         //WebVR functions
@@ -12691,7 +12702,7 @@ var BABYLON;
             _this._excludedMeshesIds = new Array();
             _this._includedOnlyMeshesIds = new Array();
             _this.getScene().addLight(_this);
-            _this._uniformBuffer = new BABYLON.UniformBuffer(scene.getEngine());
+            _this._uniformBuffer = new BABYLON.UniformBuffer(_this.getScene().getEngine());
             _this._buildUniformLayout();
             _this.includedOnlyMeshes = new Array();
             _this.excludedMeshes = new Array();
@@ -15097,6 +15108,13 @@ var BABYLON;
         Scene.prototype.getCachedEffect = function () {
             return this._cachedEffect;
         };
+        Scene.prototype.getCachedVisibility = function () {
+            return this._cachedVisibility;
+        };
+        Scene.prototype.isCachedMaterialValid = function (material, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
+        };
         Scene.prototype.getBoundingBoxRenderer = function () {
             if (!this._boundingBoxRenderer) {
                 this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
@@ -15727,6 +15745,7 @@ var BABYLON;
         Scene.prototype.resetCachedMaterial = function () {
             this._cachedMaterial = null;
             this._cachedEffect = null;
+            this._cachedVisibility = null;
         };
         Scene.prototype.registerBeforeRender = function (func) {
             this.onBeforeRenderObservable.add(func);
@@ -23694,8 +23713,9 @@ var BABYLON;
             _super.prototype._afterBind.call(this, mesh);
             this.getScene()._cachedEffect = effect;
         };
-        PushMaterial.prototype._mustRebind = function (scene, effect) {
-            return scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this;
+        PushMaterial.prototype._mustRebind = function (scene, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return scene.isCachedMaterialValid(this, effect, visibility);
         };
         PushMaterial.prototype.markAsDirty = function (flag) {
             if (flag & BABYLON.Material.TextureDirtyFlag) {
@@ -27752,7 +27772,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect)) {
+            if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
@@ -31823,7 +31843,7 @@ var BABYLON;
         function HemisphericLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
-            _this.direction = direction;
+            _this.direction = direction || BABYLON.Vector3.Up();
             return _this;
         }
         HemisphericLight.prototype._buildUniformLayout = function () {
@@ -41576,20 +41596,21 @@ var BABYLON;
             if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             var _this = _super.call(this, null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format) || this;
             _this.name = name;
+            var engine = _this.getScene().getEngine();
             _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this._generateMipMaps = generateMipMaps;
             if (options.getContext) {
                 _this._canvas = options;
-                _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             }
             else {
                 _this._canvas = document.createElement("canvas");
                 if (options.width) {
-                    _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 }
                 else {
-                    _this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
             var textureSize = _this.getSize();
@@ -41605,14 +41626,23 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        DynamicTexture.prototype.scale = function (ratio) {
-            var textureSize = this.getSize();
-            textureSize.width *= ratio;
-            textureSize.height *= ratio;
+        DynamicTexture.prototype._recreate = function (textureSize) {
             this._canvas.width = textureSize.width;
             this._canvas.height = textureSize.height;
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        };
+        DynamicTexture.prototype.scale = function (ratio) {
+            var textureSize = this.getSize();
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+            this._recreate(textureSize);
+        };
+        DynamicTexture.prototype.scaleTo = function (width, height) {
+            var textureSize = this.getSize();
+            textureSize.width = width;
+            textureSize.height = height;
+            this._recreate(textureSize);
         };
         DynamicTexture.prototype.getContext = function () {
             return this._context;
@@ -57088,7 +57118,7 @@ var BABYLON;
             }
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
-                uniforms: ["worldViewProjection", "color"]
+                uniforms: ["world", "viewProjection", "color"]
             });
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
@@ -63292,7 +63322,7 @@ var BABYLON;
             this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.layers.push(this);
-            var engine = scene.getEngine();
+            var engine = this._scene.getEngine();
             // VBO
             var vertices = [];
             vertices.push(1, 1);
