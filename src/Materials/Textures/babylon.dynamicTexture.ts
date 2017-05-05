@@ -10,7 +10,7 @@ module BABYLON {
             super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
 
             this.name = name;
-
+            var engine = this.getScene().getEngine();
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
@@ -18,14 +18,14 @@ module BABYLON {
 
             if (options.getContext) {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             } else {
                 this._canvas = document.createElement("canvas");
 
                 if (options.width) {
-                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                    this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 } else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                    this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
 
@@ -40,18 +40,31 @@ module BABYLON {
             return true;
         }
 
-        public scale(ratio: number): void {
-            var textureSize = this.getSize();
-
-            textureSize.width *= ratio;
-            textureSize.height *= ratio;
-
+        private _recreate(textureSize: ISize): void {
             this._canvas.width = textureSize.width;
             this._canvas.height = textureSize.height;
 
             this.releaseInternalTexture();
 
             this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        }
+
+        public scale(ratio: number): void {
+            var textureSize = this.getSize();
+
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+
+            this._recreate(textureSize);
+        }
+
+        public scaleTo(width: number, height: number): void {
+            var textureSize = this.getSize();
+
+            textureSize.width  = width;
+            textureSize.height = height;
+
+            this._recreate(textureSize);
         }
 
         public getContext(): CanvasRenderingContext2D {
