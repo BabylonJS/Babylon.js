@@ -24,13 +24,8 @@ module BABYLON.GUI {
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
-            if (this.font) {
-                context.font = this.font;
-            }
-
-            if (this.color) {
-                context.fillStyle = this.color;
-            }
+            
+            this.applyStates(context);
 
             this._prepare(parentMeasure, context)
 
@@ -59,19 +54,19 @@ module BABYLON.GUI {
                     break;
             }
 
-            if (!this._fontHeight) {
-                this._fontHeight = Control._GetFontHeight(context.font);
+            if (!this._fontOffset) {
+                this._fontOffset = Control._GetFontOffset(context.font);
             }
 
             switch (this.verticalAlignment) {
                 case Control.VERTICAL_ALIGNMENT_TOP:
-                    y = this._fontHeight;
+                    y = this._fontOffset.ascent;
                     break;
                 case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                    y = height;
+                    y = height - this._fontOffset.descent;
                     break;
                 case Control.VERTICAL_ALIGNMENT_CENTER:
-                    y = (height /2) + this._fontHeight;
+                    y = (height /2) + (this._fontOffset.ascent - this._fontOffset.height / 2);
                     break;
             }
             

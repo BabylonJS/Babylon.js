@@ -37,12 +37,7 @@ var BABYLON;
             });
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                if (this.font) {
-                    context.font = this.font;
-                }
-                if (this.color) {
-                    context.fillStyle = this.color;
-                }
+                this.applyStates(context);
                 this._prepare(parentMeasure, context);
                 context.fillText(this.text, this._currentMeasure.left, this._currentMeasure.top);
                 context.restore();
@@ -64,18 +59,18 @@ var BABYLON;
                         x = (width - textSize.width) / 2;
                         break;
                 }
-                if (!this._fontHeight) {
-                    this._fontHeight = GUI.Control._GetFontHeight(context.font);
+                if (!this._fontOffset) {
+                    this._fontOffset = GUI.Control._GetFontOffset(context.font);
                 }
                 switch (this.verticalAlignment) {
                     case GUI.Control.VERTICAL_ALIGNMENT_TOP:
-                        y = this._fontHeight;
+                        y = this._fontOffset.ascent;
                         break;
                     case GUI.Control.VERTICAL_ALIGNMENT_BOTTOM:
-                        y = height;
+                        y = height - this._fontOffset.descent;
                         break;
                     case GUI.Control.VERTICAL_ALIGNMENT_CENTER:
-                        y = (height / 2) + this._fontHeight;
+                        y = (height / 2) + (this._fontOffset.ascent - this._fontOffset.height / 2);
                         break;
                 }
                 this._currentMeasure = new GUI.Measure(parentMeasure.left + x, parentMeasure.top + y, width, height);

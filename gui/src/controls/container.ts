@@ -53,18 +53,20 @@ module BABYLON.GUI {
 
             context.save();
             
-            if (this.font) {
-                context.font = this.font;
-            }
-
-            if (this.color) {
-                context.fillStyle = this.color;
-            }
+            this.applyStates(context);
 
             for (var child of this._children) {
                 child._draw(this._currentMeasure, context);
             }
             context.restore();
+        }
+
+        public _rescale(scaleX: number, scaleY: number) {
+            super._rescale(scaleX, scaleY);
+
+            for (var child of this._children) {
+                child._rescale(scaleX, scaleY);
+            }
         }
     }    
 }
