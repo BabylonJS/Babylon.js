@@ -285,7 +285,7 @@
             return Quaternion.Slerp(startValue, endValue, gradient);
         }
 
-        public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, endValue: Quaternion, outTangent: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
+        public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
             return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
@@ -293,7 +293,7 @@
             return Vector3.Lerp(startValue, endValue, gradient);
         }
 
-        public vector3InterpolateFunctionWithTangents(startValue: Vector3, endValue: Vector3, outTangent: Vector3, inTangent: Vector3, gradient: number): Vector3 {
+        public vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3 {
             return Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
@@ -301,7 +301,7 @@
             return Vector2.Lerp(startValue, endValue, gradient);
         }
 
-        public vector2InterpolateFunctionWithTangents(startValue: Vector2, endValue: Vector2, outTangent: Vector2, inTangent: Vector2, gradient: number): Vector2 {
+        public vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2 {
             return Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
