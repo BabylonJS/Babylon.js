@@ -285,6 +285,10 @@
             return Quaternion.Slerp(startValue, endValue, gradient);
         }
 
+        public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, endValue: Quaternion, outTangent: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
+            return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        }
+
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
             return Vector3.Lerp(startValue, endValue, gradient);
         }
@@ -395,15 +399,13 @@
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quaternion;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quaternion.add(offsetValue.scale(repeatCount));
                             }
 
                             return quaternion;

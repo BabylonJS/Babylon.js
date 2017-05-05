@@ -2661,6 +2661,19 @@ var __extends = (this && this.__extends) || (function () {
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
         };
+        Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
+            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+            var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+            return new Quaternion(x, y, z, w);
+        };
         return Quaternion;
     }());
     BABYLON.Quaternion = Quaternion;
@@ -32675,6 +32688,9 @@ var BABYLON;
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
+        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, endValue, outTangent, inTangent, gradient) {
+            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
@@ -32760,15 +32776,13 @@ var BABYLON;
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quaternion;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quaternion.add(offsetValue.scale(repeatCount));
                             }
                             return quaternion;
                         // Vector3
