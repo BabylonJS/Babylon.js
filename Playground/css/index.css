@@ -40,7 +40,7 @@ body {
 }
 .wrapper #jsEditor {
     padding-top:5px;
-    height: 100%;
+    height: calc(100% - 10px);
 }
 
 .wrapper #jsEditor.light {
