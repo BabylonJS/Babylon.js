@@ -38,10 +38,15 @@ module BABYLON {
                 LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
 
                 var RSValues = this.gamepad.rightStick;
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                if (RSValues) {
+                    var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
+                    var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+                    RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
+                    RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                }
+                else {
+                    RSValues = {x:0, y:0};
+                }
 
                 if (!camera.rotationQuaternion) {
                     Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, this._cameraTransform);
