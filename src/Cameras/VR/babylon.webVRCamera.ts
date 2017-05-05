@@ -96,50 +96,30 @@ module BABYLON {
             //enable VR
             this.getEngine().initWebVR();
 
-            if (!this.getEngine().vrDisplaysPromise) {
-                Tools.Error("WebVR is not enabled on your browser");
+            //check specs version
+            if (!window.VRFrameData) {
+                this._specsVersion = 1.0;
+                this._frameData = {
+                };
             } else {
-                //check specs version
-                if (!window.VRFrameData) {
-                    this._specsVersion = 1.0;
-                    this._frameData = {
-                    };
-                } else {
-                    this._frameData = new VRFrameData();
+                this._frameData = new VRFrameData();
+            }
+
+            this.getEngine().getVRDevice(this.webVROptions.displayName, device => {
+                if (!device) {
+                    return;
                 }
 
-                this.getEngine().vrDisplaysPromise.then((devices) => {
-                    if (devices.length > 0) {
-                        this._vrEnabled = true;
-                        if (this.webVROptions.displayName) {
-                            var found = devices.some(device => {
-                                if (device.displayName === this.webVROptions.displayName) {
-                                    this._vrDevice = device;
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            });
-                            if (!found) {
-                                this._vrDevice = devices[0];
-                                Tools.Warn("Display " + this.webVROptions.displayName + " was not found. Using " + this._vrDevice.displayName);
-                            }
-                        } else {
-                            //choose the first one
-                            this._vrDevice = devices[0];
-                        }
+                this._vrEnabled = true;               
+                this._vrDevice = device;
 
-                        //reset the rig parameters.
-                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
+                //reset the rig parameters.
+                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
-                        if (this._attached) {
-                            this.getEngine().enableVR(this._vrDevice)
-                        }
-                    } else {
-                        Tools.Error("No WebVR devices found!");
-                    }
-                });
-            }
+                if (this._attached) {
+                    this.getEngine().enableVR(this._vrDevice)
+                }
+            });                
 
             // try to attach the controllers, if found.
             this.initControllers();

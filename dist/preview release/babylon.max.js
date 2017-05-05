@@ -7943,6 +7943,44 @@ var BABYLON;
             }
         };
         //WebVR functions
+        Engine.prototype.isVRDevicePresent = function (callback) {
+            this.getVRDevice(null, function (device) {
+                callback(device !== null);
+            });
+        };
+        Engine.prototype.getVRDevice = function (name, callback) {
+            if (!this.vrDisplaysPromise) {
+                callback(null);
+                return;
+            }
+            this.vrDisplaysPromise.then(function (devices) {
+                if (devices.length > 0) {
+                    if (name) {
+                        var found = devices.some(function (device) {
+                            if (device.displayName === name) {
+                                callback(device);
+                                return true;
+                            }
+                            else {
+                                return false;
+                            }
+                        });
+                        if (!found) {
+                            BABYLON.Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
+                            callback(devices[0]);
+                        }
+                    }
+                    else {
+                        //choose the first one
+                        callback(devices[0]);
+                    }
+                }
+                else {
+                    BABYLON.Tools.Error("No WebVR devices found!");
+                    callback(null);
+                }
+            });
+        };
         Engine.prototype.initWebVR = function () {
             if (!this.vrDisplaysPromise) {
                 this._getVRDisplays();
@@ -59018,51 +59056,26 @@ var BABYLON;
             }
             //enable VR
             _this.getEngine().initWebVR();
-            if (!_this.getEngine().vrDisplaysPromise) {
-                BABYLON.Tools.Error("WebVR is not enabled on your browser");
+            //check specs version
+            if (!window.VRFrameData) {
+                _this._specsVersion = 1.0;
+                _this._frameData = {};
             }
             else {
-                //check specs version
-                if (!window.VRFrameData) {
-                    _this._specsVersion = 1.0;
-                    _this._frameData = {};
-                }
-                else {
-                    _this._frameData = new VRFrameData();
-                }
-                _this.getEngine().vrDisplaysPromise.then(function (devices) {
-                    if (devices.length > 0) {
-                        _this._vrEnabled = true;
-                        if (_this.webVROptions.displayName) {
-                            var found = devices.some(function (device) {
-                                if (device.displayName === _this.webVROptions.displayName) {
-                                    _this._vrDevice = device;
-                                    return true;
-                                }
-                                else {
-                                    return false;
-                                }
-                            });
-                            if (!found) {
-                                _this._vrDevice = devices[0];
-                                BABYLON.Tools.Warn("Display " + _this.webVROptions.displayName + " was not found. Using " + _this._vrDevice.displayName);
-                            }
-                        }
-                        else {
-                            //choose the first one
-                            _this._vrDevice = devices[0];
-                        }
-                        //reset the rig parameters.
-                        _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
-                        if (_this._attached) {
-                            _this.getEngine().enableVR(_this._vrDevice);
-                        }
-                    }
-                    else {
-                        BABYLON.Tools.Error("No WebVR devices found!");
-                    }
-                });
+                _this._frameData = new VRFrameData();
             }
+            _this.getEngine().getVRDevice(_this.webVROptions.displayName, function (device) {
+                if (!device) {
+                    return;
+                }
+                _this._vrEnabled = true;
+                _this._vrDevice = device;
+                //reset the rig parameters.
+                _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
+                if (_this._attached) {
+                    _this.getEngine().enableVR(_this._vrDevice);
+                }
+            });
             // try to attach the controllers, if found.
             _this.initControllers();
             /**
