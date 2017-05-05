@@ -22,7 +22,7 @@
             this._colorShader = new ShaderMaterial("colorShader", this._scene, "color",
                 {
                     attributes: [VertexBuffer.PositionKind],
-                    uniforms: ["worldViewProjection", "color"]
+                    uniforms: ["world", "viewProjection", "color"]
                 });
 
 
