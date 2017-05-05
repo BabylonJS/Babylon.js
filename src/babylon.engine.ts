@@ -443,6 +443,13 @@
         public enableOfflineSupport = BABYLON.Database;
         public scenes = new Array<Scene>();
 
+        // Observables
+
+        /**
+         * Observable event triggered each time the rendering canvas is resized
+         */
+        public onResizeObservable = new Observable<Engine>();
+
         //WebVR 
 
         //The new WebVR uses promises.
@@ -1168,6 +1175,10 @@
          * @param {number} height - the new canvas' height
          */
         public setSize(width: number, height: number): void {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
+
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
 
@@ -1180,12 +1191,53 @@
                     cam._currentRenderId = 0;
                 }
             }
+
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
+            }
         }
 
 
         //WebVR functions
+        public isVRDevicePresent(callback: (result: boolean) => void) {
+            this.getVRDevice(null, (device) => {
+                callback(device !== null);
+            });
+        }
 
-        public initWebVR() {
+        public getVRDevice(name: string, callback: (device) => void) {
+            if (!this.vrDisplaysPromise) {
+                callback(null);
+                return;
+            }
+
+            this.vrDisplaysPromise.then((devices) => {
+                if (devices.length > 0) {
+                    if (name) {
+                        var found = devices.some(device => {
+                            if (device.displayName === name) {
+                                callback(device);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        });
+                        if (!found) {
+                            Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
+                            callback(devices[0]);
+                        }
+                    } else {
+                        //choose the first one
+                        callback(devices[0]);
+                    }
+                } else {
+                    Tools.Error("No WebVR devices found!");
+                    callback(null);
+                }
+            });            
+        }
+
+        public initWebVR(): void {
             if (!this.vrDisplaysPromise) {
                 this._getVRDisplays();
             }

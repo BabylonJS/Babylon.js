@@ -121,6 +121,26 @@ module BABYLON {
         public detachMesh() {
             this._mesh = undefined;
         }
+
+        public get mesh(): AbstractMesh {
+            return this._mesh;
+        }
+
+        public getForwardRay(length = 100): Ray {
+            if (!this.mesh) {
+                return new Ray(Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+            }
+
+            var m = this.mesh.getWorldMatrix();
+            var origin = m.getTranslation();
+
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+
+            return new Ray(origin, direction, length);
+        } 
     }
 
     export interface GamepadButtonChanges {

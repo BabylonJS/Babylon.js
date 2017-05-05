@@ -2661,6 +2661,19 @@ var __extends = (this && this.__extends) || (function () {
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
         };
+        Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
+            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+            var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+            return new Quaternion(x, y, z, w);
+        };
         return Quaternion;
     }());
     BABYLON.Quaternion = Quaternion;
@@ -7020,6 +7033,11 @@ var BABYLON;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = BABYLON.Database;
             this.scenes = new Array();
+            // Observables
+            /**
+             * Observable event triggered each time the rendering canvas is resized
+             */
+            this.onResizeObservable = new BABYLON.Observable();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -7908,6 +7926,9 @@ var BABYLON;
          * @param {number} height - the new canvas' height
          */
         Engine.prototype.setSize = function (width, height) {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
             for (var index = 0; index < this.scenes.length; index++) {
@@ -7917,8 +7938,49 @@ var BABYLON;
                     cam._currentRenderId = 0;
                 }
             }
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
+            }
         };
         //WebVR functions
+        Engine.prototype.isVRDevicePresent = function (callback) {
+            this.getVRDevice(null, function (device) {
+                callback(device !== null);
+            });
+        };
+        Engine.prototype.getVRDevice = function (name, callback) {
+            if (!this.vrDisplaysPromise) {
+                callback(null);
+                return;
+            }
+            this.vrDisplaysPromise.then(function (devices) {
+                if (devices.length > 0) {
+                    if (name) {
+                        var found = devices.some(function (device) {
+                            if (device.displayName === name) {
+                                callback(device);
+                                return true;
+                            }
+                            else {
+                                return false;
+                            }
+                        });
+                        if (!found) {
+                            BABYLON.Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
+                            callback(devices[0]);
+                        }
+                    }
+                    else {
+                        //choose the first one
+                        callback(devices[0]);
+                    }
+                }
+                else {
+                    BABYLON.Tools.Error("No WebVR devices found!");
+                    callback(null);
+                }
+            });
+        };
         Engine.prototype.initWebVR = function () {
             if (!this.vrDisplaysPromise) {
                 this._getVRDisplays();
@@ -12691,7 +12753,7 @@ var BABYLON;
             _this._excludedMeshesIds = new Array();
             _this._includedOnlyMeshesIds = new Array();
             _this.getScene().addLight(_this);
-            _this._uniformBuffer = new BABYLON.UniformBuffer(scene.getEngine());
+            _this._uniformBuffer = new BABYLON.UniformBuffer(_this.getScene().getEngine());
             _this._buildUniformLayout();
             _this.includedOnlyMeshes = new Array();
             _this.excludedMeshes = new Array();
@@ -13511,6 +13573,19 @@ var BABYLON;
             this.updateFrustumPlanes();
             return target.isCompletelyInFrustum(this._frustumPlanes);
         };
+        Camera.prototype.getForwardRay = function (length, transform, origin) {
+            if (length === void 0) { length = 100; }
+            if (!transform) {
+                transform = this.getWorldMatrix();
+            }
+            if (!origin) {
+                origin = this.position;
+            }
+            var forward = new BABYLON.Vector3(0, 0, 1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, transform);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
+        };
         Camera.prototype.dispose = function () {
             // Animations
             this.getScene().stopAnimation(this);
@@ -13526,7 +13601,39 @@ var BABYLON;
             }
             _super.prototype.dispose.call(this);
         };
-        // ---- Camera rigs section ----
+        Object.defineProperty(Camera.prototype, "leftCamera", {
+            // ---- Camera rigs section ----
+            get: function () {
+                if (this._rigCameras.length < 1) {
+                    return undefined;
+                }
+                return this._rigCameras[0];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "rightCamera", {
+            get: function () {
+                if (this._rigCameras.length < 2) {
+                    return undefined;
+                }
+                return this._rigCameras[1];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Camera.prototype.getLeftTarget = function () {
+            if (this._rigCameras.length < 1) {
+                return undefined;
+            }
+            return this._rigCameras[0].getTarget();
+        };
+        Camera.prototype.getRightTarget = function () {
+            if (this._rigCameras.length < 2) {
+                return undefined;
+            }
+            return this._rigCameras[1].getTarget();
+        };
         Camera.prototype.setCameraRigMode = function (mode, rigParams) {
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
@@ -15052,6 +15159,13 @@ var BABYLON;
         Scene.prototype.getCachedEffect = function () {
             return this._cachedEffect;
         };
+        Scene.prototype.getCachedVisibility = function () {
+            return this._cachedVisibility;
+        };
+        Scene.prototype.isCachedMaterialValid = function (material, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
+        };
         Scene.prototype.getBoundingBoxRenderer = function () {
             if (!this._boundingBoxRenderer) {
                 this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
@@ -15682,6 +15796,7 @@ var BABYLON;
         Scene.prototype.resetCachedMaterial = function () {
             this._cachedMaterial = null;
             this._cachedEffect = null;
+            this._cachedVisibility = null;
         };
         Scene.prototype.registerBeforeRender = function (func) {
             this.onBeforeRenderObservable.add(func);
@@ -23649,8 +23764,9 @@ var BABYLON;
             _super.prototype._afterBind.call(this, mesh);
             this.getScene()._cachedEffect = effect;
         };
-        PushMaterial.prototype._mustRebind = function (scene, effect) {
-            return scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this;
+        PushMaterial.prototype._mustRebind = function (scene, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return scene.isCachedMaterialValid(this, effect, visibility);
         };
         PushMaterial.prototype.markAsDirty = function (flag) {
             if (flag & BABYLON.Material.TextureDirtyFlag) {
@@ -27707,7 +27823,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect)) {
+            if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
@@ -31778,7 +31894,7 @@ var BABYLON;
         function HemisphericLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
-            _this.direction = direction;
+            _this.direction = direction || BABYLON.Vector3.Up();
             return _this;
         }
         HemisphericLight.prototype._buildUniformLayout = function () {
@@ -32610,11 +32726,20 @@ var BABYLON;
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
+        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
+        Animation.prototype.vector3InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.vector2InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.sizeInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Size.Lerp(startValue, endValue, gradient);
@@ -32657,18 +32782,21 @@ var BABYLON;
             }
             this.currentFrame = currentFrame;
             // Try to get a hash to find the right key
-            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
-            if (this._keys[startKey].frame >= currentFrame) {
-                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
-                    startKey--;
+            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            if (this._keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
                 }
             }
-            for (var key = startKey; key < this._keys.length; key++) {
-                if (this._keys[key + 1].frame >= currentFrame) {
-                    var startValue = this._getKeyValue(this._keys[key].value);
-                    var endValue = this._getKeyValue(this._keys[key + 1].value);
+            for (var key = startKeyIndex; key < this._keys.length; key++) {
+                var endKey = this._keys[key + 1];
+                if (endKey.frame >= currentFrame) {
+                    var startKey = this._keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+                    var useTangent = startKey.outTangent && endKey.inTangent;
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+                    var gradient = (currentFrame - startKey.frame) / (endKey.frame - startKey.frame);
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
                         gradient = this._easingFunction.ease(gradient);
@@ -32686,34 +32814,34 @@ var BABYLON;
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quaternion;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quaternion.add(offsetValue.scale(repeatCount));
                             }
                             return quaternion;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient);
+                                    return vec3Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                    return vec2Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
                             }
                         // Size
                         case Animation.ANIMATIONTYPE_SIZE:
@@ -41531,20 +41659,21 @@ var BABYLON;
             if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             var _this = _super.call(this, null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format) || this;
             _this.name = name;
+            var engine = _this.getScene().getEngine();
             _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this._generateMipMaps = generateMipMaps;
             if (options.getContext) {
                 _this._canvas = options;
-                _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             }
             else {
                 _this._canvas = document.createElement("canvas");
                 if (options.width) {
-                    _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 }
                 else {
-                    _this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
             var textureSize = _this.getSize();
@@ -41560,14 +41689,23 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        DynamicTexture.prototype.scale = function (ratio) {
-            var textureSize = this.getSize();
-            textureSize.width *= ratio;
-            textureSize.height *= ratio;
+        DynamicTexture.prototype._recreate = function (textureSize) {
             this._canvas.width = textureSize.width;
             this._canvas.height = textureSize.height;
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        };
+        DynamicTexture.prototype.scale = function (ratio) {
+            var textureSize = this.getSize();
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+            this._recreate(textureSize);
+        };
+        DynamicTexture.prototype.scaleTo = function (width, height) {
+            var textureSize = this.getSize();
+            textureSize.width = width;
+            textureSize.height = height;
+            this._recreate(textureSize);
         };
         DynamicTexture.prototype.getContext = function () {
             return this._context;
@@ -46086,6 +46224,25 @@ var BABYLON;
         };
         PoseEnabledController.prototype.detachMesh = function () {
             this._mesh = undefined;
+        };
+        Object.defineProperty(PoseEnabledController.prototype, "mesh", {
+            get: function () {
+                return this._mesh;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PoseEnabledController.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            if (!this.mesh) {
+                return new BABYLON.Ray(BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+            }
+            var m = this.mesh.getWorldMatrix();
+            var origin = m.getTranslation();
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
         };
         return PoseEnabledController;
     }(BABYLON.Gamepad));
@@ -57031,7 +57188,7 @@ var BABYLON;
             }
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
-                uniforms: ["worldViewProjection", "color"]
+                uniforms: ["world", "viewProjection", "color"]
             });
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
@@ -58906,51 +59063,26 @@ var BABYLON;
             }
             //enable VR
             _this.getEngine().initWebVR();
-            if (!_this.getEngine().vrDisplaysPromise) {
-                BABYLON.Tools.Error("WebVR is not enabled on your browser");
+            //check specs version
+            if (!window.VRFrameData) {
+                _this._specsVersion = 1.0;
+                _this._frameData = {};
             }
             else {
-                //check specs version
-                if (!window.VRFrameData) {
-                    _this._specsVersion = 1.0;
-                    _this._frameData = {};
-                }
-                else {
-                    _this._frameData = new VRFrameData();
-                }
-                _this.getEngine().vrDisplaysPromise.then(function (devices) {
-                    if (devices.length > 0) {
-                        _this._vrEnabled = true;
-                        if (_this.webVROptions.displayName) {
-                            var found = devices.some(function (device) {
-                                if (device.displayName === _this.webVROptions.displayName) {
-                                    _this._vrDevice = device;
-                                    return true;
-                                }
-                                else {
-                                    return false;
-                                }
-                            });
-                            if (!found) {
-                                _this._vrDevice = devices[0];
-                                BABYLON.Tools.Warn("Display " + _this.webVROptions.displayName + " was not found. Using " + _this._vrDevice.displayName);
-                            }
-                        }
-                        else {
-                            //choose the first one
-                            _this._vrDevice = devices[0];
-                        }
-                        //reset the rig parameters.
-                        _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
-                        if (_this._attached) {
-                            _this.getEngine().enableVR(_this._vrDevice);
-                        }
-                    }
-                    else {
-                        BABYLON.Tools.Error("No WebVR devices found!");
-                    }
-                });
+                _this._frameData = new VRFrameData();
             }
+            _this.getEngine().getVRDevice(_this.webVROptions.displayName, function (device) {
+                if (!device) {
+                    return;
+                }
+                _this._vrEnabled = true;
+                _this._vrDevice = device;
+                //reset the rig parameters.
+                _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
+                if (_this._attached) {
+                    _this.getEngine().enableVR(_this._vrDevice);
+                }
+            });
             // try to attach the controllers, if found.
             _this.initControllers();
             /**
@@ -58997,17 +59129,40 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        WebVRFreeCamera.prototype.getLeftCamera = function () {
-            return this._rigCameras[0];
+        WebVRFreeCamera.prototype.getControllerByName = function (name) {
+            for (var _i = 0, _a = this.controllers; _i < _a.length; _i++) {
+                var gp = _a[_i];
+                if (gp.hand === name) {
+                    return gp;
+                }
+            }
+            return undefined;
         };
-        WebVRFreeCamera.prototype.getRightCamera = function () {
-            return this._rigCameras[1];
-        };
-        WebVRFreeCamera.prototype.getLeftTarget = function () {
-            return this._rigCameras[0].getTarget();
-        };
-        WebVRFreeCamera.prototype.getRightTarget = function () {
-            return this._rigCameras[1].getTarget();
+        Object.defineProperty(WebVRFreeCamera.prototype, "leftController", {
+            get: function () {
+                if (!this._leftController) {
+                    this._leftController = this.getControllerByName("left");
+                }
+                return this._leftController;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        Object.defineProperty(WebVRFreeCamera.prototype, "rightController", {
+            get: function () {
+                if (!this._rightController) {
+                    this._rightController = this.getControllerByName("right");
+                }
+                return this._rightController;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        WebVRFreeCamera.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            return _super.prototype.getForwardRay.call(this, length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
         };
         WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {
@@ -63212,7 +63367,7 @@ var BABYLON;
             this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.layers.push(this);
-            var engine = scene.getEngine();
+            var engine = this._scene.getEngine();
             // VBO
             var vertices = [];
             vertices.push(1, 1);
