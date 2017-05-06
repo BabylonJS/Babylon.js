@@ -51,8 +51,8 @@ var BABYLON;
                 this._markAsDirty();
             };
             Container.prototype._draw = function (parentMeasure, context) {
-                this._currentMeasure = parentMeasure.copy();
                 context.save();
+                _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this.applyStates(context);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];

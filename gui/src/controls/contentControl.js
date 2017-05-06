@@ -39,8 +39,8 @@ var BABYLON;
                 // Implemented by child to be injected inside main draw
             };
             ContentControl.prototype._draw = function (parentMeasure, context) {
-                this._currentMeasure = parentMeasure.copy();
                 context.save();
+                _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this.applyStates(context);
                 this._localDraw(context);
                 if (this._child) {

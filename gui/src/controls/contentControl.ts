@@ -28,10 +28,10 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            this._currentMeasure = parentMeasure.copy();
-
             context.save();
-            
+
+            super._processMeasures(parentMeasure, context);
+           
             this.applyStates(context);
 
             this._localDraw(context);
