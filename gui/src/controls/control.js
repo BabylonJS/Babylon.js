@@ -8,6 +8,8 @@ var BABYLON;
                 this.name = name;
                 this._zIndex = 0;
                 this._fontSize = 18;
+                this._width = 1;
+                this._height = 1;
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this.fontFamily = "Arial";
@@ -40,6 +42,74 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "width", {
+                get: function () {
+                    return this._width;
+                },
+                set: function (value) {
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    if (value > 1) {
+                        value = 1;
+                    }
+                    if (this._width === value) {
+                        return;
+                    }
+                    this._width = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "height", {
+                get: function () {
+                    return this._height;
+                },
+                set: function (value) {
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    if (value > 1) {
+                        value = 1;
+                    }
+                    if (this._height === value) {
+                        return;
+                    }
+                    this._height = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "widthConstantPixel", {
+                get: function () {
+                    return this._widthConstantPixel;
+                },
+                set: function (value) {
+                    if (this._widthConstantPixel === value) {
+                        return;
+                    }
+                    this._widthConstantPixel = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "heightConstantPixel", {
+                get: function () {
+                    return this._heightConstantPixel;
+                },
+                set: function (value) {
+                    if (this._heightConstantPixel === value) {
+                        return;
+                    }
+                    this._heightConstantPixel = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "fontFamily", {
                 get: function () {
                     return this._fontFamily;
@@ -63,6 +133,22 @@ var BABYLON;
                         return;
                     }
                     this._fontSize = value;
+                    this._fontSizeConstantPixel = null;
+                    this._prepareFont();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontSizeConstantPixel", {
+                get: function () {
+                    return this._fontSizeConstantPixel;
+                },
+                set: function (value) {
+                    if (this._fontSizeConstantPixel === value) {
+                        return;
+                    }
+                    this._fontSize = null;
+                    this._fontSizeConstantPixel = value;
                     this._prepareFont();
                 },
                 enumerable: true,
@@ -113,8 +199,63 @@ var BABYLON;
                     context.fillStyle = this._color;
                 }
             };
-            Control.prototype._draw = function (parentMeasure, context) {
+            Control.prototype._processMeasures = function (parentMeasure, context) {
+                this._measure(parentMeasure, context);
+                this._computeAlignment(parentMeasure, context);
+                // Clip
+                context.beginPath();
+                context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                context.clip();
+            };
+            Control.prototype._measure = function (parentMeasure, context) {
                 this._currentMeasure = parentMeasure.copy();
+                // Width / Height
+                if (this._widthConstantPixel) {
+                    this._currentMeasure.width = this._widthConstantPixel * this._scaleX;
+                }
+                else {
+                    this._currentMeasure.width *= this._width;
+                }
+                if (this._heightConstantPixel) {
+                    this._currentMeasure.height = this._heightConstantPixel * this._scaleY;
+                }
+                else {
+                    this._currentMeasure.height *= this._height;
+                }
+            };
+            Control.prototype._computeAlignment = function (parentMeasure, context) {
+                var width = this._currentMeasure.width;
+                var height = this._currentMeasure.height;
+                var parentWidth = parentMeasure.width;
+                var parentHeight = parentMeasure.height;
+                var x = 0;
+                var y = 0;
+                switch (this.horizontalAlignment) {
+                    case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                        x = 0;
+                        break;
+                    case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                        x = parentWidth - width;
+                        break;
+                    case Control.HORIZONTAL_ALIGNMENT_CENTER:
+                        x = (parentWidth - width) / 2;
+                        break;
+                }
+                switch (this.verticalAlignment) {
+                    case Control.VERTICAL_ALIGNMENT_TOP:
+                        y = 0;
+                        break;
+                    case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                        y = parentHeight - height;
+                        break;
+                    case Control.VERTICAL_ALIGNMENT_CENTER:
+                        y = (parentHeight - height) / 2;
+                        break;
+                }
+                this._currentMeasure.left = this._currentMeasure.left + x;
+                this._currentMeasure.top = this._currentMeasure.top + y;
+            };
+            Control.prototype._draw = function (parentMeasure, context) {
                 // Do nothing
             };
             Control.prototype._rescale = function (scaleX, scaleY) {
@@ -126,7 +267,12 @@ var BABYLON;
                 if (!this._fontFamily) {
                     return;
                 }
-                this._font = (this._fontSize * this._scaleX) + "px " + this._fontFamily;
+                if (this._fontSizeConstantPixel) {
+                    this._font = (this._fontSizeConstantPixel * this._scaleX) + "px " + this._fontFamily;
+                }
+                else {
+                    this._font = this._fontSize + "px " + this._fontFamily;
+                }
                 this._fontOffset = Control._GetFontOffset(this._font);
                 this._markAsDirty();
             };
