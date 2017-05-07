@@ -9,8 +9,8 @@ module BABYLON.GUI {
         private _fontFamily: string;
         private _fontSize = 18;
         private _font: string;
-        private _width = 1;
-        private _height = 1;
+        private _width = new ValueAndUnit(1);
+        private _height = new ValueAndUnit(1);
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color: string;
@@ -18,11 +18,10 @@ module BABYLON.GUI {
         private _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
         private _cachedParentMeasure = Measure.Empty();
-        private _marginLeft = 0;
-        private _marginRight = 0;
-        private _marginTop = 0;
-        private _marginBottom = 0;        
-        private _unitMode = Control.UNITMODE_PERCENTAGE;
+        private _marginLeft = new ValueAndUnit(0);
+        private _marginRight = new ValueAndUnit(0);
+        private _marginTop = new ValueAndUnit(0);
+        private _marginBottom = new ValueAndUnit(0);        
         
         // Properties
         public get unitMode(): number {
@@ -344,17 +343,6 @@ module BABYLON.GUI {
         private static _VERTICAL_ALIGNMENT_TOP = 0;
         private static _VERTICAL_ALIGNMENT_BOTTOM = 1;
         private static _VERTICAL_ALIGNMENT_CENTER = 2;
-
-        private static _UNITMODE_PERCENTAGE = 0;
-        private static _UNITMODE_PIXEL = 1;
-
-        public static get UNITMODE_PERCENTAGE(): number {
-            return Control._UNITMODE_PERCENTAGE;
-        }
-
-        public static get UNITMODE_PIXEL(): number {
-            return Control._UNITMODE_PIXEL;
-        }
 
         public static get HORIZONTAL_ALIGNMENT_LEFT(): number {
             return Control._HORIZONTAL_ALIGNMENT_LEFT;
