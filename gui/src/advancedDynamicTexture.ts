@@ -18,18 +18,24 @@ module BABYLON.GUI {
             }
 
             this._background = value;
-            this._isDirty = true;
+            this.markAsDirty();
         }
         
-        constructor(name: string, scene: Scene) {
-            super(name, {}, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
+        constructor(name: string, size = 0, scene: Scene) {
+            super(name, size, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
 
-            this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
             this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
 
             this._rootContainer._link(null, this);
 
-            this._onResize();
+            if (!size) {
+                this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
+                this._onResize();
+            }
+        }
+
+        public markAsDirty() {
+            this._isDirty = true;
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
@@ -45,7 +51,10 @@ module BABYLON.GUI {
 
         public dispose() {
             this.getScene().onBeforeRenderObservable.remove(this._renderObserver);
-            this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+
+            if (this._resizeObserver) {
+                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+            }
 
             super.dispose();
         }
@@ -59,7 +68,7 @@ module BABYLON.GUI {
 
             if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                 this.scaleTo(renderWidth, renderHeight);
-                this._isDirty = true;
+                this.markAsDirty();
             }
         }
 
@@ -74,9 +83,9 @@ module BABYLON.GUI {
         }
 
         private _render(): void {
-            var engine = this.getScene().getEngine();
-            var renderWidth = engine.getRenderWidth();
-            var renderHeight = engine.getRenderHeight();
+            var textureSize = this.getSize();
+            var renderWidth = textureSize.width;
+            var renderHeight = textureSize.height;
 
             // Clear
             var context = this.getContext();
