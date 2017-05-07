@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     export class AdvancedDynamicTexture extends DynamicTexture {
-        private _dirty = false;
+        private _isDirty = false;
         private _renderObserver: Observer<Scene>;
         private _resizeObserver: Observer<Engine>;
         private _background: string;
@@ -18,20 +18,27 @@ module BABYLON.GUI {
             }
 
             this._background = value;
-            this._markAsDirty();
+            this.markAsDirty();
         }
         
-        constructor(name: string, scene: Scene) {
-            super(name, {}, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
+        constructor(name: string, size = 0, scene: Scene) {
+            super(name, size, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
 
-            this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
             this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
 
-            this._onResize();
+            this._rootContainer._link(null, this);
+
+            if (!size) {
+                this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
+                this._onResize();
+            }
+        }
+
+        public markAsDirty() {
+            this._isDirty = true;
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
-            control._setRoot(this._rootContainer);
             this._rootContainer.addControl(control);
 
             return this;
@@ -44,7 +51,10 @@ module BABYLON.GUI {
 
         public dispose() {
             this.getScene().onBeforeRenderObservable.remove(this._renderObserver);
-            this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+
+            if (this._resizeObserver) {
+                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+            }
 
             super.dispose();
         }
@@ -58,35 +68,24 @@ module BABYLON.GUI {
 
             if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                 this.scaleTo(renderWidth, renderHeight);
+                this.markAsDirty();
             }
-
-            // Update constant pixel resources            
-            var scaleX = renderWidth / 1000.0;
-            var scaleY = renderHeight / 1000.0;
-
-            this._rootContainer._rescale(scaleX, scaleY);
-
-            this._markAsDirty();
-        }
-
-        public _markAsDirty() {
-            this._dirty = true;
         }
 
         private _checkUpdate(): void {
-            if (!this._dirty) {
+            if (!this._isDirty && !this._rootContainer.isDirty) {
                 return;
             }
-            this._dirty = false;
+            this._isDirty = false;
 
             this._render();
             this.update();
         }
 
         private _render(): void {
-            var engine = this.getScene().getEngine();
-            var renderWidth = engine.getRenderWidth();
-            var renderHeight = engine.getRenderHeight();
+            var textureSize = this.getSize();
+            var renderWidth = textureSize.width;
+            var renderHeight = textureSize.height;
 
             // Clear
             var context = this.getContext();
