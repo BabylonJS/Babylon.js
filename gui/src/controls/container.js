@@ -26,7 +26,7 @@ var BABYLON;
                 if (index !== -1) {
                     return this;
                 }
-                control._setRoot(this);
+                control._link(this, this._host);
                 this._reOrderControl(control);
                 this._markAsDirty();
                 return this;
@@ -59,13 +59,6 @@ var BABYLON;
                     child._draw(this._currentMeasure, context);
                 }
                 context.restore();
-            };
-            Container.prototype._rescale = function (scaleX, scaleY) {
-                _super.prototype._rescale.call(this, scaleX, scaleY);
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    child._rescale(scaleX, scaleY);
-                }
             };
             return Container;
         }(GUI.Control));

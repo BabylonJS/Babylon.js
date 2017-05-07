@@ -17,10 +17,11 @@ var BABYLON;
             __extends(AdvancedDynamicTexture, _super);
             function AdvancedDynamicTexture(name, scene) {
                 var _this = _super.call(this, name, {}, scene, false, BABYLON.Texture.NEAREST_SAMPLINGMODE, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
-                _this._dirty = false;
+                _this._isDirty = false;
                 _this._rootContainer = new GUI.Container("root");
                 _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._onResize(); });
                 _this._renderObserver = _this.getScene().onBeforeRenderObservable.add(function () { return _this._checkUpdate(); });
+                _this._rootContainer._link(null, _this);
                 _this._onResize();
                 return _this;
             }
@@ -33,13 +34,12 @@ var BABYLON;
                         return;
                     }
                     this._background = value;
-                    this._markAsDirty();
+                    this._isDirty = true;
                 },
                 enumerable: true,
                 configurable: true
             });
             AdvancedDynamicTexture.prototype.addControl = function (control) {
-                control._setRoot(this._rootContainer);
                 this._rootContainer.addControl(control);
                 return this;
             };
@@ -60,21 +60,14 @@ var BABYLON;
                 var renderHeight = engine.getRenderHeight();
                 if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                     this.scaleTo(renderWidth, renderHeight);
+                    this._isDirty = true;
                 }
-                // Update constant pixel resources            
-                var scaleX = renderWidth / 1000.0;
-                var scaleY = renderHeight / 1000.0;
-                this._rootContainer._rescale(scaleX, scaleY);
-                this._markAsDirty();
-            };
-            AdvancedDynamicTexture.prototype._markAsDirty = function () {
-                this._dirty = true;
             };
             AdvancedDynamicTexture.prototype._checkUpdate = function () {
-                if (!this._dirty) {
+                if (!this._isDirty && !this._rootContainer.isDirty) {
                     return;
                 }
-                this._dirty = false;
+                this._isDirty = false;
                 this._render();
                 this.update();
             };

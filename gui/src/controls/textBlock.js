@@ -18,11 +18,26 @@ var BABYLON;
             function TextBlock(name, text) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._textWrapping = false;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this.text = text;
                 return _this;
             }
+            Object.defineProperty(TextBlock.prototype, "textWrapping", {
+                get: function () {
+                    return this._textWrapping;
+                },
+                set: function (value) {
+                    if (this._textWrapping === value) {
+                        return;
+                    }
+                    this._textWrapping = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(TextBlock.prototype, "text", {
                 get: function () {
                     return this._text;
@@ -65,6 +80,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            TextBlock.prototype._measure = function (parentMeasure, context) {
+                _super.prototype._measure;
+            };
             TextBlock.prototype._drawText = function (text, textWidth, y, context) {
                 var width = this._currentMeasure.width;
                 var x = 0;
@@ -83,52 +101,63 @@ var BABYLON;
             };
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this.applyStates(context);
-                this._computeTextAlignment(context);
-                var words = this.text.split(' ');
-                var line = '';
-                var width = this._currentMeasure.width;
-                var y = this._textY;
-                var lineWidth = 0;
-                for (var n = 0; n < words.length; n++) {
-                    var testLine = line + words[n] + ' ';
-                    var metrics = context.measureText(testLine);
-                    var testWidth = metrics.width;
-                    if (testWidth > width && n > 0) {
-                        this._drawText(line, lineWidth, y, context);
-                        line = words[n] + ' ';
-                        lineWidth = context.measureText(line).width;
-                        y += this._lineHeight;
-                    }
-                    else {
-                        lineWidth = testWidth;
-                        line = testLine;
-                    }
-                }
-                this._drawText(line, lineWidth, y, context);
+                _super.prototype._processMeasures.call(this, parentMeasure, context);
+                // Render lines
+                this._renderLines(context);
                 context.restore();
             };
-            TextBlock.prototype._computeTextAlignment = function (context) {
+            TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
+                this._lines = [];
+                if (this._textWrapping) {
+                    var words = this.text.split(' ');
+                    var line = '';
+                    var width = this._currentMeasure.width;
+                    var lineWidth = 0;
+                    for (var n = 0; n < words.length; n++) {
+                        var testLine = line + words[n] + ' ';
+                        var metrics = context.measureText(testLine);
+                        var testWidth = metrics.width;
+                        if (testWidth > width && n > 0) {
+                            this._lines.push({ text: line, width: lineWidth });
+                            line = words[n] + ' ';
+                            lineWidth = context.measureText(line).width;
+                        }
+                        else {
+                            lineWidth = testWidth;
+                            line = testLine;
+                        }
+                    }
+                    this._lines.push({ text: line, width: lineWidth });
+                }
+                else {
+                    this._lines.push({ text: this.text, width: context.measureText(this.text).width });
+                }
+            };
+            TextBlock.prototype._renderLines = function (context) {
                 var width = this._currentMeasure.width;
                 var height = this._currentMeasure.height;
-                var y = 0;
                 if (!this._fontOffset) {
                     this._fontOffset = GUI.Control._GetFontOffset(context.font);
                 }
+                var rootY = 0;
                 switch (this._textVerticalAlignment) {
                     case GUI.Control.VERTICAL_ALIGNMENT_TOP:
-                        y = this._fontOffset.ascent;
+                        rootY = this._fontOffset.ascent;
                         break;
                     case GUI.Control.VERTICAL_ALIGNMENT_BOTTOM:
-                        y = height - this._fontOffset.descent;
+                        rootY = height - this._fontOffset.height * (this._lines.length - 1) - this._fontOffset.descent;
                         break;
                     case GUI.Control.VERTICAL_ALIGNMENT_CENTER:
-                        y = (height / 2) + (this._fontOffset.ascent - this._fontOffset.height / 2);
+                        rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
                         break;
                 }
-                this._lineHeight = this._fontOffset.height;
-                this._textY = this._currentMeasure.top + y;
+                rootY += this._currentMeasure.top;
+                for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
+                    var line = _a[_i];
+                    this._drawText(line.text, line.width, rootY, context);
+                    rootY += this._fontOffset.height;
+                }
             };
             return TextBlock;
         }(GUI.Control));

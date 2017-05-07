@@ -64,6 +64,13 @@ var BABYLON;
                 }
                 context.restore();
             };
+            Rectangle.prototype._additionalProcessing = function (parentMeasure, context) {
+                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+                this._measureForChild.width -= 2 * this._thickness;
+                this._measureForChild.height -= 2 * this._thickness;
+                this._measureForChild.left += this._thickness;
+                this._measureForChild.top += this._thickness;
+            };
             return Rectangle;
         }(GUI.ContentControl));
         GUI.Rectangle = Rectangle;
