@@ -15,14 +15,18 @@ var BABYLON;
     (function (GUI) {
         var AdvancedDynamicTexture = (function (_super) {
             __extends(AdvancedDynamicTexture, _super);
-            function AdvancedDynamicTexture(name, size, scene) {
-                if (size === void 0) { size = 0; }
-                var _this = _super.call(this, name, size, scene, false, BABYLON.Texture.NEAREST_SAMPLINGMODE, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
+            function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
+                if (width === void 0) { width = 0; }
+                if (height === void 0) { height = 0; }
+                if (generateMipMaps === void 0) { generateMipMaps = false; }
+                if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
+                var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
                 _this._isDirty = false;
                 _this._rootContainer = new GUI.Container("root");
                 _this._renderObserver = _this.getScene().onBeforeRenderObservable.add(function () { return _this._checkUpdate(); });
                 _this._rootContainer._link(null, _this);
-                if (!size) {
+                _this.hasAlpha = true;
+                if (!width || !height) {
                     _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._onResize(); });
                     _this._onResize();
                 }
@@ -95,6 +99,18 @@ var BABYLON;
                 // Render
                 var measure = new GUI.Measure(0, 0, renderWidth, renderHeight);
                 this._rootContainer._draw(measure, context);
+            };
+            // Statics
+            AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height) {
+                if (width === void 0) { width = 1024; }
+                if (height === void 0) { height = 1024; }
+                var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
+                material.backFaceCulling = false;
+                material.emissiveTexture = result;
+                material.opacityTexture = result;
+                mesh.material = material;
+                return result;
             };
             return AdvancedDynamicTexture;
         }(BABYLON.DynamicTexture));

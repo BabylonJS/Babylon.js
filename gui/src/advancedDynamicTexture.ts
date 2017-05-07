@@ -20,15 +20,17 @@ module BABYLON.GUI {
             this._background = value;
             this.markAsDirty();
         }
-        
-        constructor(name: string, size = 0, scene: Scene) {
-            super(name, size, scene, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTUREFORMAT_RGBA);
+       
+        constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
+            super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
             this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
 
             this._rootContainer._link(null, this);
 
-            if (!size) {
+            this.hasAlpha = true;
+
+            if (!width || !height) {
                 this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
                 this._onResize();
             }
@@ -101,5 +103,20 @@ module BABYLON.GUI {
             var measure = new Measure(0, 0, renderWidth, renderHeight);
             this._rootContainer._draw(measure, context);
         }
+
+        // Statics
+        public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024): AdvancedDynamicTexture {
+            var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
+
+            var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
+            material.backFaceCulling = false;
+            material.emissiveTexture = result;
+            material.opacityTexture = result;
+
+            mesh.material = material;
+
+            return result;
+        }
+
     }    
 }

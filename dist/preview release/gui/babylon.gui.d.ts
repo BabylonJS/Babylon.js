@@ -7,7 +7,7 @@ declare module BABYLON.GUI {
         private _background;
         private _rootContainer;
         background: string;
-        constructor(name: string, size: number, scene: Scene);
+        constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
         addControl(control: Control): AdvancedDynamicTexture;
         removeControl(control: Control): AdvancedDynamicTexture;
@@ -15,6 +15,7 @@ declare module BABYLON.GUI {
         private _onResize();
         private _checkUpdate();
         private _render();
+        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
     }
 }
 
