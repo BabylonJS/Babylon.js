@@ -2,7 +2,8 @@
 
 module BABYLON.GUI {
     export class ContentControl extends Control {
-        private _child: Control;       
+        private _child: Control;  
+        protected _measureForChild = Measure.Empty();     
 
         public get child(): Control {
             return this._child;
@@ -14,7 +15,7 @@ module BABYLON.GUI {
             }
 
             this._child = control;
-            control._setRoot(this._root);
+            control._link(this._root, this._host);
 
             this._markAsDirty();
         }
@@ -37,17 +38,15 @@ module BABYLON.GUI {
             this._localDraw(context);
 
             if (this._child) {
-                this._child._draw(this._currentMeasure, context);
+                this._child._draw(this._measureForChild, context);
             }
             context.restore();
         }
 
-        public _rescale(scaleX: number, scaleY: number) {
-            super._rescale(scaleX, scaleY);
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
+            super._additionalProcessing(parentMeasure, context);
 
-            if (this._child) {
-                this._child._rescale(scaleX, scaleY);
-            }
+            this._measureForChild.copyFrom(this._currentMeasure);
         }
     }    
 }

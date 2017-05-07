@@ -4,23 +4,40 @@ module BABYLON.GUI {
     export class Control {        
         private _zIndex = 0;
         public _root: Container;
-        public _currentMeasure: Measure;
-        private _scaleX: number;
-        private _scaleY: number;
+        public _host: AdvancedDynamicTexture;
+        public _currentMeasure = Measure.Empty();
         private _fontFamily: string;
         private _fontSize = 18;
-        private _fontSizeConstantPixel: number;
         private _font: string;
         private _width = 1;
-        private _widthConstantPixel: number;
         private _height = 1;
-        private _heightConstantPixel: number;
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color: string;
         private _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        private _isDirty = true;
+        private _cachedParentMeasure = Measure.Empty();
+        private _marginLeft = 0;
+        private _marginRight = 0;
+        private _marginTop = 0;
+        private _marginBottom = 0;        
+        private _unitMode = Control.UNITMODE_PERCENTAGE;
         
+        // Properties
+        public get unitMode(): number {
+            return this._unitMode;
+        }
+
+        public set unitMode(value: number) {
+            if (this._unitMode === value) {
+                return;
+            }
+
+            this._unitMode = value;
+            this._markAsDirty();
+        } 
+
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
         }
@@ -55,10 +72,6 @@ module BABYLON.GUI {
             if (value < 0) {
                 value = 0;
             }
-
-            if (value > 1) {
-                value = 1;
-            }
             if (this._width === value) {
                 return;
             }
@@ -75,10 +88,6 @@ module BABYLON.GUI {
             if (value < 0) {
                 value = 0;
             }
-
-            if (value > 1) {
-                value = 1;
-            }            
             if (this._height === value) {
                 return;
             }
@@ -86,32 +95,6 @@ module BABYLON.GUI {
             this._height = value;
             this._markAsDirty();
         }   
-
-        public get widthConstantPixel(): number {
-            return this._widthConstantPixel;
-        }
-
-        public set widthConstantPixel(value: number) {
-            if (this._widthConstantPixel === value) {
-                return;
-            }
-
-            this._widthConstantPixel = value;
-            this._markAsDirty();
-        }
-
-        public get heightConstantPixel(): number {
-            return this._heightConstantPixel;
-        }
-
-        public set heightConstantPixel(value: number) {
-            if (this._heightConstantPixel === value) {
-                return;
-            }
-
-            this._heightConstantPixel = value;
-            this._markAsDirty();
-        }      
 
         public get fontFamily(): string {
             return this._fontFamily;
@@ -136,21 +119,6 @@ module BABYLON.GUI {
             }
 
             this._fontSize = value;
-            this._fontSizeConstantPixel = null;
-            this._prepareFont();
-        }
-
-        public get fontSizeConstantPixel(): number {
-            return this._fontSizeConstantPixel;
-        }
-
-        public set fontSizeConstantPixel(value: number) {
-            if (this._fontSizeConstantPixel === value) {
-                return;
-            }
-            
-            this._fontSize = null;
-            this._fontSizeConstantPixel = value;
             this._prepareFont();
         }
 
@@ -180,19 +148,79 @@ module BABYLON.GUI {
             this._root._reOrderControl(this);
         }
 
+        public get isDirty(): boolean {
+            return this._isDirty;
+        }
+        
+        public get marginLeft(): number {
+            return this._marginLeft;
+        }
+
+        public set marginLeft(value: number) {
+            if (this._marginLeft === value) {
+                return;
+            }
+
+            this._marginLeft = value;
+            this._markAsDirty();
+        }    
+
+        public get marginRight(): number {
+            return this._marginRight;
+        }
+
+        public set marginRight(value: number) {
+            if (this._marginRight === value) {
+                return;
+            }
+
+            this._marginRight = value;
+            this._markAsDirty();
+        }
+
+        public get marginTop(): number {
+            return this._marginTop;
+        }
+
+        public set marginTop(value: number) {
+            if (this._marginTop === value) {
+                return;
+            }
+
+            this._marginTop = value;
+            this._markAsDirty();
+        }
+
+        public get marginBottom(): number {
+            return this._marginBottom;
+        }
+
+        public set marginBottom(value: number) {
+            if (this._marginBottom === value) {
+                return;
+            }
+
+            this._marginBottom = value;
+            this._markAsDirty();
+        }                
+
+        // Functions
         constructor(public name: string) {
             this.fontFamily = "Arial";
         }
 
-        protected _markAsDirty(): void {
+        protected _markAsDirty(): void {            
+            this._isDirty = true;
+
             if (!this._root) {
                 return; // Not yet connected
             }
             this._root._markAsDirty();
         }
 
-        public _setRoot(root: Container): void {
+        public _link(root: Container, host: AdvancedDynamicTexture): void {
             this._root = root;
+            this._host = host;
         }
 
         protected applyStates(context: CanvasRenderingContext2D): void {
@@ -205,28 +233,34 @@ module BABYLON.GUI {
             }
         }
 
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D) {
-            this._measure(parentMeasure, context);
-            this._computeAlignment(parentMeasure, context);
+        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D) {     
+            if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+                this._currentMeasure.copyFrom(parentMeasure);
+
+                this._measure(parentMeasure, context);
+                this._computeAlignment(parentMeasure, context);
+                this._additionalProcessing(parentMeasure, context);
+            }      
                         
             // Clip
             context.beginPath();
             context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             context.clip();
+
+            this._isDirty = false;
+            this._cachedParentMeasure.copyFrom(parentMeasure);
         }
 
-        protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            this._currentMeasure = parentMeasure.copy();
-            
+        protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
             // Width / Height
-            if (this._widthConstantPixel) {
-                this._currentMeasure.width = this._widthConstantPixel * this._scaleX;
+            if (this._unitMode === Control.UNITMODE_PIXEL) {
+                this._currentMeasure.width = this._width;
             } else {
                 this._currentMeasure.width *= this._width; 
             }
 
-            if (this._heightConstantPixel) {
-                this._currentMeasure.height = this._heightConstantPixel * this._scaleY;
+            if (this._unitMode === Control.UNITMODE_PIXEL) {
+                this._currentMeasure.height = this._height;
             } else {
                 this._currentMeasure.height *= this._height; 
             }
@@ -239,6 +273,7 @@ module BABYLON.GUI {
             var parentWidth = parentMeasure.width;
             var parentHeight = parentMeasure.height;
 
+            // Left / top
             var x = 0;
             var y = 0;
 
@@ -266,19 +301,28 @@ module BABYLON.GUI {
                     break;
             }
             
-            this._currentMeasure.left = this._currentMeasure.left + x;
-            this._currentMeasure.top =  this._currentMeasure.top + y;            
+            if (this._unitMode === Control.UNITMODE_PIXEL) {
+                this._currentMeasure.left += this._marginLeft;
+                this._currentMeasure.left -= this._marginRight;
+                this._currentMeasure.top += this._marginTop;
+                this._currentMeasure.top -= this._marginBottom;
+            } else {
+                this._currentMeasure.left += parentWidth * this._marginLeft;
+                this._currentMeasure.left -= parentWidth * this._marginRight;
+                this._currentMeasure.top += parentHeight * this._marginTop;
+                this._currentMeasure.top -= parentHeight * this._marginBottom;
+            }
+
+            this._currentMeasure.left += x;
+            this._currentMeasure.top += y;            
+        }
+
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+            // Do nothing
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
-        }
-
-        public _rescale(scaleX: number, scaleY: number) {
-            this._scaleX = scaleX;
-            this._scaleY = scaleY;
-
-            this._prepareFont();
         }
 
         private _prepareFont() {
@@ -286,11 +330,7 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (this._fontSizeConstantPixel) {
-                this._font = (this._fontSizeConstantPixel * this._scaleX) + "px " + this._fontFamily;
-            } else {
-                this._font = this._fontSize + "px " + this._fontFamily;
-            }
+            this._font = this._fontSize + "px " + this._fontFamily;
         
             this._fontOffset = Control._GetFontOffset(this._font);
             this._markAsDirty();
@@ -300,9 +340,21 @@ module BABYLON.GUI {
         private static _HORIZONTAL_ALIGNMENT_LEFT = 0;
         private static _HORIZONTAL_ALIGNMENT_RIGHT = 1;
         private static _HORIZONTAL_ALIGNMENT_CENTER = 2;
+        
         private static _VERTICAL_ALIGNMENT_TOP = 0;
         private static _VERTICAL_ALIGNMENT_BOTTOM = 1;
         private static _VERTICAL_ALIGNMENT_CENTER = 2;
+
+        private static _UNITMODE_PERCENTAGE = 0;
+        private static _UNITMODE_PIXEL = 1;
+
+        public static get UNITMODE_PERCENTAGE(): number {
+            return Control._UNITMODE_PERCENTAGE;
+        }
+
+        public static get UNITMODE_PIXEL(): number {
+            return Control._UNITMODE_PIXEL;
+        }
 
         public static get HORIZONTAL_ALIGNMENT_LEFT(): number {
             return Control._HORIZONTAL_ALIGNMENT_LEFT;

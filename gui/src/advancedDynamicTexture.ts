@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     export class AdvancedDynamicTexture extends DynamicTexture {
-        private _dirty = false;
+        private _isDirty = false;
         private _renderObserver: Observer<Scene>;
         private _resizeObserver: Observer<Engine>;
         private _background: string;
@@ -18,7 +18,7 @@ module BABYLON.GUI {
             }
 
             this._background = value;
-            this._markAsDirty();
+            this._isDirty = true;
         }
         
         constructor(name: string, scene: Scene) {
@@ -27,11 +27,12 @@ module BABYLON.GUI {
             this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
             this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
 
+            this._rootContainer._link(null, this);
+
             this._onResize();
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
-            control._setRoot(this._rootContainer);
             this._rootContainer.addControl(control);
 
             return this;
@@ -58,26 +59,15 @@ module BABYLON.GUI {
 
             if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                 this.scaleTo(renderWidth, renderHeight);
+                this._isDirty = true;
             }
-
-            // Update constant pixel resources            
-            var scaleX = renderWidth / 1000.0;
-            var scaleY = renderHeight / 1000.0;
-
-            this._rootContainer._rescale(scaleX, scaleY);
-
-            this._markAsDirty();
-        }
-
-        public _markAsDirty() {
-            this._dirty = true;
         }
 
         private _checkUpdate(): void {
-            if (!this._dirty) {
+            if (!this._isDirty && !this._rootContainer.isDirty) {
                 return;
             }
-            this._dirty = false;
+            this._isDirty = false;
 
             this._render();
             this.update();

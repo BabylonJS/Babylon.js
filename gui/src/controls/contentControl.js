@@ -18,6 +18,7 @@ var BABYLON;
             function ContentControl(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._measureForChild = GUI.Measure.Empty();
                 return _this;
             }
             Object.defineProperty(ContentControl.prototype, "child", {
@@ -29,7 +30,7 @@ var BABYLON;
                         return;
                     }
                     this._child = control;
-                    control._setRoot(this._root);
+                    control._link(this._root, this._host);
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -44,15 +45,13 @@ var BABYLON;
                 this.applyStates(context);
                 this._localDraw(context);
                 if (this._child) {
-                    this._child._draw(this._currentMeasure, context);
+                    this._child._draw(this._measureForChild, context);
                 }
                 context.restore();
             };
-            ContentControl.prototype._rescale = function (scaleX, scaleY) {
-                _super.prototype._rescale.call(this, scaleX, scaleY);
-                if (this._child) {
-                    this._child._rescale(scaleX, scaleY);
-                }
+            ContentControl.prototype._additionalProcessing = function (parentMeasure, context) {
+                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+                this._measureForChild.copyFrom(this._currentMeasure);
             };
             return ContentControl;
         }(GUI.Control));

@@ -4,16 +4,40 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         var Control = (function () {
+            // Functions
             function Control(name) {
                 this.name = name;
                 this._zIndex = 0;
+                this._currentMeasure = GUI.Measure.Empty();
                 this._fontSize = 18;
                 this._width = 1;
                 this._height = 1;
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+                this._isDirty = true;
+                this._cachedParentMeasure = GUI.Measure.Empty();
+                this._marginLeft = 0;
+                this._marginRight = 0;
+                this._marginTop = 0;
+                this._marginBottom = 0;
+                this._unitMode = Control.UNITMODE_PERCENTAGE;
                 this.fontFamily = "Arial";
             }
+            Object.defineProperty(Control.prototype, "unitMode", {
+                // Properties
+                get: function () {
+                    return this._unitMode;
+                },
+                set: function (value) {
+                    if (this._unitMode === value) {
+                        return;
+                    }
+                    this._unitMode = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "horizontalAlignment", {
                 get: function () {
                     return this._horizontalAlignment;
@@ -50,9 +74,6 @@ var BABYLON;
                     if (value < 0) {
                         value = 0;
                     }
-                    if (value > 1) {
-                        value = 1;
-                    }
                     if (this._width === value) {
                         return;
                     }
@@ -70,41 +91,10 @@ var BABYLON;
                     if (value < 0) {
                         value = 0;
                     }
-                    if (value > 1) {
-                        value = 1;
-                    }
                     if (this._height === value) {
                         return;
                     }
                     this._height = value;
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Control.prototype, "widthConstantPixel", {
-                get: function () {
-                    return this._widthConstantPixel;
-                },
-                set: function (value) {
-                    if (this._widthConstantPixel === value) {
-                        return;
-                    }
-                    this._widthConstantPixel = value;
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Control.prototype, "heightConstantPixel", {
-                get: function () {
-                    return this._heightConstantPixel;
-                },
-                set: function (value) {
-                    if (this._heightConstantPixel === value) {
-                        return;
-                    }
-                    this._heightConstantPixel = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -133,22 +123,6 @@ var BABYLON;
                         return;
                     }
                     this._fontSize = value;
-                    this._fontSizeConstantPixel = null;
-                    this._prepareFont();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Control.prototype, "fontSizeConstantPixel", {
-                get: function () {
-                    return this._fontSizeConstantPixel;
-                },
-                set: function (value) {
-                    if (this._fontSizeConstantPixel === value) {
-                        return;
-                    }
-                    this._fontSize = null;
-                    this._fontSizeConstantPixel = value;
                     this._prepareFont();
                 },
                 enumerable: true,
@@ -182,14 +156,79 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "isDirty", {
+                get: function () {
+                    return this._isDirty;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "marginLeft", {
+                get: function () {
+                    return this._marginLeft;
+                },
+                set: function (value) {
+                    if (this._marginLeft === value) {
+                        return;
+                    }
+                    this._marginLeft = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "marginRight", {
+                get: function () {
+                    return this._marginRight;
+                },
+                set: function (value) {
+                    if (this._marginRight === value) {
+                        return;
+                    }
+                    this._marginRight = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "marginTop", {
+                get: function () {
+                    return this._marginTop;
+                },
+                set: function (value) {
+                    if (this._marginTop === value) {
+                        return;
+                    }
+                    this._marginTop = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "marginBottom", {
+                get: function () {
+                    return this._marginBottom;
+                },
+                set: function (value) {
+                    if (this._marginBottom === value) {
+                        return;
+                    }
+                    this._marginBottom = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Control.prototype._markAsDirty = function () {
+                this._isDirty = true;
                 if (!this._root) {
                     return; // Not yet connected
                 }
                 this._root._markAsDirty();
             };
-            Control.prototype._setRoot = function (root) {
+            Control.prototype._link = function (root, host) {
                 this._root = root;
+                this._host = host;
             };
             Control.prototype.applyStates = function (context) {
                 if (this._font) {
@@ -200,24 +239,29 @@ var BABYLON;
                 }
             };
             Control.prototype._processMeasures = function (parentMeasure, context) {
-                this._measure(parentMeasure, context);
-                this._computeAlignment(parentMeasure, context);
+                if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+                    this._currentMeasure.copyFrom(parentMeasure);
+                    this._measure(parentMeasure, context);
+                    this._computeAlignment(parentMeasure, context);
+                    this._additionalProcessing(parentMeasure, context);
+                }
                 // Clip
                 context.beginPath();
                 context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 context.clip();
+                this._isDirty = false;
+                this._cachedParentMeasure.copyFrom(parentMeasure);
             };
             Control.prototype._measure = function (parentMeasure, context) {
-                this._currentMeasure = parentMeasure.copy();
                 // Width / Height
-                if (this._widthConstantPixel) {
-                    this._currentMeasure.width = this._widthConstantPixel * this._scaleX;
+                if (this._unitMode === Control.UNITMODE_PIXEL) {
+                    this._currentMeasure.width = this._width;
                 }
                 else {
                     this._currentMeasure.width *= this._width;
                 }
-                if (this._heightConstantPixel) {
-                    this._currentMeasure.height = this._heightConstantPixel * this._scaleY;
+                if (this._unitMode === Control.UNITMODE_PIXEL) {
+                    this._currentMeasure.height = this._height;
                 }
                 else {
                     this._currentMeasure.height *= this._height;
@@ -228,6 +272,7 @@ var BABYLON;
                 var height = this._currentMeasure.height;
                 var parentWidth = parentMeasure.width;
                 var parentHeight = parentMeasure.height;
+                // Left / top
                 var x = 0;
                 var y = 0;
                 switch (this.horizontalAlignment) {
@@ -252,30 +297,49 @@ var BABYLON;
                         y = (parentHeight - height) / 2;
                         break;
                 }
-                this._currentMeasure.left = this._currentMeasure.left + x;
-                this._currentMeasure.top = this._currentMeasure.top + y;
+                if (this._unitMode === Control.UNITMODE_PIXEL) {
+                    this._currentMeasure.left += this._marginLeft;
+                    this._currentMeasure.left -= this._marginRight;
+                    this._currentMeasure.top += this._marginTop;
+                    this._currentMeasure.top -= this._marginBottom;
+                }
+                else {
+                    this._currentMeasure.left += parentWidth * this._marginLeft;
+                    this._currentMeasure.left -= parentWidth * this._marginRight;
+                    this._currentMeasure.top += parentHeight * this._marginTop;
+                    this._currentMeasure.top -= parentHeight * this._marginBottom;
+                }
+                this._currentMeasure.left += x;
+                this._currentMeasure.top += y;
+            };
+            Control.prototype._additionalProcessing = function (parentMeasure, context) {
+                // Do nothing
             };
             Control.prototype._draw = function (parentMeasure, context) {
                 // Do nothing
-            };
-            Control.prototype._rescale = function (scaleX, scaleY) {
-                this._scaleX = scaleX;
-                this._scaleY = scaleY;
-                this._prepareFont();
             };
             Control.prototype._prepareFont = function () {
                 if (!this._fontFamily) {
                     return;
                 }
-                if (this._fontSizeConstantPixel) {
-                    this._font = (this._fontSizeConstantPixel * this._scaleX) + "px " + this._fontFamily;
-                }
-                else {
-                    this._font = this._fontSize + "px " + this._fontFamily;
-                }
+                this._font = this._fontSize + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
                 this._markAsDirty();
             };
+            Object.defineProperty(Control, "UNITMODE_PERCENTAGE", {
+                get: function () {
+                    return Control._UNITMODE_PERCENTAGE;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control, "UNITMODE_PIXEL", {
+                get: function () {
+                    return Control._UNITMODE_PIXEL;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
                     return Control._HORIZONTAL_ALIGNMENT_LEFT;
@@ -358,6 +422,8 @@ var BABYLON;
         Control._VERTICAL_ALIGNMENT_TOP = 0;
         Control._VERTICAL_ALIGNMENT_BOTTOM = 1;
         Control._VERTICAL_ALIGNMENT_CENTER = 2;
+        Control._UNITMODE_PERCENTAGE = 0;
+        Control._UNITMODE_PIXEL = 1;
         Control._FontHeightSizes = {};
         GUI.Control = Control;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
