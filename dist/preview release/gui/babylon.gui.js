@@ -85,14 +85,12 @@ var BABYLON;
                 var renderHeight = textureSize.height;
                 // Clear
                 var context = this.getContext();
+                context.clearRect(0, 0, renderWidth, renderHeight);
                 if (this._background) {
                     context.save();
                     context.fillStyle = this._background;
                     context.fillRect(0, 0, renderWidth, renderHeight);
                     context.restore();
-                }
-                else {
-                    this.clear();
                 }
                 // Render
                 var measure = new GUI.Measure(0, 0, renderWidth, renderHeight);
