@@ -9,8 +9,8 @@ module BABYLON.GUI {
         private _fontFamily: string;
         private _fontSize = 18;
         private _font: string;
-        private _width = new ValueAndUnit(1);
-        private _height = new ValueAndUnit(1);
+        private _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+        private _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color: string;
@@ -24,19 +24,6 @@ module BABYLON.GUI {
         private _marginBottom = new ValueAndUnit(0);        
         
         // Properties
-        public get unitMode(): number {
-            return this._unitMode;
-        }
-
-        public set unitMode(value: number) {
-            if (this._unitMode === value) {
-                return;
-            }
-
-            this._unitMode = value;
-            this._markAsDirty();
-        } 
-
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
         }
@@ -63,36 +50,32 @@ module BABYLON.GUI {
             this._markAsDirty();
         } 
 
-        public get width(): number {
-            return this._width;
+        public get width(): string {
+            return this._width.toString();
         }
 
-        public set width(value: number) {
-            if (value < 0) {
-                value = 0;
-            }
-            if (this._width === value) {
+        public set width(value: string) {
+            if (this._width.toString() === value) {
                 return;
             }
 
-            this._width = value;
-            this._markAsDirty();
-        }
-
-        public get height(): number {
-            return this._height;
-        }
-
-        public set height(value: number) {
-            if (value < 0) {
-                value = 0;
+            if (this._width.fromString(value)) {
+                this._markAsDirty();
             }
-            if (this._height === value) {
+        }
+
+        public get height(): string {
+            return this._height.toString();
+        }
+
+        public set height(value: string) {
+            if (this._height.toString() === value) {
                 return;
             }
 
-            this._height = value;
-            this._markAsDirty();
+            if (this._height.fromString(value)) {
+                this._markAsDirty();
+            }
         }   
 
         public get fontFamily(): string {
@@ -151,56 +134,44 @@ module BABYLON.GUI {
             return this._isDirty;
         }
         
-        public get marginLeft(): number {
-            return this._marginLeft;
+        public get marginLeft(): string {
+            return this._marginLeft.toString();
         }
 
-        public set marginLeft(value: number) {
-            if (this._marginLeft === value) {
-                return;
+        public set marginLeft(value: string) {
+            if (this._marginLeft.fromString(value)) {
+                this._markAsDirty();
             }
-
-            this._marginLeft = value;
-            this._markAsDirty();
         }    
 
-        public get marginRight(): number {
-            return this._marginRight;
+        public get marginRight(): string {
+            return this._marginRight.toString();
         }
 
-        public set marginRight(value: number) {
-            if (this._marginRight === value) {
-                return;
+        public set marginRight(value: string) {
+            if (this._marginRight.fromString(value)) {
+                this._markAsDirty();
             }
-
-            this._marginRight = value;
-            this._markAsDirty();
         }
 
-        public get marginTop(): number {
-            return this._marginTop;
+        public get marginTop(): string {
+            return this._marginTop.toString();
         }
 
-        public set marginTop(value: number) {
-            if (this._marginTop === value) {
-                return;
+        public set marginTop(value: string) {
+            if (this._marginTop.fromString(value)) {
+                this._markAsDirty();
             }
-
-            this._marginTop = value;
-            this._markAsDirty();
         }
 
-        public get marginBottom(): number {
-            return this._marginBottom;
+        public get marginBottom(): string {
+            return this._marginBottom.toString();
         }
 
-        public set marginBottom(value: number) {
-            if (this._marginBottom === value) {
-                return;
+        public set marginBottom(value: string) {
+            if (this._marginBottom.fromString(value)) {
+                this._markAsDirty();
             }
-
-            this._marginBottom = value;
-            this._markAsDirty();
         }                
 
         // Functions
@@ -211,10 +182,10 @@ module BABYLON.GUI {
         protected _markAsDirty(): void {            
             this._isDirty = true;
 
-            if (!this._root) {
+            if (!this._host) {
                 return; // Not yet connected
             }
-            this._root._markAsDirty();
+            this._host.markAsDirty();
         }
 
         public _link(root: Container, host: AdvancedDynamicTexture): void {
@@ -239,29 +210,29 @@ module BABYLON.GUI {
                 this._measure(parentMeasure, context);
                 this._computeAlignment(parentMeasure, context);
                 this._additionalProcessing(parentMeasure, context);
+
+                this._isDirty = false;
+                this._cachedParentMeasure.copyFrom(parentMeasure);
             }      
                         
             // Clip
             context.beginPath();
             context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             context.clip();
-
-            this._isDirty = false;
-            this._cachedParentMeasure.copyFrom(parentMeasure);
         }
 
         protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
             // Width / Height
-            if (this._unitMode === Control.UNITMODE_PIXEL) {
-                this._currentMeasure.width = this._width;
+            if (this._width.isPixel) {
+                this._currentMeasure.width = this._width.value;
             } else {
-                this._currentMeasure.width *= this._width; 
+                this._currentMeasure.width *= this._width.value; 
             }
 
-            if (this._unitMode === Control.UNITMODE_PIXEL) {
-                this._currentMeasure.height = this._height;
+            if (this._height.isPixel) {
+                this._currentMeasure.height = this._height.value;
             } else {
-                this._currentMeasure.height *= this._height; 
+                this._currentMeasure.height *= this._height.value; 
             }
         }
 
@@ -300,17 +271,29 @@ module BABYLON.GUI {
                     break;
             }
             
-            if (this._unitMode === Control.UNITMODE_PIXEL) {
-                this._currentMeasure.left += this._marginLeft;
-                this._currentMeasure.left -= this._marginRight;
-                this._currentMeasure.top += this._marginTop;
-                this._currentMeasure.top -= this._marginBottom;
+            if (this._marginLeft.isPixel) {
+                this._currentMeasure.left += this._marginLeft.value;
             } else {
-                this._currentMeasure.left += parentWidth * this._marginLeft;
-                this._currentMeasure.left -= parentWidth * this._marginRight;
-                this._currentMeasure.top += parentHeight * this._marginTop;
-                this._currentMeasure.top -= parentHeight * this._marginBottom;
+                this._currentMeasure.left += parentWidth * this._marginLeft.value;
             }
+
+            if (this._marginRight.isPixel) {
+                this._currentMeasure.left -= this._marginRight.value;
+            } else {
+                this._currentMeasure.left -= parentWidth * this._marginRight.value;
+            }
+
+            if (this._marginTop.isPixel) {
+                this._currentMeasure.top += this._marginTop.value;
+            } else {
+                this._currentMeasure.top += parentWidth * this._marginTop.value;
+            }
+
+            if (this._marginBottom.isPixel) {
+                this._currentMeasure.top -= this._marginBottom.value;
+            } else {
+                this._currentMeasure.top -= parentWidth * this._marginBottom.value;
+            }            
 
             this._currentMeasure.left += x;
             this._currentMeasure.top += y;            
