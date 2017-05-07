@@ -14,7 +14,7 @@ module BABYLON.GUI {
             if (index !== -1) {
                 return this;
             }
-            control._setRoot(this);
+            control._link(this, this._host);
 
             this._reOrderControl(control);
 
@@ -49,24 +49,15 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            this._currentMeasure = parentMeasure.copy();
-
             context.save();
-            
+            super._processMeasures(parentMeasure, context);
+           
             this.applyStates(context);
 
             for (var child of this._children) {
                 child._draw(this._currentMeasure, context);
             }
             context.restore();
-        }
-
-        public _rescale(scaleX: number, scaleY: number) {
-            super._rescale(scaleX, scaleY);
-
-            for (var child of this._children) {
-                child._rescale(scaleX, scaleY);
-            }
         }
     }    
 }

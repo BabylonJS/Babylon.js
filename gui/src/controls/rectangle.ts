@@ -54,5 +54,14 @@ module BABYLON.GUI {
         
             context.restore();
         }
+
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
+            super._additionalProcessing(parentMeasure, context);
+
+            this._measureForChild.width -= 2 * this._thickness;
+            this._measureForChild.height -= 2 * this._thickness;
+            this._measureForChild.left += this._thickness;
+            this._measureForChild.top += this._thickness;            
+        }
     }    
 }
