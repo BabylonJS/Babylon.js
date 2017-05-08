@@ -26,6 +26,31 @@ module BABYLON.GUI {
         private _top = new ValueAndUnit(0);
         
         // Properties
+
+        /**
+        * An event triggered when the pointer move over the control.
+        * @type {BABYLON.Observable}
+        */
+        public onPointerMoveObservable = new Observable<Control>();
+
+        /**
+        * An event triggered when the pointer move out of the control.
+        * @type {BABYLON.Observable}
+        */
+        public onPointerOutObservable = new Observable<Control>();        
+
+        /**
+        * An event triggered when the pointer taps the control
+        * @type {BABYLON.Observable}
+        */
+        public onPointerDownObservable = new Observable<Control>();     
+
+        /**
+        * An event triggered when pointer up
+        * @type {BABYLON.Observable}
+        */
+        public onPointerUpObservable = new Observable<Control>();     
+
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
         }
@@ -355,6 +380,59 @@ module BABYLON.GUI {
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
+        }
+
+        protected _contains(x: number, y: number) : boolean {
+            if (x < this._currentMeasure.left) {
+                return false;
+            }
+
+            if (x > this._currentMeasure.left + this._currentMeasure.width) {
+                return false;
+            }
+
+            if (y < this._currentMeasure.top) {
+                return false;
+            }
+
+            if (y > this._currentMeasure.top + this._currentMeasure.height) {
+                return false;
+            } 
+
+            return true;
+        }
+
+        public _processPicking(x: number, y: number, type: number): boolean {
+            if (!this._contains(x, y)) {
+                return false;
+            }
+
+            return this._processObservables(type);
+        }
+
+        protected _processObservables(type: number): boolean {
+            if (type === BABYLON.PointerEventTypes.POINTERMOVE && this.onPointerMoveObservable.hasObservers()) {
+                this.onPointerMoveObservable.notifyObservers(this);
+
+                var previousControlOver = this._host._lastControlOver;
+                if (previousControlOver && previousControlOver !== this && previousControlOver.onPointerOutObservable.hasObservers()) {
+                    previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+                }
+                this._host._lastControlOver = this;
+                return true;
+            }
+
+            if (type === BABYLON.PointerEventTypes.POINTERDOWN && this.onPointerDownObservable.hasObservers()) {
+                this.onPointerDownObservable.notifyObservers(this);
+                return true;
+            }
+
+            if (type === BABYLON.PointerEventTypes.POINTERUP && this.onPointerUpObservable.hasObservers()) {
+                this.onPointerUpObservable.notifyObservers(this);
+                return true;
+            }
+        
+            return false;
         }
 
         private _prepareFont() {

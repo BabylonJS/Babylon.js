@@ -100,16 +100,18 @@ module BABYLON.GUI {
             var width = this._currentMeasure.width - offset * 2;
             var height = this._currentMeasure.height - offset * 2;
 
+            var radius = Math.min(height / 2 - 2, Math.min(width / 2 - 2, this._cornerRadius));
+
             context.beginPath();
-            context.moveTo(x + this._cornerRadius, y);
-            context.lineTo(x + width - this._cornerRadius, y);
-            context.quadraticCurveTo(x + width, y, x + width, y + this._cornerRadius);
-            context.lineTo(x + width, y + height - this._cornerRadius);
-            context.quadraticCurveTo(x + width, y + height, x + width - this._cornerRadius, y + height);
-            context.lineTo(x + this._cornerRadius, y + height);
-            context.quadraticCurveTo(x, y + height, x, y + height - this._cornerRadius);
-            context.lineTo(x, y + this._cornerRadius);
-            context.quadraticCurveTo(x, y, x + this._cornerRadius, y);
+            context.moveTo(x + radius, y);
+            context.lineTo(x + width - radius, y);
+            context.quadraticCurveTo(x + width, y, x + width, y + radius);
+            context.lineTo(x + width, y + height - radius);
+            context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            context.lineTo(x + radius, y + height);
+            context.quadraticCurveTo(x, y + height, x, y + height - radius);
+            context.lineTo(x, y + radius);
+            context.quadraticCurveTo(x, y, x + radius, y);
             context.closePath();
         } 
 
