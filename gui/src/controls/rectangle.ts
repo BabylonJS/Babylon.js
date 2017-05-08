@@ -4,6 +4,7 @@ module BABYLON.GUI {
     export class Rectangle extends Container {
         private _thickness = 1;
         private _background: string;
+        private _cornerRadius = 0;
         
         public get thickness(): number {
             return this._thickness;
@@ -17,7 +18,23 @@ module BABYLON.GUI {
             this._thickness = value;
             this._markAsDirty();
         }   
+        
+        public get cornerRadius(): number {
+            return this._cornerRadius;
+        }
 
+        public set cornerRadius(value: number) {
+            if (value < 0) {
+                value = 0;
+            }
+
+            if (this._cornerRadius === value) {
+                return;
+            }
+
+            this._cornerRadius = value;
+            this._markAsDirty();
+        }   
        
         public get background(): string {
             return this._background;
@@ -41,7 +58,13 @@ module BABYLON.GUI {
 
             if (this._background) {
                 context.fillStyle = this._background;
-                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+
+                if (this._cornerRadius) {
+                    this._drawRoundedRect(context, this._thickness / 2);
+                    context.fill();
+                } else {
+                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                }
             }
 
             if (this._thickness) {
@@ -49,7 +72,14 @@ module BABYLON.GUI {
                     context.strokeStyle = this.color;
                 }
                 context.lineWidth = this._thickness;
-                context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+
+                if (this._cornerRadius) {
+                    this._drawRoundedRect(context, this._thickness / 2);
+                    context.stroke();
+                } else {                
+                    context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, 
+                                       this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+                }
             }
         
             context.restore();
@@ -62,6 +92,32 @@ module BABYLON.GUI {
             this._measureForChildren.height -= 2 * this._thickness;
             this._measureForChildren.left += this._thickness;
             this._measureForChildren.top += this._thickness;            
+        }
+
+        private _drawRoundedRect(context: CanvasRenderingContext2D, offset: number = 0): void {
+            var x = this._currentMeasure.left + offset;
+            var y = this._currentMeasure.top + offset;
+            var width = this._currentMeasure.width - offset * 2;
+            var height = this._currentMeasure.height - offset * 2;
+
+            context.beginPath();
+            context.moveTo(x + this._cornerRadius, y);
+            context.lineTo(x + width - this._cornerRadius, y);
+            context.quadraticCurveTo(x + width, y, x + width, y + this._cornerRadius);
+            context.lineTo(x + width, y + height - this._cornerRadius);
+            context.quadraticCurveTo(x + width, y + height, x + width - this._cornerRadius, y + height);
+            context.lineTo(x + this._cornerRadius, y + height);
+            context.quadraticCurveTo(x, y + height, x, y + height - this._cornerRadius);
+            context.lineTo(x, y + this._cornerRadius);
+            context.quadraticCurveTo(x, y, x + this._cornerRadius, y);
+            context.closePath();
+        } 
+
+        protected _clipForChildren(context: CanvasRenderingContext2D) {
+            if (this._cornerRadius) {
+                this._drawRoundedRect(context, this._thickness);
+                context.clip();
+            }
         }
     }    
 }

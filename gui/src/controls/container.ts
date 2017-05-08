@@ -61,10 +61,15 @@ module BABYLON.GUI {
 
             this._localDraw(context);
 
+            this._clipForChildren(context);
             for (var child of this._children) {
                 child._draw(this._measureForChildren, context);
             }
             context.restore();
+        }
+
+        protected _clipForChildren(context: CanvasRenderingContext2D): void {
+            // DO nothing
         }
 
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
