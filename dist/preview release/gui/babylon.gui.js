@@ -112,6 +112,14 @@ var BABYLON;
                 mesh.material = material;
                 return result;
             };
+            AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
+                if (foreground === void 0) { foreground = true; }
+                var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+                // Display
+                var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
+                layer.texture = result;
+                return result;
+            };
             return AdvancedDynamicTexture;
         }(BABYLON.DynamicTexture));
         GUI.AdvancedDynamicTexture = AdvancedDynamicTexture;
@@ -279,6 +287,8 @@ var BABYLON;
                 this._marginRight = new GUI.ValueAndUnit(0);
                 this._marginTop = new GUI.ValueAndUnit(0);
                 this._marginBottom = new GUI.ValueAndUnit(0);
+                this._left = new GUI.ValueAndUnit(0);
+                this._top = new GUI.ValueAndUnit(0);
                 this.fontFamily = "Arial";
             }
             Object.defineProperty(Control.prototype, "horizontalAlignment", {
@@ -451,6 +461,30 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "left", {
+                get: function () {
+                    return this._left.toString();
+                },
+                set: function (value) {
+                    if (this._left.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "top", {
+                get: function () {
+                    return this._top.toString();
+                },
+                set: function (value) {
+                    if (this._top.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Control.prototype._markAsDirty = function () {
                 this._isDirty = true;
                 if (!this._host) {
@@ -531,27 +565,43 @@ var BABYLON;
                 }
                 if (this._marginLeft.isPixel) {
                     this._currentMeasure.left += this._marginLeft.value;
+                    this._currentMeasure.width -= this._marginRight.value;
                 }
                 else {
                     this._currentMeasure.left += parentWidth * this._marginLeft.value;
+                    this._currentMeasure.width -= parentWidth * this._marginLeft.value;
                 }
                 if (this._marginRight.isPixel) {
-                    this._currentMeasure.left -= this._marginRight.value;
+                    this._currentMeasure.width -= this._marginRight.value;
                 }
                 else {
-                    this._currentMeasure.left -= parentWidth * this._marginRight.value;
+                    this._currentMeasure.width -= parentWidth * this._marginRight.value;
                 }
                 if (this._marginTop.isPixel) {
                     this._currentMeasure.top += this._marginTop.value;
+                    this._currentMeasure.height -= this._marginTop.value;
                 }
                 else {
-                    this._currentMeasure.top += parentWidth * this._marginTop.value;
+                    this._currentMeasure.top += parentHeight * this._marginTop.value;
+                    this._currentMeasure.height -= parentHeight * this._marginTop.value;
                 }
                 if (this._marginBottom.isPixel) {
-                    this._currentMeasure.top -= this._marginBottom.value;
+                    this._currentMeasure.height -= this._marginBottom.value;
                 }
                 else {
-                    this._currentMeasure.top -= parentWidth * this._marginBottom.value;
+                    this._currentMeasure.height -= parentHeight * this._marginBottom.value;
+                }
+                if (this._left.isPixel) {
+                    this._currentMeasure.left += this._left.value;
+                }
+                else {
+                    this._currentMeasure.left += parentWidth * this._left.value;
+                }
+                if (this._top.isPixel) {
+                    this._currentMeasure.top += this._top.value;
+                }
+                else {
+                    this._currentMeasure.top += parentHeight * this._top.value;
                 }
                 this._currentMeasure.left += x;
                 this._currentMeasure.top += y;
@@ -674,75 +724,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var ContentControl = (function (_super) {
-            __extends(ContentControl, _super);
-            function ContentControl(name) {
-                var _this = _super.call(this, name) || this;
-                _this.name = name;
-                _this._measureForChild = GUI.Measure.Empty();
-                return _this;
-            }
-            Object.defineProperty(ContentControl.prototype, "child", {
-                get: function () {
-                    return this._child;
-                },
-                set: function (control) {
-                    if (this._child === control) {
-                        return;
-                    }
-                    this._child = control;
-                    control._link(this._root, this._host);
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            ContentControl.prototype._localDraw = function (context) {
-                // Implemented by child to be injected inside main draw
-            };
-            ContentControl.prototype._draw = function (parentMeasure, context) {
-                context.save();
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                this.applyStates(context);
-                this._localDraw(context);
-                if (this._child) {
-                    this._child._draw(this._measureForChild, context);
-                }
-                context.restore();
-            };
-            ContentControl.prototype._additionalProcessing = function (parentMeasure, context) {
-                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
-                this._measureForChild.copyFrom(this._currentMeasure);
-            };
-            return ContentControl;
-        }(GUI.Control));
-        GUI.ContentControl = ContentControl;
-    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=contentControl.js.map
-
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var BABYLON;
-(function (BABYLON) {
-    var GUI;
-    (function (GUI) {
         var Container = (function (_super) {
             __extends(Container, _super);
             function Container(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._children = new Array();
+                _this._measureForChildren = GUI.Measure.Empty();
                 return _this;
             }
             Container.prototype.addControl = function (control) {
@@ -774,15 +762,23 @@ var BABYLON;
                 this._children.push(control);
                 this._markAsDirty();
             };
+            Container.prototype._localDraw = function (context) {
+                // Implemented by child to be injected inside main draw
+            };
             Container.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this.applyStates(context);
+                this._localDraw(context);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    child._draw(this._currentMeasure, context);
+                    child._draw(this._measureForChildren, context);
                 }
                 context.restore();
+            };
+            Container.prototype._additionalProcessing = function (parentMeasure, context) {
+                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+                this._measureForChildren.copyFrom(this._currentMeasure);
             };
             return Container;
         }(GUI.Control));
@@ -860,13 +856,13 @@ var BABYLON;
             };
             Rectangle.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
-                this._measureForChild.width -= 2 * this._thickness;
-                this._measureForChild.height -= 2 * this._thickness;
-                this._measureForChild.left += this._thickness;
-                this._measureForChild.top += this._thickness;
+                this._measureForChildren.width -= 2 * this._thickness;
+                this._measureForChildren.height -= 2 * this._thickness;
+                this._measureForChildren.left += this._thickness;
+                this._measureForChildren.top += this._thickness;
             };
             return Rectangle;
-        }(GUI.ContentControl));
+        }(GUI.Container));
         GUI.Rectangle = Rectangle;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -955,9 +951,6 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            TextBlock.prototype._measure = function (parentMeasure, context) {
-                _super.prototype._measure;
-            };
             TextBlock.prototype._drawText = function (text, textWidth, y, context) {
                 var width = this._currentMeasure.width;
                 var x = 0;
@@ -1041,3 +1034,50 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=textBlock.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Image = (function (_super) {
+            __extends(Image, _super);
+            function Image(name, url) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._loaded = false;
+                _this._domImage = new HTMLImageElement();
+                _this._domImage.onload = function () {
+                    _this._imageWidth = _this._domImage.width;
+                    _this._imageHeight = _this._domImage.height;
+                    _this._loaded = true;
+                };
+                _this._domImage.src = url;
+                return _this;
+            }
+            Image.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                this.applyStates(context);
+                _super.prototype._processMeasures.call(this, parentMeasure, context);
+                if (this._loaded) {
+                    context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                }
+                context.restore();
+            };
+            return Image;
+        }(GUI.Control));
+        GUI.Image = Image;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=image.js.map

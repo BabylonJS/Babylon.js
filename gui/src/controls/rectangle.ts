@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
-    export class Rectangle extends ContentControl {
+    export class Rectangle extends Container {
         private _thickness = 1;
         private _background: string;
         
@@ -58,10 +58,10 @@ module BABYLON.GUI {
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
             super._additionalProcessing(parentMeasure, context);
 
-            this._measureForChild.width -= 2 * this._thickness;
-            this._measureForChild.height -= 2 * this._thickness;
-            this._measureForChild.left += this._thickness;
-            this._measureForChild.top += this._thickness;            
+            this._measureForChildren.width -= 2 * this._thickness;
+            this._measureForChildren.height -= 2 * this._thickness;
+            this._measureForChildren.left += this._thickness;
+            this._measureForChildren.top += this._thickness;            
         }
     }    
 }

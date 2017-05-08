@@ -1219,10 +1219,10 @@
                     "../../gui/src/measure.ts",
                     "../../gui/src/valueAndUnit.ts",
                     "../../gui/src/controls/control.ts",
-                    "../../gui/src/controls/contentControl.ts",
                     "../../gui/src/controls/container.ts",
                     "../../gui/src/controls/rectangle.ts",
-                    "../../gui/src/controls/textBlock.ts"
+                    "../../gui/src/controls/textBlock.ts",
+                    "../../gui/src/controls/image.ts"
                 ],
                 "output": "babylon.gui.js"
             }

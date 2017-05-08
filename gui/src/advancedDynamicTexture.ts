@@ -118,5 +118,14 @@ module BABYLON.GUI {
             return result;
         }
 
+        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Scene): AdvancedDynamicTexture {
+            var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+
+            // Display
+            var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
+            layer.texture = result;
+
+            return result;
+        }
     }    
 }
