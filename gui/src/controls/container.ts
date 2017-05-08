@@ -3,6 +3,7 @@
 module BABYLON.GUI {
     export class Container extends Control {
         private _children = new Array<Control>();
+        protected _measureForChildren = Measure.Empty();     
 
         constructor(public name: string) {
             super(name);
@@ -48,16 +49,28 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        protected _localDraw(context: CanvasRenderingContext2D): void {
+            // Implemented by child to be injected inside main draw
+        }
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
             super._processMeasures(parentMeasure, context);
            
             this.applyStates(context);
 
+            this._localDraw(context);
+
             for (var child of this._children) {
-                child._draw(this._currentMeasure, context);
+                child._draw(this._measureForChildren, context);
             }
             context.restore();
+        }
+
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
+            super._additionalProcessing(parentMeasure, context);
+
+            this._measureForChildren.copyFrom(this._currentMeasure);
         }
     }    
 }

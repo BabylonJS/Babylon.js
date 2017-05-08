@@ -22,6 +22,8 @@ module BABYLON.GUI {
         private _marginRight = new ValueAndUnit(0);
         private _marginTop = new ValueAndUnit(0);
         private _marginBottom = new ValueAndUnit(0);        
+        private _left = new ValueAndUnit(0);
+        private _top = new ValueAndUnit(0);
         
         // Properties
         public get horizontalAlignment(): number {
@@ -172,7 +174,27 @@ module BABYLON.GUI {
             if (this._marginBottom.fromString(value)) {
                 this._markAsDirty();
             }
-        }                
+        }     
+
+        public get left(): string {
+            return this._left.toString();
+        }
+
+        public set left(value: string) {
+            if (this._left.fromString(value)) {
+                this._markAsDirty();
+            }
+        }  
+
+        public get top(): string {
+            return this._top.toString();
+        }
+
+        public set top(value: string) {
+            if (this._top.fromString(value)) {
+                this._markAsDirty();
+            }
+        }                   
 
         // Functions
         constructor(public name: string) {
@@ -273,27 +295,43 @@ module BABYLON.GUI {
             
             if (this._marginLeft.isPixel) {
                 this._currentMeasure.left += this._marginLeft.value;
+                this._currentMeasure.width -= this._marginRight.value;
             } else {
                 this._currentMeasure.left += parentWidth * this._marginLeft.value;
+                this._currentMeasure.width -= parentWidth * this._marginLeft.value;
             }
 
             if (this._marginRight.isPixel) {
-                this._currentMeasure.left -= this._marginRight.value;
+                this._currentMeasure.width -= this._marginRight.value;
             } else {
-                this._currentMeasure.left -= parentWidth * this._marginRight.value;
+                this._currentMeasure.width -= parentWidth * this._marginRight.value;
             }
 
             if (this._marginTop.isPixel) {
                 this._currentMeasure.top += this._marginTop.value;
+                this._currentMeasure.height -= this._marginTop.value;
             } else {
-                this._currentMeasure.top += parentWidth * this._marginTop.value;
+                this._currentMeasure.top += parentHeight * this._marginTop.value;
+                this._currentMeasure.height -= parentHeight * this._marginTop.value;
             }
 
             if (this._marginBottom.isPixel) {
-                this._currentMeasure.top -= this._marginBottom.value;
+                this._currentMeasure.height -= this._marginBottom.value;
             } else {
-                this._currentMeasure.top -= parentWidth * this._marginBottom.value;
+                this._currentMeasure.height -= parentHeight * this._marginBottom.value;
             }            
+
+            if (this._left.isPixel) {
+                this._currentMeasure.left += this._left.value;
+            } else {
+                this._currentMeasure.left += parentWidth * this._left.value;
+            }
+
+            if (this._top.isPixel) {
+                this._currentMeasure.top += this._top.value;
+            } else {
+                this._currentMeasure.top += parentHeight * this._top.value;
+            }
 
             this._currentMeasure.left += x;
             this._currentMeasure.top += y;            
