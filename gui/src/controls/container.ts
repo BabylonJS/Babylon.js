@@ -68,6 +68,22 @@ module BABYLON.GUI {
             context.restore();
         }
 
+        public _processPicking(x: number, y: number, type: number): boolean {
+            if (!super._contains(x, y)) {
+                return false;
+            }
+
+            // Checking backwards to pick closest first
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child._processPicking(x, y, type)) {
+                    return true;
+                }
+            }
+
+            return this._processObservables(type);
+        }
+
         protected _clipForChildren(context: CanvasRenderingContext2D): void {
             // DO nothing
         }

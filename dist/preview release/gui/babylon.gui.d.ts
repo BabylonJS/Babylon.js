@@ -103,6 +103,7 @@ declare module BABYLON.GUI {
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected applyStates(context: CanvasRenderingContext2D): void;
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _clip(context: CanvasRenderingContext2D): void;
         protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -141,6 +142,7 @@ declare module BABYLON.GUI {
         _reOrderControl(control: Control): void;
         protected _localDraw(context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }
@@ -151,11 +153,15 @@ declare module BABYLON.GUI {
         name: string;
         private _thickness;
         private _background;
+        private _cornerRadius;
         thickness: number;
+        cornerRadius: number;
         background: string;
         constructor(name: string);
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        private _drawRoundedRect(context, offset?);
+        protected _clipForChildren(context: CanvasRenderingContext2D): void;
     }
 }
 

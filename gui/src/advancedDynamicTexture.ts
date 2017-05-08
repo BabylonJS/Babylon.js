@@ -5,8 +5,10 @@ module BABYLON.GUI {
         private _isDirty = false;
         private _renderObserver: Observer<Scene>;
         private _resizeObserver: Observer<Engine>;
+        private _pointerMoveObserver: Observer<PointerInfo>;
         private _background: string;
         private _rootContainer = new Container("root");
+        public _lastControlOver: Control;
 
         public get background(): string {
             return this._background;
@@ -58,6 +60,10 @@ module BABYLON.GUI {
                 this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
             }
 
+            if (this._pointerMoveObserver) {
+                this.getScene().onPointerObservable.remove(this._pointerMoveObserver);
+            }
+
             super.dispose();
         }
 
@@ -104,6 +110,32 @@ module BABYLON.GUI {
             this._rootContainer._draw(measure, context);
         }
 
+        private _doPicking(x: number, y: number, type: number): void {
+            if (!this._rootContainer._processPicking(x, y, type)) {
+
+                if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
+                        this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                    }
+                    
+                    this._lastControlOver = null;
+                }
+            }
+        }
+
+        public attach(): void {
+            var scene = this.getScene();
+            this._pointerMoveObserver = scene.onPointerObservable.add((pi, state) => {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    return;
+                }
+
+                this._doPicking(scene.pointerX, scene.pointerY, pi.type);
+            });
+        }
+
         // Statics
         public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
@@ -124,6 +156,9 @@ module BABYLON.GUI {
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
             layer.texture = result;
+
+            // Attach
+            result.attach();
 
             return result;
         }

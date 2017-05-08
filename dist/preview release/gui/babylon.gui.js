@@ -509,14 +509,23 @@ var BABYLON;
                     this._currentMeasure.copyFrom(parentMeasure);
                     this._measure(parentMeasure, context);
                     this._computeAlignment(parentMeasure, context);
+                    // Convert to int values
+                    this._currentMeasure.left = this._currentMeasure.left | 0;
+                    this._currentMeasure.top = this._currentMeasure.top | 0;
+                    this._currentMeasure.width = this._currentMeasure.width | 0;
+                    this._currentMeasure.height = this._currentMeasure.height | 0;
+                    // Let children add more features
                     this._additionalProcessing(parentMeasure, context);
                     this._isDirty = false;
                     this._cachedParentMeasure.copyFrom(parentMeasure);
                 }
                 // Clip
+                this._clip(context);
+                context.clip();
+            };
+            Control.prototype._clip = function (context) {
                 context.beginPath();
                 context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                context.clip();
             };
             Control.prototype._measure = function (parentMeasure, context) {
                 // Width / Height
@@ -770,11 +779,15 @@ var BABYLON;
                 _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this.applyStates(context);
                 this._localDraw(context);
+                this._clipForChildren(context);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     child._draw(this._measureForChildren, context);
                 }
                 context.restore();
+            };
+            Container.prototype._clipForChildren = function (context) {
+                // DO nothing
             };
             Container.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
@@ -809,6 +822,7 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._thickness = 1;
+                _this._cornerRadius = 0;
                 return _this;
             }
             Object.defineProperty(Rectangle.prototype, "thickness", {
@@ -820,6 +834,23 @@ var BABYLON;
                         return;
                     }
                     this._thickness = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Rectangle.prototype, "cornerRadius", {
+                get: function () {
+                    return this._cornerRadius;
+                },
+                set: function (value) {
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    if (this._cornerRadius === value) {
+                        return;
+                    }
+                    this._cornerRadius = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -843,14 +874,26 @@ var BABYLON;
                 context.save();
                 if (this._background) {
                     context.fillStyle = this._background;
-                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    if (this._cornerRadius) {
+                        this._drawRoundedRect(context, this._thickness / 2);
+                        context.fill();
+                    }
+                    else {
+                        context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    }
                 }
                 if (this._thickness) {
                     if (this.color) {
                         context.strokeStyle = this.color;
                     }
                     context.lineWidth = this._thickness;
-                    context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    if (this._cornerRadius) {
+                        this._drawRoundedRect(context, this._thickness / 2);
+                        context.stroke();
+                    }
+                    else {
+                        context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+                    }
                 }
                 context.restore();
             };
@@ -860,6 +903,30 @@ var BABYLON;
                 this._measureForChildren.height -= 2 * this._thickness;
                 this._measureForChildren.left += this._thickness;
                 this._measureForChildren.top += this._thickness;
+            };
+            Rectangle.prototype._drawRoundedRect = function (context, offset) {
+                if (offset === void 0) { offset = 0; }
+                var x = this._currentMeasure.left + offset;
+                var y = this._currentMeasure.top + offset;
+                var width = this._currentMeasure.width - offset * 2;
+                var height = this._currentMeasure.height - offset * 2;
+                context.beginPath();
+                context.moveTo(x + this._cornerRadius, y);
+                context.lineTo(x + width - this._cornerRadius, y);
+                context.quadraticCurveTo(x + width, y, x + width, y + this._cornerRadius);
+                context.lineTo(x + width, y + height - this._cornerRadius);
+                context.quadraticCurveTo(x + width, y + height, x + width - this._cornerRadius, y + height);
+                context.lineTo(x + this._cornerRadius, y + height);
+                context.quadraticCurveTo(x, y + height, x, y + height - this._cornerRadius);
+                context.lineTo(x, y + this._cornerRadius);
+                context.quadraticCurveTo(x, y, x + this._cornerRadius, y);
+                context.closePath();
+            };
+            Rectangle.prototype._clipForChildren = function (context) {
+                if (this._cornerRadius) {
+                    this._drawRoundedRect(context, this._thickness);
+                    context.clip();
+                }
             };
             return Rectangle;
         }(GUI.Container));
