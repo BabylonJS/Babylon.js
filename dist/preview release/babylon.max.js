@@ -55463,7 +55463,7 @@ var BABYLON;
             this._fixedTimeStep = timeStep;
         };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -56827,6 +56827,7 @@ var BABYLON;
             };
             SkeletonViewer.prototype._getLinesForBonesWithLength = function (bones, meshMat) {
                 var len = bones.length;
+                var meshPos = this.mesh.position;
                 for (var i = 0; i < len; i++) {
                     var bone = bones[i];
                     var points = this._debugLines[i];
@@ -56836,11 +56837,14 @@ var BABYLON;
                     }
                     this._getBonePosition(points[0], bone, meshMat);
                     this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                 }
             };
             SkeletonViewer.prototype._getLinesForBonesNoLength = function (bones, meshMat) {
                 var len = bones.length;
                 var boneNum = 0;
+                var meshPos = this.mesh.position;
                 for (var i = len - 1; i >= 0; i--) {
                     var childBone = bones[i];
                     var parentBone = childBone.getParent();
@@ -56854,6 +56858,8 @@ var BABYLON;
                     }
                     childBone.getAbsolutePositionToRef(this.mesh, points[0]);
                     parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                     boneNum++;
                 }
             };
@@ -56874,6 +56880,7 @@ var BABYLON;
                 else {
                     BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
+                this._debugMesh.position.copyFrom(this.mesh.position);
                 this._debugMesh.color = this.color;
             };
             SkeletonViewer.prototype.dispose = function () {

@@ -1046,6 +1046,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -1056,26 +1057,82 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._loaded = false;
-                _this._domImage = new HTMLImageElement();
+                _this._stretch = Image.STRETCH_FILL;
+                _this._domImage = new DOMImage();
                 _this._domImage.onload = function () {
                     _this._imageWidth = _this._domImage.width;
                     _this._imageHeight = _this._domImage.height;
                     _this._loaded = true;
+                    _this._markAsDirty();
                 };
                 _this._domImage.src = url;
                 return _this;
             }
+            Object.defineProperty(Image.prototype, "stretch", {
+                get: function () {
+                    return this._stretch;
+                },
+                set: function (value) {
+                    if (this._stretch === value) {
+                        return;
+                    }
+                    this._stretch = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this.applyStates(context);
                 _super.prototype._processMeasures.call(this, parentMeasure, context);
                 if (this._loaded) {
-                    context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    switch (this._stretch) {
+                        case Image.STRETCH_NONE:
+                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                            break;
+                        case Image.STRETCH_FILL:
+                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                            break;
+                        case Image.STRETCH_UNIFORM:
+                            var hRatio = this._currentMeasure.width / this._imageWidth;
+                            var vRatio = this._currentMeasure.height / this._imageHeight;
+                            var ratio = Math.min(hRatio, vRatio);
+                            var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
+                            var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
+                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                            break;
+                    }
                 }
                 context.restore();
             };
+            Object.defineProperty(Image, "STRETCH_NONE", {
+                get: function () {
+                    return Image._STRETCH_NONE;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image, "STRETCH_FILL", {
+                get: function () {
+                    return Image._STRETCH_FILL;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image, "STRETCH_UNIFORM", {
+                get: function () {
+                    return Image._STRETCH_UNIFORM;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Image;
         }(GUI.Control));
+        // Static
+        Image._STRETCH_NONE = 0;
+        Image._STRETCH_FILL = 1;
+        Image._STRETCH_UNIFORM = 2;
         GUI.Image = Image;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));

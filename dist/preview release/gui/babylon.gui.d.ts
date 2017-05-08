@@ -183,6 +183,7 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Image extends Control {
         name: string;
@@ -190,7 +191,15 @@ declare module BABYLON.GUI {
         private _imageWidth;
         private _imageHeight;
         private _loaded;
+        private _stretch;
+        stretch: number;
         constructor(name: string, url: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        private static _STRETCH_NONE;
+        private static _STRETCH_FILL;
+        private static _STRETCH_UNIFORM;
+        static readonly STRETCH_NONE: number;
+        static readonly STRETCH_FILL: number;
+        static readonly STRETCH_UNIFORM: number;
     }
 }
