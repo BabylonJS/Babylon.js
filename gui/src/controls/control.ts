@@ -246,9 +246,13 @@ module BABYLON.GUI {
             }      
                         
             // Clip
+            this._clip(context);
+            context.clip();
+        }
+
+        protected _clip( context: CanvasRenderingContext2D) {
             context.beginPath();
             context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-            context.clip();
         }
 
         protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
