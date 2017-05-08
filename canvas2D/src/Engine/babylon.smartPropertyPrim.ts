@@ -675,6 +675,7 @@
             } 
         }
 
+        @logProp()
         protected _triggerPropertyChanged(propInfo: Prim2DPropInfo, newValue: any) {
             if (this.isDisposed) {
                 return;
@@ -993,6 +994,7 @@
         constructor() {
             super();
             this._flags = 0;
+            this._uid = null;
             this._modelKey = null;
             this._levelBoundingInfo = new BoundingInfo2D();
             this._boundingInfo = new BoundingInfo2D();
@@ -1020,6 +1022,16 @@
          * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
          */
         public animations: Animation[];
+
+        /**
+         * return a unique identifier for the Canvas2D
+         */
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
 
         /**
          * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
@@ -1062,7 +1074,10 @@
                         if (v.typeLevelCompare) {
                             value = Tools.getClassName(propVal);
                         } else {
-                            if (propVal instanceof BaseTexture) {
+                            // String Dictionaries' content are too complex, with use a Random GUID to make the model unique
+                            if (propVal instanceof StringDictionary) {
+                                value = Tools.RandomId();
+                            } else if (propVal instanceof BaseTexture) {
                                 value = propVal.uid;
                             } else {
                                 value = propVal.toString();
@@ -1085,20 +1100,22 @@
          * @returns true is dirty, false otherwise
          */
         public get isDirty(): boolean {
-            return (this._instanceDirtyFlags !== 0) || this._areSomeFlagsSet(SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagLayoutDirty);
+            return (this._instanceDirtyFlags !== 0) || this._areSomeFlagsSet(SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagModelUpdate | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagLayoutDirty);
         }
 
         protected _boundingBoxDirty() {
-            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty|SmartPropertyPrim.flagLayoutBoundingInfoDirty);
 
             // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
             if (this instanceof Prim2DBase) {
                 let curprim: Prim2DBase = (<any>this);
                 while (curprim) {
-                    curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                    curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty|SmartPropertyPrim.flagLayoutBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
-                        curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        if (curprim._isFlagSet(SmartPropertyPrim.flagUsePositioning)) {
+                            curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
+                        }
                     }
 
                     if (curprim instanceof Group2D) {
@@ -1137,6 +1154,11 @@
                 if (p != null && p.layoutEngine && (p.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
                     p._setLayoutDirty();
                 }
+
+                let that = this as Prim2DBase;
+                if (that.layoutEngine && (that.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
+                    (<any>this)._setLayoutDirty();
+                }
             }
 
             // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change
@@ -1151,6 +1173,7 @@
             // Set the dirty flags
             if (!instanceDirty && (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL)) {
                 if (!this.isDirty) {
+                    this.onPrimBecomesDirty();
                     this._setFlags(SmartPropertyPrim.flagModelDirty);
                 }
             } else if (instanceDirty || (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
@@ -1176,10 +1199,15 @@
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
          */
+        @logProp()
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
-                this.updateLevelBoundingInfo();
-                this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+                if (this.updateLevelBoundingInfo()) {
+                    this._boundingInfo.dirtyWorldAABB();
+                    this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+                } else {
+                    this._levelBoundingInfo.clear();
+                }
             }
             return this._levelBoundingInfo;
         }
@@ -1187,8 +1215,8 @@
         /**
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
-        protected updateLevelBoundingInfo() {
-
+        protected updateLevelBoundingInfo(): boolean {
+            return false;
         }
 
         /**
@@ -1257,6 +1285,39 @@
             }
         }
 
+        public _getFlagsDebug(flags: number): string {
+            let res = "";
+            if (flags & SmartPropertyPrim.flagNoPartOfLayout)          res += "NoPartOfLayout, ";
+            if (flags & SmartPropertyPrim.flagLevelBoundingInfoDirty)  res += "LevelBoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagModelDirty)              res += "ModelDirty, ";
+            if (flags & SmartPropertyPrim.flagLayoutDirty)             res += "LayoutDirty, ";
+            if (flags & SmartPropertyPrim.flagLevelVisible)            res += "LevelVisible, ";
+            if (flags & SmartPropertyPrim.flagBoundingInfoDirty)       res += "BoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagIsPickable)              res += "IsPickable, ";
+            if (flags & SmartPropertyPrim.flagIsVisible)               res += "IsVisible, ";
+            if (flags & SmartPropertyPrim.flagVisibilityChanged)       res += "VisibilityChanged, ";
+            if (flags & SmartPropertyPrim.flagPositioningDirty)        res += "PositioningDirty, ";
+            if (flags & SmartPropertyPrim.flagTrackedGroup)            res += "TrackedGroup, ";
+            if (flags & SmartPropertyPrim.flagWorldCacheChanged)       res += "WorldCacheChanged, ";
+            if (flags & SmartPropertyPrim.flagChildrenFlatZOrder)      res += "ChildrenFlatZOrder, ";
+            if (flags & SmartPropertyPrim.flagZOrderDirty)             res += "ZOrderDirty, ";
+            if (flags & SmartPropertyPrim.flagActualOpacityDirty)      res += "ActualOpacityDirty, ";
+            if (flags & SmartPropertyPrim.flagPrimInDirtyList)         res += "PrimInDirtyList, ";
+            if (flags & SmartPropertyPrim.flagIsContainer)             res += "IsContainer, ";
+            if (flags & SmartPropertyPrim.flagNeedRefresh)             res += "NeedRefresh, ";
+            if (flags & SmartPropertyPrim.flagActualScaleDirty)        res += "ActualScaleDirty, ";
+            if (flags & SmartPropertyPrim.flagDontInheritParentScale)  res += "DontInheritParentScale, ";
+            if (flags & SmartPropertyPrim.flagGlobalTransformDirty)    res += "GlobalTransformDirty, ";
+            if (flags & SmartPropertyPrim.flagLayoutBoundingInfoDirty) res += "LayoutBoundingInfoDirty, ";
+            if (flags & SmartPropertyPrim.flagCollisionActor)          res += "CollisionActor, ";
+            if (flags & SmartPropertyPrim.flagModelUpdate)             res += "ModelUpdate, ";
+            if (flags & SmartPropertyPrim.flagLocalTransformDirty)     res += "LocalTransformDirty, ";
+            if (flags & SmartPropertyPrim.flagUsePositioning)          res += "UsePositioning, ";
+            if (flags & SmartPropertyPrim.flagComputingPositioning)    res += "ComputingPositioning, ";
+
+            return res.slice(0, res.length - 2);
+        }
+
         public static flagNoPartOfLayout          = 0x0000001;    // set if the primitive's position/size must not be computed by Layout Engine
         public static flagLevelBoundingInfoDirty  = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
         public static flagModelDirty              = 0x0000004;    // set if the model must be changed
@@ -1279,7 +1340,14 @@
         public static flagDontInheritParentScale  = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
         public static flagGlobalTransformDirty    = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
         public static flagLayoutBoundingInfoDirty = 0x0200000;    // set if the layout bounding info is dirty
+        public static flagCollisionActor          = 0x0400000;    // set if the primitive is part of the collision engine
+        public static flagModelUpdate             = 0x0800000;    // set if the primitive's model data is to update
+        public static flagLocalTransformDirty     = 0x1000000;    // set if the local transformation matrix must be recomputed
+        public static flagUsePositioning          = 0x2000000;    // set if the primitive rely on the positioning engine (padding or margin is used)
+        public static flagComputingPositioning    = 0x4000000;    // set if the positioning engine is computing the primitive, used to avoid re entrance
+        public static flagAlignPrimitive          = 0x8000000;    // set if the primitive should be pixel aligned to the render target
 
+        private   _uid                : string;
         private   _flags              : number;
         private   _modelKey           : string;
         protected _levelBoundingInfo  : BoundingInfo2D;

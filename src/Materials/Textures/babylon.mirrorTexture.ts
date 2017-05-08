@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.renderTargetTexture.ts" />
+
+module BABYLON {
     export class MirrorTexture extends RenderTargetTexture {
         public mirrorPlane = new Plane(0, 1, 0, 1);
 

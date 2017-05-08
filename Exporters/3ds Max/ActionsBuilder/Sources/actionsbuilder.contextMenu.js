@@ -113,7 +113,7 @@ var ActionsBuilder;
             element.addEventListener("contextmenu", onRightClick);
         };
         return ContextMenu;
-    })();
+    }());
     ActionsBuilder.ContextMenu = ContextMenu;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.contextMenu.js.map

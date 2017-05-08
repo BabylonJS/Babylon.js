@@ -1,17 +1,20 @@
 ﻿module BABYLON {
 
-    export interface IShadowLight {
+    export interface IShadowLight extends Light {
         id: string;
         position: Vector3;
         transformedPosition: Vector3;
         name: string;
+        shadowMinZ: number;
+        shadowMaxZ: number;
 
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
+        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        getDepthScale(): number;
 
-        supportsVSM(): boolean;
         needRefreshPerFrame(): boolean;
         needCube(): boolean;
 
@@ -67,17 +70,61 @@
         @serialize()
         public range = Number.MAX_VALUE;
 
-        @serialize()
-        public includeOnlyWithLayerMask = 0;
+        private _includedOnlyMeshes: AbstractMesh[];
+        public get includedOnlyMeshes(): AbstractMesh[] {
+            return this._includedOnlyMeshes;
+        }
 
-        public includedOnlyMeshes = new Array<AbstractMesh>();
-        public excludedMeshes = new Array<AbstractMesh>();
+        public set includedOnlyMeshes(value: AbstractMesh[]) {
+            this._includedOnlyMeshes = value;
+            this._hookArrayForIncludedOnly(value);
+        }
 
-        @serialize()
-        public excludeWithLayerMask = 0;
+        private _excludedMeshes: AbstractMesh[];
+        public get excludedMeshes(): AbstractMesh[] {
+            return this._excludedMeshes;
+        }
+        public set excludedMeshes(value: AbstractMesh[]) {
+            this._excludedMeshes = value;
+            this._hookArrayForExcluded(value);
+        }        
 
-        @serialize()
-        public lightmapMode = 0;
+        @serialize("excludeWithLayerMask")
+        private _excludeWithLayerMask = 0;
+        public get excludeWithLayerMask(): number {
+            return this._excludeWithLayerMask;
+        }
+
+        public set excludeWithLayerMask(value: number) {
+            this._excludeWithLayerMask = value;
+            this._resyncMeshes();
+        }        
+
+        @serialize("includeOnlyWithLayerMask")
+        private _includeOnlyWithLayerMask = 0;
+        public get includeOnlyWithLayerMask(): number {
+            return this._includeOnlyWithLayerMask;
+        }
+
+        public set includeOnlyWithLayerMask(value: number) {
+            this._includeOnlyWithLayerMask = value;
+            this._resyncMeshes();
+        }          
+
+        @serialize("lightmapMode")
+        private _lightmapMode = 0;
+        public get lightmapMode(): number {
+            return this._lightmapMode;
+        }
+
+        public set lightmapMode(value: number) {
+            if (this._lightmapMode === value) {
+                return;
+            }
+            
+            this._lightmapMode = value;
+            this._markMeshesAsLightDirty();
+        }    
 
         // PBR Properties.
         @serialize()
@@ -88,12 +135,32 @@
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
+        // Light uniform buffer
+        public _uniformBuffer: UniformBuffer;
+
+        /**
+         * Creates a Light object in the scene.  
+         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+            this.getScene().addLight(this);
+            this._uniformBuffer = new UniformBuffer(this.getScene().getEngine());
+            this._buildUniformLayout();
 
-            scene.addLight(this);
+            this.includedOnlyMeshes = new Array<AbstractMesh>();
+            this.excludedMeshes = new Array<AbstractMesh>();
+
+            this._resyncMeshes();
         }
 
+        protected _buildUniformLayout(): void {
+            // Overridden
+        }
+
+        /**
+         * Returns the string "Light".  
+         */
         public getClassName(): string {
             return "Light";
         }        
@@ -113,22 +180,43 @@
             }
             return ret;
         } 
-        
+
+
+        /**
+         * Set the enabled state of this node.
+         * @param {boolean} value - the new enabled state
+         * @see isEnabled
+         */
+        public setEnabled(value: boolean): void {
+            super.setEnabled(value);
+
+            this._resyncMeshes();
+        }
+
+        /**
+         * Returns the Light associated shadow generator.  
+         */
         public getShadowGenerator(): IShadowGenerator {
             return this._shadowGenerator;
         }
 
+        /**
+         * Returns a Vector3, the absolute light position in the World.  
+         */
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
 
-        public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
+        public transferToEffect(effect: Effect, lightIndex: string): void {
         }
 
         public _getWorldMatrix(): Matrix {
             return Matrix.Identity();
         }
 
+        /**
+         * Boolean : True if the light will affect the passed mesh.  
+         */
         public canAffectMesh(mesh: AbstractMesh): boolean {
             if (!mesh) {
                 return true;
@@ -153,6 +241,9 @@
             return true;
         }
 
+        /**
+         * Returns the light World matrix.  
+         */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
 
@@ -173,6 +264,9 @@
             return worldMatrix;
         }
 
+        /**
+         * Disposes the light.  
+         */
         public dispose(): void {
             if (this._shadowGenerator) {
                 this._shadowGenerator.dispose();
@@ -182,20 +276,35 @@
             // Animations
             this.getScene().stopAnimation(this);
 
+            // Remove from meshes
+            for (var mesh of this.getScene().meshes) {
+                mesh._removeLightSource(this);
+            }
+
+            this._uniformBuffer.dispose();
+
             // Remove from scene
             this.getScene().removeLight(this);
-
             super.dispose();
         }
 
+        /**
+         * Returns the light type ID (integer).  
+         */
         public getTypeID(): number {
             return 0;
         }
 
+        /**
+         * Returns a new Light object, named "name", from the current one.  
+         */
         public clone(name: string): Light {
             return SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
         }
-
+        /**
+         * Serializes the current light into a Serialization object.  
+         * Returns the serialized object.  
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
 
@@ -229,6 +338,10 @@
             return serializationObject;
         }
 
+        /**
+         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.  
+         * This new light is named "name" and added to the passed scene.  
+         */
         static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light {
             switch (type) {
                 case 0:
@@ -242,6 +355,9 @@
             }
         }
 
+        /**
+         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.  
+         */
         public static Parse(parsedLight: any, scene: Scene): Light {            
             var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
 
@@ -274,6 +390,64 @@
             }
 
             return light;
+        }
+
+        private _hookArrayForExcluded(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+
+                for (var item of items) {
+                    item._resyncLighSource(this);
+                }
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                for (var item of deleted) {
+                    item._resyncLighSource(this);
+                }
+
+                return deleted;
+            }
+        }
+
+        private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+
+                this._resyncMeshes();
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this._resyncMeshes();
+
+                return deleted;
+            }
+        }
+
+        private _resyncMeshes() {
+            for (var mesh of this.getScene().meshes) {
+                mesh._resyncLighSource(this);
+            }
+        }
+
+        public _markMeshesAsLightDirty() {
+            for (var mesh of this.getScene().meshes) {
+                if (mesh._lightSources.indexOf(this) !== -1) {
+                    mesh._markSubMeshesAsLightDirty();
+                }
+            }
         }
     }
 }

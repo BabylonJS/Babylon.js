@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>BabylonJS - Sandbox</title>
+    <link href="index.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+
+    <script src="https://preview.babylonjs.com/cannon.js"></script>
+    <script src="https://preview.babylonjs.com/Oimo.js"></script>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/canvas2D/babylon.canvas2d.js"></script>
+    <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+    <script src="https://preview.babylonjs.com/loaders/babylon.glTFFileLoader.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylon.objFileLoader.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylon.stlFileLoader.js"></script>
+
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <div id="logo">
+    </div>
+    <div id="help01" class="help">
+        <span class="helpText">Press this button to open your assets' files</span>
+        <img id="helpArrow" src="./Assets/FlecheTuto.png" />
+    </div>
+    <div id="help02" class="help2">
+        <span class="helpText">Or directly drag'n'drop your files in the browser</span>
+    </div>
+    <div class="footer">
+        <div class="footerLeft">
+            Powered by <a href="http://www.babylonjs.com/" target="_blank">Babylon.js</a><br />
+        </div>
+        <div class="footerRight">
+            <ul>
+                <li id="btnFullscreen">
+                    <img src="./Assets/BtnFullscreen.png" alt="Switch the scene to full screen" title="Switch the scene to full screen" />
+                </li>
+                <li id="btnPerf">
+                    <img src="./Assets/BtnPerf.png" alt="Display debug & performance layer" title="Display debug & performance layer" />
+                </li>
+                <li id="btnFiles">
+                    <div class="custom-upload" title="Open your .babylon scene from your hard drive">
+                        <input type="file" id="files" multiple />
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="loadingText" class="loadingText"></div>
+    <script src="index.js"></script>
+</body>
+</html>

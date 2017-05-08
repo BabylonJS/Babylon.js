@@ -29,7 +29,7 @@
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -43,7 +43,7 @@
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
             var impulse = new CANNON.Vec3(force.x, force.y, force.z);
 
-            impostor.physicsBody.applyImpulse(impulse, worldPoint);
+            impostor.physicsBody.applyForce(impulse, worldPoint);
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
@@ -153,21 +153,6 @@
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
-            //Not needed, Cannon has a collideConnected flag
-            /*if (!jointData.collision) {
-                //add 1st body to a collision group of its own, if it is not in 1
-                if (mainBody.collisionFilterGroup === 1) {
-                    mainBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                if (connectedBody.collisionFilterGroup === 1) {
-                    connectedBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                //add their mask to the collisionFilterMask of each other:
-                connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
-                mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                 case PhysicsJoint.Hinge2Joint:
@@ -242,7 +227,7 @@
             var returnValue;
             var extendSize = impostor.getObjectExtendSize();
             switch (impostor.type) {
-                case PhysicsEngine.SphereImpostor:
+                case PhysicsImpostor.SphereImpostor:
                     var radiusX = extendSize.x;
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
@@ -353,7 +338,6 @@
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var center = impostor.getObjectCenter();
-            var extendSize = impostor.getObjectExtendSize();
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
@@ -367,7 +351,7 @@
             }
 
             //If it is a heightfield, if should be centered.
-            if (impostor.type === PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === PhysicsImpostor.HeightmapImpostor) {
                 var mesh = <AbstractMesh>(<any>object);
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
@@ -397,7 +381,7 @@
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
-            } else if (impostor.type === PhysicsEngine.MeshImpostor) {
+            } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 this._tmpPosition.copyFrom(object.position);
             }
@@ -477,15 +461,6 @@
                 if (maxForce) {
                     this.setLimit(joint, maxForce);
                 }
-                //a hack for force application
-                /*var torque = new CANNON.Vec3();
-                var axis = joint.physicsJoint.axisB;
-                var body = joint.physicsJoint.bodyB;
-                var bodyTorque = body.torque;
-
-                axis.scale(force, torque);
-                body.vectorToWorldFrame(torque, torque);
-                bodyTorque.vadd(torque, bodyTorque);*/
             }
         }
 

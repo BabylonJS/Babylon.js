@@ -1,4 +1,131 @@
 declare module BABYLON {
+    /**
+       * A class storing a Matrix2D for 2D transformations
+       * The stored matrix is a 3*3 Matrix2D
+       * I   [0,1]   [mX, mY]   R   [ CosZ, SinZ]  T    [ 0,  0]  S   [Sx,  0]
+       * D = [2,3] = [nX, nY]   O = [-SinZ, CosZ]  R =  [ 0,  0]  C = [ 0, Sy]
+       * X   [4,5]   [tX, tY]   T   [  0  ,  0  ]  N    [Tx, Ty]  L   [ 0,  0]
+       *
+       * IDX = index, zero based. ROT = Z axis Rotation. TRN = Translation. SCL = Scale.
+       */
+    class Matrix2D {
+        static Zero(): Matrix2D;
+        static FromValuesToRef(m0: number, m1: number, m2: number, m3: number, m4: number, m5: number, result: Matrix2D): void;
+        static FromMatrix(source: Matrix): Matrix2D;
+        static FromMatrixToRef(source: Matrix, result: Matrix2D): void;
+        static Rotation(angle: number): Matrix2D;
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        static Translation(x: number, y: number): Matrix2D;
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        static Scaling(x: number, y: number): Matrix2D;
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        m: Float32Array;
+        static Identity(): Matrix2D;
+        static IdentityToRef(res: Matrix2D): void;
+        static FromQuaternion(quaternion: Quaternion): Matrix2D;
+        static FromQuaternionToRef(quaternion: Quaternion, result: Matrix2D): void;
+        static Compose(scale: Vector2, rotation: number, translation: Vector2): Matrix2D;
+        static Invert(source: Matrix2D): Matrix2D;
+        clone(): Matrix2D;
+        copyFrom(other: Matrix2D): void;
+        getTranslation(): Vector2;
+        setTranslation(translation: Vector2): void;
+        determinant(): number;
+        invertToThis(): void;
+        invert(): Matrix2D;
+        invertToRef(res: Matrix2D): void;
+        multiplyToThis(other: Matrix2D): void;
+        multiply(other: Matrix2D): Matrix2D;
+        multiplyToRef(other: Matrix2D, result: Matrix2D): void;
+        transformFloats(x: number, y: number): Vector2;
+        transformFloatsToRef(x: number, y: number, r: Vector2): void;
+        transformPoint(p: Vector2): Vector2;
+        transformPointToRef(p: Vector2, r: Vector2): void;
+        private static _decomp;
+        decompose(scale: Vector2, translation: Vector2): number;
+    }
+    /**
+     * Stores information about a 2D Triangle.
+     * This class stores the 3 vertices but also the center and radius of the triangle
+     */
+    class Tri2DInfo {
+        /**
+         * Construct an instance of Tri2DInfo, you can either pass null to a, b and c and the instance will be allocated "clear", or give actual triangle info and the center/radius will be computed
+         */
+        constructor(a: Vector2, b: Vector2, c: Vector2);
+        a: Vector2;
+        b: Vector2;
+        c: Vector2;
+        center: Vector2;
+        radius: number;
+        static Zero(): Tri2DInfo;
+        set(a: Vector2, b: Vector2, c: Vector2): void;
+        transformInPlace(transform: Matrix2D): void;
+        doesContain(p: Vector2): boolean;
+        private _updateCenterRadius();
+    }
+    /**
+     * Stores an array of 2D Triangles.
+     * Internally the data is stored as a Float32Array to minimize the memory footprint.
+     * This can use the Tri2DInfo class as proxy for storing/retrieving data.
+     * The array can't grow, it's fixed size.
+     */
+    class Tri2DArray {
+        constructor(count: number);
+        /**
+         * Clear the content and allocate a new array to store the given count of triangles
+         * @param count The new count of triangles to store
+         */
+        clear(count: number): void;
+        /**
+         * Store a given triangle at the given index
+         * @param index the 0 based index to store the triangle in the array
+         * @param a the A vertex of the triangle
+         * @param b the B vertex of the triangle
+         * @param c the C vertex of the triangle
+         */
+        storeTriangle(index: number, a: Vector2, b: Vector2, c: Vector2): void;
+        /**
+         * Store a triangle in a Tri2DInfo object
+         * @param index the index of the triangle to store
+         * @param tri2dInfo the instance that will contain the data, it must be already allocated with its inner object also allocated
+         */
+        storeToTri2DInfo(index: number, tri2dInfo: Tri2DInfo): void;
+        /**
+         * Transform the given triangle and store its result in the array
+         * @param index The index to store the result to
+         * @param tri2dInfo The triangle to transform
+         * @param transform The transformation matrix
+         */
+        transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix2D): void;
+        /**
+         * Get the element count that can be stored in this array
+         * @returns {}
+         */
+        readonly count: number;
+        /**
+         * Check if a given point intersects with at least one of the triangles stored in the array.
+         * If true is returned the point is intersecting with at least one triangle, false if it doesn't intersect with any of them
+         * @param p The point to check
+         */
+        doesContain(p: Vector2): boolean;
+        /**
+         * Make a intersection test between two sets of triangles. The triangles of setB will be transformed to the frame of reference of the setA using the given bToATransform matrix.
+         * If true is returned at least one triangle intersects with another of the other set, otherwise false is returned.
+         * @param setA The first set of triangles
+         * @param setB The second set of triangles
+         * @param bToATransform The transformation matrix to transform the setB triangles into the frame of reference of the setA
+         */
+        static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix2D): boolean;
+        private static _checkInitStatics();
+        private _count;
+        private _array;
+        private static tempV;
+        private static tempT;
+    }
+}
+
+declare module BABYLON {
     class PropertyChangedInfo {
         /**
          * Previous value of the property
@@ -48,6 +175,19 @@ declare module BABYLON {
         private static pci;
         private static calling;
     }
+}
+
+declare module BABYLON {
+    class C2DLogging {
+        static snooze: boolean;
+        static logFrameRender(frameCount: number): void;
+        static setPostMessage(message: () => string): void;
+        static _startFrameRender(): void;
+        static _endFrameRender(): void;
+        private static _logFramesCount;
+    }
+    function logProp<T>(message?: string, alsoGet?: boolean, setNoProlog?: boolean, getNoProlog?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function logMethod(message?: string, noProlog?: boolean): (target: any, key: any, descriptor: any) => any;
 }
 
 declare module BABYLON {
@@ -415,6 +555,208 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * This class given information about a given character.
+     */
+    class CharInfo {
+        /**
+         * The normalized ([0;1]) top/left position of the character in the texture
+         */
+        topLeftUV: Vector2;
+        /**
+         * The normalized ([0;1]) right/bottom position of the character in the texture
+         */
+        bottomRightUV: Vector2;
+        xOffset: number;
+        yOffset: number;
+        xAdvance: number;
+        charWidth: number;
+    }
+    /**
+     * This is an abstract base class to hold a Texture that will contain a FontMap
+     */
+    abstract class BaseFontTexture extends Texture {
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, premultipliedAlpha?: boolean);
+        /**
+         * Is the Font is using Super Sampling (each font texel is doubled).
+         */
+        readonly isSuperSampled: boolean;
+        /**
+         * Is the Font was rendered using the Signed Distance Field algorithm
+         * @returns {}
+         */
+        readonly isSignedDistanceField: boolean;
+        /**
+         * True if the font was drawn using multiplied alpha
+         */
+        readonly isPremultipliedAlpha: boolean;
+        /**
+         * Get the Width (in pixel) of the Space character
+         */
+        readonly spaceWidth: number;
+        /**
+         * Get the Line height (in pixel)
+         */
+        readonly lineHeight: number;
+        /**
+         * When the FontTexture is retrieved through the FontCache, there's a reference counter that is incremented for each use.
+         * You also have the possibility to extend the lifetime of the FontTexture when passing it to another object by calling this method
+         * Don't forget to call the corresponding decCachedFontTextureCounter method when you no longer have use of the FontTexture.
+         * Each call to incCachedFontTextureCounter must have a corresponding call to decCachedFontTextureCounter.
+         */
+        abstract incCachedFontTextureCounter(): any;
+        /**
+         * Decrement the reference counter, if it reaches 0 the FontTexture is disposed
+         */
+        abstract decCachedFontTextureCounter(): any;
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        readonly abstract isDynamicFontTexture: boolean;
+        /**
+         * Will fetch the new characters retrieved with getChar() to the texture.
+         * If there were no new char, this call is harmless and quit in no time.
+         * If there were new chars a texture lock/update is made, which is a costy operation.
+         */
+        abstract update(): void;
+        /**
+         * Measure the width/height that will take a given text
+         * @param text the text to measure
+         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
+         */
+        measureText(text: string, tabulationSize?: number): Size;
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        abstract getChar(char: string): CharInfo;
+        protected _charInfos: StringDictionary<CharInfo>;
+        protected _lineHeight: number;
+        protected _spaceWidth: any;
+        protected _superSample: boolean;
+        protected _signedDistanceField: boolean;
+        protected _isPremultipliedAlpha: boolean;
+        protected _cachedFontId: string;
+    }
+    class BitmapFontInfo {
+        kerningDic: StringDictionary<number>;
+        charDic: StringDictionary<CharInfo>;
+        textureSize: Size;
+        atlasName: string;
+        padding: Vector4;
+        lineHeight: number;
+        baseLine: number;
+        textureUrl: string;
+        textureFile: string;
+    }
+    interface IBitmapFontLoader {
+        loadFont(fontDataContent: any, scene: Scene, invertY: boolean): {
+            bfi: BitmapFontInfo;
+            errorMsg: string;
+            errorCode: number;
+        };
+    }
+    class BitmapFontTexture extends BaseFontTexture {
+        constructor(scene: Scene, bmFontUrl: string, textureUrl?: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, premultipliedAlpha?: boolean, onLoad?: () => void, onError?: (msg: string, code: number) => void);
+        static GetCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): BitmapFontTexture;
+        static ReleaseCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): void;
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        readonly isDynamicFontTexture: boolean;
+        /**
+         * This method does nothing for a BitmapFontTexture object as it's a static texture
+         */
+        update(): void;
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        getChar(char: string): CharInfo;
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        incCachedFontTextureCounter(): void;
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        decCachedFontTextureCounter(): void;
+        private _usedCounter;
+        static addLoader(fileExtension: string, plugin: IBitmapFontLoader): void;
+        static plugins: StringDictionary<IBitmapFontLoader[]>;
+    }
+    /**
+     * This class is a special kind of texture which generates on the fly characters of a given css style "fontName".
+     * The generated texture will be updated when new characters will be retrieved using the getChar() method, but you have
+     *  to call the update() method for the texture to fetch these changes, you can harmlessly call update any time you want, if no
+     *  change were made, nothing will happen.
+     * The Font Texture can be rendered in three modes: normal size, super sampled size (x2) or using Signed Distance Field rendering.
+     * Signed Distance Field should be prefered because the texture can be rendered using AlphaTest instead of Transparency, which is way more faster. More about SDF here (http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
+     * The only flaw of SDF is that the rendering quality may not be the best or the edges too sharp is the font thickness is too thin.
+     */
+    class FontTexture extends BaseFontTexture {
+        private _canvas;
+        private _context;
+        private _lineHeightSuper;
+        private _xMargin;
+        private _yMargin;
+        private _offset;
+        private _baseLine;
+        private _currentFreePosition;
+        private _curCharCount;
+        private _lastUpdateCharCount;
+        private _spaceWidthSuper;
+        private _sdfCanvas;
+        private _sdfContext;
+        private _sdfScale;
+        private _usedCounter;
+        debugMode: boolean;
+        readonly isDynamicFontTexture: boolean;
+        static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean, bilinearFiltering?: boolean): FontTexture;
+        static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean, bilinearFiltering?: boolean): void;
+        /**
+         * Create a new instance of the FontTexture class
+         * @param name the name of the texture
+         * @param font the font to use, use the W3C CSS notation
+         * @param scene the scene that owns the texture
+         * @param maxCharCount the approximative maximum count of characters that could fit in the texture. This is an approximation because most of the fonts are proportional (each char has its own Width). The 'W' character's width is used to compute the size of the texture based on the given maxCharCount
+         * @param samplingMode the texture sampling mode
+         * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
+         */
+        constructor(name: string, font: string, scene: Scene, maxCharCount?: number, samplingMode?: number, superSample?: boolean, signedDistanceField?: boolean);
+        private _saveToImage(url);
+        /**
+         * Make sure the given char is present in the font map.
+         * @param char the character to get or add
+         * @return the CharInfo instance corresponding to the given character
+         */
+        getChar(char: string): CharInfo;
+        private _computeSDFChar(source);
+        private getSuperSampleFont(font);
+        private getFontHeight(font, chars);
+        readonly canRescale: boolean;
+        getContext(): CanvasRenderingContext2D;
+        /**
+         * Call this method when you've call getChar() at least one time, this will update the texture if needed.
+         * Don't be afraid to call it, if no new character was added, this method simply does nothing.
+         */
+        update(): void;
+        clone(): FontTexture;
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        incCachedFontTextureCounter(): void;
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        decCachedFontTextureCounter(): void;
+    }
+    function BitmapFontLoaderPlugin(fileExtension: string, plugin: IBitmapFontLoader): (target: Object) => void;
+}
+
+declare module BABYLON {
+    /**
      * Stores 2D Bounding Information.
      * This class handles a circle area and a bounding rectangle one.
      */
@@ -476,6 +818,7 @@ declare module BABYLON {
          * @param b must be a valid/allocated object, it will contain the result of the operation
          */
         static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D): void;
+        toString(): string;
         /**
          * Duplicate this instance and return a new one
          * @return the duplicated instance
@@ -483,27 +826,54 @@ declare module BABYLON {
         clone(): BoundingInfo2D;
         clear(): void;
         copyFrom(src: BoundingInfo2D): void;
+        equals(other: BoundingInfo2D): boolean;
         /**
          * return the max extend of the bounding info
          */
         max(): Vector2;
+        /**
+         * return the min/max extend of the bounding info.
+         * x, y, z, w are left, bottom, right and top
+         */
+        minMax(): Vector4;
         /**
          * Update a vector2 with the max extend of the bounding info
          * @param result must be a valid/allocated vector2 that will contain the result of the operation
          */
         maxToRef(result: Vector2): void;
         /**
+         * Update a vector4 with the min/max extend of the bounding info
+         * x, y, z, w are left, bottom, right and top
+         * @param result must be a valid/allocated vector4 that will contain the result of the operation
+         */
+        minMaxToRef(result: Vector4): void;
+        /**
+         * Return the size of the boundingInfo rect surface
+         */
+        size(): Size;
+        /**
+         * Stores in the result object the size of the boundingInfo rect surface
+         * @param result
+         */
+        sizeToRef(result: Size): void;
+        /**
+         * Inflate the boundingInfo with the given vector
+         * @param offset the extent will be incremented with offset and the radius will be computed again
+         */
+        inflate(offset: Vector2): void;
+        /**
          * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
          * @param matrix the transformation matrix to apply
          * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
          */
-        transform(matrix: Matrix): BoundingInfo2D;
+        transform(matrix: Matrix2D): BoundingInfo2D;
         /**
          * Compute the union of this BoundingInfo2D with a given one, returns a new BoundingInfo2D as a result
          * @param other the second BoundingInfo2D to compute the union with this one
          * @return a new instance containing the result of the union
          */
         union(other: BoundingInfo2D): BoundingInfo2D;
+        worldAABBIntersectionTest(other: BoundingInfo2D): boolean;
         private static _transform;
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
@@ -511,7 +881,16 @@ declare module BABYLON {
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
-        transformToRef(matrix: Matrix, result: BoundingInfo2D): void;
+        transformToRef(matrix: Matrix2D, result: BoundingInfo2D): void;
+        private _updateWorldAABB(worldMatrix);
+        worldMatrixAccess: () => Matrix2D;
+        readonly worldAABBDirtyObservable: Observable<BoundingInfo2D>;
+        readonly isWorldAABBDirty: boolean;
+        dirtyWorldAABB(): void;
+        /**
+         * Retrieve the world AABB, the Vector4's data is x=xmin, y=ymin, z=xmax, w=ymax
+         */
+        readonly worldAABB: Vector4;
         /**
          * Compute the union of this BoundingInfo2D with another one and store the result in a third valid BoundingInfo2D object
          * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
@@ -526,10 +905,89 @@ declare module BABYLON {
          * @return true if the point is inside, false otherwise
          */
         doesIntersect(pickPosition: Vector2): boolean;
+        private _worldAABBDirtyObservable;
+        private _worldAABBDirty;
+        private _worldAABB;
     }
 }
 
 declare module BABYLON {
+    /**
+     * The base class for all implementation of a Primitive Collision Manager
+     */
+    abstract class PrimitiveCollisionManagerBase {
+        constructor(owner: Canvas2D);
+        abstract _addActor(actor: Prim2DBase, deep: boolean): ActorInfoBase;
+        abstract _removeActor(actor: Prim2DBase): any;
+        abstract _update(): any;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the left border
+         */
+        readonly abstract leftBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the bottom border
+         */
+        readonly abstract bottomBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the right border
+         */
+        readonly abstract rightBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the top border
+         */
+        readonly abstract topBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * This dictionary contains all the couple of intersecting primitives
+         */
+        readonly abstract intersectedActors: ObservableStringDictionary<{
+            a: Prim2DBase;
+            b: Prim2DBase;
+        }>;
+        /**
+         * Renders the World AABB of all Actors
+         */
+        abstract debugRenderAABB: boolean;
+        /**
+         * Renders the area of the Clusters
+         */
+        abstract debugRenderClusters: boolean;
+        /**
+         * Display stats about the PCM on screen
+         */
+        abstract debugStats: boolean;
+        static allocBasicPCM(owner: Canvas2D, enableBorders: boolean): PrimitiveCollisionManagerBase;
+        protected _owner: Canvas2D;
+    }
+    /**
+     * Base class of an Actor
+     */
+    abstract class ActorInfoBase {
+        /**
+         * Access the World AABB of the Actor, the vector4 is x:left, y: bottom, z: right, w: top
+         */
+        readonly abstract worldAABB: Vector4;
+        /**
+         * Return true if the actor is enable, false otherwise
+         */
+        readonly abstract isEnabled: boolean;
+        /**
+         * Return true is the actor boundingInfo is use, false if its levelBoundingInfo is used.
+         */
+        readonly abstract isDeep: boolean;
+        /**
+         * Return the primitive of the actor
+         */
+        readonly abstract prim: Prim2DBase;
+        /**
+         * Return a dictionary containing all the actors intersecting with this one
+         */
+        readonly abstract intersectWith: ObservableStringDictionary<ActorInfoBase>;
+    }
+}
+
+declare module BABYLON {
+    interface ILayoutData {
+    }
     class LayoutEngineBase implements ILockable {
         constructor();
         updateLayout(prim: Prim2DBase): void;
@@ -540,7 +998,9 @@ declare module BABYLON {
         private _isLocked;
     }
     class CanvasLayoutEngine extends LayoutEngineBase {
-        static Singleton: CanvasLayoutEngine;
+        private static _singleton;
+        static readonly Singleton: CanvasLayoutEngine;
+        constructor();
         updateLayout(prim: Prim2DBase): void;
         private _doUpdate(prim);
         readonly isChildPositionAllowed: boolean;
@@ -553,10 +1013,66 @@ declare module BABYLON {
         private static _vertical;
         isHorizontal: boolean;
         private _isHorizontal;
+        private static stackPanelLayoutArea;
         private static dstOffset;
         private static dstArea;
+        private static computeCounter;
         updateLayout(prim: Prim2DBase): void;
         readonly isChildPositionAllowed: boolean;
+    }
+    /**
+     * GridData is used specify what row(s) and column(s) a primitive is placed in when its parent is using a Grid Panel Layout.
+     */
+    class GridData implements ILayoutData {
+        /**
+         * the row number of the grid
+         **/
+        row: number;
+        /**
+         * the column number of the grid
+         **/
+        column: number;
+        /**
+         * the number of rows a primitive will occupy
+         **/
+        rowSpan: number;
+        /**
+         * the number of columns a primitive will occupy
+         **/
+        columnSpan: number;
+        /**
+         * Create a Grid Data that describes where a primitive will be placed in a Grid Panel Layout.
+         * @param row the row number of the grid
+         * @param column the column number of the grid
+         * @param rowSpan the number of rows a primitive will occupy
+         * @param columnSpan the number of columns a primitive will occupy
+         **/
+        constructor(row: number, column: number, rowSpan?: number, columnSpan?: number);
+    }
+    class GridPanelLayoutEngine extends LayoutEngineBase {
+        constructor(settings: {
+            rows: [{
+                height: string;
+            }];
+            columns: [{
+                width: string;
+            }];
+        });
+        private _rows;
+        private _columns;
+        private _children;
+        private _rowBottoms;
+        private _columnLefts;
+        private _rowHeights;
+        private _columnWidths;
+        private static dstOffset;
+        private static dstArea;
+        private static dstAreaPos;
+        updateLayout(prim: Prim2DBase): void;
+        readonly isChildPositionAllowed: boolean;
+        private _getMaxChildHeightInRow(rowNum);
+        private _getMaxChildWidthInColumn(colNum);
+        private _updateGrid(prim);
     }
 }
 
@@ -910,6 +1426,10 @@ declare module BABYLON {
          */
         animations: Animation[];
         /**
+         * return a unique identifier for the Canvas2D
+         */
+        readonly uid: string;
+        /**
          * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
          * Look at Sprite2D for more information
          */
@@ -937,7 +1457,7 @@ declare module BABYLON {
         /**
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Property method called when the Primitive becomes dirty
          */
@@ -977,6 +1497,7 @@ declare module BABYLON {
          * @param state true to set them, false to clear them
          */
         _changeFlags(flags: number, state: boolean): void;
+        _getFlagsDebug(flags: number): string;
         static flagNoPartOfLayout: number;
         static flagLevelBoundingInfoDirty: number;
         static flagModelDirty: number;
@@ -999,6 +1520,13 @@ declare module BABYLON {
         static flagDontInheritParentScale: number;
         static flagGlobalTransformDirty: number;
         static flagLayoutBoundingInfoDirty: number;
+        static flagCollisionActor: number;
+        static flagModelUpdate: number;
+        static flagLocalTransformDirty: number;
+        static flagUsePositioning: number;
+        static flagComputingPositioning: number;
+        static flagAlignPrimitive: number;
+        private _uid;
         private _flags;
         private _modelKey;
         protected _levelBoundingInfo: BoundingInfo2D;
@@ -1272,6 +1800,7 @@ declare module BABYLON {
          */
         fromString(value: string): void;
         copyFrom(pa: PrimitiveAlignment): void;
+        clone(): PrimitiveAlignment;
         readonly isDefault: boolean;
     }
     /**
@@ -1416,6 +1945,9 @@ declare module BABYLON {
         static Inherit: number;
         static Percentage: number;
         static Pixel: number;
+        static ComputeH: number;
+        static ComputeV: number;
+        static ComputeAll: number;
         private _computePixels(index, sourceArea, emitChanged);
         private onChangeCallback();
         /**
@@ -1426,21 +1958,21 @@ declare module BABYLON {
          * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
+        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, contentScale: Vector2, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean, computeAxis?: number): void;
         /**
          * Compute an area and its position considering this thickness properties based on a given source area
          * @param sourceArea the source area
          * @param dstOffset the position of the resulting area
          * @param dstArea the size of the resulting area
          */
-        compute(sourceArea: Size, dstOffset: Vector4, dstArea: Size): void;
+        compute(sourceArea: Size, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
         /**
          * Compute an area considering this thickness properties based on a given source area
          * @param sourceArea the source area
          * @param result the resulting area
          */
-        computeArea(sourceArea: Size, result: Size): void;
-        enlarge(sourceArea: Size, dstOffset: Vector4, enlargedArea: Size): void;
+        computeArea(sourceArea: Size, sourceScale: Vector2, result: Size): void;
+        enlarge(sourceArea: Size, sourceScale: Vector2, dstOffset: Vector4, enlargedArea: Size): void;
     }
     /**
      * Main class used for the Primitive Intersection API
@@ -1491,6 +2023,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -1499,6 +2032,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -1511,8 +2047,18 @@ declare module BABYLON {
             paddingLeft?: number | string;
             paddingRight?: number | string;
             paddingBottom?: number | string;
-            padding?: string;
+            padding?: number | string;
         });
+        /**
+         * Return the ChangedDictionary observable of the StringDictionary containing the primitives intersecting with this one
+         */
+        readonly intersectWithObservable: Observable<DictionaryChanged<ActorInfoBase>>;
+        /**
+         * Return the ObservableStringDictionary containing all the primitives intersecting with this one.
+         * The key is the primitive uid, the value is the ActorInfo object
+         * @returns {}
+         */
+        readonly intersectWith: ObservableStringDictionary<ActorInfoBase>;
         readonly actionManager: ActionManager;
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
@@ -1641,13 +2187,20 @@ declare module BABYLON {
          */
         actualPosition: Vector2;
         private static _nullPosition;
+        private static _nullSize;
         /**
          * Shortcut to actualPosition.x
+         */
+        /**
+         * DO NOT INVOKE for internal purpose only
          */
         actualX: number;
         /**
          * Shortcut to actualPosition.y
          */
+        /**
+        * DO NOT INVOKE for internal purpose only
+        */
         actualY: number;
         /**
          * Position of the primitive, relative to its parent.
@@ -1668,38 +2221,15 @@ declare module BABYLON {
         y: number;
         private static boundinbBoxReentrency;
         protected static nullSize: Size;
-        /**
-         * Size of the primitive or its bounding area
-         * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
-         * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
-         */
         size: Size;
-        /**
-         * Direct access to the size.width value of the primitive
-         * Use this property when you only want to change one component of the size property
-         */
+        protected internalGetSize(): Size;
+        protected internalSetSize(value: Size): void;
         width: number;
-        /**
-         * Direct access to the size.height value of the primitive
-         * Use this property when you only want to change one component of the size property
-         */
         height: number;
         rotation: number;
         scale: number;
-        /**
-         * Return the size of the primitive as it's being rendered into the target.
-         * This value may be different of the size property when layout/alignment is used or specific primitive types can implement a custom logic through this property.
-         * BEWARE: don't use the setter, it's for internal purpose only
-         * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
-         */
         actualSize: Size;
-        /**
-         * Shortcut to actualSize.width
-         */
         actualWidth: number;
-        /**
-         * Shortcut to actualPosition.height
-         */
         actualHeight: number;
         readonly actualZOffset: number;
         /**
@@ -1730,16 +2260,33 @@ declare module BABYLON {
         readonly isManualZOrder: boolean;
         margin: PrimitiveThickness;
         /**
+         * Set the margin from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        setMargin(value: string): void;
+        /**
          * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
          */
         readonly _hasMargin: boolean;
         padding: PrimitiveThickness;
+        /**
+         * Set the padding from a string value
+         * @param value is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.         */
+        setPadding(value: string): void;
         private readonly _hasPadding;
         marginAlignment: PrimitiveAlignment;
+        /**
+         * Set the margin's horizontal and or vertical alignments from a string value.
+         * @param value can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
+        setMarginalignment(value: string): void;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
         readonly _hasMarginAlignment: boolean;
+        protected _updatePositioningState(): void;
         opacity: number;
         scaleX: number;
         scaleY: number;
@@ -1752,6 +2299,11 @@ declare module BABYLON {
          * Get the actual Scale of the X axis, shortcut for this.actualScale.x
          */
         readonly actualScaleX: number;
+        /**
+         * This method stores the actual global scale (including DesignMode and DPR related scales) in the given Vector2
+         * @param res the object that will receive the actual global scale: this is actualScale * DPRScale * DesignModeScale
+         */
+        getActualGlobalScaleToRef(res: Vector2): void;
         /**
          * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
          */
@@ -1798,7 +2350,7 @@ declare module BABYLON {
         /**
          * Get the global transformation matrix of the primitive
          */
-        readonly globalTransform: Matrix;
+        readonly globalTransform: Matrix2D;
         /**
          * return the global position of the primitive, relative to its canvas
          */
@@ -1811,16 +2363,23 @@ declare module BABYLON {
         /**
          * Get invert of the global transformation matrix of the primitive
          */
-        readonly invGlobalTransform: Matrix;
+        readonly invGlobalTransform: Matrix2D;
         /**
          * Get the local transformation of the primitive
          */
-        readonly localTransform: Matrix;
+        readonly localTransform: Matrix2D;
+        readonly localLayoutTransform: Matrix2D;
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
+        alignToPixel: boolean;
+        private static _bMinMax;
         private static _bMax;
+        private static _bSize;
         private static _tpsBB;
+        private static _tpsBB2;
         /**
          * Get the boundingInfo associated to the primitive and its children.
-         * The value is supposed to be always up to date
          */
         readonly boundingInfo: BoundingInfo2D;
         /**
@@ -1834,6 +2393,18 @@ declare module BABYLON {
          * @returns true if the size is automatically computed, false if it were manually specified.
          */
         readonly isSizeAuto: boolean;
+        /**
+         * Determine if the horizontal size is automatically computed or fixed because manually specified.
+         * Use the actualSize property to get the final/real size of the primitive
+         * @returns true if the horizontal size is automatically computed, false if it were manually specified.
+         */
+        readonly isHorizontalSizeAuto: boolean;
+        /**
+         * Determine if the vertical size is automatically computed or fixed because manually specified.
+         * Use the actualSize property to get the final/real size of the primitive
+         * @returns true if the vertical size is automatically computed, false if it were manually specified.
+         */
+        readonly isVerticalSizeAuto: boolean;
         /**
          * Return true if this prim has an auto size which is set by the children's global bounding box
          */
@@ -1850,6 +2421,7 @@ declare module BABYLON {
         readonly pointerEventObservable: Observable<PrimitivePointerInfo>;
         readonly zActualOrderChangedObservable: Observable<number>;
         displayDebugAreas: boolean;
+        private static _updatingDebugArea;
         private _updateDebugArea();
         findById(id: string): Prim2DBase;
         protected onZOrderChanged(): void;
@@ -1865,12 +2437,15 @@ declare module BABYLON {
          * @param pointerId the Id of the pointer to release the capture from.
          */
         releasePointerEventsCapture(pointerId: number): boolean;
+        private static _bypassGroup2DExclusion;
         /**
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
-        private static _bypassGroup2DExclusion;
         intersect(intersectInfo: IntersectInfo2D): boolean;
+        intersectOtherPrim(other: Prim2DBase): boolean;
+        readonly triList: Tri2DArray;
+        protected updateTriArray(): void;
         /**
          * Move a child object into a new position regarding its siblings to change its rendering order.
          * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
@@ -1912,7 +2487,7 @@ declare module BABYLON {
         protected updateCachedStatesOf(list: Prim2DBase[], recurse: boolean): void;
         private _parentLayoutDirty();
         protected _setLayoutDirty(): void;
-        private _checkPositionChange();
+        private _checkUseMargin();
         protected _positioningDirty(): void;
         protected _spreadActualOpacityChanged(): void;
         private _changeLayoutEngine(engine);
@@ -1920,6 +2495,9 @@ declare module BABYLON {
         private static _t1;
         private static _t2;
         private static _v0;
+        private static _v30;
+        private static _iv2;
+        private static _ts0;
         private _updateLocalTransform();
         private static _transMtx;
         protected updateCachedStates(recurse: boolean): void;
@@ -1927,13 +2505,23 @@ declare module BABYLON {
         private static _icZone;
         private static _icArea;
         private static _size;
+        private static _size2;
+        private static _size3;
+        private static _size4;
+        private static _pv0;
+        private static _curContentArea;
+        private static _piv;
+        private static _tbi;
+        private static _pv1;
+        private static _pv2;
         private _updatePositioning();
         /**
-         * Get the content are of this primitive, this area is computed using the padding property and also possibly the primitive type itself.
+         * Get the content are of this primitive, this area is computed the primitive size and using the padding property.
          * Children of this primitive will be positioned relative to the bottom/left corner of this area.
          */
         readonly contentArea: Size;
         _patchHierarchy(owner: Canvas2D): void;
+        protected onSetOwner(): void;
         private static _zOrderChangedNotifList;
         private static _zRebuildReentrency;
         private _updateZOrder();
@@ -1957,7 +2545,11 @@ declare module BABYLON {
          * @param primSize the current size of the primitive
          * @param newPrimSize the new size of the primitive. PLEASE ROUND THE values, we're talking about pixels and fraction of them are not our friends!
          */
-        protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
+        protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size): void;
+        /**
+         * Get/set the layout data to use for this primitive.
+         */
+        layoutData: ILayoutData;
         private _owner;
         private _parent;
         private _actionManager;
@@ -1979,7 +2571,7 @@ declare module BABYLON {
         private _actualPosition;
         protected _size: Size;
         protected _actualSize: Size;
-        _boundingSize: Size;
+        private _internalSize;
         protected _minSize: Size;
         protected _maxSize: Size;
         protected _desiredSize: Size;
@@ -1991,21 +2583,29 @@ declare module BABYLON {
         private _lastAutoSizeArea;
         private _layoutAreaPos;
         private _layoutArea;
+        private _layoutData;
         private _contentArea;
         private _rotation;
         private _scale;
+        protected _postScale: Vector2;
         private _origin;
         protected _opacity: number;
         private _actualOpacity;
         private _actualScale;
         private _displayDebugAreas;
         private _debugAreaGroup;
+        private _actorInfo;
         protected _parentTransformStep: number;
         protected _globalTransformStep: number;
         protected _globalTransformProcessStep: number;
-        protected _localTransform: Matrix;
-        protected _globalTransform: Matrix;
-        protected _invGlobalTransform: Matrix;
+        protected _prepareProcessStep: number;
+        protected _updateCachesProcessStep: number;
+        protected _localTransform: Matrix2D;
+        protected _localLayoutTransform: Matrix2D;
+        protected _globalTransform: Matrix2D;
+        protected _invGlobalTransform: Matrix2D;
+        protected _primTriArrayDirty: boolean;
+        protected _primTriArray: Tri2DArray;
     }
 }
 
@@ -2014,15 +2614,16 @@ declare module BABYLON {
         Vector2 = 0,
         Vector3 = 1,
         Vector4 = 2,
-        Matrix = 3,
-        float = 4,
-        Color3 = 5,
-        Color4 = 6,
-        Size = 7,
+        float = 3,
+        Color3 = 4,
+        Color4 = 5,
+        Size = 6,
     }
     class GroupInstanceInfo {
         constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
+        incPrimCount(): void;
         dispose(): boolean;
+        readonly isDisposed: boolean;
         private _isDisposed;
         owner: Group2D;
         modelRenderCache: ModelRenderCache;
@@ -2041,6 +2642,7 @@ declare module BABYLON {
         readonly usedShaderCategories: string[];
         readonly strides: number[];
         private _partCount;
+        private _primCount;
         private _strides;
         private _usedShaderCategories;
         private _opaqueData;
@@ -2074,6 +2676,7 @@ declare module BABYLON {
         readonly isDisposed: boolean;
         addRef(): number;
         readonly modelKey: string;
+        updateModelRenderCache(prim: Prim2DBase): boolean;
         /**
          * Render the model instances
          * @param instanceInfo
@@ -2119,9 +2722,10 @@ declare module BABYLON {
         attributeName: string;
         category: string;
         size: number;
-        shaderOffset: number;
         instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+        curCategory: string;
+        curCategoryOffset: number;
         delimitedCategory: string;
         constructor();
         setSize(val: any): void;
@@ -2135,6 +2739,7 @@ declare module BABYLON {
         zBias: Vector2;
         transformX: Vector4;
         transformY: Vector4;
+        renderingInfo: Vector3;
         opacity: number;
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
         allocElements(): void;
@@ -2181,15 +2786,7 @@ declare module BABYLON {
         _updateTransparentSegmentIndices(ts: TransparentSegment): void;
         _getNextPrimZOrder(): number;
         _getPrevPrimZOrder(): number;
-        /**
-         * Transform a given point using the Primitive's origin setting.
-         * This method requires the Primitive's actualSize to be accurate
-         * @param p the point to transform
-         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
-         * @param res an allocated Vector2 that will receive the transformed content
-         */
-        protected transformPointWithOriginByRef(p: Vector2, originOffset: Vector2, res: Vector2): void;
-        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2): Vector2;
+        private static _toz;
         /**
          * Get the info for a given effect based on the dataPart metadata
          * @param dataPartId partId in part list to get the info
@@ -2215,7 +2812,7 @@ declare module BABYLON {
         private static _s;
         private static _r;
         private static _t;
-        private static _uV3;
+        private static _iV2;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -2255,7 +2852,6 @@ declare module BABYLON {
             borderThickness?: number;
         });
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected applyActualScaleOnTransform(): boolean;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _updateTransparencyStatus();
         protected _mustUpdateInstance(): boolean;
@@ -2312,6 +2908,8 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - trackNode: if you want the ScreenSpaceCanvas to track the position of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -2320,8 +2918,11 @@ declare module BABYLON {
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersect, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2348,6 +2949,7 @@ declare module BABYLON {
             scaleY?: number;
             dontInheritParentScale?: boolean;
             trackNode?: Node;
+            trackNodeOffset?: Vector3;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -2360,6 +2962,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2372,7 +2977,7 @@ declare module BABYLON {
             paddingLeft?: number | string;
             paddingRight?: number | string;
             paddingBottom?: number | string;
-            padding?: string;
+            padding?: number | string;
         });
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D;
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial): void;
@@ -2409,7 +3014,6 @@ declare module BABYLON {
          */
         size: Size;
         readonly viewportSize: ISize;
-        actualSize: Size;
         /**
          * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
          * GROUPCACHEBEHAVIOR_NORESIZEONSCALE can also be set if you set it at creation time.
@@ -2422,8 +3026,12 @@ declare module BABYLON {
          * Get/set the Scene's Node that should be tracked, the group's position will follow the projected position of the Node.
          */
         trackedNode: Node;
+        /**
+         * Get/set the offset of the tracked node in the tracked node's local space.
+         */
+        trackedNodeOffset: Vector3;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         protected _prepareGroupRender(context: PrepareRender2DContext): void;
         protected _groupRender(): void;
         _setCacheGroupDirty(): void;
@@ -2433,13 +3041,17 @@ declare module BABYLON {
         protected _setRenderingScale(scale: number): void;
         private static _uV;
         private static _s;
+        private static _v1;
+        private static _s2;
         private _bindCacheTarget();
         private _unbindCacheTarget();
         protected _spreadActualScaleDirty(): void;
         protected static _unS: Vector2;
         protected handleGroupChanged(prop: Prim2DPropInfo): void;
         private detectGroupStates();
+        readonly _cachedTexture: MapTexture;
         private _trackedNode;
+        private _trackedNodeOffset;
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
         private _cacheGroupDirty;
@@ -2480,6 +3092,176 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class WireFrame2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        vb: WebGLBuffer;
+        vtxCount: number;
+        instancingAttributes: InstancingAttributeInfo[];
+        effect: Effect;
+        effectInstanced: Effect;
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        updateModelRenderCache(prim: Prim2DBase): boolean;
+        dispose(): boolean;
+    }
+    class WireFrameVertex2D {
+        x: number;
+        y: number;
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        constructor(p: Vector2, c?: Color4);
+        fromVector2(p: Vector2): void;
+        fromColor3(c: Color3): void;
+        fromColor4(c: Color4): void;
+    }
+    class WireFrameGroup2D {
+        /**
+         * Construct a WireFrameGroup2D object
+         * @param id a unique ID among the Groups added to a given WireFrame2D primitive, if you don't specify an id, a random one will be generated. The id is immutable.
+         * @param defaultColor specify the default color that will be used when a vertex is pushed, white will be used if not specified.
+         */
+        constructor(id?: string, defaultColor?: Color4);
+        readonly uid: string;
+        /**
+         * Retrieve the ID of the group
+         */
+        readonly id: string;
+        /**
+         * Push a vertex in the array of vertices.
+         * If you're previously called startLineStrip, the vertex will be pushed twice in order to describe the end of a line and the start of a new one.
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        pushVertex(p: Vector2, c?: Color4): void;
+        /**
+         * Start to store a Line Strip. The given vertex will be pushed in the array. The you have to call pushVertex to add subsequent vertices describing the strip and don't forget to call endLineStrip to close the strip!!!
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        startLineStrip(p: Vector2, c?: Color4): void;
+        /**
+         * Close the Strip by storing a last vertex
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        endLineStrip(p: Vector2, c?: Color4): void;
+        /**
+         * Access to the array of Vertices, you can manipulate its content but BEWARE of what you're doing!
+         */
+        readonly vertices: Array<WireFrameVertex2D>;
+        private _uid;
+        private _id;
+        private _defaultColor;
+        private _vertices;
+        private _buildingStrip;
+    }
+    class WireFrame2D extends RenderablePrim2D {
+        static WIREFRAME2D_MAINPARTID: number;
+        static wireFrameGroupsProperty: Prim2DPropInfo;
+        readonly wireFrameGroups: StringDictionary<WireFrameGroup2D>;
+        /**
+         * If you change the content of the wireFrameGroups you MUST call this method for the changes to be reflected during rendering
+         */
+        wireFrameGroupsDirty(): void;
+        size: Size;
+        protected updateLevelBoundingInfo(): boolean;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        /**
+         * Create an WireFrame 2D primitive
+         * @param wireFrameGroups an array of WireFrameGroup.
+         * @param settings a combination of settings, possible ones are
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
+         * - zOrder: override the zOrder with the specified value
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - alignToPixel: the rendered lines will be aligned to the rendering device' pixels
+         * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         */
+        constructor(wireFrameGroups: Array<WireFrameGroup2D>, settings?: {
+            parent?: Prim2DBase;
+            children?: Array<Prim2DBase>;
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            size?: Size;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            alignToPixel?: boolean;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: number | string;
+        });
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
+        alignToPixel: boolean;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): WireFrame2DRenderCache;
+        _updateVertexBuffer(mrc: WireFrame2DRenderCache): void;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _computeMinMaxTrans();
+        protected createInstanceDataParts(): InstanceDataBase[];
+        private _vtxTransparent;
+        private _wireFrameGroups;
+        private _alignToPixel;
+    }
+    class WireFrame2DInstanceData extends InstanceDataBase {
+        constructor(partId: number);
+    }
+}
+
+declare module BABYLON {
     class Rectangle2DRenderCache extends ModelRenderCache {
         effectsReady: boolean;
         fillVB: WebGLBuffer;
@@ -2506,14 +3288,13 @@ declare module BABYLON {
         static actualSizeProperty: Prim2DPropInfo;
         static notRoundedProperty: Prim2DPropInfo;
         static roundRadiusProperty: Prim2DPropInfo;
-        actualSize: Size;
         notRounded: boolean;
         roundRadius: number;
         private static _i0;
         private static _i1;
         private static _i2;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
          * @param settings a combination of settings, possible ones are
@@ -2524,6 +3305,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -2536,6 +3318,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2562,6 +3347,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -2576,6 +3362,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2588,14 +3377,16 @@ declare module BABYLON {
             paddingLeft?: number | string;
             paddingRight?: number | string;
             paddingBottom?: number | string;
-            padding?: string;
+            padding?: number | string;
         });
         static roundSubdivisions: number;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected updateTriArray(): void;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
         protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
-        protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
+        protected _getActualSizeFromContentToRef(primSize: Size, paddingOffset: Vector4, newPrimSize: Size): void;
         protected createInstanceDataParts(): InstanceDataBase[];
+        private static _riv0;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _notRounded;
         private _roundRadius;
@@ -2628,10 +3419,9 @@ declare module BABYLON {
     class Ellipse2D extends Shape2D {
         static acutalSizeProperty: Prim2DPropInfo;
         static subdivisionsProperty: Prim2DPropInfo;
-        actualSize: Size;
         subdivisions: number;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an Ellipse 2D Shape primitive
          * @param settings a combination of settings, possible ones are
@@ -2642,6 +3432,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -2654,6 +3445,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2680,6 +3474,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -2694,6 +3489,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2706,11 +3504,13 @@ declare module BABYLON {
             paddingLeft?: number | string;
             paddingRight?: number | string;
             paddingBottom?: number | string;
-            padding?: string;
+            padding?: number | string;
         });
+        protected updateTriArray(): void;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
         protected createInstanceDataParts(): InstanceDataBase[];
+        private static _riv0;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _subdivisions;
     }
@@ -2728,46 +3528,32 @@ declare module BABYLON {
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
         dispose(): boolean;
     }
-    class Sprite2DInstanceData extends InstanceDataBase {
-        constructor(partId: number);
-        topLeftUV: Vector2;
-        sizeUV: Vector2;
-        scaleFactor: Vector2;
-        textureSize: Vector2;
-        properties: Vector3;
-    }
     class Sprite2D extends RenderablePrim2D {
         static SPRITE2D_MAINPARTID: number;
+        static SHAPE2D_CATEGORY_SCALE9: string;
         static textureProperty: Prim2DPropInfo;
         static useAlphaFromTextureProperty: Prim2DPropInfo;
         static actualSizeProperty: Prim2DPropInfo;
+        static spriteSizeProperty: Prim2DPropInfo;
         static spriteLocationProperty: Prim2DPropInfo;
         static spriteFrameProperty: Prim2DPropInfo;
         static invertYProperty: Prim2DPropInfo;
-        static spriteScaleFactorProperty: Prim2DPropInfo;
+        static spriteScale9Property: Prim2DPropInfo;
         texture: Texture;
         useAlphaFromTexture: boolean;
-        actualSize: Size;
+        size: Size;
+        spriteSize: Size;
         spriteLocation: Vector2;
         spriteFrame: number;
         invertY: boolean;
-        spriteScaleFactor: Vector2;
-        /**
-         * Sets the scale of the sprite using a BABYLON.Size(w,h).
-         * Keeps proportion by taking the maximum of the two scale for x and y.
-         * @param {Size} size Size(width,height)
-         */
-        scaleToSize(size: Size): void;
-        /**
-         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
-         */
-        alignToPixel: boolean;
-        protected updateLevelBoundingInfo(): void;
+        readonly isScale9: boolean;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
          */
         getAnimatables(): IAnimatable[];
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        readonly isSizeAuto: boolean;
         /**
          * Create an 2D Sprite primitive
          * @param texture the texture that stores the sprite to render
@@ -2778,19 +3564,23 @@ declare module BABYLON {
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
-         * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
-         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2813,6 +3603,126 @@ declare module BABYLON {
             x?: number;
             y?: number;
             rotation?: number;
+            size?: Size;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            spriteSize?: Size;
+            spriteLocation?: Vector2;
+            spriteScaleFactor?: Vector2;
+            scale9?: Vector4;
+            invertY?: boolean;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: number | string;
+        });
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
+        protected createInstanceDataParts(): InstanceDataBase[];
+        private static _prop;
+        private static layoutConstructMode;
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        protected _mustUpdateInstance(): boolean;
+        protected _useTextureAlpha(): boolean;
+        protected _shouldUseAlphaFromTexture(): boolean;
+        private _updateSpriteScaleFactor();
+        private _texture;
+        private _oldTextureHasAlpha;
+        private _useAlphaFromTexture;
+        private _useSize;
+        private _spriteLocation;
+        private _spriteSize;
+        private _spriteFrame;
+        private _scale9;
+        private _invertY;
+    }
+    class Sprite2DInstanceData extends InstanceDataBase {
+        constructor(partId: number);
+        topLeftUV: Vector2;
+        sizeUV: Vector2;
+        scaleFactor: Vector2;
+        textureSize: Vector2;
+        properties: Vector3;
+        scale9: Vector4;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface to create your own Loader of Atlas Data file.
+     * Call the AtlasPictureInfoFactory.addLoader to addd your loader instance
+     */
+    interface IAtlasLoader {
+        loadFile(content: any): {
+            api: AtlasPictureInfo;
+            errorMsg: string;
+            errorCode: number;
+        };
+    }
+    /**
+     * This class will contains information about a sub picture present in an Atlas Picture.
+     */
+    class AtlasSubPictureInfo {
+        /**
+         * Name of the SubPicture, generally the filename of the initial picture file.
+         */
+        name: string;
+        /**
+         * Location of the bottom/left corner of the sub picture from the bottom/left corner the Atlas Picture
+         */
+        location: Vector2;
+        /**
+         * Size in pixel of the sub picture
+         */
+        size: Size;
+    }
+    /**
+     * This class represent an Atlas Picture, it contains the information of all the sub pictures and the Texture that stores the bitmap.
+     * You get an instance of this class using methods of the AtlasPictureInfoFactory
+     */
+    class AtlasPictureInfo {
+        /**
+         * Creates many sprite from the Atlas Picture
+         * @param filterCallback a predicate if true is returned then the corresponding sub picture will be used to create a sprite.
+         * The Predicate has many parameters:
+         *  - index: just an index incremented at each sub picture submitted for Sprite creation
+         *  - name: the sub picture's name
+         *  - aspi: the AtlasSubPictureInfo corresponding to the submitted sub picture
+         *  - settings: the Sprite2D creation settings, you can alter this JSON object but BEWARE, the alterations will be kept for subsequent Sprite2D creations!
+         * @param spriteSettings The Sprite2D settings to use for Sprite creation, this JSON object will be passed to the filterCallback for you to alter it, if needed.
+         */
+        createSprites(filterCallback: (index: number, name: string, aspi: AtlasSubPictureInfo, settings: any) => boolean, spriteSettings: {
+            parent?: Prim2DBase;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            size?: Size;
             scale?: number;
             scaleX?: number;
             scaleY?: number;
@@ -2820,9 +3730,7 @@ declare module BABYLON {
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
-            spriteSize?: Size;
-            spriteLocation?: Vector2;
-            spriteScaleFactor?: Vector2;
+            scale9?: Vector4;
             invertY?: boolean;
             alignToPixel?: boolean;
             isVisible?: boolean;
@@ -2842,125 +3750,19 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-        });
-        protected createModelRenderCache(modelKey: string): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        private static _prop;
-        private static layoutConstructMode;
-        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
-        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        protected _mustUpdateInstance(): boolean;
-        protected _useTextureAlpha(): boolean;
-        protected _shouldUseAlphaFromTexture(): boolean;
-        private _texture;
-        private _oldTextureHasAlpha;
-        private _useAlphaFromTexture;
-        private _location;
-        private _spriteScaleFactor;
-        private _spriteFrame;
-        private _invertY;
-        private _alignToPixel;
-    }
-}
-
-declare module BABYLON {
-    class Text2DRenderCache extends ModelRenderCache {
-        effectsReady: boolean;
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-        fontTexture: FontTexture;
-        effect: Effect;
-        effectInstanced: Effect;
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Text2DInstanceData extends InstanceDataBase {
-        constructor(partId: number, dataElementCount: number);
-        topLeftUV: Vector2;
-        sizeUV: Vector2;
-        textureSize: Vector2;
-        color: Color4;
-        superSampleFactor: number;
-    }
-    class Text2D extends RenderablePrim2D {
-        static TEXT2D_MAINPARTID: number;
-        static TEXT2D_CATEGORY_SDF: string;
-        static fontProperty: Prim2DPropInfo;
-        static defaultFontColorProperty: Prim2DPropInfo;
-        static textProperty: Prim2DPropInfo;
-        static sizeProperty: Prim2DPropInfo;
-        static fontSuperSampleProperty: Prim2DPropInfo;
-        static fontSignedDistanceFieldProperty: Prim2DPropInfo;
-        fontName: string;
-        defaultFontColor: Color4;
-        text: string;
-        size: Size;
-        readonly fontSuperSample: boolean;
-        readonly fontSignedDistanceField: boolean;
-        readonly isSizeAuto: boolean;
+        }): Array<Sprite2D>;
         /**
-         * Get the actual size of the Text2D primitive
+         * Create one Sprite from a sub picture
+         * @param subPictureName the name of the sub picture to use
+         * @param spriteSettings the Sprite2D settings to use for the Sprite instance creation
          */
-        readonly actualSize: Size;
-        /**
-         * Get the area that bounds the text associated to the primitive
-         */
-        readonly textSize: Size;
-        protected readonly fontTexture: FontTexture;
-        /**
-         * Dispose the primitive, remove it from its parent
-         */
-        dispose(): boolean;
-        protected updateLevelBoundingInfo(): void;
-        /**
-         * Create a Text primitive
-         * @param text the text to display
-         * @param settings a combination of settings, possible ones are
-         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
-         * - children: an array of direct children
-         * - id a text identifier, for information purpose
-         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
-         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
-         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
-         * - zOrder: override the zOrder with the specified value
-         * - origin: define the normalized origin point location, default [0.5;0.5]
-         * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
-         * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
-         * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
-         * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
-         * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
-         * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
-         * - isVisible: true if the text must be visible, false for hidden. Default is true.
-         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
-         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
-         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
-         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
-         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
-         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
-         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
-         */
-        constructor(text: string, settings?: {
+        createSprite(subPictureName: string, spriteSettings: {
             parent?: Prim2DBase;
-            children?: Array<Prim2DBase>;
-            id?: string;
             position?: Vector2;
             x?: number;
             y?: number;
             rotation?: number;
+            size?: Size;
             scale?: number;
             scaleX?: number;
             scaleY?: number;
@@ -2968,12 +3770,9 @@ declare module BABYLON {
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
-            fontName?: string;
-            fontSuperSample?: boolean;
-            fontSignedDistanceField?: boolean;
-            defaultFontColor?: Color4;
-            size?: Size;
-            tabulationSize?: number;
+            scale9?: Vector4;
+            invertY?: boolean;
+            alignToPixel?: boolean;
             isVisible?: boolean;
             isPickable?: boolean;
             isContainer?: boolean;
@@ -2991,6 +3790,227 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
+        }): Sprite2D;
+        /**
+         * Size of the Atlas Picture
+         */
+        atlasSize: Size;
+        /**
+         * String Dictionary of all the sub pictures, the key is the sub picture's name, the value is the info object
+         */
+        subPictures: StringDictionary<AtlasSubPictureInfo>;
+        /**
+         * The Texture associated to the Atlas Picture info
+         */
+        texture: Texture;
+    }
+    /**
+     * This if the Factory class containing static method to create Atlas Pictures Info objects or add new loaders
+     */
+    class AtlasPictureInfoFactory {
+        /**
+         * Add a custom loader
+         * @param fileExtension must be the file extension (without the dot) of the file that is loaded by this loader (e.g.: json)
+         * @param plugin the instance of the loader
+         */
+        static addLoader(fileExtension: string, plugin: IAtlasLoader): void;
+        /**
+         * Load an Atlas Picture Info object from a data file at a given url and with a given texture
+         * @param texture the texture containing the atlas bitmap
+         * @param url the URL of the Atlas Info data file
+         * @param onLoad a callback that will be called when the AtlasPictureInfo object will be loaded and ready
+         * @param onError a callback that will be called in case of error
+         */
+        static loadFromUrl(texture: Texture, url: string, onLoad: (api: AtlasPictureInfo) => void, onError?: (msg: string, code: number) => void): any;
+        private static plugins;
+    }
+    /**
+     * Use this decorator when you declare an Atlas Loader Class for the loader to register itself automatically.
+     * @param fileExtension the extension of the file that the plugin is loading (there can be many plugin for the same extension)
+     * @param plugin an instance of the plugin class to add to the AtlasPictureInfoFactory
+     */
+    function AtlasLoaderPlugin(fileExtension: string, plugin: IAtlasLoader): (target: Object) => void;
+}
+
+declare module BABYLON {
+    class Text2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        vb: WebGLBuffer;
+        ib: WebGLBuffer;
+        instancingAttributes: InstancingAttributeInfo[];
+        fontTexture: BaseFontTexture;
+        effect: Effect;
+        effectInstanced: Effect;
+        fontPremulAlpha: boolean;
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Text2DInstanceData extends InstanceDataBase {
+        constructor(partId: number, dataElementCount: number);
+        topLeftUV: Vector2;
+        sizeUV: Vector2;
+        textureSize: Vector2;
+        color: Color4;
+        superSampleFactor: number;
+    }
+    class Text2D extends RenderablePrim2D {
+        static TEXT2D_MAINPARTID: number;
+        static TEXT2D_CATEGORY_SDF: string;
+        static TEXT2D_CATEGORY_FONTTEXTURE: string;
+        static fontProperty: Prim2DPropInfo;
+        static defaultFontColorProperty: Prim2DPropInfo;
+        static textProperty: Prim2DPropInfo;
+        static sizeProperty: Prim2DPropInfo;
+        static fontSuperSampleProperty: Prim2DPropInfo;
+        static fontSignedDistanceFieldProperty: Prim2DPropInfo;
+        static textureIsPremulAlphaProperty: Prim2DPropInfo;
+        static fontTextureProperty: Prim2DPropInfo;
+        /**
+         * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
+         */
+        static readonly AlignLeft: number;
+        /**
+         * Alignment is made relative to the top edge of the Content Area. Valid for vertical alignment only.
+         */
+        static readonly AlignTop: number;
+        /**
+         * Alignment is made relative to the right edge of the Content Area. Valid for horizontal alignment only.
+         */
+        static readonly AlignRight: number;
+        /**
+         * Alignment is made relative to the bottom edge of the Content Area. Valid for vertical alignment only.
+         */
+        static readonly AlignBottom: number;
+        /**
+         * Alignment is made to center the text from equal distance to the opposite edges of the Content Area
+         */
+        static readonly AlignCenter: number;
+        private static _AlignLeft;
+        private static _AlignTop;
+        private static _AlignRight;
+        private static _AlignBottom;
+        private static _AlignCenter;
+        fontName: string;
+        defaultFontColor: Color4;
+        text: string;
+        size: Size;
+        readonly fontSuperSample: boolean;
+        readonly fontSignedDistanceField: boolean;
+        textureIsPremulAlpha: boolean;
+        readonly isSizeAuto: boolean;
+        readonly isVerticalSizeAuto: boolean;
+        readonly isHorizontalSizeAuto: boolean;
+        /**
+         * Get the area that bounds the text associated to the primitive
+         */
+        readonly textSize: Size;
+        protected onSetOwner(): void;
+        readonly fontTexture: BaseFontTexture;
+        /**
+         * Dispose the primitive, remove it from its parent
+         */
+        dispose(): boolean;
+        protected updateLevelBoundingInfo(): boolean;
+        /**
+         * You can get/set the text alignment through this property
+         */
+        textAlignment: string;
+        /**
+         * Create a Text primitive
+         * @param text the text to display
+         * @param settings a combination of settings, possible ones are
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
+         * - zOrder: override the zOrder with the specified value
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
+         * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
+         * - bitmapFontTexture: set a BitmapFontTexture to use instead of a fontName.
+         * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - useBilinearFiltering: if true a FontTexture using Bilinear filtering will be used, if false a FontTexture using Nearest filtering will be used. If not specified then bilinear will be chosen for Signed Distance Field mode or a Text2D inside a WorldSpaceCanvas2D, otherwise nearest will be chose.
+         * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         * - isVisible: true if the text must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         * - textAlignmentH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignmentV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignment: a string defining the text alignment, text can be: [<h:|horizontal:><left|right|center>], [<v:|vertical:><top|bottom|center>]
+         * - wordWrap: if true the text will wrap inside content area
+         */
+        constructor(text: string, settings?: {
+            parent?: Prim2DBase;
+            children?: Array<Prim2DBase>;
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            fontName?: string;
+            fontSuperSample?: boolean;
+            fontSignedDistanceField?: boolean;
+            bitmapFontTexture?: BitmapFontTexture;
+            defaultFontColor?: Color4;
+            useBilinearFiltering?: boolean;
+            size?: Size;
+            tabulationSize?: number;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: number | string;
+            textAlignmentH?: number;
+            textAlignmentV?: number;
+            textAlignment?: string;
+            wordWrap?: boolean;
         });
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
@@ -3000,7 +4020,12 @@ declare module BABYLON {
         protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _isWhiteSpaceCharHoriz(char);
+        private _isWhiteSpaceCharVert(char);
         private _updateCharCount();
+        private _setTextAlignmentfromString(value);
+        private _setTextAlignmentHorizontal(text);
+        private _setTextAlignmentVertical(text);
         protected _useTextureAlpha(): boolean;
         protected _shouldUseAlphaFromTexture(): boolean;
         private _fontTexture;
@@ -3012,6 +4037,14 @@ declare module BABYLON {
         private _defaultFontColor;
         private _text;
         private _textSize;
+        private _wordWrap;
+        private _textAlignment;
+        private _sizeSetByUser;
+        private _textureIsPremulAlpha;
+        private _useBilinearFiltering;
+        private _fontBilinearFiltering;
+        textAlignmentH: number;
+        textAlignmentV: number;
     }
 }
 
@@ -3086,7 +4119,7 @@ declare module BABYLON {
         protected readonly boundingMin: Vector2;
         protected readonly boundingMax: Vector2;
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
@@ -3098,6 +4131,7 @@ declare module BABYLON {
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - alignToPixel: if true the primitive will be aligned to the target rendering device's pixel
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -3112,6 +4146,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -3138,6 +4175,7 @@ declare module BABYLON {
             scaleX?: number;
             scaleY?: number;
             dontInheritParentScale?: boolean;
+            alignToPixel?: boolean;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -3152,6 +4190,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -3164,7 +4205,7 @@ declare module BABYLON {
             paddingLeft?: number | string;
             paddingRight?: number | string;
             paddingBottom?: number | string;
-            padding?: string;
+            padding?: number | string;
         });
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         private _perp(v, res);
@@ -3183,6 +4224,7 @@ declare module BABYLON {
         private _buildCap(vb, vbi, ib, ibi, pos, thickness, borderThickness, type, capDir, contour);
         private _buildLine(vb, contour, ht, bt?);
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Lines2DRenderCache;
+        protected updateTriArray(): void;
         private _computeLines2D();
         readonly size: Size;
         protected createInstanceDataParts(): InstanceDataBase[];
@@ -3202,11 +4244,6 @@ declare module BABYLON {
         private _borderIB;
         private _boundingMin;
         private _boundingMax;
-        private _contour;
-        private _startCapContour;
-        private _startCapTriIndices;
-        private _endCapContour;
-        private _endCapTriIndices;
         private _closed;
         private _startCap;
         private _endCap;
@@ -3267,6 +4304,9 @@ declare module BABYLON {
             isScreenSpace?: boolean;
             cachingStrategy?: number;
             enableInteraction?: boolean;
+            enableCollisionManager?: boolean;
+            customCollisionManager?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase;
+            collisionManagerUseBorders?: boolean;
             origin?: Vector2;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
@@ -3279,20 +4319,22 @@ declare module BABYLON {
         readonly drawCallsTransparentCounter: PerfCounter;
         readonly groupRenderCounter: PerfCounter;
         readonly updateTransparentDataCounter: PerfCounter;
-        readonly cachedGroupRenderCounter: PerfCounter;
         readonly updateCachedStateCounter: PerfCounter;
         readonly updateLayoutCounter: PerfCounter;
         readonly updatePositioningCounter: PerfCounter;
         readonly updateLocalTransformCounter: PerfCounter;
         readonly updateGlobalTransformCounter: PerfCounter;
         readonly boundingInfoRecomputeCounter: PerfCounter;
+        readonly layoutBoundingInfoUpdateCounter: PerfCounter;
+        readonly canvasRenderTimeCounter: PerfCounter;
         static readonly instances: Array<Canvas2D>;
+        readonly primitiveCollisionManager: PrimitiveCollisionManagerBase;
         protected _canvasPreInit(settings: any): void;
         static _zMinDelta: number;
         private _setupInteraction(enable);
         /**
          * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
-         * Beware that you have to take under consideration the origin in your calculations! Good luck!
+         * Beware that you have to take under consideration the origin and unitScaleFactor in your calculations! Good luck!
          */
         worldSpaceToNodeLocal: (worldPos: Vector3) => Vector2;
         /**
@@ -3324,7 +4366,6 @@ declare module BABYLON {
         private _debugExecObserver(prim, mask);
         private _bubbleNotifyPrimPointerObserver(prim, mask, eventData);
         private _triggerActionManager(prim, ppi, mask, eventData);
-        _notifParents(prim: Prim2DBase, mask: number): void;
         /**
          * Don't forget to call the dispose method when you're done with the Canvas instance.
          * But don't worry, if you dispose its scene, the canvas will be automatically disposed too.
@@ -3340,10 +4381,6 @@ declare module BABYLON {
          * @returns The instance of the Engine object
          */
         readonly engine: Engine;
-        /**
-         * return a unique identifier for the Canvas2D
-         */
-        readonly uid: string;
         /**
          * And observable called during the Canvas rendering process.
          * This observable is called twice per render, each time with a different mask:
@@ -3399,6 +4436,7 @@ declare module BABYLON {
         readonly fitRenderingDevice: boolean;
         readonly designSize: Size;
         readonly designSizeUseHorizAxis: boolean;
+        designSizeUseHorizeAxis: boolean;
         /**
          * Return
          */
@@ -3408,6 +4446,7 @@ declare module BABYLON {
          * @returns {}
          */
         readonly _engineData: Canvas2DEngineBoundData;
+        readonly unitScaleFactor: number;
         createCanvasProfileInfoCanvas(): Canvas2D;
         /**
          * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
@@ -3420,13 +4459,12 @@ declare module BABYLON {
         _addDrawCallCount(count: number, renderMode: number): void;
         _addGroupRenderCount(count: number): void;
         _addUpdateTransparentDataCount(count: number): void;
-        addCachedGroupRenderCounter(count: number): void;
         addUpdateCachedStateCounter(count: number): void;
         addUpdateLayoutCounter(count: number): void;
         addUpdatePositioningCounter(count: number): void;
         addupdateLocalTransformCounter(count: number): void;
         addUpdateGlobalTransformCounter(count: number): void;
-        private _uid;
+        addLayoutBoundingInfoUpdateCounter(count: number): void;
         private _renderObservable;
         private __engineData;
         private _interactionEnabled;
@@ -3459,34 +4497,49 @@ declare module BABYLON {
         private _beforeRenderObserver;
         private _afterRenderObserver;
         private _supprtInstancedArray;
+        protected _unitScaleFactor: number;
         private _trackedGroups;
+        protected _trackNode: Node;
+        protected _trackNodeOffset: Vector3;
+        protected _trackNodeBillboard: boolean;
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize;
         private _designUseHorizAxis;
+        _primitiveCollisionManager: PrimitiveCollisionManagerBase;
+        _canvasLevelScale: Vector2;
         _renderingSize: Size;
+        private _curHWScale;
         private _drawCallsOpaqueCounter;
         private _drawCallsAlphaTestCounter;
         private _drawCallsTransparentCounter;
         private _groupRenderCounter;
         private _updateTransparentDataCounter;
-        private _cachedGroupRenderCounter;
         private _updateCachedStateCounter;
         private _updateLayoutCounter;
         private _updatePositioningCounter;
         private _updateGlobalTransformCounter;
         private _updateLocalTransformCounter;
         private _boundingInfoRecomputeCounter;
+        private _layoutBoundingInfoUpdateCounter;
+        private _canvasRenderTimeCounter;
         private _profilingCanvas;
         private _profileInfoText;
         private static _v;
+        private static _cv1;
         private static _m;
         private static _mI;
+        private static tS;
+        private static tT;
+        private static tR;
+        private static _tmpMtx;
+        private static _tmpVec3;
         private _updateTrackedNodes();
         /**
          * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
          */
         updateCanvasLayout(forceRecompute: boolean): void;
         private _updateAdaptiveSizeWorldCanvas();
+        private static _pCLS;
         private _updateCanvasState(forceRecompute);
         /**
          * Method that renders the Canvas, you should not invoke
@@ -3558,10 +4611,14 @@ declare module BABYLON {
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -3581,8 +4638,12 @@ declare module BABYLON {
         constructor(scene: Scene, size: Size, settings?: {
             children?: Array<Prim2DBase>;
             id?: string;
+            unitScaleFactor?: number;
             worldPosition?: Vector3;
             worldRotation?: Quaternion;
+            trackNode?: Node;
+            trackNodeOffset?: Vector3;
+            trackNodeBillboard?: boolean;
             sideOrientation?: number;
             cachingStrategy?: number;
             enableInteraction?: boolean;
@@ -3600,6 +4661,9 @@ declare module BABYLON {
             padding?: string;
         });
         dispose(): boolean;
+        trackNode: Node;
+        trackNodeOffset: Vector3;
+        trackNodeBillboard: boolean;
         private _customWorldSpaceNode;
     }
     class ScreenSpaceCanvas2D extends Canvas2D {
@@ -3654,6 +4718,9 @@ declare module BABYLON {
             cachingStrategy?: number;
             cacheBehavior?: number;
             enableInteraction?: boolean;
+            enableCollisionManager?: boolean;
+            customCollisionManager?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase;
+            collisionManagerUseBorders?: boolean;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
             backgroundFill?: IBrush2D | string;

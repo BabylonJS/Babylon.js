@@ -16,7 +16,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 
 #include<lightsFragmentFunctions>
@@ -73,7 +73,10 @@ void main(void) {
     lightingInfo info;
 	float shadow = 1.;
     float glossiness = 0.;
-    
+
+#ifdef SPECULARTERM
+	vec3 specularBase = vec3(0., 0., 0.);
+#endif    
 #include<lightFragment>[0..maxSimultaneousLights]
 
 

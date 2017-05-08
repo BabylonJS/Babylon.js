@@ -2,37 +2,38 @@
     #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
-        #ifndef SPECULARTERM
-            vec3 vLightSpecular{X} = vec3(0.);
-        #endif
         #ifdef SPOTLIGHT{X}
-            info = computeSpotLighting(viewDirectionW, normalW, vLightData{X}, vLightDirection{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
+            info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
         #endif
         #ifdef HEMILIGHT{X}
-            info = computeHemisphericLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightGround{X}, glossiness);
+            info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, glossiness);
         #endif
         #if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-            info = computeLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
+            info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
         #endif
     #endif
 	#ifdef SHADOW{X}
-		#ifdef SHADOWVSM{X}
-			shadow = computeShadowWithVSM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.z, shadowsInfo{X}.x);
-		#else
-		#ifdef SHADOWPCF{X}
+		#ifdef SHADOWESM{X}
 			#if defined(POINTLIGHT{X})
-				shadow = computeShadowWithPCFCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+				shadow = computeShadowWithESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
 			#else
-				shadow = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.y, shadowsInfo{X}.z, shadowsInfo{X}.x);
+				shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
 			#endif
-		#else
-			#if defined(POINTLIGHT{X})
-				shadow = computeShadowCube(vLightData{X}.xyz, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+		#else	
+			#ifdef SHADOWPCF{X}
+				#if defined(POINTLIGHT{X})
+					shadow = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+				#else
+					shadow = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+				#endif
 			#else
-				shadow = computeShadow(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.x, shadowsInfo{X}.z);
+				#if defined(POINTLIGHT{X})
+					shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x);
+				#else
+					shadow = computeShadow(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x);
+				#endif
 			#endif
 		#endif
-	#endif
 	#else
 		shadow = 1.;
 	#endif

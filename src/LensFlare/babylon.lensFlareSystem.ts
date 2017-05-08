@@ -18,7 +18,7 @@
 
         constructor(public name: string, emitter: any, scene: Scene) {
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._emitter = emitter;
             this.id = name;
             scene.lensFlareSystems.push(this);
@@ -275,7 +275,7 @@
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
-                var flare = new LensFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+                var flare = new LensFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
             }
 
             return lensFlareSystem;

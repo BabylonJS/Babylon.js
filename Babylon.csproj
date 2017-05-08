@@ -24,7 +24,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.1</TypeScriptToolsVersion>
     <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -154,7 +154,7 @@
     <TypeScriptCompile Include="src\Materials\Textures\babylon.colorGradingTexture.ts" />
     <TypeScriptCompile Include="src\Materials\Textures\babylon.cubeTexture.ts" />
     <TypeScriptCompile Include="src\Materials\Textures\babylon.dynamicTexture.ts" />
-    <TypeScriptCompile Include="src\Materials\Textures\babylon.fontTexture.ts" />
+    <TypeScriptCompile Include="canvas2D\src\Engine\babylon.fontTexture.ts" />
     <TypeScriptCompile Include="src\Materials\Textures\babylon.mapTexture.ts" />
     <TypeScriptCompile Include="src\Materials\Textures\babylon.refractionTexture.ts" />
     <TypeScriptCompile Include="src\Materials\Textures\babylon.mirrorTexture.ts" />
@@ -173,6 +173,7 @@
     <TypeScriptCompile Include="src\Tools\babylon.decorators.ts" />
     <TypeScriptCompile Include="src\Tools\babylon.dynamicFloatArray.ts" />
     <TypeScriptCompile Include="src\Tools\babylon.earcut.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.khronosTextureContainer.ts" />
     <TypeScriptCompile Include="src\Tools\babylon.observable.ts" />
     <TypeScriptCompile Include="src\Tools\babylon.rectPackingMap.ts" />
     <TypeScriptCompile Include="src\Tools\babylon.stringDictionary.ts" />
@@ -542,7 +543,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:51793/</IISUrl>
+          <IISUrl>http://localhost:10683/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

@@ -478,6 +478,7 @@ namespace Max2Babylon
                     var instanceRotation = instanceLocalTM.Rotation;
                     var instanceScale = instanceLocalTM.Scaling;
 
+                    instance.id = instanceGameNode.MaxNode.GetGuid().ToString();
                     instance.position = new[] { instanceTrans.X, instanceTrans.Y, instanceTrans.Z };
 
                     if (exportQuaternions)
@@ -490,6 +491,11 @@ namespace Max2Babylon
                     }
 
                     instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
+
+                    if (instanceGameNode.NodeParent != null)
+                    {
+                        instance.parentId = GetParentID(instanceGameNode.NodeParent, babylonScene, scene);
+                    }
                 }
                 var instanceAnimations = new List<BabylonAnimation>();
                 GenerateCoordinatesAnimations(meshNode, instanceAnimations);

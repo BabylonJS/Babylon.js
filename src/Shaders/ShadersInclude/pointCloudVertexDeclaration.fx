@@ -1,3 +1,3 @@
-﻿#ifdef POINTSIZE
+#ifdef POINTSIZE
 	uniform float pointSize;
 #endif

@@ -1,4 +1,7 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.targetCamera.ts" />
+/// <reference path="..\Tools\babylon.tools.ts" />
+
+module BABYLON {
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
         public alpha: number;
@@ -9,8 +12,16 @@
         @serialize()
         public radius: number;
 
-        @serializeAsVector3()
-        public target: Vector3;
+        @serializeAsVector3("target")
+        private _target: Vector3;
+        private _targetHost: AbstractMesh;
+
+        public get target(): Vector3 {
+            return this._target;
+        }
+        public set target(value: Vector3) {
+            this.setTarget(value);
+        }
 
         @serialize()
         public inertialAlphaOffset = 0;
@@ -184,7 +195,7 @@
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
         public collisionRadius = new Vector3(0.5, 0.5, 0.5);
-        private _collider = new Collider();
+        private _collider: Collider;
         private _previousPosition = Vector3.Zero();
         private _collisionVelocity = Vector3.Zero();
         private _newPosition = Vector3.Zero();
@@ -199,10 +210,9 @@
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
-            if (!target) {
-                this.target = Vector3.Zero();
-            } else {
-                this.target = target;
+            this._target = Vector3.Zero();
+            if (target) {
+                this.setTarget(target);
             }
 
             this.alpha = alpha;
@@ -211,13 +221,13 @@
 
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
+            this.inputs.addKeyboard().addMouseWheel().addPointers();
         }      
 
         // Cache
         public _initCache(): void {
             super._initCache();
-            this._cache.target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache._target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
@@ -229,7 +239,7 @@
                 super._updateCache();
             }
 
-            this._cache.target.copyFrom(this._getTargetPosition());
+            this._cache._target.copyFrom(this._getTargetPosition());
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
@@ -237,12 +247,16 @@
         }
 
         private _getTargetPosition(): Vector3 {
-            if ((<any>this.target).getAbsolutePosition) {
-                var pos : Vector3 = (<any>this.target).getAbsolutePosition();
-                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
+            if (this._targetHost && this._targetHost.getAbsolutePosition) {
+                var pos : Vector3 = this._targetHost.getAbsolutePosition();
+                if (this._targetBoundingCenter) {
+                    pos.addToRef(this._targetBoundingCenter, this._target);
+                } else {
+                    this._target.copyFrom(pos);
+                }
             }
 
-            return this.target;
+            return this._target;
         }
 
         // Synchronized
@@ -250,7 +264,7 @@
             if (!super._isSynchronizedViewMatrix())
                 return false;
 
-            return this._cache.target.equals(this.target)
+            return this._cache._target.equals(this._target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -333,8 +347,8 @@
                     this._transformedDirection.y = 0;
                 }
 
-                if (!(<any>this.target).getAbsolutePosition) {
-                    this.target.addInPlace(this._transformedDirection);
+                if (!this._targetHost) {
+                    this._target.addInPlace(this._transformedDirection);
                 }                
             }
 
@@ -406,17 +420,26 @@
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: Vector3, toBoundingCenter = false): void {            
-            if (this._getTargetPosition().equals(target)) {
-                return;
-            }
-            
-            if (toBoundingCenter && (<any>target).getBoundingInfo){
-                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.center.clone();
-            }else{
+        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {                        
+
+            if ((<any>target).getBoundingInfo){
+                if (toBoundingCenter){
+                    this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
+                } else {
+                    this._targetBoundingCenter = null;
+                }
+                this._targetHost = <AbstractMesh>target;
+                this._target = this._getTargetPosition();
+            } else {
+                var newTarget = <Vector3>target;
+                var currentTarget = this._getTargetPosition();
+                if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
+                   return;
+                }
+                this._target = newTarget;
                 this._targetBoundingCenter = null;
             }
-            this.target = target;
+
             this.rebuildAnglesAndRadius();
         }
 
@@ -434,6 +457,9 @@
             var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
+                if (!this._collider) {
+                    this._collider = new Collider();
+                }
                 this._collider.radius = this.collisionRadius;
                 this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
@@ -442,7 +468,7 @@
                 this.position.copyFrom(this._newPosition);
 
                 var up = this.upVector;
-                if (this.allowUpsideDown && this.beta < 0) {
+                if (this.allowUpsideDown && sinb < 0) {
                     up = up.clone();
                     up = up.negate();
                 }
@@ -527,7 +553,7 @@
                 distance = meshesOrMinMaxVectorAndDistance.distance;
             }
 
-            this.target = Mesh.Center(meshesOrMinMaxVector);
+            this._target = Mesh.Center(meshesOrMinMaxVector);
 
             if (!doNotUpdateMaxZ) {
                 this.maxZ = distance * 2;
@@ -551,7 +577,7 @@
                     alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                     break;
            }
-            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
             rigCam._cameraRigParams = {};
             return rigCam;
         }

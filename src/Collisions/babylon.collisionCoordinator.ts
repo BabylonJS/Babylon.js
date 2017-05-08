@@ -47,7 +47,7 @@ module BABYLON {
     export interface SerializedGeometry {
         id: string;
         positions: Float32Array;
-        indices: Int32Array;
+        indices: Uint32Array;
         normals: Float32Array;
         //uvs?: Float32Array;
     }
@@ -181,7 +181,7 @@ module BABYLON {
                 id: geometry.id,
                 positions: new Float32Array(geometry.getVerticesData(VertexBuffer.PositionKind) || []),
                 normals: new Float32Array(geometry.getVerticesData(VertexBuffer.NormalKind) || []),
-                indices: new Int32Array(geometry.getIndices() || []),
+                indices: new Uint32Array(geometry.getIndices() || []),
                 //uvs: new Float32Array(geometry.getVerticesData(VertexBuffer.UVKind) || [])
             }
         }
@@ -385,12 +385,15 @@ module BABYLON {
                 return;
             }
 
+            // Check if this is a mesh else camera or -1
+            var collisionMask = (excludedMesh ? excludedMesh.collisionMask : collider.collisionMask);
+
             collider._initialize(position, velocity, closeDistance);
 
             // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh &&  ((collisionMask & mesh.collisionGroup) !== 0)) {
                     mesh._checkCollision(collider);
                 }
             }

@@ -44,6 +44,7 @@ Shader "BabylonJS/Materials/PBR Material"
 
 		// Babylon Properties (Lighting & Blending)
 		[Enum(Disable,0,Additive,1,Combine,2,Subtract,3,Multiply,4,Maximized,5,OneOne,6)] _AlphaMode ("Alpha Blending Mode", int) = 2
+		[ToggleOff] _BackFaceCulling("Back Face Culling", Int) = 1
 		[ToggleOff] _DisableLighting("Disable Surface Lighting", Int) = 0
 		[ToggleOff] _UseEmissiveAsIllumination("Use Emissive Illumination", Int) = 0
 

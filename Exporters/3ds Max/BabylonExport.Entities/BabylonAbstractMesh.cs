@@ -6,6 +6,9 @@ namespace BabylonExport.Entities
     public class BabylonAbstractMesh: BabylonIAnimatable
     {
         [DataMember]
+        public string id { get; set; }
+
+        [DataMember]
         public string name { get; set; }
         
         [DataMember]
@@ -37,6 +40,9 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public bool autoAnimateLoop { get; set; }
+
+        [DataMember]
+        public string parentId { get; set; }
 
         public BabylonAbstractMesh()
         {

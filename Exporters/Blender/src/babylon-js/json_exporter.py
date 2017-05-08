@@ -30,7 +30,7 @@ class JsonExporter:
             if bpy.ops.object.mode_set.poll():
                 bpy.ops.object.mode_set(mode = 'OBJECT')
 
-            # assign texture location, purely temporary if inlining
+            # assign texture location, purely temporary if in-lining
             self.textureDir = path.dirname(filepath)
             if not scene.inlineTextures:
                 self.textureDir = path.join(self.textureDir, scene.textureDir)
@@ -45,7 +45,6 @@ class JsonExporter:
             Logger.log('inline textures:  ' + format_bool(scene.inlineTextures), 2)
             if not scene.inlineTextures:
                 Logger.log('texture directory:  ' + self.textureDir, 2)
-                
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()
@@ -66,6 +65,7 @@ class JsonExporter:
             self.materials = []
             self.multiMaterials = []
             self.sounds = []
+            self.needPhysics = False
 
             # Scene level sound
             if scene.attachedSound != '':
@@ -98,10 +98,12 @@ class JsonExporter:
                     while True and self.isInSelectedLayer(object, scene):
                         mesh = Mesh(object, scene, nextStartFace, forcedParent, nameID, self)
                         if mesh.hasUnappliedTransforms and hasattr(mesh, 'skeletonWeights'):
-                            self.fatalError = 'Mesh: ' + mesh.name + ' has unapplied transformations.  This will never work for a mesh with an armature.  Export cancelled'
+                            self.fatalError = 'Mesh: ' + mesh.name + ' has un-applied transformations.  This will never work for a mesh with an armature.  Export cancelled'
                             Logger.log(self.fatalError)
                             return
 
+                        if hasattr(mesh, 'physicsImpostor'): self.needPhysics = True
+                        
                         if hasattr(mesh, 'instances'):
                             self.meshesAndNodes.append(mesh)
                         else:
@@ -161,7 +163,7 @@ class JsonExporter:
         file_handler = open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
         file_handler.write('"producer":{"name":"Blender","version":"' + bpy.app.version_string + '","exporter_version":"' + format_exporter_version() + '","file":"' + JsonExporter.nameSpace + '.babylon"},\n')
-        self.world.to_scene_file(file_handler)
+        self.world.to_scene_file(file_handler, self.needPhysics)
 
         # Materials
         file_handler.write(',\n"materials":[')
