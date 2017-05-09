@@ -2641,7 +2641,7 @@
          * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.       
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
             var options = {
                 width: width,
                 height: height,
