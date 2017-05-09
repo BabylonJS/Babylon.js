@@ -53,6 +53,30 @@
     }
 
 
+    export class Scalar {
+        /**
+         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+         */
+        public static Lerp(start: number, end: number, amount: number): number {
+            return start + ((end - start) * amount);
+        }
+
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        public static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+
+            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+        }
+    }
+
+
     export class Color3 {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.  
@@ -899,7 +923,7 @@
         }
 
         /**
-         * Returns a new Vecto2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".  
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
          */
         public static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
@@ -1586,7 +1610,7 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".  
+         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
          */
         public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
@@ -2849,6 +2873,9 @@
             result.w = (num3 * left.w) + (num2 * right.w);
         }
 
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
         public static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion {
             var squared = amount * amount;
             var cubed = amount * squared;
