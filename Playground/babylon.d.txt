@@ -1,3 +1,6 @@
+declare var engine: BABYLON.Engine;
+declare var canvas: HtmlCanvasElement;
+
 declare module BABYLON {
     class InstancingAttributeInfo {
         /**
