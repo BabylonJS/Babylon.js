@@ -1222,7 +1222,8 @@
                     "../../gui/src/controls/container.ts",
                     "../../gui/src/controls/rectangle.ts",
                     "../../gui/src/controls/textBlock.ts",
-                    "../../gui/src/controls/image.ts"
+                    "../../gui/src/controls/image.ts",
+                    "../../gui/src/controls/button.ts"
                 ],
                 "output": "babylon.gui.js"
             }
