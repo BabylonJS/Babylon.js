@@ -389,6 +389,7 @@
         /**
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).  
          * If `copywhenShared` is true (default false) and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * You can force the copy with forceCopy === true
          * Returns null if the mesh has no geometry or no vertex buffer.    
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -404,11 +405,11 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind, copyWhenShared);
+            return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         }
 
         /**
@@ -2997,7 +2998,7 @@
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], false, true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
 
                     if (vertexData) {

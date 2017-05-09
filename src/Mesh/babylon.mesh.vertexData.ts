@@ -4,7 +4,7 @@
     export interface IGetSetVerticesData
     {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array;
         getIndices(copyWhenShared?: boolean): IndicesArray;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
@@ -427,74 +427,74 @@
         /**
          * Returns the object VertexData associated to the passed mesh.  
          */
-        public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData {
-            return VertexData._ExtractFrom(mesh, copyWhenShared);
+        public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
+            return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
         }
 
         /**
          * Returns the object VertexData associated to the passed geometry.  
          */
-        public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData {
-            return VertexData._ExtractFrom(geometry, copyWhenShared);
+        public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
+            return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
         }
 
-        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean): VertexData {
+        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             var result = new VertexData();
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared);
+                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared);
+                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                result.tangents = meshOrGeometry.getVerticesData(VertexBuffer.TangentKind, copyWhenShared);
+                result.tangents = meshOrGeometry.getVerticesData(VertexBuffer.TangentKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared);
+                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                result.uvs2 = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                result.uvs3 = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                result.uvs4 = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                result.uvs5 = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared);
+                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind, copyWhenShared);
+                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared);
+                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesExtraKind)) {
-                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesExtraKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
-                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
 
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
