@@ -86,6 +86,7 @@
             this._deleteBuffer = deleteBuffer;
             this._format = format;
 
+            scene = this.getScene();
             if (!url) {
                 return;
             }
