@@ -63,6 +63,30 @@ var __extends = (this && this.__extends) || (function () {
         return MathTools;
     }());
     BABYLON.MathTools = MathTools;
+    var Scalar = (function () {
+        function Scalar() {
+        }
+        /**
+         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+         */
+        Scalar.Lerp = function (start, end, amount) {
+            return start + ((end - start) * amount);
+        };
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        Scalar.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+        };
+        return Scalar;
+    }());
+    BABYLON.Scalar = Scalar;
     var Color3 = (function () {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
@@ -859,7 +883,7 @@ var __extends = (this && this.__extends) || (function () {
             return new Vector2(x, y);
         };
         /**
-         * Returns a new Vecto2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
          */
         Vector2.Hermite = function (value1, tangent1, value2, tangent2, amount) {
             var squared = amount * amount;
@@ -2661,6 +2685,9 @@ var __extends = (this && this.__extends) || (function () {
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
         };
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
         Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
@@ -18059,7 +18086,8 @@ var BABYLON;
         };
         BaseTexture.prototype.isReady = function () {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                return true;
+                this.delayLoad();
+                return false;
             }
             if (this._texture) {
                 return this._texture.isReady;
@@ -32723,7 +32751,10 @@ var BABYLON;
             this._easingFunction = easingFunction;
         };
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
-            return startValue + (endValue - startValue) * gradient;
+            return BABYLON.Scalar.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.floatInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
@@ -32796,7 +32827,7 @@ var BABYLON;
                     var startKey = this._keys[key];
                     var startValue = this._getKeyValue(startKey.value);
                     var endValue = this._getKeyValue(endKey.value);
-                    var useTangent = startKey.outTangent && endKey.inTangent;
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                     var frameDelta = endKey.frame - startKey.frame;
                     // gradient : percent of currentFrame between the frame inf and the frame sup
                     var gradient = (currentFrame - startKey.frame) / frameDelta;
@@ -32807,25 +32838,26 @@ var BABYLON;
                     switch (this.dataType) {
                         // Float
                         case Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return floatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return offsetValue * repeatCount + floatValue;
                             }
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quaternion;
+                                    return quatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quaternion.add(offsetValue.scale(repeatCount));
+                                    return quatValue.add(offsetValue.scale(repeatCount));
                             }
-                            return quaternion;
+                            return quatValue;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
                             var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
@@ -57277,6 +57309,7 @@ var BABYLON;
         function MorphTarget(name, influence) {
             if (influence === void 0) { influence = 0; }
             this.name = name;
+            this.animations = new Array();
             this.onInfluenceChanged = new BABYLON.Observable();
             this.influence = influence;
         }

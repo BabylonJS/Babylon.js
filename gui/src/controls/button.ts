@@ -14,12 +14,12 @@ module BABYLON.GUI {
             var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
             textBlock.textWrapping = true;
             textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            textBlock.marginLeft = 0.2;
+            textBlock.marginLeft = "20%";
             result.addControl(textBlock);   
 
             // Adding image
             var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
-            iconImage.width = 0.2;
+            iconImage.width = "20%";
             iconImage.stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
             iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             result.addControl(iconImage);            

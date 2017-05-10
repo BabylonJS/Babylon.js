@@ -4,8 +4,10 @@ declare module BABYLON.GUI {
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
+        private _pointerMoveObserver;
         private _background;
         private _rootContainer;
+        _lastControlOver: Control;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
@@ -15,6 +17,8 @@ declare module BABYLON.GUI {
         private _onResize();
         private _checkUpdate();
         private _render();
+        private _doPicking(x, y, type);
+        attach(): void;
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground: boolean, scene: Scene): AdvancedDynamicTexture;
     }
@@ -83,6 +87,26 @@ declare module BABYLON.GUI {
         private _marginBottom;
         private _left;
         private _top;
+        /**
+        * An event triggered when the pointer move over the control.
+        * @type {BABYLON.Observable}
+        */
+        onPointerMoveObservable: Observable<Control>;
+        /**
+        * An event triggered when the pointer move out of the control.
+        * @type {BABYLON.Observable}
+        */
+        onPointerOutObservable: Observable<Control>;
+        /**
+        * An event triggered when the pointer taps the control
+        * @type {BABYLON.Observable}
+        */
+        onPointerDownObservable: Observable<Control>;
+        /**
+        * An event triggered when pointer up
+        * @type {BABYLON.Observable}
+        */
+        onPointerUpObservable: Observable<Control>;
         horizontalAlignment: number;
         verticalAlignment: number;
         width: string;
@@ -108,6 +132,9 @@ declare module BABYLON.GUI {
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _contains(x: number, y: number): boolean;
+        _processPicking(x: number, y: number, type: number): boolean;
+        protected _processObservables(type: number): boolean;
         private _prepareFont();
         private static _HORIZONTAL_ALIGNMENT_LEFT;
         private static _HORIZONTAL_ALIGNMENT_RIGHT;
@@ -142,6 +169,7 @@ declare module BABYLON.GUI {
         _reOrderControl(control: Control): void;
         protected _localDraw(context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
@@ -207,5 +235,14 @@ declare module BABYLON.GUI {
         static readonly STRETCH_NONE: number;
         static readonly STRETCH_FILL: number;
         static readonly STRETCH_UNIFORM: number;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class Button extends Rectangle {
+        name: string;
+        constructor(name: string);
+        static CreateImageButton(name: string, text: string, imageUrl: string): Button;
     }
 }
