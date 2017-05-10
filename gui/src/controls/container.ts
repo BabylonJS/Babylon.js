@@ -3,6 +3,7 @@
 module BABYLON.GUI {
     export class Container extends Control {
         private _children = new Array<Control>();
+        protected _measureForChildren = Measure.Empty();     
 
         constructor(public name: string) {
             super(name);
@@ -14,7 +15,7 @@ module BABYLON.GUI {
             if (index !== -1) {
                 return this;
             }
-            control._setRoot(this);
+            control._link(this, this._host);
 
             this._reOrderControl(control);
 
@@ -48,23 +49,49 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        protected _localDraw(context: CanvasRenderingContext2D): void {
+            // Implemented by child to be injected inside main draw
+        }
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            this._currentMeasure = parentMeasure.copy();
-
             context.save();
-            
-            if (this.font) {
-                context.font = this.font;
-            }
+            super._processMeasures(parentMeasure, context);
+           
+            this.applyStates(context);
 
-            if (this.color) {
-                context.fillStyle = this.color;
-            }
+            this._localDraw(context);
 
+            this._clipForChildren(context);
             for (var child of this._children) {
-                child._draw(this._currentMeasure, context);
+                child._draw(this._measureForChildren, context);
             }
             context.restore();
+        }
+
+        public _processPicking(x: number, y: number, type: number): boolean {
+            if (!super._contains(x, y)) {
+                return false;
+            }
+
+            // Checking backwards to pick closest first
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child._processPicking(x, y, type)) {
+                    return true;
+                }
+            }
+
+            return this._processObservables(type);
+        }
+
+        protected _clipForChildren(context: CanvasRenderingContext2D): void {
+            // DO nothing
+        }
+
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
+            super._additionalProcessing(parentMeasure, context);
+
+            this._measureForChildren.copyFrom(this._currentMeasure);
         }
     }    
 }

@@ -112,7 +112,8 @@
 
         public isReady(): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
-                return true;
+                this.delayLoad();
+                return false;
             }
 
             if (this._texture) {
