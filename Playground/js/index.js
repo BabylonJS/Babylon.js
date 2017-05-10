@@ -677,45 +677,6 @@
             jsEditor.getAction('editor.action.format').run();
         }
 
-        // ---------- UI
-
-        // Run
-        setToMultipleID("runButton", "click", compileAndRun);
-        // New
-        setToMultipleID("newButton", "click", createNewScript);
-        // Clear 
-        setToMultipleID("clearButton", "click", clear);
-        // Save
-        setToMultipleID("saveButton", "click", askForSave);
-        // Zip
-        setToMultipleID("zipButton", "click", getZip);
-        // Themes
-        setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
-        setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
-        // Safe mode
-        setToMultipleID("safemodeToggle", 'click', function () {
-            document.getElementById("safemodeToggle1600").classList.toggle('checked');
-            if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
-                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
-            } else {
-                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>');
-            }
-        });
-        // Editor
-        setToMultipleID("editorButton", "click", toggleEditor);
-        // FullScreen
-        setToMultipleID("fullscreenButton", "click", goFullscreen);
-        // Format
-        setToMultipleID("formatButton", "click", formatCode);
-        // Debug
-        setToMultipleID("debugButton", "click", toggleDebug);
-        // Metadata
-        setToMultipleID("metadataButton", "click", toggleMetadata);
-
-
-        // Restore theme
-        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
-        toggleTheme(theme);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {
@@ -891,6 +852,47 @@
         }
 
         checkHash(true);
+
+
+        // ---------- UI
+
+        // Run
+        setToMultipleID("runButton", "click", compileAndRun);
+        // New
+        setToMultipleID("newButton", "click", createNewScript);
+        // Clear 
+        setToMultipleID("clearButton", "click", clear);
+        // Save
+        setToMultipleID("saveButton", "click", askForSave);
+        // Zip
+        setToMultipleID("zipButton", "click", getZip);
+        // Themes
+        setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
+        setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
+        // Safe mode
+        setToMultipleID("safemodeToggle", 'click', function () {
+            document.getElementById("safemodeToggle1600").classList.toggle('checked');
+            if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+            } else {
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>');
+            }
+        });
+        // Editor
+        setToMultipleID("editorButton", "click", toggleEditor);
+        // FullScreen
+        setToMultipleID("fullscreenButton", "click", goFullscreen);
+        // Format
+        setToMultipleID("formatButton", "click", formatCode);
+        // Debug
+        setToMultipleID("debugButton", "click", toggleDebug);
+        // Metadata
+        setToMultipleID("metadataButton", "click", toggleMetadata);
+
+
+        // Restore theme
+        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+        toggleTheme(theme);
     }
 
     // Monaco
