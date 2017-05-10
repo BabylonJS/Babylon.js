@@ -22,8 +22,35 @@ module BABYLON.GUI {
         private _marginRight = new ValueAndUnit(0);
         private _marginTop = new ValueAndUnit(0);
         private _marginBottom = new ValueAndUnit(0);        
+        private _left = new ValueAndUnit(0);
+        private _top = new ValueAndUnit(0);
         
         // Properties
+
+        /**
+        * An event triggered when the pointer move over the control.
+        * @type {BABYLON.Observable}
+        */
+        public onPointerMoveObservable = new Observable<Control>();
+
+        /**
+        * An event triggered when the pointer move out of the control.
+        * @type {BABYLON.Observable}
+        */
+        public onPointerOutObservable = new Observable<Control>();        
+
+        /**
+        * An event triggered when the pointer taps the control
+        * @type {BABYLON.Observable}
+        */
+        public onPointerDownObservable = new Observable<Control>();     
+
+        /**
+        * An event triggered when pointer up
+        * @type {BABYLON.Observable}
+        */
+        public onPointerUpObservable = new Observable<Control>();     
+
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
         }
@@ -172,7 +199,27 @@ module BABYLON.GUI {
             if (this._marginBottom.fromString(value)) {
                 this._markAsDirty();
             }
-        }                
+        }     
+
+        public get left(): string {
+            return this._left.toString();
+        }
+
+        public set left(value: string) {
+            if (this._left.fromString(value)) {
+                this._markAsDirty();
+            }
+        }  
+
+        public get top(): string {
+            return this._top.toString();
+        }
+
+        public set top(value: string) {
+            if (this._top.fromString(value)) {
+                this._markAsDirty();
+            }
+        }                   
 
         // Functions
         constructor(public name: string) {
@@ -209,6 +256,14 @@ module BABYLON.GUI {
 
                 this._measure(parentMeasure, context);
                 this._computeAlignment(parentMeasure, context);
+
+                // Convert to int values
+                this._currentMeasure.left = this._currentMeasure.left | 0;
+                this._currentMeasure.top = this._currentMeasure.top | 0;
+                this._currentMeasure.width = this._currentMeasure.width | 0;
+                this._currentMeasure.height = this._currentMeasure.height | 0;
+
+                // Let children add more features
                 this._additionalProcessing(parentMeasure, context);
 
                 this._isDirty = false;
@@ -216,9 +271,13 @@ module BABYLON.GUI {
             }      
                         
             // Clip
+            this._clip(context);
+            context.clip();
+        }
+
+        protected _clip( context: CanvasRenderingContext2D) {
             context.beginPath();
             context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-            context.clip();
         }
 
         protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
@@ -273,27 +332,43 @@ module BABYLON.GUI {
             
             if (this._marginLeft.isPixel) {
                 this._currentMeasure.left += this._marginLeft.value;
+                this._currentMeasure.width -= this._marginRight.value;
             } else {
                 this._currentMeasure.left += parentWidth * this._marginLeft.value;
+                this._currentMeasure.width -= parentWidth * this._marginLeft.value;
             }
 
             if (this._marginRight.isPixel) {
-                this._currentMeasure.left -= this._marginRight.value;
+                this._currentMeasure.width -= this._marginRight.value;
             } else {
-                this._currentMeasure.left -= parentWidth * this._marginRight.value;
+                this._currentMeasure.width -= parentWidth * this._marginRight.value;
             }
 
             if (this._marginTop.isPixel) {
                 this._currentMeasure.top += this._marginTop.value;
+                this._currentMeasure.height -= this._marginTop.value;
             } else {
-                this._currentMeasure.top += parentWidth * this._marginTop.value;
+                this._currentMeasure.top += parentHeight * this._marginTop.value;
+                this._currentMeasure.height -= parentHeight * this._marginTop.value;
             }
 
             if (this._marginBottom.isPixel) {
-                this._currentMeasure.top -= this._marginBottom.value;
+                this._currentMeasure.height -= this._marginBottom.value;
             } else {
-                this._currentMeasure.top -= parentWidth * this._marginBottom.value;
+                this._currentMeasure.height -= parentHeight * this._marginBottom.value;
             }            
+
+            if (this._left.isPixel) {
+                this._currentMeasure.left += this._left.value;
+            } else {
+                this._currentMeasure.left += parentWidth * this._left.value;
+            }
+
+            if (this._top.isPixel) {
+                this._currentMeasure.top += this._top.value;
+            } else {
+                this._currentMeasure.top += parentHeight * this._top.value;
+            }
 
             this._currentMeasure.left += x;
             this._currentMeasure.top += y;            
@@ -305,6 +380,61 @@ module BABYLON.GUI {
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
+        }
+
+        protected _contains(x: number, y: number) : boolean {
+            if (x < this._currentMeasure.left) {
+                return false;
+            }
+
+            if (x > this._currentMeasure.left + this._currentMeasure.width) {
+                return false;
+            }
+
+            if (y < this._currentMeasure.top) {
+                return false;
+            }
+
+            if (y > this._currentMeasure.top + this._currentMeasure.height) {
+                return false;
+            } 
+
+            return true;
+        }
+
+        public _processPicking(x: number, y: number, type: number): boolean {
+            if (!this._contains(x, y)) {
+                return false;
+            }
+
+            this._processObservables(type);
+
+            return true;
+        }
+
+        protected _processObservables(type: number): boolean {
+            if (type === BABYLON.PointerEventTypes.POINTERMOVE && this.onPointerMoveObservable.hasObservers()) {
+                this.onPointerMoveObservable.notifyObservers(this);
+
+                var previousControlOver = this._host._lastControlOver;
+                if (previousControlOver && previousControlOver !== this && previousControlOver.onPointerOutObservable.hasObservers()) {
+                    previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+                }
+                this._host._lastControlOver = this;
+                return true;
+            }
+
+            if (type === BABYLON.PointerEventTypes.POINTERDOWN && this.onPointerDownObservable.hasObservers()) {
+                this.onPointerDownObservable.notifyObservers(this);
+                return true;
+            }
+
+            if (type === BABYLON.PointerEventTypes.POINTERUP && this.onPointerUpObservable.hasObservers()) {
+                this.onPointerUpObservable.notifyObservers(this);
+                return true;
+            }
+        
+            return false;
         }
 
         private _prepareFont() {

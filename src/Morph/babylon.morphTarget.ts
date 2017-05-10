@@ -1,5 +1,7 @@
 module BABYLON {
     export class MorphTarget {
+        public animations = new Array<Animation>();
+
         private _positions: Float32Array;
         private _normals: Float32Array;
         private _tangents: Float32Array;

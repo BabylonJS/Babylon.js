@@ -67,10 +67,6 @@ module BABYLON.GUI {
             this.text = text;
         }
 
-        protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            super._measure
-        }
-
         private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {
             var width = this._currentMeasure.width;
             var x = 0;
