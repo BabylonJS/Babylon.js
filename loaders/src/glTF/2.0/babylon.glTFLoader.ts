@@ -1,28 +1,145 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    /**
-    * Values
-    */
-    var glTFAnimationPaths = ["translation", "rotation", "scale", "weights"];
-    var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling", "influence"];
-
     var getNodeID = (index: number): string => {
         return "node" + index;
     };
 
-    /**
-    * Returns the animation path (glTF -> Babylon)
-    */
-    var getAnimationPath = (path: string): string => {
-        var index = glTFAnimationPaths.indexOf(path);
+    var loadAnimation = (runtime: IGLTFRuntime, animation: IGLTFAnimation, animationIndex: number): void => {
+        for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
+            var channel = animation.channels[channelIndex];
+            if (!channel) {
+                Tools.Warn("[Animation " + animationIndex + "] Channel " + channelIndex + " does not exist");
+                continue;
+            }
 
-        if (index !== -1) {
-            return babylonAnimationPaths[index];
+            var samplerIndex = channel.sampler;
+            if (samplerIndex === undefined) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + samplerIndex + "] Sampler is not defined");
+                continue;
+            }
+
+            var sampler = animation.samplers[samplerIndex];
+            if (!sampler) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Sampler " + samplerIndex + " does not exist");
+                continue;
+            }
+
+            if (!channel.target) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target does not exist");
+                continue;
+            }
+
+            var targetNode = runtime.babylonScene.getNodeByID(getNodeID(channel.target.node));
+            if (!targetNode) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target node " + channel.target.node + " does not exist");
+                continue;
+            }
+
+            var targetPath = {
+                "translation": "position",
+                "rotation": "rotationQuaternion",
+                "scale": "scaling",
+                "weights": "influence"
+            }[channel.target.path];
+            if (!targetPath) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target path " + channel.target.path + " is invalid");
+                continue;
+            }
+
+            if (targetNode instanceof Bone) {
+                // TODO: Fix bones
+                continue;
+            }
+
+            var inputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.input]);
+            var outputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.output]);
+            var outputBufferOffset = 0;
+
+            var getNextOutputValue: () => any = {
+                "position": () => {
+                    var value = Vector3.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 3;
+                    return value;
+                },
+                "rotationQuaternion": () => {
+                    var value = Quaternion.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 4;
+                    return value;
+                },
+                "scale": () => {
+                    var value = Vector3.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 3;
+                    return value;
+                },
+                "influence": () => {
+                    var numTargets = (<Mesh>targetNode).morphTargetManager.numTargets;
+                    var value = new Array(numTargets);
+                    for (var i = 0; i < numTargets; i++) {
+                        value[i] = outputBuffer[outputBufferOffset++];
+                    }
+                    return value;
+                },
+            }[targetPath];
+
+            var getNextKey: (frameIndex) => any = {
+                "LINEAR": frameIndex => ({
+                    frame: inputBuffer[frameIndex],
+                    value: getNextOutputValue()
+                }),
+                "CUBICSPLINE": frameIndex => ({
+                    frame: inputBuffer[frameIndex],
+                    inTangent: getNextOutputValue(),
+                    value: getNextOutputValue(),
+                    outTangent: getNextOutputValue()
+                })
+            }[sampler.interpolation];
+
+            if (!getNextKey) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Sampler interpolation '" + sampler.interpolation + "' is invalid");
+                continue;
+            }
+
+            var keys = new Array(inputBuffer.length);
+            for (var frameIndex = 0; frameIndex < inputBuffer.length; frameIndex++) {
+                keys[frameIndex] = getNextKey(frameIndex);
+            }
+
+            if (targetPath === "influence") {
+                var targetMesh = <Mesh>targetNode;
+
+                for (var targetIndex = 0; targetIndex < targetMesh.morphTargetManager.numTargets; targetIndex++) {
+                    var morphTarget = targetMesh.morphTargetManager.getTarget(targetIndex);
+                    var animationName = (animation.name || "anim" + animationIndex) + "_" + targetIndex;
+                    var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, BABYLON.Animation.ANIMATIONTYPE_FLOAT);
+                    babylonAnimation.setKeys(keys.map(key => ({
+                        frame: key.frame,
+                        inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
+                        value: key.value[targetIndex],
+                        outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
+                    })));
+
+                    morphTarget.animations.push(babylonAnimation);
+                    runtime.babylonScene.beginAnimation(morphTarget, 0, inputBuffer[inputBuffer.length - 1], true);
+                }
+            }
+            else {
+                var targetMesh = <Mesh>targetNode;
+                var animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
+                if (targetPath === "rotationQuaternion") {
+                    animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
+                    targetMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                }
+
+                var animationName = animation.name || "anim" + animationIndex;
+                var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
+                babylonAnimation.setKeys(keys);
+
+                targetNode.animations.push(babylonAnimation);
+                runtime.babylonScene.beginAnimation(targetNode, 0, inputBuffer[inputBuffer.length - 1], true);
+            }
         }
-
-        return path;
-    };
+    }
 
     /**
     * Loads and creates animations
@@ -35,195 +152,21 @@ module BABYLON.GLTF2 {
 
         for (var animationIndex = 0; animationIndex < animations.length; animationIndex++) {
             var animation = animations[animationIndex];
-            if (!animation || !animation.channels || !animation.samplers) {
+            if (!animation) {
+                Tools.Warn("Animation " + animationIndex + " not found");
                 continue;
             }
 
-            var lastAnimation: Animation = null;
-
-            for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
-                var channel = animation.channels[channelIndex];
-                if (!channel) {
-                    continue;
-                }
-
-                var sampler = animation.samplers[channel.sampler];
-                if (!sampler) {
-                    continue;
-                }
-
-                var inputData = sampler.input;
-                var outputData = sampler.output;
-
-                var bufferInput = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[inputData]);
-                var bufferOutput = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[outputData]);
-
-                var targetID = channel.target.node;
-                var targetNode: any = runtime.babylonScene.getNodeByID(getNodeID(targetID));
-
-                if (targetNode === null) {
-                    Tools.Warn("Creating animation index " + animationIndex + " but cannot find node index " + targetID + " to attach to");
-                    continue;
-                }
-
-                var isBone = targetNode instanceof Bone;
-                var numTargets = 0;
-
-                // Get target path (position, rotation, scaling, or weights)
-                var targetPath = channel.target.path;
-                var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
-
-                if (targetPathIndex !== -1) {
-                    targetPath = babylonAnimationPaths[targetPathIndex];
-                }
-
-                var isMorph = targetPath === "influence";
-
-                // Determine animation type
-                var animationType = Animation.ANIMATIONTYPE_MATRIX;
-
-                if (!isBone) {
-                    if (targetPath === "rotationQuaternion") {
-                        animationType = Animation.ANIMATIONTYPE_QUATERNION;
-                        targetNode.rotationQuaternion = new Quaternion();
-                    }
-                    else if (isMorph) {
-                        animationType = Animation.ANIMATIONTYPE_FLOAT;
-                        numTargets = (<Mesh>targetNode).morphTargetManager.numTargets;
-                    }
-                    else {
-                        animationType = Animation.ANIMATIONTYPE_VECTOR3;
-                    }
-                }
-
-                // Create animation and key frames
-                var babylonAnimation: Animation = null;
-                var keys = [];
-                var arrayOffset = 0;
-                var modifyKey = false;
-
-                if (isBone && lastAnimation && lastAnimation.getKeys().length === bufferInput.length) {
-                    babylonAnimation = lastAnimation;
-                    modifyKey = true;
-                }
-
-                // Each morph animation may have more than one more, so we need a
-                // multi dimensional array.
-                if (isMorph) {
-                    for (var influence = 0; influence < numTargets; influence++) {
-                        keys[influence] = [];
-                    }
-                }
-
-                // For each frame
-                for (var frameIndex = 0; frameIndex < bufferInput.length; frameIndex++) {
-                    var value: any = null;
-
-                    if (targetPath === "rotationQuaternion") { // VEC4
-                        value = Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
-                        arrayOffset += 4;
-                    }
-                    else if (isMorph) { // FLOAT
-                        value = [];
-                        // There is 1 value for each morph target for each frame
-                        for (var influence = 0; influence < numTargets; influence++) {
-                            value.push(bufferOutput[arrayOffset + influence]);
-                        }
-                        arrayOffset += numTargets;
-                    }
-                    else { // Position and scaling are VEC3
-                        value = Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
-                        arrayOffset += 3;
-                    }
-
-                    if (isBone) {
-                        var bone = <Bone>targetNode;
-                        var translation = Vector3.Zero();
-                        var rotationQuaternion = new Quaternion();
-                        var scaling = Vector3.Zero();
-
-                        // Warning on decompose
-                        var mat = bone.getBaseMatrix();
-
-                        if (modifyKey) {
-                            mat = lastAnimation.getKeys()[frameIndex].value;
-                        }
-
-                        mat.decompose(scaling, rotationQuaternion, translation);
-
-                        if (targetPath === "position") {
-                            translation = value;
-                        }
-                        else if (targetPath === "rotationQuaternion") {
-                            rotationQuaternion = value;
-                        }
-                        else {
-                            scaling = value;
-                        }
-
-                        value = Matrix.Compose(scaling, rotationQuaternion, translation);
-                    }
-
-                    if (!modifyKey) {
-                        if (isMorph) {
-                            for (var influence = 0; influence < numTargets; influence++) {
-                                keys[influence].push({
-                                    frame: bufferInput[frameIndex],
-                                    value: value[influence]
-                                });
-                            }
-                        }
-                        else {
-                            keys.push({
-                                frame: bufferInput[frameIndex],
-                                value: value
-                            });
-                        }
-                    }
-                    else {
-                        lastAnimation.getKeys()[frameIndex].value = value;
-                    }
-                }
-
-                // Finish
-                if (!modifyKey) {
-                    if (isMorph) {
-                        for (var influence = 0; influence < numTargets; influence++) {
-                            var morphTarget = (<Mesh>targetNode).morphTargetManager.getTarget(influence);
-                            if ((<any>morphTarget).animations === undefined) {
-                                (<any>morphTarget).animations = [];
-                            }
-
-                            var animationName = (animation.name || "anim" + animationIndex) + "_" + influence;
-                            babylonAnimation = new Animation(animationName, targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
-
-                            babylonAnimation.setKeys(keys[influence]);
-                            (<any>morphTarget).animations.push(babylonAnimation);
-                        }
-                    }
-                    else {
-                        var animationName = animation.name || "anim" + animationIndex;
-                        babylonAnimation = new Animation(animationName, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
-
-                        babylonAnimation.setKeys(keys);
-                        targetNode.animations.push(babylonAnimation);
-                    }
-                }
-
-                lastAnimation = babylonAnimation;
-
-                if (isMorph) {
-                    for (var influence = 0; influence < numTargets; influence++) {
-                        var morph = (<Mesh>targetNode).morphTargetManager.getTarget(influence);
-                        runtime.babylonScene.stopAnimation(morph);
-                        runtime.babylonScene.beginAnimation(morph, 0, bufferInput[bufferInput.length - 1], true, 1.0);
-                    }
-                }
-                else {
-                    runtime.babylonScene.stopAnimation(targetNode);
-                    runtime.babylonScene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
-                }
+            if (!animation.channels || animation.channels.length === 0) {
+                Tools.Warn("Animation " + animationIndex + " has no channels");
             }
+
+            if (!animation.samplers || animation.samplers.length === 0) {
+                Tools.Warn("Animation " + animationIndex + " has no samplers");
+                continue;
+            }
+
+            loadAnimation(runtime, animation, animationIndex);
         }
     };
 
