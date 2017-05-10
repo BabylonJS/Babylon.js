@@ -63,6 +63,30 @@ var __extends = (this && this.__extends) || (function () {
         return MathTools;
     }());
     BABYLON.MathTools = MathTools;
+    var Scalar = (function () {
+        function Scalar() {
+        }
+        /**
+         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+         */
+        Scalar.Lerp = function (start, end, amount) {
+            return start + ((end - start) * amount);
+        };
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        Scalar.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+        };
+        return Scalar;
+    }());
+    BABYLON.Scalar = Scalar;
     var Color3 = (function () {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
@@ -859,7 +883,7 @@ var __extends = (this && this.__extends) || (function () {
             return new Vector2(x, y);
         };
         /**
-         * Returns a new Vecto2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
          */
         Vector2.Hermite = function (value1, tangent1, value2, tangent2, amount) {
             var squared = amount * amount;
@@ -2661,6 +2685,9 @@ var __extends = (this && this.__extends) || (function () {
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
         };
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
         Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
@@ -18059,7 +18086,8 @@ var BABYLON;
         };
         BaseTexture.prototype.isReady = function () {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                return true;
+                this.delayLoad();
+                return false;
             }
             if (this._texture) {
                 return this._texture.isReady;
@@ -18227,6 +18255,7 @@ var BABYLON;
             _this._buffer = buffer;
             _this._deleteBuffer = deleteBuffer;
             _this._format = format;
+            scene = _this.getScene();
             if (!url) {
                 return _this;
             }
@@ -18895,6 +18924,7 @@ var BABYLON;
         /**
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).
          * If `copywhenShared` is true (default false) and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * You can force the copy with forceCopy === true
          * Returns null if the mesh has no geometry or no vertex buffer.
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -18910,11 +18940,11 @@ var BABYLON;
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          */
-        Mesh.prototype.getVerticesData = function (kind, copyWhenShared) {
+        Mesh.prototype.getVerticesData = function (kind, copyWhenShared, forceCopy) {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind, copyWhenShared);
+            return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         };
         /**
          * Returns the mesh VertexBuffer object from the requested `kind` : positions, indices, normals, etc.
@@ -21188,7 +21218,7 @@ var BABYLON;
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], false, true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
                     if (vertexData) {
                         vertexData.merge(otherVertexData);
@@ -24163,58 +24193,58 @@ var BABYLON;
         /**
          * Returns the object VertexData associated to the passed mesh.
          */
-        VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
-            return VertexData._ExtractFrom(mesh, copyWhenShared);
+        VertexData.ExtractFromMesh = function (mesh, copyWhenShared, forceCopy) {
+            return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
         };
         /**
          * Returns the object VertexData associated to the passed geometry.
          */
-        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared) {
-            return VertexData._ExtractFrom(geometry, copyWhenShared);
+        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared, forceCopy) {
+            return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
         };
-        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared) {
+        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared, forceCopy) {
             var result = new VertexData();
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared);
+                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared);
+                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.TangentKind)) {
-                result.tangents = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.TangentKind, copyWhenShared);
+                result.tangents = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.TangentKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared);
+                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uvs2 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-                result.uvs3 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-                result.uvs4 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-                result.uvs5 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-                result.uvs6 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);
+                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared);
+                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared);
+                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesExtraKind)) {
-                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsExtraKind)) {
-                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
@@ -26100,13 +26130,13 @@ var BABYLON;
             }
             return this._totalVertices;
         };
-        Geometry.prototype.getVerticesData = function (kind, copyWhenShared) {
+        Geometry.prototype.getVerticesData = function (kind, copyWhenShared, forceCopy) {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
             var orig = vertexBuffer.getData();
-            if (!copyWhenShared || this._meshes.length === 1) {
+            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             }
             else {
@@ -32721,13 +32751,16 @@ var BABYLON;
             this._easingFunction = easingFunction;
         };
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
-            return startValue + (endValue - startValue) * gradient;
+            return BABYLON.Scalar.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.floatInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
         Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
-            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient).normalize();
         };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
@@ -32794,9 +32827,10 @@ var BABYLON;
                     var startKey = this._keys[key];
                     var startValue = this._getKeyValue(startKey.value);
                     var endValue = this._getKeyValue(endKey.value);
-                    var useTangent = startKey.outTangent && endKey.inTangent;
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                    var frameDelta = endKey.frame - startKey.frame;
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - startKey.frame) / (endKey.frame - startKey.frame);
+                    var gradient = (currentFrame - startKey.frame) / frameDelta;
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
                         gradient = this._easingFunction.ease(gradient);
@@ -32804,28 +32838,29 @@ var BABYLON;
                     switch (this.dataType) {
                         // Float
                         case Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return floatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return offsetValue * repeatCount + floatValue;
                             }
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quaternion;
+                                    return quatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quaternion.add(offsetValue.scale(repeatCount));
+                                    return quatValue.add(offsetValue.scale(repeatCount));
                             }
-                            return quaternion;
+                            return quatValue;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
-                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -32835,7 +32870,7 @@ var BABYLON;
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
-                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -55463,7 +55498,7 @@ var BABYLON;
             this._fixedTimeStep = timeStep;
         };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -56827,6 +56862,7 @@ var BABYLON;
             };
             SkeletonViewer.prototype._getLinesForBonesWithLength = function (bones, meshMat) {
                 var len = bones.length;
+                var meshPos = this.mesh.position;
                 for (var i = 0; i < len; i++) {
                     var bone = bones[i];
                     var points = this._debugLines[i];
@@ -56836,11 +56872,14 @@ var BABYLON;
                     }
                     this._getBonePosition(points[0], bone, meshMat);
                     this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                 }
             };
             SkeletonViewer.prototype._getLinesForBonesNoLength = function (bones, meshMat) {
                 var len = bones.length;
                 var boneNum = 0;
+                var meshPos = this.mesh.position;
                 for (var i = len - 1; i >= 0; i--) {
                     var childBone = bones[i];
                     var parentBone = childBone.getParent();
@@ -56854,6 +56893,8 @@ var BABYLON;
                     }
                     childBone.getAbsolutePositionToRef(this.mesh, points[0]);
                     parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                     boneNum++;
                 }
             };
@@ -56874,6 +56915,7 @@ var BABYLON;
                 else {
                     BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
+                this._debugMesh.position.copyFrom(this.mesh.position);
                 this._debugMesh.color = this.color;
             };
             SkeletonViewer.prototype.dispose = function () {
@@ -57267,6 +57309,7 @@ var BABYLON;
         function MorphTarget(name, influence) {
             if (influence === void 0) { influence = 0; }
             this.name = name;
+            this.animations = new Array();
             this.onInfluenceChanged = new BABYLON.Observable();
             this.influence = influence;
         }

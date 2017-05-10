@@ -278,7 +278,11 @@
         }
 
         public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number {
-            return startValue + (endValue - startValue) * gradient;
+            return Scalar.Lerp(startValue, endValue, gradient);
+        }
+
+        public floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number {
+            return Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
         public quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion {
@@ -286,7 +290,7 @@
         }
 
         public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
-            return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+            return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient).normalize();
         }
 
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
@@ -376,10 +380,11 @@
                     var startValue = this._getKeyValue(startKey.value);
                     var endValue = this._getKeyValue(endKey.value);
 
-                    var useTangent = startKey.outTangent && endKey.inTangent;
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                    var frameDelta = endKey.frame - startKey.frame;
 
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - startKey.frame) / (endKey.frame - startKey.frame);
+                    var gradient = (currentFrame - startKey.frame) / frameDelta;
 
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
@@ -389,29 +394,30 @@
                     switch (this.dataType) {
                         // Float
                         case Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return floatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return offsetValue * repeatCount + floatValue;
                             }
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quaternion;
+                                    return quatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quaternion.add(offsetValue.scale(repeatCount));
+                                    return quatValue.add(offsetValue.scale(repeatCount));
                             }
 
-                            return quaternion;
+                            return quatValue;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
-                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -421,7 +427,7 @@
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
-                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
