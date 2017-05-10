@@ -47,14 +47,16 @@ module BABYLON.GLTF2 {
                 continue;
             }
 
-            if (targetNode instanceof Bone) {
-                // TODO: Fix bones
-                continue;
-            }
-
             var inputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.input]);
             var outputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.output]);
             var outputBufferOffset = 0;
+
+            var animationType = {
+                "position": Animation.ANIMATIONTYPE_VECTOR3,
+                "rotationQuaternion": Animation.ANIMATIONTYPE_QUATERNION,
+                "scale": Animation.ANIMATIONTYPE_VECTOR3,
+                "influence": Animation.ANIMATIONTYPE_FLOAT,
+            }[targetPath];
 
             var getNextOutputValue: () => any = {
                 "position": () => {
@@ -92,7 +94,7 @@ module BABYLON.GLTF2 {
                     inTangent: getNextOutputValue(),
                     value: getNextOutputValue(),
                     outTangent: getNextOutputValue()
-                })
+                }),
             }[sampler.interpolation];
 
             if (!getNextKey) {
@@ -111,7 +113,7 @@ module BABYLON.GLTF2 {
                 for (var targetIndex = 0; targetIndex < targetMesh.morphTargetManager.numTargets; targetIndex++) {
                     var morphTarget = targetMesh.morphTargetManager.getTarget(targetIndex);
                     var animationName = (animation.name || "anim" + animationIndex) + "_" + targetIndex;
-                    var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, BABYLON.Animation.ANIMATIONTYPE_FLOAT);
+                    var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys.map(key => ({
                         frame: key.frame,
                         inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
@@ -124,15 +126,8 @@ module BABYLON.GLTF2 {
                 }
             }
             else {
-                var targetMesh = <Mesh>targetNode;
-                var animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
-                if (targetPath === "rotationQuaternion") {
-                    animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
-                    targetMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
-                }
-
                 var animationName = animation.name || "anim" + animationIndex;
-                var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
+                var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                 babylonAnimation.setKeys(keys);
 
                 targetNode.animations.push(babylonAnimation);
@@ -146,7 +141,7 @@ module BABYLON.GLTF2 {
     */
     var loadAnimations = (runtime: IGLTFRuntime): void => {
         var animations = runtime.gltf.animations;
-        if (!animations) {
+        if (!animations || animations.length === 0) {
             return;
         }
 
@@ -494,7 +489,7 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
-        var morphTargetManager: BABYLON.MorphTargetManager;
+        var morphTargetManager: MorphTargetManager;
 
         // Positions, normals and UVs
         for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
@@ -583,7 +578,7 @@ module BABYLON.GLTF2 {
                         weight = mesh.weights[targetsIndex];
                     }
 
-                    var morph = new BABYLON.MorphTarget("morph" + targetsIndex, weight);
+                    var morph = new MorphTarget("morph" + targetsIndex, weight);
 
                     for (var semantic in target) {
                         // Link accessor and buffer view
@@ -629,7 +624,7 @@ module BABYLON.GLTF2 {
 
                     if (morph.getPositions()) {
                         if (!morphTargetManager) {
-                            morphTargetManager = new BABYLON.MorphTargetManager();
+                            morphTargetManager = new MorphTargetManager();
                             babylonMesh.morphTargetManager = morphTargetManager;
                         }
 
@@ -1132,7 +1127,7 @@ module BABYLON.GLTF2 {
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
             var samplingMode = GLTFUtils.GetTextureFilterMode(sampler.minFilter);
 
-            var babylonTexture = new Texture(url, runtime.babylonScene, noMipMaps, true, samplingMode, () => {
+            var babylonTexture = new Texture(url, runtime.babylonScene, noMipMaps, false, samplingMode, () => {
                 onSuccess(babylonTexture);
             }, onError);
 
@@ -1270,7 +1265,7 @@ module BABYLON.GLTF2 {
 
         private static _loadMaterialsAsync(runtime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void {
             var materials = runtime.gltf.materials;
-            if (!materials) {
+            if (!materials || materials.length === 0) {
                 onSuccess();
                 return;
             }
