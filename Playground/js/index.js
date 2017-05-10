@@ -559,21 +559,22 @@
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
-        document.getElementById("exitFullPage").onclick = function (evt) {
-            exitFullPage();
-        };
-
         // Fullscreen
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
+            if(document.webkitIsFullScreen) goFullPage();
+            else exitFullPage();
+        }, false);
+
         var goFullPage = function () {
-            document.getElementById("exitFullPage").style.display = "block";
             var canvasElement = document.getElementById("renderCanvas");
             canvasElement.style.position = "absolute";
             canvasElement.style.top = 0;
             canvasElement.style.left = 0;
+            canvasElement.style.zIndex = 100;
         }
         var exitFullPage = function () {
-            document.getElementById("exitFullPage").style.display = "none";
             document.getElementById("renderCanvas").style.position = "relative";
+            document.getElementById("renderCanvas").style.zIndex = 0;
         }
         var goFullscreen = function () {
             if (engine) {
@@ -703,7 +704,7 @@
         // Editor
         setToMultipleID("editorButton", "click", toggleEditor);
         // FullScreen
-        setToMultipleID("fullscreenButton", "click", goFullPage);
+        setToMultipleID("fullscreenButton", "click", goFullscreen);
         // Format
         setToMultipleID("formatButton", "click", formatCode);
         // Debug

@@ -56,7 +56,6 @@ body {
     width: 100%;
     height: 100%;
     touch-action: none;
-    z-index: 100;
 }
 #fpsLabel {
     position: absolute;
@@ -348,14 +347,6 @@ body {
     text-decoration: none;
     color:#999;
     display: inline-block;
-}
-
-#exitFullPage {
-    display: none;
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    z-index: 101;
 }
 
 /* MONACO */
