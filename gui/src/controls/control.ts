@@ -407,7 +407,9 @@ module BABYLON.GUI {
                 return false;
             }
 
-            return this._processObservables(type);
+            this._processObservables(type);
+
+            return true;
         }
 
         protected _processObservables(type: number): boolean {
