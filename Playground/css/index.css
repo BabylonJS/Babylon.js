@@ -155,6 +155,7 @@ body {
     left: 0;
     top: 25px;
     min-width: 100%;
+    width: 150px;
     display: none;
 }
 
@@ -451,32 +452,30 @@ body {
 
 /*Media queries*/
 
-@media (max-width: 1600px) {
-    .desktopOnly {
-        display: none !important;
-    }
+@media (min-width: 1475px) {
+    .navBar1600 { display: block; }
+    .navBar1475 { display: none; }
+    .navBar1030 { display: none; }
+    .navBar750 { display: none; }
 }
 @media (max-width: 1475px) {
-    .desktopOnly {
-        display: none !important;
-    }
-    .desktopTabletOnly {
-        display: none !important;
-    }
+    .navBar1600 { display: none; }
+    .navBar1475 { display: block; }
+    .navBar1030 { display: none; }
+    .navBar750 { display: none; }
 }
-@media (max-width: 975px) {
-    .title {
-        display : none !important;
-    }
-    .version {
-        display : none !important;
-    }
+@media (max-width: 1030px) {
+    .navBar1600 { display: none; }
+    .navBar1475 { display: none; }
+    .navBar1030 { display: block; }
+    .navBar750 { display: none; }
 }
-@media (max-width: 660px) {
+@media (max-width: 750px) {
+    .navBar1600 { display: none; }
+    .navBar1475 { display: none; }
+    .navBar1030 { display: none; }
+    .navBar750 { display: block; }
     .removeOnPhone {
         display : none !important;
-    }
-    .category {
-        margin:0 !important;
     }
 }
