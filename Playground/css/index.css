@@ -204,7 +204,8 @@ body {
     z-index: 10;
     top: 32px;
     width:550px;
-    max-height:350px;
+    max-height:390px;
+    overflow-y: auto;
     right:0;
     position:absolute;
     font-size:0.8em;
@@ -457,18 +458,30 @@ body {
     .navBar1475 { display: none; }
     .navBar1030 { display: none; }
     .navBar750 { display: none; }
+
+    .navbar .select .toDisplayBig ul {
+        column-count: 3;
+    }
 }
 @media (max-width: 1475px) {
     .navBar1600 { display: none; }
     .navBar1475 { display: block; }
     .navBar1030 { display: none; }
     .navBar750 { display: none; }
+
+    .navbar .select .toDisplayBig ul {
+        column-count: 3;
+    }
 }
 @media (max-width: 1030px) {
     .navBar1600 { display: none; }
     .navBar1475 { display: none; }
     .navBar1030 { display: block; }
     .navBar750 { display: none; }
+
+    .navbar .select .toDisplayBig ul {
+        column-count: 2;
+    }
 }
 @media (max-width: 750px) {
     .navBar1600 { display: none; }
@@ -477,5 +490,8 @@ body {
     .navBar750 { display: block; }
     .removeOnPhone {
         display : none !important;
+    }
+    .navbar .select .toDisplayBig ul {
+        column-count: 1;
     }
 }
