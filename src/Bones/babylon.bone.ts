@@ -93,6 +93,39 @@ module BABYLON {
             return this._absoluteTransform;
         }
 
+        // Properties (matches AbstractMesh properties)
+        public get position(): Vector3 {
+            return this.getPosition();
+        }
+
+        public set position(newPosition: Vector3) {
+            this.setPosition(newPosition);
+        }
+
+        public get rotation(): Vector3 {
+            return this.getRotation();
+        }
+
+        public set rotation(newRotation: Vector3) {
+            this.setRotation(newRotation);
+        }
+
+        public get rotationQuaternion() {
+            return this.getRotationQuaternion();
+        }
+
+        public set rotationQuaternion(newRotation: Quaternion) {
+            this.setRotationQuaternion(newRotation);
+        }
+
+        public get scaling(): Vector3 {
+            return this.getScale();
+        }
+
+        public set scaling(newScaling: Vector3) {
+            this.setScale(newScaling.x, newScaling.y, newScaling.z);
+        }
+
         // Methods
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
             this._baseMatrix = matrix.clone();

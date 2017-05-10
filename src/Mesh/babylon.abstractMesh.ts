@@ -116,7 +116,7 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = new Vector3(0.0, 0.0, 0.0);
         private _rotation = new Vector3(0.0, 0.0, 0.0);
-        public _rotationQuaternion: Quaternion;
+        private _rotationQuaternion: Quaternion;
         private _scaling = new Vector3(1.0, 1.0, 1.0);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
