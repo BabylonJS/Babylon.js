@@ -63,6 +63,30 @@ var __extends = (this && this.__extends) || (function () {
         return MathTools;
     }());
     BABYLON.MathTools = MathTools;
+    var Scalar = (function () {
+        function Scalar() {
+        }
+        /**
+         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+         */
+        Scalar.Lerp = function (start, end, amount) {
+            return start + ((end - start) * amount);
+        };
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        Scalar.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+        };
+        return Scalar;
+    }());
+    BABYLON.Scalar = Scalar;
     var Color3 = (function () {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
@@ -859,7 +883,7 @@ var __extends = (this && this.__extends) || (function () {
             return new Vector2(x, y);
         };
         /**
-         * Returns a new Vecto2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
          */
         Vector2.Hermite = function (value1, tangent1, value2, tangent2, amount) {
             var squared = amount * amount;
@@ -2660,6 +2684,22 @@ var __extends = (this && this.__extends) || (function () {
             result.y = (num3 * left.y) + (num2 * right.y);
             result.z = (num3 * left.z) + (num2 * right.z);
             result.w = (num3 * left.w) + (num2 * right.w);
+        };
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
+        Quaternion.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
+            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+            var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+            return new Quaternion(x, y, z, w);
         };
         return Quaternion;
     }());
@@ -7020,6 +7060,11 @@ var BABYLON;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = BABYLON.Database;
             this.scenes = new Array();
+            // Observables
+            /**
+             * Observable event triggered each time the rendering canvas is resized
+             */
+            this.onResizeObservable = new BABYLON.Observable();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -7908,6 +7953,9 @@ var BABYLON;
          * @param {number} height - the new canvas' height
          */
         Engine.prototype.setSize = function (width, height) {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
             for (var index = 0; index < this.scenes.length; index++) {
@@ -7917,8 +7965,49 @@ var BABYLON;
                     cam._currentRenderId = 0;
                 }
             }
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
+            }
         };
         //WebVR functions
+        Engine.prototype.isVRDevicePresent = function (callback) {
+            this.getVRDevice(null, function (device) {
+                callback(device !== null);
+            });
+        };
+        Engine.prototype.getVRDevice = function (name, callback) {
+            if (!this.vrDisplaysPromise) {
+                callback(null);
+                return;
+            }
+            this.vrDisplaysPromise.then(function (devices) {
+                if (devices.length > 0) {
+                    if (name) {
+                        var found = devices.some(function (device) {
+                            if (device.displayName === name) {
+                                callback(device);
+                                return true;
+                            }
+                            else {
+                                return false;
+                            }
+                        });
+                        if (!found) {
+                            BABYLON.Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
+                            callback(devices[0]);
+                        }
+                    }
+                    else {
+                        //choose the first one
+                        callback(devices[0]);
+                    }
+                }
+                else {
+                    BABYLON.Tools.Error("No WebVR devices found!");
+                    callback(null);
+                }
+            });
+        };
         Engine.prototype.initWebVR = function () {
             if (!this.vrDisplaysPromise) {
                 this._getVRDisplays();
@@ -12691,7 +12780,7 @@ var BABYLON;
             _this._excludedMeshesIds = new Array();
             _this._includedOnlyMeshesIds = new Array();
             _this.getScene().addLight(_this);
-            _this._uniformBuffer = new BABYLON.UniformBuffer(scene.getEngine());
+            _this._uniformBuffer = new BABYLON.UniformBuffer(_this.getScene().getEngine());
             _this._buildUniformLayout();
             _this.includedOnlyMeshes = new Array();
             _this.excludedMeshes = new Array();
@@ -15097,6 +15186,13 @@ var BABYLON;
         Scene.prototype.getCachedEffect = function () {
             return this._cachedEffect;
         };
+        Scene.prototype.getCachedVisibility = function () {
+            return this._cachedVisibility;
+        };
+        Scene.prototype.isCachedMaterialValid = function (material, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
+        };
         Scene.prototype.getBoundingBoxRenderer = function () {
             if (!this._boundingBoxRenderer) {
                 this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
@@ -15727,6 +15823,7 @@ var BABYLON;
         Scene.prototype.resetCachedMaterial = function () {
             this._cachedMaterial = null;
             this._cachedEffect = null;
+            this._cachedVisibility = null;
         };
         Scene.prototype.registerBeforeRender = function (func) {
             this.onBeforeRenderObservable.add(func);
@@ -17989,7 +18086,8 @@ var BABYLON;
         };
         BaseTexture.prototype.isReady = function () {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                return true;
+                this.delayLoad();
+                return false;
             }
             if (this._texture) {
                 return this._texture.isReady;
@@ -18157,6 +18255,7 @@ var BABYLON;
             _this._buffer = buffer;
             _this._deleteBuffer = deleteBuffer;
             _this._format = format;
+            scene = _this.getScene();
             if (!url) {
                 return _this;
             }
@@ -18825,6 +18924,7 @@ var BABYLON;
         /**
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).
          * If `copywhenShared` is true (default false) and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * You can force the copy with forceCopy === true
          * Returns null if the mesh has no geometry or no vertex buffer.
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -18840,11 +18940,11 @@ var BABYLON;
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          */
-        Mesh.prototype.getVerticesData = function (kind, copyWhenShared) {
+        Mesh.prototype.getVerticesData = function (kind, copyWhenShared, forceCopy) {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind, copyWhenShared);
+            return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         };
         /**
          * Returns the mesh VertexBuffer object from the requested `kind` : positions, indices, normals, etc.
@@ -21118,7 +21218,7 @@ var BABYLON;
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], false, true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
                     if (vertexData) {
                         vertexData.merge(otherVertexData);
@@ -23694,8 +23794,9 @@ var BABYLON;
             _super.prototype._afterBind.call(this, mesh);
             this.getScene()._cachedEffect = effect;
         };
-        PushMaterial.prototype._mustRebind = function (scene, effect) {
-            return scene.getCachedEffect() !== effect || scene.getCachedMaterial() !== this;
+        PushMaterial.prototype._mustRebind = function (scene, effect, visibility) {
+            if (visibility === void 0) { visibility = 0; }
+            return scene.isCachedMaterialValid(this, effect, visibility);
         };
         PushMaterial.prototype.markAsDirty = function (flag) {
             if (flag & BABYLON.Material.TextureDirtyFlag) {
@@ -24092,58 +24193,58 @@ var BABYLON;
         /**
          * Returns the object VertexData associated to the passed mesh.
          */
-        VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
-            return VertexData._ExtractFrom(mesh, copyWhenShared);
+        VertexData.ExtractFromMesh = function (mesh, copyWhenShared, forceCopy) {
+            return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
         };
         /**
          * Returns the object VertexData associated to the passed geometry.
          */
-        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared) {
-            return VertexData._ExtractFrom(geometry, copyWhenShared);
+        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared, forceCopy) {
+            return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
         };
-        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared) {
+        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared, forceCopy) {
             var result = new VertexData();
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared);
+                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared);
+                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.TangentKind)) {
-                result.tangents = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.TangentKind, copyWhenShared);
+                result.tangents = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.TangentKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared);
+                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uvs2 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-                result.uvs3 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-                result.uvs4 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-                result.uvs5 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-                result.uvs6 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);
+                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared);
+                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared);
+                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesExtraKind)) {
-                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, copyWhenShared, forceCopy);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsExtraKind)) {
-                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
@@ -26029,13 +26130,13 @@ var BABYLON;
             }
             return this._totalVertices;
         };
-        Geometry.prototype.getVerticesData = function (kind, copyWhenShared) {
+        Geometry.prototype.getVerticesData = function (kind, copyWhenShared, forceCopy) {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
             var orig = vertexBuffer.getData();
-            if (!copyWhenShared || this._meshes.length === 1) {
+            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             }
             else {
@@ -27752,7 +27853,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect)) {
+            if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
@@ -31823,7 +31924,7 @@ var BABYLON;
         function HemisphericLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
-            _this.direction = direction;
+            _this.direction = direction || BABYLON.Vector3.Up();
             return _this;
         }
         HemisphericLight.prototype._buildUniformLayout = function () {
@@ -32650,16 +32751,28 @@ var BABYLON;
             this._easingFunction = easingFunction;
         };
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
-            return startValue + (endValue - startValue) * gradient;
+            return BABYLON.Scalar.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.floatInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
         };
+        Animation.prototype.quaternionInterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient).normalize();
+        };
         Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
+        Animation.prototype.vector3InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        };
         Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+        };
+        Animation.prototype.vector2InterpolateFunctionWithTangents = function (startValue, outTangent, endValue, inTangent, gradient) {
+            return BABYLON.Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         };
         Animation.prototype.sizeInterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Size.Lerp(startValue, endValue, gradient);
@@ -32702,18 +32815,22 @@ var BABYLON;
             }
             this.currentFrame = currentFrame;
             // Try to get a hash to find the right key
-            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
-            if (this._keys[startKey].frame >= currentFrame) {
-                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
-                    startKey--;
+            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            if (this._keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
                 }
             }
-            for (var key = startKey; key < this._keys.length; key++) {
-                if (this._keys[key + 1].frame >= currentFrame) {
-                    var startValue = this._getKeyValue(this._keys[key].value);
-                    var endValue = this._getKeyValue(this._keys[key + 1].value);
+            for (var key = startKeyIndex; key < this._keys.length; key++) {
+                var endKey = this._keys[key + 1];
+                if (endKey.frame >= currentFrame) {
+                    var startKey = this._keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                    var frameDelta = endKey.frame - startKey.frame;
                     // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+                    var gradient = (currentFrame - startKey.frame) / frameDelta;
                     // check for easingFunction and correction of gradient
                     if (this._easingFunction != null) {
                         gradient = this._easingFunction.ease(gradient);
@@ -32721,44 +32838,45 @@ var BABYLON;
                     switch (this.dataType) {
                         // Float
                         case Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return floatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
+                                    return offsetValue * repeatCount + floatValue;
                             }
                             break;
                         // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quaternion = null;
+                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                                    break;
+                                    return quatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                                    break;
+                                    return quatValue.add(offsetValue.scale(repeatCount));
                             }
-                            return quaternion;
+                            return quatValue;
                         // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient);
+                                    return vec3Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
                             }
                         // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                    return vec2Value;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
                             }
                         // Size
                         case Animation.ANIMATIONTYPE_SIZE:
@@ -41576,20 +41694,21 @@ var BABYLON;
             if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             var _this = _super.call(this, null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format) || this;
             _this.name = name;
+            var engine = _this.getScene().getEngine();
             _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this._generateMipMaps = generateMipMaps;
             if (options.getContext) {
                 _this._canvas = options;
-                _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             }
             else {
                 _this._canvas = document.createElement("canvas");
                 if (options.width) {
-                    _this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 }
                 else {
-                    _this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                    _this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
             var textureSize = _this.getSize();
@@ -41605,14 +41724,23 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        DynamicTexture.prototype.scale = function (ratio) {
-            var textureSize = this.getSize();
-            textureSize.width *= ratio;
-            textureSize.height *= ratio;
+        DynamicTexture.prototype._recreate = function (textureSize) {
             this._canvas.width = textureSize.width;
             this._canvas.height = textureSize.height;
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        };
+        DynamicTexture.prototype.scale = function (ratio) {
+            var textureSize = this.getSize();
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+            this._recreate(textureSize);
+        };
+        DynamicTexture.prototype.scaleTo = function (width, height) {
+            var textureSize = this.getSize();
+            textureSize.width = width;
+            textureSize.height = height;
+            this._recreate(textureSize);
         };
         DynamicTexture.prototype.getContext = function () {
             return this._context;
@@ -45360,10 +45488,15 @@ var BABYLON;
                 LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
                 LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
                 var RSValues = this.gamepad.rightStick;
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                if (RSValues) {
+                    var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
+                    var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+                    RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
+                    RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                }
+                else {
+                    RSValues = { x: 0, y: 0 };
+                }
                 if (!camera.rotationQuaternion) {
                     BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, this._cameraTransform);
                 }
@@ -45429,20 +45562,22 @@ var BABYLON;
             if (this.gamepad) {
                 var camera = this.camera;
                 var RSValues = this.gamepad.rightStick;
-                if (RSValues.x != 0) {
-                    var normalizedRX = RSValues.x / this.gamepadRotationSensibility;
-                    if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
-                        camera.inertialAlphaOffset += normalizedRX;
+                if (RSValues) {
+                    if (RSValues.x != 0) {
+                        var normalizedRX = RSValues.x / this.gamepadRotationSensibility;
+                        if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
+                            camera.inertialAlphaOffset += normalizedRX;
+                        }
                     }
-                }
-                if (RSValues.y != 0) {
-                    var normalizedRY = RSValues.y / this.gamepadRotationSensibility;
-                    if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
-                        camera.inertialBetaOffset += normalizedRY;
+                    if (RSValues.y != 0) {
+                        var normalizedRY = RSValues.y / this.gamepadRotationSensibility;
+                        if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
+                            camera.inertialBetaOffset += normalizedRY;
+                        }
                     }
                 }
                 var LSValues = this.gamepad.leftStick;
-                if (LSValues.y != 0) {
+                if (LSValues && LSValues.y != 0) {
                     var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
                     if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
                         this.camera.inertialRadiusOffset -= normalizedLY;
@@ -55363,7 +55498,7 @@ var BABYLON;
             this._fixedTimeStep = timeStep;
         };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -56727,6 +56862,7 @@ var BABYLON;
             };
             SkeletonViewer.prototype._getLinesForBonesWithLength = function (bones, meshMat) {
                 var len = bones.length;
+                var meshPos = this.mesh.position;
                 for (var i = 0; i < len; i++) {
                     var bone = bones[i];
                     var points = this._debugLines[i];
@@ -56736,11 +56872,14 @@ var BABYLON;
                     }
                     this._getBonePosition(points[0], bone, meshMat);
                     this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                 }
             };
             SkeletonViewer.prototype._getLinesForBonesNoLength = function (bones, meshMat) {
                 var len = bones.length;
                 var boneNum = 0;
+                var meshPos = this.mesh.position;
                 for (var i = len - 1; i >= 0; i--) {
                     var childBone = bones[i];
                     var parentBone = childBone.getParent();
@@ -56754,6 +56893,8 @@ var BABYLON;
                     }
                     childBone.getAbsolutePositionToRef(this.mesh, points[0]);
                     parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
                     boneNum++;
                 }
             };
@@ -56774,6 +56915,7 @@ var BABYLON;
                 else {
                     BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
+                this._debugMesh.position.copyFrom(this.mesh.position);
                 this._debugMesh.color = this.color;
             };
             SkeletonViewer.prototype.dispose = function () {
@@ -57088,7 +57230,7 @@ var BABYLON;
             }
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
-                uniforms: ["worldViewProjection", "color"]
+                uniforms: ["world", "viewProjection", "color"]
             });
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
@@ -57167,6 +57309,7 @@ var BABYLON;
         function MorphTarget(name, influence) {
             if (influence === void 0) { influence = 0; }
             this.name = name;
+            this.animations = new Array();
             this.onInfluenceChanged = new BABYLON.Observable();
             this.influence = influence;
         }
@@ -58963,51 +59106,26 @@ var BABYLON;
             }
             //enable VR
             _this.getEngine().initWebVR();
-            if (!_this.getEngine().vrDisplaysPromise) {
-                BABYLON.Tools.Error("WebVR is not enabled on your browser");
+            //check specs version
+            if (!window.VRFrameData) {
+                _this._specsVersion = 1.0;
+                _this._frameData = {};
             }
             else {
-                //check specs version
-                if (!window.VRFrameData) {
-                    _this._specsVersion = 1.0;
-                    _this._frameData = {};
-                }
-                else {
-                    _this._frameData = new VRFrameData();
-                }
-                _this.getEngine().vrDisplaysPromise.then(function (devices) {
-                    if (devices.length > 0) {
-                        _this._vrEnabled = true;
-                        if (_this.webVROptions.displayName) {
-                            var found = devices.some(function (device) {
-                                if (device.displayName === _this.webVROptions.displayName) {
-                                    _this._vrDevice = device;
-                                    return true;
-                                }
-                                else {
-                                    return false;
-                                }
-                            });
-                            if (!found) {
-                                _this._vrDevice = devices[0];
-                                BABYLON.Tools.Warn("Display " + _this.webVROptions.displayName + " was not found. Using " + _this._vrDevice.displayName);
-                            }
-                        }
-                        else {
-                            //choose the first one
-                            _this._vrDevice = devices[0];
-                        }
-                        //reset the rig parameters.
-                        _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
-                        if (_this._attached) {
-                            _this.getEngine().enableVR(_this._vrDevice);
-                        }
-                    }
-                    else {
-                        BABYLON.Tools.Error("No WebVR devices found!");
-                    }
-                });
+                _this._frameData = new VRFrameData();
             }
+            _this.getEngine().getVRDevice(_this.webVROptions.displayName, function (device) {
+                if (!device) {
+                    return;
+                }
+                _this._vrEnabled = true;
+                _this._vrDevice = device;
+                //reset the rig parameters.
+                _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
+                if (_this._attached) {
+                    _this.getEngine().enableVR(_this._vrDevice);
+                }
+            });
             // try to attach the controllers, if found.
             _this.initControllers();
             /**
@@ -63292,7 +63410,7 @@ var BABYLON;
             this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.layers.push(this);
-            var engine = scene.getEngine();
+            var engine = this._scene.getEngine();
             // VBO
             var vertices = [];
             vertices.push(1, 1);

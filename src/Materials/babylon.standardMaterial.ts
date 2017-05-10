@@ -821,7 +821,7 @@ module BABYLON {
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect)) {
+            if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 
                 this.bindViewProjection(effect);
@@ -918,6 +918,7 @@ module BABYLON {
                         this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                     }
                     this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
+
                     // Diffuse
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }
