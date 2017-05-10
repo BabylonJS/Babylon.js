@@ -6,6 +6,17 @@ module BABYLON.GUI {
             super(name);
         }
 
+        // While being a container, the button behaves like a control.
+        public _processPicking(x: number, y: number, type: number): boolean {
+            if (!this._contains(x, y)) {
+                return false;
+            }
+
+            this._processObservables(type);
+
+            return true;
+        }
+
         // Statics
         public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
             var result = new Button(name);
