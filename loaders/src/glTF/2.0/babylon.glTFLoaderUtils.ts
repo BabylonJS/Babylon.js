@@ -102,7 +102,7 @@ module BABYLON.GLTF2 {
          * @param runtime: the GLTF runtime
          * @param accessor: the GLTF accessor
          */
-        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): any {
+        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): ArrayBufferView {
             var bufferView = runtime.gltf.bufferViews[accessor.bufferView];
             var byteOffset = accessor.byteOffset || 0;
             var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);

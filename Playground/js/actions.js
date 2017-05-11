@@ -80,13 +80,4 @@
         })
 
     }
-
-    document.querySelector('#safemodeToggle').addEventListener('click', function () {
-        this.classList.toggle('checked');
-        if (this.classList.contains('checked')) {
-            this.innerHTML = 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>';
-        } else {
-            this.innerHTML = 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>';
-        }
-    })
 })();
