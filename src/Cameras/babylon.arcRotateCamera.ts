@@ -56,7 +56,7 @@ module BABYLON {
         @serialize()
         public inertialPanningY: number = 0;
 
-        //-- begin properties for backward compatibility for inputs       
+        //-- begin properties for backward compatibility for inputs
         public get angularSensibilityX() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -168,8 +168,8 @@ module BABYLON {
             if (mousewheel)
                 mousewheel.wheelPrecision = value;
         }
-        
-        //-- end properties for backward compatibility for inputs        
+
+        //-- end properties for backward compatibility for inputs
 
         @serialize()
         public zoomOnFactor = 1;
@@ -185,7 +185,7 @@ module BABYLON {
         public inputs: ArcRotateCameraInputsManager;
 
         public _reset: () => void;
-        
+
         // Panning
         public panningAxis: Vector3 = new Vector3(1, 1, 0);
         private _localDirection: Vector3;
@@ -204,7 +204,7 @@ module BABYLON {
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
-        
+
         private _targetBoundingCenter: Vector3;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
@@ -222,7 +222,7 @@ module BABYLON {
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
             this.inputs.addKeyboard().addMouseWheel().addPointers();
-        }      
+        }
 
         // Cache
         public _initCache(): void {
@@ -302,7 +302,7 @@ module BABYLON {
             this.inputs.checkInputs();
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-                
+
                 if (this.getScene().useRightHandedSystem) {
                     this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 } else {
@@ -330,14 +330,6 @@ module BABYLON {
                     this._transformedDirection = Vector3.Zero();
                 }
 
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
-
-                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
-                    this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon)
-                    this.inertialPanningY = 0;
-
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
@@ -349,7 +341,15 @@ module BABYLON {
 
                 if (!this._targetHost) {
                     this._target.addInPlace(this._transformedDirection);
-                }                
+                }
+
+                this.inertialPanningX *= this.inertia;
+                this.inertialPanningY *= this.inertia;
+
+                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
+                    this.inertialPanningX = 0;
+                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon)
+                    this.inertialPanningY = 0;
             }
 
             // Limits
@@ -420,7 +420,7 @@ module BABYLON {
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {                        
+        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
 
             if ((<any>target).getBoundingInfo){
                 if (toBoundingCenter){
@@ -559,7 +559,7 @@ module BABYLON {
                 this.maxZ = distance * 2;
             }
         }
-        
+
         /**
          * @override
          * Override Camera.createRigCamera
@@ -581,7 +581,7 @@ module BABYLON {
             rigCam._cameraRigParams = {};
             return rigCam;
         }
-        
+
         /**
          * @override
          * Override Camera._updateRigCameras
@@ -589,7 +589,7 @@ module BABYLON {
         public _updateRigCameras() {
             var camLeft  = <ArcRotateCamera>this._rigCameras[0];
             var camRight = <ArcRotateCamera>this._rigCameras[1];
-            
+
             camLeft.beta = camRight.beta = this.beta;
             camLeft.radius = camRight.radius = this.radius;
 
@@ -618,5 +618,4 @@ module BABYLON {
             return "ArcRotateCamera";
         }
     }
-} 
-
+}
