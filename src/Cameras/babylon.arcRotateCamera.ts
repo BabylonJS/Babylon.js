@@ -315,11 +315,11 @@ module BABYLON {
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < this.speed * Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < this.speed * Epsilon)
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 
@@ -333,9 +333,9 @@ module BABYLON {
                 this.inertialPanningX *= this.inertia;
                 this.inertialPanningY *= this.inertia;
 
-                if (Math.abs(this.inertialPanningX) < Epsilon)
+                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
                     this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < Epsilon)
+                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon)
                     this.inertialPanningY = 0;
 
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);

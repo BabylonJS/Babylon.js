@@ -3589,26 +3589,26 @@
 
             // Camera
             if (!this.activeCamera) {
-                // Compute position
                 var worldExtends = this.getWorldExtends();
-                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                var camera;
-
+                var camera: TargetCamera;
+                var radius = worldSize.length() * 1.5;
                 if (createArcRotateCamera) {
-                    camera = new ArcRotateCamera("default camera", 0, 0, 10, Vector3.Zero(), this);
-                    camera.setPosition(new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
-                    camera.lowerRadiusLimit = 0.5;
-                    camera.setTarget(worldCenter);
-                } else {
-                    camera = new FreeCamera("default camera", Vector3.Zero(), this);
-
-                    camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                    camera.setTarget(worldCenter);
+                    var arcRotateCamera = new ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                    arcRotateCamera.wheelPrecision = 100 / radius;
+                    camera = arcRotateCamera;
                 }
-                camera.minZ = 0.1;
-                var maxDist = worldExtends.max.subtract(worldExtends.min).length();
-                camera.wheelPrecision = 100.0 / maxDist;
+                else {
+                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    freeCamera.setTarget(worldCenter);
+                    camera = freeCamera;
+                }
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 100;
+                camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
         }
