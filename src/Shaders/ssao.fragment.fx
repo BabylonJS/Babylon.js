@@ -1,4 +1,5 @@
 ﻿// SSAO Shader
+precision highp float;
 uniform sampler2D textureSampler;
 
 varying vec2 vUV;
@@ -16,6 +17,10 @@ uniform float radius;
 uniform float area;
 uniform float fallOff;
 uniform float base;
+uniform float xViewport;
+uniform float yViewport;
+
+uniform mat4 projection;
 
 vec3 normalFromDepth(float depth, vec2 coords)
 {	
@@ -46,31 +51,61 @@ void main()
 {
 	vec3 random = normalize(texture2D(randomSampler, vUV * randTextureTiles).rgb);
 	float depth = texture2D(textureSampler, vUV).r;
-	float n = 0.1;                                // the near plane
-	float f = 10.0;
-	depth = perspectiveDepthToViewZ(depth, n, f);
-	depth = viewZToOrthographicDepth(depth, n, f);
-	// depth = (2.0 * n * f) / (f + n - (2.0 * depth - 1.0) * (f - n));  // convert to linear values 
-	vec3 position = vec3(vUV, depth);
-	vec3 normal = texture2D(normalSampler, vUV).rgb;//normalFromDepth(depth, vUV); 
-	float radiusDepth = radius / depth;
+	float n = 1.0;                                // the near plane
+	float f = 100.0;
+	float linearDepth = - perspectiveDepthToViewZ(depth, n, f);
+	vec3 position = vec3(vUV, linearDepth);
+	vec3 normal = texture2D(normalSampler, vUV).rgb; 
+	float radiusDepth = linearDepth / radius;
 	float occlusion = 0.0;
+
+	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
+	vec3 origin = vViewRay * linearDepth;
+	vec3 rvec = random * 2.0 - 1.0;
+	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
+	vec3 bitangent = cross(normal, tangent);
+	mat3 tbn = mat3(tangent, bitangent, normal);
 
 	vec3 ray;
 	vec3 hemiRay;
 	float occlusionDepth;
 	float difference;
 
-	for (int i = 0; i < SAMPLES; i++)
-	{
-		ray = clamp(radiusDepth * reflect(sampleSphere[i], random), vec3(-0.002, -0.002, -1000), vec3(0.002, 0.002, 1000));
-		hemiRay = position + sign(dot(ray, normal)) * ray;
+	// for (int i = 0; i < SAMPLES; i++)
+	// {
+	// 	ray = 0.02 * reflect(sampleSphere[i], random);
+	// 	hemiRay = position + sign(dot(ray, normal)) * ray;
 
-		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, vec2(0.001, 0.001), vec2(0.999, 0.999) )).r;
-		difference = depth - occlusionDepth;
+	// 	occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, vec2(0.001, 0.001), vec2(0.999, 0.999))).r;
+	// 	difference = linearDepth - occlusionDepth;
 
-		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));
+	// 	occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));
+	// }
+
+	for (int i = 0; i < SAMPLES; ++i) {
+		// get sample position:
+	   vec3 samplePosition = tbn * sampleSphere[i];
+	   samplePosition = samplePosition * radiusDepth + origin;
+	  
+		// project sample position:
+		// vec2 offset = vec2(n / samplePosition.z * samplePosition.x,  n / samplePosition.z * samplePosition.y) * 0.5 + 0.5;
+	   vec4 offset = vec4(samplePosition, 1.0);
+	   offset = projection * offset;
+	   offset.xyz /= offset.w;
+	   offset.xy = offset.xy * 0.5 + 0.5;
+	  
+		// get sample linearDepth:
+	   float sampleDepth = texture(textureSampler, offset.xy).r;
+	   float linearSampleDepth = - perspectiveDepthToViewZ(texture(textureSampler, offset.xy).r, n, f);
+		// range check & accumulate:
+	   float rangeCheck = abs(origin.z - linearSampleDepth) < radiusDepth / 2.0 ? 1.0 : 0.0;
+	   // occlusion += (sampleDepth <= samplePosition.z ? 1.0 : 0.0) * rangeCheck;
+	  	difference = samplePosition.z - linearSampleDepth;
+	  	// occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
+	  	occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
+
 	}
+
 
 	float ao = 1.0 - totalStrength * occlusion * samplesFactor;
 	float result = clamp(ao + base, 0.0, 1.0);
@@ -79,8 +114,8 @@ void main()
 	// gl_FragColor.g = result;
 	// gl_FragColor.b = result;
 	// gl_FragColor.a = 1.0;
-	// gl_FragColor = vec4(depth, depth, depth, 1.0);
-	gl_FragColor = texture2D(textureSampler, vUV);
+	ao = 1.0 - occlusion * samplesFactor;
+	gl_FragColor = vec4(ao, ao, ao, 1.0);
 }
 #endif
 

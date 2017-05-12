@@ -2615,6 +2615,17 @@
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
 
+            // Debug
+            // texture._MSAAFramebuffer = gl.createFramebuffer();
+            // this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
+            // var colorRenderbuffer = gl.createRenderbuffer();
+            // gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+            // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+            // gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 8, gl.RGBA8, texture._width, texture._height);
+            // gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            // this.bindUnboundFramebuffer(null);
+            // texture._MSAARenderBuffer = colorRenderbuffer;
+
             texture._framebuffer = framebuffer;
             texture._baseWidth = width;
             texture._baseHeight = height;

@@ -7,5 +7,5 @@ void main(void) {
 	vec4 ssaoColor = texture2D(textureSampler, vUV);
 	vec4 sceneColor = texture2D(originalColor, vUV);
 
-	gl_FragColor = ssaoColor;
+	gl_FragColor = sceneColor * ssaoColor;
 }
