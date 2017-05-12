@@ -347,7 +347,7 @@ declare module BABYLON.GLTF2 {
          * @param runtime: the GLTF runtime
          * @param accessor: the GLTF accessor
          */
-        static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): any;
+        static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): ArrayBufferView;
         /**
          * Decodes a buffer view into a string
          * @param view: the buffer view
