@@ -115,7 +115,7 @@
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
             // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
             // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
@@ -191,32 +191,71 @@
             };
         }
 
-        private _createSSAOPostProcess(ratio: number): void {
+        private generateHemisphere(): number[] {
             var numSamples = 16;
-            var sampleSphere = [
-                0.5381, 0.1856, -0.4319,
+            var result = [];
+            var vector, scale;
+
+            var rand = (min, max) => {
+                return Math.random() * (max - min) + min;
+            }
+
+            var lerp = (start, end, percent) => {
+                return (start + percent*(end - start));
+            }
+
+            var i = 0;
+            var normal = new BABYLON.Vector3(0, 0, 1);
+            while (i < numSamples) {
+               vector = new BABYLON.Vector3(
+                   rand(-1.0, 1.0),
+                   rand(-1.0, 1.0),
+                   rand(0.0, 1.0));
+               vector.normalize();
+               if (BABYLON.Vector3.Dot(vector, normal) < 0.15) {
+                   continue;
+               }
+               scale = i / numSamples;
+               scale = lerp(0.1, 1.0, scale*scale);
+               vector.scaleInPlace(scale);
+
+
+               result.push(vector.x, vector.y, vector.z);
+               i++;
+            }
+
+            return result;
+        }
+
+        private _createSSAOPostProcess(ratio: number): void {
+            var numSamples = 5;
+/*            var sampleSphere = [
+                0.5381, 0.1856, 0.4319,
                 0.1379, 0.2486, 0.4430,
-                0.3371, 0.5679, -0.0057,
-                -0.6999, -0.0451, -0.0019,
-                0.0689, -0.1598, -0.8547,
-                0.0560, 0.0069, -0.1843,
+                0.3371, 0.5679, 0.0057,
+                -0.6999, -0.0451, 0.0019,
+                0.0689, -0.1598, 0.8547,
+                0.0560, 0.0069, 0.1843,
                 -0.0146, 0.1402, 0.0762,
-                0.0100, -0.1924, -0.0344,
-                -0.3577, -0.5301, -0.4358,
+                0.0100, -0.1924, 0.0344,
+                -0.3577, -0.5301, 0.4358,
                 -0.3169, 0.1063, 0.0158,
                 0.0103, -0.5869, 0.0046,
                 -0.0897, -0.4940, 0.3287,
-                0.7119, -0.0154, -0.0918,
-                -0.0533, 0.0596, -0.5411,
+                0.7119, -0.0154, 0.0918,
+                -0.0533, 0.0596, 0.5411,
                 0.0352, -0.0631, 0.5460,
-                -0.4776, 0.2847, -0.0271
-            ];
+                -0.4776, 0.2847, 0.0271
+            ];*/
+
+            var sampleSphere = this.generateHemisphere();
             var samplesFactor = 1.0 / numSamples;
 
             this._ssaoPostProcess = new PostProcess("ssao", "ssao",
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "area", "fallOff", "base", "range", "viewport", "width", "height"
+                                                        "area", "fallOff", "base", "range", "viewport", "width", "height", "projection",
+                                                        "xViewport", "yViewport"
                                                     ],
                                                     ["randomSampler", "normalSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
@@ -239,6 +278,9 @@
                 effect.setFloat("base", this.base);
                 effect.setFloat("width", this._scene.getEngine().getRenderWidth());
                 effect.setFloat("height", this._scene.getEngine().getRenderHeight());
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ * this._scene.getEngine().getAspectRatio(this._scene.activeCamera));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ );
+                effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
                 effect.setTexture("textureSampler", this._depthTexture);
                 effect.setTexture("normalSampler", this._normalTexture);
@@ -273,9 +315,15 @@
 
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
-                    randVector.x = Math.floor(rand(-1.0, 1.0) * 255);
-                    randVector.y = Math.floor(rand(-1.0, 1.0) * 255);
-                    randVector.z = Math.floor(rand(-1.0, 1.0) * 255);
+                    randVector.x = rand(-1.0, 1.0);
+                    randVector.y = rand(-1.0, 1.0);
+                    randVector.z = 0.0;
+
+                    randVector.normalize();
+
+                    randVector.scaleInPlace(255);
+                    randVector.x = Math.floor(randVector.x);
+                    randVector.y = Math.floor(randVector.y);
 
                     context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
                     context.fillRect(x, y, 1, 1);
