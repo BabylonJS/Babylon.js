@@ -4,6 +4,8 @@ module BABYLON.GLTF2 {
     export abstract class GLTFLoaderExtension {
         private _name: string;
 
+        public enabled: boolean = true;
+
         public constructor(name: string) {
             this._name = name;
         }
@@ -24,42 +26,23 @@ module BABYLON.GLTF2 {
         public static PostCreateRuntime(runtime: IGLTFRuntime): void {
             for (var extensionName in GLTFLoader.Extensions) {
                 var extension = GLTFLoader.Extensions[extensionName];
-                extension.postCreateRuntime(runtime);
+                if (extension.enabled) {
+                    extension.postCreateRuntime(runtime);
+                }
             }
         }
 
         public static LoadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): void {
             for (var extensionName in GLTFLoader.Extensions) {
                 var extension = GLTFLoader.Extensions[extensionName];
-                if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
-                    return;
+                if (extension.enabled) {
+                    if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
+                        return;
+                    }
                 }
             }
 
-            var material = GLTFLoader.LoadMaterial(runtime, index);
-            if (!material) {
-                onSuccess();
-                return;
-            }
-
-            var metallicRoughnessPropertiesSuccess = false;
-            var commonPropertiesSuccess = false;
-
-            var checkSuccess = () => {
-                if (metallicRoughnessPropertiesSuccess && commonPropertiesSuccess) {
-                    onSuccess();
-                }
-            }
-
-            GLTFLoader.LoadMetallicRoughnessMaterialPropertiesAsync(runtime, material, () => {
-                metallicRoughnessPropertiesSuccess = true;
-                checkSuccess();
-            }, onError);
-
-            GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material, () => {
-                commonPropertiesSuccess = true;
-                checkSuccess();
-            }, onError);
+            GLTFLoader.LoadCoreMaterialAsync(runtime, index, onSuccess, onError);
         }
     }
 }

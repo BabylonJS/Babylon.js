@@ -489,8 +489,6 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
-        var morphTargetManager: MorphTargetManager;
-
         // Positions, normals and UVs
         for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
             // Temporary vertex data
@@ -546,7 +544,6 @@ module BABYLON.GLTF2 {
             if (accessor) {
                 buffer = GLTFUtils.GetBufferFromAccessor(runtime, accessor);
                 tempVertexData.indices = <Uint32Array>buffer;
-                indexCounts.push(tempVertexData.indices.length);
             }
             else {
                 // Set indices on the fly
@@ -554,9 +551,8 @@ module BABYLON.GLTF2 {
                 for (var index = 0; index < tempVertexData.indices.length; index++) {
                     tempVertexData.indices[index] = index;
                 }
-
-                indexCounts.push(tempVertexData.indices.length);
             }
+            indexCounts.push(tempVertexData.indices.length);
 
             vertexData.merge(tempVertexData);
             tempVertexData = undefined;
@@ -623,12 +619,11 @@ module BABYLON.GLTF2 {
                     }
 
                     if (morph.getPositions()) {
-                        if (!morphTargetManager) {
-                            morphTargetManager = new MorphTargetManager();
-                            babylonMesh.morphTargetManager = morphTargetManager;
+                        if (!babylonMesh.morphTargetManager) {
+                            babylonMesh.morphTargetManager = new MorphTargetManager();
                         }
 
-                        morphTargetManager.addTarget(morph);
+                        babylonMesh.morphTargetManager.addTarget(morph);
                     }
                     else {
                         Tools.Warn("Not adding morph target '" + morph.name + "' because it has no position data");
@@ -917,7 +912,34 @@ module BABYLON.GLTF2 {
             return material;
         }
 
-        public static LoadMetallicRoughnessMaterialPropertiesAsync(runtime: IGLTFRuntime, material: IGLTFMaterial, onSuccess: () => void, onError: () => void): void {
+        public static LoadCoreMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): void {
+            var material = GLTFLoader.LoadMaterial(runtime, index);
+            if (!material) {
+                onSuccess();
+                return;
+            }
+
+            var metallicRoughnessPropertiesSuccess = false;
+            var commonPropertiesSuccess = false;
+
+            var checkSuccess = () => {
+                if (metallicRoughnessPropertiesSuccess && commonPropertiesSuccess) {
+                    onSuccess();
+                }
+            }
+
+            GLTFLoader._loadMetallicRoughnessMaterialPropertiesAsync(runtime, material, () => {
+                metallicRoughnessPropertiesSuccess = true;
+                checkSuccess();
+            }, onError);
+
+            GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material, () => {
+                commonPropertiesSuccess = true;
+                checkSuccess();
+            }, onError);
+        }
+
+        private static _loadMetallicRoughnessMaterialPropertiesAsync(runtime: IGLTFRuntime, material: IGLTFMaterial, onSuccess: () => void, onError: () => void): void {
             // Ensure metallic workflow
             material.babylonMaterial.metallic = 1;
             material.babylonMaterial.roughness = 1;
@@ -1190,17 +1212,12 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            // Load buffers, materials, etc.
             GLTFLoader._loadBuffersAsync(runtime, () => {
                 GLTFLoader._loadMaterialsAsync(runtime, () => {
                     postLoad(runtime);
                     onSuccess(meshes, null, skeletons);
                 }, onError);
             }, onError);
-
-            if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                onSuccess(meshes, null, skeletons);
-            }
         }
 
         /**
