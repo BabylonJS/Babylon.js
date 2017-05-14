@@ -550,6 +550,36 @@ vColor=color;\n\
                 .replace('#[Fragment_Before_FragColor]', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
             return name;
         };
+        CustomMaterial.PrepareUniformsAndSamplersList = function (uniformsListOrOptions, samplersList, defines, maxSimultaneousLights) {
+            if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
+            var uniformsList, uniformBuffersList, samplersList, defines;
+            if (uniformsListOrOptions.uniformsNames) {
+                var options = uniformsListOrOptions;
+                uniformsList = options.uniformsNames;
+                uniformBuffersList = options.uniformBuffersNames;
+                samplersList = options.samplers;
+                defines = options.defines;
+                maxSimultaneousLights = options.maxSimultaneousLights;
+            }
+            else {
+                uniformsList = uniformsListOrOptions;
+            }
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    break;
+                }
+                uniformsList.push("vLightData" + lightIndex, "vLightDiffuse" + lightIndex, "vLightSpecular" + lightIndex, "vLightDirection" + lightIndex, "vLightGround" + lightIndex, "lightMatrix" + lightIndex, "shadowsInfo" + lightIndex);
+                if (uniformBuffersList) {
+                    uniformBuffersList.push("Light" + lightIndex);
+                }
+                samplersList.push("shadowSampler" + lightIndex);
+            }
+            if (defines["NUM_MORPH_INFLUENCERS"]) {
+                uniformsList.push("morphTargetInfluences");
+            }
+            // 
+            console.log(1);
+        };
         CustomMaterial.prototype.SelectVersion = function (ver) {
             switch (ver) {
                 case "3.0.0":
