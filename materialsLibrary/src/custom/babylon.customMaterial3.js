@@ -534,7 +534,7 @@ vColor=color;\
         }
         CustomMaterial.prototype.Builder = function (shaderName) {
             CustomMaterial.ShaderIndexer++;
-            var name = shaderName + "custom_" + CustomMaterial.ShaderIndexer;
+            var name =   "custom_" + CustomMaterial.ShaderIndexer;
             BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.ShaderVersion.VertexStore
                 .replace('#[Vertex_Begin]', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
                 .replace('#[Vertex_Definations]', (this.CustomParts.Vertex_Definations ? this.CustomParts.Vertex_Definations : ""))
