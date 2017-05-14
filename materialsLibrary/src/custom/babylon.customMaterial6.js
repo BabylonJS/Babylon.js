@@ -394,7 +394,7 @@ varying vec3 vDirectionW;\n\
 \n\
 void main(void) {\n\
     \n\
-    #[Vertex_Begin]\n\
+    #[Vertex_MainBegin]\n\
     \n\
 vec3 positionUpdated=position;\n\
 #ifdef NORMAL \n\
