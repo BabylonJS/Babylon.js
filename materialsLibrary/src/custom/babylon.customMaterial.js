@@ -17,6 +17,12 @@ var BABYLON;
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
+    var ShaderSpecialParts = (function () {
+        function ShaderSpecialParts() {
+        }
+        return ShaderSpecialParts;
+    }());
+    BABYLON.ShaderSpecialParts = ShaderSpecialParts;
     var ShaderForVer3_0 = (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
@@ -521,6 +527,7 @@ vColor=color;\
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
+            _this.CustomParts = new ShaderSpecialParts();
             _this.customShaderNameResolve = _this.Builder;
             _this.SelectVersion("3.0.0");
             return _this;
