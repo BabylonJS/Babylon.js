@@ -598,7 +598,7 @@ vColor=color;\n\
             return this;
         };
         CustomMaterial.prototype.Vertex_Befor_NormalUpdated = function (shaderPart) {
-            this.CustomParts.Vertex_Befor_PositionUpdated = shaderPart.replace("result", "normalUpdated");
+            this.CustomParts.Vertex_Befor_NormalUpdated = shaderPart.replace("result", "normalUpdated");
             return this;
         };
         return CustomMaterial;
