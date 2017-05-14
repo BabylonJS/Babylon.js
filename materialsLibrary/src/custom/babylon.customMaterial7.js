@@ -543,6 +543,7 @@ vColor=color;\n\
                 .replace('#[Vertex_Befor_NormalUpdated]', (this.CustomParts.Vertex_Befor_NormalUpdated ? this.CustomParts.Vertex_Befor_NormalUpdated : ""));
             BABYLON.Effect.ShadersStore[name + "PixelShader"] = this.ShaderVersion.FragmentStore
                 .replace('#[Fragment_Begin]', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
+                .replace('#[Fragment_MainBegin]', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
                 .replace('#[Fragment_Definations]', (this.CustomParts.Fragment_Definations ? this.CustomParts.Fragment_Definations : ""))
                 .replace('#[Fragment_Custom_Deffiuse]', (this.CustomParts.Fragment_Custom_Deffiuse ? this.CustomParts.Fragment_Custom_Deffiuse : ""))
                 .replace('#[Fragment_Custom_Alpha]', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
