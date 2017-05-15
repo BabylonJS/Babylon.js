@@ -2643,8 +2643,11 @@
             var generateDepthTexture = false;
             var textureCount = 1;
 
-            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var defaultSamplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+
+            var types = [], samplingModes = [];
+
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
@@ -2652,18 +2655,13 @@
                 generateDepthTexture = options.generateDepthTexture;
                 textureCount = options.textureCount || 1;
 
-                type = options.type === undefined ? type : options.type;
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
+                if (options.types) {
+                    types = options.types;
                 }
-                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                if (options.samplingModes) {
+                    samplingModes = options.samplingModes;
                 }
-                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
-                }
+
             }
             var gl = this._gl;
             // Create the framebuffer
@@ -2680,18 +2678,31 @@
 
             var width = size.width || size;
             var height = size.height || size;
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
             
             var textures = [];
             var attachments = []
-            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
-            }
 
             var depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
             for (var i = 0; i < textureCount; i++) {
+                var samplingMode = samplingModes[i] || defaultSamplingMode;
+                var type = types[i] || defaultType;
+
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+
+                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                    type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                    Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+                }
+
                 var texture = gl.createTexture();
                 var attachment = gl["COLOR_ATTACHMENT" + i];
                 textures.push(texture);

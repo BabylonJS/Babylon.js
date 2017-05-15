@@ -1,31 +1,9 @@
 module BABYLON {
-    export class MultiRenderTarget {
-
-        public getScene(): Scene {
-            return this._scene;
-        }
+    export class MultiRenderTarget extends RenderTargetTexture {
 
         private _webGLTextures: WebGLTexture[];
         private _textures: Texture[];
         private _count: number;
-        private _scene: Scene;
-        private _renderingManager: RenderingManager;
-        private _doNotChangeAspectRatio: boolean;
-        private _size: number;
-
-        /**
-        * An event triggered after the texture clear
-        * @type {BABYLON.Observable}
-        */
-        public onClearObservable = new Observable<Engine>();
-
-        private _onClearObserver: Observer<Engine>;
-        public set onClear(callback: (Engine: Engine) => void) {
-            if (this._onClearObserver) {
-                this.onClearObservable.remove(this._onClearObserver);
-            }
-            this._onClearObserver = this.onClearObservable.add(callback);
-        }
 
         public get textures(): Texture[] {
             return this._textures;
@@ -35,34 +13,46 @@ module BABYLON {
             return this._textures[this._textures.length - 1];
         }
 
-        private _shouldRender(): boolean {
-            return true;
-        }
-
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
         constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
             options = options || {};
 
-            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps[0] : false;
+            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps : false;
             var generateDepthTexture = options.generateDepthTexture ? options.generateDepthTexture : false;
             var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
-            var type = options.types ? options.types[0] : Engine.TEXTURETYPE_FLOAT;
-            var samplingMode = options.samplingModes ? options.samplingModes[0] : Texture.TRILINEAR_SAMPLINGMODE;
+
+            super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
+
+            var types = [];
+            var samplingModes = [];
+
+            for (var i = 0; i < count; i++) {
+                if (options.types && options.types[i]) {
+                    types.push(options.types[i]);
+                } else {
+                    types.push(Engine.TEXTURETYPE_FLOAT);
+                }
+
+                if (options.samplingModes && options.samplingModes[i]) {
+                    samplingModes.push(options.samplingModes[i]);
+                } else {
+                    samplingModes.push(Texture.TRILINEAR_SAMPLINGMODE);
+                }
+            }
+
             var generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             var generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
 
             this._count = count;
-            this._scene = scene;
-            this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             this._size = size;
             this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, {
-                samplingMode: samplingMode,
+                samplingModes: samplingModes,
                 generateMipMaps: generateMipMaps,
                 generateDepthBuffer: generateDepthBuffer,
                 generateStencilBuffer: generateStencilBuffer,
                 generateDepthTexture: generateDepthTexture,
-                type: type,
+                types: types,
                 textureCount: count
             });
 
@@ -72,9 +62,20 @@ module BABYLON {
                 texture._texture = this._webGLTextures[i];
                 this._textures.push(texture);
             }
+        }
 
-            // Rendering groups
-            this._renderingManager = new RenderingManager(scene);
+        public get samples(): number {
+            return this._samples;
+        }
+
+        public set samples(value: number) {
+            if (this._samples === value) {
+                return;
+            }
+            
+            for (var i = 0 ; i < this._webGLTextures.length; i++) {
+                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._webGLTextures[i], value);
+            }
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
@@ -150,20 +151,14 @@ module BABYLON {
 
 
         public dispose(): void {
-            // Animations
-            this.getScene().stopAnimation(this);
-
-            // Remove from scene
-            this._scene._removePendingData(this);
-
             for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
                 if (this._webGLTextures[i] !== undefined) {
-                    this._scene.getEngine().releaseInternalTexture(this._webGLTextures[i]);
+                    this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);
                     this._webGLTextures.splice(i, 1);
                 }
             }
+
+            super.dispose();
         }
-
-
     }
 }
