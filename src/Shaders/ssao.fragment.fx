@@ -101,8 +101,8 @@ void main()
 	   float rangeCheck = abs(linearDepth - linearSampleDepth) < radiusDepth ? 1.0 : 0.0;
 	   // occlusion += (sampleDepth <= samplePosition.z ? 1.0 : 0.0) * rangeCheck;
 	  	difference = samplePosition.z - linearSampleDepth;
-	  	occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
-	  	//occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
+	  	//occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
+	  	occlusion += (difference > 0.00000005 ? 1.0 : 0.0) * rangeCheck;
 
 	}
 

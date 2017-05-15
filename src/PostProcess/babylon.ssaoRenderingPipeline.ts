@@ -107,7 +107,7 @@
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
             this._ratio = {
-                ssaoRatio: 1.0, //ssaoRatio,
+                ssaoRatio: ssaoRatio,
                 combineRatio: combineRatio
             };
 
@@ -119,8 +119,8 @@
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
+            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
 
             // Finish
@@ -157,13 +157,6 @@
 
         // Private Methods
         private _createBlurPostProcess(ratio: number): void {
-            /*
-            var samplerOffsets = [
-                -8.0, -6.0, -4.0, -2.0,
-                0.0,
-                2.0, 4.0, 6.0, 8.0
-            ];
-            */
             var samples = 16;
             var samplerOffsets = [];
 
