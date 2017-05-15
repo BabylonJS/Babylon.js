@@ -100,13 +100,7 @@
         protected _refreshRate = 1;
         protected _textureMatrix: Matrix;
         protected _samples = 1;
-        protected _renderTargetOptions: {
-            generateMipMaps: boolean,
-            type: number,
-            samplingMode: number,
-            generateDepthBuffer: boolean,
-            generateStencilBuffer: boolean
-        };
+        protected _renderTargetOptions: any;
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
