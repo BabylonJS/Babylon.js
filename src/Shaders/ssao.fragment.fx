@@ -1,8 +1,16 @@
-﻿// SSAO Shader
+// SSAO Shader
 precision highp float;
 uniform sampler2D textureSampler;
 
 varying vec2 vUV;
+
+float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
+	return ( near * far ) / ( ( far - near ) * invClipZ - far );
+}
+
+float viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {
+	return ( viewZ + near ) / ( near - far );
+}
 
 #ifdef SSAO
 uniform sampler2D randomSampler;
@@ -39,14 +47,6 @@ vec3 normalFromDepth(float depth, vec2 coords)
 	return normalize(normal);
 }
 
-float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
-	return ( near * far ) / ( ( far - near ) * invClipZ - far );
-}
-
-float viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {
-	return ( viewZ + near ) / ( near - far );
-}
-
 void main()
 {
 	vec3 random = normalize(texture2D(randomSampler, vUV * randTextureTiles).rgb);
@@ -56,7 +56,7 @@ void main()
 	float linearDepth = - perspectiveDepthToViewZ(depth, n, f);
 	vec3 position = vec3(vUV, linearDepth);
 	vec3 normal = texture2D(normalSampler, vUV).rgb; 
-	float radiusDepth = linearDepth / radius;
+	float radiusDepth = radius; //linearDepth / radius;
 	float occlusion = 0.0;
 
 	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
@@ -98,11 +98,11 @@ void main()
 	   float sampleDepth = texture(textureSampler, offset.xy).r;
 	   float linearSampleDepth = - perspectiveDepthToViewZ(texture(textureSampler, offset.xy).r, n, f);
 		// range check & accumulate:
-	   float rangeCheck = abs(origin.z - linearSampleDepth) < radiusDepth / 2.0 ? 1.0 : 0.0;
+	   float rangeCheck = abs(linearDepth - linearSampleDepth) < radiusDepth ? 1.0 : 0.0;
 	   // occlusion += (sampleDepth <= samplePosition.z ? 1.0 : 0.0) * rangeCheck;
 	  	difference = samplePosition.z - linearSampleDepth;
-	  	// occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
-	  	occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
+	  	occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
+	  	//occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
 
 	}
 
@@ -114,7 +114,7 @@ void main()
 	// gl_FragColor.g = result;
 	// gl_FragColor.b = result;
 	// gl_FragColor.a = 1.0;
-	ao = 1.0 - occlusion * samplesFactor;
+	ao = 1.0 - totalStrength * occlusion * samplesFactor;
 	gl_FragColor = vec4(ao, ao, ao, 1.0);
 }
 #endif
@@ -127,8 +127,12 @@ uniform float samplerOffsets[SAMPLES];
 void main()
 {
 
+	// TODO change
+	float n = 1.0;
+	float f = 100.0;
 	float texelsize = 1.0 / outSize;
 	float compareDepth = texture2D(depthSampler, vUV).r;
+	float linearDepth = - perspectiveDepthToViewZ(compareDepth, n, f);
 	float result = 0.0;
 	float weightSum = 0.0;
 
@@ -142,7 +146,8 @@ void main()
 		vec2 samplePos = vUV + sampleOffset;
 
 		float sampleDepth = texture2D(depthSampler, samplePos).r;
-		float weight = (1.0 / (0.0001 + abs(compareDepth - sampleDepth)));
+		float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, n, f);
+		float weight = (1.0 / (0.0005 + abs(linearDepth - linearSampleDepth)));
 
 		result += texture2D(textureSampler, samplePos).r * weight;
 		weightSum += weight;

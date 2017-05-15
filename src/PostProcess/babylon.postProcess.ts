@@ -181,7 +181,8 @@
                 let textureOptions = { 
                     generateMipMaps: false, 
                     generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
-                    generateStencilBuffer: false, //camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                    generateStencilBuffer: 
+                    camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode, 
                     type: this._textureType 
                 };
@@ -194,7 +195,6 @@
  
                 this.onSizeChangedObservable.notifyObservers(this);
             }
-            this.samples = 4;
 
             this._textures.forEach(texture => {
                 if (texture.samples !== this.samples) {

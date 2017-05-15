@@ -19,7 +19,7 @@ module BABYLON {
             this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 2, this._scene, {generateMipMaps : [true]});
             // set default depth value to 1.0 (far away)
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
-                engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
             });
 
             // Custom render function

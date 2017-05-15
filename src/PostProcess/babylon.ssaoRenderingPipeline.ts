@@ -35,6 +35,8 @@
         @serialize()
         public totalStrength: number = 1.0;
 
+        public samples: number = 16.0;
+
         /**
         * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
         * @type {number}
@@ -105,7 +107,7 @@
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
             this._ratio = {
-                ssaoRatio: ssaoRatio,
+                ssaoRatio: 1.0, //ssaoRatio,
                 combineRatio: combineRatio
             };
 
@@ -117,9 +119,9 @@
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -192,7 +194,7 @@
         }
 
         private generateHemisphere(): number[] {
-            var numSamples = 16;
+            var numSamples = this.samples;
             var result = [];
             var vector, scale;
 
@@ -212,7 +214,7 @@
                    rand(-1.0, 1.0),
                    rand(0.0, 1.0));
                vector.normalize();
-               if (BABYLON.Vector3.Dot(vector, normal) < 0.15) {
+               if (BABYLON.Vector3.Dot(vector, normal) < 0.07) {
                    continue;
                }
                scale = i / numSamples;
@@ -228,7 +230,7 @@
         }
 
         private _createSSAOPostProcess(ratio: number): void {
-            var numSamples = 5;
+            var numSamples = this.samples;
 /*            var sampleSphere = [
                 0.5381, 0.1856, 0.4319,
                 0.1379, 0.2486, 0.4430,
@@ -278,7 +280,7 @@
                 effect.setFloat("base", this.base);
                 effect.setFloat("width", this._scene.getEngine().getRenderWidth());
                 effect.setFloat("height", this._scene.getEngine().getRenderHeight());
-                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ * this._scene.getEngine().getAspectRatio(this._scene.activeCamera));
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
                 effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ );
                 effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
@@ -315,8 +317,8 @@
 
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
-                    randVector.x = rand(-1.0, 1.0);
-                    randVector.y = rand(-1.0, 1.0);
+                    randVector.x = rand(0.0, 1.0);
+                    randVector.y = rand(0.0, 1.0);
                     randVector.z = 0.0;
 
                     randVector.normalize();
