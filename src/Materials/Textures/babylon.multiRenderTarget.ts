@@ -5,6 +5,16 @@ module BABYLON {
         private _textures: Texture[];
         private _count: number;
 
+        protected _renderTargetOptions: {
+            generateMipMaps: boolean,
+            types: number[],
+            samplingModes: number[],
+            generateDepthBuffer: boolean,
+            generateStencilBuffer: boolean,
+            generateDepthTexture: boolean,
+            textureCount: number
+        };
+
         public get textures(): Texture[] {
             return this._textures;
         }
@@ -12,8 +22,6 @@ module BABYLON {
         public get depthTexture(): Texture {
             return this._textures[this._textures.length - 1];
         }
-
-        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
         constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
             options = options || {};
@@ -46,7 +54,7 @@ module BABYLON {
 
             this._count = count;
             this._size = size;
-            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, {
+            this._renderTargetOptions = {
                 samplingModes: samplingModes,
                 generateMipMaps: generateMipMaps,
                 generateDepthBuffer: generateDepthBuffer,
@@ -54,7 +62,9 @@ module BABYLON {
                 generateDepthTexture: generateDepthTexture,
                 types: types,
                 textureCount: count
-            });
+            };
+
+            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
 
             this._textures = [];
             for (var i = 0; i < this._webGLTextures.length; i++) {
@@ -62,6 +72,11 @@ module BABYLON {
                 texture._texture = this._webGLTextures[i];
                 this._textures.push(texture);
             }
+
+            // Keeps references to frame buffer and stencil/depth buffer
+            this._texture = this._webGLTextures[0];
+
+            // this.resize(size);
         }
 
         public get samples(): number {
@@ -78,87 +93,24 @@ module BABYLON {
             }
         }
 
-        public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
-            var scene = this.getScene();
-            var engine = scene.getEngine();
-
-            engine.setViewport(scene.activeCamera.viewport);
-
-            // Prepare renderingManager
-            this._renderingManager.reset();
-
-            var currentRenderList = scene.getActiveMeshes().data;
-            var currentRenderListLength = scene.getActiveMeshes().length;
-            var sceneRenderId = scene.getRenderId();
-            for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
-                var mesh = currentRenderList[meshIndex];
-
-                if (mesh) {
-                    if (!mesh.isReady()) {
-                        continue;
-                    }
-
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
-                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices.addCount(subMesh.indexCount, false);
-                            this._renderingManager.dispatch(subMesh);
-                        }
-                    }
-                }
-            }
-
-            this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
-
-            engine.setViewport(scene.activeCamera.viewport);
-
-            scene.resetCachedMaterial();
+        public resize(size: any) {
+            this.releaseInternalTextures();
+            this._webGLTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
         }
-
-        public renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength:number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
-            var scene = this.getScene();
-            var engine = scene.getEngine();
-
-            // Bind
-            engine.bindFramebuffer(this._webGLTextures[0]);
-
-            // Clear
-            if (this.onClearObservable.hasObservers()) {
-                this.onClearObservable.notifyObservers(engine);
-            } else {
-                engine.clear(scene.clearColor, true, true, true);
-            }
-
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
-
-            // Render
-            this._renderingManager.render(this.customRenderFunction, currentRenderList, false, false);
-
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
-
-            // Dump ?
-            if (dumpForDebug) {
-                Tools.DumpFramebuffer(this._size, this._size, engine);
-            }
-
-            // Unbind
-            engine.unBindFramebuffer(this._webGLTextures[0]);
-        }
-
 
         public dispose(): void {
+            this.releaseInternalTextures();
+
+            super.dispose();
+        }
+
+        private releaseInternalTextures(): void {
             for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
                 if (this._webGLTextures[i] !== undefined) {
                     this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);
                     this._webGLTextures.splice(i, 1);
                 }
             }
-
-            super.dispose();
         }
     }
 }

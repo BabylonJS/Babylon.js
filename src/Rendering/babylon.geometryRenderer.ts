@@ -68,6 +68,8 @@ module BABYLON {
                     // renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
             };
+
+            this._multiRenderTarget.renderList = scene.getActiveMeshes().data;
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
