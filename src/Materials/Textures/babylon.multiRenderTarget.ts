@@ -45,6 +45,7 @@ module BABYLON {
             options = options || {};
 
             var generateMipMaps = options.generateMipMaps ? options.generateMipMaps[0] : false;
+            var generateDepthTexture = options.generateDepthTexture ? options.generateDepthTexture : false;
             var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
             var type = options.types ? options.types[0] : Engine.TEXTURETYPE_FLOAT;
             var samplingMode = options.samplingModes ? options.samplingModes[0] : Texture.TRILINEAR_SAMPLINGMODE;
@@ -60,6 +61,7 @@ module BABYLON {
                 generateMipMaps: generateMipMaps,
                 generateDepthBuffer: generateDepthBuffer,
                 generateStencilBuffer: generateStencilBuffer,
+                generateDepthTexture: generateDepthTexture,
                 type: type,
                 textureCount: count
             });
