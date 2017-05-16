@@ -35,32 +35,39 @@
         @serialize()
         public totalStrength: number = 1.0;
 
-        public samples: number = 16.0;
-
         /**
-        * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
+        * Number of samples used for the SSAO calculations. Default value is 8
         * @type {number}
         */
         @serialize()
-        public radius: number = 0.0001;
+        private _samples: number = 8;
+
+        public set samples(n: number) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+
+            this._samples = n;
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
+                this._ssaoPostProcess.dispose(camera);
+            }
+
+            this._createSSAOPostProcess(this._ratio.ssaoRatio);
+            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
+
+            if (this._cameras)
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+        }
+
+        public get samples(): number {
+            return this._samples;
+        }
 
         /**
-        * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
-        * Must not be equal to fallOff and superior to fallOff.
-        * Default value is 0.975
+        * The radius around the analyzed pixel used by the SSAO post-process. Default value is 2.0
         * @type {number}
         */
         @serialize()
-        public area: number = 0.0075;
-
-        /**
-        * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
-        * Must not be equal to area and inferior to area.
-        * Default value is 0.0
-        * @type {number}
-        */
-        @serialize()
-        public fallOff: number = 0.000001;
+        public radius: number = 2.0;
 
         /**
         * The base color of the SSAO post-process
@@ -98,17 +105,17 @@
 
             this._scene = scene;
 
-            // Set up assets
-            this._createRandomTexture();
-            this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture; 
-            this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1];
-
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
             this._ratio = {
                 ssaoRatio: ssaoRatio,
                 combineRatio: combineRatio
             };
+
+            // Set up assets
+            this._createRandomTexture();
+            this._depthTexture = scene.enableGeometryRenderer(this._ratio.ssaoRatio).getGBuffer().depthTexture; 
+            this._normalTexture = scene.enableGeometryRenderer(this._ratio.ssaoRatio).getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
@@ -118,8 +125,8 @@
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            // this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
 
             // Finish
@@ -133,7 +140,7 @@
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        public dispose(disableDepthRender: boolean = false): void {
+        public dispose(disableGeometryRenderer: boolean = false): void {
             for (var i = 0; i < this._scene.cameras.length; i++) {
                 var camera = this._scene.cameras[i];
 
@@ -146,8 +153,8 @@
 
             this._randomTexture.dispose();
 
-            if (disableDepthRender)
-                this._scene.disableDepthRenderer();
+            if (disableGeometryRenderer)
+                this._scene.disableGeometryRenderer();
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
@@ -163,9 +170,12 @@
                 samplerOffsets.push(i * 2);
             }
 
-            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16");
+            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16");
             this._blurHPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
+                effect.setFloat("near", this._scene.activeCamera.minZ);
+                effect.setFloat("far", this._scene.activeCamera.maxZ);
+                effect.setFloat("radius", this.radius);
                 effect.setTexture("depthSampler", this._depthTexture);
 
                 if (this._firstUpdate) {
@@ -173,9 +183,12 @@
                 }
             };
 
-            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16");
+            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16");
             this._blurVPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
+                effect.setFloat("near", this._scene.activeCamera.minZ);
+                effect.setFloat("far", this._scene.activeCamera.maxZ);
+                effect.setFloat("radius", this.radius);
                 effect.setTexture("depthSampler", this._depthTexture);
 
                 if (this._firstUpdate) {
@@ -185,7 +198,7 @@
             };
         }
 
-        private generateHemisphere(): number[] {
+        private _generateHemisphere(): number[] {
             var numSamples = this.samples;
             var result = [];
             var vector, scale;
@@ -224,13 +237,13 @@
         private _createSSAOPostProcess(ratio: number): void {
             var numSamples = this.samples;
 
-            var sampleSphere = this.generateHemisphere();
+            var sampleSphere = this._generateHemisphere();
             var samplesFactor = 1.0 / numSamples;
 
             this._ssaoPostProcess = new PostProcess("ssao", "ssao",
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "area", "fallOff", "base", "range", "viewport", "width", "height", "projection",
+                                                        "base", "range", "viewport", "projection", "near", "far",
                                                         "xViewport", "yViewport"
                                                     ],
                                                     ["randomSampler", "normalSampler"],
@@ -249,11 +262,9 @@
 
                 effect.setFloat("totalStrength", this.totalStrength);
                 effect.setFloat("radius", this.radius);
-                effect.setFloat("area", this.area);
-                effect.setFloat("fallOff", this.fallOff);
                 effect.setFloat("base", this.base);
-                effect.setFloat("width", this._scene.getEngine().getRenderWidth());
-                effect.setFloat("height", this._scene.getEngine().getRenderHeight());
+                effect.setFloat("near", this._scene.activeCamera.minZ);
+                effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
                 effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ );
                 effect.setMatrix("projection", this._scene.getProjectionMatrix());

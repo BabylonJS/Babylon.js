@@ -11,12 +11,12 @@ module BABYLON {
 
         private _cachedDefines: string;
 
-        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT) {
+        constructor(scene: Scene, ratio: number = 1) {
             this._scene = scene;
             var engine = scene.getEngine();
 
             // Render target
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 2, this._scene, { generateMipMaps : true, generateDepthTexture: true });
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps : true, generateDepthTexture: true });
             this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.refreshRate = 1;

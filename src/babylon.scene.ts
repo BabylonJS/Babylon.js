@@ -3111,12 +3111,12 @@
             this._depthRenderer = null;
         }
 
-        public enableGeometryRenderer(): GeometryRenderer {
+        public enableGeometryRenderer(ratio: number = 1): GeometryRenderer {
             if (this._geometryRenderer) {
                 return this._geometryRenderer;
             }
 
-            this._geometryRenderer = new GeometryRenderer(this);
+            this._geometryRenderer = new GeometryRenderer(this, ratio);
 
             return this._geometryRenderer;
         }
