@@ -187,7 +187,7 @@ class BakingRecipe:
 
         # accumulators set by Blender Game
         self.backFaceCulling = True  # used only when baking
-        self.isBillboard = len(mesh.material_slots) == 1 and mesh.material_slots[0].material.game_settings.face_orientation == 'BILLBOARD'
+        self.isBillboard = len(mesh.material_slots) == 1 and mesh.material_slots[0] is not None and mesh.material_slots[0].material.game_settings.face_orientation == 'BILLBOARD'
 
         # Cycles specific, need to get the node trees of each material
         self.nodeTrees = []
