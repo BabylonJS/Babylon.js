@@ -62,6 +62,7 @@ class JsonExporter:
             self.skeletons = []
             skeletonId = 0
             self.meshesAndNodes = []
+            self.morphTargetMngrs = []
             self.materials = []
             self.multiMaterials = []
             self.sounds = []
@@ -106,6 +107,8 @@ class JsonExporter:
                         
                         if hasattr(mesh, 'instances'):
                             self.meshesAndNodes.append(mesh)
+                            if hasattr(mesh, 'morphTargetManagerId'):
+                                self.morphTargetMngrs.append(mesh)
                         else:
                             break
 
@@ -207,6 +210,17 @@ class JsonExporter:
 
             first = False
             mesh.to_scene_file(file_handler)
+        file_handler.write(']')
+
+        # Morph targets
+        file_handler.write(',\n"morphTargetManagers":[')
+        first = True
+        for mesh in self.morphTargetMngrs:
+            if first != True:
+                file_handler.write(',')
+
+            first = False
+            mesh.write_morphing_file(file_handler)
         file_handler.write(']')
 
         # Cameras
