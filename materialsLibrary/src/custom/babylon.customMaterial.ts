@@ -2,6 +2,7 @@
 
 module BABYLON { 
 
+   
   export class CustomShaderStructure {
       
        public FragmentStore : string; 
@@ -551,14 +552,58 @@ vColor=color;\n\
          public static ShaderIndexer = 1;
          public CustomParts :  ShaderSpecialParts;
          public ShaderVersion : CustomShaderStructure ;
+         _customUnifrom : string[];
+         _newUnifroms : string[];
+         _newUnifromInstances : any[];
+         _newSamplerInstances : Texture[];
+
+         public AttachAfterBind(mesh:Mesh,effect:Effect){ 
+             for(var el in this._newUnifromInstances){
+                 var ea = el.toString().split('-');
+                 if(ea[0] == 'vec2') effect.setVector2(ea[1],this._newUnifromInstances[el]);
+                 else if(ea[0] == 'vec3') effect.setVector3(ea[1],this._newUnifromInstances[el]);
+                 else if(ea[0] == 'vec4') effect.setVector4(ea[1],this._newUnifromInstances[el]);
+                 else if(ea[0] == 'mat4') effect.setMatrix(ea[1],this._newUnifromInstances[el]);
+                 else if(ea[0] == 'float') effect.setFloat(ea[1],this._newUnifromInstances[el]); 
+             }
+
+              for(var el in this._newSamplerInstances){ 
+                 var ea = el.toString().split('-'); 
+                if(ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                     effect.setTexture(ea[1],this._newSamplerInstances[el]); 
+              }
+         }
+
+         public ReviewUniform(name:string, arr : string[] ) : string[]{
+             if(name == "uniform")
+              {
+                  for(var ind in this._newUnifroms)
+                    if(this._customUnifrom[ind].indexOf('sampler')== -1) 
+                        arr.push(this._newUnifroms[ind]);
+              }
+
+                 if(name == "sampler")
+              {
+                   for(var ind in this._newUnifroms)
+                    if(this._customUnifrom[ind].indexOf('sampler')!= -1) 
+                        arr.push(this._newUnifroms[ind]);
+              }
+
+             return arr;
+         }
          public Builder(shaderName:string) : string { 
 
             CustomMaterial.ShaderIndexer++;
             var name = "custom_"+CustomMaterial.ShaderIndexer;
+            var fn_afterBind = this._afterBind;
+            this._afterBind = function(m,e){ 
+                this.AttachAfterBind(m,e);
+                try{fn_afterBind(m,e);}catch(e){};
+            } ;
 
             BABYLON.Effect.ShadersStore[name+"VertexShader"] = this.ShaderVersion.VertexStore
             .replace('#[Vertex_Begin]',(this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
-            .replace('#[Vertex_Definations]',(this.CustomParts.Vertex_Definations ? this.CustomParts.Vertex_Definations : ""))
+            .replace('#[Vertex_Definations]',(this._customUnifrom? this._customUnifrom.join("\n"):"")+ (this.CustomParts.Vertex_Definations ? this.CustomParts.Vertex_Definations : ""))
             .replace('#[Vertex_MainBegin]',(this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
             .replace('#[Vertex_Befor_PositionUpdated]',(this.CustomParts.Vertex_Befor_PositionUpdated ? this.CustomParts.Vertex_Befor_PositionUpdated : ""))
             .replace('#[Vertex_Befor_NormalUpdated]',(this.CustomParts.Vertex_Befor_NormalUpdated ? this.CustomParts.Vertex_Befor_NormalUpdated : "")) ;
@@ -566,7 +611,7 @@ vColor=color;\n\
             BABYLON.Effect.ShadersStore[name+"PixelShader"] = this.ShaderVersion.FragmentStore
             .replace('#[Fragment_Begin]',(this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#[Fragment_MainBegin]',(this.CustomParts.Fragment_MainBegin  ? this.CustomParts.Fragment_MainBegin : ""))
-            .replace('#[Fragment_Definations]',(this.CustomParts.Fragment_Definations ? this.CustomParts.Fragment_Definations : ""))
+            .replace('#[Fragment_Definations]',(this._customUnifrom? this._customUnifrom.join("\n"):"")+(this.CustomParts.Fragment_Definations ? this.CustomParts.Fragment_Definations : ""))
             .replace('#[Fragment_Custom_Deffiuse]',(this.CustomParts.Fragment_Custom_Deffiuse ? this.CustomParts.Fragment_Custom_Deffiuse : ""))
             .replace('#[Fragment_Custom_Alpha]',(this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#[Fragment_Before_FragColor]',(this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : "")) ;
@@ -585,11 +630,32 @@ vColor=color;\n\
          constructor(name:string,scene:Scene ){
             super(name,scene);
             this.CustomParts = new ShaderSpecialParts();
-            this.customShaderNameResolve = this.Builder;  
+            this.customShaderNameResolve = this.Builder; 
+            this.reviewBuffersBeforeEffectCreation = this.ReviewUniform; 
             this.SelectVersion("3.0.0"); 
-         }
+         } 
+         public AddUniform(name:string,kind:string,param:any):CustomMaterial{
+             if(!this._customUnifrom)
+              {  
+                  this._customUnifrom = new Array();
+                  this._newUnifroms = new Array();
+                  this._newSamplerInstances = new Array();
+                  this._newUnifromInstances = new Array();
+              }
+              if(param){
+              if(kind.indexOf("sampler") == -1) {
+                    this._newUnifromInstances[kind+"-"+name] = param;
+              }
+              else{
+                  this._newSamplerInstances[kind+"-"+name] = param;
+              }
+             }
 
-         
+            this._customUnifrom.push("uniform "+kind+" "+name+";");
+            this._newUnifroms.push(name);
+             
+            return this;
+         }
          public Fragment_Begin(shaderPart:string):CustomMaterial{            
             this.CustomParts.Fragment_Begin = shaderPart;
             return this;
