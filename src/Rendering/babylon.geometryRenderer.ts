@@ -17,6 +17,12 @@ module BABYLON {
 
             // Render target
             this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 2, this._scene, { generateMipMaps : true, generateDepthTexture: true });
+            this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._multiRenderTarget.refreshRate = 1;
+            this._multiRenderTarget.renderParticles = false;
+            this._multiRenderTarget.renderList = null;
+            
             // set default depth value to 1.0 (far away)
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
                 engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
@@ -50,6 +56,18 @@ module BABYLON {
 
                     this._effect.setFloat("far", scene.activeCamera.maxZ);
 
+                    // Alpha test
+                    if (material && material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
+                        this._effect.setTexture("diffuseSampler", alphaTexture);
+                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
+
+                    // Bones
+                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    }
+
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                         (isInstance, world) => this._effect.setMatrix("world", world));
@@ -64,8 +82,7 @@ module BABYLON {
                 }
 
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                    // Cannot render alpha meshes this way
-                    // renderSubMesh(alphaTestSubMeshes.data[index]);
+                    renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
             };
 
@@ -75,7 +92,7 @@ module BABYLON {
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var material: any = subMesh.getMaterial();
 
-            if (material && (material.disableDepthWrite || material.needAlphaTesting())) {
+            if (material && material.disableDepthWrite) {
                 return false;
             }
 
@@ -86,14 +103,50 @@ module BABYLON {
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
 
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    attribs.push(VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    attribs.push(VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Bones
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
+            }
+
             // Get correct effect      
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
-                    ["world", "viewProjection", "view", "far"],
-                    [], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "far"],
+                    ["diffuseSampler"], join);
             }
 
             return this._effect.isReady();

@@ -101,8 +101,7 @@
             // Set up assets
             this._createRandomTexture();
             this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture; 
-            // this._depthTexture = scene.enableGeometryRenderer().getGBuffer().textures[0]; // Force depth renderer "on"
-            this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1]; // Force depth renderer "on"
+            this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1];
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
@@ -224,24 +223,6 @@
 
         private _createSSAOPostProcess(ratio: number): void {
             var numSamples = this.samples;
-/*            var sampleSphere = [
-                0.5381, 0.1856, 0.4319,
-                0.1379, 0.2486, 0.4430,
-                0.3371, 0.5679, 0.0057,
-                -0.6999, -0.0451, 0.0019,
-                0.0689, -0.1598, 0.8547,
-                0.0560, 0.0069, 0.1843,
-                -0.0146, 0.1402, 0.0762,
-                0.0100, -0.1924, 0.0344,
-                -0.3577, -0.5301, 0.4358,
-                -0.3169, 0.1063, 0.0158,
-                0.0103, -0.5869, 0.0046,
-                -0.0897, -0.4940, 0.3287,
-                0.7119, -0.0154, 0.0918,
-                -0.0533, 0.0596, 0.5411,
-                0.0352, -0.0631, 0.5460,
-                -0.4776, 0.2847, 0.0271
-            ];*/
 
             var sampleSphere = this.generateHemisphere();
             var samplesFactor = 1.0 / numSamples;
