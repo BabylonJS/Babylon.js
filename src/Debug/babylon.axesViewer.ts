@@ -40,34 +40,26 @@
 
             var scaleLines = this.scaleLines;
 
-            var point1 = this._xline[0];
+            this._xmesh.position.copyFrom(position);
+            this._ymesh.position.copyFrom(position);
+            this._zmesh.position.copyFrom(position);
+
             var point2 = this._xline[1];
-            point1.x = position.x;
-            point1.y = position.y;
-            point1.z = position.z;
-            point2.x = point1.x + xaxis.x * scaleLines;
-            point2.y = point1.y + xaxis.y * scaleLines;
-            point2.z = point1.z + xaxis.z * scaleLines;
+            point2.x = xaxis.x * scaleLines;
+            point2.y = xaxis.y * scaleLines;
+            point2.z = xaxis.z * scaleLines;
             Mesh.CreateLines(null, this._xline, null, null, this._xmesh);
 
-            point1 = this._yline[0];
             point2 = this._yline[1];
-            point1.x = position.x;
-            point1.y = position.y;
-            point1.z = position.z;
-            point2.x = point1.x + yaxis.x * scaleLines;
-            point2.y = point1.y + yaxis.y * scaleLines;
-            point2.z = point1.z + yaxis.z * scaleLines;
+            point2.x = yaxis.x * scaleLines;
+            point2.y = yaxis.y * scaleLines;
+            point2.z = yaxis.z * scaleLines;
             Mesh.CreateLines(null, this._yline, null, null, this._ymesh);
 
-            point1 = this._zline[0];
             point2 = this._zline[1];
-            point1.x = position.x;
-            point1.y = position.y;
-            point1.z = position.z;
-            point2.x = point1.x + zaxis.x * scaleLines;
-            point2.y = point1.y + zaxis.y * scaleLines;
-            point2.z = point1.z + zaxis.z * scaleLines;
+            point2.x = zaxis.x * scaleLines;
+            point2.y = zaxis.y * scaleLines;
+            point2.z = zaxis.z * scaleLines;
             Mesh.CreateLines(null, this._zline, null, null, this._zmesh);
 
         }
