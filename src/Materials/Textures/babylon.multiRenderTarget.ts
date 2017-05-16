@@ -66,17 +66,19 @@ module BABYLON {
 
             this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
 
+            this._createInternalTextures();
+        }
+
+        private _createInternalTextures(): void {
             this._textures = [];
             for (var i = 0; i < this._webGLTextures.length; i++) {
-                var texture = new BABYLON.Texture(null, scene);
+                var texture = new BABYLON.Texture(null, this.getScene());
                 texture._texture = this._webGLTextures[i];
                 this._textures.push(texture);
             }
 
             // Keeps references to frame buffer and stencil/depth buffer
             this._texture = this._webGLTextures[0];
-
-            // this.resize(size);
         }
 
         public get samples(): number {
@@ -96,6 +98,7 @@ module BABYLON {
         public resize(size: any) {
             this.releaseInternalTextures();
             this._webGLTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
+            this._createInternalTextures();
         }
 
         public dispose(): void {
@@ -104,7 +107,7 @@ module BABYLON {
             super.dispose();
         }
 
-        private releaseInternalTextures(): void {
+        public releaseInternalTextures(): void {
             for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
                 if (this._webGLTextures[i] !== undefined) {
                     this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);
