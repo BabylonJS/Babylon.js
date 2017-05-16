@@ -181,8 +181,7 @@
                 let textureOptions = { 
                     generateMipMaps: false, 
                     generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
-                    generateStencilBuffer: 
-                    camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                    generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode, 
                     type: this._textureType 
                 };
@@ -192,7 +191,7 @@
                 if (this._reusable) {
                     this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                 }
- 
+
                 this.onSizeChangedObservable.notifyObservers(this);
             }
 
