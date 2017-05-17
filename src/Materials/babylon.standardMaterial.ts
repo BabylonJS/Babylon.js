@@ -290,6 +290,7 @@ module BABYLON {
         public cameraColorCurves: ColorCurves;             
 
         public customShaderNameResolve: (shaderName: string) => string;
+        public reviewBuffersBeforeEffectCreation: (mode:string,bufferArray: string[]) => string[];
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
         protected _worldViewProjectionMatrix = Matrix.Zero();
@@ -709,6 +710,7 @@ module BABYLON {
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
                 ];
+                
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
                 var uniformBuffers = ["Material", "Scene"];
@@ -719,6 +721,13 @@ module BABYLON {
                 if (defines.CAMERACOLORGRADING) {
                     ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 }
+
+                if(this.reviewBuffersBeforeEffectCreation)
+                {
+                    uniforms = this.reviewBuffersBeforeEffectCreation('uniform',uniforms);
+                    samplers = this.reviewBuffersBeforeEffectCreation('sampler',samplers);  
+                }
+
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
                     uniformBuffersNames: uniformBuffers,
