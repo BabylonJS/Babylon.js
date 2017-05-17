@@ -596,6 +596,7 @@
         {
             "files": [
                 "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
+                "../../src/PostProcess/babylon.ssao2RenderingPipeline.js",
                 "../../src/PostProcess/babylon.lensRenderingPipeline.js",
                 "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
@@ -606,6 +607,7 @@
             ], 
             "shaders" : [
                 "ssao.fragment",
+                "ssao2.fragment",
                 "ssaoCombine.fragment",
                 "chromaticAberration.fragment",
                 "lensHighlights.fragment",
