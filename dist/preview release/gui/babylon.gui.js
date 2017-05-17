@@ -687,7 +687,8 @@ var BABYLON;
                 if (!this._contains(x, y)) {
                     return false;
                 }
-                return this._processObservables(type);
+                this._processObservables(type);
+                return true;
             };
             Control.prototype._processObservables = function (type) {
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE && this.onPointerMoveObservable.hasObservers()) {
@@ -1330,6 +1331,14 @@ var BABYLON;
                 _this.name = name;
                 return _this;
             }
+            // While being a container, the button behaves like a control.
+            Button.prototype._processPicking = function (x, y, type) {
+                if (!this._contains(x, y)) {
+                    return false;
+                }
+                this._processObservables(type);
+                return true;
+            };
             // Statics
             Button.CreateImageButton = function (name, text, imageUrl) {
                 var result = new Button(name);

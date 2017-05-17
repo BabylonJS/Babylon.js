@@ -17551,24 +17551,25 @@ var BABYLON;
             }
             // Camera
             if (!this.activeCamera) {
-                // Compute position
                 var worldExtends = this.getWorldExtends();
-                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
                 var camera;
+                var radius = worldSize.length() * 1.5;
                 if (createArcRotateCamera) {
-                    camera = new BABYLON.ArcRotateCamera("default camera", 0, 0, 10, BABYLON.Vector3.Zero(), this);
-                    camera.setPosition(new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
-                    camera.lowerRadiusLimit = 0.5;
-                    camera.setTarget(worldCenter);
+                    var arcRotateCamera = new BABYLON.ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                    arcRotateCamera.wheelPrecision = 100 / radius;
+                    camera = arcRotateCamera;
                 }
                 else {
-                    camera = new BABYLON.FreeCamera("default camera", BABYLON.Vector3.Zero(), this);
-                    camera.position = new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                    camera.setTarget(worldCenter);
+                    var freeCamera = new BABYLON.FreeCamera("default camera", new BABYLON.Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    freeCamera.setTarget(worldCenter);
+                    camera = freeCamera;
                 }
-                camera.minZ = 0.1;
-                var maxDist = worldExtends.max.subtract(worldExtends.min).length();
-                camera.wheelPrecision = 100.0 / maxDist;
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 100;
+                camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
         };
@@ -30559,22 +30560,22 @@ var BABYLON;
             }
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < BABYLON.Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < this.speed * BABYLON.Epsilon) {
                     this.cameraDirection.x = 0;
                 }
-                if (Math.abs(this.cameraDirection.y) < BABYLON.Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < this.speed * BABYLON.Epsilon) {
                     this.cameraDirection.y = 0;
                 }
-                if (Math.abs(this.cameraDirection.z) < BABYLON.Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < this.speed * BABYLON.Epsilon) {
                     this.cameraDirection.z = 0;
                 }
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < BABYLON.Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < this.speed * BABYLON.Epsilon) {
                     this.cameraRotation.x = 0;
                 }
-                if (Math.abs(this.cameraRotation.y) < BABYLON.Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < this.speed * BABYLON.Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
@@ -31582,11 +31583,11 @@ var BABYLON;
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < this.speed * BABYLON.Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < BABYLON.Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < this.speed * BABYLON.Epsilon)
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * BABYLON.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
             // Panning inertia
@@ -31597,9 +31598,9 @@ var BABYLON;
                 }
                 this.inertialPanningX *= this.inertia;
                 this.inertialPanningY *= this.inertia;
-                if (Math.abs(this.inertialPanningX) < BABYLON.Epsilon)
+                if (Math.abs(this.inertialPanningX) < this.speed * BABYLON.Epsilon)
                     this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < BABYLON.Epsilon)
+                if (Math.abs(this.inertialPanningY) < this.speed * BABYLON.Epsilon)
                     this.inertialPanningY = 0;
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._localDirection.multiplyInPlace(this.panningAxis);
@@ -49437,6 +49438,47 @@ var BABYLON;
         Bone.prototype.getAbsoluteTransform = function () {
             return this._absoluteTransform;
         };
+        Object.defineProperty(Bone.prototype, "position", {
+            // Properties (matches AbstractMesh properties)
+            get: function () {
+                return this.getPosition();
+            },
+            set: function (newPosition) {
+                this.setPosition(newPosition);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bone.prototype, "rotation", {
+            get: function () {
+                return this.getRotation();
+            },
+            set: function (newRotation) {
+                this.setRotation(newRotation);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bone.prototype, "rotationQuaternion", {
+            get: function () {
+                return this.getRotationQuaternion();
+            },
+            set: function (newRotation) {
+                this.setRotationQuaternion(newRotation);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bone.prototype, "scaling", {
+            get: function () {
+                return this.getScale();
+            },
+            set: function (newScaling) {
+                this.setScale(newScaling.x, newScaling.y, newScaling.z);
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Bone.prototype.updateMatrix = function (matrix, updateDifferenceMatrix) {
             if (updateDifferenceMatrix === void 0) { updateDifferenceMatrix = true; }

@@ -243,6 +243,7 @@ declare module BABYLON.GUI {
     class Button extends Rectangle {
         name: string;
         constructor(name: string);
+        _processPicking(x: number, y: number, type: number): boolean;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
     }
 }
