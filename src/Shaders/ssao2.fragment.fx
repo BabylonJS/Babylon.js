@@ -124,6 +124,10 @@ vec4 linearUpsample(sampler2D image, vec2 uv, float resolution, vec2 direction) 
 	return color;
 }
 
+float gaussianKernel[16] = float[16](
+0.001014, 0.003314, 0.009248, 0.022042, 0.044857, 0.077951, 0.115676, 0.146586, 0.146586, 0.115676, 0.077951, 0.044857, 0.022042, 0.009248, 0.003314, 0.001014
+);
+
 void main()
 {
 	float texelsize = 1.0 / outSize;
@@ -147,7 +151,7 @@ void main()
 
 		float sampleDepth = texture2D(depthSampler, samplePos).r;
 		float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, near, far);
-		float weight = clamp(1.0 / ( 0.01 + abs(linearDepth - linearSampleDepth)), 0.0, 100.0);
+		float weight = clamp(1.0 / ( 0.003 + abs(linearDepth - linearSampleDepth)), 0.0, 30.0) * gaussianKernel[i];
 
 		result += texture2D(textureSampler, samplePos).r * weight;
 		weightSum += weight;

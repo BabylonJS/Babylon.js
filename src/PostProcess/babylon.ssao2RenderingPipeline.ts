@@ -117,10 +117,10 @@
             this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture; 
             this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1];
 
-            this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOPostProcess(ssaoRatio);
+            this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOPostProcess(1.0);
             this._createBlurPostProcess(ssaoRatio);
-            this._createSSAOCombinePostProcess(combineRatio);
+            this._createSSAOCombinePostProcess(ssaoRatio);
 
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
@@ -243,15 +243,13 @@
             this._ssaoPostProcess = new PostProcess("ssao2", "ssao2",
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "base", "range", "viewport", "projection", "near", "far",
+                                                        "base", "range", "projection", "near", "far",
                                                         "xViewport", "yViewport"
                                                     ],
                                                     ["randomSampler", "normalSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false,
                                                     "#define SAMPLES " + numSamples + "\n#define SSAO");
-
-            var viewport = new Vector2(0, 0);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
