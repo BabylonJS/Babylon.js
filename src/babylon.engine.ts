@@ -1205,7 +1205,7 @@
             });
         }
 
-        public getVRDevice(name: string, callback: (device) => void) {
+        public getVRDevice(name: string, callback: (device: any) => void) {
             if (!this.vrDisplaysPromise) {
                 callback(null);
                 return;

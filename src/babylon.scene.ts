@@ -512,14 +512,18 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        private _defaultMaterial: StandardMaterial;
+        private _defaultMaterial: Material;
 
-        public get defaultMaterial(): StandardMaterial {
+        public get defaultMaterial(): Material {
             if (!this._defaultMaterial) {
                 this._defaultMaterial = new StandardMaterial("default material", this);
             }
 
             return this._defaultMaterial;
+        }
+
+        public set defaultMaterial(value: Material) {
+            this._defaultMaterial = value;
         }
 
         // Textures
@@ -715,6 +719,8 @@
         private _pickedDownSprite: Sprite;
         private _externalData: StringDictionary<Object>;
         private _uid: string;
+
+        public offscreenRenderTarget: RenderTargetTexture = null;
 
         /**
          * @constructor
@@ -2602,7 +2608,7 @@
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                    let renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
@@ -2632,7 +2638,7 @@
 
                         renderhighlights = true;
 
-                        var renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
+                        let renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
                         if (renderTarget._shouldRender()) {
                             this._renderId++;
                             renderTarget.render(false, false);
@@ -2646,7 +2652,12 @@
             }
 
             if (needsRestoreFrameBuffer) {
-                engine.restoreDefaultFramebuffer();
+                if (this.offscreenRenderTarget) {
+                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
+                }
+                else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer
+                }
             }
 
             this._renderTargetsDuration.endMonitoring(false);
@@ -2844,9 +2855,9 @@
 
             // Physics
             if (this._physicsEngine) {
-                Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                Tools.EndPerformanceCounter("Physics");
+               Tools.StartPerformanceCounter("Physics");
+               this._physicsEngine._step(deltaTime / 1000.0);
+               Tools.EndPerformanceCounter("Physics");
             }
 
             // Before render
@@ -2883,9 +2894,16 @@
                 this._renderId++;
             }
 
-            if (this.customRenderTargets.length > 0) { // Restore back buffer
-                engine.restoreDefaultFramebuffer();
+            if (this.offscreenRenderTarget) {
+                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
             }
+            else {
+                // Restore back buffer
+                if (this.customRenderTargets.length > 0) {
+                    engine.restoreDefaultFramebuffer();
+                }
+            }
+
             this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
 
