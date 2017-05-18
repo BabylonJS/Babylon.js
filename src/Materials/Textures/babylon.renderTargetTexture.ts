@@ -1,4 +1,12 @@
 ﻿module BABYLON {
+    export interface IRenderTargetOptions {
+        generateMipMaps: boolean,
+        type: number,
+        samplingMode: number,
+        generateDepthBuffer: boolean,
+        generateStencilBuffer: boolean
+    }
+
     export class RenderTargetTexture extends Texture {
         public static _REFRESHRATE_RENDER_ONCE: number = 0;
         public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
@@ -100,13 +108,10 @@
         private _refreshRate = 1;
         private _textureMatrix: Matrix;
         private _samples = 1;
-        protected _renderTargetOptions: {
-            generateMipMaps: boolean,
-            type: number,
-            samplingMode: number,
-            generateDepthBuffer: boolean,
-            generateStencilBuffer: boolean
-        };
+        protected _renderTargetOptions: IRenderTargetOptions;
+        public get renderTargetOptions(): IRenderTargetOptions {
+            return this._renderTargetOptions;
+        }
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false) {
             super(null, scene, !generateMipMaps);
