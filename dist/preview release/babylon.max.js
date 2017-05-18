@@ -5502,14 +5502,15 @@ var BABYLON;
                 }
                 request.onprogress = progressCallBack;
                 request.onreadystatechange = function () {
-                    if (request.readyState === 4) {
+                    // In case of undefined state in some browsers.
+                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                         request.onreadystatechange = null; //some browsers have issues where onreadystatechange can be called multiple times with the same value
                         if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
                         else {
                             if (onError) {
-                                onError();
+                                onError(request);
                             }
                             else {
                                 throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -14035,9 +14036,11 @@ var BABYLON;
                     observable.notifyObservers(info, renderingGroupMask);
                 }
                 // Clear depth/stencil if needed
-                var autoClear = this._autoClearDepthStencil[index];
-                if (autoClear && autoClear.autoClear) {
-                    this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
+                if (RenderingManager.AUTOCLEAR) {
+                    var autoClear = this._autoClearDepthStencil[index];
+                    if (autoClear && autoClear.autoClear) {
+                        this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
+                    }
                 }
                 if (observable) {
                     // Fire PREOPAQUE stage
@@ -14144,6 +14147,10 @@ var BABYLON;
      * The min id used for rendering groups (included)
      */
     RenderingManager.MIN_RENDERINGGROUPS = 0;
+    /**
+     * Used to globally prevent autoclearing scenes.
+     */
+    RenderingManager.AUTOCLEAR = true;
     BABYLON.RenderingManager = RenderingManager;
 })(BABYLON || (BABYLON = {}));
 
@@ -14879,6 +14886,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
+            this.offscreenRenderTarget = null;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
             this._uid = null;
@@ -15061,6 +15069,9 @@ var BABYLON;
                     this._defaultMaterial = new BABYLON.StandardMaterial("default material", this);
                 }
                 return this._defaultMaterial;
+            },
+            set: function (value) {
+                this._defaultMaterial = value;
             },
             enumerable: true,
             configurable: true
@@ -16765,7 +16776,12 @@ var BABYLON;
                 this._renderId++;
             }
             if (needsRestoreFrameBuffer) {
-                engine.restoreDefaultFramebuffer();
+                if (this.offscreenRenderTarget) {
+                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
+                }
+                else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer
+                }
             }
             this._renderTargetsDuration.endMonitoring(false);
             // Prepare Frame
@@ -16956,8 +16972,14 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 this._renderId++;
             }
-            if (this.customRenderTargets.length > 0) {
-                engine.restoreDefaultFramebuffer();
+            if (this.offscreenRenderTarget) {
+                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
+            }
+            else {
+                // Restore back buffer
+                if (this.customRenderTargets.length > 0) {
+                    engine.restoreDefaultFramebuffer();
+                }
             }
             this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
@@ -18008,7 +18030,7 @@ var BABYLON;
             this._coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-            this.anisotropicFilteringLevel = 4;
+            this.anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
             this.isCube = false;
             this.isRenderTarget = false;
             this.animations = new Array();
@@ -18184,6 +18206,7 @@ var BABYLON;
         };
         return BaseTexture;
     }());
+    BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL = 4;
     __decorate([
         BABYLON.serialize()
     ], BaseTexture.prototype, "name", void 0);
@@ -21853,7 +21876,7 @@ var BABYLON;
             var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
             var result = preparedSourceCode.replace(regex, "");
             // Migrate to GLSL v300
-            result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
             if (isFragment) {
@@ -27748,10 +27771,6 @@ var BABYLON;
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 BABYLON.MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
                 var shaderName = "default";
-                if (this.customShaderNameResolve) {
-                    shaderName = this.customShaderNameResolve(shaderName);
-                }
-                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -27776,6 +27795,10 @@ var BABYLON;
                     defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
+                if (this.customShaderNameResolve) {
+                    shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+                }
+                var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -31303,7 +31326,7 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
-            //-- end properties for backward compatibility for inputs        
+            //-- end properties for backward compatibility for inputs
             _this.zoomOnFactor = 1;
             _this.targetScreenOffset = BABYLON.Vector2.Zero();
             _this.allowUpsideDown = true;
@@ -31373,7 +31396,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibilityX", {
-            //-- begin properties for backward compatibility for inputs       
+            //-- begin properties for backward compatibility for inputs
             get: function () {
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
@@ -31596,12 +31619,6 @@ var BABYLON;
                     this._localDirection = BABYLON.Vector3.Zero();
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
-                if (Math.abs(this.inertialPanningX) < this.speed * BABYLON.Epsilon)
-                    this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < this.speed * BABYLON.Epsilon)
-                    this.inertialPanningY = 0;
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
@@ -31613,6 +31630,12 @@ var BABYLON;
                 if (!this._targetHost) {
                     this._target.addInPlace(this._transformedDirection);
                 }
+                this.inertialPanningX *= this.inertia;
+                this.inertialPanningY *= this.inertia;
+                if (Math.abs(this.inertialPanningX) < this.speed * BABYLON.Epsilon)
+                    this.inertialPanningX = 0;
+                if (Math.abs(this.inertialPanningY) < this.speed * BABYLON.Epsilon)
+                    this.inertialPanningY = 0;
             }
             // Limits
             this._checkLimits();
@@ -41303,6 +41326,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(RenderTargetTexture.prototype, "renderTargetOptions", {
+            get: function () {
+                return this._renderTargetOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(RenderTargetTexture.prototype, "samples", {
             get: function () {
                 return this._samples;
@@ -41978,9 +42008,10 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
-        function PostProcess(name, fragmentUrl, parameters, samplers, options, camera, samplingMode, engine, reusable, defines, textureType) {
+        function PostProcess(name, fragmentUrl, parameters, samplers, options, camera, samplingMode, engine, reusable, defines, textureType, vertexUrl) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
+            if (vertexUrl === void 0) { vertexUrl = 'postprocess'; }
             this.name = name;
             this.width = -1;
             this.height = -1;
@@ -42036,6 +42067,7 @@ var BABYLON;
             this._samplers = samplers || [];
             this._samplers.push("textureSampler");
             this._fragmentUrl = fragmentUrl;
+            this._vertexUrl = vertexUrl;
             this._parameters = parameters || [];
             this._parameters.push("scale");
             this.updateEffect(defines);
@@ -42091,7 +42123,7 @@ var BABYLON;
             configurable: true
         });
         PostProcess.prototype.updateEffect = function (defines) {
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
+            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -56840,6 +56872,329 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var DynamicFloatArrayElementInfo = (function () {
+        function DynamicFloatArrayElementInfo() {
+        }
+        return DynamicFloatArrayElementInfo;
+    }());
+    BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
+    /**
+    * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
+    * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
+    * It was first built to efficiently maintain the WebGlBuffer that contain instancing based data.
+    * Allocating an Element will return a instance of DynamicFloatArrayElement which contains the offset into the Float32Array of where the element starts, you are then responsible to copy your data using this offset.
+    * Beware, calling pack() may change the offset of some Entries because this method will defragment the Float32Array to replace empty elements by moving allocated ones at their location.
+     * This method will return an ArrayBufferView on the existing Float32Array that describes the used elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there are no "free holes".
+    */
+    var DynamicFloatArray = (function () {
+        /**
+         * Construct an instance of the dynamic float array
+         * @param stride size of one element in float (i.e. not bytes!)
+         * @param initialElementCount the number of available entries at construction
+         */
+        function DynamicFloatArray(stride, initialElementCount) {
+            this.compareValueOffset = null;
+            this.sortingAscending = true;
+            this._stride = stride;
+            this.buffer = new Float32Array(stride * initialElementCount);
+            this._lastUsed = 0;
+            this._firstFree = 0;
+            this._allEntries = new Array(initialElementCount);
+            this._freeEntries = new Array(initialElementCount);
+            for (var i = 0; i < initialElementCount; i++) {
+                var element = new DynamicFloatArrayElementInfo();
+                element.offset = i * stride;
+                this._allEntries[i] = element;
+                this._freeEntries[initialElementCount - i - 1] = element;
+            }
+        }
+        /**
+         * Allocate an element in the array.
+         * @return the element info instance that contains the offset into the main buffer of the element's location.
+         * Beware, this offset may change when you call pack()
+         */
+        DynamicFloatArray.prototype.allocElement = function () {
+            if (this._freeEntries.length === 0) {
+                this._growBuffer();
+            }
+            var el = this._freeEntries.pop();
+            this._lastUsed = Math.max(el.offset, this._lastUsed);
+            if (el.offset === this._firstFree) {
+                if (this._freeEntries.length > 0) {
+                    this._firstFree = this._freeEntries[this._freeEntries.length - 1].offset;
+                }
+                else {
+                    this._firstFree += this._stride;
+                }
+            }
+            return el;
+        };
+        /**
+         * Free the element corresponding to the given element info
+         * @param elInfo the element that describe the allocated element
+         */
+        DynamicFloatArray.prototype.freeElement = function (elInfo) {
+            this._firstFree = Math.min(elInfo.offset, this._firstFree);
+            this._freeEntries.push(elInfo);
+        };
+        /**
+         * This method will pack all the used elements into a linear sequence and put all the free space at the end.
+         * Instances of DynamicFloatArrayElement may have their 'offset' member changed as data could be copied from one location to another, so be sure to read/write your data based on the value inside this member after you called pack().
+         * @return the subArray that is the view of the used elements area, you can use it as a source to update a WebGLBuffer
+         */
+        DynamicFloatArray.prototype.pack = function () {
+            // no free slot? no need to pack
+            if (this._freeEntries.length === 0) {
+                return this.buffer;
+            }
+            // If the buffer is already packed the last used will always be lower than the first free
+            // The opposite may not be true, we can have a lastUsed greater than firstFree but the array still packed, because when an element is freed, lastUsed is not updated (for speed reason) so we may have a lastUsed of a freed element. But that's ok, well soon realize this case.
+            if (this._lastUsed < this._firstFree) {
+                var elementsBuffer_1 = this.buffer.subarray(0, this._lastUsed + this._stride);
+                return elementsBuffer_1;
+            }
+            var s = this._stride;
+            // Make sure there's a free element at the very end, we need it to create a range where we'll move the used elements that may appear before
+            var lastFree = new DynamicFloatArrayElementInfo();
+            lastFree.offset = this.totalElementCount * s;
+            this._freeEntries.push(lastFree);
+            var sortedFree = this._freeEntries.sort(function (a, b) { return a.offset - b.offset; });
+            var sortedAll = this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
+            var firstFreeSlotOffset = sortedFree[0].offset;
+            var freeZoneSize = 1;
+            var occupiedZoneSize = (this.usedElementCount + 1) * s;
+            var prevOffset = sortedFree[0].offset;
+            for (var i = 1; i < sortedFree.length; i++) {
+                // If the first free (which means everything before is occupied) is greater or equal the occupied zone size, it means everything is defragmented, we can quit
+                if (firstFreeSlotOffset >= occupiedZoneSize) {
+                    break;
+                }
+                var curFree = sortedFree[i];
+                var curOffset = curFree.offset;
+                // Compute the distance between this offset and the previous
+                var distance = curOffset - prevOffset;
+                // If the distance is the stride size, they are adjacent, it good, move to the next
+                if (distance === s) {
+                    // Free zone is one element bigger
+                    ++freeZoneSize;
+                    // as we're about to iterate to the next, the cur becomes the previous...
+                    prevOffset = curOffset;
+                    continue;
+                }
+                // Distance is bigger, which means there's x element between the previous free and this one
+                var usedRange = (distance / s) - 1;
+                // Two cases the free zone is smaller than the data to move or bigger
+                // Copy what can fit in the free zone
+                var curMoveOffset = curOffset - s;
+                var copyCount = Math.min(freeZoneSize, usedRange);
+                for (var j = 0; j < copyCount; j++) {
+                    var freeI = firstFreeSlotOffset / s;
+                    var curI = curMoveOffset / s;
+                    var moveEl = sortedAll[curI];
+                    this._moveElement(moveEl, firstFreeSlotOffset);
+                    var replacedEl = sortedAll[freeI];
+                    // set the offset of the element we replaced with a value that will make it discard at the end of the method
+                    replacedEl.offset = curMoveOffset;
+                    // Swap the element we moved and the one it replaced in the sorted array to reflect the action we've made
+                    sortedAll[freeI] = moveEl;
+                    sortedAll[curI] = replacedEl;
+                    curMoveOffset -= s;
+                    firstFreeSlotOffset += s;
+                }
+                // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
+                if (freeZoneSize <= usedRange) {
+                    firstFreeSlotOffset = curMoveOffset + s;
+                    freeZoneSize = 1 + copyCount;
+                }
+                else {
+                    freeZoneSize = ((curOffset - firstFreeSlotOffset) / s) + 1;
+                }
+                // as we're about to iterate to the next, the cur becomes the previous...
+                prevOffset = curOffset;
+            }
+            var elementsBuffer = this.buffer.subarray(0, firstFreeSlotOffset);
+            this._lastUsed = firstFreeSlotOffset - s;
+            this._firstFree = firstFreeSlotOffset;
+            sortedFree.pop(); // Remove the last free because that's the one we added at the start of the method
+            this._freeEntries = sortedFree.sort(function (a, b) { return b.offset - a.offset; });
+            this._allEntries = sortedAll;
+            return elementsBuffer;
+        };
+        DynamicFloatArray.prototype._moveElement = function (element, destOffset) {
+            for (var i = 0; i < this._stride; i++) {
+                this.buffer[destOffset + i] = this.buffer[element.offset + i];
+            }
+            element.offset = destOffset;
+        };
+        DynamicFloatArray.prototype._growBuffer = function () {
+            // Allocate the new buffer with 50% more entries, copy the content of the current one
+            var newElCount = Math.floor(this.totalElementCount * 1.5);
+            var newBuffer = new Float32Array(newElCount * this._stride);
+            newBuffer.set(this.buffer);
+            var curCount = this.totalElementCount;
+            var addedCount = newElCount - this.totalElementCount;
+            for (var i = 0; i < addedCount; i++) {
+                var element = new DynamicFloatArrayElementInfo();
+                element.offset = (curCount + i) * this.stride;
+                this._allEntries.push(element);
+                this._freeEntries[addedCount - i - 1] = element;
+            }
+            this._firstFree = curCount * this.stride;
+            this.buffer = newBuffer;
+        };
+        Object.defineProperty(DynamicFloatArray.prototype, "totalElementCount", {
+            /**
+             * Get the total count of entries that can fit in the current buffer
+             * @returns the elements count
+             */
+            get: function () {
+                return this._allEntries.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DynamicFloatArray.prototype, "freeElementCount", {
+            /**
+             * Get the count of free entries that can still be allocated without resizing the buffer
+             * @returns the free elements count
+             */
+            get: function () {
+                return this._freeEntries.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DynamicFloatArray.prototype, "usedElementCount", {
+            /**
+             * Get the count of allocated elements
+             * @returns the allocated elements count
+             */
+            get: function () {
+                return this._allEntries.length - this._freeEntries.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DynamicFloatArray.prototype, "stride", {
+            /**
+             * Return the size of one element in float
+             * @returns the size in float
+             */
+            get: function () {
+                return this._stride;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DynamicFloatArray.prototype.sort = function () {
+            var _this = this;
+            if (!this.compareValueOffset) {
+                throw new Error("The DynamicFloatArray.sort() method needs a valid 'compareValueOffset' property");
+            }
+            var count = this.usedElementCount;
+            // Do we have to (re)create the sort table?
+            if (!this._sortTable || this._sortTable.length < count) {
+                // Small heuristic... We don't want to allocate totalElementCount right away because it may have 50 for 3 used elements, but on the other side we don't want to allocate just 3 when we just need 2, so double this value to give us some air to breath...
+                var newCount = Math.min(this.totalElementCount, count * 2);
+                this._sortTable = new Array(newCount);
+            }
+            if (!this._sortedTable || this._sortedTable.length !== count) {
+                this._sortedTable = new Array(count);
+            }
+            // Because, you know...
+            this.pack();
+            //let stride = this.stride;
+            //for (let i = 0; i < count; i++) {
+            //    let si = this._sortTable[i];
+            //    if (!si) {
+            //        si = new SortInfo();
+            //        this._sortTable[i] = si;
+            //    }
+            //    si.entry = this._allEntries[i];
+            //    si.compareData = this.buffer[si.entry.offset + this.compareValueOffset];
+            //    si.swapedOffset = null;
+            //    this._sortedTable[i] = si;
+            //}
+            var curOffset = 0;
+            var stride = this.stride;
+            for (var i = 0; i < count; i++, curOffset += stride) {
+                var si = this._sortTable[i];
+                if (!si) {
+                    si = new SortInfo();
+                    this._sortTable[i] = si;
+                }
+                si.compareData = this.buffer[curOffset + this.compareValueOffset];
+                si.offset = curOffset;
+                si.swapedOffset = null;
+                this._sortedTable[i] = si;
+            }
+            // Let's sort the sorted table, we want to keep a track of the original one (that's why we have two buffers)
+            if (this.sortingAscending) {
+                this._sortedTable.sort(function (a, b) { return a.compareData - b.compareData; });
+            }
+            else {
+                this._sortedTable.sort(function (a, b) { return b.compareData - a.compareData; });
+            }
+            var swapElements = function (src, dst) {
+                for (var i = 0; i < stride; i++) {
+                    var tps = _this.buffer[dst + i];
+                    _this.buffer[dst + i] = _this.buffer[src + i];
+                    _this.buffer[src + i] = tps;
+                }
+            };
+            // The fun part begin, sortedTable give us the ordered layout to obtain, to get that we have to move elements, but when we move an element: 
+            //  it replaces an existing one.I don't want to allocate a new Float32Array and do a raw copy, because it's awful (GC - wise), 
+            //  and I still want something with a good algorithm complexity.
+            // So here's the deal: we are going to swap elements, but we have to track the change of location of the element being replaced, 
+            //  we need sortTable for that, it contains the original layout of SortInfo object, not the sorted one.
+            // The best way is to use an extra field in SortInfo, because potentially every element can be replaced.
+            // When we'll look for and element, we'll check if its swapedOffset is set, if so we reiterate the operation with the one there 
+            //  until we find a SortInfo object without a swapedOffset which means we got the right location
+            // Yes, we may have to do multiple iterations to find the right location, but hey, it won't be huge: <3 in most cases, and it's better 
+            //  than a double allocation of the whole float32Array or a O(n²/2) typical algorithm.
+            for (var i = 0; i < count; i++) {
+                // Get the element to move
+                var sourceSI = this._sortedTable[i];
+                var destSI = this._sortTable[i];
+                var sourceOff = sourceSI.offset;
+                // If the source changed location, find the new one
+                if (sourceSI.swapedOffset) {
+                    // Follow the swapedOffset until there's none, it will mean that curSI contains the new location in its offset member
+                    var curSI = sourceSI;
+                    while (curSI.swapedOffset) {
+                        curSI = this._sortTable[curSI.swapedOffset / stride];
+                    }
+                    // Finally get the right location
+                    sourceOff = curSI.offset;
+                }
+                // Tag the element being replaced with its new location
+                destSI.swapedOffset = sourceOff;
+                // Swap elements (only if needed)
+                if (sourceOff !== destSI.offset) {
+                    swapElements(sourceOff, destSI.offset);
+                }
+                // Update the offset in the corresponding DFAE
+                //sourceSI.entry.offset = destSI.entry.offset;
+                this._allEntries[sourceSI.offset / stride].offset = destSI.offset;
+            }
+            this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
+            return true;
+        };
+        return DynamicFloatArray;
+    }());
+    BABYLON.DynamicFloatArray = DynamicFloatArray;
+    var SortInfo = (function () {
+        function SortInfo() {
+            this.compareData = this.offset = this.swapedOffset = null;
+        }
+        return SortInfo;
+    }());
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.dynamicFloatArray.js.map
+
+var BABYLON;
+(function (BABYLON) {
     var Debug;
     (function (Debug) {
         /**
@@ -57003,32 +57358,23 @@ var BABYLON;
             }
             AxesViewer.prototype.update = function (position, xaxis, yaxis, zaxis) {
                 var scaleLines = this.scaleLines;
-                var point1 = this._xline[0];
+                this._xmesh.position.copyFrom(position);
+                this._ymesh.position.copyFrom(position);
+                this._zmesh.position.copyFrom(position);
                 var point2 = this._xline[1];
-                point1.x = position.x;
-                point1.y = position.y;
-                point1.z = position.z;
-                point2.x = point1.x + xaxis.x * scaleLines;
-                point2.y = point1.y + xaxis.y * scaleLines;
-                point2.z = point1.z + xaxis.z * scaleLines;
+                point2.x = xaxis.x * scaleLines;
+                point2.y = xaxis.y * scaleLines;
+                point2.z = xaxis.z * scaleLines;
                 BABYLON.Mesh.CreateLines(null, this._xline, null, null, this._xmesh);
-                point1 = this._yline[0];
                 point2 = this._yline[1];
-                point1.x = position.x;
-                point1.y = position.y;
-                point1.z = position.z;
-                point2.x = point1.x + yaxis.x * scaleLines;
-                point2.y = point1.y + yaxis.y * scaleLines;
-                point2.z = point1.z + yaxis.z * scaleLines;
+                point2.x = yaxis.x * scaleLines;
+                point2.y = yaxis.y * scaleLines;
+                point2.z = yaxis.z * scaleLines;
                 BABYLON.Mesh.CreateLines(null, this._yline, null, null, this._ymesh);
-                point1 = this._zline[0];
                 point2 = this._zline[1];
-                point1.x = position.x;
-                point1.y = position.y;
-                point1.z = position.z;
-                point2.x = point1.x + zaxis.x * scaleLines;
-                point2.y = point1.y + zaxis.y * scaleLines;
-                point2.z = point1.z + zaxis.z * scaleLines;
+                point2.x = zaxis.x * scaleLines;
+                point2.y = zaxis.y * scaleLines;
+                point2.z = zaxis.z * scaleLines;
                 BABYLON.Mesh.CreateLines(null, this._zline, null, null, this._zmesh);
             };
             AxesViewer.prototype.dispose = function () {
@@ -62706,329 +63052,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.rectPackingMap.js.map
-
-var BABYLON;
-(function (BABYLON) {
-    var DynamicFloatArrayElementInfo = (function () {
-        function DynamicFloatArrayElementInfo() {
-        }
-        return DynamicFloatArrayElementInfo;
-    }());
-    BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
-    /**
-    * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
-    * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
-    * It was first built to efficiently maintain the WebGlBuffer that contain instancing based data.
-    * Allocating an Element will return a instance of DynamicFloatArrayElement which contains the offset into the Float32Array of where the element starts, you are then responsible to copy your data using this offset.
-    * Beware, calling pack() may change the offset of some Entries because this method will defragment the Float32Array to replace empty elements by moving allocated ones at their location.
-     * This method will return an ArrayBufferView on the existing Float32Array that describes the used elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there are no "free holes".
-    */
-    var DynamicFloatArray = (function () {
-        /**
-         * Construct an instance of the dynamic float array
-         * @param stride size of one element in float (i.e. not bytes!)
-         * @param initialElementCount the number of available entries at construction
-         */
-        function DynamicFloatArray(stride, initialElementCount) {
-            this.compareValueOffset = null;
-            this.sortingAscending = true;
-            this._stride = stride;
-            this.buffer = new Float32Array(stride * initialElementCount);
-            this._lastUsed = 0;
-            this._firstFree = 0;
-            this._allEntries = new Array(initialElementCount);
-            this._freeEntries = new Array(initialElementCount);
-            for (var i = 0; i < initialElementCount; i++) {
-                var element = new DynamicFloatArrayElementInfo();
-                element.offset = i * stride;
-                this._allEntries[i] = element;
-                this._freeEntries[initialElementCount - i - 1] = element;
-            }
-        }
-        /**
-         * Allocate an element in the array.
-         * @return the element info instance that contains the offset into the main buffer of the element's location.
-         * Beware, this offset may change when you call pack()
-         */
-        DynamicFloatArray.prototype.allocElement = function () {
-            if (this._freeEntries.length === 0) {
-                this._growBuffer();
-            }
-            var el = this._freeEntries.pop();
-            this._lastUsed = Math.max(el.offset, this._lastUsed);
-            if (el.offset === this._firstFree) {
-                if (this._freeEntries.length > 0) {
-                    this._firstFree = this._freeEntries[this._freeEntries.length - 1].offset;
-                }
-                else {
-                    this._firstFree += this._stride;
-                }
-            }
-            return el;
-        };
-        /**
-         * Free the element corresponding to the given element info
-         * @param elInfo the element that describe the allocated element
-         */
-        DynamicFloatArray.prototype.freeElement = function (elInfo) {
-            this._firstFree = Math.min(elInfo.offset, this._firstFree);
-            this._freeEntries.push(elInfo);
-        };
-        /**
-         * This method will pack all the used elements into a linear sequence and put all the free space at the end.
-         * Instances of DynamicFloatArrayElement may have their 'offset' member changed as data could be copied from one location to another, so be sure to read/write your data based on the value inside this member after you called pack().
-         * @return the subArray that is the view of the used elements area, you can use it as a source to update a WebGLBuffer
-         */
-        DynamicFloatArray.prototype.pack = function () {
-            // no free slot? no need to pack
-            if (this._freeEntries.length === 0) {
-                return this.buffer;
-            }
-            // If the buffer is already packed the last used will always be lower than the first free
-            // The opposite may not be true, we can have a lastUsed greater than firstFree but the array still packed, because when an element is freed, lastUsed is not updated (for speed reason) so we may have a lastUsed of a freed element. But that's ok, well soon realize this case.
-            if (this._lastUsed < this._firstFree) {
-                var elementsBuffer_1 = this.buffer.subarray(0, this._lastUsed + this._stride);
-                return elementsBuffer_1;
-            }
-            var s = this._stride;
-            // Make sure there's a free element at the very end, we need it to create a range where we'll move the used elements that may appear before
-            var lastFree = new DynamicFloatArrayElementInfo();
-            lastFree.offset = this.totalElementCount * s;
-            this._freeEntries.push(lastFree);
-            var sortedFree = this._freeEntries.sort(function (a, b) { return a.offset - b.offset; });
-            var sortedAll = this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
-            var firstFreeSlotOffset = sortedFree[0].offset;
-            var freeZoneSize = 1;
-            var occupiedZoneSize = (this.usedElementCount + 1) * s;
-            var prevOffset = sortedFree[0].offset;
-            for (var i = 1; i < sortedFree.length; i++) {
-                // If the first free (which means everything before is occupied) is greater or equal the occupied zone size, it means everything is defragmented, we can quit
-                if (firstFreeSlotOffset >= occupiedZoneSize) {
-                    break;
-                }
-                var curFree = sortedFree[i];
-                var curOffset = curFree.offset;
-                // Compute the distance between this offset and the previous
-                var distance = curOffset - prevOffset;
-                // If the distance is the stride size, they are adjacent, it good, move to the next
-                if (distance === s) {
-                    // Free zone is one element bigger
-                    ++freeZoneSize;
-                    // as we're about to iterate to the next, the cur becomes the previous...
-                    prevOffset = curOffset;
-                    continue;
-                }
-                // Distance is bigger, which means there's x element between the previous free and this one
-                var usedRange = (distance / s) - 1;
-                // Two cases the free zone is smaller than the data to move or bigger
-                // Copy what can fit in the free zone
-                var curMoveOffset = curOffset - s;
-                var copyCount = Math.min(freeZoneSize, usedRange);
-                for (var j = 0; j < copyCount; j++) {
-                    var freeI = firstFreeSlotOffset / s;
-                    var curI = curMoveOffset / s;
-                    var moveEl = sortedAll[curI];
-                    this._moveElement(moveEl, firstFreeSlotOffset);
-                    var replacedEl = sortedAll[freeI];
-                    // set the offset of the element we replaced with a value that will make it discard at the end of the method
-                    replacedEl.offset = curMoveOffset;
-                    // Swap the element we moved and the one it replaced in the sorted array to reflect the action we've made
-                    sortedAll[freeI] = moveEl;
-                    sortedAll[curI] = replacedEl;
-                    curMoveOffset -= s;
-                    firstFreeSlotOffset += s;
-                }
-                // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
-                if (freeZoneSize <= usedRange) {
-                    firstFreeSlotOffset = curMoveOffset + s;
-                    freeZoneSize = 1 + copyCount;
-                }
-                else {
-                    freeZoneSize = ((curOffset - firstFreeSlotOffset) / s) + 1;
-                }
-                // as we're about to iterate to the next, the cur becomes the previous...
-                prevOffset = curOffset;
-            }
-            var elementsBuffer = this.buffer.subarray(0, firstFreeSlotOffset);
-            this._lastUsed = firstFreeSlotOffset - s;
-            this._firstFree = firstFreeSlotOffset;
-            sortedFree.pop(); // Remove the last free because that's the one we added at the start of the method
-            this._freeEntries = sortedFree.sort(function (a, b) { return b.offset - a.offset; });
-            this._allEntries = sortedAll;
-            return elementsBuffer;
-        };
-        DynamicFloatArray.prototype._moveElement = function (element, destOffset) {
-            for (var i = 0; i < this._stride; i++) {
-                this.buffer[destOffset + i] = this.buffer[element.offset + i];
-            }
-            element.offset = destOffset;
-        };
-        DynamicFloatArray.prototype._growBuffer = function () {
-            // Allocate the new buffer with 50% more entries, copy the content of the current one
-            var newElCount = Math.floor(this.totalElementCount * 1.5);
-            var newBuffer = new Float32Array(newElCount * this._stride);
-            newBuffer.set(this.buffer);
-            var curCount = this.totalElementCount;
-            var addedCount = newElCount - this.totalElementCount;
-            for (var i = 0; i < addedCount; i++) {
-                var element = new DynamicFloatArrayElementInfo();
-                element.offset = (curCount + i) * this.stride;
-                this._allEntries.push(element);
-                this._freeEntries[addedCount - i - 1] = element;
-            }
-            this._firstFree = curCount * this.stride;
-            this.buffer = newBuffer;
-        };
-        Object.defineProperty(DynamicFloatArray.prototype, "totalElementCount", {
-            /**
-             * Get the total count of entries that can fit in the current buffer
-             * @returns the elements count
-             */
-            get: function () {
-                return this._allEntries.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DynamicFloatArray.prototype, "freeElementCount", {
-            /**
-             * Get the count of free entries that can still be allocated without resizing the buffer
-             * @returns the free elements count
-             */
-            get: function () {
-                return this._freeEntries.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DynamicFloatArray.prototype, "usedElementCount", {
-            /**
-             * Get the count of allocated elements
-             * @returns the allocated elements count
-             */
-            get: function () {
-                return this._allEntries.length - this._freeEntries.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DynamicFloatArray.prototype, "stride", {
-            /**
-             * Return the size of one element in float
-             * @returns the size in float
-             */
-            get: function () {
-                return this._stride;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DynamicFloatArray.prototype.sort = function () {
-            var _this = this;
-            if (!this.compareValueOffset) {
-                throw new Error("The DynamicFloatArray.sort() method needs a valid 'compareValueOffset' property");
-            }
-            var count = this.usedElementCount;
-            // Do we have to (re)create the sort table?
-            if (!this._sortTable || this._sortTable.length < count) {
-                // Small heuristic... We don't want to allocate totalElementCount right away because it may have 50 for 3 used elements, but on the other side we don't want to allocate just 3 when we just need 2, so double this value to give us some air to breath...
-                var newCount = Math.min(this.totalElementCount, count * 2);
-                this._sortTable = new Array(newCount);
-            }
-            if (!this._sortedTable || this._sortedTable.length !== count) {
-                this._sortedTable = new Array(count);
-            }
-            // Because, you know...
-            this.pack();
-            //let stride = this.stride;
-            //for (let i = 0; i < count; i++) {
-            //    let si = this._sortTable[i];
-            //    if (!si) {
-            //        si = new SortInfo();
-            //        this._sortTable[i] = si;
-            //    }
-            //    si.entry = this._allEntries[i];
-            //    si.compareData = this.buffer[si.entry.offset + this.compareValueOffset];
-            //    si.swapedOffset = null;
-            //    this._sortedTable[i] = si;
-            //}
-            var curOffset = 0;
-            var stride = this.stride;
-            for (var i = 0; i < count; i++, curOffset += stride) {
-                var si = this._sortTable[i];
-                if (!si) {
-                    si = new SortInfo();
-                    this._sortTable[i] = si;
-                }
-                si.compareData = this.buffer[curOffset + this.compareValueOffset];
-                si.offset = curOffset;
-                si.swapedOffset = null;
-                this._sortedTable[i] = si;
-            }
-            // Let's sort the sorted table, we want to keep a track of the original one (that's why we have two buffers)
-            if (this.sortingAscending) {
-                this._sortedTable.sort(function (a, b) { return a.compareData - b.compareData; });
-            }
-            else {
-                this._sortedTable.sort(function (a, b) { return b.compareData - a.compareData; });
-            }
-            var swapElements = function (src, dst) {
-                for (var i = 0; i < stride; i++) {
-                    var tps = _this.buffer[dst + i];
-                    _this.buffer[dst + i] = _this.buffer[src + i];
-                    _this.buffer[src + i] = tps;
-                }
-            };
-            // The fun part begin, sortedTable give us the ordered layout to obtain, to get that we have to move elements, but when we move an element: 
-            //  it replaces an existing one.I don't want to allocate a new Float32Array and do a raw copy, because it's awful (GC - wise), 
-            //  and I still want something with a good algorithm complexity.
-            // So here's the deal: we are going to swap elements, but we have to track the change of location of the element being replaced, 
-            //  we need sortTable for that, it contains the original layout of SortInfo object, not the sorted one.
-            // The best way is to use an extra field in SortInfo, because potentially every element can be replaced.
-            // When we'll look for and element, we'll check if its swapedOffset is set, if so we reiterate the operation with the one there 
-            //  until we find a SortInfo object without a swapedOffset which means we got the right location
-            // Yes, we may have to do multiple iterations to find the right location, but hey, it won't be huge: <3 in most cases, and it's better 
-            //  than a double allocation of the whole float32Array or a O(n²/2) typical algorithm.
-            for (var i = 0; i < count; i++) {
-                // Get the element to move
-                var sourceSI = this._sortedTable[i];
-                var destSI = this._sortTable[i];
-                var sourceOff = sourceSI.offset;
-                // If the source changed location, find the new one
-                if (sourceSI.swapedOffset) {
-                    // Follow the swapedOffset until there's none, it will mean that curSI contains the new location in its offset member
-                    var curSI = sourceSI;
-                    while (curSI.swapedOffset) {
-                        curSI = this._sortTable[curSI.swapedOffset / stride];
-                    }
-                    // Finally get the right location
-                    sourceOff = curSI.offset;
-                }
-                // Tag the element being replaced with its new location
-                destSI.swapedOffset = sourceOff;
-                // Swap elements (only if needed)
-                if (sourceOff !== destSI.offset) {
-                    swapElements(sourceOff, destSI.offset);
-                }
-                // Update the offset in the corresponding DFAE
-                //sourceSI.entry.offset = destSI.entry.offset;
-                this._allEntries[sourceSI.offset / stride].offset = destSI.offset;
-            }
-            this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
-            return true;
-        };
-        return DynamicFloatArray;
-    }());
-    BABYLON.DynamicFloatArray = DynamicFloatArray;
-    var SortInfo = (function () {
-        function SortInfo() {
-            this.compareData = this.offset = this.swapedOffset = null;
-        }
-        return SortInfo;
-    }());
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.dynamicFloatArray.js.map
 
 var BABYLON;
 (function (BABYLON) {
