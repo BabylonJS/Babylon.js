@@ -31,15 +31,16 @@ uniform float totalStrength;
 uniform float base;
 uniform float xViewport;
 uniform float yViewport;
+uniform vec2 texelSize;
 
 uniform mat4 projection;
 
 void main()
 {
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-	float depth = texture2D(textureSampler, vUV).r;
+	float depth = texture(textureSampler, vUV).r;
 	float linearDepth = - perspectiveDepthToViewZ(depth, near, far);
-	vec3 normal = texture2D(normalSampler, vUV).rgb; 
+	vec3 normal = texture2D(normalSampler, vUV, 0.0).rgb; 
 	float occlusion = 0.0;
 
 	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
@@ -65,7 +66,7 @@ void main()
 	  
 		// get sample linearDepth:
 	   float sampleDepth = texture(textureSampler, offset.xy).r;
-	   float linearSampleDepth = - perspectiveDepthToViewZ(texture(textureSampler, offset.xy).r, near, far);
+	   float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, near, far);
 		// range check & accumulate:
 	   float rangeCheck = abs(linearDepth - linearSampleDepth) < radius ? 1.0 : 0.0;
 	  	difference = samplePosition.z - linearSampleDepth;
@@ -124,21 +125,16 @@ vec4 linearUpsample(sampler2D image, vec2 uv, float resolution, vec2 direction) 
 	return color;
 }
 
-float gaussianKernel[16] = float[16](
-0.001014, 0.003314, 0.009248, 0.022042, 0.044857, 0.077951, 0.115676, 0.146586, 0.146586, 0.115676, 0.077951, 0.044857, 0.022042, 0.009248, 0.003314, 0.001014
-);
-
 void main()
 {
-	float texelsize = 1.0 / outSize;
+	#if EXPENSIVE
 	float compareDepth = texture2D(depthSampler, vUV).r;
 	float linearDepth = - perspectiveDepthToViewZ(compareDepth, near, far);
+	float texelsize = 1.0 / outSize;
 	float result = 0.0;
-
-	vec4 color;
 	float weightSum = 0.0;
 
-/* 	for (int i = 0; i < SAMPLES; ++i)
+	for (int i = 0; i < SAMPLES; ++i)
 	{
 		#ifdef BILATERAL_BLUR_H
 		vec2 direction = vec2(1.0, 0.0);
@@ -151,14 +147,17 @@ void main()
 
 		float sampleDepth = texture2D(depthSampler, samplePos).r;
 		float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, near, far);
-		float weight = clamp(1.0 / ( 0.003 + abs(linearDepth - linearSampleDepth)), 0.0, 30.0) * gaussianKernel[i];
+		float weight = clamp(1.0 / ( 0.003 + abs(linearDepth - linearSampleDepth)), 0.0, 30.0);
 
 		result += texture2D(textureSampler, samplePos).r * weight;
 		weightSum += weight;
 	}
 
-	result /= weightSum; */
-
+	result /= weightSum;
+	gl_FragColor.rgb = vec3(result);
+	gl_FragColor.a = 1.0;
+	#else
+	vec4 color;
 	#ifdef BILATERAL_BLUR_H
 	vec2 direction = vec2(1.0, 0.0);
 	color = blur13(textureSampler, vUV, outSize, direction);
@@ -169,5 +168,6 @@ void main()
 
 	gl_FragColor.rgb = vec3(color.r);
 	gl_FragColor.a = 1.0;
+	#endif
 }
 #endif

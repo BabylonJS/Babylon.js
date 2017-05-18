@@ -45,7 +45,7 @@ module BABYLON {
                 if (options.samplingModes && options.samplingModes[i]) {
                     samplingModes.push(options.samplingModes[i]);
                 } else {
-                    samplingModes.push(Texture.TRILINEAR_SAMPLINGMODE);
+                    samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
                 }
             }
 

@@ -16,7 +16,7 @@ module BABYLON {
             var engine = scene.getEngine();
 
             // Render target
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps : true, generateDepthTexture: true });
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps : false, generateDepthTexture: true });
             this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.refreshRate = 1;
