@@ -42,6 +42,7 @@ void main()
 	float linearDepth = - perspectiveDepthToViewZ(depth, near, far);
 	vec3 normal = texture2D(normalSampler, vUV, 0.0).rgb; 
 	float occlusion = 0.0;
+	float correctedRadius = min(radius, 0.2 * linearDepth / near);
 
 	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
 	vec3 origin = vViewRay * linearDepth;
@@ -56,7 +57,7 @@ void main()
 	for (int i = 0; i < SAMPLES; ++i) {
 		// get sample position:
 	   vec3 samplePosition = tbn * sampleSphere[i];
-	   samplePosition = samplePosition * radius + origin;
+	   samplePosition = samplePosition * correctedRadius + origin;
 	  
 		// project sample position:
 	   vec4 offset = vec4(samplePosition, 1.0);
@@ -68,7 +69,7 @@ void main()
 	   float sampleDepth = texture(textureSampler, offset.xy).r;
 	   float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, near, far);
 		// range check & accumulate:
-	   float rangeCheck = abs(linearDepth - linearSampleDepth) < radius ? 1.0 : 0.0;
+	   float rangeCheck = abs(linearDepth - linearSampleDepth) < correctedRadius ? 1.0 : 0.0;
 	  	difference = samplePosition.z - linearSampleDepth;
 	  	//occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
 	  	occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
