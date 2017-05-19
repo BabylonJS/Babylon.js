@@ -289,14 +289,14 @@ module BABYLON {
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = this._panningModel;
+                    this._soundPanner.panningModel = this._panningModel as any;
                 }
                 else {
-                    this._soundPanner.distanceModel = this.distanceModel;
+                    this._soundPanner.distanceModel = this.distanceModel as any;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this._panningModel;
+                    this._soundPanner.panningModel = this._panningModel as any;
                 }
             }
         }
@@ -313,7 +313,7 @@ module BABYLON {
 
         private _switchPanningModel() {
             if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
-                this._soundPanner.panningModel = this._panningModel;
+                this._soundPanner.panningModel = this._panningModel as any;
             }
         }
 

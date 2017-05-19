@@ -1,5 +1,7 @@
 ﻿module BABYLON {
     export class BaseTexture {
+        public static DEFAULT_ANISOTROPIC_FILTERING_LEVEL = 4;
+
         @serialize()
         public name: string;
 
@@ -45,7 +47,7 @@
         public wrapV = Texture.WRAP_ADDRESSMODE;
 
         @serialize()
-        public anisotropicFilteringLevel = 4;
+        public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
         @serialize()
         public isCube = false;
