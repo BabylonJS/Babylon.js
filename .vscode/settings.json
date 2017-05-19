@@ -9,7 +9,6 @@
         "**/.vs": true,        
         "**/.tempChromeProfileForDebug": true,
         "**/node_modules": true,
-        "**/dist": true,
         "**/temp": true,
         "**/.temp": true,
         "**/*.d.ts": true,

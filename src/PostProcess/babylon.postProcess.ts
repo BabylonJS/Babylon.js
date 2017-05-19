@@ -27,6 +27,7 @@
         private _effect: Effect;
         private _samplers: string[];
         private _fragmentUrl: string;
+        private _vertexUrl: string;
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
 
@@ -102,7 +103,7 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = 'postprocess') {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -122,6 +123,7 @@
             this._samplers.push("textureSampler");
 
             this._fragmentUrl = fragmentUrl;
+            this._vertexUrl = vertexUrl;
             this._parameters = parameters || [];
 
             this._parameters.push("scale");
@@ -130,7 +132,7 @@
         }
         
         public updateEffect(defines?: string) {
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
+            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
                 ["position"],
                 this._parameters,
                 this._samplers, defines !== undefined ? defines : "");

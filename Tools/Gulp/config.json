@@ -6,6 +6,7 @@
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
+        "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
         "currentConfig": "all"
     },
@@ -21,7 +22,12 @@
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
-        "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
+        "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
+        "minimalViewer": [
+                "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
+                "multiMaterial"
+        ],
+        "distributed": ["minimalViewer"]
     },
     "workloads" :
     {
@@ -412,15 +418,23 @@
                 "core"
             ]
         },
+        "stringDictionary" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.stringDictionary.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
         "userData" : 
         {
             "files": [
-                "../../src/Tools/babylon.stringDictionary.js",
                 "../../src/Tools/babylon.tags.js",
                 "../../src/Tools/babylon.andOrNotEvaluator.js"
             ],
             "dependUpon" : [
-                "core"
+                "core", "stringDictionary"
             ]
         },
         "offline" : 
@@ -688,7 +702,11 @@
             ],
             "dependUpon" : [
                 "shaderMaterial",
-                "additionalMeshes"
+                "additionalMeshes",
+                "standardMaterial", 
+                "stringDictionary", 
+                "dynamicFloatArray",
+                "actions"
             ],
             "shaders" : [
                 "color.vertex",

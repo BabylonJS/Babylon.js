@@ -395,7 +395,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean, onError?: () => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest) => void): void {
             url = Tools.CleanUrl(url);
 
             var noIndexedDB = () => {
@@ -410,14 +410,15 @@
                 request.onprogress = progressCallBack;
 
                 request.onreadystatechange = () => {
-                    if (request.readyState === 4) {
+                    // In case of undefined state in some browsers.
+                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                         request.onreadystatechange = null;//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
                         if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             if (onError) {
-                                onError();
+                                onError(request);
                             } else {
 
                                 throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -436,10 +437,10 @@
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5).toLowerCase();
                 if (FilesInput.FilesToLoad[fileName]) {
-                    Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer); 
+                    Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }
                 else {
-                    Tools.Error("File: " + fileName + " not found. Did you forget to provide it?");  
+                    Tools.Error("File: " + fileName + " not found. Did you forget to provide it?");
                 }
             }
             else {
