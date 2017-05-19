@@ -72,7 +72,9 @@ void main()
 	   offset.xyz /= offset.w;
 	   offset.xy = offset.xy * 0.5 + 0.5;
 
-	   offset.xy = clamp(offset.xy, vec2(0.0, 0.0), vec2(1.0, 1.0));
+	   if (offset.x < 0.0 || offset.y < 0.0 || offset.x > 1.0 || offset.y > 1.0) {
+	     continue;
+	   }
 	  
 		// get sample linearDepth:
 	   float sampleDepth = texture(textureSampler, offset.xy).r;
