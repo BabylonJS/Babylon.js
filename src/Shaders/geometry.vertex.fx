@@ -3,8 +3,8 @@
 precision highp float;
 precision highp int;
 
-#include<bonesDeclaration>
-#include<instancesDeclaration>
+#include<bones300Declaration>
+#include<instances300Declaration>
 
 in vec3 position;
 in vec3 normal;

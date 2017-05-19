@@ -529,8 +529,8 @@
                 "geometry.fragment"
             ],
             "shaderIncludes": [
-                "bonesDeclaration",
-                "instancesDeclaration",
+                "bones300Declaration",
+                "instances300Declaration",
                 "instancesVertex",
                 "bonesVertex"
             ]
