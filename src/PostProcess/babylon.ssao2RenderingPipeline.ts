@@ -36,6 +36,20 @@
         public totalStrength: number = 1.0;
 
         /**
+        * Maximum depth value to still render AO. A smooth falloff makes the dimming more natural, so there will be no abrupt shading change.
+        * @type {number}
+        */
+        @serialize()
+        public maxZ: number = 100.0;
+
+        /**
+        * In order to save performances, SSAO radius is clamped on close geometry. This ratio changes by how much
+        * @type {number}
+        */
+        @serialize()
+        public minZAspect: number = 0.2;
+
+        /**
         * Number of samples used for the SSAO calculations. Default value is 8
         * @type {number}
         */
@@ -58,7 +72,7 @@
                 this._blurVPostProcess.dispose(camera);
             }
 
-            this._createBlurPostProcess(this._ratio.ssaoRatio);
+            this._createBlurPostProcess(this._ratio.ssaoRatio, this._ratio.blurRatio);
             this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
 
@@ -127,7 +141,7 @@
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, combineRatio: 1.0 }
+         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
@@ -136,10 +150,10 @@
             this._scene = scene;
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
-            var combineRatio = ratio.combineRatio || ratio;
+            var blurRatio = ratio.blurRatio || ratio;
             this._ratio = {
                 ssaoRatio: ssaoRatio,
-                combineRatio: combineRatio
+                blurRatio: blurRatio
             };
 
             // Set up assets
@@ -149,8 +163,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(1.0);
-            this._createBlurPostProcess(ssaoRatio);
-            this._createSSAOCombinePostProcess(ssaoRatio);
+            this._createBlurPostProcess(ssaoRatio, blurRatio);
+            this._createSSAOCombinePostProcess(blurRatio);
 
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
@@ -192,7 +206,7 @@
         }
 
         // Private Methods
-        private _createBlurPostProcess(ratio: number): void {
+        private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
             var samples = 16;
             var samplerOffsets = [];
             var expensive = this.expensiveBlur;
@@ -201,7 +215,7 @@
                 samplerOffsets.push(i * 2);
             }
 
-            this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+            this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurHPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
@@ -214,7 +228,7 @@
                 }
             };
 
-            this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+            this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
@@ -275,7 +289,7 @@
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                                                         "base", "range", "projection", "near", "far", "texelSize",
-                                                        "xViewport", "yViewport"
+                                                        "xViewport", "yViewport", "maxZ", "minZAspect"
                                                     ],
                                                     ["randomSampler", "normalSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
@@ -292,6 +306,8 @@
                 effect.setFloat("totalStrength", this.totalStrength);
                 effect.setFloat2("texelSize", 1 / this._ssaoPostProcess.width, 1 / this._ssaoPostProcess.height);
                 effect.setFloat("radius", this.radius);
+                effect.setFloat("maxZ", this.maxZ);
+                effect.setFloat("minZAspect", this.minZAspect);
                 effect.setFloat("base", this.base);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);

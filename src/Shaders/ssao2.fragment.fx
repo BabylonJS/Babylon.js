@@ -1,4 +1,4 @@
-// SSAO Shader
+// SSAO 2 Shader
 precision highp float;
 uniform sampler2D textureSampler;
 uniform float near;
@@ -31,6 +31,8 @@ uniform float totalStrength;
 uniform float base;
 uniform float xViewport;
 uniform float yViewport;
+uniform float maxZ;
+uniform float minZAspect;
 uniform vec2 texelSize;
 
 uniform mat4 projection;
@@ -40,9 +42,9 @@ void main()
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
 	float depth = texture(textureSampler, vUV).r;
 	float linearDepth = - perspectiveDepthToViewZ(depth, near, far);
-	vec3 normal = texture2D(normalSampler, vUV, 0.0).rgb; 
+	vec3 normal = texture2D(normalSampler, vUV).rgb; 
 	float occlusion = 0.0;
-	float correctedRadius = min(radius, 0.2 * linearDepth / near);
+	float correctedRadius = min(radius, minZAspect * linearDepth / near);
 
 	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
 	vec3 origin = vViewRay * linearDepth;
@@ -53,6 +55,11 @@ void main()
 	mat3 tbn = mat3(tangent, bitangent, normal);
 
 	float difference;
+
+	if (linearDepth > maxZ) {
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		return;
+	}
 
 	for (int i = 0; i < SAMPLES; ++i) {
 		// get sample position:
@@ -70,10 +77,10 @@ void main()
 	   float linearSampleDepth = - perspectiveDepthToViewZ(sampleDepth, near, far);
 		// range check & accumulate:
 	   float rangeCheck = abs(linearDepth - linearSampleDepth) < correctedRadius ? 1.0 : 0.0;
-	  	difference = samplePosition.z - linearSampleDepth;
-	  	//occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
-	  	occlusion += (difference > 0.0 ? 1.0 : 0.0) * rangeCheck;
-
+	   difference = samplePosition.z - linearSampleDepth;
+	   float errorFactor = max(0.0, pow((maxZ-linearDepth) / maxZ, 0.25));
+	  //occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck * errorFactor;
+	   occlusion += (difference >= 1e-5 ? 1.0 : 0.0) * rangeCheck * errorFactor;
 	}
 
 
