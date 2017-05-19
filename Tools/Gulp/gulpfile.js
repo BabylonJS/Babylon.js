@@ -59,7 +59,7 @@ var externalTsConfig = {
 
 function processDependency(kind, dependency, filesToLoad) {
     if (dependency.dependUpon) {
-        for (var i = 0; i < dependency.dependUpon.length; i++ ) {
+        for (var i = 0; i < dependency.dependUpon.length; i++) {
             var dependencyName = dependency.dependUpon[i];
             var parent = config.workloads[dependencyName];
             processDependency(kind, parent, filesToLoad);
@@ -71,7 +71,7 @@ function processDependency(kind, dependency, filesToLoad) {
         return;
     }
 
-    for (var i = 0; i< content.length; i++) {
+    for (var i = 0; i < content.length; i++) {
         var file = content[i];
 
         if (filesToLoad.indexOf(file) === -1) {
@@ -129,18 +129,18 @@ gulp.task("includeShaders", function (cb) {
         pipe(uncommentShader()).
         pipe(srcToVariable({
             variableName: "BABYLON.Effect.IncludesShadersStore", asMap: true, namingCallback: includeShadersName
-    }));
+        }));
     cb();
 });
 
 gulp.task("shaders", ["includeShaders"], function (cb) {
     var filesToProcess = determineFilesToProcess("shaders");
     shadersStream = gulp.src(filesToProcess).
-        pipe(expect.real({ errorOnFailure: true}, filesToProcess)).
+        pipe(expect.real({ errorOnFailure: true }, filesToProcess)).
         pipe(uncommentShader()).
         pipe(srcToVariable({
             variableName: "BABYLON.Effect.ShadersStore", asMap: true, namingCallback: shadersName
-    }));
+        }));
     cb();
 });
 
@@ -162,12 +162,12 @@ gulp.task("workers", function (cb) {
 gulp.task("buildWorker", ["workers", "shaders"], function () {
     var filesToProcess = determineFilesToProcess("files");
     return merge2(
-        gulp.src(filesToProcess).        
+        gulp.src(filesToProcess).
             pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
         includeShadersStream,
         workersStream
-        )
+    )
         .pipe(concat(config.build.minWorkerFilename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
@@ -181,11 +181,11 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
 gulp.task("build", ["shaders"], function () {
     var filesToProcess = determineFilesToProcess("files");
     return merge2(
-        gulp.src(filesToProcess).        
+        gulp.src(filesToProcess).
             pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
         includeShadersStream
-        )
+    )
         .pipe(concat(config.build.filename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
@@ -228,11 +228,11 @@ gulp.task('typescript-compile', function () {
             .pipe(addDtsExport("BABYLON"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
-            .pipe(sourcemaps.write("./", 
+            .pipe(sourcemaps.write("./",
                 {
-                    includeContent:false, 
+                    includeContent: false,
                     sourceRoot: (filePath) => {
-                        return ''; 
+                        return '';
                     }
                 }))
             .pipe(gulp.dest(config.build.srcOutputDirectory))
@@ -242,31 +242,31 @@ gulp.task('typescript-compile', function () {
 /**
  * Helper methods to build external library (mat, post processes, ...).
  */
-var buildExternalLibraries = function(settings) {
+var buildExternalLibraries = function (settings) {
     var tasks = settings.libraries.map(function (library) {
-        return buildExternalLibrary(library, settings, false); 
+        return buildExternalLibrary(library, settings, false);
     });
 
     return merge2(tasks);
 }
 
-var buildExternalLibrary= function(library, settings, watch) {
-    var tsProcess = gulp.src(library.files, {base: settings.build.srcOutputDirectory})
+var buildExternalLibrary = function (library, settings, watch) {
+    var tsProcess = gulp.src(library.files, { base: settings.build.srcOutputDirectory })
         .pipe(sourcemaps.init())
         .pipe(typescript(externalTsConfig));
 
-    var shader = gulp.src(library.shaderFiles || [], {base: settings.build.srcOutputDirectory} )
-            .pipe(uncommentShader())            
-            .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
-            .pipe(gulp.dest(settings.build.srcOutputDirectory));
+    var shader = gulp.src(library.shaderFiles || [], { base: settings.build.srcOutputDirectory })
+        .pipe(uncommentShader())
+        .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
+        .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var dev = tsProcess.js.pipe(sourcemaps.write("./", {
-        includeContent:false, 
+        includeContent: false,
         sourceRoot: (filePath) => {
-            return ''; 
+            return '';
         }
     }))
-    .pipe(gulp.dest(settings.build.srcOutputDirectory));
+        .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
     var css = gulp.src(library.sassFiles || [])
@@ -275,29 +275,29 @@ var buildExternalLibrary= function(library, settings, watch) {
         .pipe(gulp.dest(outputDirectory));
 
     if (watch) {
-        return merge2([shader, dev, css]);    
+        return merge2([shader, dev, css]);
     }
     else {
         var code = merge2([tsProcess.js, shader])
-                .pipe(concat(library.output))
-                .pipe(gulp.dest(outputDirectory))
-                .pipe(cleants())
-                .pipe(replace(extendsSearchRegex, ""))
-                .pipe(replace(decorateSearchRegex, ""))
-                .pipe(rename({extname: ".min.js"}))
-                .pipe(uglify())
-                .pipe(optimisejs())
-                .pipe(gulp.dest(outputDirectory));
-        
-        var dts = tsProcess.dts
-                .pipe(concat(library.output))
-                .pipe(rename({extname: ".d.ts"}))
-                .pipe(gulp.dest(outputDirectory));
+            .pipe(concat(library.output))
+            .pipe(gulp.dest(outputDirectory))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(rename({ extname: ".min.js" }))
+            .pipe(uglify())
+            .pipe(optimisejs())
+            .pipe(gulp.dest(outputDirectory));
 
-        var waitAll =  merge2([dev, code, css, dts]);
+        var dts = tsProcess.dts
+            .pipe(concat(library.output))
+            .pipe(rename({ extname: ".d.ts" }))
+            .pipe(gulp.dest(outputDirectory));
+
+        var waitAll = merge2([dev, code, css, dts]);
 
         if (library.webpack) {
-            return waitAll.on('end', function() {
+            return waitAll.on('end', function () {
                 webpack(require(library.webpack))
                     .pipe(rename(library.output.replace(".js", ".bundle.js")))
                     .pipe(gulp.dest(outputDirectory))
@@ -312,7 +312,7 @@ var buildExternalLibrary= function(library, settings, watch) {
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task('default', function (cb) {
+gulp.task("default", function (cb) {
     runSequence("buildWorker", "build", cb);
 });
 
@@ -336,6 +336,21 @@ gulp.task("typescript-libraries", config.modules, function () {
 });
 
 /**
+ * Dynamic custom configurations.
+ */
+config.buildConfigurations.distributed.map(function (customConfiguration) {
+    gulp.task(customConfiguration, function (cb) {
+        config.build.currentConfig = customConfiguration;
+        config.build.outputDirectory = config.build.outputCustomConfigurationsDirectory + "/" + customConfiguration;
+        runSequence("typescript-compile", "build", cb);
+    });
+});
+
+gulp.task("typescript-customConfigurations", function (cb) {
+    runSequence(config.buildConfigurations.distributed, cb);
+});
+
+/**
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
@@ -348,26 +363,26 @@ gulp.task("typescript-all", function (cb) {
 gulp.task('watch', [], function () {
     var tasks = [gulp.watch(config.typescript, ['typescript-compile'])];
 
-    config.modules.map(function (module) { 
-        config[module].libraries.map(function (library) {            
-            tasks.push(gulp.watch(library.files, function() { 
+    config.modules.map(function (module) {
+        config[module].libraries.map(function (library) {
+            tasks.push(gulp.watch(library.files, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
-                .pipe(debug()); 
+                    .pipe(debug());
             }));
-            tasks.push(gulp.watch(library.shaderFiles, function() { 
+            tasks.push(gulp.watch(library.shaderFiles, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
-                .pipe(debug()) 
+                    .pipe(debug())
             }));
-            tasks.push(gulp.watch(library.sassFiles, function() { 
+            tasks.push(gulp.watch(library.sassFiles, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
-                .pipe(debug()) 
+                    .pipe(debug())
             }));
-        }); 
+        });
     });
-    
+
     return tasks;
 });
 
@@ -384,9 +399,9 @@ gulp.task('deployLocalDev', function () {
  */
 gulp.task('webserver', function () {
     gulp.src('../../.').pipe(webserver({
-      port: 1338,
-      livereload: false
-    }));
+        port: 1338,
+        livereload: false
+        }));
 });
 
 /**
@@ -396,14 +411,14 @@ gulp.task('run', ['watch', 'webserver'], function () {
 });
 
 
-gulp.task("zip-blender" , function() {
+gulp.task("zip-blender", function () {
     return gulp.src('../../Exporters/Blender/src/**')
-    .pipe(zip('Blender2Babylon-5.2.zip'))
-    .pipe(gulp.dest('../../Exporters/Blender'));
+        .pipe(zip('Blender2Babylon-5.3.zip'))
+        .pipe(gulp.dest('../../Exporters/Blender'));
 });
 
 gulp.task('clean-JS-MAP', function () {
-	  return del([
-		  '../../src/**/*.js.map','../../src/**/*.js'
-	  ], {force: true});
-	});
+    return del([
+        '../../src/**/*.js.map', '../../src/**/*.js'
+    ], { force: true });
+});

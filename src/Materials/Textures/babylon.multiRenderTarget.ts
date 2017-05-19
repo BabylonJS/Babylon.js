@@ -5,7 +5,7 @@ module BABYLON {
         private _textures: Texture[];
         private _count: number;
 
-        protected _renderTargetOptions: {
+        protected _multiRenderTargetOptions: {
             generateMipMaps: boolean,
             types: number[],
             samplingModes: number[],
@@ -54,7 +54,7 @@ module BABYLON {
 
             this._count = count;
             this._size = size;
-            this._renderTargetOptions = {
+            this._multiRenderTargetOptions = {
                 samplingModes: samplingModes,
                 generateMipMaps: generateMipMaps,
                 generateDepthBuffer: generateDepthBuffer,
@@ -64,7 +64,7 @@ module BABYLON {
                 textureCount: count
             };
 
-            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
+            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
 
             this._createInternalTextures();
         }
@@ -97,7 +97,7 @@ module BABYLON {
 
         public resize(size: any) {
             this.releaseInternalTextures();
-            this._webGLTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._renderTargetOptions);
+            this._webGLTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
         }
 

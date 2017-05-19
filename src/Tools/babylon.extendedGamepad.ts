@@ -121,6 +121,26 @@ module BABYLON {
         public detachMesh() {
             this._mesh = undefined;
         }
+
+        public get mesh(): AbstractMesh {
+            return this._mesh;
+        }
+
+        public getForwardRay(length = 100): Ray {
+            if (!this.mesh) {
+                return new Ray(Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+            }
+
+            var m = this.mesh.getWorldMatrix();
+            var origin = m.getTranslation();
+
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+
+            return new Ray(origin, direction, length);
+        } 
     }
 
     export interface GamepadButtonChanges {
@@ -293,6 +313,7 @@ module BABYLON {
         */
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let notifyObject = state; //{ state: state, changes: changes };
+            let triggerDirection = this.hand === 'right' ? -1 : 1;
             switch (buttonIdx) {
                 case 0:
                     this.onPadStateChangedObservable.notifyObservers(notifyObject);
@@ -307,7 +328,7 @@ module BABYLON {
                     return;
                 case 2:  // secondary trigger
                     if (this._defaultModel) {
-                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = notifyObject.value * 0.0035;
+                        (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = triggerDirection * notifyObject.value * 0.0035;
                     }
                     this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                     return;

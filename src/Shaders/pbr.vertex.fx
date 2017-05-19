@@ -87,8 +87,11 @@ varying vec3 vDirectionW;
 
 void main(void) {
 	vec3 positionUpdated = position;
-#ifdef NORMAL	
+#ifdef NORMAL
 	vec3 normalUpdated = normal;
+#endif
+#ifdef TANGENT
+    vec4 tangentUpdated = tangent;
 #endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]

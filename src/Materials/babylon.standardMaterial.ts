@@ -61,6 +61,7 @@ module BABYLON {
         public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
+        public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {
@@ -288,7 +289,7 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public cameraColorCurves: ColorCurves;             
 
-        public customShaderNameResolve: (shaderName: string) => string;
+        public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
         protected _worldViewProjectionMatrix = Matrix.Zero();
@@ -693,12 +694,7 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
                 
                 var shaderName = "default";
-
-                if (this.customShaderNameResolve) {
-                    shaderName = this.customShaderNameResolve(shaderName);
-                }
-
-                var join = defines.toString();
+                
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -710,6 +706,7 @@ module BABYLON {
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+
                 var uniformBuffers = ["Material", "Scene"];
 
                 if (defines.CAMERACOLORCURVES) {
@@ -726,6 +723,11 @@ module BABYLON {
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
+                if (this.customShaderNameResolve) {
+                    shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+                }
+
+                var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -820,7 +822,7 @@ module BABYLON {
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect)) {
+            if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 
                 this.bindViewProjection(effect);
@@ -917,6 +919,7 @@ module BABYLON {
                         this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                     }
                     this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
+
                     // Diffuse
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }

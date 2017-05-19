@@ -79,6 +79,7 @@
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
+        public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
 
         constructor() {
@@ -995,7 +996,7 @@
 
             // Attribs
             if (mesh) {
-                if (!mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     mesh.createNormals(true);
                     Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
                 }
@@ -1033,6 +1034,7 @@
 
                if ((<any>mesh).morphTargetManager) {
                     var manager = (<Mesh>mesh).morphTargetManager;
+                    this._defines.MORPHTARGETS_TANGENT = manager.supportsTangents && this._defines.TANGENT;
                     this._defines.MORPHTARGETS_NORMAL = manager.supportsNormals && this._defines.NORMAL;
                     this._defines.MORPHTARGETS = (manager.numInfluencers > 0);
                     this._defines.NUM_MORPH_INFLUENCERS = manager.numInfluencers;

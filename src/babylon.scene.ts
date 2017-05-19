@@ -512,14 +512,18 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        private _defaultMaterial: StandardMaterial;
+        private _defaultMaterial: Material;
 
-        public get defaultMaterial(): StandardMaterial {
+        public get defaultMaterial(): Material {
             if (!this._defaultMaterial) {
                 this._defaultMaterial = new StandardMaterial("default material", this);
             }
 
             return this._defaultMaterial;
+        }
+
+        public set defaultMaterial(value: Material) {
+            this._defaultMaterial = value;
         }
 
         // Textures
@@ -658,6 +662,7 @@
 
         public _cachedMaterial: Material;
         public _cachedEffect: Effect;
+        public _cachedVisibility: number;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
@@ -715,6 +720,8 @@
         private _pickedDownSprite: Sprite;
         private _externalData: StringDictionary<Object>;
         private _uid: string;
+
+        public offscreenRenderTarget: RenderTargetTexture = null;
 
         /**
          * @constructor
@@ -813,8 +820,16 @@
             return this._cachedMaterial;
         }
 
-         public getCachedEffect(): Effect {
+        public getCachedEffect(): Effect {
             return this._cachedEffect;
+        }
+
+        public getCachedVisibility(): number {
+            return this._cachedVisibility;
+        }
+
+        public isCachedMaterialValid(material: Material, effect: Effect, visibility: number = 0) {
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
@@ -1509,6 +1524,7 @@
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
             this._cachedEffect = null;
+            this._cachedVisibility = null;
         }
 
         public registerBeforeRender(func: () => void): void {
@@ -2593,7 +2609,7 @@
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                    let renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
@@ -2623,7 +2639,7 @@
 
                         renderhighlights = true;
 
-                        var renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
+                        let renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
                         if (renderTarget._shouldRender()) {
                             this._renderId++;
                             renderTarget.render(false, false);
@@ -2637,7 +2653,12 @@
             }
 
             if (needsRestoreFrameBuffer) {
-                engine.restoreDefaultFramebuffer();
+                if (this.offscreenRenderTarget) {
+                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
+                }
+                else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer
+                }
             }
 
             this._renderTargetsDuration.endMonitoring(false);
@@ -2835,9 +2856,9 @@
 
             // Physics
             if (this._physicsEngine) {
-                Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                Tools.EndPerformanceCounter("Physics");
+               Tools.StartPerformanceCounter("Physics");
+               this._physicsEngine._step(deltaTime / 1000.0);
+               Tools.EndPerformanceCounter("Physics");
             }
 
             // Before render
@@ -2874,9 +2895,16 @@
                 this._renderId++;
             }
 
-            if (this.customRenderTargets.length > 0) { // Restore back buffer
-                engine.restoreDefaultFramebuffer();
+            if (this.offscreenRenderTarget) {
+                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
             }
+            else {
+                // Restore back buffer
+                if (this.customRenderTargets.length > 0) {
+                    engine.restoreDefaultFramebuffer();
+                }
+            }
+
             this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
 
@@ -3148,6 +3176,8 @@
 
             this.skeletons = [];
             this.morphTargetManagers = [];
+
+            this.importedMeshesFiles = new Array<string>();
 
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
@@ -3602,26 +3632,26 @@
 
             // Camera
             if (!this.activeCamera) {
-                // Compute position
                 var worldExtends = this.getWorldExtends();
-                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                var camera;
-
+                var camera: TargetCamera;
+                var radius = worldSize.length() * 1.5;
                 if (createArcRotateCamera) {
-                    camera = new ArcRotateCamera("default camera", 0, 0, 10, Vector3.Zero(), this);
-                    camera.setPosition(new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
-                    camera.lowerRadiusLimit = 0.5;
-                    camera.setTarget(worldCenter);
-                } else {
-                    camera = new FreeCamera("default camera", Vector3.Zero(), this);
-
-                    camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                    camera.setTarget(worldCenter);
+                    var arcRotateCamera = new ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                    arcRotateCamera.wheelPrecision = 100 / radius;
+                    camera = arcRotateCamera;
                 }
-                camera.minZ = 0.1;
-                var maxDist = worldExtends.max.subtract(worldExtends.min).length();
-                camera.wheelPrecision = 100.0 / maxDist;
+                else {
+                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    freeCamera.setTarget(worldCenter);
+                    camera = freeCamera;
+                }
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 100;
+                camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
         }

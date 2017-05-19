@@ -234,13 +234,13 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
             var orig = vertexBuffer.getData();
-            if (!copyWhenShared || this._meshes.length === 1) {
+            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             } else {
                 var len = orig.length;
@@ -349,7 +349,7 @@
         }
 
         public _releaseVertexArrayObject(effect: Effect) {
-            if (!effect) {
+            if (!effect || !this._vertexArrayObjects) {
                 return;
             }
             

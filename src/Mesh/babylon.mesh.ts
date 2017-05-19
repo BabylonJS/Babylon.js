@@ -389,6 +389,7 @@
         /**
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).  
          * If `copywhenShared` is true (default false) and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * You can force the copy with forceCopy === true
          * Returns null if the mesh has no geometry or no vertex buffer.    
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -404,11 +405,11 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind, copyWhenShared);
+            return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         }
 
         /**
@@ -2021,6 +2022,9 @@
                     if (morphTarget.hasNormals) {
                         this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
                     }
+                    if (morphTarget.hasTangents) {
+                        this.geometry.setVerticesData(VertexBuffer.TangentKind + index, morphTarget.getTangents(), false, 3);
+                    }
                 }
             } else {
                 var index = 0;
@@ -2033,6 +2037,10 @@
                     if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
                     {
                         this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
+                    }
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index))
+                    {
+                        this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
                     }
                     index++;
                 }    
@@ -2304,7 +2312,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             return MeshBuilder.CreateRibbon(name, {
                 pathArray: pathArray,
                 closeArray: closeArray,
@@ -2324,7 +2332,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 radius: radius,
                 tessellation: tessellation,
@@ -2342,7 +2350,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        public static CreateBox(name: string, size: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 size: size,
                 sideOrientation: sideOrientation,
@@ -2385,7 +2393,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh {
             if (scene === undefined || !(scene instanceof Scene)) {
                 if (scene !== undefined) {
                     sideOrientation = updatable || Mesh.DEFAULTSIDE;
@@ -2419,7 +2427,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 diameter: diameter,
                 thickness: thickness,
@@ -2441,7 +2449,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 radius: radius,
                 tube: tube,
@@ -2466,7 +2474,7 @@
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+        public static CreateLines(name: string, points: Vector3[], scene?: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
             var options = {
                 points: points,
                 updatable: updatable,
@@ -2488,7 +2496,7 @@
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene?: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
             var options = {
                 points: points,
                 dashSize: dashSize,
@@ -2518,7 +2526,7 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             var options = {
                 shape: shape,
                 path: path,
@@ -2633,7 +2641,7 @@
          * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.       
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
             var options = {
                 width: width,
                 height: height,
@@ -2990,7 +2998,7 @@
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], false, true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
 
                     if (vertexData) {
