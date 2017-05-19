@@ -1,5 +1,29 @@
 ﻿var jsEditor;
 (function () {
+
+    var multipleSize = [1600, 1475, 1030, 750];
+    var setToMultipleID = function (id, thingToDo, param) {
+        multipleSize.forEach(function (size) {
+
+            if (thingToDo == "innerHTML") {
+                document.getElementById(id + size).innerHTML = param
+            }
+            else if (thingToDo == "click") {
+                document.getElementById(id + size).addEventListener("click", param);
+            }
+            else if (thingToDo == "addClass") {
+                document.getElementById(id + size).classList.add(param);
+            }
+            else if (thingToDo == "removeClass") {
+                document.getElementById(id + size).classList.remove(param);
+            }
+            else if (thingToDo == "display") {
+                document.getElementById(id + size).style.display = param;
+            }
+        });
+    };
+
+
     var fontSize = 14;
 
     var splitInstance = Split(['#jsEditor', '#canvasZone']);
@@ -19,16 +43,20 @@
     var run = function () {
         var blockEditorChange = false;
 
-        jsEditor.onKeyDown(function (evt) {
-        });
-
-        jsEditor.onKeyUp(function (evt) {
+        var markDirty = function () {
             if (blockEditorChange) {
                 return;
             }
 
-            document.getElementById("currentScript").innerHTML = "Custom";
-            document.getElementById('safemodeToggle').classList.add('checked');
+
+            setToMultipleID("currentScript", "innerHTML", "Custom");
+            setToMultipleID("safemodeToggle", "addClass", "checked");
+
+            setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+        }
+
+        jsEditor.onKeyUp(function (evt) {
+            markDirty();
         });
 
         var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
@@ -42,15 +70,15 @@
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        var currentVersionElement = document.getElementById("currentVersion");
+        var currentVersionElement = document.getElementById("currentVersion1600");
 
         if (currentVersionElement) {
             switch (BABYLON.Engine.Version) {
                 case "2.5":
-                    currentVersionElement.innerHTML = "Version: " + BABYLON.Engine.Version;
+                    setToMultipleID("currentVersion", "innerHTML", "Version: " + BABYLON.Engine.Version);
                     break;
                 default:
-                    currentVersionElement.innerHTML = "Version: Latest";
+                    setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
                     break;
             }
         }
@@ -70,7 +98,7 @@
                         blockEditorChange = false;
                         compileAndRun();
 
-                        document.getElementById("currentScript").innerHTML = title;
+                        setToMultipleID("currentScript", "innerHTML", title);
 
                         currentSnippetToken = null;
                     }
@@ -102,20 +130,25 @@
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         scripts = xhr.responseText.split("\n");
-                        var ul = document.getElementById("scriptsList");
-                        var index;
-                        for (index = 0; index < scripts.length; index++) {
-                            var option = document.createElement("li");
-                            var a = document.createElement("a");
-                            a.href = "#";
-                            a.innerHTML = (index + 1) + " - " + scripts[index];
-                            a.scriptLinkIndex = index + 1;
-                            a.onclick = onScriptClick;
-                            option.scriptLinkIndex = index + 1;
-                            option.onclick = onScriptClick;
 
-                            option.appendChild(a);
-                            ul.appendChild(option);
+                        for (var i = 0; i < multipleSize.length; i++) {
+                            var ul = document.getElementById("scriptsList" + multipleSize[i]);
+
+                            var index;
+                            for (index = 0; index < scripts.length; index++) {
+                                var option = document.createElement("li");
+                                var a = document.createElement("a");
+                                a.href = "#";
+                                a.innerHTML = (index + 1) + " - " + scripts[index];
+                                a.scriptLinkIndex = index + 1;
+                                a.onclick = onScriptClick;
+                                option.scriptLinkIndex = index + 1;
+                                option.onclick = onScriptClick;
+
+                                option.appendChild(a);
+
+                                ul.appendChild(option);
+                            }
                         }
 
                         if (!location.hash) {
@@ -149,8 +182,6 @@
                         }
                         var mq = window.matchMedia("(max-width: 850px)");
                         mq.addListener(removeEditorForSmallScreen);
-
-
                     }
                 }
             };
@@ -234,7 +265,6 @@
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveFormButtonOk").style.display = "inline-block";
             document.getElementById("saveMessage").style.display = "block";
-            // document.getElementById("metadataButton").style.display = "none";
         };
         showNoMetadata();
         document.getElementById("saveMessage").style.display = "none";
@@ -245,7 +275,7 @@
             document.getElementById("saveFormTags").readOnly = true;
             document.getElementById("saveFormButtonOk").style.display = "none";
             document.getElementById("saveMessage").style.display = "none";
-            document.getElementById("metadataButton").style.display = "inline-block";
+            setToMultipleID("metadataButton", "display", "inline-block");
         };
 
         compileAndRun = function () {
@@ -389,6 +419,7 @@
         }
 
         var addTexturesToZip = function (zip, index, textures, folder, then) {
+
             if (index === textures.length) {
                 then();
                 return;
@@ -421,20 +452,26 @@
             if (textures[index].video) {
                 url = textures[index].video.currentSrc;
             } else {
-                url = textures[index].name;
+                // url = textures[index].name;
+                url = textures[index].url;
             }
 
-            var name = url.substr(url.lastIndexOf("/") + 1);
+            var name = textures[index].name;
+            // var name = url.substr(url.lastIndexOf("/") + 1);
 
-
-            addContentToZip(folder,
-                name,
-                url,
-                null,
-                true,
-                function () {
-                    addTexturesToZip(zip, index + 1, textures, folder, then);
-                });
+            if (url != null) {
+                addContentToZip(folder,
+                    name,
+                    url,
+                    null,
+                    true,
+                    function () {
+                        addTexturesToZip(zip, index + 1, textures, folder, then);
+                    });
+            }
+            else {
+                addTexturesToZip(zip, index + 1, textures, folder, then);
+            }
         }
 
         var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
@@ -519,10 +556,26 @@
         setFontSize = function (size) {
             fontSize = size;
             document.querySelector(".view-lines").style.fontSize = size + "px";
-            document.getElementById("currentFontSize").innerHTML = "Font: " + size;
+            setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
         // Fullscreen
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
+            if(document.webkitIsFullScreen) goFullPage();
+            else exitFullPage();
+        }, false);
+
+        var goFullPage = function () {
+            var canvasElement = document.getElementById("renderCanvas");
+            canvasElement.style.position = "absolute";
+            canvasElement.style.top = 0;
+            canvasElement.style.left = 0;
+            canvasElement.style.zIndex = 100;
+        }
+        var exitFullPage = function () {
+            document.getElementById("renderCanvas").style.position = "relative";
+            document.getElementById("renderCanvas").style.zIndex = 0;
+        }
         var goFullscreen = function () {
             if (engine) {
                 engine.switchFullscreen(true);
@@ -530,18 +583,18 @@
         }
 
         var toggleEditor = function () {
-            var editorButton = document.getElementById("editorButton");
+            var editorButton = document.getElementById("editorButton1600");
             var scene = engine.scenes[0];
 
             // If the editor is present
             if (editorButton.classList.contains('checked')) {
-                editorButton.classList.remove('checked');
+                setToMultipleID("editorButton", "removeClass", 'checked');
                 splitInstance.collapse(0);
-                editorButton.innerHTML = 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>';
+                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>');
             } else {
-                editorButton.classList.add('checked');
+                setToMultipleID("editorButton", "addClass", 'checked');
                 splitInstance.setSizes([50, 50]);  // Reset
-                editorButton.innerHTML = 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>';
+                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
             }
             engine.resize();
 
@@ -581,6 +634,10 @@
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
+            jsEditor.onKeyUp(function (evt) {
+                markDirty();
+            });
+
             for (var index = 0; index < elementToTheme.length; index++) {
                 var obj = elementToTheme[index];
                 let domObjArr = document.querySelectorAll(obj);
@@ -597,22 +654,22 @@
         }
 
         var toggleDebug = function () {
-            var debugButton = document.getElementById("debugButton");
+            var debugButton = document.getElementById("debugButton1600");
             var scene = engine.scenes[0];
 
             if (debugButton.classList.contains('uncheck')) {
-                debugButton.classList.remove('uncheck');
+                setToMultipleID("debugButton", "removeClass", 'uncheck');
+                setToMultipleID("debugButton", "innerHTML", 'Debug layer<i class="fa fa-check-square" aria-hidden="true"></i>');
                 scene.debugLayer.show();
             } else {
-                debugButton.classList.add('uncheck');
+                setToMultipleID("debugButton", "addClass", 'uncheck');
+                setToMultipleID("debugButton", "innerHTML", 'Debug layer<i class="fa fa-square-o" aria-hidden="true"></i>');
                 scene.debugLayer.hide();
             }
         }
 
         var toggleMetadata = function () {
-            // var metadataButton = document.getElementById("metadataButton");
             var scene = engine.scenes[0];
-            // metadataButton.classList.add('checked');
             document.getElementById("saveLayer").style.display = "block";
         }
 
@@ -620,26 +677,10 @@
             jsEditor.getAction('editor.action.format').run();
         }
 
-        // UI
-        document.getElementById("runButton").addEventListener("click", compileAndRun);
-        document.getElementById("zipButton").addEventListener("click", getZip);
-        document.getElementById("fullscreenButton").addEventListener("click", goFullscreen);
-        document.getElementById("newButton").addEventListener("click", createNewScript);
-        document.getElementById("clearButton").addEventListener("click", clear);
-        document.getElementById("editorButton").addEventListener("click", toggleEditor);
-        document.getElementById("debugButton").addEventListener("click", toggleDebug);
-        document.getElementById("metadataButton").addEventListener("click", toggleMetadata);
-        document.getElementById("darkTheme").addEventListener("click", toggleTheme.bind(this, 'dark'));
-        document.getElementById("lightTheme").addEventListener("click", toggleTheme.bind(this, 'light'));
-        document.getElementById("formatButton").addEventListener("click", formatCode);
-
-        // Restore theme
-        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
-        toggleTheme(theme);
 
         //Navigation Overwrites
         var exitPrompt = function (e) {
-            var safeToggle = document.getElementById("safemodeToggle");
+            var safeToggle = document.getElementById("safemodeToggle1600");
             if (safeToggle.classList.contains('checked')) {
                 e = e || window.event;
                 var message =
@@ -699,7 +740,7 @@
             xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        document.getElementById("saveButton").addEventListener("click", function () {
+        var askForSave = function () {
             if (currentSnippetTitle == null
                 || currentSnippetDescription == null
                 || currentSnippetTags == null) {
@@ -709,7 +750,7 @@
             else {
                 save();
             }
-        });
+        };
         document.getElementById("saveFormButtonOk").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
             save();
@@ -785,7 +826,7 @@
                                     blockEditorChange = false;
                                     compileAndRun();
 
-                                    document.getElementById("currentScript").innerHTML = "Custom";
+                                    setToMultipleID("currentScript", "innerHTML", "Custom");
                                 } else if (firstTime) {
                                     location.href = location.href.replace(location.hash, "");
                                     if (scripts) {
@@ -811,6 +852,47 @@
         }
 
         checkHash(true);
+
+
+        // ---------- UI
+
+        // Run
+        setToMultipleID("runButton", "click", compileAndRun);
+        // New
+        setToMultipleID("newButton", "click", createNewScript);
+        // Clear 
+        setToMultipleID("clearButton", "click", clear);
+        // Save
+        setToMultipleID("saveButton", "click", askForSave);
+        // Zip
+        setToMultipleID("zipButton", "click", getZip);
+        // Themes
+        setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
+        setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
+        // Safe mode
+        setToMultipleID("safemodeToggle", 'click', function () {
+            document.getElementById("safemodeToggle1600").classList.toggle('checked');
+            if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+            } else {
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>');
+            }
+        });
+        // Editor
+        setToMultipleID("editorButton", "click", toggleEditor);
+        // FullScreen
+        setToMultipleID("fullscreenButton", "click", goFullscreen);
+        // Format
+        setToMultipleID("formatButton", "click", formatCode);
+        // Debug
+        setToMultipleID("debugButton", "click", toggleDebug);
+        // Metadata
+        setToMultipleID("metadataButton", "click", toggleMetadata);
+
+
+        // Restore theme
+        var theme = localStorage.getItem("bjs-playground-theme") || 'light';
+        toggleTheme(theme);
     }
 
     // Monaco

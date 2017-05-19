@@ -86,6 +86,9 @@ void main(void) {
 #ifdef NORMAL	
 	vec3 normalUpdated = normal;
 #endif
+#ifdef TANGENT
+	vec4 tangentUpdated = tangent;
+#endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 

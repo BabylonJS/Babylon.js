@@ -61,7 +61,7 @@ module BABYLON {
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
-        public onControllersAttached: (controllers: Array<WebVRController>) => void;
+        private _onControllersAttached: (controllers: Array<WebVRController>) => void;
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -96,50 +96,30 @@ module BABYLON {
             //enable VR
             this.getEngine().initWebVR();
 
-            if (!this.getEngine().vrDisplaysPromise) {
-                Tools.Error("WebVR is not enabled on your browser");
+            //check specs version
+            if (!window.VRFrameData) {
+                this._specsVersion = 1.0;
+                this._frameData = {
+                };
             } else {
-                //check specs version
-                if (!window.VRFrameData) {
-                    this._specsVersion = 1.0;
-                    this._frameData = {
-                    };
-                } else {
-                    this._frameData = new VRFrameData();
+                this._frameData = new VRFrameData();
+            }
+
+            this.getEngine().getVRDevice(this.webVROptions.displayName, device => {
+                if (!device) {
+                    return;
                 }
 
-                this.getEngine().vrDisplaysPromise.then((devices) => {
-                    if (devices.length > 0) {
-                        this._vrEnabled = true;
-                        if (this.webVROptions.displayName) {
-                            var found = devices.some(device => {
-                                if (device.displayName === this.webVROptions.displayName) {
-                                    this._vrDevice = device;
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            });
-                            if (!found) {
-                                this._vrDevice = devices[0];
-                                Tools.Warn("Display " + this.webVROptions.displayName + " was not found. Using " + this._vrDevice.displayName);
-                            }
-                        } else {
-                            //choose the first one
-                            this._vrDevice = devices[0];
-                        }
+                this._vrEnabled = true;               
+                this._vrDevice = device;
 
-                        //reset the rig parameters.
-                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
+                //reset the rig parameters.
+                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
-                        if (this._attached) {
-                            this.getEngine().enableVR(this._vrDevice)
-                        }
-                    } else {
-                        Tools.Error("No WebVR devices found!");
-                    }
-                });
-            }
+                if (this._attached) {
+                    this.getEngine().enableVR(this._vrDevice)
+                }
+            });                
 
             // try to attach the controllers, if found.
             this.initControllers();
@@ -177,6 +157,46 @@ module BABYLON {
                 }
             });
         }
+
+        public set onControllersAttached(callback: (controllers: Array<WebVRController>) => void) {
+            this._onControllersAttached = callback;
+            // after setting - if the controllers are already set, execute the callback.
+            if (this.controllers.length >= 2) {
+                callback(this.controllers);
+            }
+        }
+
+        public getControllerByName(name: string): WebVRController {
+            for (var gp of this.controllers) {
+                if (gp.hand === name) {
+                    return gp;
+                }
+            }
+
+            return undefined;
+        }
+
+        private _leftController: WebVRController;
+        public get leftController(): WebVRController {
+            if (!this._leftController) {
+                this._leftController = this.getControllerByName("left");
+            }
+
+            return this._leftController;
+        };
+
+        private _rightController: WebVRController;
+        public get rightController(): WebVRController {
+            if (!this._rightController) {
+                this._rightController = this.getControllerByName("right");
+            }
+
+            return this._rightController;
+        };
+
+        public getForwardRay(length = 100): Ray {
+            return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+        } 
 
         public _checkInputs(): void {
             if (this._vrEnabled) {
@@ -377,8 +397,8 @@ module BABYLON {
                         this.controllers.push(webVrController);
 
                         //did we find enough controllers? Great! let the developer know.
-                        if (this.onControllersAttached && this.controllers.length === 2) {
-                            this.onControllersAttached(this.controllers);
+                        if (this._onControllersAttached && this.controllers.length >= 2) {
+                            this._onControllersAttached(this.controllers);
                         }
                     }
                 }

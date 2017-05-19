@@ -77,7 +77,7 @@ module BABYLON.GLTF2 {
         }
 
         public static GetBufferFromBufferView(runtime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
-            var byteOffset = bufferView.byteOffset + byteOffset;
+            byteOffset += (bufferView.byteOffset || 0);
 
             var loadedBufferView = runtime.gltf.buffers[bufferView.buffer].loadedBufferView;
             if (byteOffset + byteLength > loadedBufferView.byteLength) {
@@ -102,10 +102,11 @@ module BABYLON.GLTF2 {
          * @param runtime: the GLTF runtime
          * @param accessor: the GLTF accessor
          */
-        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): any {
+        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): ArrayBufferView {
             var bufferView = runtime.gltf.bufferViews[accessor.bufferView];
+            var byteOffset = accessor.byteOffset || 0;
             var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
-            return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
+            return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, byteOffset, byteLength, accessor.componentType);
         }
 
         /**

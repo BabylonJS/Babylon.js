@@ -6,6 +6,7 @@ module BABYLON {
         private _scene: Scene;
         private _influences: Float32Array;
         private _supportsNormals = false;
+        private _supportsTangents = false;
         private _vertexCount = 0;
         private _uniqueId = 0;
 
@@ -33,6 +34,14 @@ module BABYLON {
             return this._supportsNormals;
         }
 
+        public get supportsTangents(): boolean {
+            return this._supportsTangents;
+        }
+
+        public get numTargets(): number {
+            return this._targets.length;
+        }
+
         public get numInfluencers(): number {
             return this._activeTargets.length;
         }
@@ -43,6 +52,10 @@ module BABYLON {
 
         public getActiveTarget(index: number): MorphTarget {
             return this._activeTargets.data[index];
+        }
+
+        public getTarget(index: number): MorphTarget {
+            return this._targets[index];
         }
        
         public addTarget(target: MorphTarget): void {
@@ -96,12 +109,14 @@ module BABYLON {
             this._activeTargets.reset();
             var tempInfluences = [];
             this._supportsNormals = true;
+            this._supportsTangents = true;
             for (var target of this._targets) {
                 if (target.influence > 0) {
                     this._activeTargets.push(target);
                     tempInfluences.push(target.influence);
 
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
+                    this._supportsTangents = this._supportsTangents && target.hasTangents;
 
                     if (this._vertexCount === 0) {
                         this._vertexCount = target.getPositions().length / 3;

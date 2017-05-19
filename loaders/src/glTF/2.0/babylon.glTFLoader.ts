@@ -1,186 +1,167 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    /**
-    * Values
-    */
-    var glTFAnimationPaths = ["translation", "rotation", "scale"];
-    var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
-
-    /**
-    * Utils
-    */
-    var normalizeUVs = (buffer: any): void => {
-        if (!buffer) {
-            return;
-        }
-
-        for (var i = 0; i < buffer.length / 2; i++) {
-            buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
-        }
-    };
-
-    var createStringId = (index: number): string => {
+    var getNodeID = (index: number): string => {
         return "node" + index;
     };
 
-    /**
-    * Returns the animation path (glTF -> Babylon)
-    */
-    var getAnimationPath = (path: string): string => {
-        var index = glTFAnimationPaths.indexOf(path);
+    var loadAnimation = (runtime: IGLTFRuntime, animation: IGLTFAnimation, animationIndex: number): void => {
+        for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
+            var channel = animation.channels[channelIndex];
+            if (!channel) {
+                Tools.Warn("[Animation " + animationIndex + "] Channel " + channelIndex + " does not exist");
+                continue;
+            }
 
-        if (index !== -1) {
-            return babylonAnimationPaths[index];
+            var samplerIndex = channel.sampler;
+            if (samplerIndex === undefined) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + samplerIndex + "] Sampler is not defined");
+                continue;
+            }
+
+            var sampler = animation.samplers[samplerIndex];
+            if (!sampler) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Sampler " + samplerIndex + " does not exist");
+                continue;
+            }
+
+            if (!channel.target) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target does not exist");
+                continue;
+            }
+
+            var targetNode = runtime.babylonScene.getNodeByID(getNodeID(channel.target.node));
+            if (!targetNode) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target node " + channel.target.node + " does not exist");
+                continue;
+            }
+
+            var targetPath = {
+                "translation": "position",
+                "rotation": "rotationQuaternion",
+                "scale": "scaling",
+                "weights": "influence"
+            }[channel.target.path];
+            if (!targetPath) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Target path " + channel.target.path + " is invalid");
+                continue;
+            }
+
+            var inputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.input]);
+            var outputBuffer = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[sampler.output]);
+            var outputBufferOffset = 0;
+
+            var animationType = {
+                "position": Animation.ANIMATIONTYPE_VECTOR3,
+                "rotationQuaternion": Animation.ANIMATIONTYPE_QUATERNION,
+                "scale": Animation.ANIMATIONTYPE_VECTOR3,
+                "influence": Animation.ANIMATIONTYPE_FLOAT,
+            }[targetPath];
+
+            var getNextOutputValue: () => any = {
+                "position": () => {
+                    var value = Vector3.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 3;
+                    return value;
+                },
+                "rotationQuaternion": () => {
+                    var value = Quaternion.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 4;
+                    return value;
+                },
+                "scale": () => {
+                    var value = Vector3.FromArray(outputBuffer, outputBufferOffset);
+                    outputBufferOffset += 3;
+                    return value;
+                },
+                "influence": () => {
+                    var numTargets = (<Mesh>targetNode).morphTargetManager.numTargets;
+                    var value = new Array(numTargets);
+                    for (var i = 0; i < numTargets; i++) {
+                        value[i] = outputBuffer[outputBufferOffset++];
+                    }
+                    return value;
+                },
+            }[targetPath];
+
+            var getNextKey: (frameIndex) => any = {
+                "LINEAR": frameIndex => ({
+                    frame: inputBuffer[frameIndex],
+                    value: getNextOutputValue()
+                }),
+                "CUBICSPLINE": frameIndex => ({
+                    frame: inputBuffer[frameIndex],
+                    inTangent: getNextOutputValue(),
+                    value: getNextOutputValue(),
+                    outTangent: getNextOutputValue()
+                }),
+            }[sampler.interpolation];
+
+            if (!getNextKey) {
+                Tools.Warn("[Animation " + animationIndex + ", Channel + " + channelIndex + "] Sampler interpolation '" + sampler.interpolation + "' is invalid");
+                continue;
+            }
+
+            var keys = new Array(inputBuffer.length);
+            for (var frameIndex = 0; frameIndex < inputBuffer.length; frameIndex++) {
+                keys[frameIndex] = getNextKey(frameIndex);
+            }
+
+            if (targetPath === "influence") {
+                var targetMesh = <Mesh>targetNode;
+
+                for (var targetIndex = 0; targetIndex < targetMesh.morphTargetManager.numTargets; targetIndex++) {
+                    var morphTarget = targetMesh.morphTargetManager.getTarget(targetIndex);
+                    var animationName = (animation.name || "anim" + animationIndex) + "_" + targetIndex;
+                    var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                    babylonAnimation.setKeys(keys.map(key => ({
+                        frame: key.frame,
+                        inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
+                        value: key.value[targetIndex],
+                        outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
+                    })));
+
+                    morphTarget.animations.push(babylonAnimation);
+                    runtime.babylonScene.beginAnimation(morphTarget, 0, inputBuffer[inputBuffer.length - 1], true);
+                }
+            }
+            else {
+                var animationName = animation.name || "anim" + animationIndex;
+                var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                babylonAnimation.setKeys(keys);
+
+                targetNode.animations.push(babylonAnimation);
+                runtime.babylonScene.beginAnimation(targetNode, 0, inputBuffer[inputBuffer.length - 1], true);
+            }
         }
-
-        return path;
-    };
+    }
 
     /**
     * Loads and creates animations
     */
     var loadAnimations = (runtime: IGLTFRuntime): void => {
         var animations = runtime.gltf.animations;
-        if (!animations) {
+        if (!animations || animations.length === 0) {
             return;
         }
 
         for (var animationIndex = 0; animationIndex < animations.length; animationIndex++) {
             var animation = animations[animationIndex];
-            if (!animation || !animation.channels || !animation.samplers) {
+            if (!animation) {
+                Tools.Warn("Animation " + animationIndex + " not found");
                 continue;
             }
 
-            var lastAnimation: Animation = null;
-
-            for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
-                var channel = animation.channels[channelIndex];
-                if (!channel) {
-                    continue;
-                }
-
-                var sampler = animation.samplers[channel.sampler];
-                if (!sampler) {
-                    continue;
-                }
-
-                var inputData = sampler.input;
-                var outputData = sampler.output;
-
-                var bufferInput = GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[inputData]);
-                var bufferOutput = GLTFUtils.GetBufferFromAccessor(runtime, runtime.gltf.accessors[outputData]);
-
-                var targetID = channel.target.node;
-                var targetNode: any = runtime.babylonScene.getNodeByID(createStringId(targetID));
-
-                if (targetNode === null) {
-                    Tools.Warn("Creating animation index " + animationIndex + " but cannot find node index " + targetID + " to attach to");
-                    continue;
-                }
-
-                var isBone = targetNode instanceof Bone;
-
-                // Get target path (position, rotation or scaling)
-                var targetPath = channel.target.path;
-                var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
-
-                if (targetPathIndex !== -1) {
-                    targetPath = babylonAnimationPaths[targetPathIndex];
-                }
-
-                // Determine animation type
-                var animationType = Animation.ANIMATIONTYPE_MATRIX;
-
-                if (!isBone) {
-                    if (targetPath === "rotationQuaternion") {
-                        animationType = Animation.ANIMATIONTYPE_QUATERNION;
-                        targetNode.rotationQuaternion = new Quaternion();
-                    }
-                    else {
-                        animationType = Animation.ANIMATIONTYPE_VECTOR3;
-                    }
-                }
-
-                // Create animation and key frames
-                var babylonAnimation: Animation = null;
-                var keys = [];
-                var arrayOffset = 0;
-                var modifyKey = false;
-
-                if (isBone && lastAnimation && lastAnimation.getKeys().length === bufferInput.length) {
-                    babylonAnimation = lastAnimation;
-                    modifyKey = true;
-                }
-
-                if (!modifyKey) {
-                    var animationName = animation.name || "anim" + animationIndex;
-                    babylonAnimation = new Animation(animationName, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
-                }
-
-                // For each frame
-                for (var j = 0; j < bufferInput.length; j++) {
-                    var value: any = null;
-
-                    if (targetPath === "rotationQuaternion") { // VEC4
-                        value = Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
-                        arrayOffset += 4;
-                    }
-                    else { // Position and scaling are VEC3
-                        value = Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
-                        arrayOffset += 3;
-                    }
-
-                    if (isBone) {
-                        var bone = <Bone>targetNode;
-                        var translation = Vector3.Zero();
-                        var rotationQuaternion = new Quaternion();
-                        var scaling = Vector3.Zero();
-
-                        // Warning on decompose
-                        var mat = bone.getBaseMatrix();
-
-                        if (modifyKey) {
-                            mat = lastAnimation.getKeys()[j].value;
-                        }
-
-                        mat.decompose(scaling, rotationQuaternion, translation);
-
-                        if (targetPath === "position") {
-                            translation = value;
-                        }
-                        else if (targetPath === "rotationQuaternion") {
-                            rotationQuaternion = value;
-                        }
-                        else {
-                            scaling = value;
-                        }
-
-                        value = Matrix.Compose(scaling, rotationQuaternion, translation);
-                    }
-
-                    if (!modifyKey) {
-                        keys.push({
-                            frame: bufferInput[j],
-                            value: value
-                        });
-                    }
-                    else {
-                        lastAnimation.getKeys()[j].value = value;
-                    }
-                }
-
-                // Finish
-                if (!modifyKey) {
-                    babylonAnimation.setKeys(keys);
-                    targetNode.animations.push(babylonAnimation);
-                }
-
-                lastAnimation = babylonAnimation;
-
-                runtime.babylonScene.stopAnimation(targetNode);
-                runtime.babylonScene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
+            if (!animation.channels || animation.channels.length === 0) {
+                Tools.Warn("Animation " + animationIndex + " has no channels");
             }
+
+            if (!animation.samplers || animation.samplers.length === 0) {
+                Tools.Warn("Animation " + animationIndex + " has no samplers");
+                continue;
+            }
+
+            loadAnimation(runtime, animation, animationIndex);
         }
     };
 
@@ -209,7 +190,7 @@ module BABYLON.GLTF2 {
     */
     var getParentBone = (runtime: IGLTFRuntime, skin: IGLTFSkin, index: number, newSkeleton: Skeleton): Bone => {
         // Try to find
-        var nodeStringID = createStringId(index);
+        var nodeStringID = getNodeID(index);
         for (var i = 0; i < newSkeleton.bones.length; i++) {
             if (newSkeleton.bones[i].id === nodeStringID) {
                 return newSkeleton.bones[i].getParent();
@@ -233,8 +214,8 @@ module BABYLON.GLTF2 {
                 if (childID === index)
                 {
                     var mat = configureBoneTransformation(parent);
-                    var bone = new Bone(parent.name || createStringId(parentID), newSkeleton, getParentBone(runtime, skin, parentID, newSkeleton), mat);
-                    bone.id = createStringId(parentID);
+                    var bone = new Bone(parent.name || getNodeID(parentID), newSkeleton, getParentBone(runtime, skin, parentID, newSkeleton), mat);
+                    bone.id = getNodeID(parentID);
                     return bone;
                 }
             }
@@ -305,8 +286,8 @@ module BABYLON.GLTF2 {
 
             // Create node to root bone
             var mat = configureBoneTransformation(node);
-            var bone = new Bone(node.name || createStringId(i), newSkeleton, null, mat);
-            bone.id = createStringId(i);
+            var bone = new Bone(node.name || getNodeID(i), newSkeleton, null, mat);
+            bone.id = getNodeID(i);
             nodesToRoot.push({ bone: bone, node: node, index: i });
         }
 
@@ -372,7 +353,7 @@ module BABYLON.GLTF2 {
             }
 
             var index = jointNode.index;
-            var stringID = createStringId(index);
+            var stringID = getNodeID(index);
 
             // Optimize, if the bone already exists...
             var existingBone = runtime.babylonScene.getBoneByID(stringID);
@@ -437,7 +418,7 @@ module BABYLON.GLTF2 {
                 continue;
             }
 
-            var jointNodeStringId = createStringId(jointNode.index);
+            var jointNodeStringId = getNodeID(jointNode.index);
             for (var j = 0; j < bones.length; j++) {
                 if (bones[j].id === jointNodeStringId) {
                     babylonSkeleton.bones.push(bones[j]);
@@ -508,19 +489,21 @@ module BABYLON.GLTF2 {
         var indexStarts = [];
         var indexCounts = [];
 
+        var morphTargetManager: MorphTargetManager;
+
         // Positions, normals and UVs
-        for (var index = 0; index < mesh.primitives.length; index++) {
+        for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
             // Temporary vertex data
             var tempVertexData = new VertexData();
 
-            var primitive = mesh.primitives[index];
+            var primitive = mesh.primitives[primitiveIndex];
             if (primitive.mode !== EMeshPrimitiveMode.TRIANGLES) {
                 // continue;
             }
 
             var attributes = primitive.attributes;
             var accessor: IGLTFAccessor = null;
-            var buffer: any = null;
+            var buffer: ArrayBufferView = null;
 
             // Set positions, normal and uvs
             for (var semantic in attributes) {
@@ -530,37 +513,28 @@ module BABYLON.GLTF2 {
                 buffer = GLTFUtils.GetBufferFromAccessor(runtime, accessor);
 
                 if (semantic === "NORMAL") {
-                    tempVertexData.normals = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.normals).set(buffer);
+                    tempVertexData.normals = <Float32Array>buffer;
                 }
                 else if (semantic === "POSITION") {
-                    tempVertexData.positions = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.positions).set(buffer);
+                    tempVertexData.positions = <Float32Array>buffer;
                     verticesCounts.push(tempVertexData.positions.length);
                 }
                 else if (semantic === "TANGENT") {
-                    tempVertexData.tangents = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.tangents).set(buffer);
+                    tempVertexData.tangents = <Float32Array>buffer;
                 }
                 else if (semantic.indexOf("TEXCOORD_") !== -1) {
                     var channel = Number(semantic.split("_")[1]);
                     var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                    var uvs = new Float32Array(buffer.length);
-                    (<Float32Array>uvs).set(buffer);
-                    normalizeUVs(uvs);
-                    tempVertexData.set(uvs, uvKind);
+                    tempVertexData.set(<Float32Array>buffer, uvKind);
                 }
                 else if (semantic === "JOINT") {
-                    tempVertexData.matricesIndices = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.matricesIndices).set(buffer);
+                    tempVertexData.matricesIndices = <Float32Array>buffer;
                 }
                 else if (semantic === "WEIGHT") {
-                    tempVertexData.matricesWeights = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.matricesWeights).set(buffer);
+                    tempVertexData.matricesWeights = <Float32Array>buffer;
                 }
                 else if (semantic === "COLOR_0") {
-                    tempVertexData.colors = new Float32Array(buffer.length);
-                    (<Float32Array>tempVertexData.colors).set(buffer);
+                    tempVertexData.colors = <Float32Array>buffer;
                 }
                 else {
                     Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
@@ -571,19 +545,16 @@ module BABYLON.GLTF2 {
             accessor = runtime.gltf.accessors[primitive.indices];
             if (accessor) {
                 buffer = GLTFUtils.GetBufferFromAccessor(runtime, accessor);
-
-                tempVertexData.indices = new Int32Array(buffer.length);
-                (<Float32Array>tempVertexData.indices).set(buffer);
+                tempVertexData.indices = <Uint32Array>buffer;
                 indexCounts.push(tempVertexData.indices.length);
             }
             else {
                 // Set indices on the fly
-                var indices: number[] = [];
-                for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
-                    indices.push(j);
+                tempVertexData.indices = new Uint32Array(tempVertexData.positions.length / 3);
+                for (var index = 0; index < tempVertexData.indices.length; index++) {
+                    tempVertexData.indices[index] = index;
                 }
 
-                tempVertexData.indices = new Int32Array(indices);
                 indexCounts.push(tempVertexData.indices.length);
             }
 
@@ -593,6 +564,77 @@ module BABYLON.GLTF2 {
             // Sub material
             var material = getMaterial(runtime, primitive.material);
             multiMat.subMaterials.push(material);
+
+            // Morph Targets
+            if (primitive.targets) {
+                for (var targetsIndex = 0; targetsIndex < primitive.targets.length; targetsIndex++) {
+                    var target = primitive.targets[targetsIndex];
+
+                    var weight = 0.0;
+                    if (node.weights) {
+                        weight = node.weights[targetsIndex];
+                    }
+                    else if (mesh.weights) {
+                        weight = mesh.weights[targetsIndex];
+                    }
+
+                    var morph = new MorphTarget("morph" + targetsIndex, weight);
+
+                    for (var semantic in target) {
+                        // Link accessor and buffer view
+                        accessor = runtime.gltf.accessors[target[semantic]];
+                        var values = <Float32Array>GLTFUtils.GetBufferFromAccessor(runtime, accessor);
+
+                        if (accessor.name) {
+                            morph.name = accessor.name;
+                        }
+
+                        // glTF stores morph target information as deltas
+                        // while babylon.js expects the final data.
+                        // As a result we have to add the original data to the delta to calculate
+                        // the final data.
+                        if (semantic === "NORMAL") {
+                            for (var i = 0; i < values.length; i++) {
+                                values[i] += vertexData.normals[i];
+                            }
+                            morph.setNormals(values);
+                        }
+                        else if (semantic === "POSITION") {
+                            for (var i = 0; i < values.length; i++) {
+                                values[i] += vertexData.positions[i];
+                            }
+                            morph.setPositions(values);
+                        }
+                        else if (semantic === "TANGENT") {
+                            // Tangent data for morph targets is stored as xyz delta.
+                            // The vertexData.tangent is stored as xyzw.
+                            // So we need to skip every fourth vertexData.tangent.
+                            for (var i = 0, j = 0; i < values.length; i++, j++) {
+                                values[i] += vertexData.tangents[j];
+                                if ((i + 1) % 3 == 0) {
+                                    j++;
+                                }
+                            }
+                            morph.setTangents(values);
+                        }
+                        else {
+                            Tools.Warn("Ignoring unrecognized semantic '" + semantic + "'");
+                        }
+                    }
+
+                    if (morph.getPositions()) {
+                        if (!morphTargetManager) {
+                            morphTargetManager = new MorphTargetManager();
+                            babylonMesh.morphTargetManager = morphTargetManager;
+                        }
+
+                        morphTargetManager.addTarget(morph);
+                    }
+                    else {
+                        Tools.Warn("Not adding morph target '" + morph.name + "' because it has no position data");
+                    }
+                }
+            }
 
             // Update vertices start and index start
             verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
@@ -605,12 +647,12 @@ module BABYLON.GLTF2 {
 
         // Apply submeshes
         babylonMesh.subMeshes = [];
-        for (var index = 0; index < mesh.primitives.length; index++) {
-            if (mesh.primitives[index].mode !== EMeshPrimitiveMode.TRIANGLES) {
+        for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
+            if (mesh.primitives[primitiveIndex].mode !== EMeshPrimitiveMode.TRIANGLES) {
                 //continue;
             }
 
-            var subMesh = new SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], babylonMesh, babylonMesh, true);
+            var subMesh = new SubMesh(primitiveIndex, verticesStarts[primitiveIndex], verticesCounts[primitiveIndex], indexStarts[primitiveIndex], indexCounts[primitiveIndex], babylonMesh, babylonMesh, true);
         }
 
         // Finish
@@ -760,7 +802,7 @@ module BABYLON.GLTF2 {
             newNode = importNode(runtime, node);
 
             if (newNode !== null) {
-                newNode.id = createStringId(index);
+                newNode.id = getNodeID(index);
                 newNode.parent = parent;
             }
         }
@@ -1081,11 +1123,11 @@ module BABYLON.GLTF2 {
         }
 
         private static _createTextureAsync(runtime: IGLTFRuntime, texture: IGLTFTexture, texCoord: number, url: string, onSuccess: (babylonTexture: Texture) => void, onError: () => void): void {
-            var sampler: IGLTFSampler = texture.sampler ? runtime.gltf.samplers[texture.sampler] : {};
+            var sampler: IGLTFSampler = (texture.sampler === undefined ? {} : runtime.gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
-            var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
+            var samplingMode = GLTFUtils.GetTextureFilterMode(sampler.minFilter);
 
-            var babylonTexture = new Texture(url, runtime.babylonScene, noMipMaps, true, samplingMode, () => {
+            var babylonTexture = new Texture(url, runtime.babylonScene, noMipMaps, false, samplingMode, () => {
                 onSuccess(babylonTexture);
             }, onError);
 
@@ -1223,7 +1265,7 @@ module BABYLON.GLTF2 {
 
         private static _loadMaterialsAsync(runtime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void {
             var materials = runtime.gltf.materials;
-            if (!materials) {
+            if (!materials || materials.length === 0) {
                 onSuccess();
                 return;
             }

@@ -112,6 +112,103 @@ void main(void)
 }
 #endif
 
+#if defined(LUMINANCE)
+uniform vec2 lumOffsets[4];
+
+void main()
+{
+	float average = 0.0;
+	vec4 color = vec4(0.0);
+	float maximum = -1e20;
+	vec3 weight = vec3(0.299, 0.587, 0.114);
+
+	for (int i = 0; i < 4; i++)
+	{
+		color = texture2D(textureSampler, vUV+ lumOffsets[i]);
+
+		//#ifdef SIMPLE
+		float GreyValue = dot(color.rgb, vec3(0.33, 0.33, 0.33));
+		//#endif
+
+		#ifdef WEIGHTED_AVERAGE
+		float GreyValue = dot(color.rgb, weight);
+		#endif
+
+		#ifdef BRIGHTNESS
+		float GreyValue = max(color.r, max(color.g, color.b));
+		#endif
+
+		#ifdef HSL_COMPONENT
+		float GreyValue = 0.5 * (max(color.r, max(color.g, color.b)) + min(color.r, min(color.g, color.b)));
+		#endif
+
+		#ifdef MAGNITUDE
+		float GreyValue = length(color.rgb);
+		#endif
+
+		maximum = max(maximum, GreyValue);
+		average += (0.25 * log(1e-5 + GreyValue));
+	}
+
+	average = exp(average);
+
+	gl_FragColor = vec4(average, maximum, 0.0, 1.0);
+}
+#endif
+
+#if defined(LUMINANCE_DOWN_SAMPLE)
+uniform vec2 dsOffsets[9];
+uniform float halfDestPixelSize;
+
+#ifdef FINAL_DOWN_SAMPLER
+vec4 pack(float value) {
+	const vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
+	const vec4 bit_mask = vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
+
+	vec4 res = fract(value * bit_shift);
+	res -= res.xxyz * bit_mask;
+
+	return res;
+}
+#endif
+
+void main()
+{
+	vec4 color = vec4(0.0);
+	float average = 0.0;
+
+	for (int i = 0; i < 9; i++)
+	{
+		color = texture2D(textureSampler, vUV + vec2(halfDestPixelSize, halfDestPixelSize) + dsOffsets[i]);
+		average += color.r;
+	}
+
+	average /= 9.0;
+
+	#ifdef FINAL_DOWN_SAMPLER
+	gl_FragColor = pack(average);
+	#else
+	gl_FragColor = vec4(average, average, 0.0, 1.0);
+	#endif
+}
+#endif
+
+#if defined(HDR)
+uniform sampler2D textureAdderSampler;
+uniform float averageLuminance;
+
+void main()
+{
+	vec4 color = texture2D(textureAdderSampler, vUV);
+	vec4 adjustedColor = color / averageLuminance;
+
+	color = adjustedColor;
+	color.a = 1.0;
+
+	gl_FragColor = color;
+}
+#endif
+
 #if defined(LENS_FLARE)
 #define GHOSTS 3
 

@@ -6,6 +6,7 @@
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
+        "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
         "currentConfig": "all"
     },
@@ -21,7 +22,12 @@
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
-        "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"]
+        "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
+        "minimalViewer": [
+                "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
+                "multiMaterial"
+        ],
+        "distributed": ["minimalViewer"]
     },
     "workloads" :
     {
@@ -413,15 +419,23 @@
                 "core"
             ]
         },
+        "stringDictionary" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.stringDictionary.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },
         "userData" : 
         {
             "files": [
-                "../../src/Tools/babylon.stringDictionary.js",
                 "../../src/Tools/babylon.tags.js",
                 "../../src/Tools/babylon.andOrNotEvaluator.js"
             ],
             "dependUpon" : [
-                "core"
+                "core", "stringDictionary"
             ]
         },
         "offline" : 
@@ -710,7 +724,11 @@
             ],
             "dependUpon" : [
                 "shaderMaterial",
-                "additionalMeshes"
+                "additionalMeshes",
+                "standardMaterial", 
+                "stringDictionary", 
+                "dynamicFloatArray",
+                "actions"
             ],
             "shaders" : [
                 "color.vertex",
@@ -876,6 +894,10 @@
             ],
             "dependUpon" : [
                 "core"
+            ],
+            "shaders" : [
+                "layer.vertex",
+                "layer.fragment"
             ]
         }
     },
@@ -901,7 +923,8 @@
         "proceduralTexturesLibrary",
         "loaders",
         "serializers",
-        "inspector"
+        "inspector",
+        "gui"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1228,6 +1251,28 @@
             "distOutputDirectory": "/serializers/"
         }
     },
+    "gui": {
+        "libraries": [
+            {
+                "files": [
+                    "../../gui/src/advancedDynamicTexture.ts",
+                    "../../gui/src/measure.ts",
+                    "../../gui/src/valueAndUnit.ts",
+                    "../../gui/src/controls/control.ts",
+                    "../../gui/src/controls/container.ts",
+                    "../../gui/src/controls/rectangle.ts",
+                    "../../gui/src/controls/textBlock.ts",
+                    "../../gui/src/controls/image.ts",
+                    "../../gui/src/controls/button.ts"
+                ],
+                "output": "babylon.gui.js"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../gui/",
+            "distOutputDirectory": "/gui/"
+        }
+    },    
     "canvas2D": {
         "libraries": [
             {

@@ -1237,7 +1237,9 @@ var INSPECTOR;
             var tools = [];
             tools.push(new INSPECTOR.Checkbox(this));
             tools.push(new INSPECTOR.DebugArea(this));
-            tools.push(new INSPECTOR.BoundingBox(this));
+            if (this._obj.getTotalVertices() > 0) {
+                tools.push(new INSPECTOR.BoundingBox(this));
+            }
             tools.push(new INSPECTOR.Info(this));
             return tools;
         };
@@ -1297,19 +1299,16 @@ var INSPECTOR;
                 return axis;
             };
             // X axis
-            var xAxis = _drawAxis(BABYLON.Color3.Red(), this._obj.getAbsolutePosition(), BABYLON.Vector3.TransformCoordinates(x, m));
-            xAxis.position.subtractInPlace(this._obj.position);
+            var xAxis = _drawAxis(BABYLON.Color3.Red(), BABYLON.Vector3.Zero(), x);
             xAxis.parent = this._obj;
             this._axis.push(xAxis);
             // Y axis        
-            var yAxis = _drawAxis(BABYLON.Color3.Green(), this._obj.getAbsolutePosition(), BABYLON.Vector3.TransformCoordinates(y, m));
+            var yAxis = _drawAxis(BABYLON.Color3.Green(), BABYLON.Vector3.Zero(), y);
             yAxis.parent = this._obj;
-            yAxis.position.subtractInPlace(this._obj.position);
             this._axis.push(yAxis);
             // Z axis
-            var zAxis = _drawAxis(BABYLON.Color3.Blue(), this._obj.getAbsolutePosition(), BABYLON.Vector3.TransformCoordinates(z, m));
+            var zAxis = _drawAxis(BABYLON.Color3.Blue(), BABYLON.Vector3.Zero(), z);
             zAxis.parent = this._obj;
-            zAxis.position.subtractInPlace(this._obj.position);
             this._axis.push(zAxis);
         };
         return MeshAdapter;

@@ -12,9 +12,16 @@ module BABYLON {
         @serialize()
         public radius: number;
 
-        @serializeAsVector3()
-        public target: Vector3;
+        @serializeAsVector3("target")
+        private _target: Vector3;
         private _targetHost: AbstractMesh;
+
+        public get target(): Vector3 {
+            return this._target;
+        }
+        public set target(value: Vector3) {
+            this.setTarget(value);
+        }
 
         @serialize()
         public inertialAlphaOffset = 0;
@@ -49,7 +56,7 @@ module BABYLON {
         @serialize()
         public inertialPanningY: number = 0;
 
-        //-- begin properties for backward compatibility for inputs       
+        //-- begin properties for backward compatibility for inputs
         public get angularSensibilityX() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -161,8 +168,8 @@ module BABYLON {
             if (mousewheel)
                 mousewheel.wheelPrecision = value;
         }
-        
-        //-- end properties for backward compatibility for inputs        
+
+        //-- end properties for backward compatibility for inputs
 
         @serialize()
         public zoomOnFactor = 1;
@@ -178,7 +185,7 @@ module BABYLON {
         public inputs: ArcRotateCameraInputsManager;
 
         public _reset: () => void;
-        
+
         // Panning
         public panningAxis: Vector3 = new Vector3(1, 1, 0);
         private _localDirection: Vector3;
@@ -197,16 +204,15 @@ module BABYLON {
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
-        
+
         private _targetBoundingCenter: Vector3;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
-            if (!target) {
-                this.target = Vector3.Zero();
-            } else {
-                this.target = target;
+            this._target = Vector3.Zero();
+            if (target) {
+                this.setTarget(target);
             }
 
             this.alpha = alpha;
@@ -216,12 +222,12 @@ module BABYLON {
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
             this.inputs.addKeyboard().addMouseWheel().addPointers();
-        }      
+        }
 
         // Cache
         public _initCache(): void {
             super._initCache();
-            this._cache.target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache._target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
@@ -233,7 +239,7 @@ module BABYLON {
                 super._updateCache();
             }
 
-            this._cache.target.copyFrom(this._getTargetPosition());
+            this._cache._target.copyFrom(this._getTargetPosition());
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
@@ -241,12 +247,16 @@ module BABYLON {
         }
 
         private _getTargetPosition(): Vector3 {
-            if (this._targetHost && (<any>this._targetHost).getAbsolutePosition) {
-                var pos : Vector3 = (<any>this._targetHost).getAbsolutePosition();
-                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
+            if (this._targetHost && this._targetHost.getAbsolutePosition) {
+                var pos : Vector3 = this._targetHost.getAbsolutePosition();
+                if (this._targetBoundingCenter) {
+                    pos.addToRef(this._targetBoundingCenter, this._target);
+                } else {
+                    this._target.copyFrom(pos);
+                }
             }
 
-            return this.target;
+            return this._target;
         }
 
         // Synchronized
@@ -254,7 +264,7 @@ module BABYLON {
             if (!super._isSynchronizedViewMatrix())
                 return false;
 
-            return this._cache.target.equals(this.target)
+            return this._cache._target.equals(this._target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -292,7 +302,7 @@ module BABYLON {
             this.inputs.checkInputs();
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-                
+
                 if (this.getScene().useRightHandedSystem) {
                     this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 } else {
@@ -305,11 +315,11 @@ module BABYLON {
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < this.speed * Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < this.speed * Epsilon)
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 
@@ -320,14 +330,6 @@ module BABYLON {
                     this._transformedDirection = Vector3.Zero();
                 }
 
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
-
-                if (Math.abs(this.inertialPanningX) < Epsilon)
-                    this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < Epsilon)
-                    this.inertialPanningY = 0;
-
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
@@ -337,9 +339,17 @@ module BABYLON {
                     this._transformedDirection.y = 0;
                 }
 
-                if (!(<any>this.target).getAbsolutePosition) {
-                    this.target.addInPlace(this._transformedDirection);
-                }                
+                if (!this._targetHost) {
+                    this._target.addInPlace(this._transformedDirection);
+                }
+
+                this.inertialPanningX *= this.inertia;
+                this.inertialPanningY *= this.inertia;
+
+                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
+                    this.inertialPanningX = 0;
+                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon)
+                    this.inertialPanningY = 0;
             }
 
             // Limits
@@ -410,7 +420,7 @@ module BABYLON {
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {                        
+        public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
 
             if ((<any>target).getBoundingInfo){
                 if (toBoundingCenter){
@@ -419,13 +429,14 @@ module BABYLON {
                     this._targetBoundingCenter = null;
                 }
                 this._targetHost = <AbstractMesh>target;
-                this.target = this._getTargetPosition();
+                this._target = this._getTargetPosition();
             } else {
                 var newTarget = <Vector3>target;
-                if (!allowSamePosition && this._getTargetPosition().equals(newTarget)) {
+                var currentTarget = this._getTargetPosition();
+                if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                    return;
                 }
-                this.target = newTarget;
+                this._target = newTarget;
                 this._targetBoundingCenter = null;
             }
 
@@ -542,13 +553,13 @@ module BABYLON {
                 distance = meshesOrMinMaxVectorAndDistance.distance;
             }
 
-            this.target = Mesh.Center(meshesOrMinMaxVector);
+            this._target = Mesh.Center(meshesOrMinMaxVector);
 
             if (!doNotUpdateMaxZ) {
                 this.maxZ = distance * 2;
             }
         }
-        
+
         /**
          * @override
          * Override Camera.createRigCamera
@@ -566,11 +577,11 @@ module BABYLON {
                     alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                     break;
            }
-            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
             rigCam._cameraRigParams = {};
             return rigCam;
         }
-        
+
         /**
          * @override
          * Override Camera._updateRigCameras
@@ -578,7 +589,7 @@ module BABYLON {
         public _updateRigCameras() {
             var camLeft  = <ArcRotateCamera>this._rigCameras[0];
             var camRight = <ArcRotateCamera>this._rigCameras[1];
-            
+
             camLeft.beta = camRight.beta = this.beta;
             camLeft.radius = camRight.radius = this.radius;
 
@@ -607,5 +618,4 @@ module BABYLON {
             return "ArcRotateCamera";
         }
     }
-} 
-
+}

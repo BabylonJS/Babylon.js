@@ -443,6 +443,13 @@
         public enableOfflineSupport = BABYLON.Database;
         public scenes = new Array<Scene>();
 
+        // Observables
+
+        /**
+         * Observable event triggered each time the rendering canvas is resized
+         */
+        public onResizeObservable = new Observable<Engine>();
+
         //WebVR 
 
         //The new WebVR uses promises.
@@ -966,6 +973,14 @@
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
 
+        public setDitheringState(value: boolean): void {
+            if (value) {
+                this._gl.enable(this._gl.DITHER);
+            } else {
+                this._gl.disable(this._gl.DITHER);
+            }
+        }
+
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -1160,6 +1175,10 @@
          * @param {number} height - the new canvas' height
          */
         public setSize(width: number, height: number): void {
+            if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+                return;
+            }
+
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
 
@@ -1172,12 +1191,53 @@
                     cam._currentRenderId = 0;
                 }
             }
+
+            if (this.onResizeObservable.hasObservers) {
+                this.onResizeObservable.notifyObservers(this);
+            }
         }
 
 
         //WebVR functions
+        public isVRDevicePresent(callback: (result: boolean) => void) {
+            this.getVRDevice(null, (device) => {
+                callback(device !== null);
+            });
+        }
 
-        public initWebVR() {
+        public getVRDevice(name: string, callback: (device: any) => void) {
+            if (!this.vrDisplaysPromise) {
+                callback(null);
+                return;
+            }
+
+            this.vrDisplaysPromise.then((devices) => {
+                if (devices.length > 0) {
+                    if (name) {
+                        var found = devices.some(device => {
+                            if (device.displayName === name) {
+                                callback(device);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        });
+                        if (!found) {
+                            Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
+                            callback(devices[0]);
+                        }
+                    } else {
+                        //choose the first one
+                        callback(devices[0]);
+                    }
+                } else {
+                    Tools.Error("No WebVR devices found!");
+                    callback(null);
+                }
+            });            
+        }
+
+        public initWebVR(): void {
             if (!this.vrDisplaysPromise) {
                 this._getVRDisplays();
             }
@@ -1663,7 +1723,7 @@
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
                 var instancesBuffer = this._currentInstanceBuffers[i];
-                if (boundBuffer != instancesBuffer) {
+                if (boundBuffer != instancesBuffer && instancesBuffer.references) {
                     boundBuffer = instancesBuffer;
                     this.bindArrayBuffer(instancesBuffer);
                 }
@@ -3580,7 +3640,9 @@
             }
 
             // Release audio engine
-            Engine.audioEngine.dispose();
+            if (Engine.audioEngine) {
+                Engine.audioEngine.dispose();
+            }
 
             // Release effects
             this.releaseEffects();
@@ -3615,15 +3677,22 @@
 
         // Loading screen
         public displayLoadingUI(): void {
-            this.loadingScreen.displayLoadingUI();
+            const loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.displayLoadingUI();
+            }
         }
 
         public hideLoadingUI(): void {
-            this.loadingScreen.hideLoadingUI();
+            const loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.hideLoadingUI();
+            }
         }
 
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
+            if (!this._loadingScreen && DefaultLoadingScreen) 
+                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
 

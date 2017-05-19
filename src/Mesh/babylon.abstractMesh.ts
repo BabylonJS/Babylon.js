@@ -116,7 +116,7 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = new Vector3(0.0, 0.0, 0.0);
         private _rotation = new Vector3(0.0, 0.0, 0.0);
-        public _rotationQuaternion: Quaternion;
+        private _rotationQuaternion: Quaternion;
         private _scaling = new Vector3(1.0, 1.0, 1.0);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
@@ -1822,76 +1822,67 @@
 
         /**
          * Defines the passed mesh as the parent of the current mesh.  
-         * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
          * Returns the AbstractMesh.  
          */
-        public setParent(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
-
+        public setParent(mesh:AbstractMesh): AbstractMesh {
+            
             var child = this;
             var parent = mesh;
 
             if(mesh == null){
 
-                if(child.parent && keepWorldPositionRotation){
-                  
-                    var rotation = Tmp.Quaternion[0];
-                    var position = Tmp.Vector3[0];
-                    var scale = Tmp.Vector3[1];
+                var rotation = Tmp.Quaternion[0];
+                var position = Tmp.Vector3[0];
+                var scale = Tmp.Vector3[1];
 
-                    child.getWorldMatrix().decompose(scale, rotation, position);
+                child.getWorldMatrix().decompose(scale, rotation, position);
 
-                    if (child.rotationQuaternion) {
-                        child.rotationQuaternion.copyFrom(rotation);
-                    } else {
-                        rotation.toEulerAnglesToRef(child.rotation);
-                    }
+                if (child.rotationQuaternion) {
+                    child.rotationQuaternion.copyFrom(rotation);
+                } else {
+                    rotation.toEulerAnglesToRef(child.rotation);
+                }
 
-                    child.position.x = position.x;
-                    child.position.y = position.y;
-                    child.position.z = position.z;
-
-               }
+                child.position.x = position.x;
+                child.position.y = position.y;
+                child.position.z = position.z;
 
             } else {
+  
+                var rotation = Tmp.Quaternion[0];
+                var position = Tmp.Vector3[0];
+                var scale = Tmp.Vector3[1];
+                var m1 = Tmp.Matrix[0];
+                var m2 = Tmp.Matrix[1];
 
-                if(keepWorldPositionRotation){
-                    
-                    var rotation = Tmp.Quaternion[0];
-                    var position = Tmp.Vector3[0];
-                    var scale = Tmp.Vector3[1];
-                    var m1 = Tmp.Matrix[0];
-                    var m2 = Tmp.Matrix[1];
+                parent.getWorldMatrix().decompose(scale, rotation, position);
 
-                    parent.getWorldMatrix().decompose(scale, rotation, position);
+                rotation.toRotationMatrix(m1);
+                m2.setTranslation(position);
 
-                    rotation.toRotationMatrix(m1);
-                    m2.setTranslation(position);
+                m2.multiplyToRef(m1, m1);
 
-                    m2.multiplyToRef(m1, m1);
+                var invParentMatrix = Matrix.Invert(m1);
 
-                    var invParentMatrix = Matrix.Invert(m1);
+                var m = child.getWorldMatrix().multiply(invParentMatrix);
 
-                    var m = child.getWorldMatrix().multiply(invParentMatrix);
+                m.decompose(scale, rotation, position);
 
-                    m.decompose(scale, rotation, position);
-
-                    if (child.rotationQuaternion) {
-                        child.rotationQuaternion.copyFrom(rotation);
-                    } else {
-                        rotation.toEulerAnglesToRef(child.rotation);
-                    }
-
-                    invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
-
-                    var m = child.getWorldMatrix().multiply(invParentMatrix);
-
-                    m.decompose(scale, rotation, position);
-
-                    child.position.x = position.x;
-                    child.position.y = position.y;
-                    child.position.z = position.z;
-
+                if (child.rotationQuaternion) {
+                    child.rotationQuaternion.copyFrom(rotation);
+                } else {
+                    rotation.toEulerAnglesToRef(child.rotation);
                 }
+
+                invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
+
+                var m = child.getWorldMatrix().multiply(invParentMatrix);
+
+                m.decompose(scale, rotation, position);
+
+                child.position.x = position.x;
+                child.position.y = position.y;
+                child.position.z = position.z;
 
             }
             child.parent = parent;
@@ -1900,11 +1891,10 @@
 
         /**
          * Adds the passed mesh as a child to the current mesh.  
-         * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.  
          * Returns the AbstractMesh.  
          */
-        public addChild(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
-            mesh.setParent(this, keepWorldPositionRotation);
+        public addChild(mesh:AbstractMesh): AbstractMesh {
+            mesh.setParent(this);
             return this;
         }
 
@@ -1912,8 +1902,8 @@
          * Removes the passed mesh from the current mesh children list.  
          * Returns the AbstractMesh.  
          */
-        public removeChild(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
-            mesh.setParent(null, keepWorldPositionRotation);
+        public removeChild(mesh:AbstractMesh): AbstractMesh {
+            mesh.setParent(null);
             return this;
         }
 
@@ -2190,8 +2180,8 @@
             } else {
                 normals = [];
             }
-            
-            VertexData.ComputeNormals(positions, indices, normals);
+
+            VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
         } 
 
