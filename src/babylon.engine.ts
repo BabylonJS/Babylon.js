@@ -3474,7 +3474,9 @@
             }
 
             // Release audio engine
-            Engine.audioEngine.dispose();
+            if (Engine.audioEngine) {
+                Engine.audioEngine.dispose();
+            }
 
             // Release effects
             this.releaseEffects();
@@ -3509,15 +3511,22 @@
 
         // Loading screen
         public displayLoadingUI(): void {
-            this.loadingScreen.displayLoadingUI();
+            const loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.displayLoadingUI();
+            }
         }
 
         public hideLoadingUI(): void {
-            this.loadingScreen.hideLoadingUI();
+            const loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.hideLoadingUI();
+            }
         }
 
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen) this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
+            if (!this._loadingScreen && DefaultLoadingScreen) 
+                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
 

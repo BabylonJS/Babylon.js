@@ -9850,7 +9850,9 @@ var BABYLON;
                 this.scenes[0].dispose();
             }
             // Release audio engine
-            Engine.audioEngine.dispose();
+            if (Engine.audioEngine) {
+                Engine.audioEngine.dispose();
+            }
             // Release effects
             this.releaseEffects();
             // Unbind
@@ -9877,14 +9879,20 @@ var BABYLON;
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
-            this.loadingScreen.displayLoadingUI();
+            var loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.displayLoadingUI();
+            }
         };
         Engine.prototype.hideLoadingUI = function () {
-            this.loadingScreen.hideLoadingUI();
+            var loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.hideLoadingUI();
+            }
         };
         Object.defineProperty(Engine.prototype, "loadingScreen", {
             get: function () {
-                if (!this._loadingScreen)
+                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen)
                     this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
                 return this._loadingScreen;
             },

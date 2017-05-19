@@ -9850,7 +9850,9 @@ var BABYLON;
                 this.scenes[0].dispose();
             }
             // Release audio engine
-            Engine.audioEngine.dispose();
+            if (Engine.audioEngine) {
+                Engine.audioEngine.dispose();
+            }
             // Release effects
             this.releaseEffects();
             // Unbind
@@ -9877,14 +9879,20 @@ var BABYLON;
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
-            this.loadingScreen.displayLoadingUI();
+            var loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.displayLoadingUI();
+            }
         };
         Engine.prototype.hideLoadingUI = function () {
-            this.loadingScreen.hideLoadingUI();
+            var loadingScreen = this.loadingScreen;
+            if (loadingScreen) {
+                loadingScreen.hideLoadingUI();
+            }
         };
         Object.defineProperty(Engine.prototype, "loadingScreen", {
             get: function () {
-                if (!this._loadingScreen)
+                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen)
                     this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
                 return this._loadingScreen;
             },
@@ -21876,7 +21884,7 @@ var BABYLON;
             var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
             var result = preparedSourceCode.replace(regex, "");
             // Migrate to GLSL v300
-            result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
             if (isFragment) {
@@ -34077,10 +34085,6 @@ var BABYLON;
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 BABYLON.MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
                 var shaderName = "default";
-                if (this.customShaderNameResolve) {
-                    shaderName = this.customShaderNameResolve(shaderName);
-                }
-                var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -34105,6 +34109,10 @@ var BABYLON;
                     defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
+                if (this.customShaderNameResolve) {
+                    shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+                }
+                var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
                     attributes: attribs,
                     uniformsNames: uniforms,
