@@ -365,6 +365,7 @@ uniform mat4 prevViewProjection;
 uniform vec2 screenSize;
 
 uniform float motionScale;
+uniform float motionStrength;
 
 uniform sampler2D depthSampler;
 
@@ -380,7 +381,7 @@ void main(void)
 	ppos.xyz /= ppos.w;
 	ppos.xy = ppos.xy * 0.5 + 0.5;
 
-	vec2 velocity = (ppos.xy - vUV) * motionScale;
+	vec2 velocity = (ppos.xy - vUV) * motionScale * motionStrength;
 	float speed = length(velocity / texelSize);
 	int nSamples = int(clamp(speed, 1.0, MAX_MOTION_SAMPLES));
 
