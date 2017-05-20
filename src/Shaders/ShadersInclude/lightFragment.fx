@@ -37,7 +37,12 @@
 	#else
 		shadow = 1.;
 	#endif
-    #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
+	#ifdef CUSTOMUSERLIGHTING
+		diffuseBase += computeCustomDiffuseLighting(info, diffuseBase, shadow);
+		#ifdef SPECULARTERM
+			specularBase += computeCustomSpecularLighting(info, specularBase, shadow);
+		#endif
+    #elif defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
 	    diffuseBase += lightmapColor * shadow;
 	    #ifdef SPECULARTERM
             #ifndef LIGHTMAPNOSPECULAR{X}
