@@ -19,11 +19,12 @@ module BABYLON {
 
         public textureAdderFinalPostProcess: PostProcess = null;
         public lensFlareFinalPostProcess: PostProcess = null;
-
         public hdrFinalPostProcess: PostProcess = null;
 
         public lensFlarePostProcess: PostProcess = null;
         public lensFlareComposePostProcess: PostProcess = null;
+
+        public motionBlurPostProcess: PostProcess = null;
 
         public depthOfFieldPostProcess: PostProcess = null;
 
@@ -88,10 +89,13 @@ module BABYLON {
         private _currentHDRSource: PostProcess = null;
         private _hdrCurrentLuminance: number = 1.0;
 
+        private _motionBlurSamples: number = 64;
+
         // Getters and setters
         private _depthOfFieldEnabled: boolean = true;
         private _lensFlareEnabled: boolean = true;
         private _hdrEnabled: boolean = true;
+        private _motionBlurEnabled: boolean = true;
 
         public set DepthOfFieldEnabled(enabled: boolean) {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 1;
@@ -170,6 +174,33 @@ module BABYLON {
             return this._hdrEnabled;
         }
 
+        public set MotionBlurEnabled(enabled: boolean) {
+            if (enabled && !this._motionBlurEnabled) {
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRMotionBlur", this._scene.cameras);
+                this._depthRenderer = this._scene.enableDepthRenderer();
+            }
+            else if (!enabled && this._motionBlurEnabled) {
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRMotionBlur", this._scene.cameras);
+            }
+
+            this._motionBlurEnabled = enabled;
+        }
+
+        @serialize()
+        public get MotionBlurEnabled(): boolean {
+            return this._motionBlurEnabled;
+        }
+
+        @serialize()
+        public get motionBlurSamples(): number {
+            return this._motionBlurSamples;
+        }
+
+        public set motionBlurSamples(samples: number) {
+            this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            this._motionBlurSamples = samples;
+        }
+
         /**
          * @constructor
          * @param {string} name - The rendering pipeline name
@@ -227,7 +258,7 @@ module BABYLON {
             // Create HDR
             this._createHdrPostProcess(scene, ratio);
 
-            // Create depth-of-field source post-process post lens-flare and disable it now
+            // Create depth-of-field source post-process post hdr and disable it now
             this.hdrFinalPostProcess = new PostProcess("HDRPostHDReDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostHDReDepthOfFieldSource", () => { return this.hdrFinalPostProcess; }, true));
 
@@ -236,6 +267,9 @@ module BABYLON {
 
             // Create depth-of-field post-process
             this._createDepthOfFieldPostProcess(scene, ratio);
+
+            // Create motion blur post-process
+            this._createMotionBlurPostProcess(scene, ratio);
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -248,6 +282,7 @@ module BABYLON {
             this.LensFlareEnabled = false;
             this.DepthOfFieldEnabled = false;
             this.HDREnabled = false;
+            this.MotionBlurEnabled = false;
         }
 
         // Down Sample X4 Post-Processs
@@ -575,6 +610,41 @@ module BABYLON {
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDepthOfField", () => { return this.depthOfFieldPostProcess; }, true));
         }
 
+        // Create motion blur post-process
+        private _createMotionBlurPostProcess(scene: Scene, ratio: number): void {
+            this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
+                ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale"],
+                ["depthSampler"],
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Engine.TEXTURETYPE_UNSIGNED_INT);
+
+            var motionScale: number = 0;
+            var prevViewProjection = Matrix.Identity();
+            var invViewProjection = Matrix.Identity();
+            var viewProjection = Matrix.Identity();
+            var screenSize = Vector2.Zero();
+
+            this.motionBlurPostProcess.onApply = (effect: Effect) => {
+                viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
+
+                viewProjection.invertToRef(invViewProjection);
+                effect.setMatrix("inverseViewProjection", invViewProjection);
+
+                effect.setMatrix("prevViewProjection", prevViewProjection);
+                prevViewProjection = viewProjection;
+
+                screenSize.x = this.motionBlurPostProcess.width;
+                screenSize.y = this.motionBlurPostProcess.height;
+                effect.setVector2("screenSize", screenSize);
+
+                motionScale = scene.getEngine().getFps() / 60.0;
+                effect.setFloat("motionScale", motionScale);
+
+                effect.setTexture("depthSampler", this._depthRenderer.getDepthMap());
+            };
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRMotionBlur", () => { return this.motionBlurPostProcess; }, true));
+        }
+
         // Dispose
         public dispose(): void {
             for (var i = 0; i < this._cameras.length; i++) {
@@ -597,6 +667,7 @@ module BABYLON {
                 this.lensFlarePostProcess.dispose(camera);
                 this.lensFlareComposePostProcess.dispose(camera);
                 this.depthOfFieldPostProcess.dispose(camera);
+                this.motionBlurPostProcess.dispose(camera);
             }
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);

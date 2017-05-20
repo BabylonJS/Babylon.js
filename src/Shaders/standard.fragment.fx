@@ -356,5 +356,44 @@ void main(void)
 	factor = clamp(factor, 0.0, 0.90);
 	gl_FragColor = mix(sharp, blur, factor);
 }
+#endif
 
+#if defined(MOTION_BLUR)
+uniform mat4 inverseViewProjection;
+uniform mat4 prevViewProjection;
+
+uniform vec2 screenSize;
+
+uniform float motionScale;
+
+uniform sampler2D depthSampler;
+
+void main(void)
+{
+	vec2 texelSize = 1.0 / screenSize;
+	float depth = texture2D(depthSampler, vUV).r;
+
+	vec4 cpos = vec4(vUV * 2.0 - 1.0, depth, 1.0);
+	cpos = cpos * inverseViewProjection;
+
+	vec4 ppos = cpos * prevViewProjection;
+	ppos.xyz /= ppos.w;
+	ppos.xy = ppos.xy * 0.5 + 0.5;
+
+	vec2 velocity = (ppos.xy - vUV) * motionScale;
+	float speed = length(velocity / texelSize);
+	int nSamples = int(clamp(speed, 1.0, MAX_MOTION_SAMPLES));
+
+	vec4 result = texture2D(textureSampler, vUV);
+
+	for (int i = 1; i < int(MAX_MOTION_SAMPLES); ++i) {
+		if (i >= nSamples)
+			break;
+		
+		vec2 offset1 = vUV + velocity * (float(i) / float(nSamples - 1) - 0.5);
+		result += texture2D(textureSampler, offset1);
+	}
+
+	gl_FragColor = result / float(nSamples);
+}
 #endif
