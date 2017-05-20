@@ -220,7 +220,7 @@ module BABYLON {
             this._scene = scene;
 
             // Misc
-            var floatTextureType = scene.getEngine()["_badOS"] ? Engine.TEXTURETYPE_HALF_FLOAT : Engine.TEXTURETYPE_FLOAT;
+            var floatTextureType = scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
 
             // Create pass post-process
             if (!originalPostProcess) {
