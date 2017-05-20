@@ -1033,6 +1033,16 @@
                     "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
                 ], 
                 "output": "babylon.customMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/cell/babylon.cellMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/cell/cell.vertex.fx",
+                    "../../materialsLibrary/src/cell/cell.fragment.fx"
+                ],
+                "output": "babylon.cellMaterial.js"
             }
         ],
         "build": {
