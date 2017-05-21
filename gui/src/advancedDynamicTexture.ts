@@ -9,6 +9,7 @@ module BABYLON.GUI {
         private _background: string;
         private _rootContainer = new Container("root");
         public _lastControlOver: Control;
+        public _toDispose: IDisposable;
 
         public get background(): string {
             return this._background;
@@ -62,6 +63,11 @@ module BABYLON.GUI {
 
             if (this._pointerMoveObserver) {
                 this.getScene().onPointerObservable.remove(this._pointerMoveObserver);
+            }
+
+            if (this._toDispose) {
+                this._toDispose.dispose();
+                this._toDispose = null;
             }
 
             super.dispose();
@@ -156,6 +162,8 @@ module BABYLON.GUI {
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
             layer.texture = result;
+
+            result._toDispose = layer;
 
             // Attach
             result.attach();
