@@ -76,6 +76,9 @@ module BABYLON {
         @serialize()
         public depthOfFieldBlurWidth: number = 2.0;
 
+        @serialize()
+        public motionStrength: number = 1.0;
+
         // IAnimatable
         public animations: Animation[] = [];
 
@@ -216,9 +219,12 @@ module BABYLON {
             // Initialize
             this._scene = scene;
 
-            // Create pass post-processe
+            // Misc
+            var floatTextureType = scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
+
+            // Create pass post-process
             if (!originalPostProcess) {
-                this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_FLOAT);
+                this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", floatTextureType);
             }
             else {
                 this.originalPostProcess = originalPostProcess;
@@ -253,7 +259,7 @@ module BABYLON {
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
 
             // Create luminance
-            this._createLuminancePostProcesses(scene);
+            this._createLuminancePostProcesses(scene, floatTextureType);
 
             // Create HDR
             this._createHdrPostProcess(scene, ratio);
@@ -409,10 +415,10 @@ module BABYLON {
         }
 
         // Create luminance
-        private _createLuminancePostProcesses(scene: Scene): void {
+        private _createLuminancePostProcesses(scene: Scene, textureType: number): void {
             // Create luminance
             var size = Math.pow(3, StandardRenderingPipeline.LuminanceSteps);
-            this.luminancePostProcess = new PostProcess("HDRLuminance", "standard", ["lumOffsets"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LUMINANCE", Engine.TEXTURETYPE_FLOAT);
+            this.luminancePostProcess = new PostProcess("HDRLuminance", "standard", ["lumOffsets"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LUMINANCE", textureType);
 
             var offsets: number[] = [];
             this.luminancePostProcess.onApply = (effect: Effect) => {
@@ -443,7 +449,7 @@ module BABYLON {
                     defines += "#define FINAL_DOWN_SAMPLER";
                 }
 
-                var postProcess = new PostProcess("HDRLuminanceDownSample" + i, "standard", ["dsOffsets", "halfDestPixelSize"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines, Engine.TEXTURETYPE_FLOAT);
+                var postProcess = new PostProcess("HDRLuminanceDownSample" + i, "standard", ["dsOffsets", "halfDestPixelSize"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines, textureType);
                 this.luminanceDownSamplePostProcesses.push(postProcess);
             }
 
@@ -613,7 +619,7 @@ module BABYLON {
         // Create motion blur post-process
         private _createMotionBlurPostProcess(scene: Scene, ratio: number): void {
             this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
-                ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale"],
+                ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
                 ["depthSampler"],
                 ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Engine.TEXTURETYPE_UNSIGNED_INT);
 
@@ -638,6 +644,7 @@ module BABYLON {
 
                 motionScale = scene.getEngine().getFps() / 60.0;
                 effect.setFloat("motionScale", motionScale);
+                effect.setFloat("motionStrength", this.motionStrength);
 
                 effect.setTexture("depthSampler", this._depthRenderer.getDepthMap());
             };
