@@ -46,7 +46,7 @@ The leopard fur texture used in the test is by Martin Wegmann from [Wikimedia Co
 under the [license](https://creativecommons.org/licenses/by-sa/3.0/deed.en)
 
 ```
-furMaterial.diffuseTexture = new BABYLON.Texture("leopard_fur.jpg", scene); // Set the fur length with a texture.
+furMaterial.diffuseTexture = new BABYLON.Texture("leopard_fur.JPG, scene); // Set the fur length with a texture.
 ```
 
 # Using the High Level mode
