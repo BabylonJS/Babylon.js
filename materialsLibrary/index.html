@@ -49,6 +49,7 @@
 	<script src="test/addsky.js"></script>
 	<script src="test/addgrid.js"></script>
     <script src="test/addpbr.js"></script>
+	<script src="test/addCell.js"></script>
 	
 	<script>
 	BABYLONDEVTOOLS.Loader.load(function() {
@@ -202,13 +203,15 @@
                 var grid = prepareGrid();
 
 				var shadowOnly = new BABYLON.ShadowOnlyMaterial();
+
+				var cell = prepareCell();
 				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -258,6 +261,9 @@
                         case "grid":
                             currentMaterial = grid;
                             break;
+						case "cell":
+							currentMaterial = cell;
+							break;
 						default:
 							currentMaterial = std;
 							break;
