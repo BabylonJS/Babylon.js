@@ -120,6 +120,15 @@
         @serialize()
         public base: number = 0.5;
 
+        /**
+        *  Support test.
+        * @type {boolean}
+        */
+        public get isSupported(): boolean {
+            var engine = this._scene.getEngine();
+            return engine.webGLVersion > 1;
+        }
+
         private _scene: Scene;
         private _depthTexture: Texture;
         private _normalTexture: Texture;
@@ -147,6 +156,11 @@
             super(scene.getEngine(), name);
 
             this._scene = scene;
+
+            if (!this.isSupported) {
+                Tools.Error("SSAO 2 needs WebGL 2 support.");
+                return;
+            }
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var blurRatio = ratio.blurRatio || ratio;
