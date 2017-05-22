@@ -15,17 +15,25 @@ module BABYLON {
             this._multiRenderTarget.renderList = meshes;
         }
 
+        public get isSupported(): boolean {
+            return this._multiRenderTarget.isSupported;
+        }
+
         constructor(scene: Scene, ratio: number = 1) {
             this._scene = scene;
             var engine = scene.getEngine();
 
             // Render target
             this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps : false, generateDepthTexture: true });
+            if (!this.isSupported) {
+                return null;
+            }
             this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.refreshRate = 1;
             this._multiRenderTarget.renderParticles = false;
             this._multiRenderTarget.renderList = null;
+
             
             // set default depth value to 1.0 (far away)
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
@@ -90,11 +98,6 @@ module BABYLON {
                 }
             };
 
-        }
-
-        public get isSupported(): boolean {
-            var engine = this._scene.getEngine();
-            return (engine.webGLVersion > 1) || engine.getCaps().drawBuffersExtension;
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {

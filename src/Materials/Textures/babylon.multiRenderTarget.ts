@@ -38,6 +38,11 @@ module BABYLON {
 
             super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
 
+            if (!this.isSupported) {
+                this.dispose();
+                return;
+            }
+
             var types = [];
             var samplingModes = [];
 
@@ -114,6 +119,10 @@ module BABYLON {
         }
 
         public releaseInternalTextures(): void {
+            if (!this._webGLTextures) {
+                return;
+            }
+
             for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
                 if (this._webGLTextures[i] !== undefined) {
                     this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);

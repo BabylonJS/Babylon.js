@@ -3145,6 +3145,9 @@
             }
 
             this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
+            if (!this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
+            }
 
             return this._geometryBufferRenderer;
         }
