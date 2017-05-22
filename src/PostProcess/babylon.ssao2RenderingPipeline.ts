@@ -56,21 +56,24 @@
         @serialize("samples")
         private _samples: number = 8;
 
+        /**
+        * Dynamically generated sphere sampler.
+        * @type {number[]}
+        */
+        private _sampleSphere: number[];
+
+        /**
+        * Blur filter offsets
+        * @type {number[]}
+        */
+        private _samplerOffsets: number[];
+
         public set samples(n: number) {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-
+            this._ssaoPostProcess.updateEffect("#define SAMPLES " + n + "\n#define SSAO");
             this._samples = n;
-            for (var i = 0; i < this._scene.cameras.length; i++) {
-                var camera = this._scene.cameras[i];
-                this._ssaoPostProcess.dispose(camera);
-            }
+            this._sampleSphere = this._generateHemisphere();
 
-            this._createSSAOPostProcess(this._ratio.ssaoRatio);
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
-
-            if (this._cameras)
-                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+            this._firstUpdate = true;
         }
 
         public get samples(): number {
@@ -84,21 +87,12 @@
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
         public set expensiveBlur(b: boolean) {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-
+            this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
+                                                null, ["textureSampler", "depthSampler"]);
+            this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
+                                                null, ["textureSampler", "depthSampler"]);
             this._expensiveBlur = b;
-            for (var i = 0; i < this._scene.cameras.length; i++) {
-                var camera = this._scene.cameras[i];
-                this._blurHPostProcess.dispose(camera);
-                this._blurVPostProcess.dispose(camera);
-            }
-
-            this._createBlurPostProcess(this._ratio.ssaoRatio, this._ratio.blurRatio);
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
-
-            if (this._cameras)
-                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+            this._firstUpdate = true;
         }
 
         public get expensiveBlur(): boolean {
@@ -118,7 +112,7 @@
         * @type {number}
         */
         @serialize()
-        public base: number = 0.5;
+        public base: number = 0.1;
 
         /**
         *  Support test.
@@ -190,6 +184,7 @@
             scene.postProcessRenderPipelineManager.addPipeline(this);
             if (cameras)
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+
         }
 
         // Public Methods
@@ -221,11 +216,11 @@
         // Private Methods
         private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
             var samples = 16;
-            var samplerOffsets = [];
+            this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
 
             for (var i = -8; i < 8; i++) {
-                samplerOffsets.push(i * 2);
+                this._samplerOffsets.push(i * 2);
             }
 
             this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
@@ -237,11 +232,11 @@
                 effect.setTexture("depthSampler", this._depthTexture);
 
                 if (this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
+                    effect.setArray("samplerOffsets", this._samplerOffsets);
                 }
             };
 
-            this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+            this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
@@ -250,7 +245,7 @@
                 effect.setTexture("depthSampler", this._depthTexture);
 
                 if (this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
+                    effect.setArray("samplerOffsets", this._samplerOffsets);
                     this._firstUpdate = false;
                 }
             };
@@ -295,8 +290,7 @@
         private _createSSAOPostProcess(ratio: number): void {
             var numSamples = this.samples;
 
-            var sampleSphere = this._generateHemisphere();
-            var samplesFactor = 1.0 / numSamples;
+            this._sampleSphere = this._generateHemisphere();
 
             this._ssaoPostProcess = new PostProcess("ssao2", "ssao2",
                                                     [
@@ -311,11 +305,11 @@
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
-                    effect.setArray3("sampleSphere", sampleSphere);
-                    effect.setFloat("samplesFactor", samplesFactor);
+                    effect.setArray3("sampleSphere", this._sampleSphere);
                     effect.setFloat("randTextureTiles", 4.0);
                 }
 
+                effect.setFloat("samplesFactor", 1 / this.samples);
                 effect.setFloat("totalStrength", this.totalStrength);
                 effect.setFloat2("texelSize", 1 / this._ssaoPostProcess.width, 1 / this._ssaoPostProcess.height);
                 effect.setFloat("radius", this.radius);
