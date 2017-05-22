@@ -16,7 +16,7 @@
                 "pointLight", "directionalLight", "spotLight", "animations", "actions", "sprites", "picking", "collisions",
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
-                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "geometryRenderer", "additionalPostProcesses",
+                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
@@ -530,10 +530,10 @@
                 "bonesVertex"
             ]
         },
-        "geometryRenderer" : 
+        "geometryBufferRenderer" : 
         {
             "files": [
-                "../../src/Rendering/babylon.geometryRenderer.js"
+                "../../src/Rendering/babylon.geometryBufferRenderer.js"
             ],
             "dependUpon" : [
                 "core"

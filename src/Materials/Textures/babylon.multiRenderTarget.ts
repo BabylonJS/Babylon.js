@@ -1,19 +1,25 @@
 module BABYLON {
+    export interface IMultiRenderTargetOptions {
+        generateMipMaps: boolean,
+        types: number[],
+        samplingModes: number[],
+        generateDepthBuffer: boolean,
+        generateStencilBuffer: boolean,
+        generateDepthTexture: boolean,
+        textureCount: number
+    };
     export class MultiRenderTarget extends RenderTargetTexture {
 
         private _webGLTextures: WebGLTexture[];
         private _textures: Texture[];
         private _count: number;
 
-        protected _multiRenderTargetOptions: {
-            generateMipMaps: boolean,
-            types: number[],
-            samplingModes: number[],
-            generateDepthBuffer: boolean,
-            generateStencilBuffer: boolean,
-            generateDepthTexture: boolean,
-            textureCount: number
-        };
+        public get isSupported(): boolean {
+            var engine = this.getScene().getEngine();
+            return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+        }
+
+        private _multiRenderTargetOptions: IMultiRenderTargetOptions;
 
         public get textures(): Texture[] {
             return this._textures;

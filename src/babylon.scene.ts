@@ -711,7 +711,7 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
-        private _geometryRenderer: GeometryRenderer;
+        private _geometryBufferRenderer: GeometryBufferRenderer;
 
         private _uniqueIdCounter = 0;
 
@@ -2941,8 +2941,8 @@
             }
 
             // Geometry renderer
-            if (this._geometryRenderer) {
-                this._renderTargets.push(this._geometryRenderer.getGBuffer());
+            if (this._geometryBufferRenderer) {
+                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
             }
 
             // RenderPipeline
@@ -3139,23 +3139,23 @@
             this._depthRenderer = null;
         }
 
-        public enableGeometryRenderer(ratio: number = 1): GeometryRenderer {
-            if (this._geometryRenderer) {
-                return this._geometryRenderer;
+        public enableGeometryBufferRenderer(ratio: number = 1): GeometryBufferRenderer {
+            if (this._geometryBufferRenderer) {
+                return this._geometryBufferRenderer;
             }
 
-            this._geometryRenderer = new GeometryRenderer(this, ratio);
+            this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
 
-            return this._geometryRenderer;
+            return this._geometryBufferRenderer;
         }
 
-        public disableGeometryRenderer(): void {
-            if (!this._geometryRenderer) {
+        public disableGeometryBufferRenderer(): void {
+            if (!this._geometryBufferRenderer) {
                 return;
             }
 
-            this._geometryRenderer.dispose();
-            this._geometryRenderer = null;
+            this._geometryBufferRenderer.dispose();
+            this._geometryBufferRenderer = null;
         }
 
         public freezeMaterials(): void {

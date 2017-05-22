@@ -53,14 +53,35 @@
         * Number of samples used for the SSAO calculations. Default value is 8
         * @type {number}
         */
-        @serialize()
+        @serialize("samples")
         private _samples: number = 8;
+
+        public set samples(n: number) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+
+            this._samples = n;
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
+                this._ssaoPostProcess.dispose(camera);
+            }
+
+            this._createSSAOPostProcess(this._ratio.ssaoRatio);
+            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+
+            if (this._cameras)
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+        }
+
+        public get samples(): number {
+            return this._samples;
+        }
 
         /**
         * Are we using bilateral blur ?
         * @type {boolean}
         */
-        @serialize()
+        @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
         public set expensiveBlur(b: boolean) {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
@@ -82,28 +103,6 @@
 
         public get expensiveBlur(): boolean {
             return this._expensiveBlur;
-        }
-
-
-        public set samples(n: number) {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-
-            this._samples = n;
-            for (var i = 0; i < this._scene.cameras.length; i++) {
-                var camera = this._scene.cameras[i];
-                this._ssaoPostProcess.dispose(camera);
-            }
-
-            this._createSSAOPostProcess(this._ratio.ssaoRatio);
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
-
-            if (this._cameras)
-                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
-        }
-
-        public get samples(): number {
-            return this._samples;
         }
 
         /**
@@ -158,8 +157,8 @@
 
             // Set up assets
             this._createRandomTexture();
-            this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture; 
-            this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1];
+            this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().depthTexture; 
+            this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(1.0);
@@ -184,7 +183,7 @@
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        public dispose(disableGeometryRenderer: boolean = false): void {
+        public dispose(disableGeometryBufferRenderer: boolean = false): void {
             for (var i = 0; i < this._scene.cameras.length; i++) {
                 var camera = this._scene.cameras[i];
 
@@ -197,8 +196,8 @@
 
             this._randomTexture.dispose();
 
-            if (disableGeometryRenderer)
-                this._scene.disableGeometryRenderer();
+            if (disableGeometryBufferRenderer)
+                this._scene.disableGeometryBufferRenderer();
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
