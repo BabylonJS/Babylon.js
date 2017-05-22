@@ -17138,8 +17138,8 @@ var BABYLON;
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
             }
             // Geometry renderer
-            if (this._geometryRenderer) {
-                this._renderTargets.push(this._geometryRenderer.getGBuffer());
+            if (this._geometryBufferRenderer) {
+                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
             }
             // RenderPipeline
             if (this._postProcessRenderPipelineManager) {
@@ -17314,20 +17314,23 @@ var BABYLON;
             this._depthRenderer.dispose();
             this._depthRenderer = null;
         };
-        Scene.prototype.enableGeometryRenderer = function (ratio) {
+        Scene.prototype.enableGeometryBufferRenderer = function (ratio) {
             if (ratio === void 0) { ratio = 1; }
-            if (this._geometryRenderer) {
-                return this._geometryRenderer;
+            if (this._geometryBufferRenderer) {
+                return this._geometryBufferRenderer;
             }
-            this._geometryRenderer = new GeometryRenderer(this, ratio);
-            return this._geometryRenderer;
+            this._geometryBufferRenderer = new BABYLON.GeometryBufferRenderer(this, ratio);
+            if (!this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
+            }
+            return this._geometryBufferRenderer;
         };
-        Scene.prototype.disableGeometryRenderer = function () {
-            if (!this._geometryRenderer) {
+        Scene.prototype.disableGeometryBufferRenderer = function () {
+            if (!this._geometryBufferRenderer) {
                 return;
             }
-            this._geometryRenderer.dispose();
-            this._geometryRenderer = null;
+            this._geometryBufferRenderer.dispose();
+            this._geometryBufferRenderer = null;
         };
         Scene.prototype.freezeMaterials = function () {
             for (var i = 0; i < this.materials.length; i++) {
@@ -41761,6 +41764,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    ;
     var MultiRenderTarget = (function (_super) {
         __extends(MultiRenderTarget, _super);
         function MultiRenderTarget(name, size, count, scene, options) {
@@ -41770,6 +41774,10 @@ var BABYLON;
             var generateDepthTexture = options.generateDepthTexture ? options.generateDepthTexture : false;
             var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
             _this = _super.call(this, name, size, scene, generateMipMaps, doNotChangeAspectRatio) || this;
+            if (!_this.isSupported) {
+                _this.dispose();
+                return;
+            }
             var types = [];
             var samplingModes = [];
             for (var i = 0; i < count; i++) {
@@ -41860,6 +41868,9 @@ var BABYLON;
             _super.prototype.dispose.call(this);
         };
         MultiRenderTarget.prototype.releaseInternalTextures = function () {
+            if (!this._webGLTextures) {
+                return;
+            }
             for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
                 if (this._webGLTextures[i] !== undefined) {
                     this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);
@@ -47964,9 +47975,13 @@ var BABYLON;
             * The final result is "base + ssao" between [0, 1]
             * @type {number}
             */
-            _this.base = 0.5;
+            _this.base = 0.1;
             _this._firstUpdate = true;
             _this._scene = scene;
+            if (!_this.isSupported) {
+                BABYLON.Tools.Error("SSAO 2 needs WebGL 2 support.");
+                return _this;
+            }
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var blurRatio = ratio.blurRatio || ratio;
             _this._ratio = {
@@ -47975,8 +47990,8 @@ var BABYLON;
             };
             // Set up assets
             _this._createRandomTexture();
-            _this._depthTexture = scene.enableGeometryRenderer().getGBuffer().depthTexture;
-            _this._normalTexture = scene.enableGeometryRenderer().getGBuffer().textures[1];
+            _this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().depthTexture;
+            _this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
             _this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             _this._createSSAOPostProcess(1.0);
             _this._createBlurPostProcess(ssaoRatio, blurRatio);
@@ -48036,12 +48051,24 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SSAO2RenderingPipeline.prototype, "isSupported", {
+            /**
+            *  Support test.
+            * @type {boolean}
+            */
+            get: function () {
+                var engine = this._scene.getEngine();
+                return engine.webGLVersion > 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Public Methods
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        SSAO2RenderingPipeline.prototype.dispose = function (disableGeometryRenderer) {
-            if (disableGeometryRenderer === void 0) { disableGeometryRenderer = false; }
+        SSAO2RenderingPipeline.prototype.dispose = function (disableGeometryBufferRenderer) {
+            if (disableGeometryBufferRenderer === void 0) { disableGeometryBufferRenderer = false; }
             for (var i = 0; i < this._scene.cameras.length; i++) {
                 var camera = this._scene.cameras[i];
                 this._originalColorPostProcess.dispose(camera);
@@ -48051,8 +48078,8 @@ var BABYLON;
                 this._ssaoCombinePostProcess.dispose(camera);
             }
             this._randomTexture.dispose();
-            if (disableGeometryRenderer)
-                this._scene.disableGeometryRenderer();
+            if (disableGeometryBufferRenderer)
+                this._scene.disableGeometryBufferRenderer();
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             _super.prototype.dispose.call(this);
         };
@@ -49391,6 +49418,9 @@ var BABYLON;
             var engine = scene.getEngine();
             // Render target
             this._multiRenderTarget = new BABYLON.MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps: false, generateDepthTexture: true });
+            if (!this.isSupported) {
+                return null;
+            }
             this._multiRenderTarget.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.refreshRate = 1;
@@ -49443,12 +49473,17 @@ var BABYLON;
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
             };
-            this._multiRenderTarget.renderList = scene.getActiveMeshes().data;
         }
+        Object.defineProperty(GeometryBufferRenderer.prototype, "renderList", {
+            set: function (meshes) {
+                this._multiRenderTarget.renderList = meshes;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GeometryBufferRenderer.prototype, "isSupported", {
             get: function () {
-                var engine = this._scene.getEngine();
-                return (engine.webGLVersion > 1) || engine.getCaps().drawBuffersExtension;
+                return this._multiRenderTarget.isSupported;
             },
             enumerable: true,
             configurable: true
