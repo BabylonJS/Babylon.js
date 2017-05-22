@@ -49,7 +49,7 @@
         */
         public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 
-        protected _onAfterUnbindObserver: Observer<RenderTargetTexture>;
+        private _onAfterUnbindObserver: Observer<RenderTargetTexture>;
         public set onAfterUnbind(callback: () => void) {
             if (this._onAfterUnbindObserver) {
                 this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
@@ -63,7 +63,7 @@
         */
         public onBeforeRenderObservable = new Observable<number>();
 
-        protected _onBeforeRenderObserver: Observer<number>;
+        private _onBeforeRenderObserver: Observer<number>;
         public set onBeforeRender(callback: (faceIndex: number) => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -77,7 +77,7 @@
         */
         public onAfterRenderObservable = new Observable<number>();
 
-        protected _onAfterRenderObserver: Observer<number>;
+        private _onAfterRenderObserver: Observer<number>;
         public set onAfterRender(callback: (faceIndex: number) => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -91,7 +91,7 @@
         */
         public onClearObservable = new Observable<Engine>();
 
-        protected _onClearObserver: Observer<Engine>;
+        private _onClearObserver: Observer<Engine>;
         public set onClear(callback: (Engine: Engine) => void) {
             if (this._onClearObserver) {
                 this.onClearObservable.remove(this._onClearObserver);

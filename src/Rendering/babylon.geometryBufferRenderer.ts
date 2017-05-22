@@ -1,5 +1,5 @@
 module BABYLON {
-    export class GeometryRenderer {
+    export class GeometryBufferRenderer {
         private _scene: Scene;
         private _multiRenderTarget: MultiRenderTarget;
         private _effect: Effect;
@@ -10,6 +10,10 @@ module BABYLON {
         private _worldViewProjection = Matrix.Zero();
 
         private _cachedDefines: string;
+
+        public set renderList(meshes: Mesh[]) {
+            this._multiRenderTarget.renderList = meshes;
+        }
 
         constructor(scene: Scene, ratio: number = 1) {
             this._scene = scene;
@@ -86,7 +90,11 @@ module BABYLON {
                 }
             };
 
-            this._multiRenderTarget.renderList = scene.getActiveMeshes().data;
+        }
+
+        public get isSupported(): boolean {
+            var engine = this._scene.getEngine();
+            return (engine.webGLVersion > 1) || engine.getCaps().drawBuffersExtension;
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
