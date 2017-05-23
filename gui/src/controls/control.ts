@@ -412,25 +412,51 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _processObservables(type: number): boolean {
-            if (type === BABYLON.PointerEventTypes.POINTERMOVE && this.onPointerMoveObservable.hasObservers()) {
+        protected _onPointerMove(): void {
+            if (this.onPointerMoveObservable.hasObservers()) {
                 this.onPointerMoveObservable.notifyObservers(this);
+            }
+        }
+
+        protected _onPointerOut(): void {
+            var previousControlOver = this._host._lastControlOver;
+
+            if (previousControlOver.onPointerOutObservable.hasObservers()) {
+                previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+            }
+        }
+
+        protected _onPointerDown(): void {
+            if (this.onPointerDownObservable.hasObservers()) {
+                this.onPointerDownObservable.notifyObservers(this);
+            }
+        }
+
+        protected _onPointerUp(): void {
+            if (this.onPointerUpObservable.hasObservers()) {
+                this.onPointerUpObservable.notifyObservers(this);
+            }
+        }
+
+        protected _processObservables(type: number): boolean {
+            if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                this._onPointerMove();
 
                 var previousControlOver = this._host._lastControlOver;
-                if (previousControlOver && previousControlOver !== this && previousControlOver.onPointerOutObservable.hasObservers()) {
-                    previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+                if (previousControlOver && previousControlOver !== this) {
+                    this._onPointerOut();
                 }
                 this._host._lastControlOver = this;
                 return true;
             }
 
-            if (type === BABYLON.PointerEventTypes.POINTERDOWN && this.onPointerDownObservable.hasObservers()) {
-                this.onPointerDownObservable.notifyObservers(this);
+            if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                this._onPointerDown();
                 return true;
             }
 
-            if (type === BABYLON.PointerEventTypes.POINTERUP && this.onPointerUpObservable.hasObservers()) {
-                this.onPointerUpObservable.notifyObservers(this);
+            if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                this._onPointerUp();
                 return true;
             }
         
