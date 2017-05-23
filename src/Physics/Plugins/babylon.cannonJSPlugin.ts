@@ -358,9 +358,6 @@
                 mesh.rotationQuaternion = this._tmpUnityRotation;
                 mesh.computeWorldMatrix(true);
 
-                //get original center with no rotation
-                var c = center.clone();
-
                 var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
 
                 //rotation is back
@@ -375,9 +372,9 @@
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
 
                 this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
-                //add it inverted to the delta 
-                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center.subtract(c));
-                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                // comments needed - wingnut removes a .subtract(c) and then adjusts z
+                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center);
+                this._tmpDeltaPosition.z = -mesh.getBoundingInfo().boundingBox.extendSize.z;
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
