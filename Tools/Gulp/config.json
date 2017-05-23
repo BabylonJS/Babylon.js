@@ -1245,6 +1245,7 @@
                 "files": [
                     "../../gui/src/advancedDynamicTexture.ts",
                     "../../gui/src/measure.ts",
+                    "../../gui/src/math2D.ts",
                     "../../gui/src/valueAndUnit.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
