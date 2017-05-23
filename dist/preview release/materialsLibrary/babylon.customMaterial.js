@@ -128,7 +128,7 @@ vec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\
 \n\
 vec4 baseColor=vec4(1.,1.,1.,1.);\n\
 vec3 diffuseColor=vDiffuseColor.rgb;\n\
-#[Fragment_Custom_Deffiuse]\n\
+#[Fragment_Custom_Diffuse]\n\
 \n\
 float alpha=vDiffuseColor.a;\n\
 #[Fragment_Custom_Alpha]\n\
@@ -589,7 +589,7 @@ vColor=color;\n\
                 .replace('#[Fragment_Begin]', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
                 .replace('#[Fragment_MainBegin]', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
                 .replace('#[Fragment_Definations]', (this._customUnifrom ? this._customUnifrom.join("\n") : "") + (this.CustomParts.Fragment_Definations ? this.CustomParts.Fragment_Definations : ""))
-                .replace('#[Fragment_Custom_Deffiuse]', (this.CustomParts.Fragment_Custom_Deffiuse ? this.CustomParts.Fragment_Custom_Deffiuse : ""))
+                .replace('#[Fragment_Custom_Diffuse]', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
                 .replace('#[Fragment_Custom_Alpha]', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
                 .replace('#[Fragment_Before_FragColor]', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
             return name;
@@ -632,8 +632,8 @@ vColor=color;\n\
             this.CustomParts.Fragment_MainBegin = shaderPart;
             return this;
         };
-        CustomMaterial.prototype.Fragment_Custom_Deffiuse = function (shaderPart) {
-            this.CustomParts.Fragment_Custom_Deffiuse = shaderPart.replace("result", "diffuseColor");
+        CustomMaterial.prototype.Fragment_Custom_Diffuse = function (shaderPart) {
+            this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
             return this;
         };
         CustomMaterial.prototype.Fragment_Custom_Alpha = function (shaderPart) {

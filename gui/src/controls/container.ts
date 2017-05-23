@@ -53,6 +53,14 @@ module BABYLON.GUI {
             // Implemented by child to be injected inside main draw
         }
 
+        public _link(root: Container, host: AdvancedDynamicTexture): void {
+            super._link(root, host);
+
+            for (var child of this._children) {
+                child._link(root, host);
+            }
+        }
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
             super._processMeasures(parentMeasure, context);

@@ -7,7 +7,7 @@ window.prepareTerrain = function() {
     terrain.diffuseTexture2 = new BABYLON.Texture("../assets/textures/rock.png", scene);
     terrain.diffuseTexture3 = new BABYLON.Texture("../assets/textures/grass.png", scene);
     
-    terrain.bumpTexture1 = new BABYLON.Texture("../assets/textures/floor_bump.png", scene);
+    terrain.bumpTexture1 = new BABYLON.Texture("../assets/textures/floor_bump.PNG", scene);
     terrain.bumpTexture2 = new BABYLON.Texture("../assets/textures/rockn.png", scene);
     terrain.bumpTexture3 = new BABYLON.Texture("../assets/textures/grassn.png", scene);
     

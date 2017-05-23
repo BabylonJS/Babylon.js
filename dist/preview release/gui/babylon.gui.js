@@ -65,6 +65,10 @@ var BABYLON;
                 if (this._pointerMoveObserver) {
                     this.getScene().onPointerObservable.remove(this._pointerMoveObserver);
                 }
+                if (this._toDispose) {
+                    this._toDispose.dispose();
+                    this._toDispose = null;
+                }
                 _super.prototype.dispose.call(this);
             };
             AdvancedDynamicTexture.prototype._onResize = function () {
@@ -143,6 +147,7 @@ var BABYLON;
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
+                result._toDispose = layer;
                 // Attach
                 result.attach();
                 return result;
@@ -690,22 +695,43 @@ var BABYLON;
                 this._processObservables(type);
                 return true;
             };
-            Control.prototype._processObservables = function (type) {
-                if (type === BABYLON.PointerEventTypes.POINTERMOVE && this.onPointerMoveObservable.hasObservers()) {
+            Control.prototype._onPointerMove = function () {
+                if (this.onPointerMoveObservable.hasObservers()) {
                     this.onPointerMoveObservable.notifyObservers(this);
+                }
+            };
+            Control.prototype._onPointerOut = function () {
+                var previousControlOver = this._host._lastControlOver;
+                if (previousControlOver.onPointerOutObservable.hasObservers()) {
+                    previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+                }
+            };
+            Control.prototype._onPointerDown = function () {
+                if (this.onPointerDownObservable.hasObservers()) {
+                    this.onPointerDownObservable.notifyObservers(this);
+                }
+            };
+            Control.prototype._onPointerUp = function () {
+                if (this.onPointerUpObservable.hasObservers()) {
+                    this.onPointerUpObservable.notifyObservers(this);
+                }
+            };
+            Control.prototype._processObservables = function (type) {
+                if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    this._onPointerMove();
                     var previousControlOver = this._host._lastControlOver;
-                    if (previousControlOver && previousControlOver !== this && previousControlOver.onPointerOutObservable.hasObservers()) {
-                        previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+                    if (previousControlOver && previousControlOver !== this) {
+                        this._onPointerOut();
                     }
                     this._host._lastControlOver = this;
                     return true;
                 }
-                if (type === BABYLON.PointerEventTypes.POINTERDOWN && this.onPointerDownObservable.hasObservers()) {
-                    this.onPointerDownObservable.notifyObservers(this);
+                if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    this._onPointerDown();
                     return true;
                 }
-                if (type === BABYLON.PointerEventTypes.POINTERUP && this.onPointerUpObservable.hasObservers()) {
-                    this.onPointerUpObservable.notifyObservers(this);
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    this._onPointerUp();
                     return true;
                 }
                 return false;
@@ -862,6 +888,13 @@ var BABYLON;
             };
             Container.prototype._localDraw = function (context) {
                 // Implemented by child to be injected inside main draw
+            };
+            Container.prototype._link = function (root, host) {
+                _super.prototype._link.call(this, root, host);
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    child._link(root, host);
+                }
             };
             Container.prototype._draw = function (parentMeasure, context) {
                 context.save();

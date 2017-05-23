@@ -604,7 +604,7 @@ var BABYLON;
     BABYLON.PropertyChangedBase = PropertyChangedBase;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.iPropertyChanged.js.map
+//# sourceMappingURL=babylon.IPropertyChanged.js.map
 
 var BABYLON;
 (function (BABYLON) {

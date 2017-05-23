@@ -1033,6 +1033,16 @@
                     "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
                 ], 
                 "output": "babylon.customMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/cell/babylon.cellMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/cell/cell.vertex.fx",
+                    "../../materialsLibrary/src/cell/cell.fragment.fx"
+                ],
+                "output": "babylon.cellMaterial.js"
             }
         ],
         "build": {
@@ -1256,7 +1266,7 @@
             {
                 "files": [
                     "../../canvas2D/src/Tools/babylon.math2D.ts",
-                    "../../canvas2D/src/Tools/babylon.iPropertyChanged.ts",
+                    "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
                     "../../canvas2D/src/Tools/babylon.c2dlogging.ts",
                     "../../canvas2D/src/Tools/babylon.observableArray.ts",
                     "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
