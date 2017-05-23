@@ -8,6 +8,7 @@ declare module BABYLON.GUI {
         private _background;
         private _rootContainer;
         _lastControlOver: Control;
+        _toDispose: IDisposable;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
@@ -134,6 +135,10 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _contains(x: number, y: number): boolean;
         _processPicking(x: number, y: number, type: number): boolean;
+        protected _onPointerMove(): void;
+        protected _onPointerOut(): void;
+        protected _onPointerDown(): void;
+        protected _onPointerUp(): void;
         protected _processObservables(type: number): boolean;
         private _prepareFont();
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -168,6 +173,7 @@ declare module BABYLON.GUI {
         removeControl(control: Control): Container;
         _reOrderControl(control: Control): void;
         protected _localDraw(context: CanvasRenderingContext2D): void;
+        _link(root: Container, host: AdvancedDynamicTexture): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;

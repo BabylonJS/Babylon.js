@@ -10,7 +10,7 @@ declare module BABYLON {
         Fragment_Begin: string;
         Fragment_Definations: string;
         Fragment_MainBegin: string;
-        Fragment_Custom_Deffiuse: string;
+        Fragment_Custom_Diffuse: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -42,7 +42,7 @@ declare module BABYLON {
         Fragment_Begin(shaderPart: string): CustomMaterial;
         Fragment_Definations(shaderPart: string): CustomMaterial;
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
-        Fragment_Custom_Deffiuse(shaderPart: string): CustomMaterial;
+        Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
