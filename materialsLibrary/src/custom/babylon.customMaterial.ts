@@ -36,10 +36,10 @@ module BABYLON {
     public Vertex_MainBegin: string;
     
     // positionUpdated
-    public Vertex_Befor_PositionUpdated:string;
+    public Vertex_Before_PositionUpdated:string;
 
     // normalUpdated
-    public Vertex_Befor_NormalUpdated : string;
+    public Vertex_Before_NormalUpdated : string;
   }
 
   export class ShaderForVer3_0 extends CustomShaderStructure {
@@ -433,14 +433,14 @@ vPositionUVW=positionUpdated;\n\
 #include<instancesVertex>\n\
 #include<bonesVertex>\n\
 \n\
-#[Vertex_Befor_PositionUpdated]\n\
+#[Vertex_Before_PositionUpdated]\n\
 \n\
 gl_Position=viewProjection*finalWorld*vec4(positionUpdated,1.0);\n\
 vec4 worldPos=finalWorld*vec4(positionUpdated,1.0);\n\
 vPositionW=vec3(worldPos);\n\
 #ifdef NORMAL\n\
 \n\
-#[Vertex_Befor_NormalUpdated]\n\
+#[Vertex_Before_NormalUpdated]\n\
 \n\
 vNormalW=normalize(vec3(finalWorld*vec4(normalUpdated,0.0)));\n\
 #endif\n\
@@ -610,8 +610,8 @@ vColor=color;\n\
             .replace('#[Vertex_Begin]',(this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
             .replace('#[Vertex_Definations]',(this._customUnifrom? this._customUnifrom.join("\n"):"")+ (this.CustomParts.Vertex_Definations ? this.CustomParts.Vertex_Definations : ""))
             .replace('#[Vertex_MainBegin]',(this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
-            .replace('#[Vertex_Befor_PositionUpdated]',(this.CustomParts.Vertex_Befor_PositionUpdated ? this.CustomParts.Vertex_Befor_PositionUpdated : ""))
-            .replace('#[Vertex_Befor_NormalUpdated]',(this.CustomParts.Vertex_Befor_NormalUpdated ? this.CustomParts.Vertex_Befor_NormalUpdated : "")) ;
+            .replace('#[Vertex_Before_PositionUpdated]',(this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
+            .replace('#[Vertex_Before_NormalUpdated]',(this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : "")) ;
 
             BABYLON.Effect.ShadersStore[name+"PixelShader"] = this.ShaderVersion.FragmentStore
             .replace('#[Fragment_Begin]',(this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
@@ -698,13 +698,13 @@ vColor=color;\n\
             this.CustomParts.Vertex_MainBegin = shaderPart;
             return this;
          }
-         public Vertex_Befor_PositionUpdated(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Vertex_Befor_PositionUpdated = shaderPart.replace("result","positionUpdated");
+         public Vertex_Before_PositionUpdated(shaderPart:string):CustomMaterial{            
+            this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result","positionUpdated");
             return this;
          } 
          
-          public Vertex_Befor_NormalUpdated(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Vertex_Befor_NormalUpdated = shaderPart.replace("result","normalUpdated");
+          public Vertex_Before_NormalUpdated(shaderPart:string):CustomMaterial{            
+            this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result","normalUpdated");
             return this;
          } 
           
