@@ -42,7 +42,7 @@ module BABYLON.GUI {
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
-            this.applyStates(context);
+            this._applyStates(context);
             super._processMeasures(parentMeasure, context);
 
             if (this._loaded) {
