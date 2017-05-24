@@ -16,8 +16,8 @@ declare module BABYLON {
         Vertex_Begin: string;
         Vertex_Definations: string;
         Vertex_MainBegin: string;
-        Vertex_Befor_PositionUpdated: string;
-        Vertex_Befor_NormalUpdated: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
     }
     class ShaderForVer3_0 extends CustomShaderStructure {
         constructor();
@@ -48,7 +48,7 @@ declare module BABYLON {
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definations(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
-        Vertex_Befor_PositionUpdated(shaderPart: string): CustomMaterial;
-        Vertex_Befor_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
     }
 }

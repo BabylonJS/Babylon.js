@@ -24,6 +24,19 @@ module BABYLON.GUI {
         private _marginBottom = new ValueAndUnit(0);        
         private _left = new ValueAndUnit(0);
         private _top = new ValueAndUnit(0);
+        private _scaleX = 1.0;
+        private _scaleY = 1.0;
+        private _rotation = 0;
+        private _transformCenterX = 0.5;
+        private _transformCenterY = 0.5;
+        private _transformMatrix = Matrix2D.Identity();
+        private _invertTransformMatrix = Matrix2D.Identity();
+        private _isMatrixDirty = true;
+        private _cachedOffsetX: number;
+        private _cachedOffsetY: number;
+
+        public isHitTestVisible = true;
+        public isPointerBlocker = false;
         
         // Properties
 
@@ -50,6 +63,82 @@ module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         public onPointerUpObservable = new Observable<Control>();     
+
+        /**
+        * An event triggered when pointer enters the control
+        * @type {BABYLON.Observable}
+        */
+        public onPointerEnterObservable = new Observable<Control>();           
+
+        public get scaleX(): number {
+            return this._scaleX;
+        }
+
+        public set scaleX(value: number) {
+            if (this._scaleX === value) {
+                return;
+            }
+
+            this._scaleX = value;
+            this._markAsDirty();
+            this._isMatrixDirty = true;
+        }     
+
+        public get scaleY(): number {
+            return this._scaleY;
+        }
+
+        public set scaleY(value: number) {
+            if (this._scaleY === value) {
+                return;
+            }
+
+            this._scaleY = value;
+            this._markAsDirty();
+            this._isMatrixDirty = true;
+        }  
+
+        public get rotation(): number {
+            return this._rotation;
+        }
+
+        public set rotation(value: number) {
+            if (this._rotation === value) {
+                return;
+            }
+
+            this._rotation = value;
+            this._markAsDirty();
+            this._isMatrixDirty = true;
+        }    
+
+        public get transformCenterY(): number {
+            return this._transformCenterY;
+        }
+
+        public set transformCenterY(value: number) {
+            if (this._transformCenterY === value) {
+                return;
+            }
+
+            this._transformCenterY = value;
+            this._markAsDirty();
+            this._isMatrixDirty = true;
+        }     
+
+        public get transformCenterX(): number {
+            return this._transformCenterX;
+        }
+
+        public set transformCenterX(value: number) {
+            if (this._transformCenterX === value) {
+                return;
+            }
+
+            this._transformCenterX = value;
+            this._markAsDirty();
+            this._isMatrixDirty = true;
+        }    
 
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
@@ -240,7 +329,39 @@ module BABYLON.GUI {
             this._host = host;
         }
 
-        protected applyStates(context: CanvasRenderingContext2D): void {
+        protected _transform(context: CanvasRenderingContext2D): void {
+            if (this._scaleX === 1 && this._scaleY ===1 && this._rotation === 0) {
+                return;
+            }
+
+            // preTranslate
+            var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
+            var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
+            context.translate(offsetX, offsetY);
+
+            // scale
+            context.scale(this._scaleX, this._scaleY);
+
+            // rotate
+            context.rotate(this._rotation);
+
+            // postTranslate
+            context.translate(-offsetX, -offsetY);    
+
+
+            // Need to update matrices?
+            if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
+                this._cachedOffsetX = offsetX;
+                this._cachedOffsetY = offsetY;
+                this._isMatrixDirty = false;
+
+                Matrix2D.ComposeToRef(offsetX, offsetY, this._rotation, this._scaleX, this._scaleY, this._root ? this._root._transformMatrix : null, this._transformMatrix);
+
+                this._transformMatrix.invertToRef(this._invertTransformMatrix);
+            }
+        }
+
+        protected _applyStates(context: CanvasRenderingContext2D): void {
             if (this._font) {
                 context.font = this._font;
             }
@@ -268,7 +389,10 @@ module BABYLON.GUI {
 
                 this._isDirty = false;
                 this._cachedParentMeasure.copyFrom(parentMeasure);
-            }      
+            }     
+
+            // Transform
+            this._transform(context); 
                         
             // Clip
             this._clip(context);
@@ -382,7 +506,13 @@ module BABYLON.GUI {
             // Do nothing
         }
 
-        protected _contains(x: number, y: number) : boolean {
+        public contains(x: number, y: number) : boolean {
+            // Invert transform
+            if (this._scaleX !== 1 || this._scaleY !== 1 || this.rotation !== 0) {
+               
+            }
+
+            // Check
             if (x < this._currentMeasure.left) {
                 return false;
             }
@@ -399,11 +529,14 @@ module BABYLON.GUI {
                 return false;
             } 
 
+            if (this.isPointerBlocker) {
+                this._host._shouldBlockPointer = true;
+            }
             return true;
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this._contains(x, y)) {
+            if (!this.contains(x, y)) {
                 return false;
             }
 
@@ -418,11 +551,15 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerOut(): void {
-            var previousControlOver = this._host._lastControlOver;
+        protected _onPointerEnter(): void {
+            if (this.onPointerEnterObservable.hasObservers()) {
+                this.onPointerEnterObservable.notifyObservers(this);
+            }
+        }
 
-            if (previousControlOver.onPointerOutObservable.hasObservers()) {
-                previousControlOver.onPointerOutObservable.notifyObservers(previousControlOver);
+        protected _onPointerOut(): void {
+            if (this.onPointerOutObservable.hasObservers()) {
+                this.onPointerOutObservable.notifyObservers(this);
             }
         }
 
@@ -439,24 +576,38 @@ module BABYLON.GUI {
         }
 
         protected _processObservables(type: number): boolean {
+            if (!this.isHitTestVisible) {
+                return false;
+            }
+
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                 this._onPointerMove();
 
                 var previousControlOver = this._host._lastControlOver;
                 if (previousControlOver && previousControlOver !== this) {
-                    this._onPointerOut();
+                    previousControlOver._onPointerOut();
                 }
+
+                if (previousControlOver !== this) {
+                    this._onPointerEnter();
+                }
+
                 this._host._lastControlOver = this;
                 return true;
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                 this._onPointerDown();
+                this._host._lastControlDown = this;
                 return true;
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 this._onPointerUp();
+                if (this._host._lastControlDown !== this) {
+                    this._host._lastControlDown._onPointerUp();
+                    this._host._lastControlDown = null;
+                }
                 return true;
             }
         

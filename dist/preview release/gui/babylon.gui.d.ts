@@ -8,6 +8,8 @@ declare module BABYLON.GUI {
         private _background;
         private _rootContainer;
         _lastControlOver: Control;
+        _lastControlDown: Control;
+        _shouldBlockPointer: boolean;
         _toDispose: IDisposable;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
@@ -36,6 +38,27 @@ declare module BABYLON.GUI {
         copyFrom(other: Measure): void;
         isEqualsTo(other: Measure): boolean;
         static Empty(): Measure;
+    }
+}
+
+/// <reference path="../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class Matrix2D {
+        m: Float32Array;
+        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
+        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
+        determinant(): number;
+        invertToRef(result: Matrix2D): Matrix2D;
+        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        static Identity(): Matrix2D;
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        private static _TempPreTranslationMatrix;
+        private static _TempPostTranslationMatrix;
+        private static _TempRotationMatrix;
+        private static _TempScalingMatrix;
+        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Matrix2D, result: Matrix2D): void;
     }
 }
 
@@ -88,6 +111,18 @@ declare module BABYLON.GUI {
         private _marginBottom;
         private _left;
         private _top;
+        private _scaleX;
+        private _scaleY;
+        private _rotation;
+        private _transformCenterX;
+        private _transformCenterY;
+        private _transformMatrix;
+        private _invertTransformMatrix;
+        private _isMatrixDirty;
+        private _cachedOffsetX;
+        private _cachedOffsetY;
+        isHitTestVisible: boolean;
+        isPointerBlocker: boolean;
         /**
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
@@ -108,6 +143,16 @@ declare module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         onPointerUpObservable: Observable<Control>;
+        /**
+        * An event triggered when pointer enters the control
+        * @type {BABYLON.Observable}
+        */
+        onPointerEnterObservable: Observable<Control>;
+        scaleX: number;
+        scaleY: number;
+        rotation: number;
+        transformCenterY: number;
+        transformCenterX: number;
         horizontalAlignment: number;
         verticalAlignment: number;
         width: string;
@@ -126,16 +171,18 @@ declare module BABYLON.GUI {
         constructor(name: string);
         protected _markAsDirty(): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
-        protected applyStates(context: CanvasRenderingContext2D): void;
+        protected _transform(context: CanvasRenderingContext2D): void;
+        protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clip(context: CanvasRenderingContext2D): void;
         protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _contains(x: number, y: number): boolean;
+        contains(x: number, y: number): boolean;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerMove(): void;
+        protected _onPointerEnter(): void;
         protected _onPointerOut(): void;
         protected _onPointerDown(): void;
         protected _onPointerUp(): void;
@@ -250,6 +297,11 @@ declare module BABYLON.GUI {
         name: string;
         constructor(name: string);
         _processPicking(x: number, y: number, type: number): boolean;
+        protected _onPointerEnter(): void;
+        protected _onPointerOut(): void;
+        protected _onPointerDown(): void;
+        protected _onPointerUp(): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
+        static CreateSimpleButton(name: string, text: string): Button;
     }
 }

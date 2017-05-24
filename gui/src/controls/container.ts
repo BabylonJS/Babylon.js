@@ -65,7 +65,7 @@ module BABYLON.GUI {
             context.save();
             super._processMeasures(parentMeasure, context);
            
-            this.applyStates(context);
+            this._applyStates(context);
 
             this._localDraw(context);
 
@@ -77,7 +77,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!super._contains(x, y)) {
+            if (!super.contains(x, y)) {
                 return false;
             }
 
