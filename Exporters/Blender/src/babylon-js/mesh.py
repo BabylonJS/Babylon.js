@@ -9,6 +9,7 @@ from .shape_key_group import *
 import bpy
 import math
 from mathutils import Vector
+from random import randint
 import shutil
 
 # output related constants
@@ -435,6 +436,7 @@ class Mesh(FCurveAnimatable):
         if hasShapeKeys:
             Mesh.sort(keyOrderMap)
             self.rawShapeKeys = []
+            self.morphTargetManagerId = randint(0, 1000000) # not used for TOB implementation
             groupNames = []
             Logger.log('Shape Keys:', 2)
 
@@ -675,23 +677,26 @@ class Mesh(FCurveAnimatable):
         file_handler.write(']')
         
         # Shape Keys
-        if hasattr(self, 'rawShapeKeys'):
-            first = True
-            file_handler.write('\n,"MorphTargetManager":{')
-            write_string(file_handler, 'id', self.name, True)
-            file_handler.write('\n,"targets":[')
-            for key in self.rawShapeKeys:
-                if first == False:
-                    file_handler.write(',')
-
-                key.to_scene_file(file_handler)
-
-                first = False
-            file_handler.write(']}')
+        if hasattr(self, 'morphTargetManagerId'):
+            write_int(file_handler, 'morphTargetManagerId', self.morphTargetManagerId)
 
         # Close mesh
         file_handler.write('}\n')
         self.alreadyExported = True
+#===============================================================================
+    def write_morphing_file(self, file_handler):
+        first = True
+        file_handler.write('{')
+        write_int(file_handler, 'id', self.morphTargetManagerId, True)
+        file_handler.write('\n,"targets":[')
+        for key in self.rawShapeKeys:
+            if first == False:
+                file_handler.write(',')
+
+            key.to_scene_file(file_handler)
+
+            first = False
+        file_handler.write(']}')
 #===============================================================================
 class MeshInstance:
      def __init__(self, instancedMesh, rotation, rotationQuaternion):

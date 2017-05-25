@@ -364,7 +364,7 @@
             var result = preparedSourceCode.replace(regex, "");
 
             // Migrate to GLSL v300
-            result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
             

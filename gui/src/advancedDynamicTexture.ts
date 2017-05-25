@@ -5,10 +5,13 @@ module BABYLON.GUI {
         private _isDirty = false;
         private _renderObserver: Observer<Scene>;
         private _resizeObserver: Observer<Engine>;
-        private _pointerMoveObserver: Observer<PointerInfo>;
+        private _pointerMoveObserver: Observer<PointerInfoPre>;
         private _background: string;
         private _rootContainer = new Container("root");
         public _lastControlOver: Control;
+        public _lastControlDown: Control;
+        public _shouldBlockPointer: boolean;
+        public _toDispose: IDisposable;
 
         public get background(): string {
             return this._background;
@@ -61,7 +64,12 @@ module BABYLON.GUI {
             }
 
             if (this._pointerMoveObserver) {
-                this.getScene().onPointerObservable.remove(this._pointerMoveObserver);
+                this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
+            }
+
+            if (this._toDispose) {
+                this._toDispose.dispose();
+                this._toDispose = null;
             }
 
             super.dispose();
@@ -125,14 +133,17 @@ module BABYLON.GUI {
 
         public attach(): void {
             var scene = this.getScene();
-            this._pointerMoveObserver = scene.onPointerObservable.add((pi, state) => {
+            this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
                 if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                     && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
                 }
 
+                this._shouldBlockPointer = false;
                 this._doPicking(scene.pointerX, scene.pointerY, pi.type);
+
+                pi.skipOnPointerObservable = this._shouldBlockPointer;
             });
         }
 
@@ -156,6 +167,8 @@ module BABYLON.GUI {
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
             layer.texture = result;
+
+            result._toDispose = layer;
 
             // Attach
             result.attach();

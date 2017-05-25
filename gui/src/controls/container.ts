@@ -53,11 +53,19 @@ module BABYLON.GUI {
             // Implemented by child to be injected inside main draw
         }
 
+        public _link(root: Container, host: AdvancedDynamicTexture): void {
+            super._link(root, host);
+
+            for (var child of this._children) {
+                child._link(root, host);
+            }
+        }
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
             super._processMeasures(parentMeasure, context);
            
-            this.applyStates(context);
+            this._applyStates(context);
 
             this._localDraw(context);
 
@@ -69,7 +77,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!super._contains(x, y)) {
+            if (!super.contains(x, y)) {
                 return false;
             }
 

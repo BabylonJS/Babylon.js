@@ -199,26 +199,26 @@ module BABYLON {
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
                     this.cameraDirection.x = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.y) < Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
                     this.cameraDirection.y = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.z) < Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
                     this.cameraDirection.z = 0;
                 }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
                     this.cameraRotation.x = 0;
                 }
 
-                if (Math.abs(this.cameraRotation.y) < Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);

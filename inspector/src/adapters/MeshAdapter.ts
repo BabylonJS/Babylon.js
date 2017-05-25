@@ -95,7 +95,7 @@ module INSPECTOR {
             var x = new BABYLON.Vector3(8, 0, 0);
             var y = new BABYLON.Vector3(0, 8, 0);
             var z = new BABYLON.Vector3(0, 0, 8);
-
+            
             // Draw an axis of the given color
             let _drawAxis = (color, start, end): BABYLON.LinesMesh => {
                 let axis = BABYLON.Mesh.CreateLines("###axis###", [
@@ -110,26 +110,23 @@ module INSPECTOR {
             // X axis
             let xAxis = _drawAxis(
                 BABYLON.Color3.Red(),
-                this._obj.getAbsolutePosition(),
-                BABYLON.Vector3.TransformCoordinates(x, m));
-            xAxis.position.subtractInPlace(this._obj.position);
+                BABYLON.Vector3.Zero(),
+                x);
             xAxis.parent = this._obj;
             this._axis.push(xAxis);
             // Y axis        
             let yAxis = _drawAxis(
                 BABYLON.Color3.Green(),
-                this._obj.getAbsolutePosition(),
-                BABYLON.Vector3.TransformCoordinates(y, m));
+                BABYLON.Vector3.Zero(),
+                y);
             yAxis.parent = this._obj;
-            yAxis.position.subtractInPlace(this._obj.position);
             this._axis.push(yAxis);
             // Z axis
             let zAxis = _drawAxis(
                 BABYLON.Color3.Blue(),
-                this._obj.getAbsolutePosition(),
-                BABYLON.Vector3.TransformCoordinates(z, m));
+                BABYLON.Vector3.Zero(),
+                z);
             zAxis.parent = this._obj;
-            zAxis.position.subtractInPlace(this._obj.position);
             this._axis.push(zAxis);
         }
     }
