@@ -13109,10 +13109,6 @@ var BABYLON;
                 }
                 return deleted;
             };
-            for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
-                var item = array_1[_i];
-                item._resyncLighSource(this);
-            }
         };
         Light.prototype._hookArrayForIncludedOnly = function (array) {
             var _this = this;
@@ -13132,7 +13128,6 @@ var BABYLON;
                 _this._resyncMeshes();
                 return deleted;
             };
-            this._resyncMeshes();
         };
         Light.prototype._resyncMeshes = function () {
             for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
