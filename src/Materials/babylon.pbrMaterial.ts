@@ -554,11 +554,11 @@
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
 
-                if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
+                if (StandardMaterial.ReflectionTextureEnabled && this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                     this._renderTargets.push(this.reflectionTexture);
                 }
 
-                if (this.refractionTexture && this.refractionTexture.isRenderTarget) {
+                if (StandardMaterial.RefractionTextureEnabled && this.refractionTexture && this.refractionTexture.isRenderTarget) {
                     this._renderTargets.push(this.refractionTexture);
                 }
 
