@@ -414,10 +414,6 @@
 
                 return deleted;
             }
-
-            for (var item of array) {
-                item._resyncLighSource(this);
-            }
         }
 
         private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
@@ -438,8 +434,6 @@
 
                 return deleted;
             }
-
-            this._resyncMeshes();
         }
 
         private _resyncMeshes() {
