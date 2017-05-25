@@ -12948,10 +12948,10 @@ var BABYLON;
             if (!mesh) {
                 return true;
             }
-            if (this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
+            if (this.includedOnlyMeshes && this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
                 return false;
             }
-            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+            if (this.excludedMeshes && this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
             if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
@@ -13109,6 +13109,10 @@ var BABYLON;
                 }
                 return deleted;
             };
+            for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+                var item = array_1[_i];
+                item._resyncLighSource(this);
+            }
         };
         Light.prototype._hookArrayForIncludedOnly = function (array) {
             var _this = this;
@@ -13128,6 +13132,7 @@ var BABYLON;
                 _this._resyncMeshes();
                 return deleted;
             };
+            this._resyncMeshes();
         };
         Light.prototype._resyncMeshes = function () {
             for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
