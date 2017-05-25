@@ -639,12 +639,7 @@
             if (Array.isArray(origin)) {
                 return origin;
             } else {
-                var len = origin.length;
-                var copy = [];
-                for (var i = 0; i < len; i++) {
-                    copy.push(origin[i]);
-                }
-                return copy;
+                return Array.prototype.slice.call(origin);
             }
         }
 
