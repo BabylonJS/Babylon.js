@@ -21,6 +21,11 @@
          */
         public static MIN_RENDERINGGROUPS = 0;
 
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        public static AUTOCLEAR = true;
+
         private _scene: Scene;
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthStencilBufferAlreadyCleaned: boolean;
@@ -93,9 +98,11 @@
                 }
 
                 // Clear depth/stencil if needed
-                let autoClear = this._autoClearDepthStencil[index];
-                if (autoClear && autoClear.autoClear) {
-                    this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
+                if (RenderingManager.AUTOCLEAR) {
+                    let autoClear = this._autoClearDepthStencil[index];
+                    if (autoClear && autoClear.autoClear) {
+                        this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
+                    }
                 }
 
                 if (observable) {
