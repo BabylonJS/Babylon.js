@@ -222,11 +222,11 @@
                 return true;
             }
 
-            if (this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
+            if (this.includedOnlyMeshes && this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
                 return false;
             }
 
-            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+            if (this.excludedMeshes && this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
 
@@ -414,6 +414,10 @@
 
                 return deleted;
             }
+
+            for (var item of array) {
+                item._resyncLighSource(this);
+            }
         }
 
         private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
@@ -434,6 +438,8 @@
 
                 return deleted;
             }
+
+            this._resyncMeshes();
         }
 
         private _resyncMeshes() {
