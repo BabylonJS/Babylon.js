@@ -28,12 +28,22 @@
 
             var audioElem = document.createElement('audio');
 
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
-                this.isMP3supported = true;
+            try {
+                if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+                    this.isMP3supported = true;
+                }
+            }
+            catch (e) {
+                // protect error during capability check.
             }
 
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
-                this.isOGGsupported = true;
+            try {
+                if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
+                    this.isOGGsupported = true;
+                }
+            }
+            catch (e) {
+                // protect error during capability check.
             }
 
             if (/iPad|iPhone|iPod/.test(navigator.platform)) {
