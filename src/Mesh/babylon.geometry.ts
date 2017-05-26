@@ -24,8 +24,8 @@
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
 
         /**
-         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y 
-         * @returns The Bias Vector 
+         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
+         * @returns The Bias Vector
          */
         public get boundingBias(): Vector2 {
             return this._boundingBias;
@@ -208,7 +208,7 @@
             }
         }
 
-        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {  
+        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {
             if (indexToBind === undefined) {
                 indexToBind = this._indexBuffer;
             }
@@ -352,7 +352,7 @@
             if (!effect || !this._vertexArrayObjects) {
                 return;
             }
-            
+
             if (this._vertexArrayObjects[effect.key]) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
                 delete this._vertexArrayObjects[effect.key];
@@ -635,74 +635,82 @@
             return serializationObject;
         }
 
+        private toNumberArray(origin: Float32Array | IndicesArray) : number[] {
+            if (Array.isArray(origin)) {
+                return origin;
+            } else {
+                return Array.prototype.slice.call(origin);
+            }
+        }
+
         public serializeVerticeData(): any {
             var serializationObject = this.serialize();
 
             if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                serializationObject.positions = this.getVerticesData(VertexBuffer.PositionKind);
+                serializationObject.positions = this.toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
                 if (this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable) {
                     serializationObject.positions._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                serializationObject.normals = this.getVerticesData(VertexBuffer.NormalKind);
+                serializationObject.normals = this.toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
                 if (this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable) {
                     serializationObject.normals._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                serializationObject.uvs = this.getVerticesData(VertexBuffer.UVKind);
+                serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
                 if (this.getVertexBuffer(VertexBuffer.UVKind).isUpdatable) {
                     serializationObject.uvs._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                serializationObject.uv2s = this.getVerticesData(VertexBuffer.UV2Kind);
+                serializationObject.uv2s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
                 if (this.getVertexBuffer(VertexBuffer.UV2Kind).isUpdatable) {
                     serializationObject.uv2s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                serializationObject.uv3s = this.getVerticesData(VertexBuffer.UV3Kind);
+                serializationObject.uv3s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
                 if (this.getVertexBuffer(VertexBuffer.UV3Kind).isUpdatable) {
                     serializationObject.uv3s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                serializationObject.uv4s = this.getVerticesData(VertexBuffer.UV4Kind);
+                serializationObject.uv4s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
                 if (this.getVertexBuffer(VertexBuffer.UV4Kind).isUpdatable) {
                     serializationObject.uv4s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                serializationObject.uv5s = this.getVerticesData(VertexBuffer.UV5Kind);
+                serializationObject.uv5s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
                 if (this.getVertexBuffer(VertexBuffer.UV5Kind).isUpdatable) {
                     serializationObject.uv5s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                serializationObject.uv6s = this.getVerticesData(VertexBuffer.UV6Kind);
+                serializationObject.uv6s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
                 if (this.getVertexBuffer(VertexBuffer.UV6Kind).isUpdatable) {
                     serializationObject.uv6s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                serializationObject.colors = this.getVerticesData(VertexBuffer.ColorKind);
+                serializationObject.colors = this.toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
                 if (this.getVertexBuffer(VertexBuffer.ColorKind).isUpdatable) {
                     serializationObject.colors._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-                serializationObject.matricesIndices = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
                 serializationObject.matricesIndices._isExpanded = true;
                 if (this.getVertexBuffer(VertexBuffer.MatricesIndicesKind).isUpdatable) {
                     serializationObject.matricesIndices._updatable = true;
@@ -710,13 +718,13 @@
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-                serializationObject.matricesWeights = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
                 if (this.getVertexBuffer(VertexBuffer.MatricesWeightsKind).isUpdatable) {
                     serializationObject.matricesWeights._updatable = true;
                 }
             }
 
-            serializationObject.indices = this.getIndices();
+            serializationObject.indices = this.toNumberArray(this.getIndices());
 
             return serializationObject;
         }
