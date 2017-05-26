@@ -5038,108 +5038,48 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Ray;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
+    class LensFlare {
+        size: number;
+        position: number;
         color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
         private _scene;
-        private _debugLines;
-        private _debugMesh;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
         private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        constructor(name: string, emitter: any, scene: Scene);
         isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
         dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -5398,48 +5338,108 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
     }
 }
 
 declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
+    class DebugLayer {
         private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
+        static InspectorURL: string;
+        private _inspector;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Ray;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
         dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
     }
 }
 
@@ -5831,6 +5831,58 @@ declare module BABYLON {
          * Returns the SpotLight rotation (Vector3).
          */
         getRotation(): Vector3;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -7238,58 +7290,6 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPlugin {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -16349,6 +16349,9 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+}
+
 declare module BABYLON {
     class BaseTexture {
         static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
@@ -16892,9 +16895,6 @@ declare module BABYLON {
             deviceId: string;
         }): void;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

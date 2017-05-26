@@ -23278,11 +23278,11 @@ var BABYLON;
     Material._PointFillMode = 2;
     Material._ClockWiseSideOrientation = 0;
     Material._CounterClockWiseSideOrientation = 1;
-    Material._TextureDirtyFlag = 0;
-    Material._LightDirtyFlag = 1;
-    Material._FresnelDirtyFlag = 2;
-    Material._AttributesDirtyFlag = 4;
-    Material._MiscDirtyFlag = 8;
+    Material._TextureDirtyFlag = 1;
+    Material._LightDirtyFlag = 2;
+    Material._FresnelDirtyFlag = 4;
+    Material._AttributesDirtyFlag = 8;
+    Material._MiscDirtyFlag = 16;
     __decorate([
         BABYLON.serialize()
     ], Material.prototype, "id", void 0);
@@ -40152,11 +40152,21 @@ var BABYLON;
                 this.canUseWebAudio = true;
             }
             var audioElem = document.createElement('audio');
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
-                this.isMP3supported = true;
+            try {
+                if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+                    this.isMP3supported = true;
+                }
             }
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
-                this.isOGGsupported = true;
+            catch (e) {
+                // protect error during capability check.
+            }
+            try {
+                if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
+                    this.isOGGsupported = true;
+                }
+            }
+            catch (e) {
+                // protect error during capability check.
             }
             if (/iPad|iPhone|iPod/.test(navigator.platform)) {
                 this._unlockiOSaudio();
