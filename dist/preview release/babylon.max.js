@@ -26499,76 +26499,84 @@ var BABYLON;
             }
             return serializationObject;
         };
+        Geometry.prototype.toNumberArray = function (origin) {
+            if (Array.isArray(origin)) {
+                return origin;
+            }
+            else {
+                return Array.prototype.slice.call(origin);
+            }
+        };
         Geometry.prototype.serializeVerticeData = function () {
             var serializationObject = this.serialize();
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                serializationObject.positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                serializationObject.positions = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.PositionKind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable) {
                     serializationObject.positions._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                serializationObject.normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                serializationObject.normals = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.NormalKind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable) {
                     serializationObject.normals._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                serializationObject.uvs = this.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                serializationObject.uvs = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UVKind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UVKind).isUpdatable) {
                     serializationObject.uvs._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                serializationObject.uv2s = this.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+                serializationObject.uv2s = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UV2Kind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UV2Kind).isUpdatable) {
                     serializationObject.uv2s._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-                serializationObject.uv3s = this.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
+                serializationObject.uv3s = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UV3Kind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UV3Kind).isUpdatable) {
                     serializationObject.uv3s._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-                serializationObject.uv4s = this.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
+                serializationObject.uv4s = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UV4Kind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UV4Kind).isUpdatable) {
                     serializationObject.uv4s._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-                serializationObject.uv5s = this.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
+                serializationObject.uv5s = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UV5Kind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UV5Kind).isUpdatable) {
                     serializationObject.uv5s._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-                serializationObject.uv6s = this.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
+                serializationObject.uv6s = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.UV6Kind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.UV6Kind).isUpdatable) {
                     serializationObject.uv6s._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                serializationObject.colors = this.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                serializationObject.colors = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.ColorKind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.ColorKind).isUpdatable) {
                     serializationObject.colors._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                serializationObject.matricesIndices = this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind));
                 serializationObject.matricesIndices._isExpanded = true;
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.MatricesIndicesKind).isUpdatable) {
                     serializationObject.matricesIndices._updatable = true;
                 }
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                serializationObject.matricesWeights = this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+                serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind));
                 if (this.getVertexBuffer(BABYLON.VertexBuffer.MatricesWeightsKind).isUpdatable) {
                     serializationObject.matricesWeights._updatable = true;
                 }
             }
-            serializationObject.indices = this.getIndices();
+            serializationObject.indices = this.toNumberArray(this.getIndices());
             return serializationObject;
         };
         // Statics
@@ -27439,10 +27447,10 @@ var BABYLON;
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
-                if (_this._reflectionTexture && _this._reflectionTexture.isRenderTarget) {
+                if (StandardMaterial.ReflectionTextureEnabled && _this._reflectionTexture && _this._reflectionTexture.isRenderTarget) {
                     _this._renderTargets.push(_this._reflectionTexture);
                 }
-                if (_this._refractionTexture && _this._refractionTexture.isRenderTarget) {
+                if (StandardMaterial.RefractionTextureEnabled && _this._refractionTexture && _this._refractionTexture.isRenderTarget) {
                     _this._renderTargets.push(_this._refractionTexture);
                 }
                 return _this._renderTargets;
@@ -28892,10 +28900,10 @@ var BABYLON;
             _this._cachedDefines.BonesPerMesh = -1;
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
-                if (_this.reflectionTexture && _this.reflectionTexture.isRenderTarget) {
+                if (BABYLON.StandardMaterial.ReflectionTextureEnabled && _this.reflectionTexture && _this.reflectionTexture.isRenderTarget) {
                     _this._renderTargets.push(_this.reflectionTexture);
                 }
-                if (_this.refractionTexture && _this.refractionTexture.isRenderTarget) {
+                if (BABYLON.StandardMaterial.RefractionTextureEnabled && _this.refractionTexture && _this.refractionTexture.isRenderTarget) {
                     _this._renderTargets.push(_this.refractionTexture);
                 }
                 return _this._renderTargets;
@@ -31254,8 +31262,6 @@ var BABYLON;
             element.addEventListener("mousemove", this._onMouseMove, false);
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
-            element.addEventListener("keydown", this._onKeyDown, false);
-            element.addEventListener("keyup", this._onKeyUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
@@ -31268,12 +31274,8 @@ var BABYLON;
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
                 this._isPanClick = false;
                 this.pinchInwards = true;
-                this._onKeyDown = null;
-                this._onKeyUp = null;
                 this._onMouseMove = null;
                 this._onGestureStart = null;
                 this._onGesture = null;
