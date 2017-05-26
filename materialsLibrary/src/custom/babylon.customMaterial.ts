@@ -20,7 +20,7 @@ module BABYLON {
     constructor(){}
 
     public Fragment_Begin:string;
-    public Fragment_Definations:string;
+    public Fragment_Definitions:string;
     public Fragment_MainBegin: string;
     
     // diffuseColor
@@ -32,7 +32,7 @@ module BABYLON {
     public Fragment_Before_FragColor: string;
 
     public Vertex_Begin:string;
-    public Vertex_Definations:string;
+    public Vertex_Definitions:string;
     public Vertex_MainBegin: string;
     
     // positionUpdated
@@ -138,7 +138,7 @@ varying vec3 vDirectionW;\n\
 #include<logDepthDeclaration>\n\
 #include<fogFragmentDeclaration>\n\
 \n\
-#[Fragment_Definations]\n\
+#[Fragment_Definitions]\n\
 \n\
 void main(void) {\n\
 \n\
@@ -413,7 +413,7 @@ varying vec3 vDirectionW;\n\
 #endif\n\
 #include<logDepthDeclaration>\n\
 \n\
-#[Vertex_Definations]\n\
+#[Vertex_Definitions]\n\
 \n\
 void main(void) {\n\
     \n\
@@ -552,19 +552,19 @@ vColor=color;\n\
          public static ShaderIndexer = 1;
          public CustomParts :  ShaderSpecialParts;
          public ShaderVersion : CustomShaderStructure ;
-         _customUnifrom : string[];
-         _newUnifroms : string[];
-         _newUnifromInstances : any[];
+         _customUniform : string[];
+         _newUniforms : string[];
+         _newUniformInstances : any[];
          _newSamplerInstances : Texture[];
 
          public AttachAfterBind(mesh:Mesh,effect:Effect){ 
-             for(var el in this._newUnifromInstances){
+             for(var el in this._newUniformInstances){
                  var ea = el.toString().split('-');
-                 if(ea[0] == 'vec2') effect.setVector2(ea[1],this._newUnifromInstances[el]);
-                 else if(ea[0] == 'vec3') effect.setVector3(ea[1],this._newUnifromInstances[el]);
-                 else if(ea[0] == 'vec4') effect.setVector4(ea[1],this._newUnifromInstances[el]);
-                 else if(ea[0] == 'mat4') effect.setMatrix(ea[1],this._newUnifromInstances[el]);
-                 else if(ea[0] == 'float') effect.setFloat(ea[1],this._newUnifromInstances[el]); 
+                 if(ea[0] == 'vec2') effect.setVector2(ea[1],this._newUniformInstances[el]);
+                 else if(ea[0] == 'vec3') effect.setVector3(ea[1],this._newUniformInstances[el]);
+                 else if(ea[0] == 'vec4') effect.setVector4(ea[1],this._newUniformInstances[el]);
+                 else if(ea[0] == 'mat4') effect.setMatrix(ea[1],this._newUniformInstances[el]);
+                 else if(ea[0] == 'float') effect.setFloat(ea[1],this._newUniformInstances[el]); 
              }
 
               for(var el in this._newSamplerInstances){ 
@@ -577,16 +577,16 @@ vColor=color;\n\
          public ReviewUniform(name:string, arr : string[] ) : string[]{
              if(name == "uniform")
               {
-                  for(var ind in this._newUnifroms)
-                    if(this._customUnifrom[ind].indexOf('sampler')== -1) 
-                        arr.push(this._newUnifroms[ind]);
+                  for(var ind in this._newUniforms)
+                    if(this._customUniform[ind].indexOf('sampler')== -1) 
+                        arr.push(this._newUniforms[ind]);
               }
 
                  if(name == "sampler")
               {
-                   for(var ind in this._newUnifroms)
-                    if(this._customUnifrom[ind].indexOf('sampler')!= -1) 
-                        arr.push(this._newUnifroms[ind]);
+                   for(var ind in this._newUniforms)
+                    if(this._customUniform[ind].indexOf('sampler')!= -1) 
+                        arr.push(this._newUniforms[ind]);
               }
 
              return arr;
@@ -608,7 +608,7 @@ vColor=color;\n\
 
             BABYLON.Effect.ShadersStore[name+"VertexShader"] = this.ShaderVersion.VertexStore
             .replace('#[Vertex_Begin]',(this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
-            .replace('#[Vertex_Definations]',(this._customUnifrom? this._customUnifrom.join("\n"):"")+ (this.CustomParts.Vertex_Definations ? this.CustomParts.Vertex_Definations : ""))
+            .replace('#[Vertex_Definitions]',(this._customUniform? this._customUniform.join("\n"):"")+ (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
             .replace('#[Vertex_MainBegin]',(this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
             .replace('#[Vertex_Before_PositionUpdated]',(this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#[Vertex_Before_NormalUpdated]',(this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : "")) ;
@@ -616,7 +616,7 @@ vColor=color;\n\
             BABYLON.Effect.ShadersStore[name+"PixelShader"] = this.ShaderVersion.FragmentStore
             .replace('#[Fragment_Begin]',(this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#[Fragment_MainBegin]',(this.CustomParts.Fragment_MainBegin  ? this.CustomParts.Fragment_MainBegin : ""))
-            .replace('#[Fragment_Definations]',(this._customUnifrom? this._customUnifrom.join("\n"):"")+(this.CustomParts.Fragment_Definations ? this.CustomParts.Fragment_Definations : ""))
+            .replace('#[Fragment_Definitions]',(this._customUniform? this._customUniform.join("\n"):"")+(this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
             .replace('#[Fragment_Custom_Diffuse]',(this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
             .replace('#[Fragment_Custom_Alpha]',(this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#[Fragment_Before_FragColor]',(this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : "")) ;
@@ -639,24 +639,24 @@ vColor=color;\n\
             this.SelectVersion("3.0.0"); 
          } 
          public AddUniform(name:string,kind:string,param:any):CustomMaterial{
-             if(!this._customUnifrom)
+             if(!this._customUniform)
               {  
-                  this._customUnifrom = new Array();
-                  this._newUnifroms = new Array();
+                  this._customUniform = new Array();
+                  this._newUniforms = new Array();
                   this._newSamplerInstances = new Array();
-                  this._newUnifromInstances = new Array();
+                  this._newUniformInstances = new Array();
               }
               if(param){
               if(kind.indexOf("sampler") == -1) {
-                    this._newUnifromInstances[kind+"-"+name] = param;
+                    this._newUniformInstances[kind+"-"+name] = param;
               }
               else{
                   this._newSamplerInstances[kind+"-"+name] = param;
               }
              }
 
-            this._customUnifrom.push("uniform "+kind+" "+name+";");
-            this._newUnifroms.push(name);
+            this._customUniform.push("uniform "+kind+" "+name+";");
+            this._newUniforms.push(name);
              
             return this;
          }
@@ -665,8 +665,8 @@ vColor=color;\n\
             return this;
          }
 
-         public Fragment_Definations(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Fragment_Definations = shaderPart;
+         public Fragment_Definitions(shaderPart:string):CustomMaterial{            
+            this.CustomParts.Fragment_Definitions = shaderPart;
             return this;
          }
 
@@ -690,8 +690,8 @@ vColor=color;\n\
             this.CustomParts.Vertex_Begin = shaderPart;
             return this;
          }
-         public Vertex_Definations(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Vertex_Definations = shaderPart;
+         public Vertex_Definitions(shaderPart:string):CustomMaterial{            
+            this.CustomParts.Vertex_Definitions = shaderPart;
             return this;
          }
          public Vertex_MainBegin(shaderPart:string):CustomMaterial{            
