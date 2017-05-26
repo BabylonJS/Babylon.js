@@ -170,11 +170,11 @@
             return Material._CounterClockWiseSideOrientation;
         }
 
-        private static _TextureDirtyFlag = 0;
-        private static _LightDirtyFlag = 1;
-        private static _FresnelDirtyFlag = 2;
-        private static _AttributesDirtyFlag = 4;
-        private static _MiscDirtyFlag = 8;
+        private static _TextureDirtyFlag = 1;
+        private static _LightDirtyFlag = 2;
+        private static _FresnelDirtyFlag = 4;
+        private static _AttributesDirtyFlag = 8;
+        private static _MiscDirtyFlag = 16;
 
         public static get TextureDirtyFlag(): number {
             return Material._TextureDirtyFlag;
