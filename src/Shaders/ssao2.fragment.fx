@@ -134,39 +134,39 @@ vec4 blur13Bilateral(sampler2D image, vec2 uv, float resolution, vec2 direction)
   float compareDepth = abs(texture2D(depthSampler, uv).r);
   float sampleDepth;
   float weight;
-  float weightSum = 0.1964825501511404 * 30.0;
+  float weightSum = 30.0;
 
-  color += texture2D(image, uv) * 0.1964825501511404 * 30.0;
+  color += texture2D(image, uv) * 30.0;
 
   sampleDepth = abs(texture2D(depthSampler, uv + (off1 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.2969069646728344 * weight;
-  color += texture2D(image, uv + (off1 / resolution)) * 0.2969069646728344 * weight;
+  weightSum +=  weight;
+  color += texture2D(image, uv + (off1 / resolution)) * weight;
 
   sampleDepth = abs(texture2D(depthSampler, uv - (off1 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.2969069646728344 * weight;
-  color += texture2D(image, uv - (off1 / resolution)) * 0.2969069646728344 * weight;
+  weightSum +=  weight;
+  color += texture2D(image, uv - (off1 / resolution)) * weight;
 
   sampleDepth = abs(texture2D(depthSampler, uv + (off2 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.09447039785044732 * weight;
-  color += texture2D(image, uv + (off2 / resolution)) * 0.09447039785044732 * weight;
+  weightSum += weight;
+  color += texture2D(image, uv + (off2 / resolution)) * weight;
 
   sampleDepth = abs(texture2D(depthSampler, uv - (off2 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.09447039785044732 * weight;
-  color += texture2D(image, uv - (off2 / resolution)) * 0.09447039785044732 * weight;
+  weightSum += weight;
+  color += texture2D(image, uv - (off2 / resolution)) * weight;
 
   sampleDepth = abs(texture2D(depthSampler, uv + (off3 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.010381362401148057 * weight;
-  color += texture2D(image, uv + (off3 / resolution)) * 0.010381362401148057 * weight;
+  weightSum += weight;
+  color += texture2D(image, uv + (off3 / resolution)) * weight;
 
   sampleDepth = abs(texture2D(depthSampler, uv - (off3 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-  weightSum += 0.010381362401148057 * weight;
-  color += texture2D(image, uv - (off3 / resolution)) * 0.010381362401148057 * weight;
+  weightSum += weight;
+  color += texture2D(image, uv - (off3 / resolution)) * weight;
 
   return color / weightSum;
 }
@@ -191,7 +191,7 @@ void main()
 		vec2 samplePos = vUV + sampleOffset;
 
 		float sampleDepth = abs(texture2D(depthSampler, samplePos).r);
-		float weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		float weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30000.0);
 
 		result += texture2D(textureSampler, samplePos).r * weight;
 		weightSum += weight;
