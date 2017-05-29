@@ -2,14 +2,18 @@
 
 module BABYLON.GUI {
     export class Container extends Control {
-        private _children = new Array<Control>();
+        protected _children = new Array<Control>();
         protected _measureForChildren = Measure.Empty();     
 
         constructor(public name: string) {
             super(name);
         }
 
-       public addControl(control: Control): Container {
+        public containsControl(control: Control): boolean {
+            return this._children.indexOf(control) !== -1;
+        }
+
+        public addControl(control: Control): Container {
            var index = this._children.indexOf(control);
 
             if (index !== -1) {
@@ -47,6 +51,14 @@ module BABYLON.GUI {
             this._children.push(control);
 
             this._markAsDirty();
+        }
+
+        public _markMatrixAsDirty(): void {
+            super._markMatrixAsDirty();
+
+            for (var index = 0; index < this._children.length; index++) {
+                this._children[index]._markMatrixAsDirty();
+            }
         }
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
