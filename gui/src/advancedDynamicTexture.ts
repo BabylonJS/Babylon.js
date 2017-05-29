@@ -132,6 +132,7 @@ module BABYLON.GUI {
             }
 
             // Render
+            context.font = "18px Arial";
             var measure = new Measure(0, 0, renderWidth, renderHeight);
             this._rootContainer._draw(measure, context);
         }
@@ -171,10 +172,23 @@ module BABYLON.GUI {
 
             var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
             material.backFaceCulling = false;
+            material.diffuseColor = BABYLON.Color3.Black();
+            material.specularColor = BABYLON.Color3.Black();
             material.emissiveTexture = result;
             material.opacityTexture = result;
 
             mesh.material = material;
+
+            mesh.getScene().onPointerObservable.add(function(pi, state) {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    return;
+                }
+
+                if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                    var uv = pi.pickInfo.getTextureCoordinates();
+                    result._doPicking(uv.x * width, (1.0 - uv.y) * height, pi.type);
+                }
+            });
 
             return result;
         }

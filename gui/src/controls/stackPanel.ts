@@ -10,6 +10,7 @@ module BABYLON.GUI {
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             var top = 0;
             for (var child of this._children) {
+                child._currentMeasure.copyFrom(parentMeasure);
                 child._measure();
                 child.top = top + "px";
                 top += child._currentMeasure.height;

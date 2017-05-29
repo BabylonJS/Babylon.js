@@ -12,7 +12,6 @@ module BABYLON.GUI {
         private _y2 = 0;
         private _dash = new Array<number>();
         private _connectedControl: Control;
-        private _connectedControlDirtyObserver: Observer<Control>;
 
         public get dash(): Array<number> {
             return this._dash;
@@ -34,15 +33,6 @@ module BABYLON.GUI {
         public set connectedControl(value: Control) {
             if (this._connectedControl === value) {
                 return;
-            }
-
-            if (this._connectedControlDirtyObserver && this._connectedControl) {
-                this._connectedControl.onDirtyObservable.remove(this._connectedControlDirtyObserver);
-                this._connectedControlDirtyObserver = null;
-            }
-
-            if (value) {
-                this._connectedControlDirtyObserver = value.onDirtyObservable.add(() => this._markAsDirty());
             }
 
             this._connectedControl = value;

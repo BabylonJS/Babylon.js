@@ -20,15 +20,12 @@ module BABYLON.GUI {
         }
 
         protected _onPointerEnter(): void {
-            this.scaleX += 0.01;
-            this.scaleY += 0.01;
+            this.alpha -= 0.2;
             super._onPointerEnter();
         }
 
         protected _onPointerOut(): void {
-            this.scaleX -= 0.01;
-            this.scaleY -= 0.01;
-
+            this.alpha += 0.2;
             super._onPointerOut();
         }
 

@@ -7,8 +7,8 @@ module BABYLON.GUI {
         public _root: Container;
         public _host: AdvancedDynamicTexture;
         public _currentMeasure = Measure.Empty();
-        private _fontFamily: string;
-        private _fontSize = 18;
+        private _fontFamily = "Arial";
+        private _fontSize: number;
         private _font: string;
         private _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         private _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -348,7 +348,6 @@ module BABYLON.GUI {
 
         // Functions
         constructor(public name: string) {
-            this.fontFamily = "Arial";
         }
 
         public linkWithMesh(mesh: AbstractMesh): void {
