@@ -6,11 +6,13 @@ declare module BABYLON.GUI {
         private _resizeObserver;
         private _pointerMoveObserver;
         private _background;
-        private _rootContainer;
+        _rootContainer: Container;
         _lastControlOver: Control;
         _lastControlDown: Control;
         _shouldBlockPointer: boolean;
         _toDispose: IDisposable;
+        _linkedControls: Control[];
+        private _isFullscreen;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
@@ -18,7 +20,7 @@ declare module BABYLON.GUI {
         removeControl(control: Control): AdvancedDynamicTexture;
         dispose(): void;
         private _onResize();
-        private _checkUpdate();
+        private _checkUpdate(camera);
         private _render();
         private _doPicking(x, y, type);
         attach(): void;
@@ -50,6 +52,7 @@ declare module BABYLON.GUI {
         determinant(): number;
         invertToRef(result: Matrix2D): Matrix2D;
         multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        transformCoordinates(x: number, y: number, result: Vector2): Matrix2D;
         static Identity(): Matrix2D;
         static TranslationToRef(x: number, y: number, result: Matrix2D): void;
         static ScalingToRef(x: number, y: number, result: Matrix2D): void;
@@ -58,6 +61,9 @@ declare module BABYLON.GUI {
         private static _TempPostTranslationMatrix;
         private static _TempRotationMatrix;
         private static _TempScalingMatrix;
+        private static _TempCompose0;
+        private static _TempCompose1;
+        private static _TempCompose2;
         static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Matrix2D, result: Matrix2D): void;
     }
 }
@@ -85,6 +91,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     class Control {
         name: string;
+        private _alpha;
         private _zIndex;
         _root: Container;
         _host: AdvancedDynamicTexture;
@@ -101,8 +108,8 @@ declare module BABYLON.GUI {
             descent: number;
         };
         private _color;
-        private _horizontalAlignment;
-        private _verticalAlignment;
+        protected _horizontalAlignment: number;
+        protected _verticalAlignment: number;
         private _isDirty;
         private _cachedParentMeasure;
         private _marginLeft;
@@ -118,11 +125,15 @@ declare module BABYLON.GUI {
         private _transformCenterY;
         private _transformMatrix;
         private _invertTransformMatrix;
+        private _transformedPosition;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
+        _linkedMesh: AbstractMesh;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
+        linkOffsetX: number;
+        linkOffsetY: number;
         /**
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
@@ -148,6 +159,12 @@ declare module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         onPointerEnterObservable: Observable<Control>;
+        /**
+        * An event triggered when the control is marked as dirty
+        * @type {BABYLON.Observable}
+        */
+        onDirtyObservable: Observable<Control>;
+        alpha: number;
         scaleX: number;
         scaleY: number;
         rotation: number;
@@ -168,14 +185,19 @@ declare module BABYLON.GUI {
         marginBottom: string;
         left: string;
         top: string;
+        readonly centerX: number;
+        readonly centerY: number;
         constructor(name: string);
+        linkWithMesh(mesh: AbstractMesh): void;
+        _moveToProjectedPosition(projectedPosition: Vector3): void;
+        _markMatrixAsDirty(): void;
         protected _markAsDirty(): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected _transform(context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clip(context: CanvasRenderingContext2D): void;
-        protected _measure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -213,17 +235,28 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     class Container extends Control {
         name: string;
-        private _children;
+        protected _children: Control[];
         protected _measureForChildren: Measure;
         constructor(name: string);
+        containsControl(control: Control): boolean;
         addControl(control: Control): Container;
         removeControl(control: Control): Container;
         _reOrderControl(control: Control): void;
+        _markMatrixAsDirty(): void;
         protected _localDraw(context: CanvasRenderingContext2D): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class StackPanel extends Container {
+        name: string;
+        constructor(name: string);
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }
@@ -243,6 +276,51 @@ declare module BABYLON.GUI {
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawRoundedRect(context, offset?);
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class Ellipse extends Container {
+        name: string;
+        private _thickness;
+        private _background;
+        thickness: number;
+        background: string;
+        constructor(name: string);
+        protected _localDraw(context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _clipForChildren(context: CanvasRenderingContext2D): void;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
+declare module BABYLON.GUI {
+    class Line extends Control {
+        name: string;
+        private _lineWidth;
+        private _background;
+        private _x1;
+        private _y1;
+        private _x2;
+        private _y2;
+        private _dash;
+        private _connectedControl;
+        dash: Array<number>;
+        connectedControl: Control;
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        lineWidth: number;
+        horizontalAlignment: number;
+        verticalAlignment: number;
+        constructor(name: string);
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _measure(): void;
+        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _moveToProjectedPosition(projectedPosition: Vector3): void;
     }
 }
 
