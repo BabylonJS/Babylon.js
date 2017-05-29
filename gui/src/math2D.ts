@@ -57,6 +57,13 @@ module BABYLON.GUI {
             return this;
         }
 
+        public transformCoordinates(x: number, y: number, result: Vector2): Matrix2D {
+            result.x = x * this.m[0] + y * this.m[2] + this.m[4];
+            result.y = x * this.m[1] + y * this.m[3] + this.m[5];
+
+            return this;
+        }
+
         // Statics
         public static Identity(): Matrix2D {
             return new Matrix2D(1, 0, 0, 1, 0, 0);
@@ -77,11 +84,13 @@ module BABYLON.GUI {
             result.fromValues(c, s, -s, c,  0, 0);
         }
 
-
         private static _TempPreTranslationMatrix = Matrix2D.Identity();
         private static _TempPostTranslationMatrix = Matrix2D.Identity();
         private static _TempRotationMatrix = Matrix2D.Identity();
         private static _TempScalingMatrix = Matrix2D.Identity();
+        private static _TempCompose0 = Matrix2D.Identity();
+        private static _TempCompose1 = Matrix2D.Identity();
+        private static _TempCompose2 = Matrix2D.Identity();
 
         public static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Matrix2D,  result: Matrix2D): void {
             Matrix2D.TranslationToRef(tx, ty, Matrix2D._TempPreTranslationMatrix);
@@ -91,6 +100,15 @@ module BABYLON.GUI {
             Matrix2D.RotationToRef(angle, Matrix2D._TempRotationMatrix);
 
             Matrix2D.TranslationToRef(-tx, -ty, Matrix2D._TempPostTranslationMatrix);
+
+            Matrix2D._TempPreTranslationMatrix.multiplyToRef(Matrix2D._TempScalingMatrix, Matrix2D._TempCompose0);
+            Matrix2D._TempCompose0.multiplyToRef(Matrix2D._TempRotationMatrix, Matrix2D._TempCompose1);
+            if (parentMatrix) {
+                Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, Matrix2D._TempCompose2);
+                Matrix2D._TempCompose2.multiplyToRef(parentMatrix, result);
+            } else {
+                Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, result);
+            }
         }
     }    
 }

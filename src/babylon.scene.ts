@@ -1127,7 +1127,7 @@
                 var canvas = this._engine.getRenderingCanvas();
 
                 if (!this.pointerMovePredicate) {
-                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
                 }
 
                 // Meshes
@@ -1204,7 +1204,7 @@
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                     };
                 }
 
@@ -1334,7 +1334,7 @@
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                            return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                            return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                         };
                     }
 
