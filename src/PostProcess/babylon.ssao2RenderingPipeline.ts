@@ -165,7 +165,7 @@
 
             // Set up assets
             this._createRandomTexture();
-            this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().depthTexture; 
+            this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[0]; 
             this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
@@ -220,7 +220,7 @@
             var expensive = this.expensiveBlur;
 
             for (var i = -8; i < 8; i++) {
-                this._samplerOffsets.push(i * 2);
+                this._samplerOffsets.push(i * 2 + 0.5);
             }
 
             this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
@@ -270,11 +270,8 @@
                vector = new BABYLON.Vector3(
                    rand(-1.0, 1.0),
                    rand(-1.0, 1.0),
-                   rand(0.0, 1.0));
+                   rand(0.30, 1.0));
                vector.normalize();
-               if (BABYLON.Vector3.Dot(vector, normal) < 0.07) {
-                   continue;
-               }
                scale = i / numSamples;
                scale = lerp(0.1, 1.0, scale*scale);
                vector.scaleInPlace(scale);

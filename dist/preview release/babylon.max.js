@@ -42402,8 +42402,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        PostProcess.prototype.updateEffect = function (defines) {
-            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
+        PostProcess.prototype.updateEffect = function (defines, uniforms, samplers) {
+            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "");
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -48013,18 +48013,10 @@ var BABYLON;
                 return this._samples;
             },
             set: function (n) {
-                var _this = this;
-                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+                this._ssaoPostProcess.updateEffect("#define SAMPLES " + n + "\n#define SSAO");
                 this._samples = n;
-                for (var i = 0; i < this._scene.cameras.length; i++) {
-                    var camera = this._scene.cameras[i];
-                    this._ssaoPostProcess.dispose(camera);
-                }
-                this._createSSAOPostProcess(this._ratio.ssaoRatio);
-                this.addEffect(new BABYLON.PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurHRenderEffect, function () { return _this._blurHPostProcess; }, true));
-                this.addEffect(new BABYLON.PostProcessRenderEffect(this._scene.getEngine(), this.SSAOBlurVRenderEffect, function () { return _this._blurVPostProcess; }, true));
-                if (this._cameras)
-                    this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+                this._sampleSphere = this._generateHemisphere();
+                this._firstUpdate = true;
             },
             enumerable: true,
             configurable: true
@@ -48034,19 +48026,10 @@ var BABYLON;
                 return this._expensiveBlur;
             },
             set: function (b) {
-                var _this = this;
-                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+                this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n", null, ["textureSampler", "depthSampler"]);
+                this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n", null, ["textureSampler", "depthSampler"]);
                 this._expensiveBlur = b;
-                for (var i = 0; i < this._scene.cameras.length; i++) {
-                    var camera = this._scene.cameras[i];
-                    this._blurHPostProcess.dispose(camera);
-                    this._blurVPostProcess.dispose(camera);
-                }
-                this._createBlurPostProcess(this._ratio.ssaoRatio, this._ratio.blurRatio);
-                this.addEffect(new BABYLON.PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, function () { return _this._ssaoPostProcess; }, true));
-                this.addEffect(new BABYLON.PostProcessRenderEffect(this._scene.getEngine(), this.SSAORenderEffect, function () { return _this._ssaoPostProcess; }, true));
-                if (this._cameras)
-                    this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+                this._firstUpdate = true;
             },
             enumerable: true,
             configurable: true
@@ -48087,10 +48070,10 @@ var BABYLON;
         SSAO2RenderingPipeline.prototype._createBlurPostProcess = function (ssaoRatio, blurRatio) {
             var _this = this;
             var samples = 16;
-            var samplerOffsets = [];
+            this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
             for (var i = -8; i < 8; i++) {
-                samplerOffsets.push(i * 2);
+                this._samplerOffsets.push(i * 2);
             }
             this._blurHPostProcess = new BABYLON.PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurHPostProcess.onApply = function (effect) {
@@ -48100,10 +48083,10 @@ var BABYLON;
                 effect.setFloat("radius", _this.radius);
                 effect.setTexture("depthSampler", _this._depthTexture);
                 if (_this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
+                    effect.setArray("samplerOffsets", _this._samplerOffsets);
                 }
             };
-            this._blurVPostProcess = new BABYLON.PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+            this._blurVPostProcess = new BABYLON.PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = function (effect) {
                 effect.setFloat("outSize", _this._ssaoCombinePostProcess.height);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
@@ -48111,7 +48094,7 @@ var BABYLON;
                 effect.setFloat("radius", _this.radius);
                 effect.setTexture("depthSampler", _this._depthTexture);
                 if (_this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
+                    effect.setArray("samplerOffsets", _this._samplerOffsets);
                     _this._firstUpdate = false;
                 }
             };
@@ -48129,11 +48112,8 @@ var BABYLON;
             var i = 0;
             var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
-                vector = new BABYLON.Vector3(rand(-1.0, 1.0), rand(-1.0, 1.0), rand(0.0, 1.0));
+                vector = new BABYLON.Vector3(rand(-1.0, 1.0), rand(-1.0, 1.0), rand(0.30, 1.0));
                 vector.normalize();
-                if (BABYLON.Vector3.Dot(vector, normal) < 0.07) {
-                    continue;
-                }
                 scale = i / numSamples;
                 scale = lerp(0.1, 1.0, scale * scale);
                 vector.scaleInPlace(scale);
@@ -48145,8 +48125,7 @@ var BABYLON;
         SSAO2RenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {
             var _this = this;
             var numSamples = this.samples;
-            var sampleSphere = this._generateHemisphere();
-            var samplesFactor = 1.0 / numSamples;
+            this._sampleSphere = this._generateHemisphere();
             this._ssaoPostProcess = new BABYLON.PostProcess("ssao2", "ssao2", [
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                 "base", "range", "projection", "near", "far", "texelSize",
@@ -48154,10 +48133,10 @@ var BABYLON;
             ], ["randomSampler", "normalSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define SAMPLES " + numSamples + "\n#define SSAO");
             this._ssaoPostProcess.onApply = function (effect) {
                 if (_this._firstUpdate) {
-                    effect.setArray3("sampleSphere", sampleSphere);
-                    effect.setFloat("samplesFactor", samplesFactor);
+                    effect.setArray3("sampleSphere", _this._sampleSphere);
                     effect.setFloat("randTextureTiles", 4.0);
                 }
+                effect.setFloat("samplesFactor", 1 / _this.samples);
                 effect.setFloat("totalStrength", _this.totalStrength);
                 effect.setFloat2("texelSize", 1 / _this._ssaoPostProcess.width, 1 / _this._ssaoPostProcess.height);
                 effect.setFloat("radius", _this.radius);
