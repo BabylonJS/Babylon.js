@@ -13,4 +13,6 @@ The Babylon.js GUI library is an extension you can use to generate interactive u
 * Text wrapping
 
 ==> ideas
-* pick on mesh
+* background on containers
+* stack panel orientation
+* Doc
