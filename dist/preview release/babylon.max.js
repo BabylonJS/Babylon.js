@@ -41907,16 +41907,17 @@ var BABYLON;
             _this._lastUpdate = BABYLON.Tools.Now;
             return _this;
         }
+        VideoTexture.prototype.__setTextureReady = function () {
+            this._texture.isReady = true;
+        };
         VideoTexture.prototype._createTexture = function () {
-            var _this = this;
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             if (this._autoLaunch) {
                 this._autoLaunch = false;
                 this.video.play();
             }
-            this.video.addEventListener("playing", function () {
-                _this._texture.isReady = true;
-            });
+            this._setTextureReady = this.__setTextureReady.bind(this);
+            this.video.addEventListener("playing", this._setTextureReady);
         };
         VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
@@ -41926,6 +41927,10 @@ var BABYLON;
             this._lastUpdate = now;
             this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
             return true;
+        };
+        VideoTexture.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.video.removeEventListener("playing", this._setTextureReady);
         };
         VideoTexture.CreateFromWebCam = function (scene, onReady, constraints) {
             var video = document.createElement("video");
