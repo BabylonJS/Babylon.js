@@ -67,9 +67,13 @@ var BABYLON;
                 if (this._pointerMoveObserver) {
                     this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
                 }
-                if (this._toDispose) {
-                    this._toDispose.dispose();
-                    this._toDispose = null;
+                if (this._pointerObserver) {
+                    this.getScene().onPointerObservable.remove(this._pointerObserver);
+                }
+                if (this._layerToDispose) {
+                    this._layerToDispose.texture = null;
+                    this._layerToDispose.dispose();
+                    this._layerToDispose = null;
                 }
                 _super.prototype.dispose.call(this);
             };
@@ -147,6 +151,20 @@ var BABYLON;
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
             };
+            AdvancedDynamicTexture.prototype.attachToMesh = function (mesh) {
+                var _this = this;
+                var scene = this.getScene();
+                this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
+                    if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                        return;
+                    }
+                    if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                        var uv = pi.pickInfo.getTextureCoordinates();
+                        var size = _this.getSize();
+                        _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                    }
+                });
+            };
             // Statics
             AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height) {
                 if (width === void 0) { width = 1024; }
@@ -159,15 +177,7 @@ var BABYLON;
                 material.emissiveTexture = result;
                 material.opacityTexture = result;
                 mesh.material = material;
-                mesh.getScene().onPointerObservable.add(function (pi, state) {
-                    if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
-                        return;
-                    }
-                    if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                        var uv = pi.pickInfo.getTextureCoordinates();
-                        result._doPicking(uv.x * width, (1.0 - uv.y) * height, pi.type);
-                    }
-                });
+                result.attachToMesh(mesh);
                 return result;
             };
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
@@ -176,7 +186,7 @@ var BABYLON;
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
-                result._toDispose = layer;
+                result._layerToDispose = layer;
                 result._isFullscreen = true;
                 // Attach
                 result.attach();
@@ -2074,11 +2084,11 @@ var BABYLON;
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
-                this.alpha -= 0.2;
+                this.alpha -= 0.1;
                 _super.prototype._onPointerEnter.call(this);
             };
             Button.prototype._onPointerOut = function () {
-                this.alpha += 0.2;
+                this.alpha += 0.1;
                 _super.prototype._onPointerOut.call(this);
             };
             Button.prototype._onPointerDown = function () {

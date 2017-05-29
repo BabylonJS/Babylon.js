@@ -6,12 +6,13 @@ module BABYLON.GUI {
         private _renderObserver: Observer<Camera>;
         private _resizeObserver: Observer<Engine>;
         private _pointerMoveObserver: Observer<PointerInfoPre>;
+        private _pointerObserver: Observer<PointerInfo>;
         private _background: string;
         public _rootContainer = new Container("root");
         public _lastControlOver: Control;
         public _lastControlDown: Control;
         public _shouldBlockPointer: boolean;
-        public _toDispose: IDisposable;
+        public _layerToDispose: Layer;
         public _linkedControls = new Array<Control>();
         private _isFullscreen = false;
 
@@ -69,9 +70,14 @@ module BABYLON.GUI {
                 this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
             }
 
-            if (this._toDispose) {
-                this._toDispose.dispose();
-                this._toDispose = null;
+            if (this._pointerObserver) {
+                this.getScene().onPointerObservable.remove(this._pointerObserver);
+            }
+
+            if (this._layerToDispose) {
+                this._layerToDispose.texture = null;
+                this._layerToDispose.dispose();
+                this._layerToDispose = null;
             }
 
             super.dispose();
@@ -166,6 +172,21 @@ module BABYLON.GUI {
             });
         }
 
+        public attachToMesh(mesh: AbstractMesh): void {
+            var scene = this.getScene();
+            this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    return;
+                }
+
+                if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                    var uv = pi.pickInfo.getTextureCoordinates();
+                    var size = this.getSize();
+                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                }
+            });
+        }
+
         // Statics
         public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
@@ -179,16 +200,7 @@ module BABYLON.GUI {
 
             mesh.material = material;
 
-            mesh.getScene().onPointerObservable.add(function(pi, state) {
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
-                    return;
-                }
-
-                if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                    var uv = pi.pickInfo.getTextureCoordinates();
-                    result._doPicking(uv.x * width, (1.0 - uv.y) * height, pi.type);
-                }
-            });
+            result.attachToMesh(mesh);
 
             return result;
         }
@@ -200,7 +212,7 @@ module BABYLON.GUI {
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
             layer.texture = result;
 
-            result._toDispose = layer;
+            result._layerToDispose = layer;
             result._isFullscreen = true;
 
             // Attach
