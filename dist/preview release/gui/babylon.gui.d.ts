@@ -5,12 +5,13 @@ declare module BABYLON.GUI {
         private _renderObserver;
         private _resizeObserver;
         private _pointerMoveObserver;
+        private _pointerObserver;
         private _background;
         _rootContainer: Container;
         _lastControlOver: Control;
         _lastControlDown: Control;
         _shouldBlockPointer: boolean;
-        _toDispose: IDisposable;
+        _layerToDispose: Layer;
         _linkedControls: Control[];
         private _isFullscreen;
         background: string;
@@ -24,6 +25,7 @@ declare module BABYLON.GUI {
         private _render();
         private _doPicking(x, y, type);
         attach(): void;
+        attachToMesh(mesh: AbstractMesh): void;
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground: boolean, scene: Scene): AdvancedDynamicTexture;
     }

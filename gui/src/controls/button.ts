@@ -20,12 +20,12 @@ module BABYLON.GUI {
         }
 
         protected _onPointerEnter(): void {
-            this.alpha -= 0.2;
+            this.alpha -= 0.1;
             super._onPointerEnter();
         }
 
         protected _onPointerOut(): void {
-            this.alpha += 0.2;
+            this.alpha += 0.1;
             super._onPointerOut();
         }
 
