@@ -5,7 +5,7 @@
         private _autoLaunch = true;
         private _lastUpdate: number;
         private _generateMipMaps: boolean
-
+        private _setTextureReady: () => void;
         /**
          * Creates a video texture.
          * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
@@ -59,6 +59,10 @@
             this._lastUpdate = Tools.Now;
         }
 
+        private __setTextureReady(): void {
+            this._texture.isReady = true;
+        }
+
         private _createTexture(): void {
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
 
@@ -66,9 +70,8 @@
                 this._autoLaunch = false;
                 this.video.play();
             }
-            this.video.addEventListener("playing", () => {
-                this._texture.isReady = true;
-            });
+            this._setTextureReady = this.__setTextureReady.bind(this);
+            this.video.addEventListener("playing", this._setTextureReady);
         }
 
         public update(): boolean {
@@ -83,18 +86,23 @@
             return true;
         }
 
-        public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: { 
-                minWidth: number, 
-                maxWidth: number, 
-                minHeight: number, 
+        public dispose(): void {
+            super.dispose();
+            this.video.removeEventListener("playing", this._setTextureReady);
+        }
+
+        public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
+                minWidth: number,
+                maxWidth: number,
+                minHeight: number,
                 maxHeight: number,
                 deviceId: string
             }): void {
             var video = document.createElement("video");
             var constraintsDeviceId;
             if (constraints && constraints.deviceId){
-                constraintsDeviceId = { 
-                    exact: constraints.deviceId                     
+                constraintsDeviceId = {
+                    exact: constraints.deviceId
                 }
             }
 
@@ -102,7 +110,7 @@
 		    window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
 		    if (navigator.getUserMedia) {
-			    navigator.getUserMedia({                     
+			    navigator.getUserMedia({
                     video: {
                         deviceId: constraintsDeviceId,
                         width: {
@@ -121,14 +129,14 @@
                     } else {
                         video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
                     }
-                    
+
                     video.play();
 
                     if (onReady) {
                         onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
                     }
 			    }, function (e) {
-                    Tools.Error(e.name); 
+                    Tools.Error(e.name);
                 });
             }
         }
