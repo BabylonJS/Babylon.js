@@ -14,7 +14,3 @@ The Babylon.js GUI library is an extension you can use to generate interactive u
 
 ==> ideas
 * lines (with cap)
-* ellipse
-* button
-* interactions
-* rotate / scale

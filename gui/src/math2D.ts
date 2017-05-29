@@ -57,9 +57,9 @@ module BABYLON.GUI {
             return this;
         }
 
-        public transformCoordinates(x: number, y: number, rx: number, ry: number): Matrix2D {
-            rx = x * this.m[0] + y * this.m[2] + this.m[4];
-            ry = x * this.m[1] + y * this.m[3] + this.m[5];
+        public transformCoordinates(x: number, y: number, result: Vector2): Matrix2D {
+            result.x = x * this.m[0] + y * this.m[2] + this.m[4];
+            result.y = x * this.m[1] + y * this.m[3] + this.m[5];
 
             return this;
         }
@@ -84,7 +84,6 @@ module BABYLON.GUI {
             result.fromValues(c, s, -s, c,  0, 0);
         }
 
-
         private static _TempPreTranslationMatrix = Matrix2D.Identity();
         private static _TempPostTranslationMatrix = Matrix2D.Identity();
         private static _TempRotationMatrix = Matrix2D.Identity();
@@ -106,7 +105,7 @@ module BABYLON.GUI {
             Matrix2D._TempCompose0.multiplyToRef(Matrix2D._TempRotationMatrix, Matrix2D._TempCompose1);
             if (parentMatrix) {
                 Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, Matrix2D._TempCompose2);
-                parentMatrix.multiplyToRef(Matrix2D._TempCompose2, result);
+                Matrix2D._TempCompose2.multiplyToRef(parentMatrix, result);
             } else {
                 Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, result);
             }
