@@ -770,6 +770,54 @@
         }
 
         /**
+         * Creates a polygon mesh.
+         * The polygon's shape will depend on the input parameters and is constructed paralell to a ground mesh.
+         * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
+         * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * Remember you can only change the shape positions, not their number when updating a polygon.
+         */
+        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+			var shape = options.shape;
+			var holes = options.holes;
+			var depth = options.depth || 0;
+			var contours: Array<Vector2> = [];
+			var hole: Array<Vector2> = [];
+			for(var i=0; i < shape.length; i++) {
+				contours[i] = new Vector2(shape[i].x, shape[i].z);
+			}
+			var epsilon = 0.00000001;
+			if(contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
+					contours.pop();
+			}
+			
+			var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
+			for(var hNb = 0; hNb < holes.length; hNb++) {
+				hole = [];
+				for(var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
+					hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
+				}
+				polygonTriangulation.addHole(hole);
+			}
+			var polygon = polygonTriangulation.build(options.updatable, depth);
+            polygon.sideOrientation = options.sideOrientation;
+			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation);
+            vertexData.applyToMesh(polygon, options.updatable);			
+			
+            return polygon;
+		};
+
+        /**
+         * Creates an extruded polygon mesh, with depth in th Y direction. 
+		*/
+
+		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+			return MeshBuilder.CreatePolygon(name, options, scene);
+		};
+         
+
+        /**
          * Creates a tube mesh.    
          * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
          *
