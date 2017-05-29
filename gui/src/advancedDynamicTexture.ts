@@ -3,15 +3,17 @@
 module BABYLON.GUI {
     export class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty = false;
-        private _renderObserver: Observer<Scene>;
+        private _renderObserver: Observer<Camera>;
         private _resizeObserver: Observer<Engine>;
         private _pointerMoveObserver: Observer<PointerInfoPre>;
         private _background: string;
-        private _rootContainer = new Container("root");
+        public _rootContainer = new Container("root");
         public _lastControlOver: Control;
         public _lastControlDown: Control;
         public _shouldBlockPointer: boolean;
         public _toDispose: IDisposable;
+        public _linkedControls = new Array<Control>();
+        private _isFullscreen = false;
 
         public get background(): string {
             return this._background;
@@ -29,7 +31,7 @@ module BABYLON.GUI {
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
-            this._renderObserver = this.getScene().onBeforeRenderObservable.add(() => this._checkUpdate());
+            this._renderObserver = this.getScene().onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
 
             this._rootContainer._link(null, this);
 
@@ -57,7 +59,7 @@ module BABYLON.GUI {
         }
 
         public dispose() {
-            this.getScene().onBeforeRenderObservable.remove(this._renderObserver);
+            this.getScene().onBeforeCameraRenderObservable.remove(this._renderObserver);
 
             if (this._resizeObserver) {
                 this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
@@ -88,7 +90,23 @@ module BABYLON.GUI {
             }
         }
 
-        private _checkUpdate(): void {
+        private _checkUpdate(camera: Camera): void {
+            if (this._isFullscreen && this._linkedControls.length) {
+                var scene = this.getScene();
+                var engine = scene.getEngine();
+                var viewport = camera.viewport;
+                var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+
+                for (var control of this._linkedControls) {
+                    var mesh = control._linkedMesh;
+                    
+                    var position = mesh.getBoundingInfo().boundingSphere.center;
+                    var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
+
+                    control._moveToProjectedPosition(projectedPosition);
+                }
+            }
+
             if (!this._isDirty && !this._rootContainer.isDirty) {
                 return;
             }
@@ -114,6 +132,7 @@ module BABYLON.GUI {
             }
 
             // Render
+            context.font = "18px Arial";
             var measure = new Measure(0, 0, renderWidth, renderHeight);
             this._rootContainer._draw(measure, context);
         }
@@ -143,7 +162,7 @@ module BABYLON.GUI {
                 this._shouldBlockPointer = false;
                 this._doPicking(scene.pointerX, scene.pointerY, pi.type);
 
-                pi.skipOnPointerObservable = this._shouldBlockPointer;
+                pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
             });
         }
 
@@ -153,10 +172,23 @@ module BABYLON.GUI {
 
             var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
             material.backFaceCulling = false;
+            material.diffuseColor = BABYLON.Color3.Black();
+            material.specularColor = BABYLON.Color3.Black();
             material.emissiveTexture = result;
             material.opacityTexture = result;
 
             mesh.material = material;
+
+            mesh.getScene().onPointerObservable.add(function(pi, state) {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    return;
+                }
+
+                if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                    var uv = pi.pickInfo.getTextureCoordinates();
+                    result._doPicking(uv.x * width, (1.0 - uv.y) * height, pi.type);
+                }
+            });
 
             return result;
         }
@@ -169,6 +201,7 @@ module BABYLON.GUI {
             layer.texture = result;
 
             result._toDispose = layer;
+            result._isFullscreen = true;
 
             // Attach
             result.attach();

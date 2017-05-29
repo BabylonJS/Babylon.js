@@ -2998,7 +2998,7 @@
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], false, true);
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
 
                     if (vertexData) {

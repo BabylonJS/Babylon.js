@@ -1249,7 +1249,10 @@
                     "../../gui/src/valueAndUnit.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
+                    "../../gui/src/controls/stackPanel.ts",
                     "../../gui/src/controls/rectangle.ts",
+                    "../../gui/src/controls/ellipse.ts",
+                    "../../gui/src/controls/line.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts"

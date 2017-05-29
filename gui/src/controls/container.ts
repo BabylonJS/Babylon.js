@@ -2,14 +2,32 @@
 
 module BABYLON.GUI {
     export class Container extends Control {
-        private _children = new Array<Control>();
-        protected _measureForChildren = Measure.Empty();     
+        protected _children = new Array<Control>();
+        protected _measureForChildren = Measure.Empty();  
+        protected _background: string;   
+
+        public get background(): string {
+            return this._background;
+        }
+
+        public set background(value: string) {
+            if (this._background === value) {
+                return;
+            }
+
+            this._background = value;
+            this._markAsDirty();
+        }          
 
         constructor(public name: string) {
             super(name);
         }
 
-       public addControl(control: Control): Container {
+        public containsControl(control: Control): boolean {
+            return this._children.indexOf(control) !== -1;
+        }
+
+        public addControl(control: Control): Container {
            var index = this._children.indexOf(control);
 
             if (index !== -1) {
@@ -49,8 +67,19 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        public _markMatrixAsDirty(): void {
+            super._markMatrixAsDirty();
+
+            for (var index = 0; index < this._children.length; index++) {
+                this._children[index]._markMatrixAsDirty();
+            }
+        }
+
         protected _localDraw(context: CanvasRenderingContext2D): void {
-            // Implemented by child to be injected inside main draw
+            if (this._background) {
+                context.fillStyle = this._background;
+                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
         }
 
         public _link(root: Container, host: AdvancedDynamicTexture): void {
