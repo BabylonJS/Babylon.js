@@ -303,11 +303,11 @@ module BABYLON {
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
 
-                if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                     this._renderTargets.push(this._reflectionTexture);
                 }
 
-                if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
+                if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
                     this._renderTargets.push(this._refractionTexture);
                 }
 

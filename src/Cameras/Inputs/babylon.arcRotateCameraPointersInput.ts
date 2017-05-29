@@ -24,8 +24,6 @@ module BABYLON {
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Observer<PointerInfo>;
-        private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
         private _onMouseMove: (e: MouseEvent) => any;
         private _onGestureStart: (e: PointerEvent) => void;
         private _onGesture: (e: MSGestureEvent) => void;
@@ -202,9 +200,6 @@ module BABYLON {
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
 
-            element.addEventListener("keydown", this._onKeyDown, false);
-            element.addEventListener("keyup", this._onKeyUp, false);
-
             Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
@@ -220,14 +215,9 @@ module BABYLON {
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
 
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
-
                 this._isPanClick = false;
                 this.pinchInwards = true;
 
-                this._onKeyDown = null;
-                this._onKeyUp = null;
                 this._onMouseMove = null;
                 this._onGestureStart = null;
                 this._onGesture = null;

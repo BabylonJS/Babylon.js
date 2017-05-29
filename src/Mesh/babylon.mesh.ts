@@ -1287,7 +1287,7 @@
         public setMaterialByID(id: string): Mesh {
             var materials = this.getScene().materials;
             var index: number;
-            for (index = 0; index < materials.length; index++) {
+            for (index = materials.length - 1; index > -1; index--) {
                 if (materials[index].id === id) {
                     this.material = materials[index];
                     return this;
@@ -1296,7 +1296,7 @@
 
             // Multi
             var multiMaterials = this.getScene().multiMaterials;
-            for (index = 0; index < multiMaterials.length; index++) {
+            for (index = multiMaterials.length - 1; index > -1; index--) {
                 if (multiMaterials[index].id === id) {
                     this.material = multiMaterials[index];
                     return this;
@@ -2998,7 +2998,7 @@
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], false, true);
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
 
                     if (vertexData) {

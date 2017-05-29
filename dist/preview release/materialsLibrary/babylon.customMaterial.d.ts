@@ -8,16 +8,16 @@ declare module BABYLON {
     class ShaderSpecialParts {
         constructor();
         Fragment_Begin: string;
-        Fragment_Definations: string;
+        Fragment_Definitions: string;
         Fragment_MainBegin: string;
-        Fragment_Custom_Deffiuse: string;
+        Fragment_Custom_Diffuse: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
-        Vertex_Definations: string;
+        Vertex_Definitions: string;
         Vertex_MainBegin: string;
-        Vertex_Befor_PositionUpdated: string;
-        Vertex_Befor_NormalUpdated: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
     }
     class ShaderForVer3_0 extends CustomShaderStructure {
         constructor();
@@ -29,9 +29,9 @@ declare module BABYLON {
         static ShaderIndexer: number;
         CustomParts: ShaderSpecialParts;
         ShaderVersion: CustomShaderStructure;
-        _customUnifrom: string[];
-        _newUnifroms: string[];
-        _newUnifromInstances: any[];
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
         _newSamplerInstances: Texture[];
         AttachAfterBind(mesh: Mesh, effect: Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
@@ -40,15 +40,15 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         AddUniform(name: string, kind: string, param: any): CustomMaterial;
         Fragment_Begin(shaderPart: string): CustomMaterial;
-        Fragment_Definations(shaderPart: string): CustomMaterial;
+        Fragment_Definitions(shaderPart: string): CustomMaterial;
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
-        Fragment_Custom_Deffiuse(shaderPart: string): CustomMaterial;
+        Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
-        Vertex_Definations(shaderPart: string): CustomMaterial;
+        Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
-        Vertex_Befor_PositionUpdated(shaderPart: string): CustomMaterial;
-        Vertex_Befor_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
     }
 }
