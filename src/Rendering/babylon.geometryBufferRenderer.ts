@@ -66,8 +66,6 @@ module BABYLON {
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     this._effect.setMatrix("view", scene.getViewMatrix());
 
-                    this._effect.setFloat("far", scene.activeCamera.maxZ);
-
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
@@ -156,7 +154,7 @@ module BABYLON {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "far"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
                     ["diffuseSampler"], join);
             }
 

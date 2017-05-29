@@ -25,6 +25,7 @@ uniform mat4 viewProjection;
 uniform mat4 view;
 
 out vec3 vNormalV;
+out vec4 vViewPos;
 
 void main(void)
 {
@@ -33,6 +34,7 @@ void main(void)
 #include<bonesVertex>
 
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normal, 0.0)));
+	vViewPos = view * finalWorld * vec4(position, 1.0);
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
