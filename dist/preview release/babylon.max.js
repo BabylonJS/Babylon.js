@@ -15501,7 +15501,7 @@ var BABYLON;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
                 if (!_this.pointerMovePredicate) {
-                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (_this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
                 }
                 // Meshes
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
@@ -15570,7 +15570,7 @@ var BABYLON;
                 _this._startingPointerTime = new Date().getTime();
                 if (!_this.pointerDownPredicate) {
                     _this.pointerDownPredicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                     };
                 }
                 // Meshes
@@ -15686,7 +15686,7 @@ var BABYLON;
                     }
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = function (mesh) {
-                            return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                            return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                         };
                     }
                     // Meshes
@@ -21255,7 +21255,7 @@ var BABYLON;
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], false, true);
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
                     if (vertexData) {
                         vertexData.merge(otherVertexData);
