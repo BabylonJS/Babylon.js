@@ -2,14 +2,18 @@
 
 module BABYLON.GUI {
     export class Container extends Control {
-        private _children = new Array<Control>();
+        protected _children = new Array<Control>();
         protected _measureForChildren = Measure.Empty();     
 
         constructor(public name: string) {
             super(name);
         }
 
-       public addControl(control: Control): Container {
+        public containsControl(control: Control): boolean {
+            return this._children.indexOf(control) !== -1;
+        }
+
+        public addControl(control: Control): Container {
            var index = this._children.indexOf(control);
 
             if (index !== -1) {
@@ -49,15 +53,31 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        public _markMatrixAsDirty(): void {
+            super._markMatrixAsDirty();
+
+            for (var index = 0; index < this._children.length; index++) {
+                this._children[index]._markMatrixAsDirty();
+            }
+        }
+
         protected _localDraw(context: CanvasRenderingContext2D): void {
             // Implemented by child to be injected inside main draw
+        }
+
+        public _link(root: Container, host: AdvancedDynamicTexture): void {
+            super._link(root, host);
+
+            for (var child of this._children) {
+                child._link(root, host);
+            }
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
             super._processMeasures(parentMeasure, context);
            
-            this.applyStates(context);
+            this._applyStates(context);
 
             this._localDraw(context);
 
@@ -69,7 +89,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!super._contains(x, y)) {
+            if (!super.contains(x, y)) {
                 return false;
             }
 

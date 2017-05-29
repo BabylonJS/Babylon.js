@@ -4,11 +4,13 @@ module BABYLON.GUI {
     export class Button extends Rectangle {      
         constructor(public name: string) {
             super(name);
+            this.thickness = 1;
+            this.isPointerBlocker = true;
         }
 
         // While being a container, the button behaves like a control.
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this._contains(x, y)) {
+            if (!this.contains(x, y)) {
                 return false;
             }
 
@@ -16,6 +18,30 @@ module BABYLON.GUI {
 
             return true;
         }
+
+        protected _onPointerEnter(): void {
+            this.alpha -= 0.2;
+            super._onPointerEnter();
+        }
+
+        protected _onPointerOut(): void {
+            this.alpha += 0.2;
+            super._onPointerOut();
+        }
+
+        protected _onPointerDown(): void {
+            this.scaleX -= 0.05;
+            this.scaleY -= 0.05;
+
+            super._onPointerDown();
+        }
+
+        protected _onPointerUp (): void {
+            this.scaleX += 0.05;
+            this.scaleY += 0.05;
+
+            super._onPointerUp();
+        }        
 
         // Statics
         public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
@@ -34,6 +60,18 @@ module BABYLON.GUI {
             iconImage.stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
             iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             result.addControl(iconImage);            
+
+            return result;
+        }
+
+        public static CreateSimpleButton(name: string, text: string): Button {
+            var result = new Button(name);
+
+            // Adding text
+            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
+            textBlock.textWrapping = true;
+            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            result.addControl(textBlock);           
 
             return result;
         }

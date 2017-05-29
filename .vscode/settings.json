@@ -32,7 +32,8 @@
         "**/*.js": { 
              "when":"$(basename).ts"
          },
-        "**/*.d.ts": true
+        "**/*.d.ts": true,
+        "assets":true
     },
     "typescript.check.workspaceVersion": false
 }

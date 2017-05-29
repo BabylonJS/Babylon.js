@@ -1055,6 +1055,16 @@
                     "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
                 ], 
                 "output": "babylon.customMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/cell/babylon.cellMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/cell/cell.vertex.fx",
+                    "../../materialsLibrary/src/cell/cell.fragment.fx"
+                ],
+                "output": "babylon.cellMaterial.js"
             }
         ],
         "build": {
@@ -1257,10 +1267,14 @@
                 "files": [
                     "../../gui/src/advancedDynamicTexture.ts",
                     "../../gui/src/measure.ts",
+                    "../../gui/src/math2D.ts",
                     "../../gui/src/valueAndUnit.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
+                    "../../gui/src/controls/stackPanel.ts",
                     "../../gui/src/controls/rectangle.ts",
+                    "../../gui/src/controls/ellipse.ts",
+                    "../../gui/src/controls/line.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts"
@@ -1278,7 +1292,7 @@
             {
                 "files": [
                     "../../canvas2D/src/Tools/babylon.math2D.ts",
-                    "../../canvas2D/src/Tools/babylon.iPropertyChanged.ts",
+                    "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
                     "../../canvas2D/src/Tools/babylon.c2dlogging.ts",
                     "../../canvas2D/src/Tools/babylon.observableArray.ts",
                     "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",

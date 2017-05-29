@@ -56,10 +56,10 @@ method : Fragment_MainBegin(shaderPart:string):CustomMaterial
 > shaderPart is Shader Structure append in start place of the main function in fragment shader 
 
 
-method : Fragment_Custom_Deffiuse(shaderPart:string):CustomMaterial 
+method : Fragment_Custom_Diffuse(shaderPart:string):CustomMaterial 
 > shaderPart is Shader Structure append after diffuseColor is defined of the main function in fragment shader </br>
-> usage : new CustomMaterial(...).Fragment_Custom_Deffiuse('diffuseColor = vec3(sin(vPositionW.x));')  </br>
->       : new CustomMaterial(...).Fragment_Custom_Deffiuse('result = vec3(sin(vPositionW.x));')  </br>
+> usage : new CustomMaterial(...).Fragment_Custom_Diffuse('diffuseColor = vec3(sin(vPositionW.x));')  </br>
+>       : new CustomMaterial(...).Fragment_Custom_Diffuse('result = vec3(sin(vPositionW.x));')  </br>
 > * diffuseColor is vec3 variable </br>
 > * you can use result (vec3) too that replaced by diffuseColor
 
