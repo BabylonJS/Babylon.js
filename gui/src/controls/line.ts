@@ -12,6 +12,7 @@ module BABYLON.GUI {
         private _y2 = 0;
         private _dash = new Array<number>();
         private _connectedControl: Control;
+        private _connectedControlDirtyObserver: Observer<Control>;
 
         public get dash(): Array<number> {
             return this._dash;
@@ -34,6 +35,15 @@ module BABYLON.GUI {
             if (this._connectedControl === value) {
                 return;
             }
+
+            if (this._connectedControlDirtyObserver && this._connectedControl) {
+                this._connectedControl.onDirtyObservable.remove(this._connectedControlDirtyObserver);
+                this._connectedControlDirtyObserver = null;
+            }
+
+            if (value) {
+                this._connectedControlDirtyObserver = value.onDirtyObservable.add(() => this._markAsDirty());
+            }            
 
             this._connectedControl = value;
             this._markAsDirty();
@@ -67,7 +77,7 @@ module BABYLON.GUI {
 
         public get x2(): number {
             if (this._connectedControl) {
-                return this._connectedControl.centerX;
+                return this._connectedControl.centerX + this._x2;
             }
             return this._x2;
         }
@@ -83,7 +93,7 @@ module BABYLON.GUI {
 
         public get y2(): number {
             if (this._connectedControl) {
-                return this._connectedControl.centerY;
+                return this._connectedControl.centerY + this._y2;
             }
             return this._y2;
         }
@@ -147,13 +157,13 @@ module BABYLON.GUI {
 
         public _measure(): void {  
             // Width / Height
-            this._currentMeasure.width = Math.abs(this._x1 - this.x2);
-            this._currentMeasure.height = Math.abs(this._y1 - this.y2);
+            this._currentMeasure.width = Math.abs(this._x1 - this.x2) + this._lineWidth;
+            this._currentMeasure.height = Math.abs(this._y1 - this.y2) + this._lineWidth;
         }
 
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {          
-            this._currentMeasure.left = Math.min(this._x1, this.x2);
-            this._currentMeasure.top = Math.min(this._y1, this.y2);            
+            this._currentMeasure.left = Math.min(this._x1, this.x2) - this._lineWidth / 2;
+            this._currentMeasure.top = Math.min(this._y1, this.y2) - this._lineWidth / 2;            
         }   
 
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
