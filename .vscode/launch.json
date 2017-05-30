@@ -8,6 +8,7 @@
             "url": "http://localhost:1338/sandbox/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -19,7 +20,8 @@
             "request": "launch",
             "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
+            "sourceMaps": true,            
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -32,6 +34,7 @@
             "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--disable-es3-apis" 
@@ -44,6 +47,7 @@
             "url": "http://localhost:1338/materialsLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -56,6 +60,7 @@
             "url": "http://localhost:1338/postProcessLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -68,6 +73,7 @@
             "url": "http://localhost:1338/proceduralTexturesLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -80,6 +86,7 @@
             "url": "http://localhost:1338/inspector/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -92,6 +99,7 @@
             "url": "http://localhost:1338/localDev/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
@@ -104,6 +112,7 @@
             "url": "http://localhost:1338/tests/validation/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
+            "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
