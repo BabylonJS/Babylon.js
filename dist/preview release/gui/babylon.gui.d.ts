@@ -14,6 +14,7 @@ declare module BABYLON.GUI {
         _layerToDispose: Layer;
         _linkedControls: Control[];
         private _isFullscreen;
+        private _fullscreenViewport;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
