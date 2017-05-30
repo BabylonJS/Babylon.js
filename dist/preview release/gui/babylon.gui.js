@@ -855,15 +855,15 @@ var BABYLON;
                 if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
                     return;
                 }
-                // preTranslate
+                // postTranslate
                 var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
                 var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
                 context.translate(offsetX, offsetY);
-                // scale
-                context.scale(this._scaleX, this._scaleY);
                 // rotate
                 context.rotate(this._rotation);
-                // postTranslate
+                // scale
+                context.scale(this._scaleX, this._scaleY);
+                // preTranslate
                 context.translate(-offsetX, -offsetY);
                 // Need to update matrices?
                 if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
