@@ -376,6 +376,10 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     class Button extends Rectangle {
         name: string;
+        pointerEnterAnimation: () => void;
+        pointerOutAnimation: () => void;
+        pointerDownAnimation: () => void;
+        pointerUpAnimation: () => void;
         constructor(name: string);
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): void;
