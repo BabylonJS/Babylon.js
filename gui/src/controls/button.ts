@@ -1,11 +1,34 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
-    export class Button extends Rectangle {      
+    export class Button extends Rectangle {    
+        public pointerEnterAnimation: () => void;
+        public pointerOutAnimation: () => void;
+        public pointerDownAnimation: () => void;
+        public pointerUpAnimation: () => void;
+
         constructor(public name: string) {
             super(name);
             this.thickness = 1;
             this.isPointerBlocker = true;
+
+            this.pointerEnterAnimation = () => {
+                this.alpha -= 0.1;
+            }
+
+            this.pointerOutAnimation = () => {
+                this.alpha += 0.1;
+            }    
+
+            this.pointerDownAnimation = () => {
+                this.scaleX -= 0.05;
+                this.scaleY -= 0.05;
+            }
+
+            this.pointerUpAnimation = () => {
+                this.scaleX += 0.05;
+                this.scaleY += 0.05;
+            }                      
         }
 
         // While being a container, the button behaves like a control.
@@ -20,25 +43,31 @@ module BABYLON.GUI {
         }
 
         protected _onPointerEnter(): void {
-            this.alpha -= 0.1;
+            if (this.pointerEnterAnimation) {
+                this.pointerEnterAnimation();
+            }
             super._onPointerEnter();
         }
 
         protected _onPointerOut(): void {
-            this.alpha += 0.1;
+            if (this.pointerOutAnimation) {
+                this.pointerOutAnimation();
+            }
             super._onPointerOut();
         }
 
         protected _onPointerDown(): void {
-            this.scaleX -= 0.05;
-            this.scaleY -= 0.05;
+            if (this.pointerDownAnimation) {
+                this.pointerDownAnimation();
+            }
 
             super._onPointerDown();
         }
 
         protected _onPointerUp (): void {
-            this.scaleX += 0.05;
-            this.scaleY += 0.05;
+            if (this.pointerUpAnimation) {
+                this.pointerUpAnimation();
+            }
 
             super._onPointerUp();
         }        

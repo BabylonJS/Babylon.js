@@ -2073,6 +2073,20 @@ var BABYLON;
                 _this.name = name;
                 _this.thickness = 1;
                 _this.isPointerBlocker = true;
+                _this.pointerEnterAnimation = function () {
+                    _this.alpha -= 0.1;
+                };
+                _this.pointerOutAnimation = function () {
+                    _this.alpha += 0.1;
+                };
+                _this.pointerDownAnimation = function () {
+                    _this.scaleX -= 0.05;
+                    _this.scaleY -= 0.05;
+                };
+                _this.pointerUpAnimation = function () {
+                    _this.scaleX += 0.05;
+                    _this.scaleY += 0.05;
+                };
                 return _this;
             }
             // While being a container, the button behaves like a control.
@@ -2084,21 +2098,27 @@ var BABYLON;
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
-                this.alpha -= 0.1;
+                if (this.pointerEnterAnimation) {
+                    this.pointerEnterAnimation();
+                }
                 _super.prototype._onPointerEnter.call(this);
             };
             Button.prototype._onPointerOut = function () {
-                this.alpha += 0.1;
+                if (this.pointerOutAnimation) {
+                    this.pointerOutAnimation();
+                }
                 _super.prototype._onPointerOut.call(this);
             };
             Button.prototype._onPointerDown = function () {
-                this.scaleX -= 0.05;
-                this.scaleY -= 0.05;
+                if (this.pointerDownAnimation) {
+                    this.pointerDownAnimation();
+                }
                 _super.prototype._onPointerDown.call(this);
             };
             Button.prototype._onPointerUp = function () {
-                this.scaleX += 0.05;
-                this.scaleY += 0.05;
+                if (this.pointerUpAnimation) {
+                    this.pointerUpAnimation();
+                }
                 _super.prototype._onPointerUp.call(this);
             };
             // Statics
