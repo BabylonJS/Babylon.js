@@ -15,6 +15,7 @@ module BABYLON.GUI {
         public _layerToDispose: Layer;
         public _linkedControls = new Array<Control>();
         private _isFullscreen = false;
+        private _fullscreenViewport = new Viewport(0, 0, 1, 1);
 
         public get background(): string {
             return this._background;
@@ -100,8 +101,7 @@ module BABYLON.GUI {
             if (this._isFullscreen && this._linkedControls.length) {
                 var scene = this.getScene();
                 var engine = scene.getEngine();
-                var viewport = camera.viewport;
-                var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
                 for (var control of this._linkedControls) {
                     var mesh = control._linkedMesh;
