@@ -2517,7 +2517,7 @@
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          * Remember you can only change the shape positions, not their number when updating a polygon.
          */
-        public static CreatePolygon(name: string, shape: Vector3[], holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, scene: Scene): Mesh {
+        public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 shape: shape,
                 holes: holes,
@@ -2531,7 +2531,7 @@
          * Creates an extruded polygon mesh, with depth in the Y direction. 
          * Please consider using the same method from the MeshBuilder class instead. 
 		*/
-        public static ExtrudePolygon(name: string, shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, scene: Scene): Mesh {
+        public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 shape: shape,
                 holes: holes,
