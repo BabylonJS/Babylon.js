@@ -374,6 +374,7 @@ module BABYLON.GUI {
 
         public _markMatrixAsDirty(): void {
             this._isMatrixDirty = true;
+            this._markAsDirty();
         }
 
         protected _markAsDirty(): void {            
@@ -395,18 +396,18 @@ module BABYLON.GUI {
                 return;
             }
 
-            // preTranslate
+            // postTranslate
             var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
             var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
             context.translate(offsetX, offsetY);
 
-            // scale
-            context.scale(this._scaleX, this._scaleY);
-
             // rotate
             context.rotate(this._rotation);
 
-            // postTranslate
+            // scale
+            context.scale(this._scaleX, this._scaleY);
+
+            // preTranslate
             context.translate(-offsetX, -offsetY);    
 
             // Need to update matrices?

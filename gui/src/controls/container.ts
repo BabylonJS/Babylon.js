@@ -3,7 +3,21 @@
 module BABYLON.GUI {
     export class Container extends Control {
         protected _children = new Array<Control>();
-        protected _measureForChildren = Measure.Empty();     
+        protected _measureForChildren = Measure.Empty();  
+        protected _background: string;   
+
+        public get background(): string {
+            return this._background;
+        }
+
+        public set background(value: string) {
+            if (this._background === value) {
+                return;
+            }
+
+            this._background = value;
+            this._markAsDirty();
+        }          
 
         constructor(public name: string) {
             super(name);
@@ -62,7 +76,10 @@ module BABYLON.GUI {
         }
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
-            // Implemented by child to be injected inside main draw
+            if (this._background) {
+                context.fillStyle = this._background;
+                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
         }
 
         public _link(root: Container, host: AdvancedDynamicTexture): void {
