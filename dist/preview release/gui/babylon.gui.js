@@ -839,6 +839,7 @@ var BABYLON;
             };
             Control.prototype._markMatrixAsDirty = function () {
                 this._isMatrixDirty = true;
+                this._markAsDirty();
             };
             Control.prototype._markAsDirty = function () {
                 this._isDirty = true;
