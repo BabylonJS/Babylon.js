@@ -442,38 +442,45 @@
          */
         fromString(value: string) {
             let m = value.trim().split(",");
-            if (m.length === 1) {
-                this.setHorizontal(m[0]);
-                this.setVertical(m[0]);
-            } else {
-                for (let v of m) {
-                    v = v.toLocaleLowerCase().trim();
+            
+            var hset = false;
+            var vset = false;
 
-                    // Horizontal
-                    let i = v.indexOf("h:");
-                    if (i === -1) {
-                        i = v.indexOf("horizontal:");
-                    }
+            for (let v of m) {
+                v = v.toLocaleLowerCase().trim();
 
-                    if (i !== -1) {
-                        v = v.substr(v.indexOf(":") + 1);
-                        this.setHorizontal(v);
-                        continue;
-                    }
+                // Horizontal
+                let i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
 
-                    // Vertical
-                    i = v.indexOf("v:");
-                    if (i === -1) {
-                        i = v.indexOf("vertical:");
-                    }
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setHorizontal(v);
+                    hset = true;
+                    continue;
+                }
 
-                    if (i !== -1) {
-                        v = v.substr(v.indexOf(":") + 1);
-                        this.setVertical(v);
-                        continue;
-                    }
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setVertical(v);
+                    vset = true;
+                    continue;
                 }
             }
+
+            if (!hset && !vset && m.length === 1) {
+                this.setHorizontal(m[0]);
+                this.setVertical(m[0]);
+            }
+
         }
 
         copyFrom(pa: PrimitiveAlignment) {
