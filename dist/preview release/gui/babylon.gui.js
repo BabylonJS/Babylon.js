@@ -25,6 +25,7 @@ var BABYLON;
                 _this._rootContainer = new GUI.Container("root");
                 _this._linkedControls = new Array();
                 _this._isFullscreen = false;
+                _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
@@ -92,8 +93,7 @@ var BABYLON;
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
                     var engine = scene.getEngine();
-                    var viewport = camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                    var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
                         var mesh = control._linkedMesh;
