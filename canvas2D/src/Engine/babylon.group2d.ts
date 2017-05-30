@@ -558,6 +558,8 @@
                     }
                 }
 
+                this._renderableData._primDirtyList.length = 0;
+                
                 // Restore saved states
                 engine.setAlphaTesting(curAlphaTest);
                 engine.setDepthWrite(curDepthWrite);
