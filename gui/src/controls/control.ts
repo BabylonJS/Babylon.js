@@ -374,6 +374,7 @@ module BABYLON.GUI {
 
         public _markMatrixAsDirty(): void {
             this._isMatrixDirty = true;
+            this._markAsDirty();
         }
 
         protected _markAsDirty(): void {            
