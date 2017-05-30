@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     export class TextBlock extends Control {
-        private _text: string;
+        private _text = "";
         private _textY: number;
         private _textWrapping = false;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;

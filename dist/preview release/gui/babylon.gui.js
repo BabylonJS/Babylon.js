@@ -1648,8 +1648,16 @@ var BABYLON;
                     return this._connectedControl;
                 },
                 set: function (value) {
+                    var _this = this;
                     if (this._connectedControl === value) {
                         return;
+                    }
+                    if (this._connectedControlDirtyObserver && this._connectedControl) {
+                        this._connectedControl.onDirtyObservable.remove(this._connectedControlDirtyObserver);
+                        this._connectedControlDirtyObserver = null;
+                    }
+                    if (value) {
+                        this._connectedControlDirtyObserver = value.onDirtyObservable.add(function () { return _this._markAsDirty(); });
                     }
                     this._connectedControl = value;
                     this._markAsDirty();
@@ -1688,7 +1696,7 @@ var BABYLON;
             Object.defineProperty(Line.prototype, "x2", {
                 get: function () {
                     if (this._connectedControl) {
-                        return this._connectedControl.centerX;
+                        return this._connectedControl.centerX + this._x2;
                     }
                     return this._x2;
                 },
@@ -1705,7 +1713,7 @@ var BABYLON;
             Object.defineProperty(Line.prototype, "y2", {
                 get: function () {
                     if (this._connectedControl) {
-                        return this._connectedControl.centerY;
+                        return this._connectedControl.centerY + this._y2;
                     }
                     return this._y2;
                 },
@@ -1762,12 +1770,12 @@ var BABYLON;
             };
             Line.prototype._measure = function () {
                 // Width / Height
-                this._currentMeasure.width = Math.abs(this._x1 - this.x2);
-                this._currentMeasure.height = Math.abs(this._y1 - this.y2);
+                this._currentMeasure.width = Math.abs(this._x1 - this.x2) + this._lineWidth;
+                this._currentMeasure.height = Math.abs(this._y1 - this.y2) + this._lineWidth;
             };
             Line.prototype._computeAlignment = function (parentMeasure, context) {
-                this._currentMeasure.left = Math.min(this._x1, this.x2);
-                this._currentMeasure.top = Math.min(this._y1, this.y2);
+                this._currentMeasure.left = Math.min(this._x1, this.x2) - this._lineWidth / 2;
+                this._currentMeasure.top = Math.min(this._y1, this.y2) - this._lineWidth / 2;
             };
             Line.prototype._moveToProjectedPosition = function (projectedPosition) {
                 this.x1 = projectedPosition.x + this.linkOffsetX;
@@ -1801,6 +1809,7 @@ var BABYLON;
             function TextBlock(name, text) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._text = "";
                 _this._textWrapping = false;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;

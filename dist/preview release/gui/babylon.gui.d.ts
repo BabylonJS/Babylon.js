@@ -310,6 +310,7 @@ declare module BABYLON.GUI {
         private _y2;
         private _dash;
         private _connectedControl;
+        private _connectedControlDirtyObserver;
         dash: Array<number>;
         connectedControl: Control;
         x1: number;
