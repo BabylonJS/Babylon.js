@@ -242,6 +242,7 @@ declare module BABYLON.GUI {
         protected _measureForChildren: Measure;
         protected _background: string;
         background: string;
+        readonly children: Control[];
         constructor(name: string);
         containsControl(control: Control): boolean;
         addControl(control: Control): Container;
@@ -362,7 +363,9 @@ declare module BABYLON.GUI {
         private _imageHeight;
         private _loaded;
         private _stretch;
+        private _source;
         stretch: number;
+        source: string;
         constructor(name: string, url: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private static _STRETCH_NONE;
@@ -389,6 +392,7 @@ declare module BABYLON.GUI {
         protected _onPointerDown(): void;
         protected _onPointerUp(): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
+        static CreateImageOnlyButton(name: string, imageUrl: string): Button;
         static CreateSimpleButton(name: string, text: string): Button;
     }
 }

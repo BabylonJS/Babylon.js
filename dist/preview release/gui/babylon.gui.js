@@ -1226,6 +1226,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Container.prototype, "children", {
+                get: function () {
+                    return this._children;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Container.prototype.containsControl = function (control) {
                 return this._children.indexOf(control) !== -1;
             };
@@ -1980,14 +1987,7 @@ var BABYLON;
                 _this.name = name;
                 _this._loaded = false;
                 _this._stretch = Image.STRETCH_FILL;
-                _this._domImage = new DOMImage();
-                _this._domImage.onload = function () {
-                    _this._imageWidth = _this._domImage.width;
-                    _this._imageHeight = _this._domImage.height;
-                    _this._loaded = true;
-                    _this._markAsDirty();
-                };
-                _this._domImage.src = url;
+                _this.source = url;
                 return _this;
             }
             Object.defineProperty(Image.prototype, "stretch", {
@@ -2000,6 +2000,25 @@ var BABYLON;
                     }
                     this._stretch = value;
                     this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "source", {
+                set: function (value) {
+                    var _this = this;
+                    if (this._source === value) {
+                        return;
+                    }
+                    this._source = value;
+                    this._domImage = new DOMImage();
+                    this._domImage.onload = function () {
+                        _this._imageWidth = _this._domImage.width;
+                        _this._imageHeight = _this._domImage.height;
+                        _this._loaded = true;
+                        _this._markAsDirty();
+                    };
+                    this._domImage.src = value;
                 },
                 enumerable: true,
                 configurable: true
@@ -2144,6 +2163,15 @@ var BABYLON;
                 var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
                 iconImage.width = "20%";
                 iconImage.stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
+                iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                result.addControl(iconImage);
+                return result;
+            };
+            Button.CreateImageOnlyButton = function (name, imageUrl) {
+                var result = new Button(name);
+                // Adding image
+                var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+                iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
                 iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 result.addControl(iconImage);
                 return result;

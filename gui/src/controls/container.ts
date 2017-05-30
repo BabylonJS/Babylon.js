@@ -17,7 +17,11 @@ module BABYLON.GUI {
 
             this._background = value;
             this._markAsDirty();
-        }          
+        }  
+
+        public get children(): Control[] {
+            return this._children;
+        }        
 
         constructor(public name: string) {
             super(name);

@@ -9,6 +9,7 @@ module BABYLON.GUI {
         private _imageHeight: number;
         private _loaded = false;
         private _stretch = Image.STRETCH_FILL;
+        private _source: string;
 
         public get stretch(): number {
             return this._stretch;
@@ -24,9 +25,13 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        constructor(public name: string, url: string) {
-            super(name);
+        public set source(value: string) {
+            if (this._source === value) {
+                return;
+            }
 
+            this._source = value;
+            
             this._domImage = new DOMImage();
             
             this._domImage.onload = () => {
@@ -36,7 +41,13 @@ module BABYLON.GUI {
                 this._markAsDirty();
             }
             
-            this._domImage.src = url;
+            this._domImage.src = value;
+        }
+
+        constructor(public name: string, url: string) {
+            super(name);
+
+            this.source = url;
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
