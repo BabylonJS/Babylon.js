@@ -93,6 +93,18 @@ module BABYLON.GUI {
             return result;
         }
 
+        public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
+            var result = new Button(name);
+
+            // Adding image
+            var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+            iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
+            iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            result.addControl(iconImage);            
+
+            return result;
+        }
+
         public static CreateSimpleButton(name: string, text: string): Button {
             var result = new Button(name);
 
