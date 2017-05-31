@@ -505,7 +505,7 @@
         /**
          * Creates the vertexData of the Ribbon.  
          */
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
@@ -700,7 +700,7 @@
             }
 
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Colors
             if (customColors) {
@@ -737,7 +737,7 @@
         /**
          * Creates the VertexData of the Box.  
          */
-        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -825,7 +825,7 @@
             }
 
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -846,7 +846,7 @@
         /**
          * Creates the VertexData of the Sphere.  
          */
-        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number }): VertexData {
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
@@ -902,7 +902,7 @@
             }
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -918,7 +918,7 @@
         /**
          * Creates the VertexData of the Cylinder or Cone.  
          */
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
             var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
@@ -1150,7 +1150,7 @@
             createCylinderCap(true);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
 
@@ -1168,7 +1168,7 @@
         /**
          * Creates the VertexData of the Torus.  
          */
-        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number }) {
+        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1222,7 +1222,7 @@
             }
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1512,7 +1512,7 @@
         /**
          * Creates the VertexData of the Plane.  
          */
-        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number }): VertexData {
+        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1552,7 +1552,7 @@
             indices.push(3);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1568,7 +1568,7 @@
         /**
          * Creates the VertexData of the Disc or regular Polygon.  
          */
-        public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number }): VertexData {
+        public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
@@ -1606,7 +1606,7 @@
 
             // result
             VertexData.ComputeNormals(positions, indices, normals);
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
 
@@ -1621,7 +1621,7 @@
         /**
          * Creates the VertexData of the IcoSphere.  
          */
-        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number }): VertexData {
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
@@ -1869,7 +1869,7 @@
 
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1885,7 +1885,7 @@
         /**
          * Creates the VertexData of the Polyhedron.  
          */
-        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number }): VertexData {
+        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
             // 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
@@ -2003,7 +2003,7 @@
             }
 
             VertexData.ComputeNormals(positions, indices, normals);
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
             vertexData.positions = positions;
@@ -2020,7 +2020,7 @@
         /**
          * Creates the VertexData of the Torus Knot.  
          */
-        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number }): VertexData {
+        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -2098,7 +2098,7 @@
             VertexData.ComputeNormals(positions, indices, normals);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -2308,7 +2308,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array) {
+        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array, frontUVs?: Vector4, backUVs?: Vector4) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;
@@ -2355,8 +2355,19 @@
 
                     // uvs
                     var lu: number = uvs.length;
-                    for (var u: number = 0; u < lu; u++) {
-                        uvs[u + lu] = uvs[u];
+                    var u: number = 0;
+                    for (u = 0; u < lu; u++) {
+                        uvs[u + lu] = uvs[u];                       
+                    }
+                    var frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
+                    var backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0); 
+                    u = 0;
+                    for (i = 0; i < lu / 2; i++) {    
+                        uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];
+                        uvs[u + 1] = frontUVs.y + (frontUVs.w - frontUVs.y) * uvs[u + 1];
+                        uvs[u + lu] = backUVs.x + (backUVs.z - backUVs.x) * uvs[u + lu];
+                        uvs[u + lu + 1] = backUVs.y + (backUVs.w - backUVs.y) * uvs[u + lu + 1];
+                        u += 2;
                     }
                     break;
             }
