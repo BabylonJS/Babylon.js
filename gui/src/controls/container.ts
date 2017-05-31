@@ -94,17 +94,18 @@ module BABYLON.GUI {
             }
         }
 
-        public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {      
             context.save();
-            super._processMeasures(parentMeasure, context);
            
             this._applyStates(context);
 
-            this._localDraw(context);
+            if (this._processMeasures(parentMeasure, context)) {
+                this._localDraw(context);
 
-            this._clipForChildren(context);
-            for (var child of this._children) {
-                child._draw(this._measureForChildren, context);
+                this._clipForChildren(context);
+                for (var child of this._children) {
+                    child._draw(this._measureForChildren, context);
+                }
             }
             context.restore();
         }

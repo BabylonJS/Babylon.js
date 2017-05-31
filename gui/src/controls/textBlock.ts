@@ -89,11 +89,11 @@ module BABYLON.GUI {
             context.save();
 
             this._applyStates(context);
-            super._processMeasures(parentMeasure, context);
-            
-            // Render lines
-            this._renderLines(context);
 
+            if (this._processMeasures(parentMeasure, context)) {            
+                // Render lines
+                this._renderLines(context);
+            }
             context.restore();
         }
 
