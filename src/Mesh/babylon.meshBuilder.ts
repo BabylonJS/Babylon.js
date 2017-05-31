@@ -783,7 +783,7 @@
 
         /**
          * Creates a polygon mesh.
-         * The polygon's shape will depend on the input parameters and is constructed paralell to a ground mesh.
+         * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
          * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
          * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -801,7 +801,7 @@
 			}
 			var epsilon = 0.00000001;
 			if(contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
-					contours.pop();
+                contours.pop();
 			}
 			
 			var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
