@@ -56,6 +56,9 @@ module BABYLON {
         @serialize()
         public inertialPanningY: number = 0;
 
+        @serialize()
+        public panningInertia = 0.9;
+
         //-- begin properties for backward compatibility for inputs
         public get angularSensibilityX() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
@@ -343,8 +346,8 @@ module BABYLON {
                     this._target.addInPlace(this._transformedDirection);
                 }
 
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
+                this.inertialPanningX *= this.panningInertia;
+                this.inertialPanningY *= this.panningInertia;
 
                 if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
                     this.inertialPanningX = 0;

@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     export class TextBlock extends Control {
-        private _text: string;
+        private _text = "";
         private _textY: number;
         private _textWrapping = false;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -89,11 +89,11 @@ module BABYLON.GUI {
             context.save();
 
             this._applyStates(context);
-            super._processMeasures(parentMeasure, context);
-            
-            // Render lines
-            this._renderLines(context);
 
+            if (this._processMeasures(parentMeasure, context)) {            
+                // Render lines
+                this._renderLines(context);
+            }
             context.restore();
         }
 

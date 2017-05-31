@@ -1,16 +1,5 @@
 # Babylon.js GUI library
+The Babylon.js GUI library is an extension you can use to generate interactive user interface.
+It is build on top of the DynamicTexture.
 
-The Babylon.js GUI library is an extension you can use to generate interactive user interface on top of the DynamicTexture.
-
-## How to use it
-
-- unit mode (Default to percentage)
-
-## Features
-* Flixible containers and controls
-* Horizontal and vertical alignment
-* Proportional or pixel constant size modes
-* Text wrapping
-
-==> ideas
-* pick on mesh
+Documentation: http://doc.babylonjs.com/overviews/gui

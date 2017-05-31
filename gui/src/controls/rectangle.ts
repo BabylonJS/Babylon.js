@@ -3,7 +3,6 @@
 module BABYLON.GUI {
     export class Rectangle extends Container {
         private _thickness = 1;
-        private _background: string;
         private _cornerRadius = 0;
         
         public get thickness(): number {

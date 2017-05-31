@@ -374,6 +374,7 @@ module BABYLON.GUI {
 
         public _markMatrixAsDirty(): void {
             this._isMatrixDirty = true;
+            this._markAsDirty();
         }
 
         protected _markAsDirty(): void {            
@@ -395,18 +396,18 @@ module BABYLON.GUI {
                 return;
             }
 
-            // preTranslate
+            // postTranslate
             var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
             var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
             context.translate(offsetX, offsetY);
 
-            // scale
-            context.scale(this._scaleX, this._scaleY);
-
             // rotate
             context.rotate(this._rotation);
 
-            // postTranslate
+            // scale
+            context.scale(this._scaleX, this._scaleY);
+
+            // preTranslate
             context.translate(-offsetX, -offsetY);    
 
             // Need to update matrices?
@@ -433,7 +434,7 @@ module BABYLON.GUI {
             context.globalAlpha = this._alpha;
         }
 
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D) {     
+        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {     
             if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
                 this._isDirty = false;
                 this._currentMeasure.copyFrom(parentMeasure);
@@ -457,12 +458,30 @@ module BABYLON.GUI {
                 }                
             }     
 
+            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+                return false;
+            }
+
+            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+                return false;
+            }
+
+            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+                return false;
+            }
+
+            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+                return false;
+            }
+
             // Transform
             this._transform(context); 
                         
             // Clip
             this._clip(context);
             context.clip();
+
+            return true;
         }
 
         protected _clip( context: CanvasRenderingContext2D) {
