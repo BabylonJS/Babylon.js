@@ -25,6 +25,7 @@ var BABYLON;
                 _this._rootContainer = new GUI.Container("root");
                 _this._linkedControls = new Array();
                 _this._isFullscreen = false;
+                _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
@@ -67,9 +68,13 @@ var BABYLON;
                 if (this._pointerMoveObserver) {
                     this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
                 }
-                if (this._toDispose) {
-                    this._toDispose.dispose();
-                    this._toDispose = null;
+                if (this._pointerObserver) {
+                    this.getScene().onPointerObservable.remove(this._pointerObserver);
+                }
+                if (this._layerToDispose) {
+                    this._layerToDispose.texture = null;
+                    this._layerToDispose.dispose();
+                    this._layerToDispose = null;
                 }
                 _super.prototype.dispose.call(this);
             };
@@ -88,8 +93,7 @@ var BABYLON;
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
                     var engine = scene.getEngine();
-                    var viewport = camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                    var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
                         var mesh = control._linkedMesh;
@@ -147,6 +151,20 @@ var BABYLON;
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
             };
+            AdvancedDynamicTexture.prototype.attachToMesh = function (mesh) {
+                var _this = this;
+                var scene = this.getScene();
+                this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
+                    if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                        return;
+                    }
+                    if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                        var uv = pi.pickInfo.getTextureCoordinates();
+                        var size = _this.getSize();
+                        _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                    }
+                });
+            };
             // Statics
             AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height) {
                 if (width === void 0) { width = 1024; }
@@ -159,15 +177,7 @@ var BABYLON;
                 material.emissiveTexture = result;
                 material.opacityTexture = result;
                 mesh.material = material;
-                mesh.getScene().onPointerObservable.add(function (pi, state) {
-                    if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
-                        return;
-                    }
-                    if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                        var uv = pi.pickInfo.getTextureCoordinates();
-                        result._doPicking(uv.x * width, (1.0 - uv.y) * height, pi.type);
-                    }
-                });
+                result.attachToMesh(mesh);
                 return result;
             };
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
@@ -176,7 +186,7 @@ var BABYLON;
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
-                result._toDispose = layer;
+                result._layerToDispose = layer;
                 result._isFullscreen = true;
                 // Attach
                 result.attach();
@@ -380,9 +390,9 @@ var BABYLON;
             ValueAndUnit.prototype.toString = function () {
                 switch (this.unit) {
                     case ValueAndUnit.UNITMODE_PERCENTAGE:
-                        return this.unit + "%";
+                        return this.value + "%";
                     case ValueAndUnit.UNITMODE_PIXEL:
-                        return this.unit + "px";
+                        return this.value + "px";
                 }
                 return this.unit.toString();
             };
@@ -829,6 +839,7 @@ var BABYLON;
             };
             Control.prototype._markMatrixAsDirty = function () {
                 this._isMatrixDirty = true;
+                this._markAsDirty();
             };
             Control.prototype._markAsDirty = function () {
                 this._isDirty = true;
@@ -845,15 +856,15 @@ var BABYLON;
                 if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
                     return;
                 }
-                // preTranslate
+                // postTranslate
                 var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
                 var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
                 context.translate(offsetX, offsetY);
-                // scale
-                context.scale(this._scaleX, this._scaleY);
                 // rotate
                 context.rotate(this._rotation);
-                // postTranslate
+                // scale
+                context.scale(this._scaleX, this._scaleY);
+                // preTranslate
                 context.translate(-offsetX, -offsetY);
                 // Need to update matrices?
                 if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
@@ -891,11 +902,24 @@ var BABYLON;
                         this.onDirtyObservable.notifyObservers(this);
                     }
                 }
+                if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+                    return false;
+                }
+                if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+                    return false;
+                }
+                if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+                    return false;
+                }
+                if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+                    return false;
+                }
                 // Transform
                 this._transform(context);
                 // Clip
                 this._clip(context);
                 context.clip();
+                return true;
             };
             Control.prototype._clip = function (context) {
                 context.beginPath();
@@ -1201,6 +1225,27 @@ var BABYLON;
                 _this._measureForChildren = GUI.Measure.Empty();
                 return _this;
             }
+            Object.defineProperty(Container.prototype, "background", {
+                get: function () {
+                    return this._background;
+                },
+                set: function (value) {
+                    if (this._background === value) {
+                        return;
+                    }
+                    this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Container.prototype, "children", {
+                get: function () {
+                    return this._children;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Container.prototype.containsControl = function (control) {
                 return this._children.indexOf(control) !== -1;
             };
@@ -1240,7 +1285,10 @@ var BABYLON;
                 }
             };
             Container.prototype._localDraw = function (context) {
-                // Implemented by child to be injected inside main draw
+                if (this._background) {
+                    context.fillStyle = this._background;
+                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                }
             };
             Container.prototype._link = function (root, host) {
                 _super.prototype._link.call(this, root, host);
@@ -1251,13 +1299,14 @@ var BABYLON;
             };
             Container.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this._applyStates(context);
-                this._localDraw(context);
-                this._clipForChildren(context);
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    child._draw(this._measureForChildren, context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    this._localDraw(context);
+                    this._clipForChildren(context);
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        child._draw(this._measureForChildren, context);
+                    }
                 }
                 context.restore();
             };
@@ -1309,19 +1358,46 @@ var BABYLON;
             function StackPanel(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._isVertical = true;
                 return _this;
             }
+            Object.defineProperty(StackPanel.prototype, "isVertical", {
+                get: function () {
+                    return this._isVertical;
+                },
+                set: function (value) {
+                    if (this._isVertical === value) {
+                        return;
+                    }
+                    this._isVertical = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             StackPanel.prototype._additionalProcessing = function (parentMeasure, context) {
-                var top = 0;
+                var stack = 0;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     child._currentMeasure.copyFrom(parentMeasure);
                     child._measure();
-                    child.top = top + "px";
-                    top += child._currentMeasure.height;
-                    child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                    if (this._isVertical) {
+                        child.top = stack + "px";
+                        stack += child._currentMeasure.height;
+                        child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                    }
+                    else {
+                        child.left = stack + "px";
+                        stack += child._currentMeasure.width;
+                        child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                    }
                 }
-                this.height = top + "px";
+                if (this._isVertical) {
+                    this.height = stack + "px";
+                }
+                else {
+                    this.width = stack + "px";
+                }
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
             };
             return StackPanel;
@@ -1505,20 +1581,6 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Ellipse.prototype, "background", {
-                get: function () {
-                    return this._background;
-                },
-                set: function (value) {
-                    if (this._background === value) {
-                        return;
-                    }
-                    this._background = value;
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
                 context.beginPath();
@@ -1608,8 +1670,16 @@ var BABYLON;
                     return this._connectedControl;
                 },
                 set: function (value) {
+                    var _this = this;
                     if (this._connectedControl === value) {
                         return;
+                    }
+                    if (this._connectedControlDirtyObserver && this._connectedControl) {
+                        this._connectedControl.onDirtyObservable.remove(this._connectedControlDirtyObserver);
+                        this._connectedControlDirtyObserver = null;
+                    }
+                    if (value) {
+                        this._connectedControlDirtyObserver = value.onDirtyObservable.add(function () { return _this._markAsDirty(); });
                     }
                     this._connectedControl = value;
                     this._markAsDirty();
@@ -1648,7 +1718,7 @@ var BABYLON;
             Object.defineProperty(Line.prototype, "x2", {
                 get: function () {
                     if (this._connectedControl) {
-                        return this._connectedControl.centerX;
+                        return this._connectedControl.centerX + this._x2;
                     }
                     return this._x2;
                 },
@@ -1665,7 +1735,7 @@ var BABYLON;
             Object.defineProperty(Line.prototype, "y2", {
                 get: function () {
                     if (this._connectedControl) {
-                        return this._connectedControl.centerY;
+                        return this._connectedControl.centerY + this._y2;
                     }
                     return this._y2;
                 },
@@ -1710,24 +1780,25 @@ var BABYLON;
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                context.strokeStyle = this.color;
-                context.lineWidth = this._lineWidth;
-                context.setLineDash(this._dash);
-                context.beginPath();
-                context.moveTo(this._x1, this._y1);
-                context.lineTo(this.x2, this.y2);
-                context.stroke();
+                if (this._processMeasures(parentMeasure, context)) {
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._lineWidth;
+                    context.setLineDash(this._dash);
+                    context.beginPath();
+                    context.moveTo(this._x1, this._y1);
+                    context.lineTo(this.x2, this.y2);
+                    context.stroke();
+                }
                 context.restore();
             };
             Line.prototype._measure = function () {
                 // Width / Height
-                this._currentMeasure.width = Math.abs(this._x1 - this.x2);
-                this._currentMeasure.height = Math.abs(this._y1 - this.y2);
+                this._currentMeasure.width = Math.abs(this._x1 - this.x2) + this._lineWidth;
+                this._currentMeasure.height = Math.abs(this._y1 - this.y2) + this._lineWidth;
             };
             Line.prototype._computeAlignment = function (parentMeasure, context) {
-                this._currentMeasure.left = Math.min(this._x1, this.x2);
-                this._currentMeasure.top = Math.min(this._y1, this.y2);
+                this._currentMeasure.left = Math.min(this._x1, this.x2) - this._lineWidth / 2;
+                this._currentMeasure.top = Math.min(this._y1, this.y2) - this._lineWidth / 2;
             };
             Line.prototype._moveToProjectedPosition = function (projectedPosition) {
                 this.x1 = projectedPosition.x + this.linkOffsetX;
@@ -1761,6 +1832,7 @@ var BABYLON;
             function TextBlock(name, text) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._text = "";
                 _this._textWrapping = false;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
@@ -1842,9 +1914,10 @@ var BABYLON;
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                // Render lines
-                this._renderLines(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    // Render lines
+                    this._renderLines(context);
+                }
                 context.restore();
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
@@ -1930,16 +2003,26 @@ var BABYLON;
                 _this.name = name;
                 _this._loaded = false;
                 _this._stretch = Image.STRETCH_FILL;
-                _this._domImage = new DOMImage();
-                _this._domImage.onload = function () {
-                    _this._imageWidth = _this._domImage.width;
-                    _this._imageHeight = _this._domImage.height;
-                    _this._loaded = true;
-                    _this._markAsDirty();
-                };
-                _this._domImage.src = url;
+                _this._autoScale = false;
+                _this.source = url;
                 return _this;
             }
+            Object.defineProperty(Image.prototype, "autoScale", {
+                get: function () {
+                    return this._autoScale;
+                },
+                set: function (value) {
+                    if (this._autoScale === value) {
+                        return;
+                    }
+                    this._autoScale = value;
+                    if (value && this._loaded) {
+                        this.synchronizeSizeWithContent();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Image.prototype, "stretch", {
                 get: function () {
                     return this._stretch;
@@ -1954,26 +2037,65 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image.prototype, "source", {
+                set: function (value) {
+                    var _this = this;
+                    if (this._source === value) {
+                        return;
+                    }
+                    this._loaded = false;
+                    this._source = value;
+                    this._domImage = new DOMImage();
+                    this._domImage.onload = function () {
+                        _this._imageWidth = _this._domImage.width;
+                        _this._imageHeight = _this._domImage.height;
+                        _this._loaded = true;
+                        if (_this._autoScale) {
+                            _this.synchronizeSizeWithContent();
+                        }
+                        _this._markAsDirty();
+                    };
+                    this._domImage.src = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Image.prototype.synchronizeSizeWithContent = function () {
+                if (!this._loaded) {
+                    return;
+                }
+                this.width = this._domImage.width + "px";
+                this.height = this._domImage.height + "px";
+            };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                if (this._loaded) {
-                    switch (this._stretch) {
-                        case Image.STRETCH_NONE:
-                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
-                            break;
-                        case Image.STRETCH_FILL:
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                            break;
-                        case Image.STRETCH_UNIFORM:
-                            var hRatio = this._currentMeasure.width / this._imageWidth;
-                            var vRatio = this._currentMeasure.height / this._imageHeight;
-                            var ratio = Math.min(hRatio, vRatio);
-                            var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                            var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
-                            break;
+                if (this._processMeasures(parentMeasure, context)) {
+                    if (this._loaded) {
+                        switch (this._stretch) {
+                            case Image.STRETCH_NONE:
+                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                break;
+                            case Image.STRETCH_FILL:
+                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                break;
+                            case Image.STRETCH_UNIFORM:
+                                var hRatio = this._currentMeasure.width / this._imageWidth;
+                                var vRatio = this._currentMeasure.height / this._imageHeight;
+                                var ratio = Math.min(hRatio, vRatio);
+                                var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
+                                var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
+                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                                break;
+                            case Image.STRETCH_EXTEND:
+                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                if (this._autoScale) {
+                                    this.synchronizeSizeWithContent();
+                                }
+                                this._root.width = this.width;
+                                this._root.height = this.height;
+                                break;
+                        }
                     }
                 }
                 context.restore();
@@ -1999,12 +2121,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image, "STRETCH_EXTEND", {
+                get: function () {
+                    return Image._STRETCH_EXTEND;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Image;
         }(GUI.Control));
         // Static
         Image._STRETCH_NONE = 0;
         Image._STRETCH_FILL = 1;
         Image._STRETCH_UNIFORM = 2;
+        Image._STRETCH_EXTEND = 3;
         GUI.Image = Image;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -2033,6 +2163,20 @@ var BABYLON;
                 _this.name = name;
                 _this.thickness = 1;
                 _this.isPointerBlocker = true;
+                _this.pointerEnterAnimation = function () {
+                    _this.alpha -= 0.1;
+                };
+                _this.pointerOutAnimation = function () {
+                    _this.alpha += 0.1;
+                };
+                _this.pointerDownAnimation = function () {
+                    _this.scaleX -= 0.05;
+                    _this.scaleY -= 0.05;
+                };
+                _this.pointerUpAnimation = function () {
+                    _this.scaleX += 0.05;
+                    _this.scaleY += 0.05;
+                };
                 return _this;
             }
             // While being a container, the button behaves like a control.
@@ -2044,21 +2188,27 @@ var BABYLON;
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
-                this.alpha -= 0.2;
+                if (this.pointerEnterAnimation) {
+                    this.pointerEnterAnimation();
+                }
                 _super.prototype._onPointerEnter.call(this);
             };
             Button.prototype._onPointerOut = function () {
-                this.alpha += 0.2;
+                if (this.pointerOutAnimation) {
+                    this.pointerOutAnimation();
+                }
                 _super.prototype._onPointerOut.call(this);
             };
             Button.prototype._onPointerDown = function () {
-                this.scaleX -= 0.05;
-                this.scaleY -= 0.05;
+                if (this.pointerDownAnimation) {
+                    this.pointerDownAnimation();
+                }
                 _super.prototype._onPointerDown.call(this);
             };
             Button.prototype._onPointerUp = function () {
-                this.scaleX += 0.05;
-                this.scaleY += 0.05;
+                if (this.pointerUpAnimation) {
+                    this.pointerUpAnimation();
+                }
                 _super.prototype._onPointerUp.call(this);
             };
             // Statics
@@ -2074,6 +2224,15 @@ var BABYLON;
                 var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
                 iconImage.width = "20%";
                 iconImage.stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
+                iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                result.addControl(iconImage);
+                return result;
+            };
+            Button.CreateImageOnlyButton = function (name, imageUrl) {
+                var result = new Button(name);
+                // Adding image
+                var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+                iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
                 iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 result.addControl(iconImage);
                 return result;

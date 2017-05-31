@@ -5,14 +5,16 @@ declare module BABYLON.GUI {
         private _renderObserver;
         private _resizeObserver;
         private _pointerMoveObserver;
+        private _pointerObserver;
         private _background;
         _rootContainer: Container;
         _lastControlOver: Control;
         _lastControlDown: Control;
         _shouldBlockPointer: boolean;
-        _toDispose: IDisposable;
+        _layerToDispose: Layer;
         _linkedControls: Control[];
         private _isFullscreen;
+        private _fullscreenViewport;
         background: string;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
@@ -24,6 +26,7 @@ declare module BABYLON.GUI {
         private _render();
         private _doPicking(x, y, type);
         attach(): void;
+        attachToMesh(mesh: AbstractMesh): void;
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground: boolean, scene: Scene): AdvancedDynamicTexture;
     }
@@ -195,7 +198,7 @@ declare module BABYLON.GUI {
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected _transform(context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
         protected _clip(context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -237,6 +240,9 @@ declare module BABYLON.GUI {
         name: string;
         protected _children: Control[];
         protected _measureForChildren: Measure;
+        protected _background: string;
+        background: string;
+        readonly children: Control[];
         constructor(name: string);
         containsControl(control: Control): boolean;
         addControl(control: Control): Container;
@@ -256,6 +262,8 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
+        private _isVertical;
+        isVertical: boolean;
         constructor(name: string);
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
@@ -266,7 +274,6 @@ declare module BABYLON.GUI {
     class Rectangle extends Container {
         name: string;
         private _thickness;
-        private _background;
         private _cornerRadius;
         thickness: number;
         cornerRadius: number;
@@ -284,9 +291,7 @@ declare module BABYLON.GUI {
     class Ellipse extends Container {
         name: string;
         private _thickness;
-        private _background;
         thickness: number;
-        background: string;
         constructor(name: string);
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -307,6 +312,7 @@ declare module BABYLON.GUI {
         private _y2;
         private _dash;
         private _connectedControl;
+        private _connectedControlDirtyObserver;
         dash: Array<number>;
         connectedControl: Control;
         x1: number;
@@ -357,15 +363,22 @@ declare module BABYLON.GUI {
         private _imageHeight;
         private _loaded;
         private _stretch;
+        private _source;
+        private _autoScale;
+        autoScale: boolean;
         stretch: number;
+        source: string;
         constructor(name: string, url: string);
+        synchronizeSizeWithContent(): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private static _STRETCH_NONE;
         private static _STRETCH_FILL;
         private static _STRETCH_UNIFORM;
+        private static _STRETCH_EXTEND;
         static readonly STRETCH_NONE: number;
         static readonly STRETCH_FILL: number;
         static readonly STRETCH_UNIFORM: number;
+        static readonly STRETCH_EXTEND: number;
     }
 }
 
@@ -373,6 +386,10 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     class Button extends Rectangle {
         name: string;
+        pointerEnterAnimation: () => void;
+        pointerOutAnimation: () => void;
+        pointerDownAnimation: () => void;
+        pointerUpAnimation: () => void;
         constructor(name: string);
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): void;
@@ -380,6 +397,7 @@ declare module BABYLON.GUI {
         protected _onPointerDown(): void;
         protected _onPointerUp(): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
+        static CreateImageOnlyButton(name: string, imageUrl: string): Button;
         static CreateSimpleButton(name: string, text: string): Button;
     }
 }

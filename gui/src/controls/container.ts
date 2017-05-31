@@ -3,7 +3,25 @@
 module BABYLON.GUI {
     export class Container extends Control {
         protected _children = new Array<Control>();
-        protected _measureForChildren = Measure.Empty();     
+        protected _measureForChildren = Measure.Empty();  
+        protected _background: string;   
+
+        public get background(): string {
+            return this._background;
+        }
+
+        public set background(value: string) {
+            if (this._background === value) {
+                return;
+            }
+
+            this._background = value;
+            this._markAsDirty();
+        }  
+
+        public get children(): Control[] {
+            return this._children;
+        }        
 
         constructor(public name: string) {
             super(name);
@@ -62,7 +80,10 @@ module BABYLON.GUI {
         }
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
-            // Implemented by child to be injected inside main draw
+            if (this._background) {
+                context.fillStyle = this._background;
+                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
         }
 
         public _link(root: Container, host: AdvancedDynamicTexture): void {
@@ -73,17 +94,18 @@ module BABYLON.GUI {
             }
         }
 
-        public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {      
             context.save();
-            super._processMeasures(parentMeasure, context);
            
             this._applyStates(context);
 
-            this._localDraw(context);
+            if (this._processMeasures(parentMeasure, context)) {
+                this._localDraw(context);
 
-            this._clipForChildren(context);
-            for (var child of this._children) {
-                child._draw(this._measureForChildren, context);
+                this._clipForChildren(context);
+                for (var child of this._children) {
+                    child._draw(this._measureForChildren, context);
+                }
             }
             context.restore();
         }

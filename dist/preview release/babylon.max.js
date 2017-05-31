@@ -7521,6 +7521,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine, "ALPHA_PREMULTIPLIED_PORTERDUFF", {
+            get: function () {
+                return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine, "DELAYLOADSTATE_NONE", {
             get: function () {
                 return Engine._DELAYLOADSTATE_NONE;
@@ -8753,6 +8760,10 @@ var BABYLON;
                     break;
                 case Engine.ALPHA_PREMULTIPLIED:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_COMBINE:
@@ -10177,6 +10188,7 @@ var BABYLON;
     Engine._ALPHA_MAXIMIZED = 5;
     Engine._ALPHA_ONEONE = 6;
     Engine._ALPHA_PREMULTIPLIED = 7;
+    Engine._ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
     Engine._DELAYLOADSTATE_NONE = 0;
     Engine._DELAYLOADSTATE_LOADED = 1;
     Engine._DELAYLOADSTATE_LOADING = 2;
@@ -15620,7 +15632,7 @@ var BABYLON;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
                 if (!_this.pointerMovePredicate) {
-                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (_this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
                 }
                 // Meshes
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
@@ -15689,7 +15701,7 @@ var BABYLON;
                 _this._startingPointerTime = new Date().getTime();
                 if (!_this.pointerDownPredicate) {
                     _this.pointerDownPredicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                     };
                 }
                 // Meshes
@@ -15805,7 +15817,7 @@ var BABYLON;
                     }
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = function (mesh) {
-                            return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                            return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                         };
                     }
                     // Meshes
@@ -31482,6 +31494,7 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
+            _this.panningInertia = 0.9;
             //-- end properties for backward compatibility for inputs
             _this.zoomOnFactor = 1;
             _this.targetScreenOffset = BABYLON.Vector2.Zero();
@@ -31786,8 +31799,8 @@ var BABYLON;
                 if (!this._targetHost) {
                     this._target.addInPlace(this._transformedDirection);
                 }
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
+                this.inertialPanningX *= this.panningInertia;
+                this.inertialPanningY *= this.panningInertia;
                 if (Math.abs(this.inertialPanningX) < this.speed * BABYLON.Epsilon)
                     this.inertialPanningX = 0;
                 if (Math.abs(this.inertialPanningY) < this.speed * BABYLON.Epsilon)
@@ -32038,6 +32051,9 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], ArcRotateCamera.prototype, "panningInertia", void 0);
     __decorate([
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
@@ -42179,16 +42195,17 @@ var BABYLON;
             _this._lastUpdate = BABYLON.Tools.Now;
             return _this;
         }
+        VideoTexture.prototype.__setTextureReady = function () {
+            this._texture.isReady = true;
+        };
         VideoTexture.prototype._createTexture = function () {
-            var _this = this;
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             if (this._autoLaunch) {
                 this._autoLaunch = false;
                 this.video.play();
             }
-            this.video.addEventListener("playing", function () {
-                _this._texture.isReady = true;
-            });
+            this._setTextureReady = this.__setTextureReady.bind(this);
+            this.video.addEventListener("playing", this._setTextureReady);
         };
         VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
@@ -42198,6 +42215,10 @@ var BABYLON;
             this._lastUpdate = now;
             this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
             return true;
+        };
+        VideoTexture.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.video.removeEventListener("playing", this._setTextureReady);
         };
         VideoTexture.CreateFromWebCam = function (scene, onReady, constraints) {
             var video = document.createElement("video");
@@ -55944,6 +55965,9 @@ var BABYLON;
                 if (!this.object.parent) {
                     this._init();
                 }
+                else if (this.object.parent.physicsImpostor) {
+                    BABYLON.Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
+                }
             }
         }
         /**
@@ -56625,9 +56649,9 @@ var BABYLON;
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSize.x, object.getBoundingInfo().boundingBox.extendSize.z);
+            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSizeWorld.x, object.getBoundingInfo().boundingBox.extendSizeWorld.z);
             var elementSize = dim * 2 / arraySize;
-            var minY = object.getBoundingInfo().boundingBox.extendSize.y;
+            var minY = object.getBoundingInfo().boundingBox.extendSizeWorld.y;
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
                 var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
@@ -56697,15 +56721,15 @@ var BABYLON;
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
                 //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
-                var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
+                var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
                 //calculate the translation
-                var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
-                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
                 //add it inverted to the delta 
-                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center.subtract(c));
-                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
+                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
