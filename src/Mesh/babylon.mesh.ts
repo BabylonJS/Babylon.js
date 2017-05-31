@@ -1391,28 +1391,25 @@
         }
 
         // Cache
+        public get _positions(): Vector3[] {
+            if (this._geometry) {
+                return this._geometry._positions;
+            }
+            return null;
+        }
+
         public _resetPointsArrayCache(): Mesh {
-            this._positions = null;
+            if (this._geometry) {
+                this._geometry._resetPointsArrayCache();
+            }
             return this;
         }
 
         public _generatePointsArray(): boolean {
-            if (this._positions)
-                return true;
-
-            this._positions = [];
-
-            var data = this.getVerticesData(VertexBuffer.PositionKind);
-
-            if (!data) {
-                return false;
+            if (this._geometry) {
+                return this._geometry._generatePointsArray();
             }
-
-            for (var index = 0; index < data.length; index += 3) {
-                this._positions.push(Vector3.FromArray(data, index));
-            }
-
-            return true;
+            return false;
         }
 
         /**
