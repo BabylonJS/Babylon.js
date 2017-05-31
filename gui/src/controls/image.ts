@@ -10,6 +10,23 @@ module BABYLON.GUI {
         private _loaded = false;
         private _stretch = Image.STRETCH_FILL;
         private _source: string;
+        private _autoScale = false;
+
+        public get autoScale(): boolean {
+            return this._autoScale;
+        }
+
+        public set autoScale(value: boolean) {
+            if (this._autoScale === value) {
+                return;
+            }
+
+            this._autoScale = value;
+
+            if (value && this._loaded) {
+                this.synchronizeSizeWithContent();
+            }
+        }
 
         public get stretch(): number {
             return this._stretch;
@@ -30,6 +47,7 @@ module BABYLON.GUI {
                 return;
             }
 
+            this._loaded = false;
             this._source = value;
             
             this._domImage = new DOMImage();
@@ -38,6 +56,11 @@ module BABYLON.GUI {
                 this._imageWidth = this._domImage.width;
                 this._imageHeight = this._domImage.height;
                 this._loaded = true;
+
+                if (this._autoScale) {
+                    this.synchronizeSizeWithContent();
+                }
+
                 this._markAsDirty();
             }
             
@@ -48,6 +71,15 @@ module BABYLON.GUI {
             super(name);
 
             this.source = url;
+        }
+
+        public synchronizeSizeWithContent() {
+            if (!this._loaded) {
+                return;
+            }
+
+            this.width = this._domImage.width + "px";
+            this.height = this._domImage.height + "px";
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
@@ -74,6 +106,14 @@ module BABYLON.GUI {
                             context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight,
                                                             this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
                             break;
+                        case Image.STRETCH_EXTEND:
+                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                            if (this._autoScale) {
+                                this.synchronizeSizeWithContent();
+                            } 
+                            this._root.width = this.width;
+                            this._root.height = this.height;
+                            break;
                     }
                 }
             }
@@ -84,6 +124,7 @@ module BABYLON.GUI {
         private static _STRETCH_NONE = 0;
         private static _STRETCH_FILL = 1;
         private static _STRETCH_UNIFORM = 2;
+        private static _STRETCH_EXTEND = 3;
 
         public static get STRETCH_NONE(): number {
             return Image._STRETCH_NONE;
@@ -95,6 +136,10 @@ module BABYLON.GUI {
 
         public static get STRETCH_UNIFORM(): number {
             return Image._STRETCH_UNIFORM;
-        }              
+        }      
+
+        public static get STRETCH_EXTEND(): number {
+            return Image._STRETCH_EXTEND;
+        }                 
     }    
 }
