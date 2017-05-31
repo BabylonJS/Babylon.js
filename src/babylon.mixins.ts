@@ -50,6 +50,15 @@ interface WebGLRenderingContext {
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
 
+    /* Multiple Render Targets */
+    drawBuffers(buffers: number[]): void;
+    readBuffer(src: number): void;
+
+
+    readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
+    readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
+    readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
+    readonly COLOR_ATTACHMENT3: number;                             // 0x8CE4
 }
 
 interface HTMLURL {
