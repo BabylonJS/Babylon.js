@@ -711,6 +711,7 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
+        private _geometryBufferRenderer: GeometryBufferRenderer;
 
         private _uniqueIdCounter = 0;
 
@@ -2674,7 +2675,7 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (layer.isBackground) {
+                    if (layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -2726,7 +2727,7 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (!layer.isBackground) {
+                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -2939,6 +2940,11 @@
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
             }
 
+            // Geometry renderer
+            if (this._geometryBufferRenderer) {
+                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
+            }
+
             // RenderPipeline
             if (this._postProcessRenderPipelineManager) {
                 this._postProcessRenderPipelineManager.update();
@@ -3131,6 +3137,28 @@
 
             this._depthRenderer.dispose();
             this._depthRenderer = null;
+        }
+
+        public enableGeometryBufferRenderer(ratio: number = 1): GeometryBufferRenderer {
+            if (this._geometryBufferRenderer) {
+                return this._geometryBufferRenderer;
+            }
+
+            this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
+            if (!this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
+            }
+
+            return this._geometryBufferRenderer;
+        }
+
+        public disableGeometryBufferRenderer(): void {
+            if (!this._geometryBufferRenderer) {
+                return;
+            }
+
+            this._geometryBufferRenderer.dispose();
+            this._geometryBufferRenderer = null;
         }
 
         public freezeMaterials(): void {

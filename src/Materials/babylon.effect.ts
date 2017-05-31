@@ -352,7 +352,7 @@
 
             // Already converted
             if (preparedSourceCode.indexOf("#version 3") !== -1) {
-                callback(preparedSourceCode);
+                callback(preparedSourceCode.replace("#version 300 es", ""));
                 return;
             }
             

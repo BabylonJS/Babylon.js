@@ -99,21 +99,21 @@
             this._onClearObserver = this.onClearObservable.add(callback);
         }
 
-        private _size: number;
+        protected _size: number;
         public _generateMipMaps: boolean;
-        private _renderingManager: RenderingManager;
+        protected _renderingManager: RenderingManager;
         public _waitingRenderList: string[];
-        private _doNotChangeAspectRatio: boolean;
-        private _currentRefreshId = -1;
-        private _refreshRate = 1;
-        private _textureMatrix: Matrix;
-        private _samples = 1;
+        protected _doNotChangeAspectRatio: boolean;
+        protected _currentRefreshId = -1;
+        protected _refreshRate = 1;
+        protected _textureMatrix: Matrix;
+        protected _samples = 1;
         protected _renderTargetOptions: IRenderTargetOptions;
         public get renderTargetOptions(): IRenderTargetOptions {
             return this._renderTargetOptions;
         }
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -121,6 +121,13 @@
             this._size = size;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
+
+            // Rendering groups
+            this._renderingManager = new RenderingManager(scene);
+
+            if (isMulti) {
+                return;
+            }
 
             this._renderTargetOptions = {
                 generateMipMaps: generateMipMaps,
@@ -143,8 +150,6 @@
                 this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
 
-            // Rendering groups
-            this._renderingManager = new RenderingManager(scene);
         }
 
         public get samples(): number {
@@ -468,6 +473,10 @@
             }
 
             return serializationObject;
+        }
+
+        public dispose(): void {
+            super.dispose();
         }
     }
 }

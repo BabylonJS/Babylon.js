@@ -430,7 +430,7 @@
         }
 
         public static get Version(): string {
-            return "3.0-alpha";
+            return "3.0-beta";
         }
 
         // Updatable statics so stick with vars here
@@ -2703,6 +2703,172 @@
             this._loadedTexturesCache.push(texture);
 
             return texture;
+        }
+
+        public createMultipleRenderTarget(size: any, options): WebGLTexture[] {
+            var generateMipMaps = false;
+            var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+            var generateDepthTexture = false;
+            var textureCount = 1;
+
+            var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var defaultSamplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+
+            var types = [], samplingModes = [];
+
+            if (options !== undefined) {
+                generateMipMaps = options.generateMipMaps;
+                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = options.generateStencilBuffer;
+                generateDepthTexture = options.generateDepthTexture;
+                textureCount = options.textureCount || 1;
+
+                if (options.types) {
+                    types = options.types;
+                }
+                if (options.samplingModes) {
+                    samplingModes = options.samplingModes;
+                }
+
+            }
+            var gl = this._gl;
+            // Create the framebuffer
+            var framebuffer = gl.createFramebuffer();
+            this.bindUnboundFramebuffer(framebuffer);
+
+            var colorRenderbuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 4, gl.RGBA8, width, height);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.RENDERBUFFER, colorRenderbuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, colorRenderbuffer);
+
+            var width = size.width || size;
+            var height = size.height || size;
+            
+            var textures = [];
+            var attachments = []
+
+            var depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
+
+            for (var i = 0; i < textureCount; i++) {
+                var samplingMode = samplingModes[i] || defaultSamplingMode;
+                var type = types[i] || defaultType;
+
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+
+                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                    type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                    Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+                }
+
+                var texture = gl.createTexture();
+                var attachment = gl["COLOR_ATTACHMENT" + i];
+                textures.push(texture);
+                attachments.push(attachment);
+
+                gl.activeTexture(gl["TEXTURE" + i]);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            
+                gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
+
+
+                if (generateMipMaps) {
+                    this._gl.generateMipmap(this._gl.TEXTURE_2D);
+                }
+
+                // Unbind
+                this._bindTextureDirectly(gl.TEXTURE_2D, null);
+
+                texture._framebuffer = framebuffer;
+                texture._depthStencilBuffer = depthStencilBuffer;
+                texture._baseWidth = width;
+                texture._baseHeight = height;
+                texture._width = width;
+                texture._height = height;
+                texture.isReady = true;
+                texture.samples = 1;
+                texture.generateMipMaps = generateMipMaps;
+                texture.references = 1;
+                texture.samplingMode = samplingMode;
+                texture.type = type;
+                texture._generateDepthBuffer = generateDepthBuffer;
+                texture._generateStencilBuffer = generateStencilBuffer;
+
+                this._loadedTexturesCache.push(texture);
+            }
+
+            if (generateDepthTexture) {
+                // Depth texture
+                var depthTexture = gl.createTexture();
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.DEPTH_COMPONENT16,
+                    width,
+                    height,
+                    0,
+                    gl.DEPTH_COMPONENT,
+                    gl.UNSIGNED_SHORT,
+                    null
+                );
+
+                gl.framebufferTexture2D(
+                    gl.FRAMEBUFFER,
+                    gl.DEPTH_ATTACHMENT,
+                    gl.TEXTURE_2D,
+                    depthTexture,
+                    0
+                );
+
+                depthTexture._framebuffer = framebuffer;
+                depthTexture._baseWidth = width;
+                depthTexture._baseHeight = height;
+                depthTexture._width = width;
+                depthTexture._height = height;
+                depthTexture.isReady = true;
+                depthTexture.samples = 1;
+                depthTexture.generateMipMaps = generateMipMaps;
+                depthTexture.references = 1;
+                depthTexture.samplingMode = gl.NEAREST;
+                depthTexture._generateDepthBuffer = generateDepthBuffer;
+                depthTexture._generateStencilBuffer = generateStencilBuffer;
+
+                textures.push(depthTexture)
+                this._loadedTexturesCache.push(depthTexture);
+            }
+
+            gl.drawBuffers(attachments);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+
+            this.resetTextureCache();
+
+            return textures;
         }
 
         private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): WebGLRenderbuffer {

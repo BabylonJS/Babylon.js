@@ -16,7 +16,7 @@
                 "pointLight", "directionalLight", "spotLight", "animations", "actions", "sprites", "picking", "collisions",
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
-                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "additionalPostProcesses",
+                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
@@ -382,6 +382,7 @@
             "files": [
                 "../../src/Materials/Textures/babylon.cubeTexture.js",
                 "../../src/Materials/Textures/babylon.renderTargetTexture.js",
+                "../../src/Materials/Textures/babylon.multiRenderTarget.js",
                 "../../src/Materials/Textures/babylon.mirrorTexture.js",
                 "../../src/Materials/Textures/babylon.refractionTexture.js",
                 "../../src/Materials/Textures/babylon.dynamicTexture.js",
@@ -528,7 +529,26 @@
                 "instancesVertex",
                 "bonesVertex"
             ]
-        },      
+        },
+        "geometryBufferRenderer" : 
+        {
+            "files": [
+                "../../src/Rendering/babylon.geometryBufferRenderer.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ], 
+            "shaders" : [
+                "geometry.vertex",
+                "geometry.fragment"
+            ],
+            "shaderIncludes": [
+                "bones300Declaration",
+                "instances300Declaration",
+                "instancesVertex",
+                "bonesVertex"
+            ]
+        },            
         "postProcesses" : 
         {
             "files": [
@@ -590,6 +610,7 @@
         {
             "files": [
                 "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
+                "../../src/PostProcess/babylon.ssao2RenderingPipeline.js",
                 "../../src/PostProcess/babylon.lensRenderingPipeline.js",
                 "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
@@ -600,6 +621,7 @@
             ], 
             "shaders" : [
                 "ssao.fragment",
+                "ssao2.fragment",
                 "ssaoCombine.fragment",
                 "chromaticAberration.fragment",
                 "lensHighlights.fragment",

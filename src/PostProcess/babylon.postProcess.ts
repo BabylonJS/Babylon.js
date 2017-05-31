@@ -131,11 +131,11 @@
             this.updateEffect(defines);
         }
         
-        public updateEffect(defines?: string) {
+        public updateEffect(defines?: string, uniforms?: string[], samplers?: string[]) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
                 ["position"],
-                this._parameters,
-                this._samplers, defines !== undefined ? defines : "");
+                uniforms || this._parameters,
+                samplers || this._samplers, defines !== undefined ? defines : "");
         }
 
         public isReusable(): boolean {

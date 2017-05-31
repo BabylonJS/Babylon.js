@@ -1391,28 +1391,25 @@
         }
 
         // Cache
+        public get _positions(): Vector3[] {
+            if (this._geometry) {
+                return this._geometry._positions;
+            }
+            return null;
+        }
+
         public _resetPointsArrayCache(): Mesh {
-            this._positions = null;
+            if (this._geometry) {
+                this._geometry._resetPointsArrayCache();
+            }
             return this;
         }
 
         public _generatePointsArray(): boolean {
-            if (this._positions)
-                return true;
-
-            this._positions = [];
-
-            var data = this.getVerticesData(VertexBuffer.PositionKind);
-
-            if (!data) {
-                return false;
+            if (this._geometry) {
+                return this._geometry._generatePointsArray();
             }
-
-            for (var index = 0; index < data.length; index += 3) {
-                this._positions.push(Vector3.FromArray(data, index));
-            }
-
-            return true;
+            return false;
         }
 
         /**
@@ -2507,6 +2504,40 @@
             }
             return MeshBuilder.CreateDashedLines(name, options, scene);
         }
+
+        /**
+         * Creates a polygon mesh.
+         * Please consider using the same method from the MeshBuilder class instead. 
+         * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
+         * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
+         * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * Remember you can only change the shape positions, not their number when updating a polygon.
+         */
+        public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
+            var options = {
+                shape: shape,
+                holes: holes,
+                updatable: updatable,
+                sideOrientation: sideOrientation
+            }
+            return MeshBuilder.CreatePolygon(name, options, scene);
+		}
+
+       /**
+         * Creates an extruded polygon mesh, with depth in the Y direction. 
+         * Please consider using the same method from the MeshBuilder class instead. 
+		*/
+        public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
+            var options = {
+                shape: shape,
+                holes: holes,
+                depth: depth,
+                updatable: updatable,
+                sideOrientation: sideOrientation
+            }
+            return MeshBuilder.ExtrudePolygon(name, options, scene);
+		}
 
         /**
          * Creates an extruded shape mesh.    
