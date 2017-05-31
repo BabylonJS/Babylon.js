@@ -54,27 +54,27 @@ module BABYLON.GUI {
             context.save();
 
             this._applyStates(context);
-            super._processMeasures(parentMeasure, context);
+            if (this._processMeasures(parentMeasure, context)) {
+                if (this._loaded) {
+                    switch (this._stretch) {
+                        case Image.STRETCH_NONE:
+                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                            break;
+                        case Image.STRETCH_FILL:
+                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, 
+                                                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                            break;
+                        case Image.STRETCH_UNIFORM:
+                            var hRatio = this._currentMeasure.width  / this._imageWidth;
+                            var vRatio =  this._currentMeasure.height / this._imageHeight;
+                            var ratio = Math.min(hRatio, vRatio);
+                            var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
+                            var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2; 
 
-            if (this._loaded) {
-                switch (this._stretch) {
-                    case Image.STRETCH_NONE:
-                        context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
-                        break;
-                    case Image.STRETCH_FILL:
-                        context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, 
-                                                          this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        break;
-                    case Image.STRETCH_UNIFORM:
-                        var hRatio = this._currentMeasure.width  / this._imageWidth;
-                        var vRatio =  this._currentMeasure.height / this._imageHeight;
-                        var ratio = Math.min(hRatio, vRatio);
-                        var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                        var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2; 
-
-                        context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight,
-                                                          this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
-                        break;
+                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight,
+                                                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                            break;
+                    }
                 }
             }
             context.restore();
