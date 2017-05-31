@@ -1619,6 +1619,28 @@
         }
 
         /**
+         * Re-creates the VertexData of the Polygon for sideOrientation.  
+         */
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number) {
+			var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
+			var normals = polygon.getVerticesData(VertexBuffer.NormalKind);
+			var uvs = polygon.getVerticesData(VertexBuffer.UVKind);
+			var indices = polygon.getIndices();
+
+			// sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            
+            // Result
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+			
+		}
+
+        /**
          * Creates the VertexData of the IcoSphere.  
          */
         public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
