@@ -48,7 +48,8 @@
 	<script src="test/addgradient.js"></script>
 	<script src="test/addsky.js"></script>
 	<script src="test/addgrid.js"></script>
-    <script src="test/addpbr.js"></script>
+	<script src="test/addpbr.js"></script>
+	<script src="test/addlegacypbr.js"></script>
 	<script src="test/addCell.js"></script>
 	
 	<script>
@@ -195,12 +196,14 @@
 				var terrain = prepareTerrain();
 
 				var pbr = preparePBR();
+
+				var legacypbr = prepareLegacyPBR();
 				
 				var triPlanar = prepareTriPlanar();
 				
 				var sky = prepareSky();
-                
-                var grid = prepareGrid();
+
+				var grid = prepareGrid();
 
 				var shadowOnly = new BABYLON.ShadowOnlyMaterial();
 
@@ -211,7 +214,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -243,6 +246,9 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
+							break;
+						case "legacyPbr":
+							currentMaterial = legacypbr;
 							break;
 						case "fur":
 							currentMaterial = fur.material;
