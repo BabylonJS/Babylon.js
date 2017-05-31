@@ -22,6 +22,7 @@
  - New `Cell Shading` material added into `Materials Library` [Demo](http://www.babylonjs.com/Demos/CellShading/) - ([Julien Moreau-Mathis](https://github.com/julien-moreau))
  
 ### Updates
+- Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))
 - Added `FIXED_EQUIRECTANGULAR_MIRRORED_MODE` mode for reflection texture. [Demo here](http://www.babylonjs-playground.com/#11GAIH#22) ([deltakosh](https://github.com/deltakosh))
 - Introduced `boundingBox.centerWorld` and `boundingBox.extendSizeWorld` ([deltakosh](https://github.com/deltakosh))
 - Improved FXAA post-process ([deltakosh](https://github.com/deltakosh))

@@ -31353,6 +31353,7 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
+            _this.panningInertia = 0.9;
             //-- end properties for backward compatibility for inputs
             _this.zoomOnFactor = 1;
             _this.targetScreenOffset = BABYLON.Vector2.Zero();
@@ -31657,8 +31658,8 @@ var BABYLON;
                 if (!this._targetHost) {
                     this._target.addInPlace(this._transformedDirection);
                 }
-                this.inertialPanningX *= this.inertia;
-                this.inertialPanningY *= this.inertia;
+                this.inertialPanningX *= this.panningInertia;
+                this.inertialPanningY *= this.panningInertia;
                 if (Math.abs(this.inertialPanningX) < this.speed * BABYLON.Epsilon)
                     this.inertialPanningX = 0;
                 if (Math.abs(this.inertialPanningY) < this.speed * BABYLON.Epsilon)
@@ -31909,6 +31910,9 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], ArcRotateCamera.prototype, "panningInertia", void 0);
     __decorate([
         BABYLON.serialize()
     ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
