@@ -23,6 +23,9 @@
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
 
+        // Cache
+        public _positions: Vector3[];
+
         /**
          *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          * @returns The Bias Vector
@@ -134,13 +137,13 @@
                 this._totalVertices = data.length / stride;
 
                 this.updateExtend(data, stride);
+                this._resetPointsArrayCache();
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
 
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
-                    mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
@@ -192,10 +195,10 @@
 
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
+            this._resetPointsArrayCache();
 
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._resetPointsArrayCache();
                 if (updateExtends) {
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
@@ -424,8 +427,6 @@
                     buffer.references = numOfMeshes;
 
                 if (kind === VertexBuffer.PositionKind) {
-                    mesh._resetPointsArrayCache();
-
                     if (!this._extend) {
                         this.updateExtend(this._vertexBuffers[kind].getData());
                     }
@@ -529,6 +530,32 @@
                 }
                 this.setVerticesData(VertexBuffer.NormalKind, tNormals, false);
             }
+        }
+
+        // Cache
+        public _resetPointsArrayCache(): void
+        {
+            this._positions = null;
+        }
+
+        public _generatePointsArray(): boolean
+        {
+            if (this._positions)
+                return true;
+
+            this._positions = [];
+
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (!data) {
+                return false;
+            }
+
+            for (var index = 0; index < data.length; index += 3) {
+                this._positions.push(Vector3.FromArray(data, index));
+            }
+
+            return true;
         }
 
         public isDisposed(): boolean {

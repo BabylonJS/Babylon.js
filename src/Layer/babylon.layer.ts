@@ -7,7 +7,8 @@
         public offset = new Vector2(0, 0);
         public alphaBlendingMode = Engine.ALPHA_COMBINE;
         public alphaTest: boolean;
-
+        public layerMask: number = 0x0FFFFFFF;
+        
         private _scene: Scene;
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
@@ -63,7 +64,7 @@
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
-
+            
             this._scene = scene || Engine.LastCreatedScene;
             this._scene.layers.push(this);
 

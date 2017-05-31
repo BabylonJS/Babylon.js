@@ -294,7 +294,6 @@
         private _absolutePosition = Vector3.Zero();
         private _collisionsTransformMatrix = Matrix.Zero();
         private _collisionsScalingMatrix = Matrix.Zero();
-        public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
 
@@ -314,6 +313,10 @@
         public _poseMatrix: Matrix;
 
         public _lightSources = new Array<Light>();
+
+        public get _positions(): Vector3[] {
+            return null;
+        }
 
         // Loading properties
         public _waitingActions: any;
