@@ -24,16 +24,13 @@ module BABYLON.GUI {
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             var stack = 0;
             for (var child of this._children) {
-                child._currentMeasure.copyFrom(parentMeasure);
-                child._measure();
-
                 if (this._isVertical) {
                     child.top = stack + "px";
-                    stack += child._currentMeasure.height;
+                    stack += child._height.internalValue;
                     child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 } else {
                     child.left = stack + "px";
-                    stack += child._currentMeasure.width;
+                    stack += child._width.internalValue;
                     child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
 
                 }
