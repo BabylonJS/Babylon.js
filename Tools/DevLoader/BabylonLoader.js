@@ -155,9 +155,11 @@ var BABYLONDEVTOOLS;
                     var endDirectoryIndex = shaderFile.lastIndexOf('/');
                     shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
                     shaderFile += library.output.replace('.js', '.js.fx');
-                    file = file.replace('../', '');
-                    file = babylonJSPath + '/' + file;
                     this.loadScript(shaderFile);
+                    if (library.shadersIncludeFiles) {
+                        var includeShaderFile = shaderFile.replace('.js.fx', '.js.include.fx');
+                        this.loadScript(includeShaderFile);
+                    }
                 }
             }
             else if (min) {
