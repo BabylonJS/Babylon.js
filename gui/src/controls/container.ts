@@ -79,6 +79,18 @@ module BABYLON.GUI {
             }
         }
 
+        public _markAllAsDirty(): void {
+            this._markAsDirty();
+
+            for (var index = 0; index < this._children.length; index++) {
+                if ((<any>this._children[index])._markAllAsDirty) {
+                    (<any>this._children[index])._markAllAsDirty();
+                } else {
+                    this._children[index]._markAsDirty();
+                }
+            }
+        }
+
         protected _localDraw(context: CanvasRenderingContext2D): void {
             if (this._background) {
                 context.fillStyle = this._background;
@@ -104,7 +116,9 @@ module BABYLON.GUI {
 
                 this._clipForChildren(context);
                 for (var child of this._children) {
-                    child._draw(this._measureForChildren, context);
+                    if (child.isVisible) {
+                        child._draw(this._measureForChildren, context);
+                    }
                 }
             }
             context.restore();
