@@ -2674,7 +2674,7 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (layer.isBackground) {
+                    if (layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -2726,7 +2726,7 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (!layer.isBackground) {
+                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
