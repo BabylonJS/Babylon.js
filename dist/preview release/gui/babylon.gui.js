@@ -902,11 +902,24 @@ var BABYLON;
                         this.onDirtyObservable.notifyObservers(this);
                     }
                 }
+                if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+                    return false;
+                }
+                if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+                    return false;
+                }
+                if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+                    return false;
+                }
+                if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+                    return false;
+                }
                 // Transform
                 this._transform(context);
                 // Clip
                 this._clip(context);
                 context.clip();
+                return true;
             };
             Control.prototype._clip = function (context) {
                 context.beginPath();
@@ -1286,13 +1299,14 @@ var BABYLON;
             };
             Container.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
                 this._applyStates(context);
-                this._localDraw(context);
-                this._clipForChildren(context);
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    child._draw(this._measureForChildren, context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    this._localDraw(context);
+                    this._clipForChildren(context);
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        child._draw(this._measureForChildren, context);
+                    }
                 }
                 context.restore();
             };
@@ -1766,14 +1780,15 @@ var BABYLON;
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                context.strokeStyle = this.color;
-                context.lineWidth = this._lineWidth;
-                context.setLineDash(this._dash);
-                context.beginPath();
-                context.moveTo(this._x1, this._y1);
-                context.lineTo(this.x2, this.y2);
-                context.stroke();
+                if (this._processMeasures(parentMeasure, context)) {
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._lineWidth;
+                    context.setLineDash(this._dash);
+                    context.beginPath();
+                    context.moveTo(this._x1, this._y1);
+                    context.lineTo(this.x2, this.y2);
+                    context.stroke();
+                }
                 context.restore();
             };
             Line.prototype._measure = function () {
@@ -1899,9 +1914,10 @@ var BABYLON;
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                // Render lines
-                this._renderLines(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    // Render lines
+                    this._renderLines(context);
+                }
                 context.restore();
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
@@ -2026,23 +2042,24 @@ var BABYLON;
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
-                _super.prototype._processMeasures.call(this, parentMeasure, context);
-                if (this._loaded) {
-                    switch (this._stretch) {
-                        case Image.STRETCH_NONE:
-                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
-                            break;
-                        case Image.STRETCH_FILL:
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                            break;
-                        case Image.STRETCH_UNIFORM:
-                            var hRatio = this._currentMeasure.width / this._imageWidth;
-                            var vRatio = this._currentMeasure.height / this._imageHeight;
-                            var ratio = Math.min(hRatio, vRatio);
-                            var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                            var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
-                            break;
+                if (this._processMeasures(parentMeasure, context)) {
+                    if (this._loaded) {
+                        switch (this._stretch) {
+                            case Image.STRETCH_NONE:
+                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                break;
+                            case Image.STRETCH_FILL:
+                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                break;
+                            case Image.STRETCH_UNIFORM:
+                                var hRatio = this._currentMeasure.width / this._imageWidth;
+                                var vRatio = this._currentMeasure.height / this._imageHeight;
+                                var ratio = Math.min(hRatio, vRatio);
+                                var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
+                                var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
+                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                                break;
+                        }
                     }
                 }
                 context.restore();

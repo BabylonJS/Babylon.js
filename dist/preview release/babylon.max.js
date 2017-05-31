@@ -7521,6 +7521,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine, "ALPHA_PREMULTIPLIED_PORTERDUFF", {
+            get: function () {
+                return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine, "DELAYLOADSTATE_NONE", {
             get: function () {
                 return Engine._DELAYLOADSTATE_NONE;
@@ -8753,6 +8760,10 @@ var BABYLON;
                     break;
                 case Engine.ALPHA_PREMULTIPLIED:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_COMBINE:
@@ -10058,6 +10069,7 @@ var BABYLON;
     Engine._ALPHA_MAXIMIZED = 5;
     Engine._ALPHA_ONEONE = 6;
     Engine._ALPHA_PREMULTIPLIED = 7;
+    Engine._ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
     Engine._DELAYLOADSTATE_NONE = 0;
     Engine._DELAYLOADSTATE_LOADED = 1;
     Engine._DELAYLOADSTATE_LOADING = 2;
@@ -55207,6 +55219,9 @@ var BABYLON;
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
                 if (!this.object.parent) {
                     this._init();
+                }
+                else if (this.object.parent.physicsImpostor) {
+                    BABYLON.Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
                 }
             }
         }

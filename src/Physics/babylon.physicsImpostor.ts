@@ -86,6 +86,8 @@ module BABYLON {
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
                 if (!this.object.parent) {
                     this._init();
+                } else if (this.object.parent.physicsImpostor) {
+                    Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
                 }
             }
         }

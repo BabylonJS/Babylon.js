@@ -198,7 +198,7 @@ declare module BABYLON.GUI {
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected _transform(context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
-        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
         protected _clip(context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
