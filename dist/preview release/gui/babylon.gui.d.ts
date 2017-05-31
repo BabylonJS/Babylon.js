@@ -364,16 +364,21 @@ declare module BABYLON.GUI {
         private _loaded;
         private _stretch;
         private _source;
+        private _autoScale;
+        autoScale: boolean;
         stretch: number;
         source: string;
         constructor(name: string, url: string);
+        synchronizeSizeWithContent(): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private static _STRETCH_NONE;
         private static _STRETCH_FILL;
         private static _STRETCH_UNIFORM;
+        private static _STRETCH_EXTEND;
         static readonly STRETCH_NONE: number;
         static readonly STRETCH_FILL: number;
         static readonly STRETCH_UNIFORM: number;
+        static readonly STRETCH_EXTEND: number;
     }
 }
 

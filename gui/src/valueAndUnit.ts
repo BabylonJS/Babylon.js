@@ -16,9 +16,9 @@ module BABYLON.GUI {
         public toString(): string {
             switch (this.unit) {
                 case ValueAndUnit.UNITMODE_PERCENTAGE:
-                    return this.unit + "%";
+                    return this.value + "%";
                 case ValueAndUnit.UNITMODE_PIXEL:
-                    return this.unit + "px";
+                    return this.value + "px";
             }
 
             return this.unit.toString();

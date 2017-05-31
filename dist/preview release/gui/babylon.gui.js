@@ -390,9 +390,9 @@ var BABYLON;
             ValueAndUnit.prototype.toString = function () {
                 switch (this.unit) {
                     case ValueAndUnit.UNITMODE_PERCENTAGE:
-                        return this.unit + "%";
+                        return this.value + "%";
                     case ValueAndUnit.UNITMODE_PIXEL:
-                        return this.unit + "px";
+                        return this.value + "px";
                 }
                 return this.unit.toString();
             };
@@ -2003,9 +2003,26 @@ var BABYLON;
                 _this.name = name;
                 _this._loaded = false;
                 _this._stretch = Image.STRETCH_FILL;
+                _this._autoScale = false;
                 _this.source = url;
                 return _this;
             }
+            Object.defineProperty(Image.prototype, "autoScale", {
+                get: function () {
+                    return this._autoScale;
+                },
+                set: function (value) {
+                    if (this._autoScale === value) {
+                        return;
+                    }
+                    this._autoScale = value;
+                    if (value && this._loaded) {
+                        this.synchronizeSizeWithContent();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Image.prototype, "stretch", {
                 get: function () {
                     return this._stretch;
@@ -2026,12 +2043,16 @@ var BABYLON;
                     if (this._source === value) {
                         return;
                     }
+                    this._loaded = false;
                     this._source = value;
                     this._domImage = new DOMImage();
                     this._domImage.onload = function () {
                         _this._imageWidth = _this._domImage.width;
                         _this._imageHeight = _this._domImage.height;
                         _this._loaded = true;
+                        if (_this._autoScale) {
+                            _this.synchronizeSizeWithContent();
+                        }
                         _this._markAsDirty();
                     };
                     this._domImage.src = value;
@@ -2039,6 +2060,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Image.prototype.synchronizeSizeWithContent = function () {
+                if (!this._loaded) {
+                    return;
+                }
+                this.width = this._domImage.width + "px";
+                this.height = this._domImage.height + "px";
+            };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -2058,6 +2086,14 @@ var BABYLON;
                                 var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
                                 var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
                                 context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                                break;
+                            case Image.STRETCH_EXTEND:
+                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                if (this._autoScale) {
+                                    this.synchronizeSizeWithContent();
+                                }
+                                this._root.width = this.width;
+                                this._root.height = this.height;
                                 break;
                         }
                     }
@@ -2085,12 +2121,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image, "STRETCH_EXTEND", {
+                get: function () {
+                    return Image._STRETCH_EXTEND;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Image;
         }(GUI.Control));
         // Static
         Image._STRETCH_NONE = 0;
         Image._STRETCH_FILL = 1;
         Image._STRETCH_UNIFORM = 2;
+        Image._STRETCH_EXTEND = 3;
         GUI.Image = Image;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
