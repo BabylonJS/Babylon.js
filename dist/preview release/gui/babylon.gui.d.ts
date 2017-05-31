@@ -15,7 +15,11 @@ declare module BABYLON.GUI {
         _linkedControls: Control[];
         private _isFullscreen;
         private _fullscreenViewport;
+        private _idealWidth;
+        private _idealHeight;
         background: string;
+        idealWidth: number;
+        idealHeight: number;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
         addControl(control: Control): AdvancedDynamicTexture;
@@ -74,13 +78,16 @@ declare module BABYLON.GUI {
 /// <reference path="../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
     class ValueAndUnit {
-        value: number;
         unit: number;
         negativeValueAllowed: boolean;
-        constructor(value?: number, unit?: number, negativeValueAllowed?: boolean);
+        private _value;
+        ignoreAdaptiveScaling: boolean;
+        constructor(value: any, unit?: number, negativeValueAllowed?: boolean);
         readonly isPercentage: boolean;
         readonly isPixel: boolean;
-        toString(): string;
+        readonly internalValue: number;
+        getValue(host: AdvancedDynamicTexture): number;
+        toString(host: AdvancedDynamicTexture): string;
         fromString(source: string): boolean;
         private static _Regex;
         private static _UNITMODE_PERCENTAGE;
@@ -102,8 +109,8 @@ declare module BABYLON.GUI {
         private _fontFamily;
         private _fontSize;
         private _font;
-        private _width;
-        private _height;
+        _width: ValueAndUnit;
+        _height: ValueAndUnit;
         private _lastMeasuredFont;
         protected _fontOffset: {
             ascent: number;
@@ -132,11 +139,12 @@ declare module BABYLON.GUI {
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
+        private _isVisible;
         _linkedMesh: AbstractMesh;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
-        linkOffsetX: number;
-        linkOffsetY: number;
+        protected _linkOffsetX: ValueAndUnit;
+        protected _linkOffsetY: ValueAndUnit;
         /**
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
@@ -178,9 +186,10 @@ declare module BABYLON.GUI {
         width: string;
         height: string;
         fontFamily: string;
-        fontSize: number;
+        fontSize: string;
         color: string;
         zIndex: number;
+        isVisible: boolean;
         readonly isDirty: boolean;
         marginLeft: string;
         marginRight: string;
@@ -188,13 +197,15 @@ declare module BABYLON.GUI {
         marginBottom: string;
         left: string;
         top: string;
+        linkOffsetX: string;
+        linkOffsetY: string;
         readonly centerX: number;
         readonly centerY: number;
         constructor(name: string);
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         _markMatrixAsDirty(): void;
-        protected _markAsDirty(): void;
+        _markAsDirty(): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected _transform(context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
@@ -249,6 +260,7 @@ declare module BABYLON.GUI {
         removeControl(control: Control): Container;
         _reOrderControl(control: Control): void;
         _markMatrixAsDirty(): void;
+        _markAllAsDirty(): void;
         protected _localDraw(context: CanvasRenderingContext2D): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -315,13 +327,15 @@ declare module BABYLON.GUI {
         private _connectedControlDirtyObserver;
         dash: Array<number>;
         connectedControl: Control;
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
+        x1: string;
+        y1: string;
+        x2: string;
+        y2: string;
         lineWidth: number;
         horizontalAlignment: number;
         verticalAlignment: number;
+        private readonly _effectiveX2;
+        private readonly _effectiveY2;
         constructor(name: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;

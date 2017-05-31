@@ -8,10 +8,10 @@ module BABYLON.GUI {
         public _host: AdvancedDynamicTexture;
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
-        private _fontSize: number;
+        private _fontSize = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
-        private _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-        private _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+        public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+        public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color: string;
@@ -36,13 +36,14 @@ module BABYLON.GUI {
         private _isMatrixDirty = true;
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
+        private _isVisible = true;
         public _linkedMesh: AbstractMesh;
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
 
-        public linkOffsetX = 0;
-        public linkOffsetY = 0;
+        protected _linkOffsetX = new ValueAndUnit(0);
+        protected _linkOffsetY = new ValueAndUnit(0);
         
         // Properties
 
@@ -192,11 +193,11 @@ module BABYLON.GUI {
         } 
 
         public get width(): string {
-            return this._width.toString();
+            return this._width.toString(this._host);
         }
 
         public set width(value: string) {
-            if (this._width.toString() === value) {
+            if (this._width.toString(this._host) === value) {
                 return;
             }
 
@@ -206,11 +207,11 @@ module BABYLON.GUI {
         }
 
         public get height(): string {
-            return this._height.toString();
+            return this._height.toString(this._host);
         }
 
         public set height(value: string) {
-            if (this._height.toString() === value) {
+            if (this._height.toString(this._host) === value) {
                 return;
             }
 
@@ -232,16 +233,18 @@ module BABYLON.GUI {
             this._prepareFont();
         }
 
-        public get fontSize(): number {
-            return this._fontSize;
+        public get fontSize(): string {
+            return this._fontSize.toString(this._host);
         }
 
-        public set fontSize(value: number) {
-            if (this._fontSize === value) {
+        public set fontSize(value: string) {
+            if (this._fontSize.toString(this._host) === value) {
                 return;
             }
 
-            this._fontSize = value;
+            if (this._fontSize.fromString(value)) {
+                this._markAsDirty();
+            }
             this._prepareFont();
         }
 
@@ -274,12 +277,25 @@ module BABYLON.GUI {
             }
         }
 
+        public get isVisible(): boolean {
+            return this._isVisible;
+        }
+
+        public set isVisible(value: boolean) {
+            if (this._isVisible === value) {
+                return;
+            }
+
+            this._isVisible = value;
+            this._markAsDirty();
+        }
+
         public get isDirty(): boolean {
             return this._isDirty;
         }
         
         public get marginLeft(): string {
-            return this._marginLeft.toString();
+            return this._marginLeft.toString(this._host);
         }
 
         public set marginLeft(value: string) {
@@ -289,7 +305,7 @@ module BABYLON.GUI {
         }    
 
         public get marginRight(): string {
-            return this._marginRight.toString();
+            return this._marginRight.toString(this._host);
         }
 
         public set marginRight(value: string) {
@@ -299,7 +315,7 @@ module BABYLON.GUI {
         }
 
         public get marginTop(): string {
-            return this._marginTop.toString();
+            return this._marginTop.toString(this._host);
         }
 
         public set marginTop(value: string) {
@@ -309,7 +325,7 @@ module BABYLON.GUI {
         }
 
         public get marginBottom(): string {
-            return this._marginBottom.toString();
+            return this._marginBottom.toString(this._host);
         }
 
         public set marginBottom(value: string) {
@@ -319,7 +335,7 @@ module BABYLON.GUI {
         }     
 
         public get left(): string {
-            return this._left.toString();
+            return this._left.toString(this._host);
         }
 
         public set left(value: string) {
@@ -329,7 +345,7 @@ module BABYLON.GUI {
         }  
 
         public get top(): string {
-            return this._top.toString();
+            return this._top.toString(this._host);
         }
 
         public set top(value: string) {
@@ -337,6 +353,26 @@ module BABYLON.GUI {
                 this._markAsDirty();
             }
         }     
+
+        public get linkOffsetX(): string {
+            return this._linkOffsetX.toString(this._host);
+        }
+
+        public set linkOffsetX(value: string) {
+            if (this._linkOffsetX.fromString(value)) {
+                this._markAsDirty();
+            }
+        }      
+
+        public get linkOffsetY(): string {
+            return this._linkOffsetY.toString(this._host);
+        }
+
+        public set linkOffsetY(value: string) {
+            if (this._linkOffsetY.fromString(value)) {
+                this._markAsDirty();
+            }
+        }                
 
         public get centerX(): number {
             return this._currentMeasure.left + this._currentMeasure.width / 2;
@@ -368,8 +404,11 @@ module BABYLON.GUI {
         }
 
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
-            this.left = ((projectedPosition.x + this.linkOffsetX) - this._currentMeasure.width / 2) + "px";
-            this.top = ((projectedPosition.y + this.linkOffsetY) - this._currentMeasure.height / 2) + "px";
+            this.left = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2) + "px";
+            this.top = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2) + "px";
+
+            this._left.ignoreAdaptiveScaling = true;
+            this._top.ignoreAdaptiveScaling = true;
         }
 
         public _markMatrixAsDirty(): void {
@@ -377,7 +416,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        protected _markAsDirty(): void {            
+        public _markAsDirty(): void {            
             this._isDirty = true;
 
             if (!this._host) {
@@ -492,15 +531,15 @@ module BABYLON.GUI {
         public _measure(): void {  
             // Width / Height
             if (this._width.isPixel) {
-                this._currentMeasure.width = this._width.value;
+                this._currentMeasure.width = this._width.getValue(this._host);
             } else {
-                this._currentMeasure.width *= this._width.value; 
+                this._currentMeasure.width *= this._width.getValue(this._host); 
             }
 
             if (this._height.isPixel) {
-                this._currentMeasure.height = this._height.value;
+                this._currentMeasure.height = this._height.getValue(this._host);
             } else {
-                this._currentMeasure.height *= this._height.value; 
+                this._currentMeasure.height *= this._height.getValue(this._host); 
             }
         }
 
@@ -540,43 +579,43 @@ module BABYLON.GUI {
             }
             
             if (this._marginLeft.isPixel) {
-                this._currentMeasure.left += this._marginLeft.value;
-                this._currentMeasure.width -= this._marginRight.value;
+                this._currentMeasure.left += this._marginLeft.getValue(this._host);
+                this._currentMeasure.width -= this._marginRight.getValue(this._host);
             } else {
-                this._currentMeasure.left += parentWidth * this._marginLeft.value;
-                this._currentMeasure.width -= parentWidth * this._marginLeft.value;
+                this._currentMeasure.left += parentWidth * this._marginLeft.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._marginLeft.getValue(this._host);
             }
 
             if (this._marginRight.isPixel) {
-                this._currentMeasure.width -= this._marginRight.value;
+                this._currentMeasure.width -= this._marginRight.getValue(this._host);
             } else {
-                this._currentMeasure.width -= parentWidth * this._marginRight.value;
+                this._currentMeasure.width -= parentWidth * this._marginRight.getValue(this._host);
             }
 
             if (this._marginTop.isPixel) {
-                this._currentMeasure.top += this._marginTop.value;
-                this._currentMeasure.height -= this._marginTop.value;
+                this._currentMeasure.top += this._marginTop.getValue(this._host);
+                this._currentMeasure.height -= this._marginTop.getValue(this._host);
             } else {
-                this._currentMeasure.top += parentHeight * this._marginTop.value;
-                this._currentMeasure.height -= parentHeight * this._marginTop.value;
+                this._currentMeasure.top += parentHeight * this._marginTop.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._marginTop.getValue(this._host);
             }
 
             if (this._marginBottom.isPixel) {
-                this._currentMeasure.height -= this._marginBottom.value;
+                this._currentMeasure.height -= this._marginBottom.getValue(this._host);
             } else {
-                this._currentMeasure.height -= parentHeight * this._marginBottom.value;
+                this._currentMeasure.height -= parentHeight * this._marginBottom.getValue(this._host);
             }            
 
             if (this._left.isPixel) {
-                this._currentMeasure.left += this._left.value;
+                this._currentMeasure.left += this._left.getValue(this._host);
             } else {
-                this._currentMeasure.left += parentWidth * this._left.value;
+                this._currentMeasure.left += parentWidth * this._left.getValue(this._host);
             }
 
             if (this._top.isPixel) {
-                this._currentMeasure.top += this._top.value;
+                this._currentMeasure.top += this._top.getValue(this._host);
             } else {
-                this._currentMeasure.top += parentHeight * this._top.value;
+                this._currentMeasure.top += parentHeight * this._top.getValue(this._host);
             }
 
             this._currentMeasure.left += x;
@@ -704,7 +743,7 @@ module BABYLON.GUI {
                 return;
             }
 
-            this._font = this._fontSize + "px " + this._fontFamily;
+            this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
         
             this._fontOffset = Control._GetFontOffset(this._font);
             this._markAsDirty();

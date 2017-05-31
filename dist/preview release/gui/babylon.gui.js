@@ -26,6 +26,8 @@ var BABYLON;
                 _this._linkedControls = new Array();
                 _this._isFullscreen = false;
                 _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
+                _this._idealWidth = 0;
+                _this._idealHeight = 0;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
@@ -45,6 +47,36 @@ var BABYLON;
                     }
                     this._background = value;
                     this.markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "idealWidth", {
+                get: function () {
+                    return this._idealWidth;
+                },
+                set: function (value) {
+                    if (this._idealWidth === value) {
+                        return;
+                    }
+                    this._idealWidth = value;
+                    this.markAsDirty();
+                    this._rootContainer._markAllAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "idealHeight", {
+                get: function () {
+                    return this._idealHeight;
+                },
+                set: function (value) {
+                    if (this._idealHeight === value) {
+                        return;
+                    }
+                    this._idealHeight = value;
+                    this.markAsDirty();
+                    this._rootContainer._markAllAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -366,12 +398,13 @@ var BABYLON;
     (function (GUI) {
         var ValueAndUnit = (function () {
             function ValueAndUnit(value, unit, negativeValueAllowed) {
-                if (value === void 0) { value = 1; }
-                if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PERCENTAGE; }
+                if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
                 if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
-                this.value = value;
                 this.unit = unit;
                 this.negativeValueAllowed = negativeValueAllowed;
+                this._value = 1;
+                this.ignoreAdaptiveScaling = false;
+                this._value = value;
             }
             Object.defineProperty(ValueAndUnit.prototype, "isPercentage", {
                 get: function () {
@@ -387,12 +420,30 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            ValueAndUnit.prototype.toString = function () {
+            Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ValueAndUnit.prototype.getValue = function (host) {
+                if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+                    if (host.idealWidth) {
+                        return (this._value * host.getSize().width) / host.idealWidth;
+                    }
+                    if (host.idealHeight) {
+                        return (this._value * host.getSize().height) / host.idealHeight;
+                    }
+                }
+                return this._value;
+            };
+            ValueAndUnit.prototype.toString = function (host) {
                 switch (this.unit) {
                     case ValueAndUnit.UNITMODE_PERCENTAGE:
-                        return this.value + "%";
+                        return this.getValue(host) + "%";
                     case ValueAndUnit.UNITMODE_PIXEL:
-                        return this.value + "px";
+                        return this.getValue(host) + "px";
                 }
                 return this.unit.toString();
             };
@@ -419,10 +470,10 @@ var BABYLON;
                             break;
                     }
                 }
-                if (sourceValue === this.value && sourceUnit === this.unit) {
+                if (sourceValue === this._value && sourceUnit === this.unit) {
                     return false;
                 }
-                this.value = sourceValue;
+                this._value = sourceValue;
                 this.unit = sourceUnit;
                 return true;
             };
@@ -465,6 +516,7 @@ var BABYLON;
                 this._zIndex = 0;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
+                this._fontSize = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -486,10 +538,11 @@ var BABYLON;
                 this._invertTransformMatrix = GUI.Matrix2D.Identity();
                 this._transformedPosition = BABYLON.Vector2.Zero();
                 this._isMatrixDirty = true;
+                this._isVisible = true;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
-                this.linkOffsetX = 0;
-                this.linkOffsetY = 0;
+                this._linkOffsetX = new GUI.ValueAndUnit(0);
+                this._linkOffsetY = new GUI.ValueAndUnit(0);
                 // Properties
                 /**
                 * An event triggered when the pointer move over the control.
@@ -641,10 +694,10 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "width", {
                 get: function () {
-                    return this._width.toString();
+                    return this._width.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._width.toString() === value) {
+                    if (this._width.toString(this._host) === value) {
                         return;
                     }
                     if (this._width.fromString(value)) {
@@ -656,10 +709,10 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "height", {
                 get: function () {
-                    return this._height.toString();
+                    return this._height.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._height.toString() === value) {
+                    if (this._height.toString(this._host) === value) {
                         return;
                     }
                     if (this._height.fromString(value)) {
@@ -685,13 +738,15 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "fontSize", {
                 get: function () {
-                    return this._fontSize;
+                    return this._fontSize.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._fontSize === value) {
+                    if (this._fontSize.toString(this._host) === value) {
                         return;
                     }
-                    this._fontSize = value;
+                    if (this._fontSize.fromString(value)) {
+                        this._markAsDirty();
+                    }
                     this._prepareFont();
                 },
                 enumerable: true,
@@ -727,6 +782,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "isVisible", {
+                get: function () {
+                    return this._isVisible;
+                },
+                set: function (value) {
+                    if (this._isVisible === value) {
+                        return;
+                    }
+                    this._isVisible = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "isDirty", {
                 get: function () {
                     return this._isDirty;
@@ -736,7 +805,7 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "marginLeft", {
                 get: function () {
-                    return this._marginLeft.toString();
+                    return this._marginLeft.toString(this._host);
                 },
                 set: function (value) {
                     if (this._marginLeft.fromString(value)) {
@@ -748,7 +817,7 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "marginRight", {
                 get: function () {
-                    return this._marginRight.toString();
+                    return this._marginRight.toString(this._host);
                 },
                 set: function (value) {
                     if (this._marginRight.fromString(value)) {
@@ -760,7 +829,7 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "marginTop", {
                 get: function () {
-                    return this._marginTop.toString();
+                    return this._marginTop.toString(this._host);
                 },
                 set: function (value) {
                     if (this._marginTop.fromString(value)) {
@@ -772,7 +841,7 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "marginBottom", {
                 get: function () {
-                    return this._marginBottom.toString();
+                    return this._marginBottom.toString(this._host);
                 },
                 set: function (value) {
                     if (this._marginBottom.fromString(value)) {
@@ -784,7 +853,7 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "left", {
                 get: function () {
-                    return this._left.toString();
+                    return this._left.toString(this._host);
                 },
                 set: function (value) {
                     if (this._left.fromString(value)) {
@@ -796,10 +865,34 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "top", {
                 get: function () {
-                    return this._top.toString();
+                    return this._top.toString(this._host);
                 },
                 set: function (value) {
                     if (this._top.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "linkOffsetX", {
+                get: function () {
+                    return this._linkOffsetX.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._linkOffsetX.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "linkOffsetY", {
+                get: function () {
+                    return this._linkOffsetY.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._linkOffsetY.fromString(value)) {
                         this._markAsDirty();
                     }
                 },
@@ -834,8 +927,10 @@ var BABYLON;
                 this._host._linkedControls.push(this);
             };
             Control.prototype._moveToProjectedPosition = function (projectedPosition) {
-                this.left = ((projectedPosition.x + this.linkOffsetX) - this._currentMeasure.width / 2) + "px";
-                this.top = ((projectedPosition.y + this.linkOffsetY) - this._currentMeasure.height / 2) + "px";
+                this.left = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2) + "px";
+                this.top = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2) + "px";
+                this._left.ignoreAdaptiveScaling = true;
+                this._top.ignoreAdaptiveScaling = true;
             };
             Control.prototype._markMatrixAsDirty = function () {
                 this._isMatrixDirty = true;
@@ -928,16 +1023,16 @@ var BABYLON;
             Control.prototype._measure = function () {
                 // Width / Height
                 if (this._width.isPixel) {
-                    this._currentMeasure.width = this._width.value;
+                    this._currentMeasure.width = this._width.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.width *= this._width.value;
+                    this._currentMeasure.width *= this._width.getValue(this._host);
                 }
                 if (this._height.isPixel) {
-                    this._currentMeasure.height = this._height.value;
+                    this._currentMeasure.height = this._height.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.height *= this._height.value;
+                    this._currentMeasure.height *= this._height.getValue(this._host);
                 }
             };
             Control.prototype._computeAlignment = function (parentMeasure, context) {
@@ -971,44 +1066,44 @@ var BABYLON;
                         break;
                 }
                 if (this._marginLeft.isPixel) {
-                    this._currentMeasure.left += this._marginLeft.value;
-                    this._currentMeasure.width -= this._marginRight.value;
+                    this._currentMeasure.left += this._marginLeft.getValue(this._host);
+                    this._currentMeasure.width -= this._marginRight.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.left += parentWidth * this._marginLeft.value;
-                    this._currentMeasure.width -= parentWidth * this._marginLeft.value;
+                    this._currentMeasure.left += parentWidth * this._marginLeft.getValue(this._host);
+                    this._currentMeasure.width -= parentWidth * this._marginLeft.getValue(this._host);
                 }
                 if (this._marginRight.isPixel) {
-                    this._currentMeasure.width -= this._marginRight.value;
+                    this._currentMeasure.width -= this._marginRight.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.width -= parentWidth * this._marginRight.value;
+                    this._currentMeasure.width -= parentWidth * this._marginRight.getValue(this._host);
                 }
                 if (this._marginTop.isPixel) {
-                    this._currentMeasure.top += this._marginTop.value;
-                    this._currentMeasure.height -= this._marginTop.value;
+                    this._currentMeasure.top += this._marginTop.getValue(this._host);
+                    this._currentMeasure.height -= this._marginTop.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.top += parentHeight * this._marginTop.value;
-                    this._currentMeasure.height -= parentHeight * this._marginTop.value;
+                    this._currentMeasure.top += parentHeight * this._marginTop.getValue(this._host);
+                    this._currentMeasure.height -= parentHeight * this._marginTop.getValue(this._host);
                 }
                 if (this._marginBottom.isPixel) {
-                    this._currentMeasure.height -= this._marginBottom.value;
+                    this._currentMeasure.height -= this._marginBottom.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.height -= parentHeight * this._marginBottom.value;
+                    this._currentMeasure.height -= parentHeight * this._marginBottom.getValue(this._host);
                 }
                 if (this._left.isPixel) {
-                    this._currentMeasure.left += this._left.value;
+                    this._currentMeasure.left += this._left.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.left += parentWidth * this._left.value;
+                    this._currentMeasure.left += parentWidth * this._left.getValue(this._host);
                 }
                 if (this._top.isPixel) {
-                    this._currentMeasure.top += this._top.value;
+                    this._currentMeasure.top += this._top.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.top += parentHeight * this._top.value;
+                    this._currentMeasure.top += parentHeight * this._top.getValue(this._host);
                 }
                 this._currentMeasure.left += x;
                 this._currentMeasure.top += y;
@@ -1108,7 +1203,7 @@ var BABYLON;
                 if (!this._fontFamily) {
                     return;
                 }
-                this._font = this._fontSize + "px " + this._fontFamily;
+                this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
                 this._markAsDirty();
             };
@@ -1284,6 +1379,17 @@ var BABYLON;
                     this._children[index]._markMatrixAsDirty();
                 }
             };
+            Container.prototype._markAllAsDirty = function () {
+                this._markAsDirty();
+                for (var index = 0; index < this._children.length; index++) {
+                    if (this._children[index]._markAllAsDirty) {
+                        this._children[index]._markAllAsDirty();
+                    }
+                    else {
+                        this._children[index]._markAsDirty();
+                    }
+                }
+            };
             Container.prototype._localDraw = function (context) {
                 if (this._background) {
                     context.fillStyle = this._background;
@@ -1305,7 +1411,9 @@ var BABYLON;
                     this._clipForChildren(context);
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var child = _a[_i];
-                        child._draw(this._measureForChildren, context);
+                        if (child.isVisible) {
+                            child._draw(this._measureForChildren, context);
+                        }
                     }
                 }
                 context.restore();
@@ -1379,16 +1487,14 @@ var BABYLON;
                 var stack = 0;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    child._currentMeasure.copyFrom(parentMeasure);
-                    child._measure();
                     if (this._isVertical) {
                         child.top = stack + "px";
-                        stack += child._currentMeasure.height;
+                        stack += child._height.internalValue;
                         child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                     }
                     else {
                         child.left = stack + "px";
-                        stack += child._currentMeasure.width;
+                        stack += child._width.internalValue;
                         child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                     }
                 }
@@ -1641,10 +1747,10 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._lineWidth = 1;
-                _this._x1 = 0;
-                _this._y1 = 0;
-                _this._x2 = 0;
-                _this._y2 = 0;
+                _this._x1 = new GUI.ValueAndUnit(0);
+                _this._y1 = new GUI.ValueAndUnit(0);
+                _this._x2 = new GUI.ValueAndUnit(0);
+                _this._y2 = new GUI.ValueAndUnit(0);
                 _this._dash = new Array();
                 _this.isHitTestVisible = false;
                 _this._horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -1689,62 +1795,60 @@ var BABYLON;
             });
             Object.defineProperty(Line.prototype, "x1", {
                 get: function () {
-                    return this._x1;
+                    return this._x1.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._x1 === value) {
+                    if (this._x1.toString(this._host) === value) {
                         return;
                     }
-                    this._x1 = value;
-                    this._markAsDirty();
+                    if (this._x1.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y1", {
                 get: function () {
-                    return this._y1;
+                    return this._y1.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._y1 === value) {
+                    if (this._y1.toString(this._host) === value) {
                         return;
                     }
-                    this._y1 = value;
-                    this._markAsDirty();
+                    if (this._y1.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "x2", {
                 get: function () {
-                    if (this._connectedControl) {
-                        return this._connectedControl.centerX + this._x2;
-                    }
-                    return this._x2;
+                    return this._x2.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._x2 === value) {
+                    if (this._x2.toString(this._host) === value) {
                         return;
                     }
-                    this._x2 = value;
-                    this._markAsDirty();
+                    if (this._x2.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y2", {
                 get: function () {
-                    if (this._connectedControl) {
-                        return this._connectedControl.centerY + this._y2;
-                    }
-                    return this._y2;
+                    return this._y2.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._y2 === value) {
+                    if (this._y2.toString(this._host) === value) {
                         return;
                     }
-                    this._y2 = value;
-                    this._markAsDirty();
+                    if (this._y2.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
@@ -1777,6 +1881,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Line.prototype, "_effectiveX2", {
+                get: function () {
+                    return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Line.prototype, "_effectiveY2", {
+                get: function () {
+                    return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -1785,24 +1903,26 @@ var BABYLON;
                     context.lineWidth = this._lineWidth;
                     context.setLineDash(this._dash);
                     context.beginPath();
-                    context.moveTo(this._x1, this._y1);
-                    context.lineTo(this.x2, this.y2);
+                    context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
+                    context.lineTo(this._effectiveX2, this._effectiveY2);
                     context.stroke();
                 }
                 context.restore();
             };
             Line.prototype._measure = function () {
                 // Width / Height
-                this._currentMeasure.width = Math.abs(this._x1 - this.x2) + this._lineWidth;
-                this._currentMeasure.height = Math.abs(this._y1 - this.y2) + this._lineWidth;
+                this._currentMeasure.width = Math.abs(this._x1.getValue(this._host) - this._effectiveX2) + this._lineWidth;
+                this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
             };
             Line.prototype._computeAlignment = function (parentMeasure, context) {
-                this._currentMeasure.left = Math.min(this._x1, this.x2) - this._lineWidth / 2;
-                this._currentMeasure.top = Math.min(this._y1, this.y2) - this._lineWidth / 2;
+                this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
+                this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
             };
             Line.prototype._moveToProjectedPosition = function (projectedPosition) {
-                this.x1 = projectedPosition.x + this.linkOffsetX;
-                this.y1 = projectedPosition.y + this.linkOffsetY;
+                this.x1 = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
+                this.y1 = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
+                this._x1.ignoreAdaptiveScaling = true;
+                this._y1.ignoreAdaptiveScaling = true;
             };
             return Line;
         }(GUI.Control));
