@@ -140,17 +140,17 @@ module BABYLON.GUI {
             context.save();
 
             this._applyStates(context);
-            super._processMeasures(parentMeasure, context);
+            if (this._processMeasures(parentMeasure, context)) {
+                context.strokeStyle = this.color;
+                context.lineWidth = this._lineWidth;
+                context.setLineDash(this._dash);
 
-            context.strokeStyle = this.color;
-            context.lineWidth = this._lineWidth;
-            context.setLineDash(this._dash);
+                context.beginPath();
+                context.moveTo(this._x1, this._y1);
+                context.lineTo(this.x2, this.y2);
 
-            context.beginPath();
-            context.moveTo(this._x1, this._y1);
-            context.lineTo(this.x2, this.y2);
-
-            context.stroke();
+                context.stroke();
+            }
 
             context.restore();
         }
