@@ -11218,6 +11218,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "_positions", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AbstractMesh.prototype, "skeleton", {
             get: function () {
                 return this._skeleton;
@@ -16938,7 +16945,7 @@ var BABYLON;
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (layer.isBackground) {
+                    if (layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -16980,7 +16987,7 @@ var BABYLON;
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (!layer.isBackground) {
+                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -19998,23 +20005,28 @@ var BABYLON;
             this._worldMatrix = BABYLON.Matrix.Identity();
             return this;
         };
-        // Cache
+        Object.defineProperty(Mesh.prototype, "_positions", {
+            // Cache
+            get: function () {
+                if (this._geometry) {
+                    return this._geometry._positions;
+                }
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Mesh.prototype._resetPointsArrayCache = function () {
-            this._positions = null;
+            if (this._geometry) {
+                this._geometry._resetPointsArrayCache();
+            }
             return this;
         };
         Mesh.prototype._generatePointsArray = function () {
-            if (this._positions)
-                return true;
-            this._positions = [];
-            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            if (!data) {
-                return false;
+            if (this._geometry) {
+                return this._geometry._generatePointsArray();
             }
-            for (var index = 0; index < data.length; index += 3) {
-                this._positions.push(BABYLON.Vector3.FromArray(data, index));
-            }
-            return true;
+            return false;
         };
         /**
          * Returns a new Mesh object generated from the current mesh properties.
@@ -20954,6 +20966,38 @@ var BABYLON;
                 instance: instance
             };
             return BABYLON.MeshBuilder.CreateDashedLines(name, options, scene);
+        };
+        /**
+         * Creates a polygon mesh.
+         * Please consider using the same method from the MeshBuilder class instead.
+         * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
+         * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
+         * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * Remember you can only change the shape positions, not their number when updating a polygon.
+         */
+        Mesh.CreatePolygon = function (name, shape, scene, holes, updatable, sideOrientation) {
+            var options = {
+                shape: shape,
+                holes: holes,
+                updatable: updatable,
+                sideOrientation: sideOrientation
+            };
+            return BABYLON.MeshBuilder.CreatePolygon(name, options, scene);
+        };
+        /**
+          * Creates an extruded polygon mesh, with depth in the Y direction.
+          * Please consider using the same method from the MeshBuilder class instead.
+         */
+        Mesh.ExtrudePolygon = function (name, shape, depth, scene, holes, updatable, sideOrientation) {
+            var options = {
+                shape: shape,
+                holes: holes,
+                depth: depth,
+                updatable: updatable,
+                sideOrientation: sideOrientation
+            };
+            return BABYLON.MeshBuilder.ExtrudePolygon(name, options, scene);
         };
         /**
          * Creates an extruded shape mesh.
@@ -24622,7 +24666,7 @@ var BABYLON;
                 }
             }
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Colors
             if (customColors) {
                 var colors = new Float32Array(customColors.length * 4);
@@ -24728,7 +24772,7 @@ var BABYLON;
                 }
             }
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -24788,7 +24832,7 @@ var BABYLON;
                 }
             }
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -25017,7 +25061,7 @@ var BABYLON;
             createCylinderCap(false);
             createCylinderCap(true);
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -25071,7 +25115,7 @@ var BABYLON;
                 }
             }
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -25340,7 +25384,7 @@ var BABYLON;
             indices.push(2);
             indices.push(3);
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -25385,7 +25429,25 @@ var BABYLON;
             }
             // result
             VertexData.ComputeNormals(positions, indices, normals);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+        };
+        /**
+         * Re-creates the VertexData of the Polygon for sideOrientation.
+         */
+        VertexData.CreatePolygon = function (polygon, sideOrientation) {
+            var positions = polygon.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var normals = polygon.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var uvs = polygon.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            var indices = polygon.getIndices();
+            // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -25621,7 +25683,7 @@ var BABYLON;
                 }
             }
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -25742,7 +25804,7 @@ var BABYLON;
                 }
             }
             VertexData.ComputeNormals(positions, indices, normals);
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             var vertexData = new VertexData();
             vertexData.positions = positions;
             vertexData.indices = indices;
@@ -25824,7 +25886,7 @@ var BABYLON;
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -26010,7 +26072,7 @@ var BABYLON;
                 normals[index * 3 + 2] = faceNormalz;
             }
         };
-        VertexData._ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
+        VertexData._ComputeSides = function (sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs) {
             var li = indices.length;
             var ln = normals.length;
             var i;
@@ -26052,8 +26114,19 @@ var BABYLON;
                     }
                     // uvs
                     var lu = uvs.length;
-                    for (var u = 0; u < lu; u++) {
+                    var u = 0;
+                    for (u = 0; u < lu; u++) {
                         uvs[u + lu] = uvs[u];
+                    }
+                    var frontUVs = frontUVs ? frontUVs : new BABYLON.Vector4(0.0, 0.0, 1.0, 1.0);
+                    var backUVs = backUVs ? backUVs : new BABYLON.Vector4(0.0, 0.0, 1.0, 1.0);
+                    u = 0;
+                    for (i = 0; i < lu / 2; i++) {
+                        uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];
+                        uvs[u + 1] = frontUVs.y + (frontUVs.w - frontUVs.y) * uvs[u + 1];
+                        uvs[u + lu] = backUVs.x + (backUVs.z - backUVs.x) * uvs[u + lu];
+                        uvs[u + lu + 1] = backUVs.y + (backUVs.w - backUVs.y) * uvs[u + lu + 1];
+                        u += 2;
                     }
                     break;
             }
@@ -26244,11 +26317,11 @@ var BABYLON;
                 var stride = buffer.getStrideSize();
                 this._totalVertices = data.length / stride;
                 this.updateExtend(data, stride);
+                this._resetPointsArrayCache();
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
-                    mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
@@ -26287,9 +26360,9 @@ var BABYLON;
             }
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
+            this._resetPointsArrayCache();
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._resetPointsArrayCache();
                 if (updateExtends) {
                     mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
                     for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
@@ -26481,7 +26554,6 @@ var BABYLON;
                 if (buffer)
                     buffer.references = numOfMeshes;
                 if (kind === BABYLON.VertexBuffer.PositionKind) {
-                    mesh._resetPointsArrayCache();
                     if (!this._extend) {
                         this.updateExtend(this._vertexBuffers[kind].getData());
                     }
@@ -26569,6 +26641,23 @@ var BABYLON;
                 }
                 this.setVerticesData(BABYLON.VertexBuffer.NormalKind, tNormals, false);
             }
+        };
+        // Cache
+        Geometry.prototype._resetPointsArrayCache = function () {
+            this._positions = null;
+        };
+        Geometry.prototype._generatePointsArray = function () {
+            if (this._positions)
+                return true;
+            this._positions = [];
+            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            if (!data) {
+                return false;
+            }
+            for (var index = 0; index < data.length; index += 3) {
+                this._positions.push(BABYLON.Vector3.FromArray(data, index));
+            }
+            return true;
         };
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;
@@ -39211,6 +39300,7 @@ var BABYLON;
          * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements).
          * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39231,6 +39321,7 @@ var BABYLON;
          * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
          * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39249,6 +39340,7 @@ var BABYLON;
          * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.
          * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39268,6 +39360,7 @@ var BABYLON;
          * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.
          * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39292,6 +39385,7 @@ var BABYLON;
          * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11.
          * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
          * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones.
@@ -39444,6 +39538,7 @@ var BABYLON;
          * If `enclose` is true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.
          * Example how to set colors and textures on a sliced cylinder : http://www.html5gamedevs.com/topic/17945-creating-a-closed-slice-of-a-cylinder/#comment-106379
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39462,6 +39557,7 @@ var BABYLON;
          * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5).
          * The parameter `tessellation` sets the number of torus sides (postive integer, default 16).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39481,6 +39577,7 @@ var BABYLON;
          * The parameter `tubularSegments` sets the number of tubes to decompose the knot into (positive integer, default 32).
          * The parameters `p` and `q` are the number of windings on each axis (positive integers, default 2 and 3).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39630,6 +39727,7 @@ var BABYLON;
          * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
          * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -39644,7 +39742,7 @@ var BABYLON;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
         };
         /**
          * Creates an custom extruded shape mesh.
@@ -39677,6 +39775,7 @@ var BABYLON;
          * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
          * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -39693,7 +39792,7 @@ var BABYLON;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
         };
         /**
          * Creates lathe mesh.
@@ -39708,6 +39807,7 @@ var BABYLON;
          * The parameter `closed` (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc".
          * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -39747,7 +39847,7 @@ var BABYLON;
                 paths.push(path);
             }
             // lathe ribbon
-            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV }, scene);
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
             return lathe;
         };
         /**
@@ -39757,6 +39857,7 @@ var BABYLON;
          * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value than `size`).
          * The parameter `sourcePlane` is a Plane instance. It builds a mesh plane from a Math plane.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -39880,6 +39981,50 @@ var BABYLON;
             return ground;
         };
         /**
+         * Creates a polygon mesh.
+         * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
+         * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
+         * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * Remember you can only change the shape positions, not their number when updating a polygon.
+         */
+        MeshBuilder.CreatePolygon = function (name, options, scene) {
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            var shape = options.shape;
+            var holes = options.holes;
+            var depth = options.depth || 0;
+            var contours = [];
+            var hole = [];
+            for (var i = 0; i < shape.length; i++) {
+                contours[i] = new BABYLON.Vector2(shape[i].x, shape[i].z);
+            }
+            var epsilon = 0.00000001;
+            if (contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
+                contours.pop();
+            }
+            var polygonTriangulation = new BABYLON.PolygonMeshBuilder(name, contours, scene);
+            for (var hNb = 0; hNb < holes.length; hNb++) {
+                hole = [];
+                for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
+                    hole.push(new BABYLON.Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
+                }
+                polygonTriangulation.addHole(hole);
+            }
+            var polygon = polygonTriangulation.build(options.updatable, depth);
+            polygon.sideOrientation = options.sideOrientation;
+            var vertexData = BABYLON.VertexData.CreatePolygon(polygon, options.sideOrientation);
+            vertexData.applyToMesh(polygon, options.updatable);
+            return polygon;
+        };
+        ;
+        /**
+         * Creates an extruded polygon mesh, with depth in th Y direction.
+        */
+        MeshBuilder.ExtrudePolygon = function (name, options, scene) {
+            return MeshBuilder.CreatePolygon(name, options, scene);
+        };
+        ;
+        /**
          * Creates a tube mesh.
          * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
          *
@@ -39899,6 +40044,7 @@ var BABYLON;
          * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
          * The optional parameter `instance` is an instance of an existing Tube object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#tube
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -39990,7 +40136,7 @@ var BABYLON;
             var newPathArray = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, options.arc);
-            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV }, scene);
+            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
@@ -40012,6 +40158,7 @@ var BABYLON;
          * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
          * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -40201,7 +40348,7 @@ var BABYLON;
             return decal;
         };
         // Privates
-        MeshBuilder._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance, invertUV) {
+        MeshBuilder._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance, invertUV, frontUVs, backUVs) {
             // extrusion geometry
             var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
@@ -40280,7 +40427,7 @@ var BABYLON;
             var newShapePaths = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-            var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV }, scene);
+            var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs, backUVs: backUVs }, scene);
             extrudedGeneric.pathArray = pathArray;
             extrudedGeneric.path3D = path3D;
             extrudedGeneric.cap = cap;
@@ -64315,6 +64462,7 @@ var BABYLON;
             this.scale = new BABYLON.Vector2(1, 1);
             this.offset = new BABYLON.Vector2(0, 0);
             this.alphaBlendingMode = BABYLON.Engine.ALPHA_COMBINE;
+            this.layerMask = 0x0FFFFFFF;
             this._vertexBuffers = {};
             // Events
             /**
