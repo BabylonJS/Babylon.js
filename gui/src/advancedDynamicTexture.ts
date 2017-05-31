@@ -16,6 +16,8 @@ module BABYLON.GUI {
         public _linkedControls = new Array<Control>();
         private _isFullscreen = false;
         private _fullscreenViewport = new Viewport(0, 0, 1, 1);
+        private _idealWidth = 0;
+        private _idealHeight = 0;
 
         public get background(): string {
             return this._background;
@@ -29,6 +31,34 @@ module BABYLON.GUI {
             this._background = value;
             this.markAsDirty();
         }
+
+        public get idealWidth(): number {
+            return this._idealWidth;
+        }
+
+        public set idealWidth(value: number) {
+            if (this._idealWidth === value) {
+                return;
+            }
+
+            this._idealWidth = value;
+            this.markAsDirty();
+            this._rootContainer._markAllAsDirty();
+        }
+
+        public get idealHeight(): number {
+            return this._idealHeight;
+        }
+
+        public set idealHeight(value: number) {
+            if (this._idealHeight === value) {
+                return;
+            }
+
+            this._idealHeight = value;
+            this.markAsDirty();
+            this._rootContainer._markAllAsDirty();
+        }        
        
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);

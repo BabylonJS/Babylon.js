@@ -2,7 +2,11 @@
 
 module BABYLON.GUI {
     export class ValueAndUnit {
-        public constructor(public value = 1, public unit = ValueAndUnit.UNITMODE_PERCENTAGE, public negativeValueAllowed = true) {
+        private _value = 1;
+        public ignoreAdaptiveScaling = false;
+
+        public constructor(value, public unit = ValueAndUnit.UNITMODE_PIXEL, public negativeValueAllowed = true) {
+            this._value = value;
         }
 
         public get isPercentage(): boolean {
@@ -13,12 +17,30 @@ module BABYLON.GUI {
             return this.unit === ValueAndUnit.UNITMODE_PIXEL;
         }
 
-        public toString(): string {
+        public get internalValue(): number {
+            return this._value;
+        }
+
+        public getValue(host: AdvancedDynamicTexture): number {
+            if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+
+                if (host.idealWidth) { // horizontal
+                    return (this._value * host.getSize().width) / host.idealWidth;
+                }
+
+                if (host.idealHeight) { // vertical
+                    return (this._value * host.getSize().height) / host.idealHeight;
+                }
+            }
+            return this._value;
+        }
+
+        public toString(host: AdvancedDynamicTexture): string {
             switch (this.unit) {
                 case ValueAndUnit.UNITMODE_PERCENTAGE:
-                    return this.value + "%";
+                    return this.getValue(host) + "%";
                 case ValueAndUnit.UNITMODE_PIXEL:
-                    return this.value + "px";
+                    return this.getValue(host) + "px";
             }
 
             return this.unit.toString();
@@ -52,11 +74,11 @@ module BABYLON.GUI {
                 }
             }
 
-            if (sourceValue === this.value && sourceUnit === this.unit) {
+            if (sourceValue === this._value && sourceUnit === this.unit) {
                 return false;
             }
 
-            this.value = sourceValue;
+            this._value = sourceValue;
             this.unit = sourceUnit;
 
             return true;
@@ -73,6 +95,6 @@ module BABYLON.GUI {
 
         public static get UNITMODE_PIXEL(): number {
             return ValueAndUnit._UNITMODE_PIXEL;
-        }
+        }   
     }    
 }
