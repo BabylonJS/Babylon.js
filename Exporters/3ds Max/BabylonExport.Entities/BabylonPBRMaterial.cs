@@ -29,48 +29,6 @@ namespace BabylonExport.Entities
         public float microSurface { get; set; }
 
         [DataMember]
-        public float overloadedShadowIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedShadeIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedAmbientIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedAlbedoIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedReflectivityIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedEmissiveIntensity { get; set; }
-
-        [DataMember]
-        public float[] overloadedAmbient { get; set; }
-
-        [DataMember]
-        public float[] overloadedAlbedo { get; set; }
-
-        [DataMember]
-        public float[] overloadedReflectivity { get; set; }
-
-        [DataMember]
-        public float[] overloadedEmissive { get; set; }
-
-        [DataMember]
-        public float[] overloadedReflection { get; set; }
-
-        [DataMember]
-        public float overloadedMicroSurface { get; set; }
-
-        [DataMember]
-        public float overloadedMicroSurfaceIntensity { get; set; }
-
-        [DataMember]
-        public float overloadedReflectionIntensity { get; set; }
-
-        [DataMember]
         public BabylonTexture albedoTexture { get; set; }
 
         [DataMember]
@@ -198,20 +156,11 @@ namespace BabylonExport.Entities
             microSurface = 0.9f;
             useMicroSurfaceFromReflectivityMapAplha = false;
 
-            overloadedShadowIntensity = 1.0f;
-            overloadedShadeIntensity = 1.0f;
-
             ambient = new[] { 0f, 0f, 0f };
             albedo = new[] { 1f, 1f, 1f };
             reflectivity = new[] { 1f, 1f, 1f };
             reflection = new[] { 0.5f, 0.5f, 0.5f };
             emissive = new[] { 0f, 0f, 0f };
-
-            overloadedAmbient = new[] { 0f, 0f, 0f };
-            overloadedAlbedo = new[] { 1f, 1f, 1f };
-            overloadedReflectivity = new[] { 0.3f, 0.3f, 0.3f };
-            overloadedEmissive = new[] {1f, 1f, 1f };
-            overloadedReflection = new[] { 1f, 1f, 1f };
         }
 
         public void SetCustomType(string type)
