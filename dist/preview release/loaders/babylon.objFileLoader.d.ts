@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
