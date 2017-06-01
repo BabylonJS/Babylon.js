@@ -9,7 +9,7 @@ module BABYLON.GUI {
 
         private _buttonIsDown : boolean = false;
 
-        constructor(public name: string) {
+        constructor(public name?: string) {
             super(name);
             this.thickness = 1;
             this.isPointerBlocker = true;
