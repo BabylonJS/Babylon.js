@@ -5,7 +5,7 @@ var canvas;
 var currentScene;
 var config;
 
-var thresold = 25;
+var threshold = 25;
 var errorRatio = 5;
 
 function compare(renderData, referenceCanvas) {

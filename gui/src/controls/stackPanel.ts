@@ -17,20 +17,23 @@ module BABYLON.GUI {
             this._markAsDirty();
         }           
     
-        constructor(public name: string) {
+        constructor(public name?: string) {
             super(name);
         }
 
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             var stack = 0;
             for (var child of this._children) {
+                child._currentMeasure.copyFrom(parentMeasure);
+                child._measure();
+                
                 if (this._isVertical) {
                     child.top = stack + "px";
-                    stack += child._height.internalValue;
+                    stack += child._currentMeasure.height;
                     child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 } else {
                     child.left = stack + "px";
-                    stack += child._width.internalValue;
+                    stack += child._currentMeasure.width;
                     child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
 
                 }
@@ -38,9 +41,12 @@ module BABYLON.GUI {
 
             if (this._isVertical) {
                 this.height = stack + "px";
+                this._height.ignoreAdaptiveScaling = true;
             } else {
                 this.width = stack + "px";
+                this._width.ignoreAdaptiveScaling = true;
             }
+            
 
             super._additionalProcessing(parentMeasure, context);
         }    

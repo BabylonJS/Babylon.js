@@ -23,7 +23,7 @@ module BABYLON.GUI {
             return this._children;
         }        
 
-        constructor(public name: string) {
+        constructor(public name?: string) {
             super(name);
         }
 
