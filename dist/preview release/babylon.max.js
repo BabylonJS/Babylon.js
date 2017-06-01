@@ -7614,7 +7614,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.0-alpha";
+                return "3.0-beta";
             },
             enumerable: true,
             configurable: true
@@ -23463,6 +23463,13 @@ var BABYLON;
         Material.Parse = function (parsedMaterial, scene, rootUrl) {
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
+            }
+            if (parsedMaterial.customType === "BABYLON.PBRMaterial" && !parsedMaterial.overloadedAlbedo) {
+                parsedMaterial.customType === "BABYLON.legacyPBRMaterial";
+                if (!BABYLON.legacyPBRMaterial) {
+                    BABYLON.Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
+                    return;
+                }
             }
             var materialType = BABYLON.Tools.Instantiate(parsedMaterial.customType);
             return materialType.Parse(parsedMaterial, scene, rootUrl);
