@@ -581,7 +581,8 @@
                 "postProcesses"
             ], 
             "shaders" : [
-                "blur.fragment",
+                "kernelBlur.vertex",
+                "kernelBlur.fragment",
                 "refraction.fragment",
                 "blackAndWhite.fragment",
                 "convolution.fragment",
@@ -592,6 +593,12 @@
                 "colorCorrection.fragment",
                 "tonemap.fragment",
                 "displayPass.fragment"
+            ],
+            "shadersIncludeFiles": [
+                "kernelBlurFragment",
+                "kernelBlurFragment2",
+                "kernelBlurVaryingDeclaration",
+                "kernelBlurVertex"
             ]
         },                         
         "renderingPipeline" : 
