@@ -1621,14 +1621,14 @@
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.  
          */
-        public static CreatePolygon(polygon: Mesh, sideOrientation: number) {
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, frontUVs?: Vector4, backUVs?: Vector4) {
 			var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
 			var normals = polygon.getVerticesData(VertexBuffer.NormalKind);
 			var uvs = polygon.getVerticesData(VertexBuffer.UVKind);
 			var indices = polygon.getIndices();
 
 			// sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs);
             
             // Result
             var vertexData = new VertexData();
