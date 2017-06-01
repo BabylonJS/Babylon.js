@@ -2307,6 +2307,7 @@ var BABYLON;
             function Button(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                _this._buttonIsDown = false;
                 _this.thickness = 1;
                 _this.isPointerBlocker = true;
                 _this.pointerEnterAnimation = function () {
@@ -2325,6 +2326,14 @@ var BABYLON;
                 };
                 return _this;
             }
+            Button.prototype._ensureButtonUp = function () {
+                if (this._buttonIsDown === true) {
+                    if (this.pointerUpAnimation) {
+                        this.pointerUpAnimation();
+                    }
+                    this._buttonIsDown = false;
+                }
+            };
             // While being a container, the button behaves like a control.
             Button.prototype._processPicking = function (x, y, type) {
                 if (!this.contains(x, y)) {
@@ -2343,18 +2352,19 @@ var BABYLON;
                 if (this.pointerOutAnimation) {
                     this.pointerOutAnimation();
                 }
+                // in case you move the pointer out of view while pointer is "down".
+                this._ensureButtonUp();
                 _super.prototype._onPointerOut.call(this);
             };
             Button.prototype._onPointerDown = function () {
                 if (this.pointerDownAnimation) {
                     this.pointerDownAnimation();
                 }
+                this._buttonIsDown = true;
                 _super.prototype._onPointerDown.call(this);
             };
             Button.prototype._onPointerUp = function () {
-                if (this.pointerUpAnimation) {
-                    this.pointerUpAnimation();
-                }
+                this._ensureButtonUp();
                 _super.prototype._onPointerUp.call(this);
             };
             // Statics

@@ -406,7 +406,9 @@ declare module BABYLON.GUI {
         pointerOutAnimation: () => void;
         pointerDownAnimation: () => void;
         pointerUpAnimation: () => void;
+        private _buttonIsDown;
         constructor(name?: string);
+        private _ensureButtonUp();
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): void;
         protected _onPointerOut(): void;

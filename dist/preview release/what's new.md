@@ -14,13 +14,14 @@
  - Support for multisample render targets. [Demo](http://www.babylonjs-playground.com/#12MKMN) ([deltakosh](https://github.com/deltakosh))
  - New Unity 5 Editor Toolkit. Complete pipeline integration [Doc](TODO) - ([MackeyK24](https://github.com/MackeyK24))
  - New DebugLayer. [Doc](TODO) - ([temechon](https://github.com/temechon))
- - New `VideoTexture.CreateFromWebCam` to generate video texture using WebRTC. [Demo](https://www.babylonjs-playground.com#1R77YT#2) - (Sebastien Vandenberghe)(https://github.com/sebavanmicrosoft) / ([deltakosh](https://github.com/deltakosh))
+ - New `VideoTexture.CreateFromWebCam` to generate video texture using WebRTC. [Demo](https://www.babylonjs-playground.com#1R77YT#2) (Sebastien Vandenberghe)(https://github.com/sebavanmicrosoft) / ([deltakosh](https://github.com/deltakosh))
  - New Facet Data feature ([jerome](https://github.com/jbousquie))
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's [Doc](http://doc.babylonjs.com/tutorials/multi-platform_compressed_textures) ([jcpalmer](https://github.com/Palmer-JC))
  - All deprecated functions and properties were removed ([deltakosh](https://github.com/deltakosh))
  - New build system based on workloads. [More info here](http://doc.babylonjs.com/generals/how_to_start#custom-builds) ([deltakosh](https://github.com/deltakosh))
- - New `Cell Shading` material added into `Materials Library` [Demo](http://www.babylonjs.com/Demos/CellShading/) - ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+ - New `Cell Shading` material added into `Materials Library` [Demo](http://www.babylonjs.com/Demos/CellShading/) ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+ - New kernel based blur. [Demo]( ([deltakosh](https://github.com/deltakosh))
  
 ### Updates
 - Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))
@@ -66,7 +67,7 @@
 - Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 
 ### API Documentation
-`- File `abstractMesh.ts` documented  ([jerome](https://github.com/jbousquie))  
+`- File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  
