@@ -42,6 +42,31 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        public set domImage(value: HTMLImageElement) {
+            this._domImage = value;
+            this._loaded = false;
+            
+            if (this._domImage.width) {
+                this._onImageLoaded();
+            } else {
+                this._domImage.onload = () => {
+                    this._onImageLoaded();
+                }
+            }
+        }
+
+        private _onImageLoaded(): void {
+            this._imageWidth = this._domImage.width;
+            this._imageHeight = this._domImage.height;
+            this._loaded = true;
+
+            if (this._autoScale) {
+                this.synchronizeSizeWithContent();
+            }
+
+            this._markAsDirty();
+        }
+
         public set source(value: string) {
             if (this._source === value) {
                 return;
@@ -53,21 +78,13 @@ module BABYLON.GUI {
             this._domImage = new DOMImage();
             
             this._domImage.onload = () => {
-                this._imageWidth = this._domImage.width;
-                this._imageHeight = this._domImage.height;
-                this._loaded = true;
-
-                if (this._autoScale) {
-                    this.synchronizeSizeWithContent();
-                }
-
-                this._markAsDirty();
+                this._onImageLoaded();
             }
             
             this._domImage.src = value;
         }
 
-        constructor(public name: string, url: string) {
+        constructor(public name?: string, url?: string) {
             super(name);
 
             this.source = url;

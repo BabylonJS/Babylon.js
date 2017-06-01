@@ -214,6 +214,7 @@ var BABYLON;
             };
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
                 if (foreground === void 0) { foreground = true; }
+                if (scene === void 0) { scene = null; }
                 var result = new AdvancedDynamicTexture(name, 0, 0, scene);
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
@@ -448,7 +449,7 @@ var BABYLON;
                 return this.unit.toString();
             };
             ValueAndUnit.prototype.fromString = function (source) {
-                var match = ValueAndUnit._Regex.exec(source);
+                var match = ValueAndUnit._Regex.exec(source.toString());
                 if (!match || match.length === 0) {
                     return false;
                 }
@@ -1487,22 +1488,26 @@ var BABYLON;
                 var stack = 0;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
+                    child._currentMeasure.copyFrom(parentMeasure);
+                    child._measure();
                     if (this._isVertical) {
                         child.top = stack + "px";
-                        stack += child._height.internalValue;
+                        stack += child._currentMeasure.height;
                         child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                     }
                     else {
                         child.left = stack + "px";
-                        stack += child._width.internalValue;
+                        stack += child._currentMeasure.width;
                         child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                     }
                 }
                 if (this._isVertical) {
                     this.height = stack + "px";
+                    this._height.ignoreAdaptiveScaling = true;
                 }
                 else {
                     this.width = stack + "px";
+                    this._width.ignoreAdaptiveScaling = true;
                 }
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
             };
@@ -1950,6 +1955,7 @@ var BABYLON;
         var TextBlock = (function (_super) {
             __extends(TextBlock, _super);
             function TextBlock(name, text) {
+                if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
@@ -2157,6 +2163,32 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image.prototype, "domImage", {
+                set: function (value) {
+                    var _this = this;
+                    this._domImage = value;
+                    this._loaded = false;
+                    if (this._domImage.width) {
+                        this._onImageLoaded();
+                    }
+                    else {
+                        this._domImage.onload = function () {
+                            _this._onImageLoaded();
+                        };
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Image.prototype._onImageLoaded = function () {
+                this._imageWidth = this._domImage.width;
+                this._imageHeight = this._domImage.height;
+                this._loaded = true;
+                if (this._autoScale) {
+                    this.synchronizeSizeWithContent();
+                }
+                this._markAsDirty();
+            };
             Object.defineProperty(Image.prototype, "source", {
                 set: function (value) {
                     var _this = this;
@@ -2167,13 +2199,7 @@ var BABYLON;
                     this._source = value;
                     this._domImage = new DOMImage();
                     this._domImage.onload = function () {
-                        _this._imageWidth = _this._domImage.width;
-                        _this._imageHeight = _this._domImage.height;
-                        _this._loaded = true;
-                        if (_this._autoScale) {
-                            _this.synchronizeSizeWithContent();
-                        }
-                        _this._markAsDirty();
+                        _this._onImageLoaded();
                     };
                     this._domImage.src = value;
                 },

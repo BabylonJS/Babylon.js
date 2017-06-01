@@ -1,4 +1,4 @@
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty;
@@ -32,11 +32,11 @@ declare module BABYLON.GUI {
         attach(): void;
         attachToMesh(mesh: AbstractMesh): void;
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
-        static CreateFullscreenUI(name: string, foreground: boolean, scene: Scene): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Measure {
         left: number;
@@ -50,7 +50,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Matrix2D {
         m: Float32Array;
@@ -75,7 +75,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class ValueAndUnit {
         unit: number;
@@ -88,7 +88,7 @@ declare module BABYLON.GUI {
         readonly internalValue: number;
         getValue(host: AdvancedDynamicTexture): number;
         toString(host: AdvancedDynamicTexture): string;
-        fromString(source: string): boolean;
+        fromString(source: string | number): boolean;
         private static _Regex;
         private static _UNITMODE_PERCENTAGE;
         private static _UNITMODE_PIXEL;
@@ -97,7 +97,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Control {
         name: string;
@@ -183,25 +183,25 @@ declare module BABYLON.GUI {
         transformCenterX: number;
         horizontalAlignment: number;
         verticalAlignment: number;
-        width: string;
-        height: string;
+        width: string | number;
+        height: string | number;
         fontFamily: string;
-        fontSize: string;
+        fontSize: string | number;
         color: string;
         zIndex: number;
         isVisible: boolean;
         readonly isDirty: boolean;
-        marginLeft: string;
-        marginRight: string;
-        marginTop: string;
-        marginBottom: string;
-        left: string;
-        top: string;
-        linkOffsetX: string;
-        linkOffsetY: string;
+        marginLeft: string | number;
+        marginRight: string | number;
+        marginTop: string | number;
+        marginBottom: string | number;
+        left: string | number;
+        top: string | number;
+        linkOffsetX: string | number;
+        linkOffsetY: string | number;
         readonly centerX: number;
         readonly centerY: number;
-        constructor(name: string);
+        constructor(name?: string);
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         _markMatrixAsDirty(): void;
@@ -245,7 +245,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Container extends Control {
         name: string;
@@ -254,7 +254,7 @@ declare module BABYLON.GUI {
         protected _background: string;
         background: string;
         readonly children: Control[];
-        constructor(name: string);
+        constructor(name?: string);
         containsControl(control: Control): boolean;
         addControl(control: Control): Container;
         removeControl(control: Control): Container;
@@ -270,18 +270,18 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
         private _isVertical;
         isVertical: boolean;
-        constructor(name: string);
+        constructor(name?: string);
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Rectangle extends Container {
         name: string;
@@ -290,7 +290,7 @@ declare module BABYLON.GUI {
         thickness: number;
         cornerRadius: number;
         background: string;
-        constructor(name: string);
+        constructor(name?: string);
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawRoundedRect(context, offset?);
@@ -298,20 +298,20 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Ellipse extends Container {
         name: string;
         private _thickness;
         thickness: number;
-        constructor(name: string);
+        constructor(name?: string);
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Line extends Control {
@@ -327,16 +327,16 @@ declare module BABYLON.GUI {
         private _connectedControlDirtyObserver;
         dash: Array<number>;
         connectedControl: Control;
-        x1: string;
-        y1: string;
-        x2: string;
-        y2: string;
+        x1: string | number;
+        y1: string | number;
+        x2: string | number;
+        y2: string | number;
         lineWidth: number;
         horizontalAlignment: number;
         verticalAlignment: number;
         private readonly _effectiveX2;
         private readonly _effectiveY2;
-        constructor(name: string);
+        constructor(name?: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -344,7 +344,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class TextBlock extends Control {
         name: string;
@@ -359,7 +359,7 @@ declare module BABYLON.GUI {
         text: string;
         textHorizontalAlignment: number;
         textVerticalAlignment: number;
-        constructor(name: string, text: string);
+        constructor(name?: string, text?: string);
         private _drawText(text, textWidth, y, context);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -367,7 +367,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Image extends Control {
@@ -381,8 +381,10 @@ declare module BABYLON.GUI {
         private _autoScale;
         autoScale: boolean;
         stretch: number;
+        domImage: HTMLImageElement;
+        private _onImageLoaded();
         source: string;
-        constructor(name: string, url: string);
+        constructor(name?: string, url?: string);
         synchronizeSizeWithContent(): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private static _STRETCH_NONE;
@@ -396,7 +398,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Button extends Rectangle {
         name: string;
@@ -404,7 +406,7 @@ declare module BABYLON.GUI {
         pointerOutAnimation: () => void;
         pointerDownAnimation: () => void;
         pointerUpAnimation: () => void;
-        constructor(name: string);
+        constructor(name?: string);
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): void;
         protected _onPointerOut(): void;
