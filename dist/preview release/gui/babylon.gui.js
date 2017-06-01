@@ -35,6 +35,7 @@ var BABYLON;
                     _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._onResize(); });
                     _this._onResize();
                 }
+                _this._texture.isReady = true;
                 return _this;
             }
             Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
