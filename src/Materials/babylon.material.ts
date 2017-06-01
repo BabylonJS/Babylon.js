@@ -586,6 +586,14 @@
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
 
+            if (parsedMaterial.customType === "BABYLON.PBRMaterial" && !parsedMaterial.overloadedAlbedo) {
+                parsedMaterial.customType === "BABYLON.legacyPBRMaterial";
+                if (!(<any>BABYLON).legacyPBRMaterial) {
+                    BABYLON.Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
+                    return;
+                }
+            }
+
             var materialType = Tools.Instantiate(parsedMaterial.customType);
             return materialType.Parse(parsedMaterial, scene, rootUrl);;
         }

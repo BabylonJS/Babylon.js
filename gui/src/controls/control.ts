@@ -192,11 +192,11 @@ module BABYLON.GUI {
             this._markAsDirty();
         } 
 
-        public get width(): string {
+        public get width(): string | number {
             return this._width.toString(this._host);
         }
 
-        public set width(value: string) {
+        public set width(value: string | number ) {
             if (this._width.toString(this._host) === value) {
                 return;
             }
@@ -206,11 +206,11 @@ module BABYLON.GUI {
             }
         }
 
-        public get height(): string {
+        public get height(): string | number  {
             return this._height.toString(this._host);
         }
 
-        public set height(value: string) {
+        public set height(value: string | number ) {
             if (this._height.toString(this._host) === value) {
                 return;
             }
@@ -233,11 +233,11 @@ module BABYLON.GUI {
             this._prepareFont();
         }
 
-        public get fontSize(): string {
+        public get fontSize(): string | number  {
             return this._fontSize.toString(this._host);
         }
 
-        public set fontSize(value: string) {
+        public set fontSize(value: string | number ) {
             if (this._fontSize.toString(this._host) === value) {
                 return;
             }
@@ -294,81 +294,81 @@ module BABYLON.GUI {
             return this._isDirty;
         }
         
-        public get marginLeft(): string {
+        public get marginLeft(): string | number  {
             return this._marginLeft.toString(this._host);
         }
 
-        public set marginLeft(value: string) {
+        public set marginLeft(value: string | number ) {
             if (this._marginLeft.fromString(value)) {
                 this._markAsDirty();
             }
         }    
 
-        public get marginRight(): string {
+        public get marginRight(): string | number  {
             return this._marginRight.toString(this._host);
         }
 
-        public set marginRight(value: string) {
+        public set marginRight(value: string | number ) {
             if (this._marginRight.fromString(value)) {
                 this._markAsDirty();
             }
         }
 
-        public get marginTop(): string {
+        public get marginTop(): string | number  {
             return this._marginTop.toString(this._host);
         }
 
-        public set marginTop(value: string) {
+        public set marginTop(value: string | number ) {
             if (this._marginTop.fromString(value)) {
                 this._markAsDirty();
             }
         }
 
-        public get marginBottom(): string {
+        public get marginBottom(): string | number  {
             return this._marginBottom.toString(this._host);
         }
 
-        public set marginBottom(value: string) {
+        public set marginBottom(value: string | number ) {
             if (this._marginBottom.fromString(value)) {
                 this._markAsDirty();
             }
         }     
 
-        public get left(): string {
+        public get left(): string | number  {
             return this._left.toString(this._host);
         }
 
-        public set left(value: string) {
+        public set left(value: string | number ) {
             if (this._left.fromString(value)) {
                 this._markAsDirty();
             }
         }  
 
-        public get top(): string {
+        public get top(): string | number  {
             return this._top.toString(this._host);
         }
 
-        public set top(value: string) {
+        public set top(value: string | number ) {
             if (this._top.fromString(value)) {
                 this._markAsDirty();
             }
         }     
 
-        public get linkOffsetX(): string {
+        public get linkOffsetX(): string | number  {
             return this._linkOffsetX.toString(this._host);
         }
 
-        public set linkOffsetX(value: string) {
+        public set linkOffsetX(value: string | number ) {
             if (this._linkOffsetX.fromString(value)) {
                 this._markAsDirty();
             }
         }      
 
-        public get linkOffsetY(): string {
+        public get linkOffsetY(): string | number  {
             return this._linkOffsetY.toString(this._host);
         }
 
-        public set linkOffsetY(value: string) {
+        public set linkOffsetY(value: string | number ) {
             if (this._linkOffsetY.fromString(value)) {
                 this._markAsDirty();
             }
@@ -383,7 +383,7 @@ module BABYLON.GUI {
         }                   
 
         // Functions
-        constructor(public name: string) {
+        constructor(public name?: string) {
         }
 
         public linkWithMesh(mesh: AbstractMesh): void {

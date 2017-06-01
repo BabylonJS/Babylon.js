@@ -1065,6 +1065,24 @@
                     "../../materialsLibrary/src/cell/cell.fragment.fx"
                 ],
                 "output": "babylon.cellMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/legacyPBR/babylon.legacyPBRMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/legacyPBR/legacyPbr.vertex.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbr.fragment.fx"
+                ],
+                "shadersIncludeFiles": [
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrFragmentDeclaration.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrFunctions.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctions.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctionsCall.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrUboDeclaration.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrVertexDeclaration.fx"
+                ],
+                "output": "babylon.legacyPbrMaterial.js"
             }
         ],
         "build": {
