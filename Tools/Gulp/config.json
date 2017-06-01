@@ -594,7 +594,7 @@
                 "tonemap.fragment",
                 "displayPass.fragment"
             ],
-            "shadersIncludeFiles": [
+            "shaderIncludes": [
                 "kernelBlurFragment",
                 "kernelBlurFragment2",
                 "kernelBlurVaryingDeclaration",
