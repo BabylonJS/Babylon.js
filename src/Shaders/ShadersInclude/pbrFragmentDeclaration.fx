@@ -4,20 +4,6 @@ uniform vec4 vAlbedoColor;
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 
-#ifdef OVERLOADEDVALUES
-uniform vec4 vOverloadedIntensity;
-uniform vec3 vOverloadedAmbient;
-uniform vec3 vOverloadedAlbedo;
-uniform vec3 vOverloadedReflectivity;
-uniform vec3 vOverloadedEmissive;
-uniform vec3 vOverloadedReflection;
-uniform vec3 vOverloadedMicroSurface;
-#endif
-
-#ifdef OVERLOADEDSHADOWVALUES
-uniform vec4 vOverloadedShadowIntensity;
-#endif
-
 #if defined(REFLECTION) || defined(REFRACTION)
 uniform vec2 vMicrosurfaceTextureLods;
 #endif

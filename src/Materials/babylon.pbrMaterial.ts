@@ -52,8 +52,6 @@
         public CAMERACONTRAST = false;
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
-        public OVERLOADEDVALUES = false;
-        public OVERLOADEDSHADOWVALUES = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
@@ -134,22 +132,6 @@
         public disableBumpMap: boolean = false;
 
         /**
-         * Debug Control helping enforcing or dropping the darkness of shadows.
-         * 1.0 means the shadows have their normal darkness, 0.0 means the shadows are not visible.
-         */
-        @serialize()
-        public overloadedShadowIntensity: number = 1.0;
-        
-        /**
-         * Debug Control helping dropping the shading effect coming from the diffuse lighting.
-         * 1.0 means the shade have their normal impact, 0.0 means no shading at all.
-         */
-        @serialize()
-        public overloadedShadeIntensity: number = 1.0;
-
-        private _overloadedShadowInfos: Vector4 = new Vector4(this.overloadedShadowIntensity, this.overloadedShadeIntensity, 0.0, 0.0);
-
-        /**
          * The camera exposure used on this material.
          * This property is here and not in the camera to allow controlling exposure without full screen post process.
          * This corresponds to a photographic exposure.
@@ -183,88 +165,6 @@
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
         private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
-
-        /**
-         * Debug Control allowing to overload the ambient color.
-         * This as to be use with the overloadedAmbientIntensity parameter.
-         */
-        @serializeAsColor3()
-        public overloadedAmbient: Color3 = BABYLON.Color3.White();
-
-        /**
-         * Debug Control indicating how much the overloaded ambient color is used against the default one.
-         */
-        @serialize()
-        public overloadedAmbientIntensity: number = 0.0;
-        
-        /**
-         * Debug Control allowing to overload the albedo color.
-         * This as to be use with the overloadedAlbedoIntensity parameter.
-         */
-        @serializeAsColor3()
-        public overloadedAlbedo: Color3 = BABYLON.Color3.White();
-        
-        /**
-         * Debug Control indicating how much the overloaded albedo color is used against the default one.
-         */
-        @serialize()
-        public overloadedAlbedoIntensity: number = 0.0;
-        
-        /**
-         * Debug Control allowing to overload the reflectivity color.
-         * This as to be use with the overloadedReflectivityIntensity parameter.
-         */
-        @serializeAsColor3()
-        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.0, 0.0, 0.0);
-        
-        /**
-         * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
-         */
-        @serialize()
-        public overloadedReflectivityIntensity: number = 0.0;
-        
-        /**
-         * Debug Control allowing to overload the emissive color.
-         * This as to be use with the overloadedEmissiveIntensity parameter.
-         */
-        @serializeAsColor3()
-        public overloadedEmissive: Color3 = BABYLON.Color3.White();
-        
-        /**
-         * Debug Control indicating how much the overloaded emissive color is used against the default one.
-         */
-        @serialize()
-        public overloadedEmissiveIntensity: number = 0.0;
-
-        private _overloadedIntensity: Vector4 = new Vector4(this.overloadedAmbientIntensity, this.overloadedAlbedoIntensity, this.overloadedReflectivityIntensity, this.overloadedEmissiveIntensity);
-        
-        /**
-         * Debug Control allowing to overload the reflection color.
-         * This as to be use with the overloadedReflectionIntensity parameter.
-         */
-        @serializeAsColor3()
-        public overloadedReflection: Color3 = BABYLON.Color3.White();
-        
-        /**
-         * Debug Control indicating how much the overloaded reflection color is used against the default one.
-         */
-        @serialize()
-        public overloadedReflectionIntensity: number = 0.0;
-
-        /**
-         * Debug Control allowing to overload the microsurface.
-         * This as to be use with the overloadedMicroSurfaceIntensity parameter.
-         */
-        @serialize()
-        public overloadedMicroSurface: number = 0.0;
-        
-        /**
-         * Debug Control indicating how much the overloaded microsurface is used against the default one.
-         */
-        @serialize()
-        public overloadedMicroSurfaceIntensity: number = 0.0;
-
-        private _overloadedMicroSurface: Vector3 = new Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
 
         /**
          * AKA Diffuse Texture in standard nomenclature.
@@ -937,20 +837,6 @@
                 this._defines.CAMERACOLORCURVES = true;
             }
 
-            if (this.overloadedShadeIntensity != 1 ||
-                this.overloadedShadowIntensity != 1) {
-                this._defines.OVERLOADEDSHADOWVALUES = true;
-            }
-
-            if (this.overloadedMicroSurfaceIntensity > 0 ||
-                this.overloadedEmissiveIntensity > 0 ||
-                this.overloadedReflectivityIntensity > 0 ||
-                this.overloadedAlbedoIntensity > 0 ||
-                this.overloadedAmbientIntensity > 0 ||
-                this.overloadedReflectionIntensity > 0) {
-                this._defines.OVERLOADEDVALUES = true;
-            }
-
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {
                 this._defines.POINTSIZE = true;
@@ -1148,7 +1034,7 @@
                         "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                         "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
-                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
+                        "vLightingIntensity",
                         "logarithmicDepthConstant",
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
@@ -1239,15 +1125,6 @@
             this._uniformBuffer.addUniform("opacityParts", 4);
             this._uniformBuffer.addUniform("emissiveLeftColor", 4);
             this._uniformBuffer.addUniform("emissiveRightColor", 4);
-
-            this._uniformBuffer.addUniform("vOverloadedIntensity", 4);
-            this._uniformBuffer.addUniform("vOverloadedAmbient", 3);
-            this._uniformBuffer.addUniform("vOverloadedAlbedo", 3);
-            this._uniformBuffer.addUniform("vOverloadedReflectivity", 3);
-            this._uniformBuffer.addUniform("vOverloadedEmissive", 3);
-            this._uniformBuffer.addUniform("vOverloadedReflection", 3);
-            this._uniformBuffer.addUniform("vOverloadedMicroSurface", 3);
-            this._uniformBuffer.addUniform("vOverloadedShadowIntensity", 4);
 
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.create();
@@ -1441,34 +1318,6 @@
                     this._lightingInfos.w = this.specularIntensity;
 
                     this._uniformBuffer.updateVector4("vLightingIntensity", this._lightingInfos);
-
-                    // Overloaded params
-
-                    this._overloadedShadowInfos.x = this.overloadedShadowIntensity;
-                    this._overloadedShadowInfos.y = this.overloadedShadeIntensity;
-                    this._uniformBuffer.updateVector4("vOverloadedShadowIntensity", this._overloadedShadowInfos);
-
-                    this._overloadedIntensity.x = this.overloadedAmbientIntensity;
-                    this._overloadedIntensity.y = this.overloadedAlbedoIntensity;
-                    this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
-                    this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
-                    this._uniformBuffer.updateVector4("vOverloadedIntensity", this._overloadedIntensity);
-
-                    this._uniformBuffer.updateColor3("vOverloadedAmbient", this.overloadedAmbient);
-                    this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
-                    this._uniformBuffer.updateColor3("vOverloadedAlbedo", this._tempColor);
-                    this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
-                    this._uniformBuffer.updateColor3("vOverloadedReflectivity", this._tempColor);
-                    this.convertColorToLinearSpaceToRef(this.overloadedEmissive, this._tempColor);
-                    this._uniformBuffer.updateColor3("vOverloadedEmissive", this._tempColor);
-                    this.convertColorToLinearSpaceToRef(this.overloadedReflection, this._tempColor);
-                    this._uniformBuffer.updateColor3("vOverloadedReflection", this._tempColor);
-
-                    this._overloadedMicroSurface.x = this.overloadedMicroSurface;
-                    this._overloadedMicroSurface.y = this.overloadedMicroSurfaceIntensity;
-                    this._overloadedMicroSurface.z = this.overloadedReflectionIntensity;
-                    this._uniformBuffer.updateVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
-
                 }
 
                 // Textures        

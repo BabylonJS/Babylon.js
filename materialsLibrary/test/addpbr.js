@@ -154,18 +154,6 @@ window.preparePBR = function() {
 		return pbr.specularIntensity;
 	});
 	
-	registerRangeUI("pbr", "ShadowIntensity", 0, 2, function(value) {
-		pbr.overloadedShadowIntensity = value;
-	}, function() {
-		return pbr.overloadedShadowIntensity;
-	});
-	
-	registerRangeUI("pbr", "ShadeIntensity", 0, 2, function(value) {
-		pbr.overloadedShadeIntensity = value;
-	}, function() {
-		return pbr.overloadedShadeIntensity;
-	});
-	
 	registerRangeUI("pbr", "cameraExposure", 0, 2, function(value) {
 		pbr.cameraExposure = value;
 	}, function() {
@@ -203,27 +191,27 @@ window.preparePBR = function() {
 	});
 
 	registerRangeUI("pbr", "albedoColorR", 0, 1, function(value) {
-		pbr.overloadedAlbedo.r = value;
+		pbr.albedoColor.r = value;
 	}, function() {
-		return pbr.overloadedAlbedo.r;
+		return pbr.albedoColor.r;
 	});
 
 	registerRangeUI("pbr", "albedoColorG", 0, 1, function(value) {
-		pbr.overloadedAlbedo.g = value;
+		pbr.albedoColor.g = value;
 	}, function() {
-		return pbr.overloadedAlbedo.g;
+		return pbr.albedoColor.g;
 	});
 
 	registerRangeUI("pbr", "albedoColorB", 0, 1, function(value) {
-		pbr.overloadedAlbedo.b = value;
+		pbr.albedoColor.b = value;
 	}, function() {
-		return pbr.overloadedAlbedo.b;
+		return pbr.albedoColor.b;
 	});
 
 	registerRangeUI("pbr", "albedoColorLevel", 0, 1, function(value) {
-		pbr.overloadedAlbedoIntensity = value;
+		pbr.albedoTexture.level = value;
 	}, function() {
-		return pbr.overloadedAlbedoIntensity;
+		return pbr.albedoTexture.level;
 	});
     
     registerButtonUI("pbr", "Toggle Skybox", function() {
