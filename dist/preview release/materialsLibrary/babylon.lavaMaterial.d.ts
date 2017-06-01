@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     class LavaMaterial extends PushMaterial {
         private _diffuseTexture;

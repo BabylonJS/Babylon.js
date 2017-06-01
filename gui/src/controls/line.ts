@@ -49,11 +49,11 @@ module BABYLON.GUI {
             this._markAsDirty();
         }              
 
-        public get x1(): string {
+        public get x1(): string | number  {
             return this._x1.toString(this._host);
         }
 
-        public set x1(value: string) {
+        public set x1(value: string | number ) {
             if (this._x1.toString(this._host) === value) {
                 return;
             }
@@ -63,11 +63,11 @@ module BABYLON.GUI {
             }
         }    
 
-        public get y1(): string {
+        public get y1(): string | number  {
             return this._y1.toString(this._host);
         }
 
-        public set y1(value: string) {
+        public set y1(value: string | number ) {
             if (this._y1.toString(this._host) === value) {
                 return;
             }
@@ -77,11 +77,11 @@ module BABYLON.GUI {
             }
         }     
 
-        public get x2(): string {
+        public get x2(): string | number  {
             return this._x2.toString(this._host);
         }
 
-        public set x2(value: string) {
+        public set x2(value: string | number ) {
             if (this._x2.toString(this._host) === value) {
                 return;
             }
@@ -91,11 +91,11 @@ module BABYLON.GUI {
             }
         }    
 
-        public get y2(): string {
+        public get y2(): string | number  {
             return this._y2.toString(this._host);
         }
 
-        public set y2(value: string) {
+        public set y2(value: string | number ) {
             if (this._y2.toString(this._host) === value) {
                 return;
             }
@@ -134,7 +134,7 @@ module BABYLON.GUI {
             return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
         }           
 
-        constructor(public name: string) {
+        constructor(public name?: string) {
             super(name);
 
             this.isHitTestVisible = false;

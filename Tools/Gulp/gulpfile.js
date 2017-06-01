@@ -34,6 +34,7 @@ var workersStream;
 
 var extendsSearchRegex = /var\s__extends[\s\S]+?\}\)\(\);/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
+var referenceSearchRegex = /\/\/\/ <reference.*/g;
 
 /**
  * TS configurations shared in the gulp file.
@@ -296,6 +297,7 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         var dts = tsProcess.dts
             .pipe(concat(library.output))
+            .pipe(replace(referenceSearchRegex, ""))
             .pipe(rename({ extname: ".d.ts" }))
             .pipe(gulp.dest(outputDirectory));
 

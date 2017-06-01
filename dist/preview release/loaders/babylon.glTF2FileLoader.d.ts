@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     interface IGLTFLoaderData {
         json: Object;
@@ -27,7 +27,7 @@ declare module BABYLON {
     }
 }
 
-/// <reference path="../../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GLTF2 {
     /**
     * Enums
@@ -279,7 +279,7 @@ declare module BABYLON.GLTF2 {
     }
 }
 
-/// <reference path="../../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GLTF2 {
     /**
     * glTF File Loader Plugin
@@ -310,7 +310,7 @@ declare module BABYLON.GLTF2 {
     }
 }
 
-/// <reference path="../../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GLTF2 {
     /**
     * Utils functions for GLTF
@@ -361,7 +361,7 @@ declare module BABYLON.GLTF2 {
     }
 }
 
-/// <reference path="../../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
         private _name;
@@ -374,7 +374,7 @@ declare module BABYLON.GLTF2 {
     }
 }
 
-/// <reference path="../../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GLTF2 {
     class GLTFMaterialsPbrSpecularGlossinessExtension extends GLTFLoaderExtension {
         constructor();

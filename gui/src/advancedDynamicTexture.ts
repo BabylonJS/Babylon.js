@@ -235,7 +235,7 @@ module BABYLON.GUI {
             return result;
         }
 
-        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Scene): AdvancedDynamicTexture {
+        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Scene = null): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(name, 0, 0, scene);
 
             // Display

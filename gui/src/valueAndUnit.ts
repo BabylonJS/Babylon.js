@@ -46,8 +46,8 @@ module BABYLON.GUI {
             return this.unit.toString();
         }
 
-        public fromString(source: string): boolean {
-            var match = ValueAndUnit._Regex.exec(source);
+        public fromString(source: string | number ): boolean {
+            var match = ValueAndUnit._Regex.exec(source.toString());
 
             if (!match || match.length === 0) {
                 return false;

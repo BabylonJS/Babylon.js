@@ -61,7 +61,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         } 
 
-        constructor(public name: string, text: string) {
+        constructor(public name?: string, text: string = "") {
             super(name);
 
             this.text = text;
