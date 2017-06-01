@@ -5461,7 +5461,7 @@ var BABYLON;
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                if (url.indexOf("file:") === -1) {
+                if (url.indexOf("file:") !== 0) {
                     noIndexedDB();
                 }
                 else {
