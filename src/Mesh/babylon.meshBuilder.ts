@@ -787,9 +787,10 @@
          * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
          * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Remember you can only change the shape positions, not their number when updating a polygon.
          */
-        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
 			var shape = options.shape;
 			var holes = options.holes;
@@ -814,7 +815,7 @@
 			}
 			var polygon = polygonTriangulation.build(options.updatable, depth);
             polygon.sideOrientation = options.sideOrientation;
-			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation);
+			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);			
 			
             return polygon;
@@ -824,7 +825,7 @@
          * Creates an extruded polygon mesh, with depth in th Y direction. 
 		*/
 
-		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
 			return MeshBuilder.CreatePolygon(name, options, scene);
 		};
          

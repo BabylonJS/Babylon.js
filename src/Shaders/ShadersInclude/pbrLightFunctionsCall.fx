@@ -49,14 +49,6 @@
         #endif
     #else
         lightDiffuseContribution += info.diffuse * notShadowLevel;
-        
-        #ifdef OVERLOADEDSHADOWVALUES
-            if (NdotL < 0.000000000011)
-            {
-                notShadowLevel = 1.;
-            }
-            shadowedOnlyLightDiffuseContribution *= notShadowLevel;
-        #endif
 
         #ifdef SPECULARTERM
             lightSpecularContribution += info.specular * notShadowLevel;

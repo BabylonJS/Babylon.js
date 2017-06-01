@@ -34,15 +34,6 @@ uniform Material
 	uniform vec4 emissiveLeftColor;
 	uniform vec4 emissiveRightColor;
 
-	uniform vec4 vOverloadedIntensity;
-	uniform vec3 vOverloadedAmbient;
-	uniform vec3 vOverloadedAlbedo;
-	uniform vec3 vOverloadedReflectivity;
-	uniform vec3 vOverloadedEmissive;
-	uniform vec3 vOverloadedReflection;
-	uniform vec3 vOverloadedMicroSurface;
-	uniform vec4 vOverloadedShadowIntensity;
-
 	uniform float pointSize;
 };
 
