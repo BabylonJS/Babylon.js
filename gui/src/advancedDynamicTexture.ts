@@ -73,6 +73,8 @@ module BABYLON.GUI {
                 this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
                 this._onResize();
             }
+
+            this._texture.isReady = true;
         }
 
         public markAsDirty() {
