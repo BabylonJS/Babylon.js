@@ -27,11 +27,7 @@
 
 		if (depth > shadow)
 		{
-			#ifdef OVERLOADEDSHADOWVALUES
-                return mix(1.0, darkness, vOverloadedShadowIntensity.x);
-            #else
-                return darkness;
-            #endif
+			return darkness;
 		}
 		return 1.0;
 	}
@@ -69,11 +65,7 @@
 			if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) visibility -= 0.25;
 		#endif
 
-		#ifdef OVERLOADEDSHADOWVALUES
-            return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
-        #else
-            return  min(1.0, visibility + darkness);
-        #endif
+		return  min(1.0, visibility + darkness);
 	}
 
 	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale)
@@ -93,11 +85,7 @@
 		#endif
 
 		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);	
-		#ifdef OVERLOADEDSHADOWVALUES
-			return mix(1.0, esm, vOverloadedShadowIntensity.x);
-		#else
-			return esm;
-		#endif
+		return esm;
 	}
 
 	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
@@ -119,11 +107,7 @@
 
 		if (depth.z > shadow)
 		{
-			#ifdef OVERLOADEDSHADOWVALUES
-                return mix(1.0, darkness, vOverloadedShadowIntensity.x);
-            #else
-                return darkness;
-            #endif
+			return darkness;
 		}
 		return 1.;
 	}
@@ -160,12 +144,8 @@
 			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < depth.z) visibility -= 0.25;
 			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < depth.z) visibility -= 0.25;
 		#endif
-		
-        #ifdef OVERLOADEDSHADOWVALUES
-            return  mix(1.0, min(1.0, visibility + darkness), vOverloadedShadowIntensity.x);
-        #else
-            return  min(1.0, visibility + darkness);
-        #endif
+
+		return  min(1.0, visibility + darkness);
 	}
 
 	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float depthScale)
@@ -195,10 +175,6 @@
 
 		// esm = mix(1.0, esm, mask);
 
-		#ifdef OVERLOADEDSHADOWVALUES
-            return mix(1.0, esm, vOverloadedShadowIntensity.x);
-        #else
-            return esm;
-        #endif
+		return esm;
 	}
 #endif

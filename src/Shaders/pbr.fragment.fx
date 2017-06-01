@@ -186,23 +186,15 @@ void main(void) {
 	surfaceAlbedo.rgb *= vColor.rgb;
 #endif
 
-#ifdef OVERLOADEDVALUES
-	surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
-#endif
-
 	// Ambient color
 	vec3 ambientOcclusionColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
 	vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
-	#ifdef AMBIENTINGRAYSCALE			
+	#ifdef AMBIENTINGRAYSCALE
 		ambientOcclusionColorMap = vec3(ambientOcclusionColorMap.r, ambientOcclusionColorMap.r, ambientOcclusionColorMap.r);
 	#endif
 	ambientOcclusionColor = mix(ambientOcclusionColor, ambientOcclusionColorMap, vAmbientInfos.z);
-
-	#ifdef OVERLOADEDVALUES
-		ambientOcclusionColor.rgb = mix(ambientOcclusionColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
-	#endif
 #endif
 
 	// Reflectivity map
@@ -215,20 +207,12 @@ void main(void) {
 	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 	surfaceReflectivityColor *= vReflectivityInfos.y;
 
-	#ifdef OVERLOADEDVALUES
-		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
-	#endif
-
 	#ifdef MICROSURFACEFROMREFLECTIVITYMAP
 		microSurface = surfaceReflectivityColorMap.a * vReflectivityInfos.z;
 	#else
 		#ifdef MICROSURFACEAUTOMATIC
 			microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
 		#endif
-	#endif
-#else
-	#ifdef OVERLOADEDVALUES
-		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
 	#endif
 #endif
 
@@ -278,19 +262,11 @@ void main(void) {
 
 	// Compute the converted reflectivity.
 	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
-
-	#ifdef OVERLOADEDVALUES
-		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
-	#endif
 #else
 	#ifdef MICROSURFACEMAP
 		vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
 		microSurface = microSurfaceTexel.r;
 	#endif
-#endif
-
-#ifdef OVERLOADEDVALUES
-	microSurface = mix(microSurface, vOverloadedMicroSurface.x, vOverloadedMicroSurface.y);
 #endif
 
 	// Compute N dot V.
@@ -304,10 +280,6 @@ void main(void) {
 
 	// Lighting
 	vec3 lightDiffuseContribution = vec3(0., 0., 0.);
-
-#ifdef OVERLOADEDSHADOWVALUES
-	vec3 shadowedOnlyLightDiffuseContribution = vec3(1., 1., 1.);
-#endif
 
 #ifdef SPECULARTERM
 	vec3 lightSpecularContribution = vec3(0., 0., 0.);
@@ -495,11 +467,6 @@ void main(void) {
 	#endif
 #endif
 
-#ifdef OVERLOADEDVALUES
-	environmentIrradiance = mix(environmentIrradiance, vOverloadedReflection, vOverloadedMicroSurface.z);
-	environmentRadiance = mix(environmentRadiance, vOverloadedReflection, vOverloadedMicroSurface.z);
-#endif
-
 	environmentRadiance *= vLightingIntensity.z;
 	environmentIrradiance *= vLightingIntensity.z;
 
@@ -558,10 +525,6 @@ void main(void) {
 	surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
 #endif
 
-#ifdef OVERLOADEDVALUES
-	surfaceEmissiveColor = mix(surfaceEmissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
-#endif
-
 #ifdef EMISSIVEFRESNEL
 	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);
 
@@ -571,37 +534,17 @@ void main(void) {
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
 	vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution;
-
-	#ifdef OVERLOADEDSHADOWVALUES
-		shadowedOnlyLightDiffuseContribution = shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution;
-	#endif
 #else
 	#ifdef LINKEMISSIVEWITHALBEDO
 		vec3 finalDiffuse = (lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution;
-
-		#ifdef OVERLOADEDSHADOWVALUES
-			shadowedOnlyLightDiffuseContribution = (shadowedOnlyLightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution;
-		#endif
 	#else
 		vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor;
-
-		#ifdef OVERLOADEDSHADOWVALUES
-			shadowedOnlyLightDiffuseContribution = shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor;
-		#endif
 	#endif
 #endif
 
 finalDiffuse.rgb += vAmbientColor;
 finalDiffuse *= surfaceAlbedo.rgb;
 finalDiffuse = max(finalDiffuse, 0.0);
-
-#ifdef OVERLOADEDSHADOWVALUES
-	shadowedOnlyLightDiffuseContribution += vAmbientColor;
-	shadowedOnlyLightDiffuseContribution *= surfaceAlbedo.rgb;
-	shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution, 0.0);
-	finalDiffuse = mix(finalDiffuse, shadowedOnlyLightDiffuseContribution, (1.0 - vOverloadedShadowIntensity.y));
-#endif
-
 finalDiffuse = (finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientOcclusionColor;
 
 #ifdef SPECULARTERM
@@ -660,6 +603,8 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular * vLightingIntensity.x + env
 	finalColor.rgb = applyColorCurves(finalColor.rgb);
 #endif
 
+	gl_FragColor = finalColor;
+
 	// Normal Display.
 	// gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
 
@@ -687,6 +632,4 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular * vLightingIntensity.x + env
 	//// Emissive Color
 	//vec2 test = vEmissiveUV * 0.5 + 0.5;
 	//gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
-
-	gl_FragColor = finalColor;
 }
