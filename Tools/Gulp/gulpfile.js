@@ -117,7 +117,7 @@ function shadersName(filename) {
 }
 
 function includeShadersName(filename) {
-    return filename.replace('.fx', '');
+    return path.basename(filename).replace('.fx', '');
 }
 
 /*
@@ -256,6 +256,11 @@ var buildExternalLibrary = function (library, settings, watch) {
         .pipe(sourcemaps.init())
         .pipe(typescript(externalTsConfig));
 
+    var includeShader = gulp.src(library.shadersIncludeFiles || [], { base: settings.build.srcOutputDirectory })
+        .pipe(uncommentShader())
+        .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, library.output + '.include.fx'))
+        .pipe(gulp.dest(settings.build.srcOutputDirectory));
+
     var shader = gulp.src(library.shaderFiles || [], { base: settings.build.srcOutputDirectory })
         .pipe(uncommentShader())
         .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
@@ -276,10 +281,10 @@ var buildExternalLibrary = function (library, settings, watch) {
         .pipe(gulp.dest(outputDirectory));
 
     if (watch) {
-        return merge2([shader, dev, css]);
+        return merge2([shader, includeShader, dev, css]);
     }
     else {
-        var code = merge2([tsProcess.js, shader])
+        var code = merge2([tsProcess.js, shader, includeShader])
             .pipe(concat(library.output))
             .pipe(gulp.dest(outputDirectory))
             .pipe(cleants())
