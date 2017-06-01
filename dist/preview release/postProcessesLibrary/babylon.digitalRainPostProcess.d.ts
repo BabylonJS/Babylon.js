@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     /**
      * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.

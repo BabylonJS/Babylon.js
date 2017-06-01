@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     /**
      * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
