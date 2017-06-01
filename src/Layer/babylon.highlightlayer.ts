@@ -7,12 +7,12 @@ module BABYLON {
      * It enforces keeping the most luminous color in the color channel.
      */
     class GlowBlurPostProcess extends PostProcess {
-        constructor(name: string, public direction: Vector2, public blurWidth: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
+        constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
-                effect.setFloat("blurWidth", this.blurWidth);
+                effect.setFloat("blurWidth", this.kernel);
             });
         }
     }
@@ -136,8 +136,8 @@ module BABYLON {
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _downSamplePostprocess: PassPostProcess;
-        private _horizontalBlurPostprocess: BlurPostProcess;
-        private _verticalBlurPostprocess: BlurPostProcess;
+        private _horizontalBlurPostprocess: GlowBlurPostProcess;
+        private _verticalBlurPostprocess: GlowBlurPostProcess;
         private _cachedDefines: string;
         private _glowMapGenerationEffect: Effect;
         private _glowMapMergeEffect: Effect;
@@ -169,28 +169,28 @@ module BABYLON {
          * Specifies the horizontal size of the blur.
          */
         public set blurHorizontalSize(value: number) {
-            this._horizontalBlurPostprocess.blurWidth = value;
+            this._horizontalBlurPostprocess.kernel = value;
         }
 
         /**
          * Specifies the vertical size of the blur.
          */
         public set blurVerticalSize(value: number) {
-            this._verticalBlurPostprocess.blurWidth = value;
+            this._verticalBlurPostprocess.kernel = value;
         }
 
         /**
          * Gets the horizontal size of the blur.
          */
         public get blurHorizontalSize(): number {
-            return this._horizontalBlurPostprocess.blurWidth
+            return this._horizontalBlurPostprocess.kernel
         }
 
         /**
          * Gets the vertical size of the blur.
          */
         public get blurVerticalSize(): number {
-            return this._verticalBlurPostprocess.blurWidth;
+            return this._verticalBlurPostprocess.kernel;
         }
 
         /**
