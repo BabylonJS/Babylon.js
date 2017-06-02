@@ -793,7 +793,7 @@
         public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
 			var shape = options.shape;
-			var holes = options.holes;
+			var holes = options.holes || [];
 			var depth = options.depth || 0;
 			var contours: Array<Vector2> = [];
 			var hole: Array<Vector2> = [];
@@ -822,7 +822,7 @@
 		};
 
         /**
-         * Creates an extruded polygon mesh, with depth in th Y direction. 
+         * Creates an extruded polygon mesh, with depth in the Y direction. 
 		*/
 
 		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
