@@ -246,6 +246,7 @@
         private static _ALPHA_ONEONE = 6;
         private static _ALPHA_PREMULTIPLIED = 7;
         private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
+        private static _ALPHA_INTERPOLATE = 9;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -380,6 +381,10 @@
         public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
             return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
         }
+
+        public static get ALPHA_INTERPOLATE(): number {
+            return Engine._ALPHA_INTERPOLATE;
+        }        
 
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
@@ -2159,6 +2164,10 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
+        public setAlphaConstants(r: number, g: number, b: number, a: number) {
+            this._alphaState.setAlphaBlendConstants(r, g, b, a);
+        }
+
         public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
             if (this._alphaMode === mode) {
                 return;
@@ -2200,6 +2209,10 @@
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
+                case Engine.ALPHA_INTERPOLATE:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;                    
             }
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
