@@ -38,6 +38,7 @@ module BABYLON.GUI {
         private _cachedOffsetY: number;
         private _isVisible = true;
         public _linkedMesh: AbstractMesh;
+        private _fontSet = false;
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
@@ -217,6 +218,7 @@ module BABYLON.GUI {
 
             if (this._height.fromString(value)) {
                 this._markAsDirty();
+                this._fontSet = true;
             }
         }   
 
@@ -230,7 +232,6 @@ module BABYLON.GUI {
             }
 
             this._fontFamily = value;
-            this._prepareFont();
         }
 
         public get fontSize(): string | number  {
@@ -244,8 +245,8 @@ module BABYLON.GUI {
 
             if (this._fontSize.fromString(value)) {
                 this._markAsDirty();
+                this._fontSet = true;
             }
-            this._prepareFont();
         }
 
         public get color(): string {
@@ -425,6 +426,14 @@ module BABYLON.GUI {
             this._host.markAsDirty();
         }
 
+        public _markAllAsDirty(): void {
+            this._markAsDirty();
+
+            if (this._font) {
+                this._prepareFont();
+            }
+        }
+
         public _link(root: Container, host: AdvancedDynamicTexture): void {
             this._root = root;
             this._host = host;
@@ -462,6 +471,11 @@ module BABYLON.GUI {
         }
 
         protected _applyStates(context: CanvasRenderingContext2D): void {
+            if (this._fontSet = true) {
+                this._fontSet = false;
+                this._prepareFont();
+            }
+
             if (this._font) {
                 context.font = this._font;
             }

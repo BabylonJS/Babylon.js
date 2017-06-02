@@ -80,14 +80,10 @@ module BABYLON.GUI {
         }
 
         public _markAllAsDirty(): void {
-            this._markAsDirty();
+            super._markAllAsDirty();
 
             for (var index = 0; index < this._children.length; index++) {
-                if ((<any>this._children[index])._markAllAsDirty) {
-                    (<any>this._children[index])._markAllAsDirty();
-                } else {
-                    this._children[index]._markAsDirty();
-                }
+                this._children[index]._markAllAsDirty();
             }
         }
 

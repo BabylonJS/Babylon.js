@@ -120,6 +120,9 @@ var BABYLON;
                 if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                     this.scaleTo(renderWidth, renderHeight);
                     this.markAsDirty();
+                    if (this._idealWidth || this._idealHeight) {
+                        this._rootContainer._markAllAsDirty();
+                    }
                 }
             };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
@@ -541,6 +544,7 @@ var BABYLON;
                 this._transformedPosition = BABYLON.Vector2.Zero();
                 this._isMatrixDirty = true;
                 this._isVisible = true;
+                this._fontSet = false;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
@@ -719,6 +723,7 @@ var BABYLON;
                     }
                     if (this._height.fromString(value)) {
                         this._markAsDirty();
+                        this._fontSet = true;
                     }
                 },
                 enumerable: true,
@@ -733,7 +738,6 @@ var BABYLON;
                         return;
                     }
                     this._fontFamily = value;
-                    this._prepareFont();
                 },
                 enumerable: true,
                 configurable: true
@@ -748,8 +752,8 @@ var BABYLON;
                     }
                     if (this._fontSize.fromString(value)) {
                         this._markAsDirty();
+                        this._fontSet = true;
                     }
-                    this._prepareFont();
                 },
                 enumerable: true,
                 configurable: true
@@ -945,6 +949,12 @@ var BABYLON;
                 }
                 this._host.markAsDirty();
             };
+            Control.prototype._markAllAsDirty = function () {
+                this._markAsDirty();
+                if (this._font) {
+                    this._prepareFont();
+                }
+            };
             Control.prototype._link = function (root, host) {
                 this._root = root;
                 this._host = host;
@@ -973,6 +983,10 @@ var BABYLON;
                 }
             };
             Control.prototype._applyStates = function (context) {
+                if (this._fontSet = true) {
+                    this._fontSet = false;
+                    this._prepareFont();
+                }
                 if (this._font) {
                     context.font = this._font;
                 }
@@ -1382,14 +1396,9 @@ var BABYLON;
                 }
             };
             Container.prototype._markAllAsDirty = function () {
-                this._markAsDirty();
+                _super.prototype._markAllAsDirty.call(this);
                 for (var index = 0; index < this._children.length; index++) {
-                    if (this._children[index]._markAllAsDirty) {
-                        this._children[index]._markAllAsDirty();
-                    }
-                    else {
-                        this._children[index]._markAsDirty();
-                    }
+                    this._children[index]._markAllAsDirty();
                 }
             };
             Container.prototype._localDraw = function (context) {
@@ -2165,6 +2174,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "domImage", {
+                get: function () {
+                    return this._domImage;
+                },
                 set: function (value) {
                     var _this = this;
                     this._domImage = value;

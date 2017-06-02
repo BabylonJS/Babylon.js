@@ -125,7 +125,12 @@ module BABYLON.GUI {
 
             if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                 this.scaleTo(renderWidth, renderHeight);
+
                 this.markAsDirty();
+
+                if (this._idealWidth || this._idealHeight) {
+                    this._rootContainer._markAllAsDirty();
+                }                
             }
         }
 

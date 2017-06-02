@@ -141,6 +141,7 @@ declare module BABYLON.GUI {
         private _cachedOffsetY;
         private _isVisible;
         _linkedMesh: AbstractMesh;
+        private _fontSet;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         protected _linkOffsetX: ValueAndUnit;
@@ -206,6 +207,7 @@ declare module BABYLON.GUI {
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         _markMatrixAsDirty(): void;
         _markAsDirty(): void;
+        _markAllAsDirty(): void;
         _link(root: Container, host: AdvancedDynamicTexture): void;
         protected _transform(context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
