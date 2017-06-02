@@ -55,6 +55,10 @@ module BABYLON.GUI {
             }
         }
 
+        public get domImage(): HTMLImageElement {
+            return this._domImage;
+        }
+
         private _onImageLoaded(): void {
             this._imageWidth = this._domImage.width;
             this._imageHeight = this._domImage.height;
