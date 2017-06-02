@@ -6,6 +6,8 @@ module BABYLON {
 
         public FOG = false;
 
+        public USERIGHTHANDEDSYSTEM = false;
+
         constructor() {
             super();
             this.rebuild();
