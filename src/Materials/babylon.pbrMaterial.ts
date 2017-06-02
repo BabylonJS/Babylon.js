@@ -66,6 +66,7 @@
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFULLFLOAT = false;
+        public USERIGHTHANDEDSYSTEM = false;
 
         public METALLICWORKFLOW = false;
         public METALLICMAP = false;
@@ -763,7 +764,11 @@
                     if (scene._mirroredCameraPosition) {
                         this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
                         this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
-                    }                        
+                    }
+
+                    if (scene.useRightHandedSystem) {
+                        this._defines.USERIGHTHANDEDSYSTEM = true;
+                    }
                 }
 
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
