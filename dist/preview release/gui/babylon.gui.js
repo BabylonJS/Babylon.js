@@ -738,6 +738,7 @@ var BABYLON;
                         return;
                     }
                     this._fontFamily = value;
+                    this._fontSet = true;
                 },
                 enumerable: true,
                 configurable: true
@@ -983,7 +984,7 @@ var BABYLON;
                 }
             };
             Control.prototype._applyStates = function (context) {
-                if (this._fontSet = true) {
+                if (this._fontSet) {
                     this._fontSet = false;
                     this._prepareFont();
                 }
@@ -1221,7 +1222,6 @@ var BABYLON;
                 }
                 this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
-                this._markAsDirty();
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
