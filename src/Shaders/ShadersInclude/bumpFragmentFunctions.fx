@@ -23,6 +23,10 @@
 		vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
 		vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
 
+	#ifdef USERIGHTHANDEDSYSTEM
+		binormal = -binormal;
+	#endif
+
 		// construct a scale-invariant frame 
 		float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
 		return mat3(tangent * invmax, binormal * invmax, normal);
