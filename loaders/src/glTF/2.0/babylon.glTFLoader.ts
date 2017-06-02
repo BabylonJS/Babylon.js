@@ -955,8 +955,8 @@ module BABYLON.GLTF2 {
             //
 
             material.babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
-            material.babylonMaterial.metallic = properties.metallicFactor || 1;
-            material.babylonMaterial.roughness = properties.roughnessFactor || 1;
+            material.babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
+            material.babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
 
             //
             // Load Textures
