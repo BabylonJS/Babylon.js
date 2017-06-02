@@ -112,6 +112,10 @@
             return this._textures.data[this._currentRenderTextureInd];
         }      
 
+        public getCamera(): Camera {
+            return this._camera;
+        }
+
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
