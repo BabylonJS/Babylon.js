@@ -232,6 +232,7 @@ module BABYLON.GUI {
             }
 
             this._fontFamily = value;
+            this._fontSet = true;
         }
 
         public get fontSize(): string | number  {
@@ -471,7 +472,7 @@ module BABYLON.GUI {
         }
 
         protected _applyStates(context: CanvasRenderingContext2D): void {
-            if (this._fontSet = true) {
+            if (this._fontSet) {
                 this._fontSet = false;
                 this._prepareFont();
             }
@@ -760,7 +761,6 @@ module BABYLON.GUI {
             this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
         
             this._fontOffset = Control._GetFontOffset(this._font);
-            this._markAsDirty();
         }
 
         // Statics
