@@ -37,7 +37,7 @@
                 ColorCurves.Bind(this.colorCurves, effect);
 
                 // Vignette
-                let vignetteScaleY = 0;// TODO Math.tan(imageProcessing._scene.activeCamera.fov * 0.5);
+                let vignetteScaleY = this.getCamera().fov * 0.5 ;
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
@@ -60,15 +60,18 @@
                 // Color transform settings
                 let hasColorGradingTexture = (this.colorGradingTexture != null) && this.colorGradingTexture.isReady();
                 effect.setBool('hasTextureColorTransform', hasColorGradingTexture);
-                //effect.setTexture('txColorTransform', hasColorGradingTexture ? this.colorGradingTexture : emptyTexture);
-                let textureSize = hasColorGradingTexture ? this.colorGradingTexture.getSize().height : 1.0;
 
-                effect.setFloat4("colorTransformSettings",
-                    (textureSize - 1) / textureSize, // textureScale
-                    0.5 / textureSize, // textureOffset
-                    textureSize, // textureSize
-                    hasColorGradingTexture ? this.colorGradingWeight : 0.0 // weight
-                );                
+                if (hasColorGradingTexture) {
+                    effect.setTexture('txColorTransform', this.colorGradingTexture);
+                    let textureSize = hasColorGradingTexture ? this.colorGradingTexture.getSize().height : 1.0;
+
+                    effect.setFloat4("colorTransformSettings",
+                        (textureSize - 1) / textureSize, // textureScale
+                        0.5 / textureSize, // textureOffset
+                        textureSize, // textureSize
+                        hasColorGradingTexture ? this.colorGradingWeight : 0.0 // weight
+                    );                
+                }
             };
         }
 

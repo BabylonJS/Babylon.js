@@ -118,7 +118,7 @@ void main(void)
 {
 	vec4 result = texture2D(textureSampler, vUV);
 
-	vec2 viewportXY = texelCoord * 2.0 - 1.0;
+	vec2 viewportXY = vUV * 2.0 - 1.0;
 	result = applyImageProcessing(result, viewportXY);
 
 	gl_FragColor = result;
