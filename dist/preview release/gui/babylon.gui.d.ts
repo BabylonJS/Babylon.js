@@ -347,6 +347,17 @@ declare module BABYLON.GUI {
 }
 
 
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
+declare module BABYLON.GUI {
+    class Slider extends Control {
+        name: string;
+        private _barHeight;
+        constructor(name?: string);
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+    }
+}
+
+
 declare module BABYLON.GUI {
     class TextBlock extends Control {
         name: string;

@@ -122,9 +122,10 @@
                 }
             }
 
-            // Restore depth buffer
+            // Restore states
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {
