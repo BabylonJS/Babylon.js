@@ -1300,6 +1300,7 @@
                     "../../gui/src/controls/rectangle.ts",
                     "../../gui/src/controls/ellipse.ts",
                     "../../gui/src/controls/line.ts",
+                    "../../gui/src/controls/slider.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts"
