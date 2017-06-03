@@ -26,6 +26,7 @@ var BABYLON;
             _this.FOG = false;
             _this.VERTEXCOLOR = false;
             _this.VERTEXALPHA = false;
+            _this.USERIGHTHANDEDSYSTEM = false;
             _this.rebuild();
             return _this;
         }

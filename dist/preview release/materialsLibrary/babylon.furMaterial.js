@@ -36,6 +36,7 @@ var BABYLON;
             _this.BonesPerMesh = 0;
             _this.INSTANCES = false;
             _this.HIGHLEVEL = false;
+            _this.USERIGHTHANDEDSYSTEM = false;
             _this.rebuild();
             return _this;
         }

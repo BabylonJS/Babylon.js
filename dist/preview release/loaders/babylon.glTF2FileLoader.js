@@ -687,7 +687,6 @@ var BABYLON;
             var verticesCounts = [];
             var indexStarts = [];
             var indexCounts = [];
-            var morphTargetManager;
             // Positions, normals and UVs
             for (var primitiveIndex = 0; primitiveIndex < mesh.primitives.length; primitiveIndex++) {
                 // Temporary vertex data
@@ -737,7 +736,6 @@ var BABYLON;
                 if (accessor) {
                     buffer = GLTF2.GLTFUtils.GetBufferFromAccessor(runtime, accessor);
                     tempVertexData.indices = buffer;
-                    indexCounts.push(tempVertexData.indices.length);
                 }
                 else {
                     // Set indices on the fly
@@ -745,8 +743,8 @@ var BABYLON;
                     for (var index = 0; index < tempVertexData.indices.length; index++) {
                         tempVertexData.indices[index] = index;
                     }
-                    indexCounts.push(tempVertexData.indices.length);
                 }
+                indexCounts.push(tempVertexData.indices.length);
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
                 // Sub material
@@ -804,11 +802,10 @@ var BABYLON;
                             }
                         }
                         if (morph.getPositions()) {
-                            if (!morphTargetManager) {
-                                morphTargetManager = new BABYLON.MorphTargetManager();
-                                babylonMesh.morphTargetManager = morphTargetManager;
+                            if (!babylonMesh.morphTargetManager) {
+                                babylonMesh.morphTargetManager = new BABYLON.MorphTargetManager();
                             }
-                            morphTargetManager.addTarget(morph);
+                            babylonMesh.morphTargetManager.addTarget(morph);
                         }
                         else {
                             BABYLON.Tools.Warn("Not adding morph target '" + morph.name + "' because it has no position data");
@@ -1044,7 +1041,29 @@ var BABYLON;
                 material.babylonMaterial.useScalarInLinearSpace = true;
                 return material;
             };
-            GLTFLoader.LoadMetallicRoughnessMaterialPropertiesAsync = function (runtime, material, onSuccess, onError) {
+            GLTFLoader.LoadCoreMaterialAsync = function (runtime, index, onSuccess, onError) {
+                var material = GLTFLoader.LoadMaterial(runtime, index);
+                if (!material) {
+                    onSuccess();
+                    return;
+                }
+                var metallicRoughnessPropertiesSuccess = false;
+                var commonPropertiesSuccess = false;
+                var checkSuccess = function () {
+                    if (metallicRoughnessPropertiesSuccess && commonPropertiesSuccess) {
+                        onSuccess();
+                    }
+                };
+                GLTFLoader._loadMetallicRoughnessMaterialPropertiesAsync(runtime, material, function () {
+                    metallicRoughnessPropertiesSuccess = true;
+                    checkSuccess();
+                }, onError);
+                GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material, function () {
+                    commonPropertiesSuccess = true;
+                    checkSuccess();
+                }, onError);
+            };
+            GLTFLoader._loadMetallicRoughnessMaterialPropertiesAsync = function (runtime, material, onSuccess, onError) {
                 // Ensure metallic workflow
                 material.babylonMaterial.metallic = 1;
                 material.babylonMaterial.roughness = 1;
@@ -1057,8 +1076,8 @@ var BABYLON;
                 // Load Factors
                 //
                 material.babylonMaterial.albedoColor = properties.baseColorFactor ? BABYLON.Color3.FromArray(properties.baseColorFactor) : new BABYLON.Color3(1, 1, 1);
-                material.babylonMaterial.metallic = properties.metallicFactor || 1;
-                material.babylonMaterial.roughness = properties.roughnessFactor || 1;
+                material.babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
+                material.babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
                 //
                 // Load Textures
                 //
@@ -1271,16 +1290,12 @@ var BABYLON;
                         skeletons.push(skin.babylonSkeleton);
                     }
                 }
-                // Load buffers, materials, etc.
                 GLTFLoader._loadBuffersAsync(runtime, function () {
                     GLTFLoader._loadMaterialsAsync(runtime, function () {
                         postLoad(runtime);
                         onSuccess(meshes, null, skeletons);
                     }, onError);
                 }, onError);
-                if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                    onSuccess(meshes, null, skeletons);
-                }
             };
             /**
             * Load scene
@@ -1529,6 +1544,7 @@ var BABYLON;
     (function (GLTF2) {
         var GLTFLoaderExtension = (function () {
             function GLTFLoaderExtension(name) {
+                this.enabled = true;
                 this._name = name;
             }
             Object.defineProperty(GLTFLoaderExtension.prototype, "name", {
@@ -1547,36 +1563,21 @@ var BABYLON;
             GLTFLoaderExtension.PostCreateRuntime = function (runtime) {
                 for (var extensionName in GLTF2.GLTFLoader.Extensions) {
                     var extension = GLTF2.GLTFLoader.Extensions[extensionName];
-                    extension.postCreateRuntime(runtime);
+                    if (extension.enabled) {
+                        extension.postCreateRuntime(runtime);
+                    }
                 }
             };
             GLTFLoaderExtension.LoadMaterialAsync = function (runtime, index, onSuccess, onError) {
                 for (var extensionName in GLTF2.GLTFLoader.Extensions) {
                     var extension = GLTF2.GLTFLoader.Extensions[extensionName];
-                    if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
-                        return;
+                    if (extension.enabled) {
+                        if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
+                            return;
+                        }
                     }
                 }
-                var material = GLTF2.GLTFLoader.LoadMaterial(runtime, index);
-                if (!material) {
-                    onSuccess();
-                    return;
-                }
-                var metallicRoughnessPropertiesSuccess = false;
-                var commonPropertiesSuccess = false;
-                var checkSuccess = function () {
-                    if (metallicRoughnessPropertiesSuccess && commonPropertiesSuccess) {
-                        onSuccess();
-                    }
-                };
-                GLTF2.GLTFLoader.LoadMetallicRoughnessMaterialPropertiesAsync(runtime, material, function () {
-                    metallicRoughnessPropertiesSuccess = true;
-                    checkSuccess();
-                }, onError);
-                GLTF2.GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material, function () {
-                    commonPropertiesSuccess = true;
-                    checkSuccess();
-                }, onError);
+                GLTF2.GLTFLoader.LoadCoreMaterialAsync(runtime, index, onSuccess, onError);
             };
             return GLTFLoaderExtension;
         }());

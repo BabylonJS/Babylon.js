@@ -206,7 +206,6 @@
         public clipPlane: Plane;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
-        public useRightHandedSystem = false;
 
         public hoverCursor = "pointer";
 
@@ -413,6 +412,23 @@
         // Keyboard
         private _onKeyDown: (evt: Event) => void;
         private _onKeyUp: (evt: Event) => void;
+
+        // Coordinate system
+        /**
+        * use right-handed coordinate system on this scene.
+        * @type {boolean}
+        */
+        private _useRightHandedSystem = false;
+        public set useRightHandedSystem(value: boolean) {
+            if (this._useRightHandedSystem === value) {
+                return;
+            }
+            this._useRightHandedSystem = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get useRightHandedSystem(): boolean {
+            return this._useRightHandedSystem;
+        }
 
         // Fog
         /**

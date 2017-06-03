@@ -738,6 +738,7 @@ var BABYLON;
                         return;
                     }
                     this._fontFamily = value;
+                    this._fontSet = true;
                 },
                 enumerable: true,
                 configurable: true
@@ -983,7 +984,7 @@ var BABYLON;
                 }
             };
             Control.prototype._applyStates = function (context) {
-                if (this._fontSet = true) {
+                if (this._fontSet) {
                     this._fontSet = false;
                     this._prepareFont();
                 }
@@ -1221,7 +1222,6 @@ var BABYLON;
                 }
                 this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
-                this._markAsDirty();
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
@@ -1946,6 +1946,54 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=line.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var DOMImage = Image;
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Slider = (function (_super) {
+            __extends(Slider, _super);
+            function Slider(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._barHeight = new GUI.ValueAndUnit(0.5, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                return _this;
+            }
+            Slider.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    // Main bar
+                    var effectiveBarHeight = 0;
+                    if (this._barHeight.isPixel) {
+                        effectiveBarHeight = Math.min(this._barHeight.getValue(this._host), this._currentMeasure.height);
+                    }
+                    else {
+                        effectiveBarHeight = this._currentMeasure.height * this._barHeight.getValue(this._host);
+                    }
+                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top + (this._currentMeasure.height - effectiveBarHeight) / 2, this._currentMeasure.width, effectiveBarHeight);
+                }
+                context.restore();
+            };
+            return Slider;
+        }(GUI.Control));
+        GUI.Slider = Slider;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=slider.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
