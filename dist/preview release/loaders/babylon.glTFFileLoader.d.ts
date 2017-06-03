@@ -785,7 +785,8 @@ declare module BABYLON.GLTF2 {
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
         static LoadMaterial(runtime: IGLTFRuntime, index: number): IGLTFMaterial;
-        static LoadMetallicRoughnessMaterialPropertiesAsync(runtime: IGLTFRuntime, material: IGLTFMaterial, onSuccess: () => void, onError: () => void): void;
+        static LoadCoreMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): void;
+        private static _loadMetallicRoughnessMaterialPropertiesAsync(runtime, material, onSuccess, onError);
         static LoadCommonMaterialPropertiesAsync(runtime: IGLTFRuntime, material: IGLTFMaterial, onSuccess: () => void, onError: () => void): void;
         static LoadAlphaProperties(runtime: IGLTFRuntime, material: IGLTFMaterial): void;
         static LoadTextureAsync(runtime: IGLTFRuntime, textureInfo: IGLTFTextureInfo, onSuccess: (babylonTexture: Texture) => void, onError: () => void): void;
@@ -860,6 +861,7 @@ declare module BABYLON.GLTF2 {
 declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
         private _name;
+        enabled: boolean;
         constructor(name: string);
         readonly name: string;
         protected postCreateRuntime(runtime: IGLTFRuntime): void;

@@ -8,18 +8,12 @@ const vec3 RGBLuminanceCoefficients = vec3(0.2126, 0.7152, 0.0722);
 uniform float contrast;
 uniform vec4 vignetteSettings1;
 uniform vec4 vignetteSettings2;
-uniform vec4 vignetteSettings3;
 uniform float cameraExposureLinear;
-uniform float toneMappingEnabled;
 uniform vec4 vCameraColorCurveNegative;
 uniform vec4 vCameraColorCurveNeutral;
 uniform vec4 vCameraColorCurvePositive;
-uniform bool hasTextureColorTransform;
 uniform sampler2D txColorTransform;
 uniform vec4 colorTransformSettings;
-
-#define VignetteBlendModeMultiply 0.0
-#define VignetteBlendModeOpaque 1.0
 
 vec3 applyEaseInOut(vec3 x){
 	return x * x * (3.0 - 2.0 * x);
@@ -69,21 +63,20 @@ vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 	// Interpolate between the artist 'color' and white based on the physical transmission value 'vignette'.
 	vec3 vignetteColor = vignetteSettings2.rgb;
 
-	float vignetteBlendMode = vignetteSettings3.w;
+#ifdef VIGNETTEBLENDMODEMULTIPLY
+	vec3 vignetteColorMultiplier = mix(vignetteColor, vec3(1, 1, 1), vignette);
+	result.rgb *= vignetteColorMultiplier;
+#endif
 
-	if (vignetteBlendMode == VignetteBlendModeMultiply) {
-		vec3 vignetteColorMultiplier = mix(vignetteColor, vec3(1, 1, 1), vignette);
-		result.rgb *= vignetteColorMultiplier;
-	}
-
-	if (vignetteBlendMode == VignetteBlendModeOpaque) {
-		result.rgb = mix(vignetteColor, result.rgb, vignette);
-	}
+#ifdef VIGNETTEBLENDMODEOPAQUE
+	result.rgb = mix(vignetteColor, result.rgb, vignette);
+#endif
 	
+#ifdef TONEMAPPING	
 	float tonemappingCalibration = 1.590579;
-	vec3 tonemapped = 1.0 - exp2(-tonemappingCalibration * result.rgb);
+	result.rgb = 1.0 - exp2(-tonemappingCalibration * result.rgb);
+#endif
 
-	result.rgb = mix(result.rgb, tonemapped, toneMappingEnabled);
 	result.rgb = pow(result.rgb, vec3(GammaEncodePowerApprox));
 	result.rgb = clamp(result.rgb, 0.0, 1.0);
 
@@ -96,12 +89,12 @@ vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 	}
 
 	// Apply Color Transform
-	if (hasTextureColorTransform) {
-		vec3 colorTransformInput = result.rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
-		vec3 colorTransformOutput = sampleTexture3D(txColorTransform, colorTransformInput).rgb;
+#ifdef COLORGRADING
+	vec3 colorTransformInput = result.rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
+	vec3 colorTransformOutput = sampleTexture3D(txColorTransform, colorTransformInput).rgb;
 
-		result.rgb = mix(result.rgb, colorTransformOutput, colorTransformSettings.www);
-	}
+	result.rgb = mix(result.rgb, colorTransformOutput, colorTransformSettings.www);
+#endif
 
 	// Apply Color Curves
 	float luma = dot(result.rgb, RGBLuminanceCoefficients);
