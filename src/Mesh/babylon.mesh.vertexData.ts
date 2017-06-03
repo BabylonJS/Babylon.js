@@ -1658,8 +1658,8 @@
                    face = 2; 
                 }
                 idx = index / 3;
-                uvs[idx] = (1 - uvs[idx])*faceUV[face].x + uvs[idx]*faceUV[face].z;
-                uvs[idx + 1] = (1 - uvs[idx + 1])*faceUV[face].y + uvs[idx + 1]*faceUV[face].w;
+                uvs[2*idx] = (1 - uvs[2*idx])*faceUV[face].x + uvs[2*idx]*faceUV[face].z;
+                uvs[2*idx + 1] = (1 - uvs[2*idx + 1])*faceUV[face].y + uvs[2*idx + 1]*faceUV[face].w;
                 if (faceColors) {
                     colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
                 }
