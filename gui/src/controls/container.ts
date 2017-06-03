@@ -133,7 +133,7 @@ module BABYLON.GUI {
                 }
             }
 
-            return this._processObservables(type);
+            return this._processObservables(type, x, y);
         }
 
         protected _clipForChildren(context: CanvasRenderingContext2D): void {

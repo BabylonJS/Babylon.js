@@ -7,8 +7,6 @@ module BABYLON.GUI {
         public pointerDownAnimation: () => void;
         public pointerUpAnimation: () => void;
 
-        private _buttonIsDown : boolean = false;
-
         constructor(public name?: string) {
             super(name);
             this.thickness = 1;
@@ -33,22 +31,13 @@ module BABYLON.GUI {
             }                      
         }
 
-        private _ensureButtonUp (): void {
-            if (this._buttonIsDown === true) {
-                if (this.pointerUpAnimation) {
-                    this.pointerUpAnimation();
-                }
-                this._buttonIsDown = false;
-            }
-        }
-
         // While being a container, the button behaves like a control.
         public _processPicking(x: number, y: number, type: number): boolean {
             if (!this.contains(x, y)) {
                 return false;
             }
 
-            this._processObservables(type);
+            this._processObservables(type, x, y);
 
             return true;
         }
@@ -65,25 +54,23 @@ module BABYLON.GUI {
                 this.pointerOutAnimation();
             }
 
-            // in case you move the pointer out of view while pointer is "down".
-            this._ensureButtonUp()
-
             super._onPointerOut();
         }
 
-        protected _onPointerDown(): void {
+        protected _onPointerDown(coordinates: Vector2): void {
             if (this.pointerDownAnimation) {
                 this.pointerDownAnimation();
             }
-            this._buttonIsDown = true;
 
-            super._onPointerDown();
+            super._onPointerDown(coordinates);
         }
 
-        protected _onPointerUp (): void {
-            this._ensureButtonUp()
-            
-            super._onPointerUp();
+        protected _onPointerUp(coordinates: Vector2): void {
+            if (this.pointerUpAnimation) {
+                this.pointerUpAnimation();
+            }
+
+            super._onPointerUp(coordinates);
         }        
 
         // Statics
