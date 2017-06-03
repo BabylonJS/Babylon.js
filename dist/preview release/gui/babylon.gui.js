@@ -82,6 +82,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "layer", {
+                get: function () {
+                    return this._layerToDispose;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AdvancedDynamicTexture.prototype.markAsDirty = function () {
                 this._isDirty = true;
             };
@@ -103,6 +110,9 @@ var BABYLON;
                 }
                 if (this._pointerObserver) {
                     this.getScene().onPointerObservable.remove(this._pointerObserver);
+                }
+                if (this._canvasBlurObserver) {
+                    this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
                 }
                 if (this._layerToDispose) {
                     this._layerToDispose.texture = null;
@@ -126,6 +136,11 @@ var BABYLON;
                 }
             };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
+                if (this._layerToDispose) {
+                    if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
+                        return;
+                    }
+                }
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
                     var engine = scene.getEngine();
@@ -164,6 +179,10 @@ var BABYLON;
                 this._rootContainer._draw(measure, context);
             };
             AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
+                if (this._capturingControl) {
+                    this._capturingControl._processObservables(type, x, y);
+                    return;
+                }
                 if (!this._rootContainer._processPicking(x, y, type)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
@@ -185,6 +204,16 @@ var BABYLON;
                     _this._shouldBlockPointer = false;
                     _this._doPicking(scene.pointerX, scene.pointerY, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
+                });
+                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                    if (_this._lastControlOver && _this._lastControlOver.onPointerOutObservable.hasObservers()) {
+                        _this._lastControlOver.onPointerOutObservable.notifyObservers(_this._lastControlOver);
+                    }
+                    _this._lastControlOver = null;
+                    if (_this._lastControlDown) {
+                        _this._lastControlDown.forcePointerUp();
+                    }
+                    _this._lastControlDown = null;
                 });
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh) {
@@ -521,7 +550,7 @@ var BABYLON;
                 this._zIndex = 0;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
-                this._fontSize = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -545,6 +574,7 @@ var BABYLON;
                 this._isMatrixDirty = true;
                 this._isVisible = true;
                 this._fontSet = false;
+                this._dummyVector2 = BABYLON.Vector2.Zero();
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
@@ -1161,12 +1191,12 @@ var BABYLON;
                 if (!this.contains(x, y)) {
                     return false;
                 }
-                this._processObservables(type);
+                this._processObservables(type, x, y);
                 return true;
             };
-            Control.prototype._onPointerMove = function () {
+            Control.prototype._onPointerMove = function (coordinates) {
                 if (this.onPointerMoveObservable.hasObservers()) {
-                    this.onPointerMoveObservable.notifyObservers(this);
+                    this.onPointerMoveObservable.notifyObservers(coordinates);
                 }
             };
             Control.prototype._onPointerEnter = function () {
@@ -1179,19 +1209,23 @@ var BABYLON;
                     this.onPointerOutObservable.notifyObservers(this);
                 }
             };
-            Control.prototype._onPointerDown = function () {
+            Control.prototype._onPointerDown = function (coordinates) {
                 if (this.onPointerDownObservable.hasObservers()) {
-                    this.onPointerDownObservable.notifyObservers(this);
+                    this.onPointerDownObservable.notifyObservers(coordinates);
                 }
             };
-            Control.prototype._onPointerUp = function () {
+            Control.prototype._onPointerUp = function (coordinates) {
                 if (this.onPointerUpObservable.hasObservers()) {
-                    this.onPointerUpObservable.notifyObservers(this);
+                    this.onPointerUpObservable.notifyObservers(coordinates);
                 }
             };
-            Control.prototype._processObservables = function (type) {
+            Control.prototype.forcePointerUp = function () {
+                this._onPointerUp(BABYLON.Vector2.Zero());
+            };
+            Control.prototype._processObservables = function (type, x, y) {
+                this._dummyVector2.copyFromFloats(x, y);
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    this._onPointerMove();
+                    this._onPointerMove(this._dummyVector2);
                     var previousControlOver = this._host._lastControlOver;
                     if (previousControlOver && previousControlOver !== this) {
                         previousControlOver._onPointerOut();
@@ -1203,13 +1237,13 @@ var BABYLON;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    this._onPointerDown();
+                    this._onPointerDown(this._dummyVector2);
                     this._host._lastControlDown = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._host._lastControlDown) {
-                        this._host._lastControlDown._onPointerUp();
+                        this._host._lastControlDown._onPointerUp(this._dummyVector2);
                     }
                     this._host._lastControlDown = null;
                     return true;
@@ -1440,7 +1474,7 @@ var BABYLON;
                         return true;
                     }
                 }
-                return this._processObservables(type);
+                return this._processObservables(type, x, y);
             };
             Container.prototype._clipForChildren = function (context) {
                 // DO nothing
@@ -1579,20 +1613,6 @@ var BABYLON;
                         return;
                     }
                     this._cornerRadius = value;
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Rectangle.prototype, "background", {
-                get: function () {
-                    return this._background;
-                },
-                set: function (value) {
-                    if (this._background === value) {
-                        return;
-                    }
-                    this._background = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -1968,24 +1988,160 @@ var BABYLON;
             function Slider(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
-                _this._barHeight = new GUI.ValueAndUnit(0.5, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                _this._thumbWidth = new GUI.ValueAndUnit(30, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                _this._minimum = 0;
+                _this._maximum = 100;
+                _this._value = 50;
+                _this._background = "black";
+                _this._foreground = "green";
+                _this._borderColor = "white";
+                _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                _this.onValueChangedObservable = new BABYLON.Observable();
+                // Events
+                _this._pointerIsDown = false;
+                _this.isPointerBlocker = true;
                 return _this;
             }
+            Object.defineProperty(Slider.prototype, "borderColor", {
+                get: function () {
+                    return this._borderColor;
+                },
+                set: function (value) {
+                    if (this._borderColor === value) {
+                        return;
+                    }
+                    this._borderColor = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "foreground", {
+                get: function () {
+                    return this._foreground;
+                },
+                set: function (value) {
+                    if (this._foreground === value) {
+                        return;
+                    }
+                    this._foreground = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "background", {
+                get: function () {
+                    return this._background;
+                },
+                set: function (value) {
+                    if (this._background === value) {
+                        return;
+                    }
+                    this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "minimum", {
+                get: function () {
+                    return this._minimum;
+                },
+                set: function (value) {
+                    if (this._minimum === value) {
+                        return;
+                    }
+                    this._minimum = value;
+                    this._markAsDirty();
+                    this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "maximum", {
+                get: function () {
+                    return this._maximum;
+                },
+                set: function (value) {
+                    if (this._maximum === value) {
+                        return;
+                    }
+                    this._maximum = value;
+                    this._markAsDirty();
+                    this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (value) {
+                    value = Math.max(Math.min(value, this._maximum), this._minimum);
+                    if (this._value === value) {
+                        return;
+                    }
+                    this._value = value;
+                    this._markAsDirty();
+                    this.onValueChangedObservable.notifyObservers(this._value);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Slider.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     // Main bar
-                    var effectiveBarHeight = 0;
-                    if (this._barHeight.isPixel) {
-                        effectiveBarHeight = Math.min(this._barHeight.getValue(this._host), this._currentMeasure.height);
+                    var effectiveThumbWidth;
+                    var effectiveBarOffset;
+                    if (this._thumbWidth.isPixel) {
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
                     }
                     else {
-                        effectiveBarHeight = this._currentMeasure.height * this._barHeight.getValue(this._host);
+                        effectiveThumbWidth = this._currentMeasure.height * this._thumbWidth.getValue(this._host);
                     }
-                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top + (this._currentMeasure.height - effectiveBarHeight) / 2, this._currentMeasure.width, effectiveBarHeight);
+                    if (this._barOffset.isPixel) {
+                        effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
+                    }
+                    else {
+                        effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
+                    }
+                    var left = this._currentMeasure.left + effectiveThumbWidth / 2;
+                    var width = this._currentMeasure.width - effectiveThumbWidth;
+                    var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
+                    // Bar
+                    context.fillStyle = this._background;
+                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    context.fillStyle = this._foreground;
+                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    // Thumb
+                    context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    context.strokeStyle = this._borderColor;
+                    context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                 }
                 context.restore();
+            };
+            Slider.prototype._updateValueFromPointer = function (x) {
+                this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+            };
+            Slider.prototype._onPointerDown = function (coordinates) {
+                this._pointerIsDown = true;
+                this._updateValueFromPointer(coordinates.x);
+                this._host._capturingControl = this;
+                _super.prototype._onPointerDown.call(this, coordinates);
+            };
+            Slider.prototype._onPointerMove = function (coordinates) {
+                if (this._pointerIsDown) {
+                    this._updateValueFromPointer(coordinates.x);
+                }
+            };
+            Slider.prototype._onPointerUp = function (coordinates) {
+                this._pointerIsDown = false;
+                this._host._capturingControl = null;
+                _super.prototype._onPointerUp.call(this, coordinates);
             };
             return Slider;
         }(GUI.Control));
@@ -2368,7 +2524,6 @@ var BABYLON;
             function Button(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
-                _this._buttonIsDown = false;
                 _this.thickness = 1;
                 _this.isPointerBlocker = true;
                 _this.pointerEnterAnimation = function () {
@@ -2387,20 +2542,12 @@ var BABYLON;
                 };
                 return _this;
             }
-            Button.prototype._ensureButtonUp = function () {
-                if (this._buttonIsDown === true) {
-                    if (this.pointerUpAnimation) {
-                        this.pointerUpAnimation();
-                    }
-                    this._buttonIsDown = false;
-                }
-            };
             // While being a container, the button behaves like a control.
             Button.prototype._processPicking = function (x, y, type) {
                 if (!this.contains(x, y)) {
                     return false;
                 }
-                this._processObservables(type);
+                this._processObservables(type, x, y);
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
@@ -2413,20 +2560,19 @@ var BABYLON;
                 if (this.pointerOutAnimation) {
                     this.pointerOutAnimation();
                 }
-                // in case you move the pointer out of view while pointer is "down".
-                this._ensureButtonUp();
                 _super.prototype._onPointerOut.call(this);
             };
-            Button.prototype._onPointerDown = function () {
+            Button.prototype._onPointerDown = function (coordinates) {
                 if (this.pointerDownAnimation) {
                     this.pointerDownAnimation();
                 }
-                this._buttonIsDown = true;
-                _super.prototype._onPointerDown.call(this);
+                _super.prototype._onPointerDown.call(this, coordinates);
             };
-            Button.prototype._onPointerUp = function () {
-                this._ensureButtonUp();
-                _super.prototype._onPointerUp.call(this);
+            Button.prototype._onPointerUp = function (coordinates) {
+                if (this.pointerUpAnimation) {
+                    this.pointerUpAnimation();
+                }
+                _super.prototype._onPointerUp.call(this, coordinates);
             };
             // Statics
             Button.CreateImageButton = function (name, text, imageUrl) {

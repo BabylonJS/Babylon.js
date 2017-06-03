@@ -6,10 +6,12 @@ declare module BABYLON.GUI {
         private _resizeObserver;
         private _pointerMoveObserver;
         private _pointerObserver;
+        private _canvasBlurObserver;
         private _background;
         _rootContainer: Container;
         _lastControlOver: Control;
         _lastControlDown: Control;
+        _capturingControl: Control;
         _shouldBlockPointer: boolean;
         _layerToDispose: Layer;
         _linkedControls: Control[];
@@ -20,6 +22,7 @@ declare module BABYLON.GUI {
         background: string;
         idealWidth: number;
         idealHeight: number;
+        readonly layer: Layer;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         markAsDirty(): void;
         addControl(control: Control): AdvancedDynamicTexture;
@@ -142,6 +145,7 @@ declare module BABYLON.GUI {
         private _isVisible;
         _linkedMesh: AbstractMesh;
         private _fontSet;
+        private _dummyVector2;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         protected _linkOffsetX: ValueAndUnit;
@@ -150,7 +154,7 @@ declare module BABYLON.GUI {
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
         */
-        onPointerMoveObservable: Observable<Control>;
+        onPointerMoveObservable: Observable<Vector2>;
         /**
         * An event triggered when the pointer move out of the control.
         * @type {BABYLON.Observable}
@@ -160,12 +164,12 @@ declare module BABYLON.GUI {
         * An event triggered when the pointer taps the control
         * @type {BABYLON.Observable}
         */
-        onPointerDownObservable: Observable<Control>;
+        onPointerDownObservable: Observable<Vector2>;
         /**
         * An event triggered when pointer up
         * @type {BABYLON.Observable}
         */
-        onPointerUpObservable: Observable<Control>;
+        onPointerUpObservable: Observable<Vector2>;
         /**
         * An event triggered when pointer enters the control
         * @type {BABYLON.Observable}
@@ -219,12 +223,13 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         contains(x: number, y: number): boolean;
         _processPicking(x: number, y: number, type: number): boolean;
-        protected _onPointerMove(): void;
+        protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerEnter(): void;
         protected _onPointerOut(): void;
-        protected _onPointerDown(): void;
-        protected _onPointerUp(): void;
-        protected _processObservables(type: number): boolean;
+        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerUp(coordinates: Vector2): void;
+        forcePointerUp(): void;
+        _processObservables(type: number, x: number, y: number): boolean;
         private _prepareFont();
         private static _HORIZONTAL_ALIGNMENT_LEFT;
         private static _HORIZONTAL_ALIGNMENT_RIGHT;
@@ -291,7 +296,6 @@ declare module BABYLON.GUI {
         private _cornerRadius;
         thickness: number;
         cornerRadius: number;
-        background: string;
         constructor(name?: string);
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -351,9 +355,28 @@ declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Slider extends Control {
         name: string;
-        private _barHeight;
+        private _thumbWidth;
+        private _minimum;
+        private _maximum;
+        private _value;
+        private _background;
+        private _foreground;
+        private _borderColor;
+        private _barOffset;
+        onValueChangedObservable: Observable<number>;
+        borderColor: string;
+        foreground: string;
+        background: string;
+        minimum: number;
+        maximum: number;
+        value: number;
         constructor(name?: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        private _pointerIsDown;
+        private _updateValueFromPointer(x);
+        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerMove(coordinates: Vector2): void;
+        protected _onPointerUp(coordinates: Vector2): void;
     }
 }
 
@@ -419,14 +442,12 @@ declare module BABYLON.GUI {
         pointerOutAnimation: () => void;
         pointerDownAnimation: () => void;
         pointerUpAnimation: () => void;
-        private _buttonIsDown;
         constructor(name?: string);
-        private _ensureButtonUp();
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): void;
         protected _onPointerOut(): void;
-        protected _onPointerDown(): void;
-        protected _onPointerUp(): void;
+        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerUp(coordinates: Vector2): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
         static CreateImageOnlyButton(name: string, imageUrl: string): Button;
         static CreateSimpleButton(name: string, text: string): Button;

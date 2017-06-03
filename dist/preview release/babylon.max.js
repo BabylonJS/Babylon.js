@@ -7120,6 +7120,10 @@ var BABYLON;
              * Observable event triggered each time the rendering canvas is resized
              */
             this.onResizeObservable = new BABYLON.Observable();
+            /**
+             * Observable event triggered each time the canvas lost focus
+             */
+            this.onCanvasBlurObservable = new BABYLON.Observable();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -7217,8 +7221,12 @@ var BABYLON;
             this._onFocus = function () {
                 _this._windowIsBackground = false;
             };
+            this._onCanvasBlur = function () {
+                _this.onCanvasBlurObservable.notifyObservers(_this);
+            };
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
+            canvas.addEventListener("pointerout", this._onCanvasBlur);
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
@@ -10077,6 +10085,7 @@ var BABYLON;
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);

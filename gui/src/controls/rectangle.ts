@@ -35,19 +35,6 @@ module BABYLON.GUI {
             this._markAsDirty();
         }   
        
-        public get background(): string {
-            return this._background;
-        }
-
-        public set background(value: string) {
-            if (this._background === value) {
-                return;
-            }
-
-            this._background = value;
-            this._markAsDirty();
-        }           
-     
         constructor(public name?: string) {
             super(name);
         }
