@@ -8,7 +8,7 @@ module BABYLON.GUI {
         public _host: AdvancedDynamicTexture;
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
-        private _fontSize = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PIXEL, false);
+        private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -39,6 +39,7 @@ module BABYLON.GUI {
         private _isVisible = true;
         public _linkedMesh: AbstractMesh;
         private _fontSet = false;
+        private _dummyVector2 = Vector2.Zero();
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
@@ -52,7 +53,7 @@ module BABYLON.GUI {
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
         */
-        public onPointerMoveObservable = new Observable<Control>();
+        public onPointerMoveObservable = new Observable<Vector2>();
 
         /**
         * An event triggered when the pointer move out of the control.
@@ -64,13 +65,13 @@ module BABYLON.GUI {
         * An event triggered when the pointer taps the control
         * @type {BABYLON.Observable}
         */
-        public onPointerDownObservable = new Observable<Control>();     
+        public onPointerDownObservable = new Observable<Vector2>();     
 
         /**
         * An event triggered when pointer up
         * @type {BABYLON.Observable}
         */
-        public onPointerUpObservable = new Observable<Control>();     
+        public onPointerUpObservable = new Observable<Vector2>();     
 
         /**
         * An event triggered when pointer enters the control
@@ -684,14 +685,14 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type);
+            this._processObservables(type, x, y);
 
             return true;
         }
 
-        protected _onPointerMove(): void {
+        protected _onPointerMove(coordinates: Vector2): void {
             if (this.onPointerMoveObservable.hasObservers()) {
-                this.onPointerMoveObservable.notifyObservers(this);
+                this.onPointerMoveObservable.notifyObservers(coordinates);
             }
         }
 
@@ -707,25 +708,30 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerDown(): void {
+        protected _onPointerDown(coordinates: Vector2): void {
             if (this.onPointerDownObservable.hasObservers()) {
-                this.onPointerDownObservable.notifyObservers(this);
+                this.onPointerDownObservable.notifyObservers(coordinates);
             }
         }
 
-        protected _onPointerUp(): void {
+        protected _onPointerUp(coordinates: Vector2): void {
             if (this.onPointerUpObservable.hasObservers()) {
-                this.onPointerUpObservable.notifyObservers(this);
+                this.onPointerUpObservable.notifyObservers(coordinates);
             }
         }
 
-        protected _processObservables(type: number): boolean {
+        public forcePointerUp() {
+            this._onPointerUp(Vector2.Zero());
+        }
+
+        public _processObservables(type: number, x: number, y: number): boolean {
+            this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                this._onPointerMove();
+                this._onPointerMove(this._dummyVector2);
 
                 var previousControlOver = this._host._lastControlOver;
                 if (previousControlOver && previousControlOver !== this) {
-                    previousControlOver._onPointerOut();
+                    previousControlOver._onPointerOut();                
                 }
 
                 if (previousControlOver !== this) {
@@ -737,14 +743,14 @@ module BABYLON.GUI {
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._onPointerDown();
+                this._onPointerDown(this._dummyVector2);
                 this._host._lastControlDown = this;
                 return true;
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp();
+                    this._host._lastControlDown._onPointerUp(this._dummyVector2);
                 }
                 this._host._lastControlDown = null;
                 return true;

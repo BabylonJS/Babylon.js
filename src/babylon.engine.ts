@@ -460,6 +460,11 @@
          */
         public onResizeObservable = new Observable<Engine>();
 
+        /**
+         * Observable event triggered each time the canvas lost focus
+         */
+        public onCanvasBlurObservable = new Observable<Engine>();
+
         //WebVR 
 
         //The new WebVR uses promises.
@@ -482,6 +487,7 @@
 
         public static audioEngine: AudioEngine;
 
+        private _onCanvasBlur: () => void;
         private _onBlur: () => void;
         private _onFocus: () => void;
         private _onFullscreenChange: () => void;
@@ -637,8 +643,14 @@
                 this._windowIsBackground = false;
             };
 
+            this._onCanvasBlur = () => {
+                this.onCanvasBlurObservable.notifyObservers(this);
+            };
+
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
+
+            canvas.addEventListener("pointerout", this._onCanvasBlur);
 
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
@@ -3697,6 +3709,7 @@
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
