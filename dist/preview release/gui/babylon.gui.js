@@ -2044,6 +2044,36 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "barOffset", {
+                get: function () {
+                    return this._barOffset.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._barOffset.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._barOffset.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "thumbWidth", {
+                get: function () {
+                    return this._thumbWidth.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._thumbWidth.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._thumbWidth.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Slider.prototype, "minimum", {
                 get: function () {
                     return this._minimum;

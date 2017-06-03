@@ -52,7 +52,35 @@ module BABYLON.GUI {
 
             this._background = value;
             this._markAsDirty();
-        }         
+        }     
+
+        public get barOffset(): string | number  {
+            return this._barOffset.toString(this._host);
+        }
+
+        public set barOffset(value: string | number ) {
+            if (this._barOffset.toString(this._host) === value) {
+                return;
+            }
+
+            if (this._barOffset.fromString(value)) {
+                this._markAsDirty();
+            }
+        }      
+
+        public get thumbWidth(): string | number  {
+            return this._thumbWidth.toString(this._host);
+        }
+
+        public set thumbWidth(value: string | number ) {
+            if (this._thumbWidth.toString(this._host) === value) {
+                return;
+            }
+
+            if (this._thumbWidth.fromString(value)) {
+                this._markAsDirty();
+            }
+        }              
 
         public get minimum(): number {
             return this._minimum;

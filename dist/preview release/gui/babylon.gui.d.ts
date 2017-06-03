@@ -367,6 +367,8 @@ declare module BABYLON.GUI {
         borderColor: string;
         foreground: string;
         background: string;
+        barOffset: string | number;
+        thumbWidth: string | number;
         minimum: number;
         maximum: number;
         value: number;
