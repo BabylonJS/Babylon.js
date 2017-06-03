@@ -575,7 +575,9 @@
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
                 "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
                 "../../src/PostProcess/babylon.tonemapPostProcess.js",
-                "../../src/PostProcess/babylon.displayPassPostProcess.js"                                
+                "../../src/PostProcess/babylon.displayPassPostProcess.js",                                
+                "../../src/PostProcess/babylon.highlightsPostProcess.js",
+                "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
             ],
             "dependUpon" : [
                 "postProcesses"
@@ -592,7 +594,9 @@
                 "volumetricLightScatteringPass.fragment",
                 "colorCorrection.fragment",
                 "tonemap.fragment",
-                "displayPass.fragment"
+                "displayPass.fragment",
+                "highlights.fragment",
+                "imageProcessing.fragment"
             ],
             "shaderIncludes": [
                 "kernelBlurFragment",
@@ -1300,6 +1304,7 @@
                     "../../gui/src/controls/rectangle.ts",
                     "../../gui/src/controls/ellipse.ts",
                     "../../gui/src/controls/line.ts",
+                    "../../gui/src/controls/slider.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts"

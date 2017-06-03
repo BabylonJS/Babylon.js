@@ -246,6 +246,7 @@
         private static _ALPHA_ONEONE = 6;
         private static _ALPHA_PREMULTIPLIED = 7;
         private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
+        private static _ALPHA_INTERPOLATE = 9;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -380,6 +381,10 @@
         public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
             return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
         }
+
+        public static get ALPHA_INTERPOLATE(): number {
+            return Engine._ALPHA_INTERPOLATE;
+        }        
 
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
@@ -545,6 +550,8 @@
         private _vaoRecordInProgress = false;
         private _mustWipeVertexAttributes = false;
 
+        private _emptyTexture: WebGLTexture;
+
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
         private _textureFormatInUse: string;
@@ -555,6 +562,15 @@
 
         public get textureFormatInUse(): string {
             return this._textureFormatInUse;
+        }
+
+        // Empty texture
+        public get emptyTexture(): WebGLTexture {
+            if (!this._emptyTexture) {
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            }
+
+            return this._emptyTexture;
         }
 
         /**
@@ -2159,6 +2175,10 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
+        public setAlphaConstants(r: number, g: number, b: number, a: number) {
+            this._alphaState.setAlphaBlendConstants(r, g, b, a);
+        }
+
         public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
             if (this._alphaMode === mode) {
                 return;
@@ -2200,6 +2220,10 @@
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
+                case Engine.ALPHA_INTERPOLATE:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;                    
             }
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
@@ -3415,7 +3439,7 @@
 
         private _setTexture(channel: number, texture: BaseTexture): void {
             // Not ready?
-            if (!texture || !texture.isReady()) {
+            if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
                     this.activateTexture(this._gl["TEXTURE" + channel]);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
@@ -3435,7 +3459,7 @@
                 return;
             }
 
-            var internalTexture = texture.getInternalTexture();
+            var internalTexture = texture.isReady() ? texture.getInternalTexture() : this.emptyTexture;
 
             if (this._activeTexturesCache[channel] === internalTexture) {
                 return;
@@ -3642,6 +3666,12 @@
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            // Empty texture
+            if (this._emptyTexture) {
+                this._releaseTexture(this._emptyTexture);
+                this._emptyTexture = null;
+            }
 
             // Release scenes
             while (this.scenes.length) {

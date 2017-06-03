@@ -85,6 +85,7 @@ declare module BABYLON {
         private static _ALPHA_ONEONE;
         private static _ALPHA_PREMULTIPLIED;
         private static _ALPHA_PREMULTIPLIED_PORTERDUFF;
+        private static _ALPHA_INTERPOLATE;
         private static _DELAYLOADSTATE_NONE;
         private static _DELAYLOADSTATE_LOADED;
         private static _DELAYLOADSTATE_LOADING;
@@ -139,6 +140,7 @@ declare module BABYLON {
         static readonly ALPHA_MAXIMIZED: number;
         static readonly ALPHA_PREMULTIPLIED: number;
         static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        static readonly ALPHA_INTERPOLATE: number;
         static readonly DELAYLOADSTATE_NONE: number;
         static readonly DELAYLOADSTATE_LOADED: number;
         static readonly DELAYLOADSTATE_LOADING: number;
@@ -230,10 +232,12 @@ declare module BABYLON {
         private _bindedRenderFunction;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
+        private _emptyTexture;
         private _texturesSupported;
         private _textureFormatInUse;
         readonly texturesSupported: Array<string>;
         readonly textureFormatInUse: string;
+        readonly emptyTexture: WebGLTexture;
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
@@ -425,6 +429,7 @@ declare module BABYLON {
         getDepthWrite(): boolean;
         setDepthWrite(enable: boolean): void;
         setColorWrite(enable: boolean): void;
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
         getAlphaMode(): number;
         setAlphaTesting(enable: boolean): void;
@@ -1333,7 +1338,6 @@ declare module BABYLON {
         clipPlane: Plane;
         animationsEnabled: boolean;
         constantlyUpdateMeshUnderPointer: boolean;
-        useRightHandedSystem: boolean;
         hoverCursor: string;
         metadata: any;
         /**
@@ -1471,6 +1475,12 @@ declare module BABYLON {
         _mirroredCameraPosition: Vector3;
         private _onKeyDown;
         private _onKeyUp;
+        /**
+        * use right-handed coordinate system on this scene.
+        * @type {boolean}
+        */
+        private _useRightHandedSystem;
+        useRightHandedSystem: boolean;
         /**
         * is fog enabled on this scene.
         * @type {boolean}
@@ -6838,6 +6848,7 @@ declare module BABYLON {
         MORPHTARGETS_NORMAL: boolean;
         MORPHTARGETS_TANGENT: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        USERIGHTHANDEDSYSTEM: boolean;
         constructor();
         setReflectionMode(modeToEnable: string): void;
     }
@@ -12151,7 +12162,7 @@ declare module BABYLON {
             backUVs?: Vector4;
         }, scene: Scene): Mesh;
         /**
-         * Creates an extruded polygon mesh, with depth in th Y direction.
+         * Creates an extruded polygon mesh, with depth in the Y direction.
         */
         static ExtrudePolygon(name: string, options: {
             shape: Vector3[];
@@ -13537,7 +13548,7 @@ declare module BABYLON {
          * Sets the length in pixels of the blur sample region
          */
         kernel: number;
-        constructor(name: string, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        constructor(name: string, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
         protected _updateParameters(): void;
         /**
          * Best kernels are odd numbers that when divided by 2, their integer part is even, so 5, 9 or 13.
@@ -13602,7 +13613,7 @@ declare module BABYLON {
     class FxaaPostProcess extends PostProcess {
         texelWidth: number;
         texelHeight: number;
-        constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
     }
 }
 
@@ -13730,6 +13741,38 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class HighlightsPostProcess extends PostProcess {
+        constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+    }
+}
+
+declare module BABYLON {
+    class ImageProcessingPostProcess extends PostProcess {
+        private _colorGradingTexture;
+        colorGradingWeight: number;
+        colorCurves: ColorCurves;
+        vignetteStretch: number;
+        vignetteCentreX: number;
+        vignetteCentreY: number;
+        vignetteWeight: number;
+        vignetteColor: BABYLON.Color4;
+        private _vignetteBlendMode;
+        cameraContrast: number;
+        cameraExposureValue: number;
+        private _cameraToneMappingEnabled;
+        colorGradingTexture: BaseTexture;
+        vignetteBlendMode: number;
+        cameraToneMappingEnabled: boolean;
+        constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+        protected _updateParameters(): void;
+        private static _VIGNETTEMODE_MULTIPLY;
+        private static _VIGNETTEMODE_OPAQUE;
+        static readonly VIGNETTEMODE_MULTIPLY: number;
+        static readonly VIGNETTEMODE_OPAQUE: number;
+    }
+}
+
+declare module BABYLON {
     class LensRenderingPipeline extends PostProcessRenderPipeline {
         /**
         * The chromatic aberration PostProcess id in the pipeline
@@ -13837,6 +13880,9 @@ declare module BABYLON {
         height: number;
         renderTargetSamplingMode: number;
         clearColor: Color4;
+        autoClear: boolean;
+        alphaMode: number;
+        alphaConstants: Color4;
         enablePixelPerfectMode: boolean;
         samples: number;
         private _camera;
@@ -13854,6 +13900,7 @@ declare module BABYLON {
         private _parameters;
         private _scaleRatio;
         protected _indexParameters: any;
+        private _shareOutputWithPostProcess;
         /**
         * An event triggered when the postprocess is activated.
         * @type {BABYLON.Observable}
@@ -13889,8 +13936,11 @@ declare module BABYLON {
         onAfterRenderObservable: Observable<Effect>;
         private _onAfterRenderObserver;
         onAfterRender: (efect: Effect) => void;
+        readonly outputTexture: WebGLTexture;
+        getCamera(): Camera;
         constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: string, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
         getEngine(): Engine;
+        shareOutputWith(postProcess: PostProcess): PostProcess;
         updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any): void;
         isReusable(): boolean;
         /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
@@ -13898,6 +13948,7 @@ declare module BABYLON {
         activate(camera: Camera, sourceTexture?: WebGLTexture): void;
         readonly isSupported: boolean;
         apply(): Effect;
+        private _disposeTextures();
         dispose(camera?: Camera): void;
     }
 }
@@ -14687,15 +14738,21 @@ declare module BABYLON.Internals {
     class _AlphaState {
         private _isAlphaBlendDirty;
         private _isBlendFunctionParametersDirty;
+        private _isBlendEquationParametersDirty;
+        private _isBlendConstantsDirty;
         private _alphaBlend;
         private _blendFunctionParameters;
+        private _blendEquationParameters;
+        private _blendConstants;
         /**
          * Initializes the state.
          */
         constructor();
         readonly isDirty: boolean;
         alphaBlend: boolean;
+        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
         setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        setAlphaEquationParameters(rgb: number, alpha: any): void;
         reset(): void;
         apply(gl: WebGLRenderingContext): void;
     }
@@ -15765,6 +15822,14 @@ declare module BABYLON {
         static CorsBehavior: any;
         static UseFallbackTexture: boolean;
         private static fallbackTexture;
+        /**
+         * Interpolates between a and b via alpha
+         * @param a The lower value (returned when alpha = 0)
+         * @param b The upper value (returned when alpha = 1)
+         * @param alpha The interpolation-factor
+         * @return The mixed value
+         */
+        static Mix(a: number, b: number, alpha: number): number;
         static Instantiate(className: string): any;
         static SetImmediate(action: () => void): void;
         static IsExponentOfTwo(value: number): boolean;
