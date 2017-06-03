@@ -550,6 +550,8 @@
         private _vaoRecordInProgress = false;
         private _mustWipeVertexAttributes = false;
 
+        private _emptyTexture: WebGLTexture;
+
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
         private _textureFormatInUse: string;
@@ -560,6 +562,15 @@
 
         public get textureFormatInUse(): string {
             return this._textureFormatInUse;
+        }
+
+        // Empty texture
+        public get emptyTexture(): WebGLTexture {
+            if (!this._emptyTexture) {
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            }
+
+            return this._emptyTexture;
         }
 
         /**
@@ -3428,7 +3439,7 @@
 
         private _setTexture(channel: number, texture: BaseTexture): void {
             // Not ready?
-            if (!texture || !texture.isReady()) {
+            if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
                     this.activateTexture(this._gl["TEXTURE" + channel]);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
@@ -3448,7 +3459,7 @@
                 return;
             }
 
-            var internalTexture = texture.getInternalTexture();
+            var internalTexture = texture.isReady() ? texture.getInternalTexture() : this.emptyTexture;
 
             if (this._activeTexturesCache[channel] === internalTexture) {
                 return;
@@ -3655,6 +3666,12 @@
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            // Empty texture
+            if (this._emptyTexture) {
+                this._releaseTexture(this._emptyTexture);
+                this._emptyTexture = null;
+            }
 
             // Release scenes
             while (this.scenes.length) {
