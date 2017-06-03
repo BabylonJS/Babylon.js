@@ -20,8 +20,8 @@
 			return this._idealKernel;
 		}
 
-        constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
-            super(name, "kernelBlur", ["delta", "direction"], null, options, camera, samplingMode, engine, reusable, null, Engine.TEXTURETYPE_UNSIGNED_INT, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
+        constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+            super(name, "kernelBlur", ["delta", "direction"], null, options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
             });

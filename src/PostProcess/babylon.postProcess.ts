@@ -7,6 +7,9 @@
         public height = -1;
         public renderTargetSamplingMode: number;
         public clearColor: Color4;
+        public autoClear = true;
+        public alphaMode = Engine.ALPHA_DISABLE;
+        public alphaConstants: Color4;        
 
         /*
             Enable Pixel Perfect mode where texture is not scaled to be power of 2.
@@ -31,7 +34,8 @@
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
-
+        private _shareOutputWithPostProcess: PostProcess;
+        
         // Events
 
         /**
@@ -104,6 +108,14 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
+        public get outputTexture(): WebGLTexture {
+            return this._textures.data[this._currentRenderTextureInd];
+        }      
+
+        public getCamera(): Camera {
+            return this._camera;
+        }
+
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
@@ -134,11 +146,19 @@
             if (!blockCompilation) {
                 this.updateEffect(defines);
             }
-        }
+        }    
 
         public getEngine(): Engine {
             return this._engine;
         }        
+
+        public shareOutputWith(postProcess: PostProcess): PostProcess {
+            this._disposeTextures();
+
+            this._shareOutputWithPostProcess = postProcess;
+
+            return this;
+        }
         
         public updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
@@ -163,88 +183,100 @@
         }
 
         public activate(camera: Camera, sourceTexture?: WebGLTexture): void {
-            camera = camera || this._camera;
+            if (!this._shareOutputWithPostProcess) {
+                camera = camera || this._camera;
 
-            var scene = camera.getScene();
-            var maxSize = camera.getEngine().getCaps().maxTextureSize;
+                var scene = camera.getScene();
+                var maxSize = camera.getEngine().getCaps().maxTextureSize;
 
-            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
-            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
+                var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
+                var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
 
-            var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
-            var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
+                var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
+                var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
-            if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
-                if (!(<PostProcessOptions>this._options).width) {
-                    desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
-                }
-
-                if (!(<PostProcessOptions>this._options).height) {
-                    desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
-                }
-            }
-
-            if (this.width !== desiredWidth || this.height !== desiredHeight) {
-                if (this._textures.length > 0) {
-                    for (var i = 0; i < this._textures.length; i++) {
-                        this._engine._releaseTexture(this._textures.data[i]);
+                if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+                    if (!(<PostProcessOptions>this._options).width) {
+                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
                     }
-                    this._textures.reset();
-                }         
-                this.width = desiredWidth;
-                this.height = desiredHeight;
 
-                let textureSize = { width: this.width, height: this.height };
-                let textureOptions = { 
-                    generateMipMaps: false, 
-                    generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
-                    generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
-                    samplingMode: this.renderTargetSamplingMode, 
-                    type: this._textureType 
-                };
-
-                this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
-
-                if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
+                    if (!(<PostProcessOptions>this._options).height) {
+                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                    }
                 }
 
-                this.onSizeChangedObservable.notifyObservers(this);
+                if (this.width !== desiredWidth || this.height !== desiredHeight) {
+                    if (this._textures.length > 0) {
+                        for (var i = 0; i < this._textures.length; i++) {
+                            this._engine._releaseTexture(this._textures.data[i]);
+                        }
+                        this._textures.reset();
+                    }         
+                    this.width = desiredWidth;
+                    this.height = desiredHeight;
+
+                    let textureSize = { width: this.width, height: this.height };
+                    let textureOptions = { 
+                        generateMipMaps: false, 
+                        generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
+                        generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                        samplingMode: this.renderTargetSamplingMode, 
+                        type: this._textureType 
+                    };
+
+                    this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
+
+                    if (this._reusable) {
+                        this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
+                    }
+
+                    this.onSizeChangedObservable.notifyObservers(this);
+                }
+
+                this._textures.forEach(texture => {
+                    if (texture.samples !== this.samples) {
+                        this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
+                    }
+                });
             }
 
-            this._textures.forEach(texture => {
-                if (texture.samples !== this.samples) {
-                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
-                }
-            });
+            var target = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
 
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
-                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd], 0, requiredWidth, requiredHeight);
+                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight);
             }
             else {
                 this._scaleRatio.copyFromFloats(1, 1);
-                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
+                this._engine.bindFramebuffer(target);
             }
 
             this.onActivateObservable.notifyObservers(camera);
 
             // Clear
-            if (this.clearColor) {
-                this._engine.clear(this.clearColor, true, true, true);
-            } else {
-                this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true, true);
+            if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
+                if (this.clearColor) {
+                    this._engine.clear(this.clearColor, true, true, true);
+                } else {
+                    this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true, true);
+                }
             }
 
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
+            }
+
+            // Alpha
+            this._engine.setAlphaMode(this.alphaMode);
+            if (this.alphaConstants) {
+                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
             }
         }
 
         public get isSupported(): boolean {
             return this._effect.isSupported;
         }
-
+        
         public apply(): Effect {
             // Check
             if (!this._effect || !this._effect.isReady())
@@ -253,12 +285,12 @@
             // States
             this._engine.enableEffect(this._effect);
             this._engine.setState(false);
-            this._engine.setAlphaMode(Engine.ALPHA_DISABLE);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
 
-            // Texture
-            this._effect._bindTexture("textureSampler", this._textures.data[this._currentRenderTextureInd]);
+            // Texture            
+            var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
+            this._effect._bindTexture("textureSampler", source);
 
             // Parameters
             this._effect.setVector2("scale", this._scaleRatio);
@@ -267,8 +299,10 @@
             return this._effect;
         }
 
-        public dispose(camera?: Camera): void {
-            camera = camera || this._camera;            
+        private _disposeTextures() {
+            if (this._shareOutputWithPostProcess) {
+                return;
+            }
 
             if (this._textures.length > 0) {
                 for (var i = 0; i < this._textures.length; i++) {
@@ -276,6 +310,12 @@
                 }
             }
             this._textures.dispose();
+        }
+
+        public dispose(camera?: Camera): void {
+            camera = camera || this._camera;            
+
+            this._disposeTextures();
 
             if (!camera) {
                 return;
