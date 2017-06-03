@@ -7,10 +7,12 @@ module BABYLON.GUI {
         private _resizeObserver: Observer<Engine>;
         private _pointerMoveObserver: Observer<PointerInfoPre>;
         private _pointerObserver: Observer<PointerInfo>;
+        private _canvasBlurObserver: Observer<Engine>;
         private _background: string;
         public _rootContainer = new Container("root");
         public _lastControlOver: Control;
         public _lastControlDown: Control;
+        public _capturingControl: Control;
         public _shouldBlockPointer: boolean;
         public _layerToDispose: Layer;
         public _linkedControls = new Array<Control>();
@@ -58,7 +60,11 @@ module BABYLON.GUI {
             this._idealHeight = value;
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
-        }        
+        }     
+
+        public get layer(): Layer {
+            return this._layerToDispose;
+        }   
        
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
@@ -107,6 +113,10 @@ module BABYLON.GUI {
                 this.getScene().onPointerObservable.remove(this._pointerObserver);
             }
 
+            if (this._canvasBlurObserver) {
+                this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+            }
+
             if (this._layerToDispose) {
                 this._layerToDispose.texture = null;
                 this._layerToDispose.dispose();
@@ -135,6 +145,12 @@ module BABYLON.GUI {
         }
 
         private _checkUpdate(camera: Camera): void {
+            if (this._layerToDispose) {
+                if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
+                    return;
+                }
+            }
+
             if (this._isFullscreen && this._linkedControls.length) {
                 var scene = this.getScene();
                 var engine = scene.getEngine();
@@ -181,6 +197,11 @@ module BABYLON.GUI {
         }
 
         private _doPicking(x: number, y: number, type: number): void {
+            if (this._capturingControl) {
+                this._capturingControl._processObservables(type, x, y);
+                return;
+            }
+
             if (!this._rootContainer._processPicking(x, y, type)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
@@ -206,6 +227,19 @@ module BABYLON.GUI {
                 this._doPicking(scene.pointerX, scene.pointerY, pi.type);
 
                 pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
+            });
+
+            this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
+                if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
+                    this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                }
+                
+                this._lastControlOver = null;
+
+                if (this._lastControlDown) {
+                    this._lastControlDown.forcePointerUp();
+                }
+                this._lastControlDown = null;                
             });
         }
 
