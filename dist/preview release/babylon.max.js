@@ -25561,11 +25561,46 @@ var BABYLON;
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.
          */
-        VertexData.CreatePolygon = function (polygon, sideOrientation, frontUVs, backUVs) {
+        VertexData.CreatePolygon = function (polygon, sideOrientation, fUV, fColors, frontUVs, backUVs) {
+            var faceUV = fUV || new Array(3);
+            var faceColors = fColors;
+            var colors = [];
+            // default face colors and UV if undefined
+            for (var f = 0; f < 3; f++) {
+                if (faceUV[f] === undefined) {
+                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
+                }
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                }
+            }
             var positions = polygon.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var normals = polygon.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var uvs = polygon.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var indices = polygon.getIndices();
+            // set face colours and textures
+            var idx = 0;
+            var face = 0;
+            for (var index = 0; index < normals.length; index += 3) {
+                //Edge Face  no. 1
+                if (Math.abs(normals[index + 1]) == 0) {
+                    face = 1;
+                }
+                //Top Face  no. 0
+                if (normals[index + 1] == 1) {
+                    face = 0;
+                }
+                //Bottom Face  no. 2
+                if (normals[index + 1] == -1) {
+                    face = 2;
+                }
+                idx = index / 3;
+                uvs[2 * idx] = (1 - uvs[2 * idx]) * faceUV[face].x + uvs[2 * idx] * faceUV[face].z;
+                uvs[2 * idx + 1] = (1 - uvs[2 * idx + 1]) * faceUV[face].y + uvs[2 * idx + 1] * faceUV[face].w;
+                if (faceColors) {
+                    colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
+                }
+            }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs);
             // Result
@@ -25574,6 +25609,10 @@ var BABYLON;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (faceColors) {
+                var totalColors = (sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                vertexData.colors = totalColors;
+            }
             return vertexData;
         };
         /**
@@ -39987,13 +40026,15 @@ var BABYLON;
             }
             var polygon = polygonTriangulation.build(options.updatable, depth);
             polygon.sideOrientation = options.sideOrientation;
-            var vertexData = BABYLON.VertexData.CreatePolygon(polygon, options.sideOrientation, options.frontUVs, options.backUVs);
+            var vertexData = BABYLON.VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);
             return polygon;
         };
         ;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
+         * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements).
+         * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
         */
         MeshBuilder.ExtrudePolygon = function (name, options, scene) {
             return MeshBuilder.CreatePolygon(name, options, scene);
