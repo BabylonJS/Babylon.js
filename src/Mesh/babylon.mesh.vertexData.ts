@@ -1621,11 +1621,49 @@
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.  
          */
-        public static CreatePolygon(polygon: Mesh, sideOrientation: number, frontUVs?: Vector4, backUVs?: Vector4) {
-			var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?, fColors?, frontUVs?: Vector4, backUVs?: Vector4) {
+			var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
+            var faceColors: Color4[] = fColors;
+            var colors = [];
+
+            // default face colors and UV if undefined
+            for (var f = 0; f < 3; f++) {
+                if (faceUV[f] === undefined) {
+                    faceUV[f] = new Vector4(0, 0, 1, 1);
+                }
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new Color4(1, 1, 1, 1);
+                }
+            }
+            
+            var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
 			var normals = polygon.getVerticesData(VertexBuffer.NormalKind);
 			var uvs = polygon.getVerticesData(VertexBuffer.UVKind);
 			var indices = polygon.getIndices();
+
+            // set face colours and textures
+            var idx: number = 0;
+            var face: number = 0;
+            for (var index = 0; index < normals.length; index += 3) { 
+                //Edge Face  no. 1
+                if(Math.abs(normals[index + 1]) == 0) {
+                   face = 1; 
+                }
+                //Top Face  no. 0
+                if(normals[index + 1] == 1) {
+                   face = 0; 
+                }
+                //Bottom Face  no. 2
+                if(normals[index + 1] == -1) {
+                   face = 2; 
+                }
+                idx = index / 3;
+                uvs[2*idx] = (1 - uvs[2*idx])*faceUV[face].x + uvs[2*idx]*faceUV[face].z;
+                uvs[2*idx + 1] = (1 - uvs[2*idx + 1])*faceUV[face].y + uvs[2*idx + 1]*faceUV[face].w;
+                if (faceColors) {
+                    colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
+                }
+            }
 
 			// sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs);
@@ -1636,6 +1674,12 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+
+            if (faceColors) {
+                var totalColors = (sideOrientation === Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                vertexData.colors = totalColors;
+            }
+
             return vertexData;
 			
 		}
