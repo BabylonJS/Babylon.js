@@ -790,13 +790,14 @@
          * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Remember you can only change the shape positions, not their number when updating a polygon.
          */
-        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
+        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
 			var shape = options.shape;
 			var holes = options.holes || [];
 			var depth = options.depth || 0;
 			var contours: Array<Vector2> = [];
 			var hole: Array<Vector2> = [];
+            
 			for(var i=0; i < shape.length; i++) {
 				contours[i] = new Vector2(shape[i].x, shape[i].z);
 			}
@@ -815,7 +816,7 @@
 			}
 			var polygon = polygonTriangulation.build(options.updatable, depth);
             polygon.sideOrientation = options.sideOrientation;
-			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.frontUVs, options.backUVs);
+			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);			
 			
             return polygon;
@@ -823,9 +824,11 @@
 
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction. 
+         * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements).
+         * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
 		*/
 
-		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
+		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
 			return MeshBuilder.CreatePolygon(name, options, scene);
 		};
          
