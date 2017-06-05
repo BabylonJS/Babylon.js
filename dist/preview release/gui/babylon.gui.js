@@ -2028,7 +2028,6 @@ var BABYLON;
                 _this._maximum = 100;
                 _this._value = 50;
                 _this._background = "black";
-                _this._foreground = "green";
                 _this._borderColor = "white";
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this.onValueChangedObservable = new BABYLON.Observable();
@@ -2046,20 +2045,6 @@ var BABYLON;
                         return;
                     }
                     this._borderColor = value;
-                    this._markAsDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Slider.prototype, "foreground", {
-                get: function () {
-                    return this._foreground;
-                },
-                set: function (value) {
-                    if (this._foreground === value) {
-                        return;
-                    }
-                    this._foreground = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -2180,7 +2165,7 @@ var BABYLON;
                     // Bar
                     context.fillStyle = this._background;
                     context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-                    context.fillStyle = this._foreground;
+                    context.fillStyle = this.color;
                     context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     // Thumb
                     context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
