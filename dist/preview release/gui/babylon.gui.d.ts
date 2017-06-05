@@ -249,6 +249,10 @@ declare module BABYLON.GUI {
             height: number;
             descent: number;
         };
+        static AddHeader(control: Control, text: string, size: string | number, options: {
+            isHorizontal: boolean;
+            controlFirst: boolean;
+        }): StackPanel;
     }
 }
 
@@ -262,6 +266,7 @@ declare module BABYLON.GUI {
         background: string;
         readonly children: Control[];
         constructor(name?: string);
+        getChildByName(name: string): Control;
         containsControl(control: Control): boolean;
         addControl(control: Control): Container;
         removeControl(control: Control): Container;
@@ -379,6 +384,26 @@ declare module BABYLON.GUI {
         protected _onPointerDown(coordinates: Vector2): void;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerUp(coordinates: Vector2): void;
+    }
+}
+
+
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
+declare module BABYLON.GUI {
+    class Checkbox extends Control {
+        name: string;
+        private _isChecked;
+        private _background;
+        private _checkSizeRatio;
+        private _thickness;
+        thickness: number;
+        onIsCheckedChangedObservable: Observable<boolean>;
+        checkSizeRatio: number;
+        background: string;
+        isChecked: boolean;
+        constructor(name?: string);
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _onPointerDown(coordinates: Vector2): void;
     }
 }
 

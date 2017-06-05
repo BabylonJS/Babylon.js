@@ -14,7 +14,7 @@ module BABYLON.GUI {
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
-        private _color: string;
+        private _color = "white";
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
@@ -219,7 +219,6 @@ module BABYLON.GUI {
 
             if (this._height.fromString(value)) {
                 this._markAsDirty();
-                this._fontSet = true;
             }
         }   
 
@@ -840,5 +839,34 @@ module BABYLON.GUI {
 
             return result;
         };
+
+        public static AddHeader(control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
+            let panel = new BABYLON.GUI.StackPanel("panel");        
+            let isHorizontal = options ? options.isHorizontal : true;
+            let controlFirst = options ? options.controlFirst : false;
+
+            panel.isVertical = !isHorizontal;
+
+            let header = new BABYLON.GUI.TextBlock("header");
+            header.text = text;
+            header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            if (isHorizontal) {
+                header.width = size;
+            } else {
+                header.height = size;
+            }
+
+            if (controlFirst) {
+                panel.addControl(control);
+                panel.addControl(header); 
+                header.marginLeft = "5px";
+            } else {
+                panel.addControl(header); 
+                panel.addControl(control);
+                header.marginRight = "5px";
+            }
+
+            return panel;
+        }
     }    
 }
