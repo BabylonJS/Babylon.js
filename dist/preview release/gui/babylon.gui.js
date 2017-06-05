@@ -553,6 +553,7 @@ var BABYLON;
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                this._color = "white";
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this._isDirty = true;
@@ -753,7 +754,6 @@ var BABYLON;
                     }
                     if (this._height.fromString(value)) {
                         this._markAsDirty();
-                        this._fontSet = true;
                     }
                 },
                 enumerable: true,
@@ -1330,6 +1330,32 @@ var BABYLON;
                 return result;
             };
             ;
+            Control.AddHeader = function (control, text, size, options) {
+                var panel = new BABYLON.GUI.StackPanel("panel");
+                var isHorizontal = options ? options.isHorizontal : true;
+                var controlFirst = options ? options.controlFirst : false;
+                panel.isVertical = !isHorizontal;
+                var header = new BABYLON.GUI.TextBlock("header");
+                header.text = text;
+                header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+                if (isHorizontal) {
+                    header.width = size;
+                }
+                else {
+                    header.height = size;
+                }
+                if (controlFirst) {
+                    panel.addControl(control);
+                    panel.addControl(header);
+                    header.marginLeft = "5px";
+                }
+                else {
+                    panel.addControl(header);
+                    panel.addControl(control);
+                    header.marginRight = "5px";
+                }
+                return panel;
+            };
             return Control;
         }());
         // Statics
@@ -1391,6 +1417,15 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Container.prototype.getChildByName = function (name) {
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child.name === name) {
+                        return child;
+                    }
+                }
+                return null;
+            };
             Container.prototype.containsControl = function (control) {
                 return this._children.indexOf(control) !== -1;
             };
@@ -2180,6 +2215,126 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=slider.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var DOMImage = Image;
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Checkbox = (function (_super) {
+            __extends(Checkbox, _super);
+            function Checkbox(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._isChecked = false;
+                _this._background = "black";
+                _this._checkSizeRatio = 0.8;
+                _this._thickness = 1;
+                _this.onIsCheckedChangedObservable = new BABYLON.Observable();
+                _this.isPointerBlocker = true;
+                return _this;
+            }
+            Object.defineProperty(Checkbox.prototype, "thickness", {
+                get: function () {
+                    return this._thickness;
+                },
+                set: function (value) {
+                    if (this._thickness === value) {
+                        return;
+                    }
+                    this._thickness = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Checkbox.prototype, "checkSizeRatio", {
+                get: function () {
+                    return this._checkSizeRatio;
+                },
+                set: function (value) {
+                    value = Math.max(Math.min(1, value), 0);
+                    if (this._checkSizeRatio === value) {
+                        return;
+                    }
+                    this._checkSizeRatio = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Checkbox.prototype, "background", {
+                get: function () {
+                    return this._background;
+                },
+                set: function (value) {
+                    if (this._background === value) {
+                        return;
+                    }
+                    this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Checkbox.prototype, "isChecked", {
+                get: function () {
+                    return this._isChecked;
+                },
+                set: function (value) {
+                    if (this._isChecked === value) {
+                        return;
+                    }
+                    this._isChecked = value;
+                    this._markAsDirty();
+                    this.onIsCheckedChangedObservable.notifyObservers(value);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Checkbox.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    var actualWidth = this._currentMeasure.width - this._thickness;
+                    var actualHeight = this._currentMeasure.height - this._thickness;
+                    context.fillStyle = this._background;
+                    context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+                    if (this._isChecked) {
+                        context.fillStyle = this.color;
+                        var offsetWidth = actualWidth * this._checkSizeRatio;
+                        var offseHeight = actualHeight * this._checkSizeRatio;
+                        context.fillRect(this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2, this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2, offsetWidth, offseHeight);
+                    }
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._thickness;
+                    context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+                }
+                context.restore();
+            };
+            // Events
+            Checkbox.prototype._onPointerDown = function (coordinates) {
+                this.isChecked = !this.isChecked;
+                _super.prototype._onPointerDown.call(this, coordinates);
+            };
+            return Checkbox;
+        }(GUI.Control));
+        GUI.Checkbox = Checkbox;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=checkbox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {

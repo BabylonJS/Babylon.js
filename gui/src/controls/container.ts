@@ -27,6 +27,16 @@ module BABYLON.GUI {
             super(name);
         }
 
+        public getChildByName(name: string) {
+            for (var child of this._children) {
+                if (child.name === name) {
+                    return child;
+                }
+            }
+
+            return null;
+        }
+
         public containsControl(control: Control): boolean {
             return this._children.indexOf(control) !== -1;
         }
