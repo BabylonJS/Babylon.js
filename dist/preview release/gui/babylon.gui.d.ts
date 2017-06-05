@@ -365,12 +365,10 @@ declare module BABYLON.GUI {
         private _maximum;
         private _value;
         private _background;
-        private _foreground;
         private _borderColor;
         private _barOffset;
         onValueChangedObservable: Observable<number>;
         borderColor: string;
-        foreground: string;
         background: string;
         barOffset: string | number;
         thumbWidth: string | number;

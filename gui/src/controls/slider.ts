@@ -9,7 +9,6 @@ module BABYLON.GUI {
         private _maximum = 100;
         private _value = 50;
         private _background = "black";   
-        private _foreground = "green";
         private _borderColor = "white";
         private _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
 
@@ -27,19 +26,6 @@ module BABYLON.GUI {
             this._borderColor = value;
             this._markAsDirty();
         }  
-
-        public get foreground(): string {
-            return this._foreground;
-        }
-
-        public set foreground(value: string) {
-            if (this._foreground === value) {
-                return;
-            }
-
-            this._foreground = value;
-            this._markAsDirty();
-        }          
 
         public get background(): string {
             return this._background;
@@ -164,7 +150,7 @@ module BABYLON.GUI {
                 context.fillStyle = this._background;
                 context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
 
-                context.fillStyle = this._foreground;
+                context.fillStyle = this.color;
                 context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
 
                 // Thumb
