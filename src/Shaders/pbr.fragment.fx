@@ -149,41 +149,35 @@ void main(void) {
 
 #include<bumpFragment>
 
-#ifdef TWOSIDEDLIGHTING
+#if defined(TWOSIDEDLIGHTING) && defined(NORMAL) 
 	normalW = gl_FrontFacing ? normalW : -normalW;
 #endif
 
 	// Albedo
-	vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
-	vec3 surfaceAlbedoContribution = vAlbedoColor.rgb;
+	vec3 surfaceAlbedo = vAlbedoColor.rgb;
 
 	// Alpha
 	float alpha = vAlbedoColor.a;
 
 #ifdef ALBEDO
-	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV + uvOffset);
-	surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
-
-	#ifndef LINKREFRACTIONTOTRANSPARENCY
-		#ifdef ALPHATEST
-			if (surfaceAlbedo.a < 0.4)
-				discard;
-		#endif
-	#endif
-
+	vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 	#ifdef ALPHAFROMALBEDO
-		alpha *= surfaceAlbedo.a;
+		alpha *= albedoTexture.a;
 	#endif
 
-	surfaceAlbedo.rgb *= vAlbedoInfos.y;
-#else
-	// No Albedo texture.
-	surfaceAlbedo.rgb = surfaceAlbedoContribution;
-	surfaceAlbedoContribution = vec3(1., 1., 1.);
+	surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
+	surfaceAlbedo *= vAlbedoInfos.y;
+#endif
+
+#ifndef LINKREFRACTIONTOTRANSPARENCY
+	#if defined(ALPHATEST) && defined(ALPHATESTVALUE)
+		if (alpha < ALPHATESTVALUE)
+			discard;
+	#endif
 #endif
 
 #ifdef VERTEXCOLOR
-	surfaceAlbedo.rgb *= vColor.rgb;
+	surfaceAlbedo *= vColor.rgb;
 #endif
 
 	// Ambient color
@@ -201,28 +195,13 @@ void main(void) {
 	float microSurface = vReflectivityColor.a;
 	vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
 
-#ifdef REFLECTIVITY
-	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
-	surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
-	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
-	surfaceReflectivityColor *= vReflectivityInfos.y;
-
-	#ifdef MICROSURFACEFROMREFLECTIVITYMAP
-		microSurface = surfaceReflectivityColorMap.a * vReflectivityInfos.z;
-	#else
-		#ifdef MICROSURFACEAUTOMATIC
-			microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
-		#endif
-	#endif
-#endif
-
 #ifdef METALLICWORKFLOW
 	vec2 metallicRoughness = surfaceReflectivityColor.rg;
 
 	#ifdef METALLICMAP
 		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 
-		#ifdef AOSTOREINMETALMAPRED			
+		#ifdef AOSTOREINMETALMAPRED
 			vec3 aoStoreInMetalMap = vec3(surfaceMetallicColorMap.r, surfaceMetallicColorMap.r, surfaceMetallicColorMap.r);
 			ambientOcclusionColor = mix(ambientOcclusionColor, aoStoreInMetalMap, vReflectivityInfos.z);
 		#endif
@@ -251,21 +230,36 @@ void main(void) {
 	microSurface = 1.0 - metallicRoughness.g;
 
 	// Diffuse is used as the base of the reflectivity.
-	vec3 baseColor = surfaceAlbedo.rgb;
+	vec3 baseColor = surfaceAlbedo;
 
 	// Default specular reflectance at normal incidence.
 	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
 	const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
 
 	// Compute the converted diffuse.
-	surfaceAlbedo.rgb = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
+	surfaceAlbedo = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
 
 	// Compute the converted reflectivity.
 	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
 #else
-	#ifdef MICROSURFACEMAP
-		vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
-		microSurface = microSurfaceTexel.r;
+	#ifdef REFLECTIVITY
+		vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+		surfaceReflectivityColor *= toLinearSpace(surfaceReflectivityColorMap.rgb);
+		surfaceReflectivityColor *= vReflectivityInfos.y;
+
+		#ifdef MICROSURFACEFROMREFLECTIVITYMAP
+			microSurface *= surfaceReflectivityColorMap.a;
+			microSurface *= vReflectivityInfos.z;
+		#else
+			#ifdef MICROSURFACEAUTOMATIC
+				microSurface *= computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+			#endif
+
+			#ifdef MICROSURFACEMAP
+				vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+				microSurface *= microSurfaceTexel.r;
+			#endif
+		#endif
 	#endif
 #endif
 
@@ -484,12 +478,12 @@ void main(void) {
 
 		// Tint the material with albedo.
 		// TODO. PBR Tinting.
-		vec3 mixedAlbedo = surfaceAlbedoContribution.rgb * surfaceAlbedo.rgb;
+		vec3 mixedAlbedo = surfaceAlbedo;
 		float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
 		vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
 
 		// Decrease Albedo Contribution
-		surfaceAlbedoContribution *= alpha;
+		surfaceAlbedo *= alpha;
 
 		// Decrease irradiance Contribution
 		environmentIrradiance *= alpha;
@@ -532,14 +526,9 @@ void main(void) {
 #endif
 
 	// Composition
-#ifdef EMISSIVEASILLUMINATION
-	vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution;
-#else
-	#ifdef LINKEMISSIVEWITHALBEDO
-		vec3 finalDiffuse = (lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution;
-	#else
-		vec3 finalDiffuse = lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor;
-	#endif
+	vec3 finalDiffuse = lightDiffuseContribution;
+#ifndef EMISSIVEASILLUMINATION
+	finalDiffuse += surfaceEmissiveColor;
 #endif
 
 finalDiffuse.rgb += vAmbientColor;
@@ -547,23 +536,28 @@ finalDiffuse *= surfaceAlbedo.rgb;
 finalDiffuse = max(finalDiffuse, 0.0);
 finalDiffuse = (finalDiffuse * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance) * ambientOcclusionColor;
 
+float luminanceOverAlpha = 0.0;
+#ifdef RADIANCEOVERALPHA
+	luminanceOverAlpha += getLuminance(environmentRadiance);
+#endif
+
 #ifdef SPECULARTERM
 	vec3 finalSpecular = lightSpecularContribution * surfaceReflectivityColor;
 	#ifdef SPECULAROVERALPHA
-		alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
+		luminanceOverAlpha += getLuminance(finalSpecular);
 	#endif
 #else
 	vec3 finalSpecular = vec3(0.0);
 #endif
+finalSpecular *= vLightingIntensity.x;
 
-#ifdef RADIANCEOVERALPHA
-	alpha = clamp(alpha + getLuminance(environmentRadiance), 0., 1.);
+#if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
+	alpha = clamp(alpha + luminanceOverAlpha * alpha, 0., 1.);
 #endif
 
 // Composition
 // Reflection already includes the environment intensity.
-vec4 finalColor = vec4(finalDiffuse + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
-
+vec4 finalColor = vec4(finalDiffuse + finalSpecular + environmentRadiance + refractance, alpha);
 #ifdef EMISSIVEASILLUMINATION
 	finalColor.rgb += (surfaceEmissiveColor * vLightingIntensity.y);
 #endif
@@ -593,14 +587,16 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular * vLightingIntensity.x + env
 	finalColor = contrasts(finalColor);
 #endif
 
+#ifdef LDROUTPUT
 	finalColor.rgb = clamp(finalColor.rgb, 0., 1.);
 
-#ifdef CAMERACOLORGRADING
-	finalColor = colorGrades(finalColor);
-#endif
+	#ifdef CAMERACOLORGRADING
+		finalColor = colorGrades(finalColor);
+	#endif
 
-#ifdef CAMERACOLORCURVES
-	finalColor.rgb = applyColorCurves(finalColor.rgb);
+	#ifdef CAMERACOLORCURVES
+		finalColor.rgb = applyColorCurves(finalColor.rgb);
+	#endif
 #endif
 
 	gl_FragColor = finalColor;
