@@ -604,7 +604,7 @@ var BABYLON;
     BABYLON.PropertyChangedBase = PropertyChangedBase;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.iPropertyChanged.js.map
+//# sourceMappingURL=babylon.IPropertyChanged.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -6140,35 +6140,37 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            if (m.length === 1) {
+            var hset = false;
+            var vset = false;
+            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
+                var v = m_1[_i];
+                v = v.toLocaleLowerCase().trim();
+                // Horizontal
+                var i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setHorizontal(v);
+                    hset = true;
+                    continue;
+                }
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setVertical(v);
+                    vset = true;
+                    continue;
+                }
+            }
+            if (!hset && !vset && m.length === 1) {
                 this.setHorizontal(m[0]);
                 this.setVertical(m[0]);
-            }
-            else {
-                for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                    var v = m_1[_i];
-                    v = v.toLocaleLowerCase().trim();
-                    // Horizontal
-                    var i = v.indexOf("h:");
-                    if (i === -1) {
-                        i = v.indexOf("horizontal:");
-                    }
-                    if (i !== -1) {
-                        v = v.substr(v.indexOf(":") + 1);
-                        this.setHorizontal(v);
-                        continue;
-                    }
-                    // Vertical
-                    i = v.indexOf("v:");
-                    if (i === -1) {
-                        i = v.indexOf("vertical:");
-                    }
-                    if (i !== -1) {
-                        v = v.substr(v.indexOf(":") + 1);
-                        this.setVertical(v);
-                        continue;
-                    }
-                }
             }
         };
         PrimitiveAlignment.prototype.copyFrom = function (pa) {
@@ -12093,6 +12095,7 @@ var BABYLON;
                         engine.setViewport(curVP);
                     }
                 }
+                this._renderableData._primDirtyList.length = 0;
                 // Restore saved states
                 engine.setAlphaTesting(curAlphaTest);
                 engine.setDepthWrite(curDepthWrite);
