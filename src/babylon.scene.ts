@@ -189,6 +189,25 @@
         public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
+        protected _environmentTexture: BaseTexture;
+        /**
+         * Texture used in all pbr material as the reflection texture.
+         * As in the majority of the scene they are the same (excpetion for multi room and so on),
+         * this is easier to reference from here than from all the materials.
+         */
+        public get environmentTexture(): BaseTexture {
+            return this._environmentTexture;
+        }
+        /**
+         * Texture used in all pbr material as the reflection texture.
+         * As in the majority of the scene they are the same (excpetion for multi room and so on),
+         * this is easier to set here than in all the materials.
+         */
+        public set environmentTexture(value: BaseTexture) {
+            this._environmentTexture = value;
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
         public forceWireframe = false;
         private _forcePointsCloud = false;
         public set forcePointsCloud(value : boolean) {
@@ -3673,6 +3692,48 @@
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
+        }
+
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false): Mesh {
+            if (environmentTexture) {
+                this.environmentTexture = environmentTexture;
+            }
+
+            if (!this.environmentTexture) {
+                Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+
+            if (!this.environmentTexture) {
+                Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+
+            // Skybox
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            if (pbr) {
+                let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
+                hdrSkyboxMaterial.backFaceCulling = false;
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                hdrSkyboxMaterial.microSurface = 1.0;
+                hdrSkyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = hdrSkyboxMaterial;
+            }
+            else {
+                let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
+                skyboxMaterial.backFaceCulling = false;
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
+                skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = skyboxMaterial;
+            }
+
+            return hdrSkybox;
         }
 
         // Tags

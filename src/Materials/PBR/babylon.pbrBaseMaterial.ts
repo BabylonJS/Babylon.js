@@ -586,20 +586,21 @@
                     }
                 }
 
-                if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (!this._reflectionTexture.isReady()) {
+                var reflectionTexture = this._reflectionTexture || scene.environmentTexture;
+                if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (!reflectionTexture.isReady()) {
                         return false;
                     }
                     
                     this._defines.REFLECTION = true;
 
-                    if (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
+                    if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                         this._defines.INVERTCUBICMAP = true;
                     }
 
-                    this._defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
+                    this._defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
 
-                    switch (this._reflectionTexture.coordinatesMode) {
+                    switch (reflectionTexture.coordinatesMode) {
                         case Texture.CUBIC_MODE:
                         case Texture.INVCUBIC_MODE:
                             this._defines.REFLECTIONMAP_CUBIC = true;
@@ -630,10 +631,10 @@
                             break;                                
                     }
 
-                    if (this._reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this._reflectionTexture)) {
+                    if (reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>reflectionTexture)) {
                         this._defines.USESPHERICALFROMREFLECTIONMAP = true;
 
-                        if ((<HDRCubeTexture>this._reflectionTexture).isPMREM) {
+                        if ((<HDRCubeTexture>reflectionTexture).isPMREM) {
                             this._defines.USEPMREMREFLECTION = true;
                         }
                     }
@@ -1152,39 +1153,40 @@
                             this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
                         }
 
-                        if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                            this._microsurfaceTextureLods.x = Math.round(Math.log(this._reflectionTexture.getSize().width) * Math.LOG2E);
-                            this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
-                            this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, 0);
+                        var reflectionTexture = this._reflectionTexture || this._myScene.environmentTexture;;
+                        if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                            this._microsurfaceTextureLods.x = Math.round(Math.log(reflectionTexture.getSize().width) * Math.LOG2E);
+                            this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+                            this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                                this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.x.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.x.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.x.z);
-                                this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.y.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.y.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.y.z);
-                                this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.z.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.z.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.z.z);
-                                this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xx.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xx.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xx.z);
-                                this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yy.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yy.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yy.z);
-                                this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zz.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zz.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zz.z);
-                                this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xy.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xy.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yz.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yz.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.yz.z);
-                                this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zx.x,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zx.y,
-                                    (<HDRCubeTexture>this._reflectionTexture).sphericalPolynomial.zx.z);
+                                this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.z);
+                                this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.z);
+                                this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.z);
+                                this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.z);
+                                this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.z);
+                                this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.z);
+                                this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.z);
+                                this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.z);
+                                this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.x,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.y,
+                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.z);
                             }
                         }
 
@@ -1233,7 +1235,7 @@
                             this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
                         }
 
-                        if ((this._reflectionTexture || this._refractionTexture)) {
+                        if ((reflectionTexture || this._refractionTexture)) {
                             this._uniformBuffer.updateFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                         }
                     }
@@ -1291,11 +1293,11 @@
                         this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
                     }
 
-                    if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (this._reflectionTexture.isCube) {
-                            this._uniformBuffer.setTexture("reflectionCubeSampler", this._reflectionTexture);
+                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (reflectionTexture.isCube) {
+                            this._uniformBuffer.setTexture("reflectionCubeSampler", reflectionTexture);
                         } else {
-                            this._uniformBuffer.setTexture("reflection2DSampler", this._reflectionTexture);
+                            this._uniformBuffer.setTexture("reflection2DSampler", reflectionTexture);
                         }
                     }
 
@@ -1355,7 +1357,7 @@
                 }
 
                 // View
-                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture) {
+                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== Scene.FOGMODE_NONE || reflectionTexture) {
                     this.bindView(effect);
                 }
 

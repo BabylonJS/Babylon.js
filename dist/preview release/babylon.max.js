@@ -15186,6 +15186,27 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "environmentTexture", {
+            /**
+             * Texture used in all pbr material as the reflection texture.
+             * As in the majority of the scene they are the same (excpetion for multi room and so on),
+             * this is easier to reference from here than from all the materials.
+             */
+            get: function () {
+                return this._environmentTexture;
+            },
+            /**
+             * Texture used in all pbr material as the reflection texture.
+             * As in the majority of the scene they are the same (excpetion for multi room and so on),
+             * this is easier to set here than in all the materials.
+             */
+            set: function (value) {
+                this._environmentTexture = value;
+                this.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "forcePointsCloud", {
             get: function () {
                 return this._forcePointsCloud;
@@ -17880,6 +17901,44 @@ var BABYLON;
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
+        };
+        Scene.prototype.createDefaultSkybox = function (environmentTexture, pbr) {
+            if (pbr === void 0) { pbr = false; }
+            if (environmentTexture) {
+                this.environmentTexture = environmentTexture;
+            }
+            if (!this.environmentTexture) {
+                BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+            if (!this.environmentTexture) {
+                BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+            // Skybox
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            if (pbr) {
+                var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
+                hdrSkyboxMaterial.backFaceCulling = false;
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                hdrSkyboxMaterial.microSurface = 1.0;
+                hdrSkyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = hdrSkyboxMaterial;
+            }
+            else {
+                var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
+                skyboxMaterial.backFaceCulling = false;
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
+                skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = skyboxMaterial;
+            }
+            return hdrSkybox;
         };
         // Tags
         Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
@@ -29383,16 +29442,17 @@ var BABYLON;
                         this._defines.OPACITYRGB = true;
                     }
                 }
-                if (this._reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
-                    if (!this._reflectionTexture.isReady()) {
+                var reflectionTexture = this._reflectionTexture || scene.environmentTexture;
+                if (reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
+                    if (!reflectionTexture.isReady()) {
                         return false;
                     }
                     this._defines.REFLECTION = true;
-                    if (this._reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
+                    if (reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
                         this._defines.INVERTCUBICMAP = true;
                     }
-                    this._defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
-                    switch (this._reflectionTexture.coordinatesMode) {
+                    this._defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    switch (reflectionTexture.coordinatesMode) {
                         case BABYLON.Texture.CUBIC_MODE:
                         case BABYLON.Texture.INVCUBIC_MODE:
                             this._defines.REFLECTIONMAP_CUBIC = true;
@@ -29422,9 +29482,9 @@ var BABYLON;
                             this._defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                             break;
                     }
-                    if (this._reflectionTexture instanceof BABYLON.HDRCubeTexture && this._reflectionTexture) {
+                    if (reflectionTexture instanceof BABYLON.HDRCubeTexture && reflectionTexture) {
                         this._defines.USESPHERICALFROMREFLECTIONMAP = true;
-                        if (this._reflectionTexture.isPMREM) {
+                        if (reflectionTexture.isPMREM) {
                             this._defines.USEPMREMREFLECTION = true;
                         }
                     }
@@ -29838,20 +29898,22 @@ var BABYLON;
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                             this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
                         }
-                        if (this._reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
-                            this._microsurfaceTextureLods.x = Math.round(Math.log(this._reflectionTexture.getSize().width) * Math.LOG2E);
-                            this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
-                            this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, 0);
+                        var reflectionTexture = this._reflectionTexture || this._myScene.environmentTexture;
+                        ;
+                        if (reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
+                            this._microsurfaceTextureLods.x = Math.round(Math.log(reflectionTexture.getSize().width) * Math.LOG2E);
+                            this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+                            this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                                this._effect.setFloat3("vSphericalX", this._reflectionTexture.sphericalPolynomial.x.x, this._reflectionTexture.sphericalPolynomial.x.y, this._reflectionTexture.sphericalPolynomial.x.z);
-                                this._effect.setFloat3("vSphericalY", this._reflectionTexture.sphericalPolynomial.y.x, this._reflectionTexture.sphericalPolynomial.y.y, this._reflectionTexture.sphericalPolynomial.y.z);
-                                this._effect.setFloat3("vSphericalZ", this._reflectionTexture.sphericalPolynomial.z.x, this._reflectionTexture.sphericalPolynomial.z.y, this._reflectionTexture.sphericalPolynomial.z.z);
-                                this._effect.setFloat3("vSphericalXX", this._reflectionTexture.sphericalPolynomial.xx.x, this._reflectionTexture.sphericalPolynomial.xx.y, this._reflectionTexture.sphericalPolynomial.xx.z);
-                                this._effect.setFloat3("vSphericalYY", this._reflectionTexture.sphericalPolynomial.yy.x, this._reflectionTexture.sphericalPolynomial.yy.y, this._reflectionTexture.sphericalPolynomial.yy.z);
-                                this._effect.setFloat3("vSphericalZZ", this._reflectionTexture.sphericalPolynomial.zz.x, this._reflectionTexture.sphericalPolynomial.zz.y, this._reflectionTexture.sphericalPolynomial.zz.z);
-                                this._effect.setFloat3("vSphericalXY", this._reflectionTexture.sphericalPolynomial.xy.x, this._reflectionTexture.sphericalPolynomial.xy.y, this._reflectionTexture.sphericalPolynomial.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", this._reflectionTexture.sphericalPolynomial.yz.x, this._reflectionTexture.sphericalPolynomial.yz.y, this._reflectionTexture.sphericalPolynomial.yz.z);
-                                this._effect.setFloat3("vSphericalZX", this._reflectionTexture.sphericalPolynomial.zx.x, this._reflectionTexture.sphericalPolynomial.zx.y, this._reflectionTexture.sphericalPolynomial.zx.z);
+                                this._effect.setFloat3("vSphericalX", reflectionTexture.sphericalPolynomial.x.x, reflectionTexture.sphericalPolynomial.x.y, reflectionTexture.sphericalPolynomial.x.z);
+                                this._effect.setFloat3("vSphericalY", reflectionTexture.sphericalPolynomial.y.x, reflectionTexture.sphericalPolynomial.y.y, reflectionTexture.sphericalPolynomial.y.z);
+                                this._effect.setFloat3("vSphericalZ", reflectionTexture.sphericalPolynomial.z.x, reflectionTexture.sphericalPolynomial.z.y, reflectionTexture.sphericalPolynomial.z.z);
+                                this._effect.setFloat3("vSphericalXX", reflectionTexture.sphericalPolynomial.xx.x, reflectionTexture.sphericalPolynomial.xx.y, reflectionTexture.sphericalPolynomial.xx.z);
+                                this._effect.setFloat3("vSphericalYY", reflectionTexture.sphericalPolynomial.yy.x, reflectionTexture.sphericalPolynomial.yy.y, reflectionTexture.sphericalPolynomial.yy.z);
+                                this._effect.setFloat3("vSphericalZZ", reflectionTexture.sphericalPolynomial.zz.x, reflectionTexture.sphericalPolynomial.zz.y, reflectionTexture.sphericalPolynomial.zz.z);
+                                this._effect.setFloat3("vSphericalXY", reflectionTexture.sphericalPolynomial.xy.x, reflectionTexture.sphericalPolynomial.xy.y, reflectionTexture.sphericalPolynomial.xy.z);
+                                this._effect.setFloat3("vSphericalYZ", reflectionTexture.sphericalPolynomial.yz.x, reflectionTexture.sphericalPolynomial.yz.y, reflectionTexture.sphericalPolynomial.yz.z);
+                                this._effect.setFloat3("vSphericalZX", reflectionTexture.sphericalPolynomial.zx.x, reflectionTexture.sphericalPolynomial.zx.y, reflectionTexture.sphericalPolynomial.zx.z);
                             }
                         }
                         if (this._emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
@@ -29891,7 +29953,7 @@ var BABYLON;
                             }
                             this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
                         }
-                        if ((this._reflectionTexture || this._refractionTexture)) {
+                        if ((reflectionTexture || this._refractionTexture)) {
                             this._uniformBuffer.updateFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                         }
                     }
@@ -29937,12 +29999,12 @@ var BABYLON;
                     if (this._opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
                         this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
                     }
-                    if (this._reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
-                        if (this._reflectionTexture.isCube) {
-                            this._uniformBuffer.setTexture("reflectionCubeSampler", this._reflectionTexture);
+                    if (reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
+                        if (reflectionTexture.isCube) {
+                            this._uniformBuffer.setTexture("reflectionCubeSampler", reflectionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("reflection2DSampler", this._reflectionTexture);
+                            this._uniformBuffer.setTexture("reflection2DSampler", reflectionTexture);
                         }
                     }
                     if (this._emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
@@ -29990,7 +30052,7 @@ var BABYLON;
                     BABYLON.PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this._useScalarInLinearSpace, this._maxSimultaneousLights, this._usePhysicalLightFalloff);
                 }
                 // View
-                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this._reflectionTexture) {
+                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== BABYLON.Scene.FOGMODE_NONE || reflectionTexture) {
                     this.bindView(effect);
                 }
                 // Fog

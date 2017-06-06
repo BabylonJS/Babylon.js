@@ -4,30 +4,15 @@ window.preparePBRSpecularGlossiness = function() {
 	pbr.diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
 	pbr.diffuseTexture.uScale = 5;
 	pbr.diffuseTexture.vScale = 5;
-    
-    var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
-
-    // Uncomment for PMREM Generation
-    // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
-    pbr.environmentTexture = hdrTexture;
-
 	pbr.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 	pbr.glossiness = 0.9;
-    
+
+    // Uncomment for PMREM Generation
+    var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
+    // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
+
     // Skybox
-    var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
-    var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
-    hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
-    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-    hdrSkyboxMaterial.microSurface = 1;
-    hdrSkyboxMaterial.specularColor = new BABYLON.Color3(1, 1, 1);
-    hdrSkyboxMaterial.disableLighting = true;
-    hdrSkyboxMaterial.cameraExposure = 0.6;
-    hdrSkyboxMaterial.cameraContrast = 1.6;
-    hdrSkyboxMaterial.directIntensity = 0;
-    hdrSkybox.material = hdrSkyboxMaterial;
-    hdrSkybox.infiniteDistance = true;
+    var hdrSkybox = scene.createDefaultSkybox(hdrTexture, true);
     hdrSkybox.setEnabled(false);
     
     registerRangeUI("pbrspecularglossiness", "alpha", 0, 1, function(value) {
