@@ -31,6 +31,13 @@
 
     SceneLoader.RegisterPlugin({
         extensions: ".babylon",
+        canDirectLoad: (data: string) => {
+            if (data.indexOf("babylon") !== -1) { // We consider that the producer string is filled
+                return true;
+            }
+
+            return false;
+        },
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
