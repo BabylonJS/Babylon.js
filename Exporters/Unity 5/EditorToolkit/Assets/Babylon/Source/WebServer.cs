@@ -145,7 +145,7 @@ namespace BabylonHosting
             }
             catch
             {
-                // Note: Thread Abort Excpetions Caught Here
+                // Note: Thread Abort Exceptions Caught Here
             }
         }
 

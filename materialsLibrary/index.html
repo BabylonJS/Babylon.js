@@ -49,6 +49,8 @@
 	<script src="test/addsky.js"></script>
 	<script src="test/addgrid.js"></script>
 	<script src="test/addpbr.js"></script>
+	<script src="test/addpbrmetallicroughness.js"></script>
+	<script src="test/addpbrspecularglossiness.js"></script>
 	<script src="test/addlegacypbr.js"></script>
 	<script src="test/addCell.js"></script>
 	
@@ -197,6 +199,10 @@
 
 				var pbr = preparePBR();
 
+				var pbrmetallicroughness = preparePBRMetallicRoughness();
+
+				var pbrspecularglossiness = preparePBRSpecularGlossiness();
+
 				var legacypbr = prepareLegacyPBR();
 				
 				var triPlanar = prepareTriPlanar();
@@ -214,7 +220,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -246,6 +252,12 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
+							break;
+						case "pbrmetallicroughness":
+							currentMaterial = pbrmetallicroughness;
+							break;
+						case "pbrspecularglossiness":
+							currentMaterial = pbrspecularglossiness;
 							break;
 						case "legacyPbr":
 							currentMaterial = legacypbr;
