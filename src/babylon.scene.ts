@@ -725,8 +725,7 @@
         private _sceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-
-        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+        
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
@@ -2478,7 +2477,6 @@
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.reset();
             }
-            this._edgesRenderers.reset();
 
             // Meshes
             var meshes: AbstractMesh[];
@@ -2567,10 +2565,6 @@
 
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this.getBoundingBoxRenderer().renderList.push(sourceMesh.getBoundingInfo().boundingBox);
-            }
-
-            if (sourceMesh._edgesRenderer) {
-                this._edgesRenderers.push(sourceMesh._edgesRenderer);
             }
 
             if (mesh && mesh.subMeshes) {
@@ -2737,11 +2731,6 @@
             // Bounding boxes
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.render();
-            }
-
-            // Edges
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
-                this._edgesRenderers.data[edgesRendererIndex].render();
             }
 
             // Lens flares
@@ -3235,7 +3224,6 @@
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();
             }
-            this._edgesRenderers.dispose();
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
 

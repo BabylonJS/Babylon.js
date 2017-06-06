@@ -29,33 +29,36 @@ var createScene = function () {
         blurRatio: 0.5// Ratio of the combine post-process (combines the SSAO and the scene)
     };
 
-    var ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
-    ssao.radius = 3.5;
-    ssao.totalStrength = 1.3;
-    ssao.expensiveBlur = true;
-    ssao.samples = 16;
-    ssao.maxZ = 250;
+    if (BABYLON.SSAO2RenderingPipeline.IsSupported) {
+        var ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
+        ssao.radius = 3.5;
+        ssao.totalStrength = 1.3;
+        ssao.expensiveBlur = true;
+        ssao.samples = 16;
+        ssao.maxZ = 250;
+        // Attach camera to the SSAO render pipeline
+        scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
-    // Attach camera to the SSAO render pipeline
-    scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
-
-    // Manage SSAO
-    window.addEventListener("keydown", function (evt) {
-        // draw SSAO with scene when pressed "1"
-        if (evt.keyCode === 49) {
-            scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
-            scene.postProcessRenderPipelineManager.enableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
-        }
-            // draw without SSAO when pressed "2"
-        else if (evt.keyCode === 50) {
-            scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", camera);
-        }
-            // draw only SSAO when pressed "2"
-        else if (evt.keyCode === 51) {
-            scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
-            scene.postProcessRenderPipelineManager.disableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
-        }
-    });
+        // Manage SSAO
+        window.addEventListener("keydown", function (evt) {
+            // draw SSAO with scene when pressed "1"
+            if (evt.keyCode === 49) {
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                scene.postProcessRenderPipelineManager.enableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
+            }
+                // draw without SSAO when pressed "2"
+            else if (evt.keyCode === 50) {
+                scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", camera);
+            }
+                // draw only SSAO when pressed "2"
+            else if (evt.keyCode === 51) {
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                scene.postProcessRenderPipelineManager.disableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
+            }
+        });
+    } else {
+        alert("WebGL2 is required to use SSAO2 effect");
+    }
 
     return scene;
 }
