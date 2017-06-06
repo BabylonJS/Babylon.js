@@ -492,7 +492,8 @@
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var light of mesh._lightSources) {
-                var useUbo = light._uniformBuffer.useUbo;
+                let useUbo = light._uniformBuffer.useUbo;
+                let scaledIntensity = light.getScaledIntensity();
 
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
@@ -500,13 +501,13 @@
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
 
-                PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
+                PBRMaterial._scaledAlbedo.scaleToRef(scaledIntensity, PBRMaterial._scaledAlbedo);
                 light._uniformBuffer.updateColor4(useUbo ? "vLightDiffuse" : "vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
 
                 if (defines["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
 
-                    PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
+                    PBRMaterial._scaledReflectivity.scaleToRef(scaledIntensity, PBRMaterial._scaledReflectivity);
                     light._uniformBuffer.updateColor3(useUbo ? "vLightSpecular" : "vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
 
