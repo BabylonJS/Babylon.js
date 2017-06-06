@@ -116,7 +116,7 @@
             return this._texture;
         }
 
-        public isReadyOrNoneBlocking(): boolean {
+        public isReadyOrNotBlocking(): boolean {
             return !this.isBlocking || this.isReady();
         }
 

@@ -379,7 +379,7 @@ module BABYLON {
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this._diffuseTexture.isReadyOrNoneBlocking()) {
+                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -390,7 +390,7 @@ module BABYLON {
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                        if (!this._ambientTexture.isReadyOrNoneBlocking()) {
+                        if (!this._ambientTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -401,7 +401,7 @@ module BABYLON {
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReadyOrNoneBlocking()) {
+                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -413,7 +413,7 @@ module BABYLON {
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!this._reflectionTexture.isReadyOrNoneBlocking()) {
+                        if (!this._reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needNormals = true;
@@ -460,7 +460,7 @@ module BABYLON {
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                        if (!this._emissiveTexture.isReadyOrNoneBlocking()) {
+                        if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -471,7 +471,7 @@ module BABYLON {
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                        if (!this._lightmapTexture.isReadyOrNoneBlocking()) {
+                        if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -483,7 +483,7 @@ module BABYLON {
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                        if (!this._specularTexture.isReadyOrNoneBlocking()) {
+                        if (!this._specularTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -513,7 +513,7 @@ module BABYLON {
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (!this._refractionTexture.isReadyOrNoneBlocking()) {
+                        if (!this._refractionTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
