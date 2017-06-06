@@ -90,6 +90,10 @@
         public _texture: WebGLTexture;
         private _uid: string;
 
+        public get isBlocking(): boolean {
+            return true;
+        }
+
         constructor(scene: Scene) {
             this._scene = scene || Engine.LastCreatedScene;
             this._scene.textures.push(this);
@@ -110,6 +114,10 @@
 
         public getInternalTexture(): WebGLTexture {
             return this._texture;
+        }
+
+        public isReadyOrNoneBlocking(): boolean {
+            return !this.isBlocking || this.isReady();
         }
 
         public isReady(): boolean {
