@@ -8,13 +8,15 @@
     export interface ISceneLoaderPlugin {
         extensions: string | ISceneLoaderPluginExtensions;
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;        
+        canDirectLoad?: (data: string) => boolean;
     }
 
     export interface ISceneLoaderPluginAsync {
         extensions: string | ISceneLoaderPluginExtensions;
         importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;        
+        canDirectLoad?: (data: string) => boolean;
     }
 
     interface IRegisteredPlugin {
@@ -85,6 +87,18 @@
             return SceneLoader._getDefaultPlugin();
         }
 
+        private static _getPluginForDirectLoad(data: string): IRegisteredPlugin {
+            for (var extension in SceneLoader._registeredPlugins) {
+                var plugin = SceneLoader._registeredPlugins[extension].plugin;
+
+                if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
+                    return SceneLoader._registeredPlugins[extension];
+                }
+            }
+
+            return SceneLoader._getDefaultPlugin();
+        }
+
         private static _getPluginForFilename(sceneFilename: any): IRegisteredPlugin {
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
@@ -146,7 +160,7 @@
                 return;
             }
 
-            var directLoad =SceneLoader._getDirectLoad(sceneFilename);
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
 
             var loadingToken = {};
             scene._addPendingData(loadingToken);
@@ -154,7 +168,7 @@
             var manifestChecked = success => {
                 scene.database = database;
 
-                var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
                 var plugin = registeredPlugin.plugin;
                 var useArrayBuffer = registeredPlugin.isBinary;
 
@@ -257,7 +271,7 @@
             }
 
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;

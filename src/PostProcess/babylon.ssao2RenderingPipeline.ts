@@ -118,8 +118,8 @@
         *  Support test.
         * @type {boolean}
         */
-        public get isSupported(): boolean {
-            var engine = this._scene.getEngine();
+        public static get IsSupported(): boolean {
+            var engine = Engine.LastCreatedEngine;
             return engine.webGLVersion > 1;
         }
 
