@@ -555,7 +555,7 @@
                 }
 
                 if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this._albedoTexture.isReadyOrNoneBlocking()) {
+                    if (!this._albedoTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
 
@@ -564,7 +564,7 @@
                 }
 
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                    if (!this._ambientTexture.isReadyOrNoneBlocking()) {
+                    if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
 
@@ -574,7 +574,7 @@
                 }
 
                 if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                    if (!this._opacityTexture.isReadyOrNoneBlocking()) {
+                    if (!this._opacityTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                     
@@ -588,7 +588,7 @@
 
                 var reflectionTexture = this._reflectionTexture || scene.environmentTexture;
                 if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (!reflectionTexture.isReadyOrNoneBlocking()) {
+                    if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                     
@@ -641,7 +641,7 @@
                 }
 
                 if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                    if (!this._lightmapTexture.isReadyOrNoneBlocking()) {
+                    if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
 
@@ -651,7 +651,7 @@
                 }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                    if (!this._emissiveTexture.isReadyOrNoneBlocking()) {
+                    if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
 
@@ -661,7 +661,7 @@
 
                 if (StandardMaterial.SpecularTextureEnabled) {
                     if (this._metallicTexture) {
-                        if (!this._metallicTexture.isReadyOrNoneBlocking()) {
+                        if (!this._metallicTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
 
@@ -674,7 +674,7 @@
                         this._defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                     }
                     else if (this._reflectivityTexture) {
-                        if (!this._reflectivityTexture.isReadyOrNoneBlocking()) {
+                        if (!this._reflectivityTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
 
@@ -685,7 +685,7 @@
                     }
 
                     if (this._microSurfaceTexture) {
-                        if (!this._microSurfaceTexture.isReadyOrNoneBlocking()) {
+                        if (!this._microSurfaceTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
 
@@ -727,7 +727,7 @@
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                    if (!this._refractionTexture.isReadyOrNoneBlocking()) {
+                    if (!this._refractionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                     
