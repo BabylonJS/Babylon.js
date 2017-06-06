@@ -1,32 +1,4 @@
-﻿module BABYLON {
-    /**
-     * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
-     */
-    export const PBRMATERIAL_OPAQUE = 0;
-
-    /**
-     * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-     */
-    export const PBRMATERIAL_ALPHATEST = 1;
-
-    /**
-     * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-     */
-    export const PBRMATERIAL_ALPHABLEND = 2;
-
-    /**
-     * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-     * They are also discarded below the alpha cutoff threshold to improve performances.
-     */
-    export const PBRMATERIAL_ALPHATESTANDBLEND = 3;
-
-    /**
-     * Limits the values allowed in the transparency ones to the known ones.
-     */
-    export type PBRMaterialTransparencyMode = 0 | 1 | 2 | 3;
-}
-
-module BABYLON.Internals {
+﻿module BABYLON.Internals {
     /**
      * The Physically based simple base material of BJS.
      * 
@@ -112,20 +84,20 @@ module BABYLON.Internals {
         @expandToProperty(null, "_alphaCutOff")
         public alphaCutOff: number;
 
-        protected _transparencyMode: PBRMaterialTransparencyMode = PBRMATERIAL_OPAQUE;
+        protected _transparencyMode: number = PBRMaterial.PBRMATERIAL_OPAQUE;
         /**
          * Gets the current transparency mode.
          */
         @serialize()
-        public get transparencyMode(): PBRMaterialTransparencyMode {
+        public get transparencyMode(): number {
             return this._transparencyMode;
         }
         /**
          * Sets the transparency mode of the material.
          */
-        public set transparencyMode(value: PBRMaterialTransparencyMode) {
+        public set transparencyMode(value: number) {
             this._transparencyMode = value;
-            if (value === PBRMATERIAL_ALPHATESTANDBLEND) {
+            if (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND) {
                 this._forceAlphaTest = true;
             }
             else {
@@ -152,7 +124,7 @@ module BABYLON.Internals {
          * Specifies wether or not the alpha value of the albedo texture should be used.
          */
         protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-            return this._albedoTexture && this._albedoTexture.hasAlpha && this._transparencyMode !== PBRMATERIAL_OPAQUE;
+            return this._albedoTexture && this._albedoTexture.hasAlpha && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
         }
 
         /**
@@ -165,8 +137,8 @@ module BABYLON.Internals {
 
             return (this.alpha < 1.0) || 
                     (this._shouldUseAlphaFromAlbedoTexture() &&
-                        (this._transparencyMode === PBRMATERIAL_ALPHABLEND ||
-                            this._transparencyMode === PBRMATERIAL_ALPHATESTANDBLEND));
+                        (this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHABLEND ||
+                            this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND));
         }
 
         /**
@@ -178,7 +150,7 @@ module BABYLON.Internals {
             }
 
             return this._shouldUseAlphaFromAlbedoTexture() &&
-                 this._transparencyMode === PBRMATERIAL_ALPHATEST;
+                 this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST;
         }
 
         /**

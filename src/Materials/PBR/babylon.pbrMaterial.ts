@@ -7,6 +7,38 @@
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
+        private static _PBRMATERIAL_OPAQUE = 0;
+        /**
+         * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+         */
+        public static get PBRMATERIAL_OPAQUE(): number {
+            return this._PBRMATERIAL_OPAQUE;
+        }
+
+        private static _PBRMATERIAL_ALPHATEST = 1;
+        /**
+         * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
+        public static get PBRMATERIAL_ALPHATEST(): number {
+            return this._PBRMATERIAL_ALPHATEST;
+        }
+
+        private static _PBRMATERIAL_ALPHABLEND = 2;
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
+        public static get PBRMATERIAL_ALPHABLEND(): number {
+            return this._PBRMATERIAL_ALPHABLEND;
+        }
+
+        private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
+        public static get PBRMATERIAL_ALPHATESTANDBLEND(): number {
+            return this._PBRMATERIAL_ALPHATESTANDBLEND;
+        }
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
