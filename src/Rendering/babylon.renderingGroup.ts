@@ -16,6 +16,8 @@
         private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
+        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+
         public onBeforeTransparentRendering: () => void;
 
         /**
@@ -125,6 +127,11 @@
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
             engine.setStencilBuffer(stencilState);
+
+            // Edges
+            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                this._edgesRenderers.data[edgesRendererIndex].render();
+            }
         }
 
         /**
@@ -256,7 +263,8 @@
             this._transparentSubMeshes.reset();
             this._alphaTestSubMeshes.reset();
             this._particleSystems.reset();
-            this._spriteManagers.reset();
+            this._spriteManagers.reset();            
+            this._edgesRenderers.reset();
         }
 
         public dispose(): void {
@@ -264,7 +272,8 @@
             this._transparentSubMeshes.dispose();
             this._alphaTestSubMeshes.dispose();
             this._particleSystems.dispose();
-            this._spriteManagers.dispose();
+            this._spriteManagers.dispose();                      
+            this._edgesRenderers.dispose();
         }
 
         /**
@@ -281,6 +290,10 @@
                 this._alphaTestSubMeshes.push(subMesh);
             } else {
                 this._opaqueSubMeshes.push(subMesh); // Opaque
+            }
+
+            if (mesh._edgesRenderer) {
+                this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }
 
