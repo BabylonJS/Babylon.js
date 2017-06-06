@@ -14421,6 +14421,7 @@ var BABYLON;
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
             this._particleSystems = new BABYLON.SmartArray(256);
             this._spriteManagers = new BABYLON.SmartArray(256);
+            this._edgesRenderers = new BABYLON.SmartArray(16);
             this._scene = scene;
             this.opaqueSortCompareFn = opaqueSortCompareFn;
             this.alphaTestSortCompareFn = alphaTestSortCompareFn;
@@ -14517,6 +14518,10 @@ var BABYLON;
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
             engine.setStencilBuffer(stencilState);
+            // Edges
+            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                this._edgesRenderers.data[edgesRendererIndex].render();
+            }
         };
         /**
          * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
@@ -14635,6 +14640,7 @@ var BABYLON;
             this._alphaTestSubMeshes.reset();
             this._particleSystems.reset();
             this._spriteManagers.reset();
+            this._edgesRenderers.reset();
         };
         RenderingGroup.prototype.dispose = function () {
             this._opaqueSubMeshes.dispose();
@@ -14642,6 +14648,7 @@ var BABYLON;
             this._alphaTestSubMeshes.dispose();
             this._particleSystems.dispose();
             this._spriteManagers.dispose();
+            this._edgesRenderers.dispose();
         };
         /**
          * Inserts the submesh in its correct queue depending on its material.
@@ -14658,6 +14665,9 @@ var BABYLON;
             }
             else {
                 this._opaqueSubMeshes.push(subMesh); // Opaque
+            }
+            if (mesh._edgesRenderer) {
+                this._edgesRenderers.push(mesh._edgesRenderer);
             }
         };
         RenderingGroup.prototype.dispatchSprites = function (spriteManager) {
@@ -15134,7 +15144,6 @@ var BABYLON;
             this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
-            this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
             this.offscreenRenderTarget = null;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
@@ -16874,7 +16883,6 @@ var BABYLON;
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.reset();
             }
-            this._edgesRenderers.reset();
             // Meshes
             var meshes;
             var len;
@@ -16945,9 +16953,6 @@ var BABYLON;
             }
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this.getBoundingBoxRenderer().renderList.push(sourceMesh.getBoundingInfo().boundingBox);
-            }
-            if (sourceMesh._edgesRenderer) {
-                this._edgesRenderers.push(sourceMesh._edgesRenderer);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -17079,10 +17084,6 @@ var BABYLON;
             // Bounding boxes
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.render();
-            }
-            // Edges
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
-                this._edgesRenderers.data[edgesRendererIndex].render();
             }
             // Lens flares
             if (this.lensFlaresEnabled) {
@@ -17502,7 +17503,6 @@ var BABYLON;
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();
             }
-            this._edgesRenderers.dispose();
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
             // Debug layer
@@ -43533,9 +43533,9 @@ var BABYLON;
         };
         SceneLoader._getPluginForDirectLoad = function (data) {
             for (var extension in SceneLoader._registeredPlugins) {
-                var plugin = SceneLoader._registeredPlugins[plugin];
+                var plugin = SceneLoader._registeredPlugins[extension].plugin;
                 if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
-                    return plugin;
+                    return SceneLoader._registeredPlugins[extension];
                 }
             }
             return SceneLoader._getDefaultPlugin();
