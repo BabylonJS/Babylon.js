@@ -149,14 +149,44 @@
         public range = Number.MAX_VALUE;
 
         /**
-         * Defines the photometric scale used to interpret intensity.
+         * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
+         * of light.
+         */
+        private _photometricScale = 1.0;
+
+        private _intensityMode: number = Light.INTENSITYMODE_AUTOMATIC;
+        /**
+         * Gets the photometric scale used to interpret the intensity.
          * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
          */
         @serialize()
-        public intensityMode: number = Light.INTENSITYMODE_AUTOMATIC;
+        public get intensityMode(): number {
+            return this._intensityMode;
+        };
+        /**
+         * Sets the photometric scale used to interpret the intensity.
+         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
+         */
+        public set intensityMode(value: number) {
+            this._intensityMode = value;
+            this._computePhotometricScale();
+        };
 
+        private _radius = 0.00001;
+        /**
+         * Gets the light radius used by PBR Materials to simulate soft area lights.
+         */
         @serialize()
-        public radius = 0.00001;
+        public get radius(): number {
+            return this._radius;
+        };
+        /**
+         * sets the light radius used by PBR Materials to simulate soft area lights.
+         */
+        public set radius(value: number) {
+            this._radius = value;
+            this._computePhotometricScale();
+        };
 
         private _includedOnlyMeshes: AbstractMesh[];
         public get includedOnlyMeshes(): AbstractMesh[] {
@@ -383,67 +413,7 @@
          * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
          */
         public getScaledIntensity() {
-            let photometricScale = this.getPhotometricScale();
-            return photometricScale * this.intensity;
-        }
-
-        /**
-         * Returns the Photometric Scale according to the light type and intensity mode.
-         */
-        public getPhotometricScale() {
-            let photometricScale = 0.0;
-            let lightTypeID = this.getTypeID();
-
-            //get photometric mode
-            let photometricMode = this.intensityMode;
-            if (photometricMode === Light.INTENSITYMODE_AUTOMATIC) {
-                if (lightTypeID === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                    photometricMode = Light.INTENSITYMODE_ILLUMINANCE;
-                } else {
-                    photometricMode = Light.INTENSITYMODE_LUMINOUSINTENSITY;
-                }
-            }
-
-            //compute photometric scale
-            switch (lightTypeID) {
-                case Light.LIGHTTYPEID_POINTLIGHT:
-                case Light.LIGHTTYPEID_SPOTLIGHT:
-                    switch (photometricMode) {
-                        case Light.INTENSITYMODE_LUMINOUSPOWER:
-                            photometricScale = 1.0 / (4.0 * Math.PI);
-                            break;
-                        case Light.INTENSITYMODE_LUMINOUSINTENSITY:
-                            photometricScale = 1.0;
-                            break;
-                        case Light.INTENSITYMODE_LUMINANCE:
-                            photometricScale = this.radius * this.radius;
-                            break;
-                    }
-                    break;
-
-                case Light.LIGHTTYPEID_DIRECTIONALLIGHT:
-                    switch (photometricMode) {
-                        case Light.INTENSITYMODE_ILLUMINANCE:
-                            photometricScale = 1.0;
-                            break;
-                        case Light.INTENSITYMODE_LUMINANCE:
-                            // When radius (and therefore solid angle) is non-zero a directional lights brightness can be specified via central (peak) luminance.
-                            // For a directional light the 'radius' defines the angular radius (in radians) rather than world-space radius (e.g. in metres).
-                            let apexAngleRadians = this.radius;
-                            // Impose a minimum light angular size to avoid the light becoming an infinitely small angular light source (i.e. a dirac delta function).
-                            apexAngleRadians = Math.max(apexAngleRadians, 0.001);
-                            let solidAngle = 2.0 * Math.PI * (1.0 - Math.cos(apexAngleRadians));
-                            photometricScale = solidAngle;
-                            break;
-                    }
-                    break;
-
-                case Light.LIGHTTYPEID_HEMISPHERICLIGHT:
-                    // No fall off in hemisperic light.
-                    photometricScale = 1.0;
-                    break;
-            }
-            return photometricScale;
+            return this._photometricScale * this.intensity;
         }
 
         /**
@@ -605,6 +575,73 @@
                     mesh._markSubMeshesAsLightDirty();
                 }
             }
+        }
+
+        /**
+         * Recomputes the cached photometric scale if needed.
+         */
+        private _computePhotometricScale(): void {
+            this._photometricScale = this._getPhotometricScale();
+            this.getScene().resetCachedMaterial();
+        }
+
+        /**
+         * Returns the Photometric Scale according to the light type and intensity mode.
+         */
+        private _getPhotometricScale() {
+            let photometricScale = 0.0;
+            let lightTypeID = this.getTypeID();
+
+            //get photometric mode
+            let photometricMode = this.intensityMode;
+            if (photometricMode === Light.INTENSITYMODE_AUTOMATIC) {
+                if (lightTypeID === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                    photometricMode = Light.INTENSITYMODE_ILLUMINANCE;
+                } else {
+                    photometricMode = Light.INTENSITYMODE_LUMINOUSINTENSITY;
+                }
+            }
+
+            //compute photometric scale
+            switch (lightTypeID) {
+                case Light.LIGHTTYPEID_POINTLIGHT:
+                case Light.LIGHTTYPEID_SPOTLIGHT:
+                    switch (photometricMode) {
+                        case Light.INTENSITYMODE_LUMINOUSPOWER:
+                            photometricScale = 1.0 / (4.0 * Math.PI);
+                            break;
+                        case Light.INTENSITYMODE_LUMINOUSINTENSITY:
+                            photometricScale = 1.0;
+                            break;
+                        case Light.INTENSITYMODE_LUMINANCE:
+                            photometricScale = this.radius * this.radius;
+                            break;
+                    }
+                    break;
+
+                case Light.LIGHTTYPEID_DIRECTIONALLIGHT:
+                    switch (photometricMode) {
+                        case Light.INTENSITYMODE_ILLUMINANCE:
+                            photometricScale = 1.0;
+                            break;
+                        case Light.INTENSITYMODE_LUMINANCE:
+                            // When radius (and therefore solid angle) is non-zero a directional lights brightness can be specified via central (peak) luminance.
+                            // For a directional light the 'radius' defines the angular radius (in radians) rather than world-space radius (e.g. in metres).
+                            let apexAngleRadians = this.radius;
+                            // Impose a minimum light angular size to avoid the light becoming an infinitely small angular light source (i.e. a dirac delta function).
+                            apexAngleRadians = Math.max(apexAngleRadians, 0.001);
+                            let solidAngle = 2.0 * Math.PI * (1.0 - Math.cos(apexAngleRadians));
+                            photometricScale = solidAngle;
+                            break;
+                    }
+                    break;
+
+                case Light.LIGHTTYPEID_HEMISPHERICLIGHT:
+                    // No fall off in hemisperic light.
+                    photometricScale = 1.0;
+                    break;
+            }
+            return photometricScale;
         }
     }
 }
