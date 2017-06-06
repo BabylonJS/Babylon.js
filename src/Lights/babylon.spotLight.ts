@@ -155,7 +155,7 @@
                     this.position.y,
                     this.position.z,
                     this.exponent,
-                    lightIndex);                    
+                    lightIndex);
 
                 normalizeDirection = Vector3.Normalize(this.direction);
             }
