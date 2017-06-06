@@ -555,7 +555,7 @@
                 }
 
                 if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this._albedoTexture.isReady()) {
+                    if (!this._albedoTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
 
@@ -564,7 +564,7 @@
                 }
 
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                    if (!this._ambientTexture.isReady()) {
+                    if (!this._ambientTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
 
@@ -574,7 +574,7 @@
                 }
 
                 if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                    if (!this._opacityTexture.isReady()) {
+                    if (!this._opacityTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
                     
@@ -588,7 +588,7 @@
 
                 var reflectionTexture = this._reflectionTexture || scene.environmentTexture;
                 if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (!reflectionTexture.isReady()) {
+                    if (!reflectionTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
                     
@@ -641,7 +641,7 @@
                 }
 
                 if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                    if (!this._lightmapTexture.isReady()) {
+                    if (!this._lightmapTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
 
@@ -651,7 +651,7 @@
                 }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                    if (!this._emissiveTexture.isReady()) {
+                    if (!this._emissiveTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
 
@@ -661,7 +661,7 @@
 
                 if (StandardMaterial.SpecularTextureEnabled) {
                     if (this._metallicTexture) {
-                        if (!this._metallicTexture.isReady()) {
+                        if (!this._metallicTexture.isReadyOrNoneBlocking()) {
                             return false;
                         }
 
@@ -674,7 +674,7 @@
                         this._defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                     }
                     else if (this._reflectivityTexture) {
-                        if (!this._reflectivityTexture.isReady()) {
+                        if (!this._reflectivityTexture.isReadyOrNoneBlocking()) {
                             return false;
                         }
 
@@ -685,7 +685,7 @@
                     }
 
                     if (this._microSurfaceTexture) {
-                        if (!this._microSurfaceTexture.isReady()) {
+                        if (!this._microSurfaceTexture.isReadyOrNoneBlocking()) {
                             return false;
                         }
 
@@ -695,6 +695,7 @@
                 }
 
                 if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
+                    // Bump texure can not be none blocking.
                     if (!this._bumpTexture.isReady()) {
                         return false;
                     }
@@ -726,7 +727,7 @@
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                    if (!this._refractionTexture.isReady()) {
+                    if (!this._refractionTexture.isReadyOrNoneBlocking()) {
                         return false;
                     }
                     
@@ -747,6 +748,7 @@
                 }
             
                 if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                    // Color Grading texure can not be none blocking.
                     if (!this._cameraColorGradingTexture.isReady()) {
                         return false;
                     }

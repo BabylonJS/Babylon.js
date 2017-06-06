@@ -74,6 +74,14 @@
         private _delayedOnError: () => void;
         private _onLoadObservarble: Observable<boolean>;
 
+        protected _isBlocking: boolean = true;
+        public set isBlocking(value: boolean) {
+            this._isBlocking = value;
+        }
+        public get isBlocking(): boolean {
+            return this._isBlocking;
+        }
+
         constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
@@ -99,6 +107,10 @@
                 }
                 if (onLoad) {
                     onLoad();
+                }
+
+                if (!this.isBlocking) {
+                    scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
                 }
             }
 
