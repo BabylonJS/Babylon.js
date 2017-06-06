@@ -78,6 +78,7 @@
         public set isBlocking(value: boolean) {
             this._isBlocking = value;
         }
+        @serialize()
         public get isBlocking(): boolean {
             return this._isBlocking;
         }
