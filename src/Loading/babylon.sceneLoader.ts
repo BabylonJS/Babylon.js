@@ -168,7 +168,7 @@
             var manifestChecked = success => {
                 scene.database = database;
 
-                var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(directLoad) : SceneLoader._getPluginForFilename(sceneFilename);
                 var plugin = registeredPlugin.plugin;
                 var useArrayBuffer = registeredPlugin.isBinary;
 

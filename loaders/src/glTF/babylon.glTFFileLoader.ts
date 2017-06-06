@@ -45,6 +45,10 @@ module BABYLON {
             return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onError);
         }
 
+        public canDirectLoad(data: string): boolean {
+            return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
+        }
+
         private static _parse(data: string | ArrayBuffer): IGLTFLoaderData {
             if (data instanceof ArrayBuffer) {
                 return GLTFFileLoader._parseBinary(data);
