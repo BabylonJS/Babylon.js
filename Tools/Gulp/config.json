@@ -151,7 +151,7 @@
             "dependUpon" : [
                 "core"
             ]
-        },                             
+        },
         "additionalMeshes" : 
         {
             "files": [
@@ -246,7 +246,11 @@
         "pbrMaterial" : 
         {
             "files": [
-                "../../src/Materials/babylon.pbrMaterial.js"
+                "../../src/Materials/PBR/babylon.pbrBaseMaterial.js",
+                "../../src/Materials/PBR/babylon.pbrBaseSimpleMaterial.js",
+                "../../src/Materials/PBR/babylon.pbrMaterial.js",
+                "../../src/Materials/PBR/babylon.pbrMetallicRoughnessMaterial.js",
+                "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
             ],
             "dependUpon" : [
                 "core"
@@ -279,7 +283,7 @@
                 "pbrFragmentDeclaration",
                 "pbrUboDeclaration",
                 "fresnelFunction",
-                "reflectionFunction",                
+                "reflectionFunction",
                 "colorGradingDefinition",
                 "colorCurvesDefinition",
                 "shadowsFragmentFunctions",
