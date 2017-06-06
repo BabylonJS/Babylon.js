@@ -110,7 +110,7 @@
                 }
 
                 if (!this.isBlocking) {
-                    scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                    scene.resetCachedMaterial();
                 }
             }
 
