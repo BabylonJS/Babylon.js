@@ -557,6 +557,7 @@
         private _mustWipeVertexAttributes = false;
 
         private _emptyTexture: WebGLTexture;
+        private _emptyCubeTexture: WebGLTexture;
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -577,6 +578,15 @@
             }
 
             return this._emptyTexture;
+        }
+        public get emptyCubeTexture(): WebGLTexture {
+            if (!this._emptyCubeTexture) {
+                var faceData = new Uint8Array(4);
+                var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
+                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            }
+
+            return this._emptyCubeTexture;
         }
 
         /**
@@ -3196,35 +3206,130 @@
             texture._baseHeight = height;
         }
 
-        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
-            callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
-            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]), onLoad: () => void = null, onError: () => void = null): WebGLTexture {
+        public updateRawCubeTexture(texture: WebGLTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: string = null, level = 0): void {
             var gl = this._gl;
-            var texture = gl.createTexture();
-            scene._addPendingData(texture);
-            texture.isCube = true;
-            texture.references = 1;
-            texture.url = url;
-
-            var textureType = gl.UNSIGNED_BYTE;
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                textureType = gl.FLOAT;
-            }
-
+            var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+
             var needConversion = false;
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
                 needConversion = true;
             }
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+
+            if (texture._width % 4 !== 0) {
+                gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+            }
+
+            var facesIndex = [
+                gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+            ];
+
+            // Data are known to be in +X +Y +Z -X -Y -Z
+            for (let index = 0; index < facesIndex.length; index++) {
+                let faceData = data[index];
+
+                if (compression) {
+                    gl.compressedTexImage2D(facesIndex[index], level, this.getCaps().s3tc[compression], texture._width, texture._height, 0, faceData);
+                } else {
+                    if (needConversion) {
+                        faceData = this._convertRGBtoRGBATextureData(faceData, texture._width, texture._height, type);
+                    }
+                    gl.texImage2D(facesIndex[index], level, internalSizedFomat, texture._width, texture._height, 0, internalFormat, textureType, faceData);
+                }
+            }
+
+            var isPot = (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
+            if (isPot && texture.generateMipMaps && level === 0) {
+                this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
+            }
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+
+            this.resetTextureCache();
+            texture.isReady = true;
+        }
+
+        public createRawCubeTexture(data: ArrayBufferView[], size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: string = null): WebGLTexture {
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            texture.isCube = true;
+            texture.references = 1;
+
+            var textureType = this._getWebGLTextureType(type);
+            var internalFormat = this._getInternalFormat(format);
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+
+            var needConversion = false;
+            if (internalFormat === gl.RGB) {
+                internalFormat = gl.RGBA;
+                needConversion = true;
+            }
 
             var width = size;
             var height = width;
-            var isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
 
             texture._width = width;
             texture._height = height;
+
+            // Double check on POT to generate Mips.
+            var isPot = (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
+            if (!isPot) {
+                generateMipMaps = false;
+            }
+            texture.generateMipMaps = generateMipMaps;
+
+            // Upload data if needed. The texture won t be ready until then.
+            if (data) {
+                this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
+
+            // Filters
+            if (data && generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
+            }
+
+            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            }
+            else if (textureType === Engine.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            }
+            else {
+                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
+            }
+
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            this._loadedTexturesCache.push(texture);
+
+            return texture;
+        }
+
+        public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+            callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]), 
+            onLoad: () => void = null, 
+            onError: () => void = null,
+            samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
+            invertY = false): WebGLTexture {
+
+            var gl = this._gl;
+            var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode);
+            scene._addPendingData(texture);
+            texture.url = url;
 
             var onerror = () => {
                 scene._removePendingData(texture);
@@ -3232,7 +3337,7 @@
                     onError();
                 }
             };
-
+            
             var internalCallback = (data) => {
                 var rgbeDataArrays = callback(data);
 
@@ -3241,15 +3346,24 @@
                     gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
 
-                width = texture._width;
-                height = texture._height;
-                isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
-
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-
+                var width = texture._width;
+                var height = texture._height;
                 if (mipmmapGenerator) {
 
+                    // TODO Remove this once Proper CubeMap Blur... This has nothing to do in engine...
+                    // I ll remove ASAP.
+                    var textureType = this._getWebGLTextureType(type);
+                    var internalFormat = this._getInternalFormat(format);
+                    var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+
+                    var needConversion = false;
+                    if (internalFormat === gl.RGB) {
+                        internalFormat = gl.RGBA;
+                        needConversion = true;
+                    }
+
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                     var arrayTemp: ArrayBufferView[] = [];
                     // Data are known to be in +X +Y +Z -X -Y -Z
                     // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
@@ -3274,45 +3388,15 @@
                             gl.texImage2D(facesIndex[mipIndex], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
                         }
                     }
+
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                 }
                 else {
-                    // Data are known to be in +X +Y +Z -X -Y -Z
-                    for (let index = 0; index < facesIndex.length; index++) {
-                        let faceData = rgbeDataArrays[index];
-                        if (needConversion) {
-                            faceData = this._convertRGBtoRGBATextureData(faceData, width, height, type);
-                        }
-
-                        gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
-                    }
-
-                    if (!noMipmap && isPot) {
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                    }
-                    else {
-                        noMipmap = true;
-                    }
+                    texture.generateMipMaps = !noMipmap;
+                    this.updateRawCubeTexture(texture, rgbeDataArrays, format, type, invertY);
                 }
-
-                if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                }
-                else if (textureType === Engine.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                }
-                else {
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
-                }
-
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
                 texture.isReady = true;
-
                 this.resetTextureCache();
                 scene._removePendingData(texture);
 
@@ -3471,7 +3555,9 @@
                 return;
             }
 
-            var internalTexture = texture.isReady() ? texture.getInternalTexture() : this.emptyTexture;
+
+            var internalTexture = texture.isReady() ? texture.getInternalTexture() : 
+                (texture.isCube ? this.emptyCubeTexture : this.emptyTexture);
 
             if (this._activeTexturesCache[channel] === internalTexture) {
                 return;
@@ -3683,6 +3769,10 @@
             if (this._emptyTexture) {
                 this._releaseTexture(this._emptyTexture);
                 this._emptyTexture = null;
+            }
+            if (this._emptyCubeTexture) {
+                this._releaseTexture(this._emptyCubeTexture);
+                this._emptyCubeTexture = null;
             }
 
             // Release scenes

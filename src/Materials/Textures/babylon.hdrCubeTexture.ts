@@ -49,6 +49,20 @@ module BABYLON {
          */
         public isPMREM = false;
 
+        protected _isBlocking: boolean = true;
+        /**
+         * Sets wether or not the texture is blocking during loading.
+         */
+        public set isBlocking(value: boolean) {
+            this._isBlocking = value;
+        }
+        /**
+         * Gets wether or not the texture is blocking during loading.
+         */
+        public get isBlocking(): boolean {
+            return this._isBlocking;
+        }
+
         /**
          * Instantiates an HDRTexture from the following parameters.
          * 
@@ -232,7 +246,7 @@ module BABYLON {
                 return results;
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
@@ -331,12 +345,12 @@ module BABYLON {
                 };
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
                 callback,
-                mipmapGenerator, this._onLoad, this._onError);                
+                mipmapGenerator, this._onLoad, this._onError);
         }
 
         /**
@@ -394,6 +408,7 @@ module BABYLON {
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
                 texture.coordinatesMode = parsedTexture.coordinatesMode;
+                texture.isBlocking = parsedTexture.isBlocking;
             }
             return texture;
         }
@@ -416,6 +431,7 @@ module BABYLON {
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
             serializationObject.customType = "BABYLON.HDRCubeTexture";
             serializationObject.noMipmap = this._noMipmap;
+            serializationObject.isBlocking = this._isBlocking;
             
             return serializationObject;
         }
