@@ -43531,6 +43531,15 @@ var BABYLON;
             }
             return SceneLoader._getDefaultPlugin();
         };
+        SceneLoader._getPluginForDirectLoad = function (data) {
+            for (var extension in SceneLoader._registeredPlugins) {
+                var plugin = SceneLoader._registeredPlugins[plugin];
+                if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
+                    return plugin;
+                }
+            }
+            return SceneLoader._getDefaultPlugin();
+        };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
@@ -43586,7 +43595,7 @@ var BABYLON;
             scene._addPendingData(loadingToken);
             var manifestChecked = function (success) {
                 scene.database = database;
-                var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
                 var plugin = registeredPlugin.plugin;
                 var useArrayBuffer = registeredPlugin.isBinary;
                 var importMeshFromData = function (data) {
@@ -43680,7 +43689,7 @@ var BABYLON;
                 return;
             }
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
@@ -43793,6 +43802,12 @@ var BABYLON;
         };
         BABYLON.SceneLoader.RegisterPlugin({
             extensions: ".babylon",
+            canDirectLoad: function (data) {
+                if (data.indexOf("babylon") !== -1) {
+                    return true;
+                }
+                return false;
+            },
             importMesh: function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
                 // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
                 // when SceneLoader.debugLogging = true (default), or exception encountered.
@@ -48275,13 +48290,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SSAO2RenderingPipeline.prototype, "isSupported", {
+        Object.defineProperty(SSAO2RenderingPipeline, "IsSupported", {
             /**
             *  Support test.
             * @type {boolean}
             */
             get: function () {
-                var engine = this._scene.getEngine();
+                var engine = BABYLON.Engine.LastCreatedEngine;
                 return engine.webGLVersion > 1;
             },
             enumerable: true,
