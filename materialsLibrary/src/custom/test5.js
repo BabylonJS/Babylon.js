@@ -571,9 +571,7 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial2.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
-            defines.UV1 = true;
-            defines._needUVs = true;
-            defines.DIFFUSE = true;
+          
             CustomMaterial2.ShaderIndexer++;
             var name = name + "custom_" + CustomMaterial2.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
