@@ -1036,6 +1036,8 @@ var BABYLON;
                 if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
                     this._isDirty = false;
                     this._currentMeasure.copyFrom(parentMeasure);
+                    // Let children take some pre-measurement actions
+                    this._preMeasure(parentMeasure, context);
                     this._measure();
                     this._computeAlignment(parentMeasure, context);
                     // Convert to int values
@@ -1160,6 +1162,9 @@ var BABYLON;
                 }
                 this._currentMeasure.left += x;
                 this._currentMeasure.top += y;
+            };
+            Control.prototype._preMeasure = function (parentMeasure, context) {
+                // Do nothing
             };
             Control.prototype._additionalProcessing = function (parentMeasure, context) {
                 // Do nothing
@@ -1553,6 +1558,7 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._isVertical = true;
+                _this._tempMeasureStore = GUI.Measure.Empty();
                 return _this;
             }
             Object.defineProperty(StackPanel.prototype, "isVertical", {
@@ -1569,32 +1575,50 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            StackPanel.prototype._additionalProcessing = function (parentMeasure, context) {
+            StackPanel.prototype._preMeasure = function (parentMeasure, context) {
                 var stack = 0;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
+                    this._tempMeasureStore.copyFrom(child._currentMeasure);
                     child._currentMeasure.copyFrom(parentMeasure);
                     child._measure();
                     if (this._isVertical) {
                         child.top = stack + "px";
+                        if (!child._top.ignoreAdaptiveScaling) {
+                            child._markAsDirty();
+                        }
+                        child._top.ignoreAdaptiveScaling = true;
                         stack += child._currentMeasure.height;
                         child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                     }
                     else {
                         child.left = stack + "px";
+                        if (!child._left.ignoreAdaptiveScaling) {
+                            child._markAsDirty();
+                        }
+                        child._left.ignoreAdaptiveScaling = true;
                         stack += child._currentMeasure.width;
                         child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                     }
+                    child._currentMeasure.copyFrom(this._tempMeasureStore);
                 }
+                var panelChanged = false;
                 if (this._isVertical) {
+                    var previousHeight = this.height;
                     this.height = stack + "px";
+                    panelChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
                     this._height.ignoreAdaptiveScaling = true;
                 }
                 else {
+                    var previousWidth = this.width;
                     this.width = stack + "px";
+                    panelChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
                     this._width.ignoreAdaptiveScaling = true;
                 }
-                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+                if (panelChanged) {
+                    this._markAllAsDirty();
+                }
+                _super.prototype._preMeasure.call(this, parentMeasure, context);
             };
             return StackPanel;
         }(GUI.Container));

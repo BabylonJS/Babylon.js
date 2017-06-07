@@ -129,8 +129,8 @@ declare module BABYLON.GUI {
         private _paddingRight;
         private _paddingTop;
         private _paddingBottom;
-        private _left;
-        private _top;
+        _left: ValueAndUnit;
+        _top: ValueAndUnit;
         private _scaleX;
         private _scaleY;
         private _rotation;
@@ -219,6 +219,7 @@ declare module BABYLON.GUI {
         protected _clip(context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         contains(x: number, y: number): boolean;
@@ -287,9 +288,10 @@ declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
         private _isVertical;
+        private _tempMeasureStore;
         isVertical: boolean;
         constructor(name?: string);
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }
 
