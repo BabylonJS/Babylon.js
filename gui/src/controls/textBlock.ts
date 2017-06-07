@@ -108,12 +108,12 @@ module BABYLON.GUI {
                 var lineWidth = 0;
 
                 for(var n = 0; n < words.length; n++) {
-                    var testLine = line + words[n] + ' ';
+                    var testLine = n > 0 ? line + " " + words[n] : words[0];
                     var metrics = context.measureText(testLine);
                     var testWidth = metrics.width;
                     if (testWidth > width && n > 0) {
                         this._lines.push({text: line, width: lineWidth});
-                        line = words[n] + ' ';
+                        line = words[n];
                         lineWidth = context.measureText(line).width;
                     }
                     else {
