@@ -379,7 +379,7 @@ module BABYLON {
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this._diffuseTexture.isReady()) {
+                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -390,7 +390,7 @@ module BABYLON {
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                        if (!this._ambientTexture.isReady()) {
+                        if (!this._ambientTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -401,7 +401,7 @@ module BABYLON {
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReady()) {
+                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -413,7 +413,7 @@ module BABYLON {
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!this._reflectionTexture.isReady()) {
+                        if (!this._reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needNormals = true;
@@ -460,7 +460,7 @@ module BABYLON {
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                        if (!this._emissiveTexture.isReady()) {
+                        if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -471,7 +471,7 @@ module BABYLON {
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                        if (!this._lightmapTexture.isReady()) {
+                        if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -483,7 +483,7 @@ module BABYLON {
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                        if (!this._specularTexture.isReady()) {
+                        if (!this._specularTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -495,6 +495,7 @@ module BABYLON {
                     }
 
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled) {
+                        // Bump texure can not be none blocking.
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {
@@ -512,7 +513,7 @@ module BABYLON {
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (!this._refractionTexture.isReady()) {
+                        if (!this._refractionTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -525,6 +526,7 @@ module BABYLON {
                     }
 
                     if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                        // Camera Color Grading can not be none blocking.
                         if (!this._cameraColorGradingTexture.isReady()) {
                             return false;
                         } else {
