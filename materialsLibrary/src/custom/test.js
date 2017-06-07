@@ -673,7 +673,7 @@ vColor=color;\n\
             return this;
         };
         return CustomMaterial2;
-    }(StandardMaterial));
+    }(BABYLON.StandardMaterial));
     CustomMaterial2.ShaderIndexer = 1;
     BABYLON.CustomMaterial2 = CustomMaterial2;
 })(BABYLON || (BABYLON = {}));
