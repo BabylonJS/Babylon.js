@@ -1448,8 +1448,10 @@
 
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             
-            if(Canvas2D._m.m[15] === 0){
+            if(Canvas2D._m.m[15] < Epsilon && Canvas2D._m.m[15] >= 0){
                 Canvas2D._m.m[15] = Epsilon;
+            }else if(Canvas2D._m.m[15] > -Epsilon && Canvas2D._m.m[15] <= 0){
+                Canvas2D._m.m[15] = -Epsilon;
             }
 
             let vp = cam.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
