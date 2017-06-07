@@ -574,8 +574,8 @@ vColor=color;\n\
             defines.UV1 = true;
             defines._needUVs = true;
             defines.DIFFUSE = true;
-            CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            CustomMaterial2.ShaderIndexer++;
+            var name = name + "custom_" + CustomMaterial2.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
