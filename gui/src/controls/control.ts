@@ -19,10 +19,10 @@ module BABYLON.GUI {
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
         private _cachedParentMeasure = Measure.Empty();
-        private _marginLeft = new ValueAndUnit(0);
-        private _marginRight = new ValueAndUnit(0);
-        private _marginTop = new ValueAndUnit(0);
-        private _marginBottom = new ValueAndUnit(0);        
+        private _paddingLeft = new ValueAndUnit(0);
+        private _paddingRight = new ValueAndUnit(0);
+        private _paddingTop = new ValueAndUnit(0);
+        private _paddingBottom = new ValueAndUnit(0);        
         private _left = new ValueAndUnit(0);
         private _top = new ValueAndUnit(0);
         private _scaleX = 1.0;
@@ -296,42 +296,42 @@ module BABYLON.GUI {
             return this._isDirty;
         }
         
-        public get marginLeft(): string | number  {
-            return this._marginLeft.toString(this._host);
+        public get paddingLeft(): string | number  {
+            return this._paddingLeft.toString(this._host);
         }
 
-        public set marginLeft(value: string | number ) {
-            if (this._marginLeft.fromString(value)) {
+        public set paddingLeft(value: string | number ) {
+            if (this._paddingLeft.fromString(value)) {
                 this._markAsDirty();
             }
         }    
 
-        public get marginRight(): string | number  {
-            return this._marginRight.toString(this._host);
+        public get paddingRight(): string | number  {
+            return this._paddingRight.toString(this._host);
         }
 
-        public set marginRight(value: string | number ) {
-            if (this._marginRight.fromString(value)) {
+        public set paddingRight(value: string | number ) {
+            if (this._paddingRight.fromString(value)) {
                 this._markAsDirty();
             }
         }
 
-        public get marginTop(): string | number  {
-            return this._marginTop.toString(this._host);
+        public get paddingTop(): string | number  {
+            return this._paddingTop.toString(this._host);
         }
 
-        public set marginTop(value: string | number ) {
-            if (this._marginTop.fromString(value)) {
+        public set paddingTop(value: string | number ) {
+            if (this._paddingTop.fromString(value)) {
                 this._markAsDirty();
             }
         }
 
-        public get marginBottom(): string | number  {
-            return this._marginBottom.toString(this._host);
+        public get paddingBottom(): string | number  {
+            return this._paddingBottom.toString(this._host);
         }
 
-        public set marginBottom(value: string | number ) {
-            if (this._marginBottom.fromString(value)) {
+        public set paddingBottom(value: string | number ) {
+            if (this._paddingBottom.fromString(value)) {
                 this._markAsDirty();
             }
         }     
@@ -593,32 +593,32 @@ module BABYLON.GUI {
                     break;
             }
             
-            if (this._marginLeft.isPixel) {
-                this._currentMeasure.left += this._marginLeft.getValue(this._host);
-                this._currentMeasure.width -= this._marginRight.getValue(this._host);
+            if (this._paddingLeft.isPixel) {
+                this._currentMeasure.left += this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
             } else {
-                this._currentMeasure.left += parentWidth * this._marginLeft.getValue(this._host);
-                this._currentMeasure.width -= parentWidth * this._marginLeft.getValue(this._host);
+                this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
             }
 
-            if (this._marginRight.isPixel) {
-                this._currentMeasure.width -= this._marginRight.getValue(this._host);
+            if (this._paddingRight.isPixel) {
+                this._currentMeasure.width -= this._paddingRight.getValue(this._host);
             } else {
-                this._currentMeasure.width -= parentWidth * this._marginRight.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
             }
 
-            if (this._marginTop.isPixel) {
-                this._currentMeasure.top += this._marginTop.getValue(this._host);
-                this._currentMeasure.height -= this._marginTop.getValue(this._host);
+            if (this._paddingTop.isPixel) {
+                this._currentMeasure.top += this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= this._paddingTop.getValue(this._host);
             } else {
-                this._currentMeasure.top += parentHeight * this._marginTop.getValue(this._host);
-                this._currentMeasure.height -= parentHeight * this._marginTop.getValue(this._host);
+                this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
             }
 
-            if (this._marginBottom.isPixel) {
-                this._currentMeasure.height -= this._marginBottom.getValue(this._host);
+            if (this._paddingBottom.isPixel) {
+                this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
             } else {
-                this._currentMeasure.height -= parentHeight * this._marginBottom.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
             }            
 
             if (this._left.isPixel) {
@@ -859,11 +859,11 @@ module BABYLON.GUI {
             if (controlFirst) {
                 panel.addControl(control);
                 panel.addControl(header); 
-                header.marginLeft = "5px";
+                header.paddingLeft = "5px";
             } else {
                 panel.addControl(header); 
                 panel.addControl(control);
-                header.marginRight = "5px";
+                header.paddingRight = "5px";
             }
 
             return panel;

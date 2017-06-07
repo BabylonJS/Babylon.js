@@ -49,6 +49,8 @@
 	<script src="test/addsky.js"></script>
 	<script src="test/addgrid.js"></script>
 	<script src="test/addpbr.js"></script>
+	<script src="test/addpbrmetallicroughness.js"></script>
+	<script src="test/addpbrspecularglossiness.js"></script>
 	<script src="test/addlegacypbr.js"></script>
 	<script src="test/addCell.js"></script>
 	
@@ -197,6 +199,10 @@
 
 				var pbr = preparePBR();
 
+				var pbrmetallicroughness = preparePBRMetallicRoughness();
+
+				var pbrspecularglossiness = preparePBRSpecularGlossiness();
+
 				var legacypbr = prepareLegacyPBR();
 				
 				var triPlanar = prepareTriPlanar();
@@ -214,7 +220,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -246,6 +252,12 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
+							break;
+						case "pbrmetallicroughness":
+							currentMaterial = pbrmetallicroughness;
+							break;
+						case "pbrspecularglossiness":
+							currentMaterial = pbrspecularglossiness;
 							break;
 						case "legacyPbr":
 							currentMaterial = legacypbr;
@@ -321,6 +333,41 @@
                     directionalLight.intensity = options.lightIntensity;
                     pointLight.intensity = options.lightIntensity;
                     spotLight.intensity = options.lightIntensity;
+                });
+
+				f1.add(options, 'lightIntensityMode', ['automatic', 'luminousPower', 'luminousIntensity', 'illuminance', 'luminance']).onFinishChange(function() {
+					switch (options.lightIntensityMode) {
+						case "automatic":
+							hemisphericLight.intensityMode = BABYLON.Light.INTENSITYMODE_AUTOMATIC;
+							directionalLight.intensityMode = BABYLON.Light.INTENSITYMODE_AUTOMATIC;
+							pointLight.intensityMode = BABYLON.Light.INTENSITYMODE_AUTOMATIC;
+							spotLight.intensityMode = BABYLON.Light.INTENSITYMODE_AUTOMATIC;
+							break;
+						case "luminousPower":
+							hemisphericLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSPOWER;
+							directionalLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSPOWER;
+							pointLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSPOWER;
+							spotLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSPOWER;
+							break;
+						case "luminousIntensity":
+							hemisphericLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSINTENSITY;
+							directionalLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSINTENSITY;
+							pointLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSINTENSITY;
+							spotLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINOUSINTENSITY;
+							break;
+						case "illuminance":
+							hemisphericLight.intensityMode = BABYLON.Light.INTENSITYMODE_ILLUMINANCE;
+							directionalLight.intensityMode = BABYLON.Light.INTENSITYMODE_ILLUMINANCE;
+							pointLight.intensityMode = BABYLON.Light.INTENSITYMODE_ILLUMINANCE;
+							spotLight.intensityMode = BABYLON.Light.INTENSITYMODE_ILLUMINANCE;
+							break;
+						case "luminance":
+							hemisphericLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINANCE;
+							directionalLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINANCE;
+							pointLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINANCE;
+							spotLight.intensityMode = BABYLON.Light.INTENSITYMODE_LUMINANCE;
+							break;
+					}
                 });
                 
                 f1.add(options, 'lightRange').onChange(function() {

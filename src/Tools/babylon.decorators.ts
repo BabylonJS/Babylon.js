@@ -11,30 +11,31 @@
         }
     }
 
-    function generateExpandMember(setCallback: string) {
+    function generateExpandMember(setCallback: string, targetKey: string) {
         return (target: any, propertyKey: string) => {
-            if (setCallback) {
-                var key = "_" + propertyKey;
-                Object.defineProperty(target, propertyKey, {
-                    get: function () {
-                        return this[key];
-                    },
-                    set: function (value) {
-                        if (this[key] === value) {
-                            return;
-                        }
-                        this[key] = value;
+            var key = targetKey || ("_" + propertyKey);
+            Object.defineProperty(target, propertyKey, {
+                get: function () {
+                    return this[key];
+                },
+                set: function (value) {
+                    if (this[key] === value) {
+                        return;
+                    }
+                    this[key] = value;
+                    
+                    if (setCallback) {
                         target[setCallback].apply(this);
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-            }
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
         }
     }
 
-    export function expandToProperty(callback: string) {
-        return generateExpandMember(callback);
+    export function expandToProperty(callback: string, targetKey?: string) {
+        return generateExpandMember(callback, targetKey);
     }
 
     export function serialize(sourceName?: string) {

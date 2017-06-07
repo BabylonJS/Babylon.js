@@ -26,7 +26,10 @@ module BABYLON.GUI {
 
             let det = this.determinant();
             if (det < (Epsilon * Epsilon)) {
-                throw new Error("Can't invert matrix, near null determinant");
+                result.m[0] = 0;     result.m[1] = 0;
+                result.m[2] = 0;    result.m[3] = 0;
+                result.m[4] = 0;   result.m[5] = 0;
+                return this;
             }
 
             let detDiv = 1 / det;
