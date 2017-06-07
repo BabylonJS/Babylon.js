@@ -23,8 +23,8 @@ module BABYLON.GUI {
         private _paddingRight = new ValueAndUnit(0);
         private _paddingTop = new ValueAndUnit(0);
         private _paddingBottom = new ValueAndUnit(0);        
-        private _left = new ValueAndUnit(0);
-        private _top = new ValueAndUnit(0);
+        public _left = new ValueAndUnit(0);
+        public _top = new ValueAndUnit(0);
         private _scaleX = 1.0;
         private _scaleY = 1.0;
         private _rotation = 0;
@@ -493,6 +493,9 @@ module BABYLON.GUI {
                 this._isDirty = false;
                 this._currentMeasure.copyFrom(parentMeasure);
 
+                // Let children take some pre-measurement actions
+                this._preMeasure(parentMeasure, context);
+
                 this._measure();
                 this._computeAlignment(parentMeasure, context);
 
@@ -636,6 +639,10 @@ module BABYLON.GUI {
             this._currentMeasure.left += x;
             this._currentMeasure.top += y;            
         }
+
+        protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+            // Do nothing
+        }        
 
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
