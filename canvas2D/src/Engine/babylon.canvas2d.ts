@@ -1447,6 +1447,11 @@
             let cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
 
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
+            
+            if(Canvas2D._m.m[15] === 0){
+                Canvas2D._m.m[15] = Epsilon;
+            }
+
             let vp = cam.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
 
 
