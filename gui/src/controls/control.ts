@@ -774,6 +774,13 @@ module BABYLON.GUI {
         
             this._fontOffset = Control._GetFontOffset(this._font);
         }
+        
+        public measureForIdeal() {
+            this._measure();
+            
+            this.width = this._currentMeasure.width + 'px';
+			this.height = this._currentMeasure.height + 'px';
+        }
 
         // Statics
         private static _HORIZONTAL_ALIGNMENT_LEFT = 0;
