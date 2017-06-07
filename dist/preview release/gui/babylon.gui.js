@@ -341,7 +341,13 @@ var BABYLON;
                 var l5 = this.m[5];
                 var det = this.determinant();
                 if (det < (BABYLON.Epsilon * BABYLON.Epsilon)) {
-                    throw new Error("Can't invert matrix, near null determinant");
+                    result.m[0] = 0;
+                    result.m[1] = 0;
+                    result.m[2] = 0;
+                    result.m[3] = 0;
+                    result.m[4] = 0;
+                    result.m[5] = 0;
+                    return this;
                 }
                 var detDiv = 1 / det;
                 var det4 = l2 * l5 - l3 * l4;
@@ -558,10 +564,10 @@ var BABYLON;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this._isDirty = true;
                 this._cachedParentMeasure = GUI.Measure.Empty();
-                this._marginLeft = new GUI.ValueAndUnit(0);
-                this._marginRight = new GUI.ValueAndUnit(0);
-                this._marginTop = new GUI.ValueAndUnit(0);
-                this._marginBottom = new GUI.ValueAndUnit(0);
+                this._paddingLeft = new GUI.ValueAndUnit(0);
+                this._paddingRight = new GUI.ValueAndUnit(0);
+                this._paddingTop = new GUI.ValueAndUnit(0);
+                this._paddingBottom = new GUI.ValueAndUnit(0);
                 this._left = new GUI.ValueAndUnit(0);
                 this._top = new GUI.ValueAndUnit(0);
                 this._scaleX = 1.0;
@@ -840,48 +846,48 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Control.prototype, "marginLeft", {
+            Object.defineProperty(Control.prototype, "paddingLeft", {
                 get: function () {
-                    return this._marginLeft.toString(this._host);
+                    return this._paddingLeft.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._marginLeft.fromString(value)) {
+                    if (this._paddingLeft.fromString(value)) {
                         this._markAsDirty();
                     }
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Control.prototype, "marginRight", {
+            Object.defineProperty(Control.prototype, "paddingRight", {
                 get: function () {
-                    return this._marginRight.toString(this._host);
+                    return this._paddingRight.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._marginRight.fromString(value)) {
+                    if (this._paddingRight.fromString(value)) {
                         this._markAsDirty();
                     }
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Control.prototype, "marginTop", {
+            Object.defineProperty(Control.prototype, "paddingTop", {
                 get: function () {
-                    return this._marginTop.toString(this._host);
+                    return this._paddingTop.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._marginTop.fromString(value)) {
+                    if (this._paddingTop.fromString(value)) {
                         this._markAsDirty();
                     }
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Control.prototype, "marginBottom", {
+            Object.defineProperty(Control.prototype, "paddingBottom", {
                 get: function () {
-                    return this._marginBottom.toString(this._host);
+                    return this._paddingBottom.toString(this._host);
                 },
                 set: function (value) {
-                    if (this._marginBottom.fromString(value)) {
+                    if (this._paddingBottom.fromString(value)) {
                         this._markAsDirty();
                     }
                 },
@@ -1112,33 +1118,33 @@ var BABYLON;
                         y = (parentHeight - height) / 2;
                         break;
                 }
-                if (this._marginLeft.isPixel) {
-                    this._currentMeasure.left += this._marginLeft.getValue(this._host);
-                    this._currentMeasure.width -= this._marginRight.getValue(this._host);
+                if (this._paddingLeft.isPixel) {
+                    this._currentMeasure.left += this._paddingLeft.getValue(this._host);
+                    this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.left += parentWidth * this._marginLeft.getValue(this._host);
-                    this._currentMeasure.width -= parentWidth * this._marginLeft.getValue(this._host);
+                    this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
+                    this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
                 }
-                if (this._marginRight.isPixel) {
-                    this._currentMeasure.width -= this._marginRight.getValue(this._host);
-                }
-                else {
-                    this._currentMeasure.width -= parentWidth * this._marginRight.getValue(this._host);
-                }
-                if (this._marginTop.isPixel) {
-                    this._currentMeasure.top += this._marginTop.getValue(this._host);
-                    this._currentMeasure.height -= this._marginTop.getValue(this._host);
+                if (this._paddingRight.isPixel) {
+                    this._currentMeasure.width -= this._paddingRight.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.top += parentHeight * this._marginTop.getValue(this._host);
-                    this._currentMeasure.height -= parentHeight * this._marginTop.getValue(this._host);
+                    this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
                 }
-                if (this._marginBottom.isPixel) {
-                    this._currentMeasure.height -= this._marginBottom.getValue(this._host);
+                if (this._paddingTop.isPixel) {
+                    this._currentMeasure.top += this._paddingTop.getValue(this._host);
+                    this._currentMeasure.height -= this._paddingTop.getValue(this._host);
                 }
                 else {
-                    this._currentMeasure.height -= parentHeight * this._marginBottom.getValue(this._host);
+                    this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
+                    this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
+                }
+                if (this._paddingBottom.isPixel) {
+                    this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
+                }
+                else {
+                    this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
                 }
                 if (this._left.isPixel) {
                     this._currentMeasure.left += this._left.getValue(this._host);
@@ -1347,12 +1353,12 @@ var BABYLON;
                 if (controlFirst) {
                     panel.addControl(control);
                     panel.addControl(header);
-                    header.marginLeft = "5px";
+                    header.paddingLeft = "5px";
                 }
                 else {
                     panel.addControl(header);
                     panel.addControl(control);
-                    header.marginRight = "5px";
+                    header.paddingRight = "5px";
                 }
                 return panel;
             };
@@ -2751,7 +2757,7 @@ var BABYLON;
                 var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
                 textBlock.textWrapping = true;
                 textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-                textBlock.marginLeft = "20%";
+                textBlock.paddingLeft = "20%";
                 result.addControl(textBlock);
                 // Adding image
                 var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);

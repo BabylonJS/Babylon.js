@@ -81,7 +81,7 @@ module BABYLON.GUI {
             var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
             textBlock.textWrapping = true;
             textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            textBlock.marginLeft = "20%";
+            textBlock.paddingLeft = "20%";
             result.addControl(textBlock);   
 
             // Adding image
