@@ -627,7 +627,6 @@
                 "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
                 "../../src/PostProcess/babylon.ssao2RenderingPipeline.js",
                 "../../src/PostProcess/babylon.lensRenderingPipeline.js",
-                "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
             ],
             "dependUpon" : [
@@ -641,8 +640,7 @@
                 "chromaticAberration.fragment",
                 "lensHighlights.fragment",
                 "depthOfField.fragment",
-                "standard.fragment",
-                "hdr.fragment"
+                "standard.fragment"
             ]
         },
         "bones" : 
