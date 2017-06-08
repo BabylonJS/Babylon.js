@@ -30,9 +30,7 @@ var BABYLON;
             _this.VertexStore = "";
             _this.FragmentStore = "#include<__decl__defaultFragment>\n\
 #[Fragment_Begin]\n\
-#ifdef BUMP\n\
 #extension GL_OES_standard_derivatives : enable\n\
-#endif\n\
 #ifdef LOGARITHMICDEPTH\n\
 #extension GL_EXT_frag_depth : enable\n\
 #endif\n\
@@ -43,7 +41,10 @@ uniform vec3 vAmbientColor;\n\
 \n\
 varying vec3 vPositionW;\n\
 #ifdef NORMAL\n\
-varying vec3 vNormalW;\n\
+varying vec3 vNormalW_helper;\n\
+varying vec3 localNormal;\n\
+varying vec3 localPosition;\n\
+vec3 vNormalW;\n\
 #endif\n\
 #ifdef VERTEXCOLOR\n\
 varying vec4 vColor;\n\
@@ -121,6 +122,7 @@ varying vec3 vDirectionW;\n\
 \n\
 void main(void) {\n\
 \n\
+vNormalW = vNormalW_helper;\n\
 #[Fragment_MainBegin]\n\
 \n\
 #include<clipPlaneFragment>\n\
@@ -369,9 +371,11 @@ varying vec2 vSpecularUV;\n\
 varying vec2 vBumpUV;\n\
 #endif\n\
 \n\
+varying vec3 localPosition;\n\
 varying vec3 vPositionW;\n\
 #ifdef NORMAL\n\
-varying vec3 vNormalW;\n\
+varying vec3 vNormalW_helper;\n\
+varying vec3 localNormal;\n\
 #endif\n\
 #ifdef VERTEXCOLOR\n\
 varying vec4 vColor;\n\
@@ -410,6 +414,7 @@ vPositionUVW=positionUpdated;\n\
 #include<instancesVertex>\n\
 #include<bonesVertex>\n\
 \n\
+localPosition = positionUpdated;\n\
 #[Vertex_Before_PositionUpdated]\n\
 \n\
 gl_Position=viewProjection*finalWorld*vec4(positionUpdated,1.0);\n\
@@ -419,7 +424,8 @@ vPositionW=vec3(worldPos);\n\
 \n\
 #[Vertex_Before_NormalUpdated]\n\
 \n\
-vNormalW=normalize(vec3(finalWorld*vec4(normalUpdated,0.0)));\n\
+localNormal = normalUpdated;\n\
+vNormalW_helper=normalize(vec3(finalWorld*vec4(normalUpdated,0.0)));\n\
 #endif\n\
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\n\
 vDirectionW=normalize(vec3(finalWorld*vec4(positionUpdated,0.0)));\n\
