@@ -26,7 +26,8 @@
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalViewer": [
                 "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
-                "multiMaterial", "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing"
+                "multiMaterial", "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing",
+                "colorCurves"
         ],
         "distributed": ["minimalViewer"]
     },
