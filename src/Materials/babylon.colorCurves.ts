@@ -36,14 +36,14 @@
          * Gets the global Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public get GlobalHue(): number {
+        public get globalHue(): number {
             return this._globalHue;
         }
         /**
          * Sets the global Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public set GlobalHue(value: number) {
+        public set globalHue(value: number) {
             this._globalHue = value;
             this._dirty = true;
         }
@@ -52,7 +52,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public get GlobalDensity(): number {
+        public get globalDensity(): number {
             return this._globalDensity;
         }
         /**
@@ -60,7 +60,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public set GlobalDensity(value: number) {
+        public set globalDensity(value: number) {
             this._globalDensity = value;
             this._dirty = true;
         }
@@ -68,14 +68,14 @@
          * Gets the global Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public get GlobalSaturation(): number {
+        public get globalSaturation(): number {
             return this._globalSaturation;
         }
         /**
          * Sets the global Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public set GlobalSaturation(value: number) {
+        public set globalSaturation(value: number) {
             this._globalSaturation = value;
             this._dirty = true;
         }
@@ -96,14 +96,14 @@
          * Gets the highlights Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public get HighlightsHue(): number {
+        public get highlightsHue(): number {
             return this._highlightsHue;
         }
         /**
          * Sets the highlights Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public set HighlightsHue(value: number) {
+        public set highlightsHue(value: number) {
             this._highlightsHue = value;
             this._dirty = true;
         }
@@ -112,7 +112,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public get HighlightsDensity(): number {
+        public get highlightsDensity(): number {
             return this._highlightsDensity;
         }
         /**
@@ -120,7 +120,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public set HighlightsDensity(value: number) {
+        public set highlightsDensity(value: number) {
             this._highlightsDensity = value;
             this._dirty = true;
         }
@@ -128,14 +128,14 @@
          * Gets the highlights Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public get HighlightsSaturation(): number {
+        public get highlightsSaturation(): number {
             return this._highlightsSaturation;
         }
         /**
          * Sets the highlights Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public set HighlightsSaturation(value: number) {
+        public set highlightsSaturation(value: number) {
             this._highlightsSaturation = value;
             this._dirty = true;
         }
@@ -143,14 +143,14 @@
          * Gets the highlights Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public get HighlightsExposure(): number {
+        public get highlightsExposure(): number {
             return this._highlightsExposure;
         }
         /**
          * Sets the highlights Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public set HighlightsExposure(value: number) {
+        public set highlightsExposure(value: number) {
             this._highlightsExposure = value;
             this._dirty = true;
         }
@@ -171,14 +171,14 @@
          * Gets the midtones Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public get MidtonesHue(): number {
+        public get midtonesHue(): number {
             return this._midtonesHue;
         }
         /**
          * Sets the midtones Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public set MidtonesHue(value: number) {
+        public set midtonesHue(value: number) {
             this._midtonesHue = value;
             this._dirty = true;
         }
@@ -187,7 +187,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public get MidtonesDensity(): number {
+        public get midtonesDensity(): number {
             return this._midtonesDensity;
         }
         /**
@@ -195,7 +195,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public set MidtonesDensity(value: number) {
+        public set midtonesDensity(value: number) {
             this._midtonesDensity = value;
             this._dirty = true;
         }
@@ -203,14 +203,14 @@
          * Gets the midtones Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public get MidtonesSaturation(): number {
+        public get midtonesSaturation(): number {
             return this._midtonesSaturation;
         }
         /**
          * Sets the midtones Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public set MidtonesSaturation(value: number) {
+        public set midtonesSaturation(value: number) {
             this._midtonesSaturation = value;
             this._dirty = true;
         }
@@ -218,14 +218,14 @@
          * Gets the midtones Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public get MidtonesExposure(): number {
+        public get midtonesExposure(): number {
             return this._midtonesExposure;
         }
         /**
          * Sets the midtones Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public set MidtonesExposure(value: number) {
+        public set midtonesExposure(value: number) {
             this._midtonesExposure = value;
             this._dirty = true;
         }
@@ -239,14 +239,14 @@
          * Gets the shadows Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public get ShadowsHue(): number {
+        public get shadowsHue(): number {
             return this._shadowsHue;
         }
         /**
          * Sets the shadows Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
          */
-        public set ShadowsHue(value: number) {
+        public set shadowsHue(value: number) {
             this._shadowsHue = value;
             this._dirty = true;
         }
@@ -255,7 +255,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public get ShadowsDensity(): number {
+        public get shadowsDensity(): number {
             return this._shadowsDensity;
         }
         /**
@@ -263,7 +263,7 @@
          * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
          * Values less than zero provide a filter of opposite hue.
          */
-        public set ShadowsDensity(value: number) {
+        public set shadowsDensity(value: number) {
             this._shadowsDensity = value;
             this._dirty = true;
         }
@@ -271,14 +271,14 @@
          * Gets the shadows Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public get ShadowsSaturation(): number {
+        public get shadowsSaturation(): number {
             return this._shadowsSaturation;
         }
         /**
          * Sets the shadows Saturation value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
          */
-        public set ShadowsSaturation(value: number) {
+        public set shadowsSaturation(value: number) {
             this._shadowsSaturation = value;
             this._dirty = true;
         }
@@ -286,14 +286,14 @@
          * Gets the shadows Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public get ShadowsExposure(): number {
+        public get shadowsExposure(): number {
             return this._shadowsExposure;
         }
         /**
          * Sets the shadows Exposure value.
          * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
          */
-        public set ShadowsExposure(value: number) {
+        public set shadowsExposure(value: number) {
             this._shadowsExposure = value;
             this._dirty = true;
         }

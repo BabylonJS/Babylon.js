@@ -1,7 +1,7 @@
 ﻿vec2 uvOffset = vec2(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX)
-	#if NORMALXYSCALE
+	#ifdef NORMALXYSCALE
 		normalW = normalize(normalW * vec3(vBumpInfos.y, vBumpInfos.y, 1.0));
 		float normalScale = 1.0;
 	#else		
