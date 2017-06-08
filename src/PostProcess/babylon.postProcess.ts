@@ -195,7 +195,7 @@
                 var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
-                if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
                     if (!(<PostProcessOptions>this._options).width) {
                         desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
                     }
