@@ -64,11 +64,11 @@
          * Returns the integer 0.  
          */
         public getTypeID(): number {
-            return 0;
+            return Light.LIGHTTYPEID_POINTLIGHT;
         }
 
         /**
-         * Boolean : returns true by default.
+         * Specifies wether or not the shadowmap should be a cube texture.
          */
         public needCube(): boolean {
             return !this.direction;

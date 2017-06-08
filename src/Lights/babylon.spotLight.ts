@@ -44,7 +44,7 @@
          * Returns the integer 2.
          */
         public getTypeID(): number {
-            return 2;
+            return Light.LIGHTTYPEID_SPOTLIGHT;
         }
 
         /**
