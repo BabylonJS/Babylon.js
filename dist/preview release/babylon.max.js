@@ -60629,7 +60629,7 @@ var BABYLON;
             this._shadowsSaturation = 0;
             this._shadowsExposure = 0;
         }
-        Object.defineProperty(ColorCurves.prototype, "GlobalHue", {
+        Object.defineProperty(ColorCurves.prototype, "globalHue", {
             /**
              * Gets the global Hue value.
              * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -60648,7 +60648,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "GlobalDensity", {
+        Object.defineProperty(ColorCurves.prototype, "globalDensity", {
             /**
              * Gets the global Density value.
              * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
@@ -60669,7 +60669,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "GlobalSaturation", {
+        Object.defineProperty(ColorCurves.prototype, "globalSaturation", {
             /**
              * Gets the global Saturation value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
@@ -60688,7 +60688,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "HighlightsHue", {
+        Object.defineProperty(ColorCurves.prototype, "highlightsHue", {
             /**
              * Gets the highlights Hue value.
              * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -60707,7 +60707,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "HighlightsDensity", {
+        Object.defineProperty(ColorCurves.prototype, "highlightsDensity", {
             /**
              * Gets the highlights Density value.
              * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
@@ -60728,7 +60728,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "HighlightsSaturation", {
+        Object.defineProperty(ColorCurves.prototype, "highlightsSaturation", {
             /**
              * Gets the highlights Saturation value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
@@ -60747,7 +60747,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "HighlightsExposure", {
+        Object.defineProperty(ColorCurves.prototype, "highlightsExposure", {
             /**
              * Gets the highlights Exposure value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
@@ -60766,7 +60766,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "MidtonesHue", {
+        Object.defineProperty(ColorCurves.prototype, "midtonesHue", {
             /**
              * Gets the midtones Hue value.
              * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -60785,7 +60785,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "MidtonesDensity", {
+        Object.defineProperty(ColorCurves.prototype, "midtonesDensity", {
             /**
              * Gets the midtones Density value.
              * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
@@ -60806,7 +60806,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "MidtonesSaturation", {
+        Object.defineProperty(ColorCurves.prototype, "midtonesSaturation", {
             /**
              * Gets the midtones Saturation value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
@@ -60825,7 +60825,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "MidtonesExposure", {
+        Object.defineProperty(ColorCurves.prototype, "midtonesExposure", {
             /**
              * Gets the midtones Exposure value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
@@ -60844,7 +60844,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "ShadowsHue", {
+        Object.defineProperty(ColorCurves.prototype, "shadowsHue", {
             /**
              * Gets the shadows Hue value.
              * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -60863,7 +60863,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "ShadowsDensity", {
+        Object.defineProperty(ColorCurves.prototype, "shadowsDensity", {
             /**
              * Gets the shadows Density value.
              * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
@@ -60884,7 +60884,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "ShadowsSaturation", {
+        Object.defineProperty(ColorCurves.prototype, "shadowsSaturation", {
             /**
              * Gets the shadows Saturation value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
@@ -60903,7 +60903,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ColorCurves.prototype, "ShadowsExposure", {
+        Object.defineProperty(ColorCurves.prototype, "shadowsExposure", {
             /**
              * Gets the shadows Exposure value.
              * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
