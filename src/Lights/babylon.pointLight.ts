@@ -23,6 +23,10 @@
             this.forceProjectionMatrixCompute();
         }
 
+        public get direction(): Vector3 {
+            return this._direction;
+        }
+
         /**
          * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
          */
