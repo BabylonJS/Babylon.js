@@ -43679,7 +43679,7 @@ var BABYLON;
                 var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._options) | 0;
                 var desiredWidth = this._options.width || requiredWidth;
                 var desiredHeight = this._options.height || requiredHeight;
-                if (this.renderTargetSamplingMode !== BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                if (this.renderTargetSamplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
                     if (!this._options.width) {
                         desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
                     }
