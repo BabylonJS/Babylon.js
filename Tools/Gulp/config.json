@@ -17,6 +17,7 @@
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
                 "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
+                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_imageProcessing",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
@@ -25,7 +26,8 @@
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalViewer": [
                 "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
-                "multiMaterial"
+                "multiMaterial", "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing",
+                "colorCurves"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -566,11 +568,65 @@
                 "postprocess.vertex",
                 "pass.fragment"
             ]
+        }, 
+        "additionalPostProcess_blur" : 
+        {
+            "files": [
+                "../../src/PostProcess/babylon.blurPostProcess.js"
+            ],
+            "dependUpon" : [
+                "postProcesses"
+            ], 
+            "shaders" : [
+                "kernelBlur.vertex",
+                "kernelBlur.fragment"
+            ],
+            "shaderIncludes": [
+                "kernelBlurFragment",
+                "kernelBlurFragment2",
+                "kernelBlurVaryingDeclaration",
+                "kernelBlurVertex"
+            ]
         },    
+        "additionalPostProcess_fxaa" : 
+        {
+            "files": [
+                "../../src/PostProcess/babylon.fxaaPostProcess.js"
+            ],
+            "dependUpon" : [
+                "postProcesses"
+            ], 
+            "shaders" : [
+                "fxaa.fragment"
+            ]
+        },                       
+        "additionalPostProcess_highlights" : 
+        {
+            "files": [
+                "../../src/PostProcess/babylon.highlightsPostProcess.js"
+            ],
+            "dependUpon" : [
+                "postProcesses"
+            ], 
+            "shaders" : [
+                "highlights.fragment"
+            ]
+        },                                       
+        "additionalPostProcess_imageProcessing" : 
+        {
+            "files": [
+                "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
+            ],
+            "dependUpon" : [
+                "postProcesses"
+            ], 
+            "shaders" : [
+                "imageProcessing.fragment"
+            ]
+        },                                          
         "additionalPostProcesses" : 
         {
             "files": [
-                "../../src/PostProcess/babylon.blurPostProcess.js",
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
                 "../../src/PostProcess/babylon.blackAndWhitePostProcess.js",
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
@@ -587,8 +643,6 @@
                 "postProcesses"
             ], 
             "shaders" : [
-                "kernelBlur.vertex",
-                "kernelBlur.fragment",
                 "refraction.fragment",
                 "blackAndWhite.fragment",
                 "convolution.fragment",
@@ -601,12 +655,6 @@
                 "displayPass.fragment",
                 "highlights.fragment",
                 "imageProcessing.fragment"
-            ],
-            "shaderIncludes": [
-                "kernelBlurFragment",
-                "kernelBlurFragment2",
-                "kernelBlurVaryingDeclaration",
-                "kernelBlurVertex"
             ]
         },                         
         "renderingPipeline" : 
@@ -627,7 +675,6 @@
                 "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
                 "../../src/PostProcess/babylon.ssao2RenderingPipeline.js",
                 "../../src/PostProcess/babylon.lensRenderingPipeline.js",
-                "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
                 "../../src/PostProcess/babylon.standardRenderingPipeline.js"
             ],
             "dependUpon" : [
@@ -641,8 +688,7 @@
                 "chromaticAberration.fragment",
                 "lensHighlights.fragment",
                 "depthOfField.fragment",
-                "standard.fragment",
-                "hdr.fragment"
+                "standard.fragment"
             ]
         },
         "bones" : 
