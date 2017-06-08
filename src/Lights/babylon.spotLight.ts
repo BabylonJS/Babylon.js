@@ -74,8 +74,6 @@
             var normalizeDirection;
 
             if (this.computeTransformedInformation()) {
-                Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
-
                 this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
                     this.transformedPosition.y,
