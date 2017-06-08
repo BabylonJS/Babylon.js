@@ -46,7 +46,7 @@ module BABYLON {
          * Returns the integer 1.
          */
         public getTypeID(): number {
-            return 1;
+            return Light.LIGHTTYPEID_DIRECTIONALLIGHT;
         }
 
         /**

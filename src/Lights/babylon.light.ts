@@ -166,7 +166,7 @@
 
         /**
          * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
-         * exceeding the allowed number of the materials.
+         * exceeding the number allowed of the materials.
          */
         @serialize()
         @expandToProperty("_reorderLightsInScene")
@@ -371,8 +371,8 @@
 
         /**
 		 * Sort function to order lights for rendering.
-		 * @param a First SPECTRE.Light object to compare to second.
-		 * @param b Second SPECTRE.Light object to compare first.
+		 * @param a First Light object to compare to second.
+		 * @param b Second Light object to compare first.
 		 * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
 		 */
         public static compareLightsPriority(a: Light, b: Light): number {

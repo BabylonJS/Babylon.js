@@ -205,7 +205,7 @@
             }
         }
         
-        private _initializeGenerator(boxBlurOffset: number) {
+        private _initializeGenerator(boxBlurOffset: number): void {
             var light = this._light;
             var scene = this._scene;
             var textureType = this._textureType;
@@ -334,7 +334,7 @@
             });
         }
 
-        private _applyFilterValues() {
+        private _applyFilterValues(): void {
             if (this.usePoissonSampling || this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 this._shadowMap.anisotropicFilteringLevel = 16;
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
@@ -344,7 +344,7 @@
             }
         }
 
-        public recreateShadowMap() {
+        public recreateShadowMap(): void {
             // Clean up existing data.
             this._disposeRTTandPostProcesses();
 
@@ -529,7 +529,7 @@
             return new Vector2(depth - fract / 255.0, fract);
         }
 
-        private _disposeRTTandPostProcesses() {
+        private _disposeRTTandPostProcesses(): void {
             if (this._shadowMap) {
                 this._shadowMap.dispose();
             }
@@ -641,7 +641,7 @@
         }
 
         /**
-         * This works according to the standard show defined and supported by the BJS materials.
+         * This creates the defines related to the standard BJS materials.
          */
         public prepareDefines(defines: MaterialDefines, lightIndex: number): void {
             var scene = this._scene;
@@ -666,7 +666,8 @@
         }
 
         /**
-         * This works according to the standard show defined and supported by the BJS materials.
+         * This binds shadow lights related to the standard BJS materials.
+         * It implies the unifroms available on the materials are the standard BJS ones.
          */
         public bindShadowLight(lightIndex: string, effect: Effect, depthValuesAlreadySet: boolean): boolean {
             var light = this._light;
