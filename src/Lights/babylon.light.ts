@@ -1,28 +1,4 @@
 ﻿module BABYLON {
-
-    export interface IShadowLight extends Light {
-        id: string;
-        position: Vector3;
-        transformedPosition: Vector3;
-        name: string;
-        shadowMinZ: number;
-        shadowMaxZ: number;
-
-        computeTransformedPosition(): boolean;
-        getScene(): Scene;
-
-        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        getDepthScale(): number;
-
-        needRefreshPerFrame(): boolean;
-        needCube(): boolean;
-
-        getShadowDirection(faceIndex?: number): Vector3;
-
-        _shadowGenerator: IShadowGenerator;
-    }
-
     export class Light extends Node {
 
         //lightmapMode Consts
@@ -188,6 +164,21 @@
             this._computePhotometricScale();
         };
 
+        /**
+         * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+         * exceeding the allowed number of the materials.
+         */
+        @serialize()
+        @expandToProperty("_reorderLightsInScene")
+        public renderPriority: number = 0;
+
+        /**
+         * Defines wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * the current shadow generator.
+         */
+        @serialize()
+        public shadowEnabled: boolean = true;
+
         private _includedOnlyMeshes: AbstractMesh[];
         public get includedOnlyMeshes(): AbstractMesh[] {
             return this._includedOnlyMeshes;
@@ -205,7 +196,7 @@
         public set excludedMeshes(value: AbstractMesh[]) {
             this._excludedMeshes = value;
             this._hookArrayForExcluded(value);
-        }        
+        }
 
         @serialize("excludeWithLayerMask")
         private _excludeWithLayerMask = 0;
@@ -216,7 +207,7 @@
         public set excludeWithLayerMask(value: number) {
             this._excludeWithLayerMask = value;
             this._resyncMeshes();
-        }        
+        }
 
         @serialize("includeOnlyWithLayerMask")
         private _includeOnlyWithLayerMask = 0;
@@ -227,7 +218,7 @@
         public set includeOnlyWithLayerMask(value: number) {
             this._includeOnlyWithLayerMask = value;
             this._resyncMeshes();
-        }          
+        }
 
         @serialize("lightmapMode")
         private _lightmapMode = 0;
@@ -239,13 +230,13 @@
             if (this._lightmapMode === value) {
                 return;
             }
-            
+
             this._lightmapMode = value;
             this._markMeshesAsLightDirty();
         }
 
-        public _shadowGenerator: IShadowGenerator;
         private _parentedWorldMatrix: Matrix;
+        public _shadowGenerator: IShadowGenerator;
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
@@ -277,23 +268,23 @@
          */
         public getClassName(): string {
             return "Light";
-        }        
+        }
 
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
             ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this.getTypeID()];
-            if (this.animations){
-                for (var i = 0; i < this.animations.length; i++){
-                   ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
                 }
             }
-            if (fullDetails){
+            if (fullDetails) {
             }
             return ret;
-        } 
+        }
 
 
         /**
@@ -379,6 +370,21 @@
         }
 
         /**
+		 * Sort function to order lights for rendering.
+		 * @param a First SPECTRE.Light object to compare to second.
+		 * @param b Second SPECTRE.Light object to compare first.
+		 * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+		 */
+        public static compareLightsPriority(a: Light, b: Light): number {
+            //shadow-casting lights have priority over non-shadow-casting lights
+            //the renderPrioirty is a secondary sort criterion
+            if (a.shadowEnabled !== b.shadowEnabled) {
+                return (b.shadowEnabled ? 1 : 0) - (a.shadowEnabled ? 1 : 0);
+            }
+            return b.renderPriority - a.renderPriority;
+        }
+
+        /**
          * Disposes the light.  
          */
         public dispose(): void {
@@ -454,7 +460,7 @@
 
             // Animations  
             Animation.AppendSerializedAnimations(this, serializationObject);
-            serializationObject.ranges = this.serializeAnimationRanges();  
+            serializationObject.ranges = this.serializeAnimationRanges();
 
             return serializationObject;
         }
@@ -479,7 +485,7 @@
         /**
          * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.  
          */
-        public static Parse(parsedLight: any, scene: Scene): Light {            
+        public static Parse(parsedLight: any, scene: Scene): Light {
             var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
 
             // Inclusion / exclusions
@@ -642,6 +648,10 @@
                     break;
             }
             return photometricScale;
+        }
+
+        private _reorderLightsInScene(): void {
+            this.getScene().orderLightsByPriority();
         }
     }
 }

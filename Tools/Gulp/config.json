@@ -25,7 +25,7 @@
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalViewer": [
                 "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
-                "multiMaterial"
+                "multiMaterial", "pbrMaterial", "pointLight", "directionalLight", "spotLight"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -299,7 +299,7 @@
                 "fogFragmentDeclaration",
                 "clipPlaneFragment",
                 "bumpFragment",
-                "pbrLightFunctionsCall",
+                "lightFragment",
                 "logDepthFragment",
                 "fogFragment"
             ]
@@ -345,6 +345,7 @@
         "pointLight" : 
         {
             "files": [
+                "../../src/Lights/babylon.shadowLight.js",
                 "../../src/Lights/babylon.pointLight.js"
             ],
             "dependUpon" : [
@@ -354,6 +355,7 @@
         "directionalLight" : 
         {
             "files": [
+                "../../src/Lights/babylon.shadowLight.js",
                 "../../src/Lights/babylon.directionalLight.js"
             ],
             "dependUpon" : [
@@ -363,6 +365,7 @@
         "spotLight" : 
         {
             "files": [
+                "../../src/Lights/babylon.shadowLight.js",
                 "../../src/Lights/babylon.spotLight.js"
             ],
             "dependUpon" : [
