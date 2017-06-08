@@ -18141,6 +18141,12 @@ var BABYLON;
             var v = bi.vectorsWorld;
             var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D_1._m);
+            if (Canvas2D_1._m.m[15] < BABYLON.Epsilon && Canvas2D_1._m.m[15] >= 0) {
+                Canvas2D_1._m.m[15] = BABYLON.Epsilon;
+            }
+            else if (Canvas2D_1._m.m[15] > -BABYLON.Epsilon && Canvas2D_1._m.m[15] <= 0) {
+                Canvas2D_1._m.m[15] = -BABYLON.Epsilon;
+            }
             var vp = cam.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
             var projPoints = new Array(4);
             for (var i = 0; i < 4; i++) {
