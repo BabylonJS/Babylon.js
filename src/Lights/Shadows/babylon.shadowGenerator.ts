@@ -191,8 +191,6 @@
             this._scene = light.getScene();
             light._shadowGenerator = this;
 
-            this._initializeGenerator(1);
-
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
             if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
@@ -203,6 +201,8 @@
                 this._useFullFloat = false;
                 this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
             }
+
+            this._initializeGenerator(1);
         }
         
         private _initializeGenerator(boxBlurOffset: number): void {
