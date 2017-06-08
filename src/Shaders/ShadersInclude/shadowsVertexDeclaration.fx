@@ -1,5 +1,5 @@
 ﻿#ifdef SHADOWS
-	#if defined(SPOTLIGHT{X}) || defined(DIRLIGHT{X})
+	#if !defined(SHADOWCUBE{X})
 		uniform mat4 lightMatrix{X};
 		varying vec4 vPositionFromLight{X};
 	#endif

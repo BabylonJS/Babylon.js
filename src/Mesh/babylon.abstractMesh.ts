@@ -1677,10 +1677,11 @@
                 // Shadow generators
                 var generator = light.getShadowGenerator();
                 if (generator) {
-                    meshIndex = generator.getShadowMap().renderList.indexOf(this);
+                    var shadowMap = generator.getShadowMap();
+                    meshIndex = shadowMap.renderList.indexOf(this);
 
                     if (meshIndex !== -1) {
-                        generator.getShadowMap().renderList.splice(meshIndex, 1);
+                        shadowMap.renderList.splice(meshIndex, 1);
                     }
                 }
             });
