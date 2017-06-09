@@ -347,21 +347,23 @@
                 colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);            
             }
             
-            effect.setFloat4(positiveUniform, 
-                colorCurves._positiveCurve.r,
-                colorCurves._positiveCurve.g,
-                colorCurves._positiveCurve.b,
-                colorCurves._positiveCurve.a);
-            effect.setFloat4(neutralUniform, 
-                colorCurves._midtonesCurve.r,
-                colorCurves._midtonesCurve.g,
-                colorCurves._midtonesCurve.b,
-                colorCurves._midtonesCurve.a);
-            effect.setFloat4(negativeUniform, 
-                colorCurves._negativeCurve.r,
-                colorCurves._negativeCurve.g,
-                colorCurves._negativeCurve.b,
-                colorCurves._negativeCurve.a);
+            if (effect) {
+                effect.setFloat4(positiveUniform, 
+                    colorCurves._positiveCurve.r,
+                    colorCurves._positiveCurve.g,
+                    colorCurves._positiveCurve.b,
+                    colorCurves._positiveCurve.a);
+                effect.setFloat4(neutralUniform, 
+                    colorCurves._midtonesCurve.r,
+                    colorCurves._midtonesCurve.g,
+                    colorCurves._midtonesCurve.b,
+                    colorCurves._midtonesCurve.a);
+                effect.setFloat4(negativeUniform, 
+                    colorCurves._negativeCurve.r,
+                    colorCurves._negativeCurve.g,
+                    colorCurves._negativeCurve.b,
+                    colorCurves._negativeCurve.a);
+            }
         }
         
         /**

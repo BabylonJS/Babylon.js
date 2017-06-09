@@ -4809,7 +4809,9 @@ var BABYLON;
                 serializationObject = {};
             }
             // Tags
-            serializationObject.tags = BABYLON.Tags.GetTags(entity);
+            if (BABYLON.Tags) {
+                serializationObject.tags = BABYLON.Tags.GetTags(entity);
+            }
             // Properties
             for (var property in entity.__serializableMembers) {
                 var propertyDescriptor = entity.__serializableMembers[property];
@@ -4850,7 +4852,9 @@ var BABYLON;
         SerializationHelper.Parse = function (creationFunction, source, scene, rootUrl) {
             var destination = creationFunction();
             // Tags
-            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(destination, source.tags);
+            }
             // Properties
             for (var property in destination.__serializableMembers) {
                 var propertyDescriptor = destination.__serializableMembers[property];
@@ -4890,7 +4894,9 @@ var BABYLON;
         SerializationHelper.Clone = function (creationFunction, source) {
             var destination = creationFunction();
             // Tags
-            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(destination, source.tags);
+            }
             // Properties
             for (var property in destination.__serializableMembers) {
                 var propertyDescriptor = destination.__serializableMembers[property];
@@ -21055,7 +21061,7 @@ var BABYLON;
             serializationObject.name = this.name;
             serializationObject.id = this.id;
             serializationObject.type = this.getClassName();
-            if (BABYLON.Tags.HasTags(this)) {
+            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
                 serializationObject.tags = BABYLON.Tags.GetTags(this);
             }
             serializationObject.position = this.position.asArray();
@@ -21218,7 +21224,9 @@ var BABYLON;
                 mesh = new Mesh(parsedMesh.name, scene);
             }
             mesh.id = parsedMesh.id;
-            BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
+            }
             mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
             if (parsedMesh.metadata !== undefined) {
                 mesh.metadata = parsedMesh.metadata;
@@ -21376,7 +21384,9 @@ var BABYLON;
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
-                    BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
+                    }
                     instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
                     if (parsedInstance.parentId) {
                         instance._waitingParentId = parsedInstance.parentId;
@@ -24069,7 +24079,9 @@ var BABYLON;
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
             var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
             multiMaterial.id = parsedMultiMaterial.id;
-            BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            }
             for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                 var subMatId = parsedMultiMaterial.materials[matIndex];
                 if (subMatId) {
@@ -27403,7 +27415,7 @@ var BABYLON;
         Geometry.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.id = this.id;
-            if (BABYLON.Tags.HasTags(this)) {
+            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
                 serializationObject.tags = BABYLON.Tags.GetTags(this);
             }
             return serializationObject;
@@ -27669,7 +27681,9 @@ var BABYLON;
                 return null; // null since geometry could be something else than a box...
             }
             var geometry = new Geometry(parsedVertexData.id, scene);
-            BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            }
             if (parsedVertexData.delayLoadingFile) {
                 geometry.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
@@ -27819,7 +27833,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a box...
                     }
                     var box = new Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(box, parsedBox.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(box, parsedBox.tags);
+                    }
                     scene.pushGeometry(box, true);
                     return box;
                 };
@@ -27853,7 +27869,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a sphere...
                     }
                     var sphere = new Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(sphere, parsedSphere.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(sphere, parsedSphere.tags);
+                    }
                     scene.pushGeometry(sphere, true);
                     return sphere;
                 };
@@ -27913,7 +27931,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a cylinder...
                     }
                     var cylinder = new Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                    }
                     scene.pushGeometry(cylinder, true);
                     return cylinder;
                 };
@@ -27949,7 +27969,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a torus...
                     }
                     var torus = new Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(torus, parsedTorus.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(torus, parsedTorus.tags);
+                    }
                     scene.pushGeometry(torus, true);
                     return torus;
                 };
@@ -27983,7 +28005,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a ground...
                     }
                     var ground = new Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(ground, parsedGround.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(ground, parsedGround.tags);
+                    }
                     scene.pushGeometry(ground, true);
                     return ground;
                 };
@@ -28036,7 +28060,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a ground...
                     }
                     var plane = new Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(plane, parsedPlane.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(plane, parsedPlane.tags);
+                    }
                     scene.pushGeometry(plane, true);
                     return plane;
                 };
@@ -28079,7 +28105,9 @@ var BABYLON;
                         return null; // null since geometry could be something else than a ground...
                     }
                     var torusKnot = new Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-                    BABYLON.Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                    if (BABYLON.Tags) {
+                        BABYLON.Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                    }
                     scene.pushGeometry(torusKnot, true);
                     return torusKnot;
                 };
@@ -60798,9 +60826,11 @@ var BABYLON;
                 colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
                 colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
             }
-            effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
-            effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
-            effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
+            if (effect) {
+                effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
+                effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
+                effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
+            }
         };
         /**
          * Prepare the list of uniforms associated with the ColorCurves effects.
