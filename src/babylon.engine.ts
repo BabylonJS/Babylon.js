@@ -2266,18 +2266,21 @@
         }
 
         // Textures
-        public wipeCaches(): void {
+        public wipeCaches(bruteForce?: boolean): void {
             if (this.preventCacheWipeBetweenFrames) {
                 return;
             }
             this.resetTextureCache();
             this._currentEffect = null;
 
-            // 6/8/2017: deltakosh: Should not be required anymore. This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
-            // this._stencilState.reset();
-            // this._depthCullingState.reset();
-            // this.setDepthFunctionToLessOrEqual();
-            // this._alphaState.reset();
+            // 6/8/2017: deltakosh: Should not be required anymore. 
+            // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
+            if (bruteForce) {
+                this._stencilState.reset();
+                this._depthCullingState.reset();
+                this.setDepthFunctionToLessOrEqual();
+                this._alphaState.reset();
+            }
 
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
