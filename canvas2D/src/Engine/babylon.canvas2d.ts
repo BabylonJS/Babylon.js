@@ -1542,7 +1542,7 @@
             }
 
             // If the canvas fit the rendering size and it changed, update
-            if (renderingSizeChanged && this._fitRenderingDevice) {
+            if (!this._designSize && renderingSizeChanged && this._fitRenderingDevice) {
                 this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
