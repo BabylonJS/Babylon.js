@@ -11,13 +11,14 @@ module BABYLON.GUI {
             super(name);
             this.thickness = 1;
             this.isPointerBlocker = true;
+            this._initialAlpha = this.alpha;
 
-            this.pointerEnterAnimation = () => {
-                this.alpha -= 0.1;
+            this.pointerEnterAnimation = () => {               
+                this.alpha = (this._initialAlpha - 0.1);
             }
 
-            this.pointerOutAnimation = () => {
-                this.alpha += 0.1;
+            this.pointerOutAnimation = () => {                
+                this.alpha = this._initialAlpha;
             }    
 
             this.pointerDownAnimation = () => {
