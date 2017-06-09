@@ -16,6 +16,7 @@ declare module BABYLON {
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void;
+        canDirectLoad(data: string): boolean;
         private static _parse(data);
         private _getLoader(loaderData);
         private static _parseBinary(data);

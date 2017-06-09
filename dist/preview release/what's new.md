@@ -109,6 +109,8 @@
   - `createCompoundImpostor` has been removed. Use PhysicsImpostor parent/child instead
 - ActionManager:
   - `LongPressDelay` and `DragMovementThreshold` are now respectively Scene.LongPressDelay and Scene.DragMovementThreshold
+- HDRRenderingPipeline:
+  - `HDRRenderingPipeline` has been removed because it is deprecated. It is now replaced by `StandardRenderingPipeline` which is more advanced. See [documentation](http://doc.babylonjs.com/tutorials/using_standard_rendering_pipeline)
  
 ## Canvas2D
 

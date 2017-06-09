@@ -162,6 +162,11 @@ module BABYLON.GUI {
                     var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
+                    if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                        control.isVisible = false;
+                        continue;
+                    }
+                    control.isVisible = true;
                     control._moveToProjectedPosition(projectedPosition);
                 }
             }

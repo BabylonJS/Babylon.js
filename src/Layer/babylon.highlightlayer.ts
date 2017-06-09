@@ -610,6 +610,9 @@ module BABYLON {
             var previousStencilBuffer = engine.getStencilBuffer();
             var previousStencilFunction = engine.getStencilFunction();
             var previousStencilMask = engine.getStencilMask();
+            var previousStencilOperationPass = engine.getStencilOperationPass();
+            var previousStencilOperationFail = engine.getStencilOperationFail();
+            var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();            
             var previousAlphaMode = engine.getAlphaMode();
 
             // Texture
@@ -617,6 +620,11 @@ module BABYLON {
 
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
+
+            // Stencil operations
+            engine.setStencilOperationPass(Engine.REPLACE);
+            engine.setStencilOperationFail(Engine.KEEP);
+            engine.setStencilOperationDepthFail(Engine.KEEP);
 
             // Draw order
             engine.setAlphaMode(this._options.alphaBlendingMode);
@@ -640,6 +648,11 @@ module BABYLON {
             engine.setStencilMask(previousStencilMask);
             engine.setAlphaMode(previousAlphaMode);
             engine.setStencilBuffer(previousStencilBuffer);
+            engine.setStencilOperationPass(previousStencilOperationPass);
+            engine.setStencilOperationFail(previousStencilOperationFail);
+            engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);            
+
+            (<any>engine)._stencilState.reset();
 
             this.onAfterComposeObservable.notifyObservers(this);
 

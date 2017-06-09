@@ -24,7 +24,6 @@ sound on mesh
 ssao rendering pipeline
 ssao 2
 volumetric Light Scattering
-hdr Rendering Pipeline
 refraction and Reflection
 pbr
 instanced bones

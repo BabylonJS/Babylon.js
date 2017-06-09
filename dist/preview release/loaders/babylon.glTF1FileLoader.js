@@ -26,6 +26,9 @@ var BABYLON;
             }
             return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onError);
         };
+        GLTFFileLoader.prototype.canDirectLoad = function (data) {
+            return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
+        };
         GLTFFileLoader._parse = function (data) {
             if (data instanceof ArrayBuffer) {
                 return GLTFFileLoader._parseBinary(data);
