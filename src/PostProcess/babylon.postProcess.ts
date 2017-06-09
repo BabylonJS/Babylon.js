@@ -35,6 +35,7 @@
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
         private _shareOutputWithPostProcess: PostProcess;
+        private _texelSize = Vector2.Zero();
         
         // Events
 
@@ -114,6 +115,14 @@
 
         public getCamera(): Camera {
             return this._camera;
+        }
+
+        public get texelSize(): Vector2 {
+            if (this._shareOutputWithPostProcess) {
+                return this._shareOutputWithPostProcess.texelSize;
+            }
+
+            return this._texelSize;
         }
 
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
@@ -229,6 +238,8 @@
                     if (this._reusable) {
                         this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                     }
+                    
+                    this._texelSize.copyFromFloats(1.0 / this.width, 1.0 / this.height);
 
                     this.onSizeChangedObservable.notifyObservers(this);
                 }

@@ -43610,6 +43610,7 @@ var BABYLON;
             this._textures = new BABYLON.SmartArray(2);
             this._currentRenderTextureInd = 0;
             this._scaleRatio = new BABYLON.Vector2(1, 1);
+            this._texelSize = BABYLON.Vector2.Zero();
             // Events
             /**
             * An event triggered when the postprocess is activated.
@@ -43720,6 +43721,16 @@ var BABYLON;
         PostProcess.prototype.getCamera = function () {
             return this._camera;
         };
+        Object.defineProperty(PostProcess.prototype, "texelSize", {
+            get: function () {
+                if (this._shareOutputWithPostProcess) {
+                    return this._shareOutputWithPostProcess.texelSize;
+                }
+                return this._texelSize;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PostProcess.prototype.getEngine = function () {
             return this._engine;
         };
@@ -43777,6 +43788,7 @@ var BABYLON;
                     if (this._reusable) {
                         this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                     }
+                    this._texelSize.copyFromFloats(1.0 / this.width, 1.0 / this.height);
                     this.onSizeChangedObservable.notifyObservers(this);
                 }
                 this._textures.forEach(function (texture) {
@@ -50762,12 +50774,9 @@ var BABYLON;
         function FxaaPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             var _this = _super.call(this, name, "fxaa", ["texelSize"], null, options, camera, samplingMode || BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType) || this;
-            _this.onSizeChangedObservable.add(function () {
-                _this.texelWidth = 1.0 / _this.width;
-                _this.texelHeight = 1.0 / _this.height;
-            });
             _this.onApplyObservable.add(function (effect) {
-                effect.setFloat2("texelSize", _this.texelWidth, _this.texelHeight);
+                var texelSize = _this.texelSize;
+                effect.setFloat2("texelSize", texelSize.x, texelSize.y);
             });
             return _this;
         }
@@ -60691,7 +60700,10 @@ var BABYLON;
          * @param colorCurves The color curve to bind
          * @param effect The effect to bind to
          */
-        ColorCurves.Bind = function (colorCurves, effect) {
+        ColorCurves.Bind = function (colorCurves, effect, positiveUniform, neutralUniform, negativeUniform) {
+            if (positiveUniform === void 0) { positiveUniform = "vCameraColorCurvePositive"; }
+            if (neutralUniform === void 0) { neutralUniform = "vCameraColorCurveNeutral"; }
+            if (negativeUniform === void 0) { negativeUniform = "vCameraColorCurveNegative"; }
             if (colorCurves._dirty) {
                 colorCurves._dirty = false;
                 // Fill in global info.
@@ -60709,9 +60721,9 @@ var BABYLON;
                 colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
                 colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
             }
-            effect.setFloat4("vCameraColorCurvePositive", colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
-            effect.setFloat4("vCameraColorCurveNeutral", colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
-            effect.setFloat4("vCameraColorCurveNegative", colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
+            effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
+            effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
+            effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
         };
         /**
          * Prepare the list of uniforms associated with the ColorCurves effects.
