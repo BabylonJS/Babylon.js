@@ -265,16 +265,18 @@
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
-
-            // Alpha
-            this._engine.setAlphaMode(this.alphaMode);
-            if (this.alphaConstants) {
-                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
-            }
         }
 
         public get isSupported(): boolean {
             return this._effect.isSupported;
+        }
+
+        public get aspectRatio(): number {
+            if (this._shareOutputWithPostProcess) {
+                return this._shareOutputWithPostProcess.aspectRatio;
+            }
+
+            return this.width / this.height;
         }
         
         public apply(): Effect {
@@ -287,6 +289,12 @@
             this._engine.setState(false);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
+
+            // Alpha
+            this._engine.setAlphaMode(this.alphaMode);
+            if (this.alphaConstants) {
+                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
+            }            
 
             // Texture            
             var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
