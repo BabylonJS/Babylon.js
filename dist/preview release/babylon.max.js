@@ -51278,7 +51278,7 @@ var BABYLON;
             _this._cameraToneMappingEnabled = true;
             _this._updateParameters();
             _this.onApply = function (effect) {
-                var aspectRatio = _this.width / _this.height;
+                var aspectRatio = _this.aspectRatio;
                 // Color 
                 BABYLON.ColorCurves.Bind(_this.colorCurves, effect);
                 // Vignette

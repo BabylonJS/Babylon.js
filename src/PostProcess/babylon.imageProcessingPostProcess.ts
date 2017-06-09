@@ -70,7 +70,7 @@
             this._updateParameters();
 
             this.onApply = (effect: Effect) => {
-                let aspectRatio = this.width / this.height;
+                let aspectRatio = this.aspectRatio;
                 
                 // Color 
                 ColorCurves.Bind(this.colorCurves, effect);
