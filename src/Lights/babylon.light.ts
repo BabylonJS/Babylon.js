@@ -169,6 +169,7 @@
          * exceeding the number allowed of the materials.
          */
         @serialize()
+        private _renderPriority: number;
         @expandToProperty("_reorderLightsInScene")
         public renderPriority: number = 0;
 
@@ -651,7 +652,11 @@
         }
 
         private _reorderLightsInScene(): void {
-            this.getScene().orderLightsByPriority();
+            var scene = this.getScene();
+            if (this.renderPriority != 0) {
+                scene.requireLightSorting = true;
+            }
+            this.getScene().sortLightsByPriority();
         }
     }
 }
