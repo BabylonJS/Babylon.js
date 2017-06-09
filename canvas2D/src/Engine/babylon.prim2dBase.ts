@@ -4146,10 +4146,6 @@
                         hasV = true;
                         setSize = true;
                     }
-                }else{
-                    //this prevents the prim from flying off the screen when margin is not set (bug #1929)
-                    this._marginOffset.x = 0;
-                    this._marginOffset.y = 0;
                 }
 
                 if (!hasH) {
@@ -4250,11 +4246,13 @@
                         this.onPrimitivePropertyDirty(Prim2DBase.actualSizeProperty.flagId);
                     }
 
+                    this._marginOffset.x -= transbi.x * levelScale.x;
+                    this._marginOffset.y -= transbi.y * levelScale.y;
+                    
                 }
 
                 let lap = this.layoutAreaPos;
-                this._marginOffset.x -= transbi.x * levelScale.x;
-                this._marginOffset.y -= transbi.y * levelScale.y;
+
                 this.actualPosition = new Vector2(this._marginOffset.x + (lap ? lap.x : 0), this._marginOffset.y + (lap ? lap.y : 0));
 //                if (setSize) {
                     this.actualSize = primNewSize.clone();
