@@ -18245,8 +18245,8 @@ var BABYLON;
             if (this._renderObservable && this._renderObservable.hasObservers()) {
                 this._renderObservable.notifyObservers(this, Canvas2D_1.RENDEROBSERVABLE_PRE);
             }
-            this._updateCanvasState(false);
             this._updateTrackedNodes();
+            this._updateCanvasState(false);
             // Nothing to do is the Canvas is not visible
             if (this.isVisible === false) {
                 return;
