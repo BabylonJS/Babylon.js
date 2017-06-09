@@ -1574,9 +1574,9 @@
                 this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_PRE);
             }
 
-            this._updateCanvasState(false);
-
             this._updateTrackedNodes();
+
+            this._updateCanvasState(false);
 
             // Nothing to do is the Canvas is not visible
             if (this.isVisible === false) {
