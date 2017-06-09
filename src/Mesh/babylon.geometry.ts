@@ -655,7 +655,7 @@
 
             serializationObject.id = this.id;
 
-            if (Tags.HasTags(this)) {
+            if (Tags && Tags.HasTags(this)) {
                 serializationObject.tags = Tags.GetTags(this);
             }
 
@@ -981,7 +981,9 @@
 
             var geometry = new Geometry(parsedVertexData.id, scene);
 
-            Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            if (Tags) {
+                Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            }
 
             if (parsedVertexData.delayLoadingFile) {
                 geometry.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
@@ -1146,7 +1148,9 @@
                 }
 
                 var box = new Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-                Tags.AddTagsTo(box, parsedBox.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(box, parsedBox.tags);
+                }
 
                 scene.pushGeometry(box, true);
 
@@ -1183,7 +1187,9 @@
                 }
 
                 var sphere = new Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-                Tags.AddTagsTo(sphere, parsedSphere.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(sphere, parsedSphere.tags);
+                }
 
                 scene.pushGeometry(sphere, true);
 
@@ -1239,7 +1245,9 @@
                 }
 
                 var cylinder = new Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-                Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                }
 
                 scene.pushGeometry(cylinder, true);
 
@@ -1277,7 +1285,9 @@
                 }
 
                 var torus = new Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-                Tags.AddTagsTo(torus, parsedTorus.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(torus, parsedTorus.tags);
+                }
 
                 scene.pushGeometry(torus, true);
 
@@ -1315,7 +1325,9 @@
                 }
 
                 var ground = new Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-                Tags.AddTagsTo(ground, parsedGround.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(ground, parsedGround.tags);
+                }
 
                 scene.pushGeometry(ground, true);
 
@@ -1366,7 +1378,9 @@
                 }
 
                 var plane = new Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-                Tags.AddTagsTo(plane, parsedPlane.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(plane, parsedPlane.tags);
+                }
 
                 scene.pushGeometry(plane, true);
 
@@ -1407,7 +1421,9 @@
                 }
 
                 var torusKnot = new Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-                Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                }
 
                 scene.pushGeometry(torusKnot, true);
 
