@@ -60,6 +60,7 @@
 - Added a [HTML page](https://github.com/BabylonJS/Babylon.js/blob/master/Tools/Gulp/profiling.html) with embedded directions to improve the custom build process. ([jcpalmer](https://github.com/Palmer-JC))
 - Added glTF 2.0 loader with versioning support ([bghgary](https://github.com/bghgary), thanks to [BeardedGnome](https://github.com/BeardedGnome) for animation updates)
 - New `Motion Blur` effect added into `StandardRenderingPipeline` [Demo](http://www.babylonjs.com/Demos/MotionBlur/) ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+- Allow the BlackAndWhite post process to adjust the degree in subsequent frames, for `Welcome to Wonderland`	types of animation ([jcpalmer](https://github.com/Palmer-JC))
  
 ### Bug fixes
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 
