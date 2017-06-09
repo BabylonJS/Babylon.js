@@ -247,6 +247,7 @@
         private static _ALPHA_PREMULTIPLIED = 7;
         private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         private static _ALPHA_INTERPOLATE = 9;
+        private static _ALPHA_SCREENMODE = 10;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -385,6 +386,10 @@
         public static get ALPHA_INTERPOLATE(): number {
             return Engine._ALPHA_INTERPOLATE;
         }        
+
+        public static get ALPHA_SCREENMODE(): number {
+            return Engine._ALPHA_SCREENMODE;
+        }           
 
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
@@ -2245,7 +2250,11 @@
                 case Engine.ALPHA_INTERPOLATE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
                     this._alphaState.alphaBlend = true;
-                    break;                    
+                    break;    
+                case Engine.ALPHA_SCREENMODE:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;                                      
             }
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
