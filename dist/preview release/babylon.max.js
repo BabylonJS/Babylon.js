@@ -51148,7 +51148,7 @@ var BABYLON;
                 // Color 
                 BABYLON.ColorCurves.Bind(_this.colorCurves, effect);
                 // Vignette
-                var vignetteScaleY = _this.getCamera().fov * 0.5;
+                var vignetteScaleY = Math.tan(_this.getCamera().fov * 0.5);
                 var vignetteScaleX = vignetteScaleY * aspectRatio;
                 var vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
                 vignetteScaleX = BABYLON.Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, _this.vignetteStretch);
