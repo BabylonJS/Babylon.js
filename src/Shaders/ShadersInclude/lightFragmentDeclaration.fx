@@ -7,11 +7,11 @@
 		vec3 vLightSpecular{X} = vec3(0.);
 	#endif
 	#ifdef SHADOW{X}
-		#if defined(SPOTLIGHT{X}) || defined(DIRLIGHT{X})
+		#if defined(SHADOWCUBE{X})
+			uniform samplerCube shadowSampler{X};
+		#else
 			varying vec4 vPositionFromLight{X};
 			uniform sampler2D shadowSampler{X};
-		#else
-			uniform samplerCube shadowSampler{X};
 		#endif
 		uniform vec3 shadowsInfo{X};
 	#endif

@@ -272,21 +272,11 @@ void main(void) {
 	// Compute roughness.
 	float roughness = clamp(1. - microSurface, 0.000001, 1.0);
 
-	// Lighting
-	vec3 lightDiffuseContribution = vec3(0., 0., 0.);
-
-#ifdef SPECULARTERM
-	vec3 lightSpecularContribution = vec3(0., 0., 0.);
-#endif
-	
-	float notShadowLevel = 1.; // 1 - shadowLevel
-
 	#ifdef LIGHTMAP
   		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
   	#endif
 
 	float NdotL = -1.;
-	lightingInfo info;
 
 	// Compute reflectance.
 	float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
@@ -297,10 +287,22 @@ void main(void) {
 	vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
 	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
-#include<pbrLightFunctionsCall>[0..maxSimultaneousLights]
+	// Lighting
+	vec3 diffuseBase = vec3(0., 0., 0.);
 
 #ifdef SPECULARTERM
-	lightSpecularContribution *= vLightingIntensity.w;
+	vec3 specularBase = vec3(0., 0., 0.);
+#endif
+	
+	lightingInfo info;
+	float shadow = 1.; // 1 - shadowLevel
+
+#include<lightFragment>[0..maxSimultaneousLights]
+
+	vec3 lightDiffuseContribution = diffuseBase;
+
+#ifdef SPECULARTERM
+	vec3 lightSpecularContribution = specularBase * vLightingIntensity.w;
 #endif
 
 #ifdef OPACITY

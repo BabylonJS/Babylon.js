@@ -1,5 +1,5 @@
 ﻿#ifdef SHADOWS
-	#if defined(SPOTLIGHT{X}) || defined(DIRLIGHT{X})
+	#if !defined(SHADOWCUBE{X})
 		vPositionFromLight{X} = lightMatrix{X} * worldPos;
 	#endif
 #endif

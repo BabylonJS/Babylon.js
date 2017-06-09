@@ -1,5 +1,6 @@
 ﻿module BABYLON {
     class PBRMaterialDefines extends MaterialDefines {
+        public PBR = true;
         public ALBEDO = false;
         public AMBIENT = false;
         public AMBIENTINGRAYSCALE = false;
@@ -87,6 +88,12 @@
         constructor() {
             super();
             this.rebuild();
+        }
+
+        public reset(): void {
+            super.reset();
+            this.ALPHATESTVALUE = 0.4;
+            this.PBR = true;
         }
     }
 

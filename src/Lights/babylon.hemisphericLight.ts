@@ -73,7 +73,7 @@
          * Returns the integer 3.  
          */
         public getTypeID(): number {
-            return 3;
+            return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
         }
     }
 } 
