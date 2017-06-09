@@ -114,11 +114,11 @@
                     defines["DIRLIGHT" + lightIndex] = false;
 
                     var type;
-                    if (light.getTypeID() === 2) {
+                    if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
                         type = "SPOTLIGHT" + lightIndex;
-                    } else if (light.getTypeID() === 3) {
+                    } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
                         type = "HEMILIGHT" + lightIndex;
-                    } else if (light.getTypeID() === 0) {
+                    } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
                         type = "POINTLIGHT" + lightIndex;
                     } else {
                         type = "DIRLIGHT" + lightIndex;
@@ -133,22 +133,15 @@
 
                     // Shadows
                     defines["SHADOW" + lightIndex] = false;
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
-                        if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            defines["SHADOW" + lightIndex] = true;
+                    defines["SHADOWPCF" + lightIndex] = false;
+                    defines["SHADOWESM" + lightIndex] = false;
+                    defines["SHADOWCUBE" + lightIndex] = false;
 
+                    if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
+                        var shadowGenerator = light.getShadowGenerator();
+                        if (shadowGenerator) {
                             shadowEnabled = true;
-
-                            defines["SHADOWPCF" + lightIndex] = false;
-                            defines["SHADOWESM" + lightIndex] = false;
-
-                            if (shadowGenerator.usePoissonSampling) {
-                                defines["SHADOWPCF" + lightIndex] = true;
-                            } 
-                            else if (shadowGenerator.useExponentialShadowMap || shadowGenerator.useBlurExponentialShadowMap) {
-                                defines["SHADOWESM" + lightIndex] = true;
-                            }
+                            shadowGenerator.prepareDefines(defines, lightIndex);
                         }
                     }
 
@@ -312,19 +305,11 @@
 
         // Bindings
         public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect, depthValuesAlreadySet: boolean): boolean {
-            var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
-
-            if (mesh.receiveShadows && shadowGenerator) {
-                if (!(<any>light).needCube()) {
-                    effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                } else {
-                    if (!depthValuesAlreadySet) {
-                        depthValuesAlreadySet = true;
-                        effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                    }
+            if (light.shadowEnabled && mesh.receiveShadows) {
+                var shadowGenerator = light.getShadowGenerator();
+                if (shadowGenerator) {
+                    depthValuesAlreadySet = shadowGenerator.bindShadowLight(lightIndex, effect, depthValuesAlreadySet);
                 }
-                effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                light._uniformBuffer.updateFloat3("shadowsInfo", shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.depthScale, lightIndex);
             }
 
             return depthValuesAlreadySet;
