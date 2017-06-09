@@ -15246,6 +15246,7 @@ var BABYLON;
         function Scene(engine) {
             // Members
             this.autoClear = true;
+            this.autoClearDepthAndStencil = true;
             this.clearColor = new BABYLON.Color4(0.2, 0.2, 0.3, 1.0);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
@@ -17627,7 +17628,9 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
             }
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true, true);
+            if (this.autoClearDepthAndStencil || this.autoClear) {
+                this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            }
             // Shadows
             if (this.shadowsEnabled) {
                 for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
@@ -43792,15 +43795,20 @@ var BABYLON;
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
-            // Alpha
-            this._engine.setAlphaMode(this.alphaMode);
-            if (this.alphaConstants) {
-                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
-            }
         };
         Object.defineProperty(PostProcess.prototype, "isSupported", {
             get: function () {
                 return this._effect.isSupported;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PostProcess.prototype, "aspectRatio", {
+            get: function () {
+                if (this._shareOutputWithPostProcess) {
+                    return this._shareOutputWithPostProcess.aspectRatio;
+                }
+                return this.width / this.height;
             },
             enumerable: true,
             configurable: true
@@ -43814,6 +43822,11 @@ var BABYLON;
             this._engine.setState(false);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
+            // Alpha
+            this._engine.setAlphaMode(this.alphaMode);
+            if (this.alphaConstants) {
+                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
+            }
             // Texture            
             var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
             this._effect._bindTexture("textureSampler", source);
