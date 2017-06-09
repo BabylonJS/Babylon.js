@@ -9429,6 +9429,11 @@ var BABYLON;
                         setSize = true;
                     }
                 }
+                else {
+                    //this prevents the prim from flying off the screen when margin is not set (bug #1929)
+                    this._marginOffset.x = 0;
+                    this._marginOffset.y = 0;
+                }
                 if (!hasH) {
                     // If the Horizontal size is Auto, we have to compute it from its content and padding
                     if (isHSizeAuto) {
@@ -18222,7 +18227,7 @@ var BABYLON;
                 this._setLayoutDirty();
             }
             // If the canvas fit the rendering size and it changed, update
-            if (renderingSizeChanged && this._fitRenderingDevice) {
+            if (!this._designSize && renderingSizeChanged && this._fitRenderingDevice) {
                 this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;

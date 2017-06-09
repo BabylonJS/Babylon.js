@@ -5225,14 +5225,59 @@ var BABYLON;
             } while (count < value);
             return count === value;
         };
-        Tools.GetExponentOfTwo = function (value, max) {
-            var count = 1;
-            do {
-                count *= 2;
-            } while (count < value);
-            if (count > max)
-                count = max;
-            return count;
+        /**
+         * Find the next highest power of two.
+         * @param x Number to start search from.
+         * @return Next highest power of two.
+         */
+        Tools.CeilingPOT = function (x) {
+            x--;
+            x |= x >> 1;
+            x |= x >> 2;
+            x |= x >> 4;
+            x |= x >> 8;
+            x |= x >> 16;
+            x++;
+            return x;
+        };
+        /**
+         * Find the next lowest power of two.
+         * @param x Number to start search from.
+         * @return Next lowest power of two.
+         */
+        Tools.FloorPOT = function (x) {
+            x = x | (x >> 1);
+            x = x | (x >> 2);
+            x = x | (x >> 4);
+            x = x | (x >> 8);
+            x = x | (x >> 16);
+            return x - (x >> 1);
+        };
+        /**
+         * Find the nearest power of two.
+         * @param x Number to start search from.
+         * @return Next nearest power of two.
+         */
+        Tools.NearestPOT = function (x) {
+            var c = Tools.CeilingPOT(x);
+            var f = Tools.FloorPOT(x);
+            return (c - x) > (x - f) ? f : c;
+        };
+        Tools.GetExponentOfTwo = function (value, max, mode) {
+            if (mode === void 0) { mode = BABYLON.Engine.SCALEMODE_NEAREST; }
+            var pot;
+            switch (mode) {
+                case BABYLON.Engine.SCALEMODE_FLOOR:
+                    pot = Tools.FloorPOT(value);
+                    break;
+                case BABYLON.Engine.SCALEMODE_NEAREST:
+                    pot = Tools.NearestPOT(value);
+                    break;
+                case BABYLON.Engine.SCALEMODE_CEILING:
+                    pot = Tools.CeilingPOT(value);
+                    break;
+            }
+            return Math.min(pot, max);
         };
         Tools.GetFilename = function (path) {
             var index = path.lastIndexOf("/");
@@ -7690,6 +7735,27 @@ var BABYLON;
         Object.defineProperty(Engine, "TEXTURETYPE_HALF_FLOAT", {
             get: function () {
                 return Engine._TEXTURETYPE_HALF_FLOAT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "SCALEMODE_FLOOR", {
+            get: function () {
+                return Engine._SCALEMODE_FLOOR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "SCALEMODE_NEAREST", {
+            get: function () {
+                return Engine._SCALEMODE_NEAREST;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "SCALEMODE_CEILING", {
+            get: function () {
+                return Engine._SCALEMODE_CEILING;
             },
             enumerable: true,
             configurable: true
@@ -10415,6 +10481,10 @@ var BABYLON;
     Engine._INVERT = 0x150A;
     Engine._INCR_WRAP = 0x8507;
     Engine._DECR_WRAP = 0x8508;
+    // Texture rescaling mode
+    Engine._SCALEMODE_FLOOR = 1;
+    Engine._SCALEMODE_NEAREST = 2;
+    Engine._SCALEMODE_CEILING = 3;
     // Updatable statics so stick with vars here
     Engine.CollisionsEpsilon = 0.001;
     Engine.CodeRepository = "src/";
@@ -40808,6 +40878,8 @@ var BABYLON;
                 Can only be used on a single postprocess or on the last one of a chain.
             */
             this.enablePixelPerfectMode = false;
+            this.scaleMode = BABYLON.Engine.SCALEMODE_FLOOR;
+            this.alwaysForcePOT = false;
             this.samples = 1;
             this._reusable = false;
             this._textures = new BABYLON.SmartArray(2);
@@ -40962,12 +41034,12 @@ var BABYLON;
                 var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._options) | 0;
                 var desiredWidth = this._options.width || requiredWidth;
                 var desiredHeight = this._options.height || requiredHeight;
-                if (this.renderTargetSamplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+                if (this.renderTargetSamplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!this._options.width) {
-                        desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                        desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode);
                     }
                     if (!this._options.height) {
-                        desiredHeight = BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                        desiredHeight = BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode);
                     }
                 }
                 if (this.width !== desiredWidth || this.height !== desiredHeight) {

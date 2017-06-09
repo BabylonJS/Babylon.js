@@ -74,17 +74,63 @@
             return count === value;
         }
 
-        public static GetExponentOfTwo(value: number, max: number): number {
-            var count = 1;
+		/**
+		 * Find the next highest power of two.
+		 * @param x Number to start search from.
+		 * @return Next highest power of two.
+		 */
+		public static CeilingPOT(x: number): number {
+			x--;
+			x |= x >> 1;
+			x |= x >> 2;
+			x |= x >> 4;
+			x |= x >> 8;
+			x |= x >> 16;
+			x++;
+			return x;
+		}
 
-            do {
-                count *= 2;
-            } while (count < value);
+		/**
+		 * Find the next lowest power of two.
+		 * @param x Number to start search from.
+		 * @return Next lowest power of two.
+		 */
+		public static FloorPOT(x: number): number {
+			x = x | (x >> 1);
+			x = x | (x >> 2);
+			x = x | (x >> 4);
+			x = x | (x >> 8);
+			x = x | (x >> 16);
+			return x - (x >> 1);
+		}
 
-            if (count > max)
-                count = max;
+		/**
+		 * Find the nearest power of two.
+		 * @param x Number to start search from.
+		 * @return Next nearest power of two.
+		 */
+		public static NearestPOT(x: number): number {
+			var c = Tools.CeilingPOT(x);
+			var f = Tools.FloorPOT(x);
+			return (c - x) > (x - f) ? f : c;
+		}        
 
-            return count;
+        public static GetExponentOfTwo(value: number, max: number, mode = Engine.SCALEMODE_NEAREST): number {
+            let pot;
+
+            switch (mode) {
+                case Engine.SCALEMODE_FLOOR:
+                    pot = Tools.FloorPOT(value);
+                break;
+                case Engine.SCALEMODE_NEAREST:
+                    pot = Tools.NearestPOT(value);
+                break;
+                case Engine.SCALEMODE_CEILING:
+                    pot = Tools.CeilingPOT(value);
+                break;
+            }
+
+            return  Math.min(pot, max);
         }
 
         public static GetFilename(path: string): string {
