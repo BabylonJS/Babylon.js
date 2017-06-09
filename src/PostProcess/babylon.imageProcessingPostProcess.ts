@@ -76,7 +76,7 @@
                 ColorCurves.Bind(this.colorCurves, effect);
 
                 // Vignette
-                let vignetteScaleY = this.getCamera().fov * 0.5 ;
+                let vignetteScaleY = Math.tan(this.getCamera().fov * 0.5);
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
