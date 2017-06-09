@@ -737,6 +737,8 @@
             return this._frustumPlanes;
         }
 
+        public requireLightSorting = false;
+
         private _selectionOctree: Octree<AbstractMesh>;
 
         private _pointerOverMesh: AbstractMesh;
@@ -1826,7 +1828,7 @@
             if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
-                this.orderLightsByPriority();
+                this.sortLightsByPriority();
             }
             this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
@@ -1859,13 +1861,15 @@
         public addLight(newLight: Light) {
             newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
-            this.orderLightsByPriority();
+            this.sortLightsByPriority();
 
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
-        public orderLightsByPriority(): void {
-            this.lights = this.lights.sort(Light.compareLightsPriority);
+        public sortLightsByPriority(): void {
+            if(this.requireLightSorting) {
+                this.lights.sort(Light.compareLightsPriority);
+            }
         }
 
         public addCamera(newCamera: Camera) {
