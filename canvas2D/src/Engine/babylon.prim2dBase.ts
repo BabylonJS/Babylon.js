@@ -4146,6 +4146,10 @@
                         hasV = true;
                         setSize = true;
                     }
+                }else{
+                    //this prevents the prim from flying off the screen when margin is not set (bug #1929)
+                    this._marginOffset.x = 0;
+                    this._marginOffset.y = 0;
                 }
 
                 if (!hasH) {
