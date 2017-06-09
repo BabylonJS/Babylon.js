@@ -515,7 +515,7 @@
 
         public get lightsEnabled(): boolean {
             return this._lightsEnabled;
-        }    
+        }
 
         /**
         * All of the lights added to this scene.
@@ -736,6 +736,8 @@
         public get frustumPlanes(): Plane[] {
             return this._frustumPlanes;
         }
+
+        public requireLightSorting = false;
 
         private _selectionOctree: Octree<AbstractMesh>;
 
@@ -1826,6 +1828,7 @@
             if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
+                this.sortLightsByPriority();
             }
             this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
@@ -1857,8 +1860,16 @@
 
         public addLight(newLight: Light) {
             newLight.uniqueId = this.getUniqueId();
-            var position = this.lights.push(newLight);
+            this.lights.push(newLight);
+            this.sortLightsByPriority();
+
             this.onNewLightAddedObservable.notifyObservers(newLight);
+        }
+
+        public sortLightsByPriority(): void {
+            if(this.requireLightSorting) {
+                this.lights.sort(Light.compareLightsPriority);
+            }
         }
 
         public addCamera(newCamera: Camera) {
@@ -2953,8 +2964,11 @@
                     var light = this.lights[lightIndex];
                     var shadowGenerator = light.getShadowGenerator();
 
-                    if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
-                        this._renderTargets.push(shadowGenerator.getShadowMap());
+                    if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
+                        var shadowMap = shadowGenerator.getShadowMap();
+                        if (shadowMap.getScene().textures.indexOf(shadowMap) !== -1) {
+                            this._renderTargets.push(shadowMap);
+                        }
                     }
                 }
             }
