@@ -7597,6 +7597,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine, "ALPHA_SCREENMODE", {
+            get: function () {
+                return Engine._ALPHA_SCREENMODE;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine, "DELAYLOADSTATE_NONE", {
             get: function () {
                 return Engine._DELAYLOADSTATE_NONE;
@@ -8887,6 +8894,10 @@ var BABYLON;
                     break;
                 case Engine.ALPHA_INTERPOLATE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_SCREENMODE:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
                     this._alphaState.alphaBlend = true;
                     break;
             }
@@ -10365,6 +10376,7 @@ var BABYLON;
     Engine._ALPHA_PREMULTIPLIED = 7;
     Engine._ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
     Engine._ALPHA_INTERPOLATE = 9;
+    Engine._ALPHA_SCREENMODE = 10;
     Engine._DELAYLOADSTATE_NONE = 0;
     Engine._DELAYLOADSTATE_LOADED = 1;
     Engine._DELAYLOADSTATE_LOADING = 2;
