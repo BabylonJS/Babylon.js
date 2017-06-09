@@ -439,6 +439,24 @@
             return Engine._TEXTURETYPE_HALF_FLOAT;
         }
 
+
+        // Texture rescaling mode
+        private static _SCALEMODE_FLOOR = 1;
+        private static _SCALEMODE_NEAREST = 2;
+        private static _SCALEMODE_CEILING = 3;
+
+        public static get SCALEMODE_FLOOR(): number {
+            return Engine._SCALEMODE_FLOOR;
+        }
+
+        public static get SCALEMODE_NEAREST(): number {
+            return Engine._SCALEMODE_NEAREST;
+        }      
+
+        public static get SCALEMODE_CEILING(): number {
+            return Engine._SCALEMODE_CEILING;
+        }           
+
         public static get Version(): string {
             return "3.0-beta";
         }

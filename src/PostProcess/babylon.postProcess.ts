@@ -17,6 +17,8 @@
         */ 
         public enablePixelPerfectMode = false;
 
+        public scaleMode = Engine.SCALEMODE_FLOOR;
+        public alwaysForcePOT = false;
         public samples = 1;
 
         private _camera: Camera;
@@ -204,13 +206,13 @@
                 var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
-                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
+                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!(<PostProcessOptions>this._options).width) {
-                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode);
                     }
 
                     if (!(<PostProcessOptions>this._options).height) {
-                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode);
                     }
                 }
 
@@ -351,6 +353,6 @@
             this.onApplyObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onSizeChangedObservable.clear();
-        }
+        }          
     }
 }
