@@ -361,7 +361,7 @@ gulp.task("typescript-customConfigurations", function (cb) {
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
-    runSequence("typescript", "typescript-libraries", cb);
+    runSequence("typescript", "typescript-libraries", "typescript-customConfigurations", cb);
 });
 
 /**
