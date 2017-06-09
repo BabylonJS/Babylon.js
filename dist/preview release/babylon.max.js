@@ -8911,10 +8911,11 @@ var BABYLON;
             }
             this.resetTextureCache();
             this._currentEffect = null;
-            this._stencilState.reset();
-            this._depthCullingState.reset();
-            this.setDepthFunctionToLessOrEqual();
-            this._alphaState.reset();
+            // 6/8/2017: deltakosh: Should not be required anymore. This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
+            // this._stencilState.reset();
+            // this._depthCullingState.reset();
+            // this.setDepthFunctionToLessOrEqual();
+            // this._alphaState.reset();
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
@@ -64208,11 +64209,18 @@ var BABYLON;
             var previousStencilBuffer = engine.getStencilBuffer();
             var previousStencilFunction = engine.getStencilFunction();
             var previousStencilMask = engine.getStencilMask();
+            var previousStencilOperationPass = engine.getStencilOperationPass();
+            var previousStencilOperationFail = engine.getStencilOperationFail();
+            var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();
             var previousAlphaMode = engine.getAlphaMode();
             // Texture
             currentEffect.setTexture("textureSampler", this._blurTexture);
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
+            // Stencil operations
+            engine.setStencilOperationPass(BABYLON.Engine.REPLACE);
+            engine.setStencilOperationFail(BABYLON.Engine.KEEP);
+            engine.setStencilOperationDepthFail(BABYLON.Engine.KEEP);
             // Draw order
             engine.setAlphaMode(this._options.alphaBlendingMode);
             engine.setStencilMask(0x00);
@@ -64233,6 +64241,10 @@ var BABYLON;
             engine.setStencilMask(previousStencilMask);
             engine.setAlphaMode(previousAlphaMode);
             engine.setStencilBuffer(previousStencilBuffer);
+            engine.setStencilOperationPass(previousStencilOperationPass);
+            engine.setStencilOperationFail(previousStencilOperationFail);
+            engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
+            engine._stencilState.reset();
             this.onAfterComposeObservable.notifyObservers(this);
             // Handle size changes.
             var size = this._mainTexture.getSize();
