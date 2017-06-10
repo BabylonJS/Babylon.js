@@ -41478,8 +41478,10 @@ var BABYLON;
         });
         ImageProcessingPostProcess.prototype._updateParameters = function () {
             var defines = "";
+            var samplers = ["textureSampler"];
             if (this.colorGradingTexture) {
                 defines = "#define COLORGRADING\r\n";
+                samplers.push("txColorTransform");
             }
             if (this.vignetteBlendMode === ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY) {
                 defines += "#define VIGNETTEBLENDMODEMULTIPLY\r\n";
@@ -41490,7 +41492,7 @@ var BABYLON;
             if (this.cameraToneMappingEnabled) {
                 defines += "#define TONEMAPPING\r\n";
             }
-            this.updateEffect(defines);
+            this.updateEffect(defines, null, samplers);
         };
         Object.defineProperty(ImageProcessingPostProcess, "VIGNETTEMODE_MULTIPLY", {
             get: function () {
