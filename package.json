@@ -8,7 +8,7 @@
   ],
   "name": "babylonjs",
   "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-  "version": "3.0.2-beta",
+  "version": "3.0.3-beta",
   "repository": {
     "type": "git",
     "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -23,6 +23,9 @@
     "dist/preview release/gui/babylon.gui.js",
     "dist/preview release/gui/babylon.gui.min.js",
     "dist/preview release/gui/babylon.gui.d.ts",
+    "dist/preview release/loaders/babylon.glTFFileLoader.min.js",
+    "dist/preview release/loaders/babylon.objFileLoader.min.js",
+    "dist/preview release/loaders/babylon.stlFileLoader.min.js",
     "dist/preview release/Oimo.js",
     "package.json"
   ],
@@ -40,6 +43,6 @@
   },
   "readme": "Babylon.js is a 3D engine based on webgl and javascript",
   "readmeFilename": "README.md",
-  "_id": "babylonjs@3.0.2",
+  "_id": "babylonjs@3.0.3",
   "_from": "babylonjs@"
 }
