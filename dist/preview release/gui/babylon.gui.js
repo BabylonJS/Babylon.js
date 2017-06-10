@@ -89,6 +89,19 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
+                if (!container) {
+                    container = this._rootContainer;
+                }
+                for (var _i = 0, _a = container.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child.children) {
+                        this.executeOnAllControls(func, child);
+                        continue;
+                    }
+                    func(child);
+                }
+            };
             AdvancedDynamicTexture.prototype.markAsDirty = function () {
                 this._isDirty = true;
             };
@@ -2358,7 +2371,152 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=checkbox.js.map
+//# sourceMappingURL=checkBox.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var DOMImage = Image;
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var RadioButton = (function (_super) {
+            __extends(RadioButton, _super);
+            function RadioButton(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._isChecked = false;
+                _this._background = "black";
+                _this._checkSizeRatio = 0.8;
+                _this._thickness = 1;
+                _this.group = "";
+                _this.onIsCheckedChangedObservable = new BABYLON.Observable();
+                _this.isPointerBlocker = true;
+                return _this;
+            }
+            Object.defineProperty(RadioButton.prototype, "thickness", {
+                get: function () {
+                    return this._thickness;
+                },
+                set: function (value) {
+                    if (this._thickness === value) {
+                        return;
+                    }
+                    this._thickness = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RadioButton.prototype, "checkSizeRatio", {
+                get: function () {
+                    return this._checkSizeRatio;
+                },
+                set: function (value) {
+                    value = Math.max(Math.min(1, value), 0);
+                    if (this._checkSizeRatio === value) {
+                        return;
+                    }
+                    this._checkSizeRatio = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RadioButton.prototype, "background", {
+                get: function () {
+                    return this._background;
+                },
+                set: function (value) {
+                    if (this._background === value) {
+                        return;
+                    }
+                    this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RadioButton.prototype, "isChecked", {
+                get: function () {
+                    return this._isChecked;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._isChecked === value) {
+                        return;
+                    }
+                    this._isChecked = value;
+                    this._markAsDirty();
+                    this.onIsCheckedChangedObservable.notifyObservers(value);
+                    if (this._isChecked) {
+                        // Update all controls from same group
+                        this._host.executeOnAllControls(function (control) {
+                            if (control === _this) {
+                                return;
+                            }
+                            if (control.group === undefined) {
+                                return;
+                            }
+                            var childRadio = control;
+                            if (childRadio.group === _this.group) {
+                                childRadio.isChecked = false;
+                            }
+                        });
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            RadioButton.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    var actualWidth = this._currentMeasure.width - this._thickness;
+                    var actualHeight = this._currentMeasure.height - this._thickness;
+                    // Outer                
+                    context.beginPath();
+                    context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
+                    context.closePath();
+                    context.fillStyle = this._background;
+                    context.fill();
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._thickness;
+                    context.stroke();
+                    // Inner
+                    if (this._isChecked) {
+                        context.fillStyle = this.color;
+                        var offsetWidth = actualWidth * this._checkSizeRatio;
+                        var offseHeight = actualHeight * this._checkSizeRatio;
+                        context.beginPath();
+                        context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
+                        context.closePath();
+                        context.fill();
+                    }
+                }
+                context.restore();
+            };
+            // Events
+            RadioButton.prototype._onPointerDown = function (coordinates) {
+                this.isChecked = !this.isChecked;
+                _super.prototype._onPointerDown.call(this, coordinates);
+            };
+            return RadioButton;
+        }(GUI.Control));
+        GUI.RadioButton = RadioButton;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=radioButton.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
