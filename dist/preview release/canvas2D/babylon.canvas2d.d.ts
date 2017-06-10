@@ -3066,6 +3066,7 @@ declare module BABYLON {
         addNewTransparentPrimitiveInfo(prim: RenderablePrim2D, gii: GroupInstanceInfo): TransparentPrimitiveInfo;
         removeTransparentPrimitiveInfo(tpi: TransparentPrimitiveInfo): void;
         transparentPrimitiveZChanged(tpi: TransparentPrimitiveInfo): void;
+        resetPrimDirtyList(): void;
         _primDirtyList: Array<Prim2DBase>;
         _primNewDirtyList: Array<Prim2DBase>;
         _childrenRenderableGroups: Array<Group2D>;

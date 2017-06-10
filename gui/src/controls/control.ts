@@ -3,6 +3,7 @@
 module BABYLON.GUI {
     export class Control {       
         private _alpha = 1; 
+        private _alphaSet = false; 
         private _zIndex = 0;
         public _root: Container;
         public _host: AdvancedDynamicTexture;
@@ -93,7 +94,7 @@ module BABYLON.GUI {
             if (this._alpha === value) {
                 return;
             }
-
+            this._alphaSet = true;
             this._alpha = value;
             this._markAsDirty();
         }                 
@@ -485,7 +486,9 @@ module BABYLON.GUI {
                 context.fillStyle = this._color;
             }
 
-            context.globalAlpha = this._alpha;
+            if (this._alphaSet) {
+                context.globalAlpha = this._alpha;
+            }
         }
 
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {     

@@ -558,6 +558,7 @@ var BABYLON;
             function Control(name) {
                 this.name = name;
                 this._alpha = 1;
+                this._alphaSet = false;
                 this._zIndex = 0;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
@@ -631,6 +632,7 @@ var BABYLON;
                     if (this._alpha === value) {
                         return;
                     }
+                    this._alphaSet = true;
                     this._alpha = value;
                     this._markAsDirty();
                 },
@@ -1035,7 +1037,9 @@ var BABYLON;
                 if (this._color) {
                     context.fillStyle = this._color;
                 }
-                context.globalAlpha = this._alpha;
+                if (this._alphaSet) {
+                    context.globalAlpha = this._alpha;
+                }
             };
             Control.prototype._processMeasures = function (parentMeasure, context) {
                 if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {

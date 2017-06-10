@@ -12095,7 +12095,7 @@ var BABYLON;
                         engine.setViewport(curVP);
                     }
                 }
-                this._renderableData._primDirtyList.length = 0;
+                this._renderableData.resetPrimDirtyList();
                 // Restore saved states
                 engine.setAlphaTesting(curAlphaTest);
                 engine.setDepthWrite(curDepthWrite);
@@ -12617,6 +12617,16 @@ var BABYLON;
         RenderableGroupData.prototype.transparentPrimitiveZChanged = function (tpi) {
             this._transparentListChanged = true;
             //this.updateSmallestZChangedPrim(tpi);
+        };
+        RenderableGroupData.prototype.resetPrimDirtyList = function () {
+            var dirtyList = this._primDirtyList;
+            var numDirty = dirtyList.length;
+            for (var i = 0; i < numDirty; i++) {
+                if (dirtyList[i]._isFlagSet(BABYLON.SmartPropertyPrim.flagPrimInDirtyList)) {
+                    dirtyList[i]._resetPropertiesDirty();
+                }
+            }
+            dirtyList.length = 0;
         };
         return RenderableGroupData;
     }());
