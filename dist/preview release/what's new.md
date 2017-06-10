@@ -25,7 +25,8 @@
  - New highlights postprocess ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
- - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
+- New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
+- PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
 - Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))
 - Added `FIXED_EQUIRECTANGULAR_MIRRORED_MODE` mode for reflection texture. [Demo here](http://www.babylonjs-playground.com/#11GAIH#22) ([deltakosh](https://github.com/deltakosh))
 - Introduced `boundingBox.centerWorld` and `boundingBox.extendSizeWorld` ([deltakosh](https://github.com/deltakosh))
