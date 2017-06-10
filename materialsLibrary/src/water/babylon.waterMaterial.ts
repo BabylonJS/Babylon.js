@@ -153,9 +153,9 @@ module BABYLON {
         /**
 		* Constructor
 		*/
-		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
+		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512), camera: Camera = scene.activeCamera) {
             super(name, scene);
-			
+			this.camera = camera;
 			// Create render targets
 			this._createRenderTargets(scene, renderTargetSize);
         }
@@ -407,7 +407,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : this.camera.position);                
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -514,7 +514,7 @@ module BABYLON {
 				mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
 				scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
 				scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates(this.camera.position, mirrorMatrix);
 			};
 			
 			this._reflectionRTT.onAfterRender = () => {
