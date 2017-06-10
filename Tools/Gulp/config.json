@@ -16,7 +16,8 @@
                 "pointLight", "directionalLight", "spotLight", "animations", "actions", "sprites", "picking", "collisions",
                 "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
                 "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
-                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
+                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "defaultRenderingPipeline",
+                "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_imageProcessing",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
@@ -27,7 +28,7 @@
         "minimalViewer": [
                 "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
                 "multiMaterial", "pbrMaterial", "pointLight", "directionalLight", "spotLight", "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing",
-                "colorCurves"
+                "colorCurves", "defaultRenderingPipeline"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -676,10 +677,10 @@
         "additionalRenderingPipeline" : 
         {
             "files": [
-                "../../src/PostProcess/babylon.ssaoRenderingPipeline.js",
-                "../../src/PostProcess/babylon.ssao2RenderingPipeline.js",
-                "../../src/PostProcess/babylon.lensRenderingPipeline.js",
-                "../../src/PostProcess/babylon.standardRenderingPipeline.js"
+                "../../src/PostProcess/RenderPipeline/Pipelines/babylon.ssaoRenderingPipeline.js",
+                "../../src/PostProcess/RenderPipeline/Pipelines/babylon.ssao2RenderingPipeline.js",
+                "../../src/PostProcess/RenderPipeline/Pipelines/babylon.lensRenderingPipeline.js",
+                "../../src/PostProcess/RenderPipeline/Pipelines/babylon.standardRenderingPipeline.js"
             ],
             "dependUpon" : [
                 "renderingPipeline", 
@@ -693,6 +694,16 @@
                 "lensHighlights.fragment",
                 "depthOfField.fragment",
                 "standard.fragment"
+            ]
+        },                       
+        "defaultRenderingPipeline" : 
+        {
+            "files": [
+                "../../src/PostProcess/RenderPipeline/Pipelines/babylon.defaultRenderingPipeline.js"
+            ],
+            "dependUpon" : [
+                "renderingPipeline", 
+                "additionalPostProcess_fxaa"
             ]
         },
         "bones" : 
