@@ -9519,10 +9519,10 @@ var BABYLON;
                         }
                         this.onPrimitivePropertyDirty(Prim2DBase_1.actualSizeProperty.flagId);
                     }
+                    this._marginOffset.x -= transbi.x * levelScale.x;
+                    this._marginOffset.y -= transbi.y * levelScale.y;
                 }
                 var lap = this.layoutAreaPos;
-                this._marginOffset.x -= transbi.x * levelScale.x;
-                this._marginOffset.y -= transbi.y * levelScale.y;
                 this.actualPosition = new BABYLON.Vector2(this._marginOffset.x + (lap ? lap.x : 0), this._marginOffset.y + (lap ? lap.y : 0));
                 //                if (setSize) {
                 this.actualSize = primNewSize.clone();
@@ -18222,7 +18222,7 @@ var BABYLON;
                 this._setLayoutDirty();
             }
             // If the canvas fit the rendering size and it changed, update
-            if (renderingSizeChanged && this._fitRenderingDevice) {
+            if (!this._designSize && renderingSizeChanged && this._fitRenderingDevice) {
                 this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;

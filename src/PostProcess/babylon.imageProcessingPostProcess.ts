@@ -70,7 +70,7 @@
             this._updateParameters();
 
             this.onApply = (effect: Effect) => {
-                let aspectRatio = this.width / this.height;
+                let aspectRatio = this.aspectRatio;
                 
                 // Color 
                 ColorCurves.Bind(this.colorCurves, effect);
@@ -109,9 +109,11 @@
 
         protected _updateParameters(): void {
             var defines = "";
+            var samplers = ["textureSampler"];
 
             if (this.colorGradingTexture) {
                 defines = "#define COLORGRADING\r\n";
+                samplers.push("txColorTransform");
             }
 
             if (this.vignetteBlendMode === ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY) {
@@ -124,7 +126,7 @@
                 defines += "#define TONEMAPPING\r\n";
             }
 
-            this.updateEffect(defines);
+            this.updateEffect(defines, null, samplers);
         }
 
         // Statics
