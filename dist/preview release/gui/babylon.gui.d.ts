@@ -105,6 +105,7 @@ declare module BABYLON.GUI {
     class Control {
         name: string;
         private _alpha;
+        private _alphaSet;
         private _zIndex;
         _root: Container;
         _host: AdvancedDynamicTexture;
