@@ -558,7 +558,7 @@
                     }
                 }
 
-                this._renderableData._primDirtyList.length = 0;
+                this._renderableData.resetPrimDirtyList();
                 
                 // Restore saved states
                 engine.setAlphaTesting(curAlphaTest);
@@ -1135,6 +1135,19 @@
         transparentPrimitiveZChanged(tpi: TransparentPrimitiveInfo) {
             this._transparentListChanged = true;
             //this.updateSmallestZChangedPrim(tpi);
+        }
+
+        resetPrimDirtyList(){
+            let dirtyList = this._primDirtyList;
+            let numDirty = dirtyList.length;
+
+            for(let i = 0; i < numDirty; i++){
+                if(dirtyList[i]._isFlagSet(SmartPropertyPrim.flagPrimInDirtyList)){
+                    dirtyList[i]._resetPropertiesDirty();
+                }
+            }
+            
+            dirtyList.length = 0;
         }
 
         _primDirtyList: Array<Prim2DBase>;
