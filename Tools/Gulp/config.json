@@ -600,6 +600,7 @@
                 "postProcesses"
             ], 
             "shaders" : [
+                "fxaa.vertex",
                 "fxaa.fragment"
             ]
         },                       
