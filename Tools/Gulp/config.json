@@ -1359,7 +1359,8 @@
                     "../../gui/src/controls/ellipse.ts",
                     "../../gui/src/controls/line.ts",
                     "../../gui/src/controls/slider.ts",
-                    "../../gui/src/controls/checkbox.ts",
+                    "../../gui/src/controls/checkBox.ts",
+                    "../../gui/src/controls/radioButton.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts"

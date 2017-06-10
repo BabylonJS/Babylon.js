@@ -24,6 +24,7 @@ declare module BABYLON.GUI {
         idealHeight: number;
         readonly layer: Layer;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
+        executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
         addControl(control: Control): AdvancedDynamicTexture;
         removeControl(control: Control): AdvancedDynamicTexture;
@@ -398,6 +399,27 @@ declare module BABYLON.GUI {
         private _checkSizeRatio;
         private _thickness;
         thickness: number;
+        onIsCheckedChangedObservable: Observable<boolean>;
+        checkSizeRatio: number;
+        background: string;
+        isChecked: boolean;
+        constructor(name?: string);
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _onPointerDown(coordinates: Vector2): void;
+    }
+}
+
+
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
+declare module BABYLON.GUI {
+    class RadioButton extends Control {
+        name: string;
+        private _isChecked;
+        private _background;
+        private _checkSizeRatio;
+        private _thickness;
+        thickness: number;
+        group: string;
         onIsCheckedChangedObservable: Observable<boolean>;
         checkSizeRatio: number;
         background: string;
