@@ -268,11 +268,7 @@
 
             // Clear
             if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
-                if (this.clearColor) {
-                    this._engine.clear(this.clearColor, true, true, true);
-                } else {
-                    this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true, true);
-                }
+                this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, true, true, true);
             }
 
             if (this._reusable) {
