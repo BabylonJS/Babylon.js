@@ -1864,7 +1864,7 @@
             serializationObject.id = this.id;
             serializationObject.type = this.getClassName();
 
-            if (Tags.HasTags(this)) {
+            if (Tags && Tags.HasTags(this)) {
                 serializationObject.tags = Tags.GetTags(this);
             }
 
@@ -2060,7 +2060,9 @@
             }
             mesh.id = parsedMesh.id;
 
-            Tags.AddTagsTo(mesh, parsedMesh.tags);
+            if (Tags) {
+                Tags.AddTagsTo(mesh, parsedMesh.tags);
+            }
 
             mesh.position = Vector3.FromArray(parsedMesh.position);
 
@@ -2261,7 +2263,9 @@
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
 
-                    Tags.AddTagsTo(instance, parsedInstance.tags);
+                    if (Tags) {
+                        Tags.AddTagsTo(instance, parsedInstance.tags);
+                    }
 
                     instance.position = Vector3.FromArray(parsedInstance.position);
 

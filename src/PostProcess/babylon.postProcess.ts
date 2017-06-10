@@ -17,6 +17,8 @@
         */ 
         public enablePixelPerfectMode = false;
 
+        public scaleMode = Engine.SCALEMODE_FLOOR;
+        public alwaysForcePOT = false;
         public samples = 1;
 
         private _camera: Camera;
@@ -35,6 +37,7 @@
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
         private _shareOutputWithPostProcess: PostProcess;
+        private _texelSize = Vector2.Zero();
         
         // Events
 
@@ -116,6 +119,14 @@
             return this._camera;
         }
 
+        public get texelSize(): Vector2 {
+            if (this._shareOutputWithPostProcess) {
+                return this._shareOutputWithPostProcess.texelSize;
+            }
+
+            return this._texelSize;
+        }
+
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
@@ -195,13 +206,13 @@
                 var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
-                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
+                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!(<PostProcessOptions>this._options).width) {
-                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode);
                     }
 
                     if (!(<PostProcessOptions>this._options).height) {
-                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode);
                     }
                 }
 
@@ -229,6 +240,8 @@
                     if (this._reusable) {
                         this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                     }
+                    
+                    this._texelSize.copyFromFloats(1.0 / this.width, 1.0 / this.height);
 
                     this.onSizeChangedObservable.notifyObservers(this);
                 }
@@ -255,26 +268,24 @@
 
             // Clear
             if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
-                if (this.clearColor) {
-                    this._engine.clear(this.clearColor, true, true, true);
-                } else {
-                    this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true, true);
-                }
+                this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, true, true, true);
             }
 
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
-
-            // Alpha
-            this._engine.setAlphaMode(this.alphaMode);
-            if (this.alphaConstants) {
-                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
-            }
         }
 
         public get isSupported(): boolean {
             return this._effect.isSupported;
+        }
+
+        public get aspectRatio(): number {
+            if (this._shareOutputWithPostProcess) {
+                return this._shareOutputWithPostProcess.aspectRatio;
+            }
+
+            return this.width / this.height;
         }
         
         public apply(): Effect {
@@ -287,6 +298,12 @@
             this._engine.setState(false);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
+
+            // Alpha
+            this._engine.setAlphaMode(this.alphaMode);
+            if (this.alphaConstants) {
+                this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
+            }            
 
             // Texture            
             var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
@@ -332,6 +349,6 @@
             this.onApplyObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onSizeChangedObservable.clear();
-        }
+        }          
     }
 }

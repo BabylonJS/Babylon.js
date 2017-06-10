@@ -1,6 +1,15 @@
-﻿varying vec2 vUV;
-uniform sampler2D textureSampler;
+﻿uniform sampler2D textureSampler;
 uniform vec2 texelSize;
+
+varying vec2 vUV;
+varying vec2 sampleCoordS;
+varying vec2 sampleCoordE;
+varying vec2 sampleCoordN;
+varying vec2 sampleCoordW;
+varying vec2 sampleCoordNW;
+varying vec2 sampleCoordSE;
+varying vec2 sampleCoordNE;
+varying vec2 sampleCoordSW;
 
 const float fxaaQualitySubpix = 1.0;
 const float fxaaQualityEdgeThreshold = 0.166;
@@ -10,16 +19,6 @@ const vec3 kLumaCoefficients = vec3(0.2126, 0.7152, 0.0722);
 #define FxaaLuma(rgba) dot(rgba.rgb, kLumaCoefficients)
 
 void main(){
-	vec2 sampleCoordS = vUV + vec2( 0.0, 1.0) * texelSize;
-	vec2 sampleCoordE = vUV + vec2( 1.0, 0.0) * texelSize;
-	vec2 sampleCoordN = vUV + vec2( 0.0,-1.0) * texelSize;
-	vec2 sampleCoordW = vUV + vec2(-1.0, 0.0) * texelSize;
-
-	vec2 sampleCoordNW = vUV + vec2(-1.0,-1.0) * texelSize;
-	vec2 sampleCoordSE = vUV + vec2( 1.0, 1.0) * texelSize;
-	vec2 sampleCoordNE = vUV + vec2( 1.0,-1.0) * texelSize;
-	vec2 sampleCoordSW = vUV + vec2(-1.0, 1.0) * texelSize;
-
 	vec2 posM;
 
 	posM.x = vUV.x;

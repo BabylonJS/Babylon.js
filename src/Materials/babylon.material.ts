@@ -566,7 +566,9 @@
 
             multiMaterial.id = parsedMultiMaterial.id;
 
-            Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            if (Tags) {
+                Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            }
 
             for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                 var subMatId = parsedMultiMaterial.materials[matIndex];

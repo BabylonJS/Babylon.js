@@ -247,6 +247,7 @@
         private static _ALPHA_PREMULTIPLIED = 7;
         private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         private static _ALPHA_INTERPOLATE = 9;
+        private static _ALPHA_SCREENMODE = 10;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -386,6 +387,10 @@
             return Engine._ALPHA_INTERPOLATE;
         }        
 
+        public static get ALPHA_SCREENMODE(): number {
+            return Engine._ALPHA_SCREENMODE;
+        }           
+
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
         }
@@ -433,6 +438,24 @@
         public static get TEXTURETYPE_HALF_FLOAT(): number {
             return Engine._TEXTURETYPE_HALF_FLOAT;
         }
+
+
+        // Texture rescaling mode
+        private static _SCALEMODE_FLOOR = 1;
+        private static _SCALEMODE_NEAREST = 2;
+        private static _SCALEMODE_CEILING = 3;
+
+        public static get SCALEMODE_FLOOR(): number {
+            return Engine._SCALEMODE_FLOOR;
+        }
+
+        public static get SCALEMODE_NEAREST(): number {
+            return Engine._SCALEMODE_NEAREST;
+        }      
+
+        public static get SCALEMODE_CEILING(): number {
+            return Engine._SCALEMODE_CEILING;
+        }           
 
         public static get Version(): string {
             return "3.0-beta";
@@ -2245,7 +2268,11 @@
                 case Engine.ALPHA_INTERPOLATE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
                     this._alphaState.alphaBlend = true;
-                    break;                    
+                    break;    
+                case Engine.ALPHA_SCREENMODE:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;                                      
             }
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
