@@ -83,6 +83,20 @@ module BABYLON.GUI {
             this._texture.isReady = true;
         }
 
+        public executeOnAllControls(func: (control: Control) => void, container?: Container) {
+            if (!container) {
+                container = this._rootContainer;
+            }
+
+            for (var child of container.children) {               
+                if ((<any>child).children) {
+                    this.executeOnAllControls(func, (<Container>child));
+                    continue;
+                }
+                func(child);
+            }
+        }
+
         public markAsDirty() {
             this._isDirty = true;
         }
