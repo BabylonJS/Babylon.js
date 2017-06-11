@@ -5,7 +5,6 @@
 - New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
 - Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
 - Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
-- Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
 - New BoneIKController [Demo](http://www.babylonjs-playground.com/#1EVNNB#15) ([abow](https://github.com/abow))
 - New BoneLookController [Demo](http://www.babylonjs-playground.com/#1B1PUZ#15) ([abow](https://github.com/abow))
 - You can now build your own version of babylon.js with `gulp build-custom` [Doc](http://doc.babylonjs.com/generals/how_to_start) ([deltakosh](https://github.com/deltakosh))
@@ -43,12 +42,6 @@
 - PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object ([nockawa](https://github.com/nockawa))
 - Better keyboard event handling which is now done at canvas level and not at window level ([deltakosh](https://github.com/deltakosh)) 
 - New `scene.hoverCursor` property to define a custom cursor when moving mouse over meshes ([deltakosh](https://github.com/deltakosh)) 
-- Canvas2D: ([nockawa](https://github.com/nockawa)) 
- - Performance metrics added
- - Text2D super sampling to enhance quality in World Space Canvas
- - World Space Canvas is now rendering in an adaptive way for its resolution to fit the on screen projected one to achieve a good rendering quality
- - Transparent Primitives are now drawn with Instanced Array when supported
- - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
 - New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
 - Scene.stopAnimation has now an optional second parameter, the name of the animation to kill. Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
@@ -69,24 +62,9 @@
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
 - Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
-- Canvas2D: ([nockawa](https://github.com/nockawa))
- - `WorldSpaceCanvas2D`:
-	- Intersection/interaction now works on non squared canvas
- - Primitive:
-	- `ZOrder` fixed in Primitives created inline
-	- Z-Order is now correctly distributed along the whole canvas object graph
- - `Sprite2D`: 
-	- texture size is now set by default as expected
-	- can have no `id` set
- - `Text2D`: 
-	- Fix bad rendering quality on Chrome
-	- Rendering above transparent surface is now blending correctly
 
 ### Breaking changes
  - FollowCamera.target was renamed to FollowCamera.lockedTarget to avoid conflicts ([deltakosh](https://github.com/deltakosh)) 
  - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
- - Canvas2D: ([nockawa](https://github.com/nockawa))
-  - `WorldSpaceCanvas2D`:
-	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
 
 
