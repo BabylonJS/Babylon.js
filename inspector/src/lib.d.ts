@@ -1,5 +1,5 @@
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../../dist/preview release/canvas2D/babylon.canvas2D.d.ts"/>
+/// <reference path="babylon.canvas2D.d.ts"/>
 
 interface ISplit {
     setSizes(sizes:Array<number>);
