@@ -3,10 +3,6 @@
 // Definitions by: Nico Kemnitz <https://github.com/nkemnitz/>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-interface HTMLCanvasElement extends HTMLElement {
-    getContext(contextId: "webgl2" | "experimental-webgl2", contextAttributes?: WebGLContextAttributes): WebGL2RenderingContext | null;
-}
-
 interface ImageBitmap {
     readonly width: number;
     readonly height: number;

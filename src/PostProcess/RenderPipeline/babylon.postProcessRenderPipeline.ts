@@ -8,6 +8,7 @@ module BABYLON {
         protected _cameras: Camera[];
 
         // private
+        @serialize()
         public _name: string;
 
         private static PASS_EFFECT_NAME: string = "passEffect";
