@@ -83,7 +83,7 @@
                     if (!this.transformedDirection) {
                         this.transformedDirection = Vector3.Zero();
                     }
-                    Vector3.TransformCoordinatesToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
+                    Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
                 }
                 return true;
             }
