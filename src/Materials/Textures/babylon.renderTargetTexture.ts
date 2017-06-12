@@ -269,7 +269,9 @@
 
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
+            let camera: Camera;
             if (this.activeCamera) {
+                camera = this.activeCamera;
                 engine.setViewport(this.activeCamera.viewport);
 
                 if (this.activeCamera !== scene.activeCamera)
@@ -278,6 +280,7 @@
                 }
             }
             else {
+                camera = scene.activeCamera;
                 engine.setViewport(scene.activeCamera.viewport);
             }
 
@@ -298,8 +301,15 @@
                     }
 
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
+                    
+                    let isMasked;
+                    if (!this.renderList) {
+                        isMasked = ((mesh.layerMask & camera.layerMask) !== 0);
+                    } else {
+                        isMasked = false;
+                    }
 
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
                         mesh._activate(sceneRenderId);
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
