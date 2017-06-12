@@ -20419,6 +20419,10 @@ var BABYLON;
             else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
             if (this.renderOutline) {
@@ -20443,10 +20447,6 @@ var BABYLON;
             }
             else {
                 effectiveMaterial.bind(world, this);
-            }
-            // Alpha mode
-            if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
             }
             // Draw
             this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
@@ -63842,7 +63842,7 @@ var BABYLON;
             var material = subMesh.getMaterial();
             engine.enableEffect(this._effect);
             this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
-            this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
+            this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
