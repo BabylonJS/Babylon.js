@@ -277,8 +277,7 @@ module BABYLON.GUI {
             this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
                 if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
                     this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
-                }
-                
+                }                
                 this._lastControlOver = null;
 
                 if (this._lastControlDown) {

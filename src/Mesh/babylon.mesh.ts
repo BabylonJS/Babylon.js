@@ -1123,6 +1123,11 @@
                 return this;
             }
 
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
+            
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
             if (this.renderOutline) {
@@ -1150,11 +1155,6 @@
                 effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
                 effectiveMaterial.bind(world, this);
-            }
-
-            // Alpha mode
-            if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
             }
 
             // Draw
