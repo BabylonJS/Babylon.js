@@ -248,18 +248,7 @@ module BABYLON.GUI {
                 pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
             });
 
-            this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
-                if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                    this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
-                }
-                
-                this._lastControlOver = null;
-
-                if (this._lastControlDown) {
-                    this._lastControlDown.forcePointerUp();
-                }
-                this._lastControlDown = null;                
-            });
+            this._attachToOnBlur(scene);
         }
 
         public attachToMesh(mesh: AbstractMesh): void {
@@ -279,6 +268,23 @@ module BABYLON.GUI {
                     }
                     this._lastControlDown = null;  
                 }
+            });
+
+            this._attachToOnBlur(scene);
+        }
+
+        private _attachToOnBlur(scene: Scene): void {
+            this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
+                if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
+                    this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                }
+                
+                this._lastControlOver = null;
+
+                if (this._lastControlDown) {
+                    this._lastControlDown.forcePointerUp();
+                }
+                this._lastControlDown = null;                
             });
         }
 
