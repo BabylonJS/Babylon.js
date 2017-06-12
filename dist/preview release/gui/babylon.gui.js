@@ -499,7 +499,7 @@ var BABYLON;
             ValueAndUnit.prototype.toString = function (host) {
                 switch (this.unit) {
                     case ValueAndUnit.UNITMODE_PERCENTAGE:
-                        return this.getValue(host) + "%";
+                        return (this.getValue(host) * 100) + "%";
                     case ValueAndUnit.UNITMODE_PIXEL:
                         return this.getValue(host) + "px";
                 }

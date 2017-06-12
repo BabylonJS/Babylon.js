@@ -42986,13 +42986,16 @@ var BABYLON;
             }
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
+            var camera;
             if (this.activeCamera) {
+                camera = this.activeCamera;
                 engine.setViewport(this.activeCamera.viewport);
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
             }
             else {
+                camera = scene.activeCamera;
                 engine.setViewport(scene.activeCamera.viewport);
             }
             // Prepare renderingManager
@@ -43009,7 +43012,14 @@ var BABYLON;
                         continue;
                     }
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
+                    var isMasked = void 0;
+                    if (!this.renderList) {
+                        isMasked = ((mesh.layerMask & camera.layerMask) !== 0);
+                    }
+                    else {
+                        isMasked = false;
+                    }
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
                         mesh._activate(sceneRenderId);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
@@ -50726,8 +50736,6 @@ var BABYLON;
         };
         return DefaultRenderingPipeline;
     }(BABYLON.PostProcessRenderPipeline));
-    // Luminance steps
-    DefaultRenderingPipeline.LuminanceSteps = 6;
     __decorate([
         BABYLON.serialize()
     ], DefaultRenderingPipeline.prototype, "_hdr", void 0);
