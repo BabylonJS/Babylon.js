@@ -148,6 +148,8 @@ declare module BABYLON.GUI {
         _linkedMesh: AbstractMesh;
         private _fontSet;
         private _dummyVector2;
+        private _downCount;
+        private _enterCount;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         protected _linkOffsetX: ValueAndUnit;
@@ -227,9 +229,9 @@ declare module BABYLON.GUI {
         contains(x: number, y: number): boolean;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
-        protected _onPointerEnter(): void;
+        protected _onPointerEnter(): boolean;
         protected _onPointerOut(): void;
-        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         forcePointerUp(): void;
         _processObservables(type: number, x: number, y: number): boolean;
@@ -383,7 +385,7 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
         private _updateValueFromPointer(x);
-        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerUp(coordinates: Vector2): void;
     }
@@ -405,7 +407,7 @@ declare module BABYLON.GUI {
         isChecked: boolean;
         constructor(name?: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
     }
 }
 
@@ -426,7 +428,7 @@ declare module BABYLON.GUI {
         isChecked: boolean;
         constructor(name?: string);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
     }
 }
 
@@ -494,9 +496,9 @@ declare module BABYLON.GUI {
         pointerUpAnimation: () => void;
         constructor(name?: string);
         _processPicking(x: number, y: number, type: number): boolean;
-        protected _onPointerEnter(): void;
+        protected _onPointerEnter(): boolean;
         protected _onPointerOut(): void;
-        protected _onPointerDown(coordinates: Vector2): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
         static CreateImageOnlyButton(name: string, imageUrl: string): Button;

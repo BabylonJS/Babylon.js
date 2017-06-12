@@ -41,6 +41,8 @@ module BABYLON.GUI {
         public _linkedMesh: AbstractMesh;
         private _fontSet = false;
         private _dummyVector2 = Vector2.Zero();
+        private _downCount = 0;
+        private _enterCount = 0;
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
@@ -705,25 +707,41 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerEnter(): void {
+        protected _onPointerEnter(): boolean {
+            if (this._enterCount !== 0) {
+                return false;
+            }
+
+            this._enterCount++;
             if (this.onPointerEnterObservable.hasObservers()) {
                 this.onPointerEnterObservable.notifyObservers(this);
             }
+
+            return true;
         }
 
         protected _onPointerOut(): void {
+            this._enterCount = 0;
             if (this.onPointerOutObservable.hasObservers()) {
                 this.onPointerOutObservable.notifyObservers(this);
             }
         }
 
-        protected _onPointerDown(coordinates: Vector2): void {
+        protected _onPointerDown(coordinates: Vector2): boolean {
+            if (this._downCount !== 0) {
+                return false;
+            }
+
+            this._downCount++;            
             if (this.onPointerDownObservable.hasObservers()) {
                 this.onPointerDownObservable.notifyObservers(coordinates);
             }
+
+            return true;
         }
 
         protected _onPointerUp(coordinates: Vector2): void {
+            this._downCount = 0;
             if (this.onPointerUpObservable.hasObservers()) {
                 this.onPointerUpObservable.notifyObservers(coordinates);
             }
