@@ -23,7 +23,7 @@
 
             engine.enableEffect(this._effect);
             this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
-            this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
+            this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
