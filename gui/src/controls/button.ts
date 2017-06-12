@@ -42,11 +42,16 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerEnter(): void {
+        protected _onPointerEnter(): boolean {
+            if (!super._onPointerEnter()) {
+                return false;
+            }
+
             if (this.pointerEnterAnimation) {
                 this.pointerEnterAnimation();
             }
-            super._onPointerEnter();
+
+            return true;
         }
 
         protected _onPointerOut(): void {
@@ -57,12 +62,17 @@ module BABYLON.GUI {
             super._onPointerOut();
         }
 
-        protected _onPointerDown(coordinates: Vector2): void {
+        protected _onPointerDown(coordinates: Vector2): boolean {
+            if (!super._onPointerDown(coordinates)) {
+                return false;
+            }
+
+
             if (this.pointerDownAnimation) {
                 this.pointerDownAnimation();
             }
 
-            super._onPointerDown(coordinates);
+            return true;
         }
 
         protected _onPointerUp(coordinates: Vector2): void {
