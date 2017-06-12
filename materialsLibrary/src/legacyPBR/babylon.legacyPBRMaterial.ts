@@ -1689,7 +1689,7 @@ module BABYLON {
 
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
-            serializationObject.customType = "BABYLON.legacyPBRMaterial";
+            serializationObject.customType = "BABYLON.LegacyPBRMaterial";
             return serializationObject;
         }
 
