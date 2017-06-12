@@ -32863,7 +32863,7 @@ var BABYLON;
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
                     var isMasked = void 0;
                     if (!this.renderList) {
-                        isMasked = ((mesh.layerMask & camera.layerMask) !== 0);
+                        isMasked = ((mesh.layerMask & camera.layerMask) === 0);
                     }
                     else {
                         isMasked = false;
