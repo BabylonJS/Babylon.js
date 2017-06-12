@@ -33536,7 +33536,7 @@ var BABYLON;
                     if (!this.transformedDirection) {
                         this.transformedDirection = BABYLON.Vector3.Zero();
                     }
-                    BABYLON.Vector3.TransformCoordinatesToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
+                    BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
                 }
                 return true;
             }
