@@ -246,6 +246,12 @@ var BABYLON;
                         var size = _this.getSize();
                         _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
                     }
+                    else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
+                        if (_this._lastControlDown) {
+                            _this._lastControlDown.forcePointerUp();
+                        }
+                        _this._lastControlDown = null;
+                    }
                 });
             };
             // Statics
@@ -601,6 +607,8 @@ var BABYLON;
                 this._isVisible = true;
                 this._fontSet = false;
                 this._dummyVector2 = BABYLON.Vector2.Zero();
+                this._downCount = 0;
+                this._enterCount = 0;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
@@ -1233,21 +1241,33 @@ var BABYLON;
                 }
             };
             Control.prototype._onPointerEnter = function () {
+                if (this._enterCount !== 0) {
+                    return false;
+                }
+                this._enterCount++;
                 if (this.onPointerEnterObservable.hasObservers()) {
                     this.onPointerEnterObservable.notifyObservers(this);
                 }
+                return true;
             };
             Control.prototype._onPointerOut = function () {
+                this._enterCount = 0;
                 if (this.onPointerOutObservable.hasObservers()) {
                     this.onPointerOutObservable.notifyObservers(this);
                 }
             };
             Control.prototype._onPointerDown = function (coordinates) {
+                if (this._downCount !== 0) {
+                    return false;
+                }
+                this._downCount++;
                 if (this.onPointerDownObservable.hasObservers()) {
                     this.onPointerDownObservable.notifyObservers(coordinates);
                 }
+                return true;
             };
             Control.prototype._onPointerUp = function (coordinates) {
+                this._downCount = 0;
                 if (this.onPointerUpObservable.hasObservers()) {
                     this.onPointerUpObservable.notifyObservers(coordinates);
                 }
@@ -2230,10 +2250,13 @@ var BABYLON;
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
             Slider.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
                 this._pointerIsDown = true;
                 this._updateValueFromPointer(coordinates.x);
                 this._host._capturingControl = this;
-                _super.prototype._onPointerDown.call(this, coordinates);
+                return true;
             };
             Slider.prototype._onPointerMove = function (coordinates) {
                 if (this._pointerIsDown) {
@@ -2362,8 +2385,11 @@ var BABYLON;
             };
             // Events
             Checkbox.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
                 this.isChecked = !this.isChecked;
-                _super.prototype._onPointerDown.call(this, coordinates);
+                return true;
             };
             return Checkbox;
         }(GUI.Control));
@@ -2507,8 +2533,11 @@ var BABYLON;
             };
             // Events
             RadioButton.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
                 this.isChecked = !this.isChecked;
-                _super.prototype._onPointerDown.call(this, coordinates);
+                return true;
             };
             return RadioButton;
         }(GUI.Control));
@@ -2918,10 +2947,13 @@ var BABYLON;
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
+                if (!_super.prototype._onPointerEnter.call(this)) {
+                    return false;
+                }
                 if (this.pointerEnterAnimation) {
                     this.pointerEnterAnimation();
                 }
-                _super.prototype._onPointerEnter.call(this);
+                return true;
             };
             Button.prototype._onPointerOut = function () {
                 if (this.pointerOutAnimation) {
@@ -2930,10 +2962,13 @@ var BABYLON;
                 _super.prototype._onPointerOut.call(this);
             };
             Button.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
                 if (this.pointerDownAnimation) {
                     this.pointerDownAnimation();
                 }
-                _super.prototype._onPointerDown.call(this, coordinates);
+                return true;
             };
             Button.prototype._onPointerUp = function (coordinates) {
                 if (this.pointerUpAnimation) {

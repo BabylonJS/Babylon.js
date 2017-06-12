@@ -273,6 +273,11 @@ module BABYLON.GUI {
                     var uv = pi.pickInfo.getTextureCoordinates();
                     var size = this.getSize();
                     this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._lastControlDown) {
+                        this._lastControlDown.forcePointerUp();
+                    }
+                    this._lastControlDown = null;  
                 }
             });
         }
