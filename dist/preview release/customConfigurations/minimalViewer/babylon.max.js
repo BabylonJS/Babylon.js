@@ -20419,6 +20419,10 @@ var BABYLON;
             else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
             if (this.renderOutline) {
@@ -20443,10 +20447,6 @@ var BABYLON;
             }
             else {
                 effectiveMaterial.bind(world, this);
-            }
-            // Alpha mode
-            if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
             }
             // Draw
             this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
@@ -40398,7 +40398,7 @@ var BABYLON;
                     if (!this.transformedDirection) {
                         this.transformedDirection = BABYLON.Vector3.Zero();
                     }
-                    BABYLON.Vector3.TransformCoordinatesToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
+                    BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this.transformedDirection);
                 }
                 return true;
             }
