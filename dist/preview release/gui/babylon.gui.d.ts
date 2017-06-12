@@ -35,6 +35,7 @@ declare module BABYLON.GUI {
         private _doPicking(x, y, type);
         attach(): void;
         attachToMesh(mesh: AbstractMesh): void;
+        private _attachToOnBlur(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
     }

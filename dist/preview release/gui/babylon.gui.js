@@ -223,16 +223,7 @@ var BABYLON;
                     _this._doPicking(scene.pointerX, scene.pointerY, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
-                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
-                    if (_this._lastControlOver && _this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                        _this._lastControlOver.onPointerOutObservable.notifyObservers(_this._lastControlOver);
-                    }
-                    _this._lastControlOver = null;
-                    if (_this._lastControlDown) {
-                        _this._lastControlDown.forcePointerUp();
-                    }
-                    _this._lastControlDown = null;
-                });
+                this._attachToOnBlur(scene);
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh) {
                 var _this = this;
@@ -252,6 +243,20 @@ var BABYLON;
                         }
                         _this._lastControlDown = null;
                     }
+                });
+                this._attachToOnBlur(scene);
+            };
+            AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+                var _this = this;
+                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                    if (_this._lastControlOver && _this._lastControlOver.onPointerOutObservable.hasObservers()) {
+                        _this._lastControlOver.onPointerOutObservable.notifyObservers(_this._lastControlOver);
+                    }
+                    _this._lastControlOver = null;
+                    if (_this._lastControlDown) {
+                        _this._lastControlDown.forcePointerUp();
+                    }
+                    _this._lastControlDown = null;
                 });
             };
             // Statics
