@@ -169,13 +169,17 @@ module BABYLON.GUI {
             this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
 
-        protected _onPointerDown(coordinates: Vector2): void {
+        protected _onPointerDown(coordinates: Vector2): boolean {
+            if (!super._onPointerDown(coordinates)) {
+                return false;
+            }
+
             this._pointerIsDown = true;
 
             this._updateValueFromPointer(coordinates.x);
             this._host._capturingControl = this;
 
-            super._onPointerDown(coordinates);
+            return true;
         }
 
         protected _onPointerMove(coordinates: Vector2): void {

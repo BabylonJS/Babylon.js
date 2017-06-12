@@ -133,10 +133,13 @@ module BABYLON.GUI {
         }
 
         // Events
-        protected _onPointerDown(coordinates: Vector2): void {
+        protected _onPointerDown(coordinates: Vector2): boolean {
+            if (!super._onPointerDown(coordinates)) {
+                return false;
+            }
             this.isChecked = !this.isChecked;
 
-            super._onPointerDown(coordinates);
+            return true;
         }
     }    
 }
