@@ -50694,7 +50694,7 @@ var BABYLON;
             /**
              * Specifies the weight of the bloom in the final rendering
              */
-            _this.bloomWeight = 0.15;
+            _this._bloomWeight = 0.15;
             _this._cameras = cameras || [];
             // Initialize
             _this._hdr = hdr;
@@ -50706,6 +50706,22 @@ var BABYLON;
             _this._buildPipeline();
             return _this;
         }
+        Object.defineProperty(DefaultRenderingPipeline.prototype, "bloomWeight", {
+            get: function () {
+                return this._bloomWeight;
+            },
+            set: function (value) {
+                if (this._bloomWeight === value) {
+                    return;
+                }
+                this._bloomWeight = value;
+                if (this._hdr && this.copyBack) {
+                    this.copyBack.alphaConstants = new BABYLON.Color4(value, value, value, value);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DefaultRenderingPipeline.prototype, "bloomScale", {
             get: function () {
                 return this._bloomScale;
@@ -50884,10 +50900,13 @@ var BABYLON;
     ], DefaultRenderingPipeline.prototype, "bloomKernel", void 0);
     __decorate([
         BABYLON.serialize()
-    ], DefaultRenderingPipeline.prototype, "bloomWeight", void 0);
+    ], DefaultRenderingPipeline.prototype, "_bloomWeight", void 0);
     __decorate([
         BABYLON.serialize()
     ], DefaultRenderingPipeline.prototype, "_hdr", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "bloomWeight", null);
     __decorate([
         BABYLON.serialize()
     ], DefaultRenderingPipeline.prototype, "bloomScale", null);
