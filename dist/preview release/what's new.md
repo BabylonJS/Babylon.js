@@ -14,7 +14,7 @@
  - Support for multisample render targets. [Demo](http://www.babylonjs-playground.com/#12MKMN) ([deltakosh](https://github.com/deltakosh))
  - New Unity 5 Editor Toolkit. Complete pipeline integration [Doc](TODO) ([MackeyK24](https://github.com/MackeyK24))
  - New DebugLayer. [Doc](http://doc.babylonjs.com/overviews/customize_debug_layer) ([temechon](https://github.com/temechon))
- - New `VideoTexture.CreateFromWebCam` to generate video texture using WebRTC. [Demo](https://www.babylonjs-playground.com#1R77YT#11) ([Sebastien Vandenberghe](https://github.com/sebavanmicrosoft)) / ([deltakosh](https://github.com/deltakosh))
+ - New `VideoTexture.CreateFromWebCam` to generate video texture using WebRTC. [Demo](https://www.babylonjs-playground.com#1R77YT#11) ([Sebastien Vandenberghe](https://github.com/sebavan)) / ([deltakosh](https://github.com/deltakosh))
  - New Facet Data feature ([jerome](https://github.com/jbousquie))
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's [Doc](http://doc.babylonjs.com/tutorials/multi-platform_compressed_textures) ([jcpalmer](https://github.com/Palmer-JC))
@@ -23,6 +23,7 @@
  - New `Cell Shading` material added into `Materials Library` [Demo](http://www.babylonjs.com/Demos/CellShading/) ([Julien Moreau-Mathis](https://github.com/julien-moreau))
  - New kernel based blur. [Demo](https://www.babylonjs-playground.com/#FBH4J7#1) ([deltakosh](https://github.com/deltakosh))
  - New highlights postprocess ([deltakosh](https://github.com/deltakosh))
+ - Sepctor.js New WebGL debugger: [more info here](http://spector.babylonjs.com) ([Sebastien Vandenberghe](https://github.com/sebavan))
 
 ### Updates
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
@@ -71,7 +72,7 @@
 - Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 
 ### API Documentation
-`- File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
+- File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `instancedMesh.ts` documented ([jerome](https://github.com/jbousquie))  

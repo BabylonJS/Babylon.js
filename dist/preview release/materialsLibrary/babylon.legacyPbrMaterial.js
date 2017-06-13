@@ -1270,7 +1270,7 @@ var BABYLON;
         };
         LegacyPBRMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
-            serializationObject.customType = "BABYLON.legacyPBRMaterial";
+            serializationObject.customType = "BABYLON.LegacyPBRMaterial";
             return serializationObject;
         };
         // Statics

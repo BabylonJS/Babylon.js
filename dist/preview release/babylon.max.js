@@ -24098,8 +24098,8 @@ var BABYLON;
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
             if (parsedMaterial.customType === "BABYLON.PBRMaterial" && !parsedMaterial.overloadedAlbedo) {
-                parsedMaterial.customType === "BABYLON.legacyPBRMaterial";
-                if (!BABYLON.legacyPBRMaterial) {
+                parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
+                if (!BABYLON.LegacyPBRMaterial) {
                     BABYLON.Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
                     return;
                 }
@@ -44327,12 +44327,20 @@ var BABYLON;
             }
         };
         ShadowGenerator.prototype.recreateShadowMap = function () {
+            // Track render list.
+            var renderList = this._shadowMap.renderList;
             // Clean up existing data.
             this._disposeRTTandPostProcesses();
             // Reinitializes.
             this._initializeGenerator(this.blurBoxOffset);
+            // Reaffect the blur ESM to ensure a correct fallback if necessary.
+            if (this.useBlurExponentialShadowMap) {
+                this.useBlurExponentialShadowMap = true;
+            }
             // Reaffect the filter.
             this._applyFilterValues();
+            // Reaffect Render List.
+            this._shadowMap.renderList = renderList;
         };
         /**
          * Boolean : true when the ShadowGenerator is finally computed.
@@ -44480,15 +44488,19 @@ var BABYLON;
         ShadowGenerator.prototype._disposeRTTandPostProcesses = function () {
             if (this._shadowMap) {
                 this._shadowMap.dispose();
+                this._shadowMap = null;
             }
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
+                this._shadowMap2 = null;
             }
             if (this._downSamplePostprocess) {
                 this._downSamplePostprocess.dispose();
+                this._downSamplePostprocess = null;
             }
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
+                this._boxBlurPostprocess = null;
             }
         };
         /**
@@ -48940,8 +48952,8 @@ var BABYLON;
         function PostProcessRenderPipeline(engine, name) {
             this._engine = engine;
             this._name = name;
-            this._renderEffects = {};
-            this._renderEffectsForIsolatedPass = {};
+            this._renderEffects = new Array();
+            this._renderEffectsForIsolatedPass = new Array();
             this._cameras = [];
         }
         Object.defineProperty(PostProcessRenderPipeline.prototype, "isSupported", {
@@ -49053,6 +49065,10 @@ var BABYLON;
                     this._renderEffectsForIsolatedPass[cameraName]._update();
                 }
             }
+        };
+        PostProcessRenderPipeline.prototype._reset = function () {
+            this._renderEffects = new Array();
+            this._renderEffectsForIsolatedPass = new Array();
         };
         PostProcessRenderPipeline.prototype.dispose = function () {
             // Must be implemented by children 
@@ -50668,35 +50684,85 @@ var BABYLON;
          */
         function DefaultRenderingPipeline(name, hdr, scene, cameras) {
             var _this = _super.call(this, scene.getEngine(), name) || this;
-            /**
-            * The FxaaPostProcess Id
-            * @type {string}
-            */
+            _this.PassPostProcessId = "PassPostProcessEffect";
+            _this.HighLightsPostProcessId = "HighLightsPostProcessEffect";
+            _this.BlurXPostProcessId = "BlurXPostProcessEffect";
+            _this.BlurYPostProcessId = "BlurYPostProcessEffect";
+            _this.CopyBackPostProcessId = "CopyBackPostProcessEffect";
+            _this.ImageProcessingPostProcessId = "ImageProcessingPostProcessEffect";
             _this.FxaaPostProcessId = "FxaaPostProcessEffect";
+            _this.FinalMergePostProcessId = "FinalMergePostProcessEffect";
             // IAnimatable
             _this.animations = [];
             // Values       
+            _this._bloomEnabled = false;
             _this._fxaaEnabled = false;
             _this._imageProcessingEnabled = false;
+            _this._bloomScale = 0.6;
+            /**
+             * Specifies the size of the bloom blur kernel, relative to the final output size
+             */
+            _this.bloomKernel = 64;
+            /**
+             * Specifies the weight of the bloom in the final rendering
+             */
+            _this._bloomWeight = 0.15;
             _this._cameras = cameras || [];
             // Initialize
             _this._hdr = hdr;
             _this._scene = scene;
             // Misc
-            var floatTextureType = scene.getEngine().getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
-            // fxaa
-            _this.fxaa = new BABYLON.FxaaPostProcess("fxaa", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, floatTextureType);
-            _this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), _this.FxaaPostProcessId, function () { return _this.fxaa; }, true));
-            // Finish
+            _this._defaultPipelineTextureType = scene.getEngine().getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+            // Attach
             scene.postProcessRenderPipelineManager.addPipeline(_this);
-            if (cameras !== null) {
-                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
-            }
-            // Deactivate
-            _this.FxaaEnabled = false;
+            _this._buildPipeline();
             return _this;
         }
-        Object.defineProperty(DefaultRenderingPipeline.prototype, "FxaaEnabled", {
+        Object.defineProperty(DefaultRenderingPipeline.prototype, "bloomWeight", {
+            get: function () {
+                return this._bloomWeight;
+            },
+            set: function (value) {
+                if (this._bloomWeight === value) {
+                    return;
+                }
+                this._bloomWeight = value;
+                if (this._hdr && this.copyBack) {
+                    this.copyBack.alphaConstants = new BABYLON.Color4(value, value, value, value);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DefaultRenderingPipeline.prototype, "bloomScale", {
+            get: function () {
+                return this._bloomScale;
+            },
+            set: function (value) {
+                if (this._bloomScale === value) {
+                    return;
+                }
+                this._bloomScale = value;
+                this._buildPipeline();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DefaultRenderingPipeline.prototype, "bloomEnabled", {
+            get: function () {
+                return this._bloomEnabled;
+            },
+            set: function (enabled) {
+                if (this._bloomEnabled === enabled) {
+                    return;
+                }
+                this._bloomEnabled = enabled;
+                this._buildPipeline();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DefaultRenderingPipeline.prototype, "fxaaEnabled", {
             get: function () {
                 return this._fxaaEnabled;
             },
@@ -50705,22 +50771,127 @@ var BABYLON;
                     return;
                 }
                 this._fxaaEnabled = enabled;
-                if (enabled) {
-                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, this.FxaaPostProcessId, this._scene.cameras);
-                }
-                else {
-                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, this.FxaaPostProcessId, this._scene.cameras);
-                }
+                this._buildPipeline();
             },
             enumerable: true,
             configurable: true
         });
-        // Dispose
-        DefaultRenderingPipeline.prototype.dispose = function () {
+        DefaultRenderingPipeline.prototype._buildPipeline = function () {
+            var _this = this;
+            var engine = this._scene.getEngine();
+            this._disposePostProcesses();
+            this._reset();
+            if (this.bloomEnabled) {
+                this.pass = new BABYLON.PassPostProcess("sceneRenderTarget", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.PassPostProcessId, function () { return _this.pass; }, true));
+                if (!this._hdr) {
+                    this.highlights = new BABYLON.HighlightsPostProcess("highlights", this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                    this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.HighLightsPostProcessId, function () { return _this.highlights; }, true));
+                    this.highlights.autoClear = false;
+                    this.highlights.alwaysForcePOT = true;
+                }
+                this.blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), 10.0, this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.BlurXPostProcessId, function () { return _this.blurX; }, true));
+                this.blurX.alwaysForcePOT = true;
+                this.blurX.autoClear = false;
+                this.blurX.onActivateObservable.add(function () {
+                    var dw = _this.blurX.width / engine.getRenderingCanvas().width;
+                    _this.blurX.kernel = _this.bloomKernel * dw;
+                });
+                this.blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), 10.0, this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.BlurYPostProcessId, function () { return _this.blurY; }, true));
+                this.blurY.alwaysForcePOT = true;
+                this.blurY.autoClear = false;
+                this.blurY.onActivateObservable.add(function () {
+                    var dh = _this.blurY.height / engine.getRenderingCanvas().height;
+                    _this.blurY.kernel = _this.bloomKernel * dh;
+                });
+                this.copyBack = new BABYLON.PassPostProcess("bloomBlendBlit", this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.CopyBackPostProcessId, function () { return _this.copyBack; }, true));
+                this.copyBack.alwaysForcePOT = true;
+                if (this._hdr) {
+                    this.copyBack.alphaMode = BABYLON.Engine.ALPHA_INTERPOLATE;
+                    var w = this.bloomWeight;
+                    this.copyBack.alphaConstants = new BABYLON.Color4(w, w, w, w);
+                }
+                else {
+                    this.copyBack.alphaMode = BABYLON.Engine.ALPHA_SCREENMODE;
+                }
+                this.copyBack.autoClear = false;
+            }
+            this.imageProcessing = new BABYLON.ImageProcessingPostProcess("imageProcessing", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            if (this._hdr) {
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, function () { return _this.imageProcessing; }, true));
+            }
+            if (this.fxaaEnabled) {
+                this.fxaa = new BABYLON.FxaaPostProcess("fxaa", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FxaaPostProcessId, function () { return _this.fxaa; }, true));
+                this.fxaa.autoClear = false;
+            }
+            else {
+                this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FinalMergePostProcessId, function () { return _this.finalMerge; }, true));
+                this.finalMerge.autoClear = false;
+            }
+            if (this.bloomEnabled) {
+                if (this._hdr) {
+                    this.copyBack.shareOutputWith(this.blurX);
+                    this.imageProcessing.shareOutputWith(this.pass);
+                    this.imageProcessing.autoClear = false;
+                }
+                else {
+                    if (this.fxaa) {
+                        this.fxaa.shareOutputWith(this.pass);
+                    }
+                    else {
+                        this.finalMerge.shareOutputWith(this.pass);
+                    }
+                }
+            }
+            if (this._cameras !== null) {
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+            }
+        };
+        DefaultRenderingPipeline.prototype._disposePostProcesses = function () {
             for (var i = 0; i < this._cameras.length; i++) {
                 var camera = this._cameras[i];
-                this.fxaa.dispose(camera);
+                if (this.pass) {
+                    this.pass.dispose(camera);
+                    this.pass = null;
+                }
+                if (this.highlights) {
+                    this.highlights.dispose(camera);
+                    this.highlights = null;
+                }
+                if (this.blurX) {
+                    this.blurX.dispose(camera);
+                    this.blurX = null;
+                }
+                if (this.blurY) {
+                    this.blurY.dispose(camera);
+                    this.blurY = null;
+                }
+                if (this.copyBack) {
+                    this.copyBack.dispose(camera);
+                    this.copyBack = null;
+                }
+                if (this.imageProcessing) {
+                    this.imageProcessing.dispose(camera);
+                    this.imageProcessing = null;
+                }
+                if (this.fxaa) {
+                    this.fxaa.dispose(camera);
+                    this.fxaa = null;
+                }
+                if (this.finalMerge) {
+                    this.finalMerge.dispose(camera);
+                    this.finalMerge = null;
+                }
             }
+        };
+        // Dispose
+        DefaultRenderingPipeline.prototype.dispose = function () {
+            this._disposePostProcesses();
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
             _super.prototype.dispose.call(this);
         };
@@ -50738,10 +50909,25 @@ var BABYLON;
     }(BABYLON.PostProcessRenderPipeline));
     __decorate([
         BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "bloomKernel", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "_bloomWeight", void 0);
+    __decorate([
+        BABYLON.serialize()
     ], DefaultRenderingPipeline.prototype, "_hdr", void 0);
     __decorate([
         BABYLON.serialize()
-    ], DefaultRenderingPipeline.prototype, "FxaaEnabled", null);
+    ], DefaultRenderingPipeline.prototype, "bloomWeight", null);
+    __decorate([
+        BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "bloomScale", null);
+    __decorate([
+        BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "bloomEnabled", null);
+    __decorate([
+        BABYLON.serialize()
+    ], DefaultRenderingPipeline.prototype, "fxaaEnabled", null);
     BABYLON.DefaultRenderingPipeline = DefaultRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
 
@@ -51500,6 +51686,7 @@ var BABYLON;
             ], ["txColorTransform"], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true) || this;
             _this.colorGradingWeight = 1.0;
             _this.colorCurves = new BABYLON.ColorCurves();
+            _this.cameraFov = 0.5;
             _this.vignetteStretch = 0;
             _this.vignetteCentreX = 0;
             _this.vignetteCentreY = 0;
@@ -51515,7 +51702,7 @@ var BABYLON;
                 // Color 
                 BABYLON.ColorCurves.Bind(_this.colorCurves, effect);
                 // Vignette
-                var vignetteScaleY = Math.tan(_this.getCamera().fov * 0.5);
+                var vignetteScaleY = Math.tan(_this.cameraFov * 0.5);
                 var vignetteScaleX = vignetteScaleY * aspectRatio;
                 var vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
                 vignetteScaleX = BABYLON.Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, _this.vignetteStretch);
@@ -51650,6 +51837,9 @@ var BABYLON;
              * Sets the length in pixels of the blur sample region
              */
             set: function (v) {
+                if (this._idealKernel === v) {
+                    return;
+                }
                 v = Math.max(v, 1);
                 this._idealKernel = v;
                 this._kernel = this._nearestBestKernel(v);
@@ -51724,9 +51914,10 @@ var BABYLON;
                 defines += "#define KERNEL_DEP_WEIGHT" + depCount + " " + this._glslFloat(weights[i]) + "\r\n";
                 depCount++;
             }
-            this._indexParameters.varyingCount = varyingCount;
-            this._indexParameters.depCount = depCount;
-            this.updateEffect(defines);
+            this.updateEffect(defines, null, null, {
+                varyingCount: varyingCount,
+                depCount: depCount
+            });
         };
         /**
          * Best kernels are odd numbers that when divided by 2, their integer part is even, so 5, 9 or 13.
