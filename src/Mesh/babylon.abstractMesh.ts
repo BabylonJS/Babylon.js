@@ -1162,8 +1162,6 @@
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix) {
-                this._markSyncedWithParent();
-
                 if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
                     if (this._meshToBoneReferal) {
                         this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
@@ -1185,6 +1183,7 @@
                         this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }
                 }
+                this._markSyncedWithParent();
             } else {
                 this._worldMatrix.copyFrom(this._localWorld);
             }
