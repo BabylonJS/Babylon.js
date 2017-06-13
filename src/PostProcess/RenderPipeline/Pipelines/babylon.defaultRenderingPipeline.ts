@@ -41,10 +41,26 @@
 		 * Specifies the weight of the bloom in the final rendering
 		 */
         @serialize()
-		public bloomWeight: number = 0.15;        
+		private _bloomWeight: number = 0.15;        
 
         @serialize()
         private _hdr: boolean;
+
+        public set bloomWeight(value: number) {
+            if (this._bloomWeight === value) {
+                return;
+            }
+            this._bloomWeight = value;
+
+            if (this._hdr && this.copyBack) {
+                this.copyBack.alphaConstants = new BABYLON.Color4(value, value, value, value);	
+            }
+        }   
+        
+        @serialize()
+        public get bloomWeight(): number {
+            return this._bloomWeight;
+        }          
 
         public set bloomScale(value: number) {
             if (this._bloomScale === value) {
