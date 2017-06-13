@@ -42817,7 +42817,7 @@ var BABYLON;
                 this.blurX.alwaysForcePOT = true;
                 this.blurX.autoClear = false;
                 this.blurX.onActivateObservable.add(function () {
-                    var dw = _this.blurX.width / engine.getRenderWidth();
+                    var dw = _this.blurX.width / engine.getRenderingCanvas().width;
                     _this.blurX.kernel = _this.bloomKernel * dw;
                 });
                 this.blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), 10.0, this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
@@ -42825,7 +42825,7 @@ var BABYLON;
                 this.blurY.alwaysForcePOT = true;
                 this.blurY.autoClear = false;
                 this.blurY.onActivateObservable.add(function () {
-                    var dh = _this.blurY.height / engine.getRenderHeight();
+                    var dh = _this.blurY.height / engine.getRenderingCanvas().height;
                     _this.blurY.kernel = _this.bloomKernel * dh;
                 });
                 this.copyBack = new BABYLON.PassPostProcess("bloomBlendBlit", this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
