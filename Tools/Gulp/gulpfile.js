@@ -358,6 +358,13 @@ gulp.task("typescript-customConfigurations", function (cb) {
 });
 
 /**
+ * Custom build with full path file control; used by profile.html
+ */
+gulp.task("build-custom", function (cb) {
+    runSequence("typescript-compile", "build", cb);
+});
+
+/**
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
