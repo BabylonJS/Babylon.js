@@ -134,7 +134,7 @@
 				this.blurX.alwaysForcePOT = true;
 				this.blurX.autoClear = false;
 				this.blurX.onActivateObservable.add(() => {
-					let dw = this.blurX.width / engine.getRenderWidth();
+					let dw = this.blurX.width / engine.getRenderingCanvas().width;
 					this.blurX.kernel = this.bloomKernel * dw;
 				});
 
@@ -143,7 +143,7 @@
 				this.blurY.alwaysForcePOT = true;
 				this.blurY.autoClear = false;
 				this.blurY.onActivateObservable.add(() => {
-					let dh = this.blurY.height / engine.getRenderHeight();
+					let dh = this.blurY.height / engine.getRenderingCanvas().height;
 					this.blurY.kernel = this.bloomKernel * dh;
 				});				
 
