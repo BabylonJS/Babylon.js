@@ -351,8 +351,10 @@
             this._disposeRTTandPostProcesses();
             // Reinitializes.
             this._initializeGenerator(this.blurBoxOffset);
-            // Reaffect the blur to ensure a correct fallback if necessary.
-            this.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
+            // Reaffect the blur ESM to ensure a correct fallback if necessary.
+            if (this.useBlurExponentialShadowMap) {
+                this.useBlurExponentialShadowMap = true;
+            }
             // Reaffect the filter.
             this._applyFilterValues();
             // Reaffect Render List.
