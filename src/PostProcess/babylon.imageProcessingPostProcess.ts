@@ -4,6 +4,8 @@
 		public colorGradingWeight: number = 1.0;
 		public colorCurves = new ColorCurves();
 
+        public cameraFov = 0.5;
+
 		public vignetteStretch = 0;
 		public vignetteCentreX = 0;
 		public vignetteCentreY = 0;
@@ -76,7 +78,7 @@
                 ColorCurves.Bind(this.colorCurves, effect);
 
                 // Vignette
-                let vignetteScaleY = Math.tan(this.getCamera().fov * 0.5);
+                let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);

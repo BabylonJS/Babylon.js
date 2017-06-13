@@ -345,14 +345,20 @@
         }
 
         public recreateShadowMap(): void {
+            // Track render list.
+            var renderList = this._shadowMap.renderList;
             // Clean up existing data.
             this._disposeRTTandPostProcesses();
-
             // Reinitializes.
             this._initializeGenerator(this.blurBoxOffset);
-
+            // Reaffect the blur ESM to ensure a correct fallback if necessary.
+            if (this.useBlurExponentialShadowMap) {
+                this.useBlurExponentialShadowMap = true;
+            }
             // Reaffect the filter.
             this._applyFilterValues();
+            // Reaffect Render List.
+            this._shadowMap.renderList = renderList;
         }
 
         /**
@@ -532,18 +538,22 @@
         private _disposeRTTandPostProcesses(): void {
             if (this._shadowMap) {
                 this._shadowMap.dispose();
+                this._shadowMap = null;
             }
 
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
+                this._shadowMap2 = null;
             }
 
             if (this._downSamplePostprocess) {
                 this._downSamplePostprocess.dispose();
+                this._downSamplePostprocess = null;
             }
 
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
+                this._boxBlurPostprocess = null;
             }
         }
 

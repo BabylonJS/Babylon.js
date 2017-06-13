@@ -7,6 +7,10 @@
 		 * Sets the length in pixels of the blur sample region
 		 */
 		public set kernel(v: number) {
+			if (this._idealKernel === v) {
+				return;
+			}
+
 			v = Math.max(v, 1);
 			this._idealKernel = v;
 			this._kernel = this._nearestBestKernel(v);
@@ -109,11 +113,10 @@
                 defines += `#define KERNEL_DEP_WEIGHT${depCount} ${this._glslFloat(weights[i])}\r\n`;
                 depCount++;
 			}
-
-            this._indexParameters.varyingCount = varyingCount;
-            this._indexParameters.depCount = depCount;
-
-            this.updateEffect(defines);
+            this.updateEffect(defines, null, null, {
+				varyingCount: varyingCount,
+				depCount: depCount
+			});
         }
 
         /**
