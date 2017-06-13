@@ -5,9 +5,11 @@ declare module BABYLON {
         facetsPattern: RegExp;
         normalPattern: RegExp;
         vertexPattern: RegExp;
-        extensions: string;
+        extensions: ISceneLoaderPluginExtensions;
         importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean;
-        load(scene: Scene, data: string, rootUrl: string): boolean;
-        private parseSolid(mesh, solidData);
+        load(scene: Scene, data: any, rootUrl: string): boolean;
+        private isBinary(data);
+        private parseBinary(mesh, data);
+        private parseASCII(mesh, solidData);
     }
 }
