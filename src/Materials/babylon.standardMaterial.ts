@@ -56,7 +56,7 @@ module BABYLON {
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
-        public SHADOWFULLFLOAT = false;
+        public SHADOWFLOAT = false;
         public CAMERACOLORGRADING = false;
         public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;

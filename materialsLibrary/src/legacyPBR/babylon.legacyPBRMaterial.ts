@@ -69,7 +69,7 @@ module BABYLON {
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
-        public SHADOWFULLFLOAT = false;
+        public SHADOWFLOAT = false;
 
         public METALLICWORKFLOW = false;
         public METALLICMAP = false;

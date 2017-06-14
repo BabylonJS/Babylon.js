@@ -65,7 +65,7 @@
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
-        public SHADOWFULLFLOAT = false;
+        public SHADOWFLOAT = false;
         public NORMALXYSCALE = true;
         public USERIGHTHANDEDSYSTEM = false;
 
