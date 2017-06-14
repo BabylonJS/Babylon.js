@@ -3,8 +3,23 @@
 module BABYLON {
     export class DirectionalLight extends ShadowLight {
 
-        private _shadowOrthoScale = 0.5;
+        private _shadowFrustumSize = 0;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        @serialize()
+        public get shadowFrustumSize(): number {
+            return this._shadowFrustumSize
+        }
+        /**
+         * Specifies a fix frustum size for the shadow generation.
+         */
+        public set shadowFrustumSize(value: number) {
+            this._shadowFrustumSize = value;
+            this.forceProjectionMatrixCompute();
+        }
 
+        private _shadowOrthoScale = 0.5;
         @serialize()
         public get shadowOrthoScale(): number {
             return this._shadowOrthoScale
@@ -51,9 +66,33 @@ module BABYLON {
 
         /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.  
-         * Returns the DirectionalLight.  
+         * Returns the DirectionalLight Shadow projection matrix.
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            if (this.shadowFrustumSize > 0) {
+                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix, viewMatrix);
+            }
+            else {
+                this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
+            }
+        }
+
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void {
+            var activeCamera = this.getScene().activeCamera;
+
+            Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize,
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+        }
+
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.  
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
 
             // Check extends
