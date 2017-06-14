@@ -172,11 +172,13 @@
 
             let caps = scene.getEngine().getCaps();
 
-            if (defines["SHADOWFULLFLOAT"] === undefined) {
+            if (defines["SHADOWFLOAT"] === undefined) {
                 needRebuild = true;
             }
 
-            defines["SHADOWFULLFLOAT"] = (shadowEnabled && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender);
+            defines["SHADOWFLOAT"] = shadowEnabled && 
+                                    ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
+                                         (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
             defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
