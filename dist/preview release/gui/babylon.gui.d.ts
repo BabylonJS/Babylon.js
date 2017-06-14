@@ -506,3 +506,39 @@ declare module BABYLON.GUI {
         static CreateSimpleButton(name: string, text: string): Button;
     }
 }
+
+
+declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
+declare module BABYLON.GUI {
+    class ColorPicker extends Control {
+        name: string;
+        private static _ColorWheelCanvas;
+        private _value;
+        private _tmpColor;
+        private _pointerStartedOnSquare;
+        private _pointerStartedOnWheel;
+        private _squareLeft;
+        private _squareTop;
+        private _squareSize;
+        private _h;
+        private _s;
+        private _v;
+        onValueChangedObservable: Observable<Color3>;
+        value: Color3;
+        constructor(name?: string);
+        private _updateSquareProps();
+        private _drawGradientSquare(hueValue, left, top, width, height, context);
+        private _drawCircle(centerX, centerY, radius, context);
+        private _createColorWheelImage(context, radius, thickness);
+        private _RGBtoHSV(color, result);
+        private _HSVtoRGB(hue, saturation, value, result);
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        private _pointerIsDown;
+        private _updateValueFromPointer(x, y);
+        private _isPointOnSquare(coordinates);
+        private _isPointOnWheel(coordinates);
+        protected _onPointerDown(coordinates: Vector2): boolean;
+        protected _onPointerMove(coordinates: Vector2): void;
+        protected _onPointerUp(coordinates: Vector2): void;
+    }
+}
