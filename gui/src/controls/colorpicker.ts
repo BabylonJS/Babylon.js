@@ -6,7 +6,7 @@ module BABYLON.GUI {
     export class ColorPicker extends Control {
         private static _ColorWheelCanvas: HTMLCanvasElement;
         
-        private _value:Color3 = Color3.White();
+        private _value: Color3 = Color3.Red();
         private _tmpColor = new Color3();
 
         private _pointerStartedOnSquare = false;
@@ -48,6 +48,7 @@ module BABYLON.GUI {
             super(name);
 
             this.isPointerBlocker = true;
+            this.value =  Color3.White();
         }
 
         private _updateSquareProps():void {
