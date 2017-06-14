@@ -195,7 +195,12 @@ module BABYLON {
         };
 
         public getForwardRay(length = 100): Ray {
-            return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+            if (this.leftCamera) {
+                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+            }
+            else {
+                return super.getForwardRay(length); 
+            }
         } 
 
         public _checkInputs(): void {
