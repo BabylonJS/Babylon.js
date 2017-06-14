@@ -1373,7 +1373,8 @@
                     "../../gui/src/controls/radioButton.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
-                    "../../gui/src/controls/button.ts"
+                    "../../gui/src/controls/button.ts",
+                    "../../gui/src/controls/colorPicker.ts"
                 ],
                 "output": "babylon.gui.js"
             }
