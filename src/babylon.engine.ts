@@ -644,7 +644,7 @@
             // GL
             if (!options.disableWebGL2Support) {
                 try {
-                    this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
                     }
