@@ -22,6 +22,10 @@ module BABYLON.GUI {
             super(name);
         }
 
+        protected _getTypeName(): string {
+            return "StackPanel";
+        }              
+
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             var stack = 0;
             for (var child of this._children) {

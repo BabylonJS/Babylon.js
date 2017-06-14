@@ -92,6 +92,10 @@ module BABYLON.GUI {
             this.isPointerBlocker = true;
         }
 
+        protected _getTypeName(): string {
+            return "RadioButton";
+        }              
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 

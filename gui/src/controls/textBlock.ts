@@ -67,6 +67,10 @@ module BABYLON.GUI {
             this.text = text;
         }
 
+        protected _getTypeName(): string {
+            return "TextBlock";
+        }              
+
         private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {
             var width = this._currentMeasure.width;
             var x = 0;
