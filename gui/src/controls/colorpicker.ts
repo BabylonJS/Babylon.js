@@ -11,10 +11,7 @@ module BABYLON.GUI {
 
         private _pointerStartedOnSquare = false;
         private _pointerStartedOnWheel = false;
-
-        private _squarePoint = Vector2.Zero();
-        private _wheelPoint = Vector2.Zero();
-
+        
         private _squareLeft = 0;
         private _squareTop = 0;
         private _squareSize = 0;
