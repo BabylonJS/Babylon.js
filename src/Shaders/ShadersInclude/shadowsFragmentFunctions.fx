@@ -1,5 +1,5 @@
 ﻿#ifdef SHADOWS
-	#ifndef SHADOWFULLFLOAT
+	#ifndef SHADOWFLOAT
 		float unpack(vec4 color)
 		{
 			const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
@@ -19,7 +19,7 @@
 		directionToLight = normalize(directionToLight);
 		directionToLight.y = -directionToLight.y;
 		
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			float shadow = unpack(textureCube(shadowSampler, directionToLight));
 		#else
 			float shadow = textureCube(shadowSampler, directionToLight).x;
@@ -53,7 +53,7 @@
 
 		// Poisson Sampling
 
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) visibility -= 0.25;
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) visibility -= 0.25;
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) visibility -= 0.25;
@@ -78,7 +78,7 @@
 		directionToLight = normalize(directionToLight);
 		directionToLight.y = -directionToLight.y;
 		
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			float shadowMapSample = unpack(textureCube(shadowSampler, directionToLight));
 		#else
 			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
@@ -99,7 +99,7 @@
 			return 1.0;
 		}
 
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			float shadow = unpack(texture2D(shadowSampler, uv));
 		#else
 			float shadow = texture2D(shadowSampler, uv).x;
@@ -133,7 +133,7 @@
 
 		// Poisson Sampling
 
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < depth.z) visibility -= 0.25;
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < depth.z) visibility -= 0.25;
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < depth.z) visibility -= 0.25;
@@ -160,7 +160,7 @@
 			return 1.0;
 		}
 	
-		#ifndef SHADOWFULLFLOAT
+		#ifndef SHADOWFLOAT
 			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
 		#else
 			float shadowMapSample = texture2D(shadowSampler, uv).x;

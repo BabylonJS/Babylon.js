@@ -1,4 +1,4 @@
-﻿#ifndef FULLFLOAT
+﻿#ifndef FLOAT
 vec4 pack(float depth)
 {
 	const vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
@@ -49,9 +49,9 @@ void main(void)
 	depth = exp(-min(87., biasAndScale.y * depth));
 #endif
 
-#ifndef FULLFLOAT
-	gl_FragColor = pack(depth);
-#else
+#ifdef FLOAT
 	gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
+#else
+	gl_FragColor = pack(depth);
 #endif
 }
