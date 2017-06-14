@@ -4,7 +4,7 @@ var DOMImage = Image;
 
 module BABYLON.GUI {
     export class ColorPicker extends Control {
-        private static _ColorWheelCanvas: HTMLCanvasElement;
+        private _colorWheelCanvas: HTMLCanvasElement;
         
         private _value: Color3 = Color3.Red();
         private _tmpColor = new Color3();
@@ -36,8 +36,8 @@ module BABYLON.GUI {
             this._RGBtoHSV(this._value, this._tmpColor);
             
             this._h = this._tmpColor.r;
-            this._s = this._tmpColor.g;
-            this._v = this._tmpColor.b;
+            this._s = Math.max(this._tmpColor.g, 0.00001);
+            this._v = Math.max(this._tmpColor.b, 0.00001);
 
             this._markAsDirty();
 
@@ -46,9 +46,10 @@ module BABYLON.GUI {
 
         constructor(public name?: string) {
             super(name);
-
+            this.value = new BABYLON.Color3(.88, .1, .1);
+            this.width = "200px";
+            this.height = "200px";
             this.isPointerBlocker = true;
-            this.value =  Color3.White();
         }
 
         protected _getTypeName(): string {
@@ -96,11 +97,11 @@ module BABYLON.GUI {
             context.stroke();
         }
 
-        private _createColorWheelImage(context: CanvasRenderingContext2D, radius:number, thickness:number): void {
-            ColorPicker._ColorWheelCanvas = document.createElement("canvas");
-            ColorPicker._ColorWheelCanvas.width = radius * 2;
-            ColorPicker._ColorWheelCanvas.height = radius * 2;
-            var context = ColorPicker._ColorWheelCanvas.getContext("2d");
+        private _createColorWheelCanvas(radius:number, thickness:number): HTMLCanvasElement {
+            var canvas = document.createElement("canvas");
+            canvas.width = radius * 2;
+            canvas.height = radius * 2;
+            var context = canvas.getContext("2d");
             var image = context.getImageData(0, 0, radius * 2, radius * 2);
             var data = image.data;
             
@@ -128,19 +129,39 @@ module BABYLON.GUI {
                     data[index] = color.r*255;
                     data[index + 1] = color.g*255;
                     data[index + 2] = color.b*255;      
-                    var alphaRatio = (distSq - minDistSq) / (maxDistSq - minDistSq);
+                    var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
-                    if (alphaRatio < 0.2) {
-                        data[index + 3] = 255 * (alphaRatio / 0.2);
-                    } else if (alphaRatio > 0.8) {
-                        data[index + 3] = 255 * (1.0 - ((alphaRatio - 0.8) / 0.2));
+                    //apply less alpha to bigger color pickers
+                    var alphaAmount = .2;
+                    var maxAlpha = .2;
+                    var minAlpha = .04;
+                    var lowerRadius = 50;
+                    var upperRadius = 150;
+
+                    if(radius < lowerRadius){
+                        alphaAmount = maxAlpha;
+                    }else if(radius > upperRadius){
+                        alphaAmount = minAlpha;
+                    }else{
+                        alphaAmount = (minAlpha - maxAlpha)*(radius - lowerRadius)/(upperRadius - lowerRadius) + maxAlpha;
+                    }
+                    
+                    var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+
+                    if (alphaRatio < alphaAmount) {
+                        data[index + 3] = 255 * (alphaRatio / alphaAmount);
+                    } else if (alphaRatio > 1 - alphaAmount) {
+                        data[index + 3] = 255 * (1.0 - ((alphaRatio - (1 - alphaAmount)) / alphaAmount));
                     } else {
                         data[index + 3] = 255;
                     }
+
                 }
             }
 
             context.putImageData(image, 0, 0);
+
+            return canvas;
         }
 
         private _RGBtoHSV(color:Color3, result:Color3){
@@ -222,11 +243,11 @@ module BABYLON.GUI {
                 var left = this._currentMeasure.left;
                 var top = this._currentMeasure.top;
 
-                if(!ColorPicker._ColorWheelCanvas){
-                    this._createColorWheelImage(context, radius, wheelThickness);
+                if(!this._colorWheelCanvas || this._colorWheelCanvas.width != radius*2){
+                    this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                 }
 
-                context.drawImage(ColorPicker._ColorWheelCanvas, left, top);
+                context.drawImage(this._colorWheelCanvas, left, top);
 
                 this._updateSquareProps();
 
@@ -324,12 +345,9 @@ module BABYLON.GUI {
             this._pointerStartedOnSquare = false;
             this._pointerStartedOnWheel = false;
 
-            if(this._isPointOnSquare(coordinates))
-            {
+            if(this._isPointOnSquare(coordinates)){
                 this._pointerStartedOnSquare = true;
-            }
-            else if(this._isPointOnWheel(coordinates))
-            {
+            }else if(this._isPointOnWheel(coordinates)){
                 this._pointerStartedOnWheel = true;
             }
 
