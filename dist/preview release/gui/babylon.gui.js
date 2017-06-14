@@ -3045,7 +3045,7 @@ var BABYLON;
             function ColorPicker(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
-                _this._value = BABYLON.Color3.White();
+                _this._value = BABYLON.Color3.Red();
                 _this._tmpColor = new BABYLON.Color3();
                 _this._pointerStartedOnSquare = false;
                 _this._pointerStartedOnWheel = false;
@@ -3059,6 +3059,7 @@ var BABYLON;
                 // Events
                 _this._pointerIsDown = false;
                 _this.isPointerBlocker = true;
+                _this.value = BABYLON.Color3.White();
                 return _this;
             }
             Object.defineProperty(ColorPicker.prototype, "value", {
