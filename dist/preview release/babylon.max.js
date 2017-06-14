@@ -62199,7 +62199,12 @@ var BABYLON;
         ;
         WebVRFreeCamera.prototype.getForwardRay = function (length) {
             if (length === void 0) { length = 100; }
-            return _super.prototype.getForwardRay.call(this, length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+            if (this.leftCamera) {
+                return _super.prototype.getForwardRay.call(this, length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+            }
+            else {
+                return _super.prototype.getForwardRay.call(this, length);
+            }
         };
         WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {

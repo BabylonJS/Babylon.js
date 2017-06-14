@@ -530,7 +530,7 @@
             return target.isCompletelyInFrustum(this._frustumPlanes);
         }
 
-        public getForwardRay(length = 100, transform: Matrix, origin: Vector3): Ray {
+        public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
             if (!transform) {
                 transform = this.getWorldMatrix();
             }
