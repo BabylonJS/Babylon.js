@@ -51,6 +51,10 @@ module BABYLON.GUI {
             this.value =  Color3.White();
         }
 
+        protected _getTypeName(): string {
+            return "ColorPicker";
+        }        
+
         private _updateSquareProps():void {
             var radius = Math.min(this._currentMeasure.width, this._currentMeasure.height)*.5;
             var wheelThickness = radius*.2;

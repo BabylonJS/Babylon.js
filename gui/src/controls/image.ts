@@ -94,6 +94,10 @@ module BABYLON.GUI {
             this.source = url;
         }
 
+        protected _getTypeName(): string {
+            return "Image";
+        }              
+
         public synchronizeSizeWithContent() {
             if (!this._loaded) {
                 return;

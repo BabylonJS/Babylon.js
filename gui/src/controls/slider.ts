@@ -120,6 +120,10 @@ module BABYLON.GUI {
             this.isPointerBlocker = true;
         }
 
+        protected _getTypeName(): string {
+            return "Slider";
+        }              
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
