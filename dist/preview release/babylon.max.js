@@ -16627,6 +16627,9 @@ var BABYLON;
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === void 0) { speedRatio = 1.0; }
+            if (from > to && speedRatio > 0) {
+                speedRatio *= -1;
+            }
             this.stopAnimation(target);
             if (!animatable) {
                 animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -34588,7 +34591,7 @@ var BABYLON;
             // ratio represents the frame delta between from and to
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
             var highLimitValue = 0;
-            if (ratio > range && !loop) {
+            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
                 returnValue = false;
                 highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
             }
@@ -47610,9 +47613,6 @@ var BABYLON;
             }
         }
         Gamepads.prototype.dispose = function () {
-            if (Gamepads.gamepadDOMInfo) {
-                document.body.removeChild(Gamepads.gamepadDOMInfo);
-            }
             if (this._onGamepadConnectedEvent) {
                 window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
@@ -47629,10 +47629,6 @@ var BABYLON;
         Gamepads.prototype._addNewGamepad = function (gamepad) {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
-                if (Gamepads.gamepadDOMInfo) {
-                    document.body.removeChild(Gamepads.gamepadDOMInfo);
-                    Gamepads.gamepadDOMInfo = null;
-                }
             }
             var newGamepad;
             var xboxOne = (gamepad.id.search("Xbox One") !== -1);
@@ -62163,6 +62159,7 @@ var BABYLON;
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
+            _this.nonVRControllers = [];
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -62247,6 +62244,16 @@ var BABYLON;
                 if (this.controllers.length >= 2) {
                     callback(this.controllers);
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebVRFreeCamera.prototype, "onNonVRControllerAttached", {
+            set: function (callback) {
+                this._onNonVRControllerAttached = callback;
+                this.nonVRControllers.forEach(function (controller) {
+                    callback(controller);
+                });
             },
             enumerable: true,
             configurable: true
@@ -62465,6 +62472,12 @@ var BABYLON;
                         if (_this._onControllersAttached && _this.controllers.length >= 2) {
                             _this._onControllersAttached(_this.controllers);
                         }
+                    }
+                }
+                else {
+                    _this.nonVRControllers.push(gp);
+                    if (_this._onNonVRControllerAttached) {
+                        _this._onNonVRControllerAttached(gp);
                     }
                 }
             });
@@ -65329,6 +65342,20 @@ var BABYLON;
         AssetsManager.prototype.addTextureTask = function (taskName, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
+            this.tasks.push(task);
+            return task;
+        };
+        AssetsManager.prototype.addCubeTextureTask = function (name, url, extensions, noMipmap, files) {
+            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
+            this.tasks.push(task);
+            return task;
+        };
+        AssetsManager.prototype.addHDRCubeTextureTask = function (name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (generateHarmonics === void 0) { generateHarmonics = true; }
+            if (useInGammaSpace === void 0) { useInGammaSpace = false; }
+            if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
+            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
             this.tasks.push(task);
             return task;
         };
