@@ -47613,9 +47613,6 @@ var BABYLON;
             }
         }
         Gamepads.prototype.dispose = function () {
-            if (Gamepads.gamepadDOMInfo) {
-                document.body.removeChild(Gamepads.gamepadDOMInfo);
-            }
             if (this._onGamepadConnectedEvent) {
                 window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
@@ -47632,10 +47629,6 @@ var BABYLON;
         Gamepads.prototype._addNewGamepad = function (gamepad) {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
-                if (Gamepads.gamepadDOMInfo) {
-                    document.body.removeChild(Gamepads.gamepadDOMInfo);
-                    Gamepads.gamepadDOMInfo = null;
-                }
             }
             var newGamepad;
             var xboxOne = (gamepad.id.search("Xbox One") !== -1);
@@ -62251,6 +62244,7 @@ var BABYLON;
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
+            _this.nonVRControllers = [];
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -62335,6 +62329,16 @@ var BABYLON;
                 if (this.controllers.length >= 2) {
                     callback(this.controllers);
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebVRFreeCamera.prototype, "onNonVRControllerAttached", {
+            set: function (callback) {
+                this._onNonVRControllerAttached = callback;
+                this.nonVRControllers.forEach(function (controller) {
+                    callback(controller);
+                });
             },
             enumerable: true,
             configurable: true
@@ -62553,6 +62557,12 @@ var BABYLON;
                         if (_this._onControllersAttached && _this.controllers.length >= 2) {
                             _this._onControllersAttached(_this.controllers);
                         }
+                    }
+                }
+                else {
+                    _this.nonVRControllers.push(gp);
+                    if (_this._onNonVRControllerAttached) {
+                        _this._onNonVRControllerAttached(gp);
                     }
                 }
             });
