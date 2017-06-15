@@ -1,4 +1,3 @@
-
 module BABYLON {
 
     export enum PoseEnabledControllerType {
