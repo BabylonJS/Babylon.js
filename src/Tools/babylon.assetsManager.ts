@@ -304,6 +304,21 @@
             return task;
         }
 
+
+        public addCubeTextureTask(name: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): IAssetTask {
+            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
+            this.tasks.push(task);
+
+            return task;
+        }
+
+        public addHDRCubeTextureTask(name: string, url: string, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false): IAssetTask {
+            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
+            this.tasks.push(task);
+
+            return task;
+        }
+        
         private _decreaseWaitingTasksCount(): void {
             this.waitingTasksCount--;
 
