@@ -3,6 +3,7 @@
 		private _colorGradingTexture: BaseTexture;
 		public colorGradingWeight: number = 1.0;
 		public colorCurves = new ColorCurves();
+        private _colorCurvesEnabled = true;
 
         public cameraFov = 0.5;
 
@@ -12,10 +13,13 @@
 		public vignetteWeight = 1.5;
 		public vignetteColor: BABYLON.Color4 = new BABYLON.Color4(0, 0, 0, 0);
 		private _vignetteBlendMode = ImageProcessingPostProcess.VIGNETTEMODE_MULTIPLY;
+        private _vignetteEnabled = true;
 
 		public cameraContrast = 1.0;
-		public cameraExposureValue = 1.5;
+		public cameraExposure = 1.68;
 		private _cameraToneMappingEnabled = true;
+
+        private _fromLinearSpace = false;
 
         public get colorGradingTexture(): BaseTexture {
             return this._colorGradingTexture;
@@ -41,7 +45,46 @@
 
             this._vignetteBlendMode = value;
             this._updateParameters();
-        }     
+        }  
+
+        public get colorCurvesEnabled(): boolean {
+            return this._colorCurvesEnabled;
+        }
+
+        public set colorCurvesEnabled(value: boolean) {
+            if (this._colorCurvesEnabled === value) {
+                return;
+            }
+
+            this._colorCurvesEnabled = value;
+            this._updateParameters();
+        }           
+
+        public get vignetteEnabled(): boolean {
+            return this._vignetteEnabled;
+        }
+
+        public set vignetteEnabled(value: boolean) {
+            if (this._vignetteEnabled === value) {
+                return;
+            }
+
+            this._vignetteEnabled = value;
+            this._updateParameters();
+        }      
+
+        public get fromLinearSpace(): boolean {
+            return this._fromLinearSpace;
+        }
+
+        public set fromLinearSpace(value: boolean) {
+            if (this._fromLinearSpace === value) {
+                return;
+            }
+
+            this._fromLinearSpace = value;
+            this._updateParameters();
+        }              
 
         public get cameraToneMappingEnabled(): boolean {
             return this._cameraToneMappingEnabled;
@@ -75,24 +118,28 @@
                 let aspectRatio = this.aspectRatio;
                 
                 // Color 
-                ColorCurves.Bind(this.colorCurves, effect);
+                if (this._colorCurvesEnabled) {
+                    ColorCurves.Bind(this.colorCurves, effect);
+                }
 
-                // Vignette
-                let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
-                let vignetteScaleX = vignetteScaleY * aspectRatio;
+                if (this._vignetteEnabled) {
+                    // Vignette
+                    let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
+                    let vignetteScaleX = vignetteScaleY * aspectRatio;
 
-                let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-                vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-                vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                    let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
+                    vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                    vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
-                effect.setFloat4('vignetteSettings1', vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+                    effect.setFloat4('vignetteSettings1', vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
 
-                let vignettePower = -2.0 * this.vignetteWeight;
-                effect.setFloat4('vignetteSettings2', this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+                    let vignettePower = -2.0 * this.vignetteWeight;
+                    effect.setFloat4('vignetteSettings2', this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+                }
 
                 // Contrast and exposure
                 effect.setFloat('contrast', this.cameraContrast);
-                effect.setFloat('cameraExposureLinear', Math.pow(2.0, -this.cameraExposureValue) * Math.PI);
+                effect.setFloat('cameraExposureLinear', Math.pow(2.0, -this.cameraExposure) * Math.PI);
                 
                 // Color transform settings
                 if (this._colorGradingTexture) {
@@ -118,14 +165,26 @@
                 samplers.push("txColorTransform");
             }
 
-            if (this.vignetteBlendMode === ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY) {
-                defines += "#define VIGNETTEBLENDMODEMULTIPLY\r\n";
-            } else {
-                defines += "#define VIGNETTEBLENDMODEOPAQUE\r\n";
+            if (this._vignetteEnabled) {
+                defines += "#define VIGNETTE\r\n";
+
+                if (this.vignetteBlendMode === ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY) {
+                    defines += "#define VIGNETTEBLENDMODEMULTIPLY\r\n";
+                } else {
+                    defines += "#define VIGNETTEBLENDMODEOPAQUE\r\n";
+                }
             }
 
             if (this.cameraToneMappingEnabled) {
                 defines += "#define TONEMAPPING\r\n";
+            }
+
+            if (this._colorCurvesEnabled && this.colorCurves) {
+                defines += "#define COLORCURVES\r\n";
+            }
+
+            if (this._fromLinearSpace) {
+                defines += "#define FROMLINEARSPACE\r\n";
             }
 
             this.updateEffect(defines, null, samplers);
