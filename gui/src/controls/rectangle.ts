@@ -39,6 +39,10 @@ module BABYLON.GUI {
             super(name);
         }
 
+        protected _getTypeName(): string {
+            return "Rectangle";
+        }              
+
         protected _localDraw(context: CanvasRenderingContext2D): void {
             context.save();
 

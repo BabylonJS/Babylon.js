@@ -88,7 +88,7 @@ var BABYLON;
             _this.INVERTNORMALMAPX = false;
             _this.INVERTNORMALMAPY = false;
             _this.TWOSIDEDLIGHTING = false;
-            _this.SHADOWFULLFLOAT = false;
+            _this.SHADOWFLOAT = false;
             _this.METALLICWORKFLOW = false;
             _this.METALLICMAP = false;
             _this.ROUGHNESSSTOREINMETALMAPALPHA = false;

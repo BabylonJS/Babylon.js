@@ -618,7 +618,6 @@ var BABYLON;
                 this.isPointerBlocker = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
-                // Properties
                 /**
                 * An event triggered when the pointer move over the control.
                 * @type {BABYLON.Observable}
@@ -650,6 +649,14 @@ var BABYLON;
                 */
                 this.onDirtyObservable = new BABYLON.Observable();
             }
+            Object.defineProperty(Control.prototype, "typeName", {
+                // Properties
+                get: function () {
+                    return this._getTypeName();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "alpha", {
                 get: function () {
                     return this._alpha;
@@ -989,6 +996,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Control.prototype._getTypeName = function () {
+                return "Control";
+            };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
@@ -1475,10 +1485,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Container.prototype._getTypeName = function () {
+                return "Container";
+            };
             Container.prototype.getChildByName = function (name) {
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     if (child.name === name) {
+                        return child;
+                    }
+                }
+                return null;
+            };
+            Container.prototype.getChildByType = function (name, type) {
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child.typeName === type) {
                         return child;
                     }
                 }
@@ -1622,6 +1644,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            StackPanel.prototype._getTypeName = function () {
+                return "StackPanel";
+            };
             StackPanel.prototype._preMeasure = function (parentMeasure, context) {
                 var stack = 0;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -1730,6 +1755,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Rectangle.prototype._getTypeName = function () {
+                return "Rectangle";
+            };
             Rectangle.prototype._localDraw = function (context) {
                 context.save();
                 if (this._background) {
@@ -1834,6 +1862,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Ellipse.prototype._getTypeName = function () {
+                return "Ellipse";
+            };
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
                 context.beginPath();
@@ -2042,6 +2073,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Line.prototype._getTypeName = function () {
+                return "Line";
+            };
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -2217,6 +2251,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Slider.prototype._getTypeName = function () {
+                return "Slider";
+            };
             Slider.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -2368,6 +2405,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Checkbox.prototype._getTypeName = function () {
+                return "CheckBox";
+            };
             Checkbox.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -2508,6 +2548,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            RadioButton.prototype._getTypeName = function () {
+                return "RadioButton";
+            };
             RadioButton.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -2636,6 +2679,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            TextBlock.prototype._getTypeName = function () {
+                return "TextBlock";
+            };
             TextBlock.prototype._drawText = function (text, textWidth, y, context) {
                 var width = this._currentMeasure.width;
                 var x = 0;
@@ -2824,6 +2870,9 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Image.prototype._getTypeName = function () {
+                return "Image";
+            };
             Image.prototype.synchronizeSizeWithContent = function () {
                 if (!this._loaded) {
                     return;
@@ -2943,6 +2992,9 @@ var BABYLON;
                 };
                 return _this;
             }
+            Button.prototype._getTypeName = function () {
+                return "Button";
+            };
             // While being a container, the button behaves like a control.
             Button.prototype._processPicking = function (x, y, type) {
                 if (!this.contains(x, y)) {
@@ -3058,8 +3110,10 @@ var BABYLON;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
+                _this.value = new BABYLON.Color3(.88, .1, .1);
+                _this.width = "200px";
+                _this.height = "200px";
                 _this.isPointerBlocker = true;
-                _this.value = BABYLON.Color3.White();
                 return _this;
             }
             Object.defineProperty(ColorPicker.prototype, "value", {
@@ -3073,14 +3127,17 @@ var BABYLON;
                     this._value.copyFrom(value);
                     this._RGBtoHSV(this._value, this._tmpColor);
                     this._h = this._tmpColor.r;
-                    this._s = this._tmpColor.g;
-                    this._v = this._tmpColor.b;
+                    this._s = Math.max(this._tmpColor.g, 0.00001);
+                    this._v = Math.max(this._tmpColor.b, 0.00001);
                     this._markAsDirty();
                     this.onValueChangedObservable.notifyObservers(this._value);
                 },
                 enumerable: true,
                 configurable: true
             });
+            ColorPicker.prototype._getTypeName = function () {
+                return "ColorPicker";
+            };
             ColorPicker.prototype._updateSquareProps = function () {
                 var radius = Math.min(this._currentMeasure.width, this._currentMeasure.height) * .5;
                 var wheelThickness = radius * .2;
@@ -3115,11 +3172,11 @@ var BABYLON;
                 context.strokeStyle = '#ffffff';
                 context.stroke();
             };
-            ColorPicker.prototype._createColorWheelImage = function (context, radius, thickness) {
-                ColorPicker._ColorWheelCanvas = document.createElement("canvas");
-                ColorPicker._ColorWheelCanvas.width = radius * 2;
-                ColorPicker._ColorWheelCanvas.height = radius * 2;
-                var context = ColorPicker._ColorWheelCanvas.getContext("2d");
+            ColorPicker.prototype._createColorWheelCanvas = function (radius, thickness) {
+                var canvas = document.createElement("canvas");
+                canvas.width = radius * 2;
+                canvas.height = radius * 2;
+                var context = canvas.getContext("2d");
                 var image = context.getImageData(0, 0, radius * 2, radius * 2);
                 var data = image.data;
                 var color = this._tmpColor;
@@ -3139,12 +3196,28 @@ var BABYLON;
                         data[index] = color.r * 255;
                         data[index + 1] = color.g * 255;
                         data[index + 2] = color.b * 255;
-                        var alphaRatio = (distSq - minDistSq) / (maxDistSq - minDistSq);
-                        if (alphaRatio < 0.2) {
-                            data[index + 3] = 255 * (alphaRatio / 0.2);
+                        var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                        //apply less alpha to bigger color pickers
+                        var alphaAmount = .2;
+                        var maxAlpha = .2;
+                        var minAlpha = .04;
+                        var lowerRadius = 50;
+                        var upperRadius = 150;
+                        if (radius < lowerRadius) {
+                            alphaAmount = maxAlpha;
                         }
-                        else if (alphaRatio > 0.8) {
-                            data[index + 3] = 255 * (1.0 - ((alphaRatio - 0.8) / 0.2));
+                        else if (radius > upperRadius) {
+                            alphaAmount = minAlpha;
+                        }
+                        else {
+                            alphaAmount = (minAlpha - maxAlpha) * (radius - lowerRadius) / (upperRadius - lowerRadius) + maxAlpha;
+                        }
+                        var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                        if (alphaRatio < alphaAmount) {
+                            data[index + 3] = 255 * (alphaRatio / alphaAmount);
+                        }
+                        else if (alphaRatio > 1 - alphaAmount) {
+                            data[index + 3] = 255 * (1.0 - ((alphaRatio - (1 - alphaAmount)) / alphaAmount));
                         }
                         else {
                             data[index + 3] = 255;
@@ -3152,6 +3225,7 @@ var BABYLON;
                     }
                 }
                 context.putImageData(image, 0, 0);
+                return canvas;
             };
             ColorPicker.prototype._RGBtoHSV = function (color, result) {
                 var r = color.r;
@@ -3227,10 +3301,10 @@ var BABYLON;
                     var wheelThickness = radius * .2;
                     var left = this._currentMeasure.left;
                     var top = this._currentMeasure.top;
-                    if (!ColorPicker._ColorWheelCanvas) {
-                        this._createColorWheelImage(context, radius, wheelThickness);
+                    if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
+                        this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                     }
-                    context.drawImage(ColorPicker._ColorWheelCanvas, left, top);
+                    context.drawImage(this._colorWheelCanvas, left, top);
                     this._updateSquareProps();
                     this._drawGradientSquare(this._h, this._squareLeft, this._squareTop, this._squareSize, this._squareSize, context);
                     var cx = this._squareLeft + this._squareSize * this._s;
