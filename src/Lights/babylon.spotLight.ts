@@ -1,13 +1,28 @@
 ﻿module BABYLON {
     export class SpotLight extends ShadowLight {
         private _angle: number;
-
         @serialize()
         public get angle(): number {
             return this._angle
         }
         public set angle(value: number) {
             this._angle = value;
+            this.forceProjectionMatrixCompute();
+        }
+
+        private _shadowAngleScale: number;
+        @serialize()
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        public get shadowAngleScale(): number {
+            return this._shadowAngleScale
+        }
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        public set shadowAngleScale(value: number) {
+            this._shadowAngleScale = value;
             this.forceProjectionMatrixCompute();
         }
 
@@ -53,7 +68,11 @@
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
-            Matrix.PerspectiveFovLHToRef(this.angle, 1.0, 
+
+            this._shadowAngleScale = this._shadowAngleScale || 1;
+            var angle = this._shadowAngleScale * this._angle;
+            
+            Matrix.PerspectiveFovLHToRef(angle, 1.0, 
             this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
         }
 
