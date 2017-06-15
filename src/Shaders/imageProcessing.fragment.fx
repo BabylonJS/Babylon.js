@@ -3,6 +3,7 @@ varying vec2 vUV;
 uniform sampler2D textureSampler;
 
 const float GammaEncodePowerApprox = 1.0 / 2.2;
+const float LinearEncodePowerApprox = 2.2;
 const vec3 RGBLuminanceCoefficients = vec3(0.2126, 0.7152, 0.0722);
 
 uniform float contrast;
@@ -53,23 +54,31 @@ vec3 sampleTexture3D(sampler2D colorTransform, vec3 color)
 
 vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 
-	result.rgb *= cameraExposureLinear;
-
-	//vignette
-	vec3 vignetteXY1 = vec3(viewportXY * vignetteSettings1.xy + vignetteSettings1.zw, 1.0);
-	float vignetteTerm = dot(vignetteXY1, vignetteXY1);
-	float vignette = pow(vignetteTerm, vignetteSettings2.w);
-
-	// Interpolate between the artist 'color' and white based on the physical transmission value 'vignette'.
-	vec3 vignetteColor = vignetteSettings2.rgb;
-
-#ifdef VIGNETTEBLENDMODEMULTIPLY
-	vec3 vignetteColorMultiplier = mix(vignetteColor, vec3(1, 1, 1), vignette);
-	result.rgb *= vignetteColorMultiplier;
+#ifndef FROMLINEARSPACE
+	// Need to move to linear space for subsequent operations
+	result.rgb = pow(result.rgb, vec3(LinearEncodePowerApprox));
 #endif
 
-#ifdef VIGNETTEBLENDMODEOPAQUE
-	result.rgb = mix(vignetteColor, result.rgb, vignette);
+	result.rgb *= cameraExposureLinear;
+
+#ifdef VIGNETTE
+		//vignette
+		vec3 vignetteXY1 = vec3(viewportXY * vignetteSettings1.xy + vignetteSettings1.zw, 1.0);
+		float vignetteTerm = dot(vignetteXY1, vignetteXY1);
+		float vignette = pow(vignetteTerm, vignetteSettings2.w);
+
+		// Interpolate between the artist 'color' and white based on the physical transmission value 'vignette'.
+		vec3 vignetteColor = vignetteSettings2.rgb;
+
+	#ifdef VIGNETTEBLENDMODEMULTIPLY
+		vec3 vignetteColorMultiplier = mix(vignetteColor, vec3(1, 1, 1), vignette);
+		result.rgb *= vignetteColorMultiplier;
+	#endif
+
+	#ifdef VIGNETTEBLENDMODEOPAQUE
+		result.rgb = mix(vignetteColor, result.rgb, vignette);
+	#endif
+
 #endif
 	
 #ifdef TONEMAPPING	
@@ -77,9 +86,11 @@ vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 	result.rgb = 1.0 - exp2(-tonemappingCalibration * result.rgb);
 #endif
 
+	// Going back to gamma space
 	result.rgb = pow(result.rgb, vec3(GammaEncodePowerApprox));
 	result.rgb = clamp(result.rgb, 0.0, 1.0);
 
+	// Contrast
 	vec3 resultHighContrast = applyEaseInOut(result.rgb);
 
 	if (contrast < 1.0) {
@@ -96,6 +107,7 @@ vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 	result.rgb = mix(result.rgb, colorTransformOutput, colorTransformSettings.www);
 #endif
 
+#ifdef COLORCURVES
 	// Apply Color Curves
 	float luma = dot(result.rgb, RGBLuminanceCoefficients);
 	vec2 curveMix = clamp(vec2(luma * 3.0 - 1.5, luma * -3.0 + 1.5), vec2(0.0), vec2(1.0));
@@ -103,6 +115,7 @@ vec4 applyImageProcessing(vec4 result, vec2 viewportXY){
 
 	result.rgb *= colorCurve.rgb;
 	result.rgb = mix(vec3(luma), result.rgb, colorCurve.a);
+#endif
 
 	return result;
 }

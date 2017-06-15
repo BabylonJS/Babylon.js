@@ -27,7 +27,7 @@
         // Values       
         private _bloomEnabled: boolean = false;
         private _fxaaEnabled: boolean = false;
-        private _imageProcessingEnabled: boolean = false;
+        private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
 
@@ -104,6 +104,20 @@
             return this._fxaaEnabled;
         }
 
+        public set imageProcessingEnabled(enabled: boolean) {
+            if (this._imageProcessingEnabled === enabled) {
+                return;
+            }
+            this._imageProcessingEnabled = enabled;
+
+            this._buildPipeline();
+        }
+
+        @serialize()
+        public get imageProcessingEnabled(): boolean {
+            return this._imageProcessingEnabled;
+        }        
+
         /**
          * @constructor
          * @param {string} name - The rendering pipeline name
@@ -176,26 +190,36 @@
 				this.copyBack.autoClear = false;
 			}
 
-			this.imageProcessing = new BABYLON.ImageProcessingPostProcess("imageProcessing",  1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-			if (this._hdr) {
-				this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
-			}
+            if (this._imageProcessingEnabled) {
+                this.imageProcessing = new BABYLON.ImageProcessingPostProcess("imageProcessing",  1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                if (this._hdr) {
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                }
+            }
 
 			if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));               
-				this.fxaa.autoClear = false;
+                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));  
+
+				this.fxaa.autoClear = !this.bloomEnabled && !this.imageProcessing;
 			} else {
 				this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true)); 
-				this.finalMerge.autoClear = false;
+                
+				this.finalMerge.autoClear = !this.bloomEnabled && !this.imageProcessing;
 			}
 
 			if (this.bloomEnabled) {
 				if (this._hdr) { // Share render targets to save memory
-					this.copyBack.shareOutputWith(this.blurX);		
-					this.imageProcessing.shareOutputWith(this.pass);			
-					this.imageProcessing.autoClear = false;
+					this.copyBack.shareOutputWith(this.blurX);	
+                    if (this.imageProcessing) {	
+					    this.imageProcessing.shareOutputWith(this.pass);			
+					    this.imageProcessing.autoClear = false;
+                    } else if (this.fxaa) {
+						this.fxaa.shareOutputWith(this.pass);		
+					} else {
+						this.finalMerge.shareOutputWith(this.pass);	
+					} 
 				} else  {
 					if (this.fxaa) {
 						this.fxaa.shareOutputWith(this.pass);		
