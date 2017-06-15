@@ -1642,6 +1642,10 @@
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
 
+            if(from > to && speedRatio > 0){
+                speedRatio *= -1;
+            }
+
             this.stopAnimation(target);
 
             if (!animatable) {

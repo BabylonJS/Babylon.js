@@ -571,7 +571,7 @@
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
             var highLimitValue = 0;
 
-            if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
+            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) { // If we are out of range and not looping get back to caller
                 returnValue = false;
                 highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
             } else {
