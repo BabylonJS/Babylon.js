@@ -1,22 +1,22 @@
 Babylon.js
 ==========
 
-Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
+Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
 [![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN
-- http://cdn.babylonjs.com/2-5/babylon.js 
-- http://cdn.babylonjs.com/2-5/babylon.max.js 
-- http://cdn.babylonjs.com/2-5/babylon.noworker.js 
-- http://cdn.babylonjs.com/2-5/babylon.core.js 
+- http://cdn.babylonjs.com/2-5/babylon.js
+- http://cdn.babylonjs.com/2-5/babylon.max.js
+- http://cdn.babylonjs.com/2-5/babylon.noworker.js
+- http://cdn.babylonjs.com/2-5/babylon.core.js
 
 For preview release you can use the following ones:
 
-- http://preview.babylonjs.com/babylon.js 
-- http://preview.babylonjs.com/babylon.max.js 
+- http://preview.babylonjs.com/babylon.js
+- http://preview.babylonjs.com/babylon.max.js
 - http://preview.babylonjs.com/babylon.worker.js
 
 ## Preview release
@@ -117,10 +117,4 @@ In no event and under no legal theory, whether in tort (including negligence), c
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
 ## External dependencies
-- hand.js: https://github.com/deltakosh/handjs
-
-
-
-
-
-
+- jQuery PEP: https://github.com/jquery/PEP
