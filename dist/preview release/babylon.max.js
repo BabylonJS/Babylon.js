@@ -16627,6 +16627,9 @@ var BABYLON;
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === void 0) { speedRatio = 1.0; }
+            if (from > to && speedRatio > 0) {
+                speedRatio *= -1;
+            }
             this.stopAnimation(target);
             if (!animatable) {
                 animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -20149,6 +20152,25 @@ var BABYLON;
                 BABYLON.VertexData.ComputeNormals(positions, indices, normals);
                 this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
             }
+            return this;
+        };
+        /**
+         * This method will force the computation of normals for the mesh.
+         * Please note that the mesh must have normals vertex data already.
+         * Returns the Mesh.
+         */
+        Mesh.prototype.recomputeNormals = function () {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var indices = this.getIndices();
+            var normals;
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            }
+            else {
+                normals = [];
+            }
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
             return this;
         };
         /**
@@ -33810,6 +33832,7 @@ var BABYLON;
          */
         function DirectionalLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
+            _this._shadowFrustumSize = 0;
             _this._shadowOrthoScale = 0.5;
             _this.autoUpdateExtends = true;
             // Cache
@@ -33821,6 +33844,23 @@ var BABYLON;
             _this.direction = direction;
             return _this;
         }
+        Object.defineProperty(DirectionalLight.prototype, "shadowFrustumSize", {
+            /**
+             * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+             */
+            get: function () {
+                return this._shadowFrustumSize;
+            },
+            /**
+             * Specifies a fix frustum size for the shadow generation.
+             */
+            set: function (value) {
+                this._shadowFrustumSize = value;
+                this.forceProjectionMatrixCompute();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DirectionalLight.prototype, "shadowOrthoScale", {
             get: function () {
                 return this._shadowOrthoScale;
@@ -33846,9 +33886,29 @@ var BABYLON;
         };
         /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight.
+         * Returns the DirectionalLight Shadow projection matrix.
          */
         DirectionalLight.prototype._setDefaultShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
+            if (this.shadowFrustumSize > 0) {
+                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix, viewMatrix);
+            }
+            else {
+                this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
+            }
+        };
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        DirectionalLight.prototype._setDefaultFixedFrustumShadowProjectionMatrix = function (matrix, viewMatrix) {
+            var activeCamera = this.getScene().activeCamera;
+            BABYLON.Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+        };
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        DirectionalLight.prototype._setDefaultAutoExtendShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
             // Check extends
             if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
@@ -33907,6 +33967,9 @@ var BABYLON;
     }(BABYLON.ShadowLight));
     __decorate([
         BABYLON.serialize()
+    ], DirectionalLight.prototype, "shadowFrustumSize", null);
+    __decorate([
+        BABYLON.serialize()
     ], DirectionalLight.prototype, "shadowOrthoScale", null);
     __decorate([
         BABYLON.serialize()
@@ -33955,6 +34018,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SpotLight.prototype, "shadowAngleScale", {
+            get: function () {
+                return this._shadowAngleScale;
+            },
+            /**
+             * Allows scaling the angle of the light for shadow generation only.
+             */
+            set: function (value) {
+                this._shadowAngleScale = value;
+                this.forceProjectionMatrixCompute();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Returns the string "SpotLight".
          */
@@ -33973,7 +34050,9 @@ var BABYLON;
          */
         SpotLight.prototype._setDefaultShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
-            BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            this._shadowAngleScale = this._shadowAngleScale || 1;
+            var angle = this._shadowAngleScale * this._angle;
+            BABYLON.Matrix.PerspectiveFovLHToRef(angle, 1.0, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
         };
         SpotLight.prototype._buildUniformLayout = function () {
             this._uniformBuffer.addUniform("vLightData", 4);
@@ -34005,6 +34084,12 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], SpotLight.prototype, "angle", null);
+    __decorate([
+        BABYLON.serialize()
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+    ], SpotLight.prototype, "shadowAngleScale", null);
     __decorate([
         BABYLON.serialize()
     ], SpotLight.prototype, "exponent", void 0);
@@ -34506,7 +34591,7 @@ var BABYLON;
             // ratio represents the frame delta between from and to
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
             var highLimitValue = 0;
-            if (ratio > range && !loop) {
+            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
                 returnValue = false;
                 highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
             }
@@ -47528,9 +47613,6 @@ var BABYLON;
             }
         }
         Gamepads.prototype.dispose = function () {
-            if (Gamepads.gamepadDOMInfo) {
-                document.body.removeChild(Gamepads.gamepadDOMInfo);
-            }
             if (this._onGamepadConnectedEvent) {
                 window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
@@ -47547,10 +47629,6 @@ var BABYLON;
         Gamepads.prototype._addNewGamepad = function (gamepad) {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
-                if (Gamepads.gamepadDOMInfo) {
-                    document.body.removeChild(Gamepads.gamepadDOMInfo);
-                    Gamepads.gamepadDOMInfo = null;
-                }
             }
             var newGamepad;
             var xboxOne = (gamepad.id.search("Xbox One") !== -1);
@@ -62081,6 +62159,7 @@ var BABYLON;
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
+            _this.nonVRControllers = [];
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -62165,6 +62244,16 @@ var BABYLON;
                 if (this.controllers.length >= 2) {
                     callback(this.controllers);
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebVRFreeCamera.prototype, "onNonVRControllerAttached", {
+            set: function (callback) {
+                this._onNonVRControllerAttached = callback;
+                this.nonVRControllers.forEach(function (controller) {
+                    callback(controller);
+                });
             },
             enumerable: true,
             configurable: true
@@ -62383,6 +62472,12 @@ var BABYLON;
                         if (_this._onControllersAttached && _this.controllers.length >= 2) {
                             _this._onControllersAttached(_this.controllers);
                         }
+                    }
+                }
+                else {
+                    _this.nonVRControllers.push(gp);
+                    if (_this._onNonVRControllerAttached) {
+                        _this._onNonVRControllerAttached(gp);
                     }
                 }
             });
@@ -65247,6 +65342,20 @@ var BABYLON;
         AssetsManager.prototype.addTextureTask = function (taskName, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
+            this.tasks.push(task);
+            return task;
+        };
+        AssetsManager.prototype.addCubeTextureTask = function (name, url, extensions, noMipmap, files) {
+            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
+            this.tasks.push(task);
+            return task;
+        };
+        AssetsManager.prototype.addHDRCubeTextureTask = function (name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (generateHarmonics === void 0) { generateHarmonics = true; }
+            if (useInGammaSpace === void 0) { useInGammaSpace = false; }
+            if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
+            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
             this.tasks.push(task);
             return task;
         };

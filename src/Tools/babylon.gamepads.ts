@@ -13,9 +13,6 @@
         private _onGamepadConnectedEvent: (evt) => void;
         private _onGamepadDisonnectedEvent: (evt: Event) => void;
 
-        private static gamepadDOMInfo: HTMLElement;
-
-
         constructor(ongamedpadconnected: (gamepad: T) => void) {
             this._callbackGamepadConnected = ongamedpadconnected;
             if (this.gamepadSupport) {
@@ -42,10 +39,6 @@
         }
 
         public dispose() {
-            if (Gamepads.gamepadDOMInfo) {
-                document.body.removeChild(Gamepads.gamepadDOMInfo);
-            }
-
             if (this._onGamepadConnectedEvent) {
                 window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
@@ -63,10 +56,6 @@
         private _addNewGamepad(gamepad): T {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
-                if (Gamepads.gamepadDOMInfo) {
-                    document.body.removeChild(Gamepads.gamepadDOMInfo);
-                    Gamepads.gamepadDOMInfo = null;
-                }
             }
 
             var newGamepad;

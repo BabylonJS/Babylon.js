@@ -42,13 +42,42 @@ module BABYLON.GUI {
             this._markAsDirty();
 
             this.onValueChangedObservable.notifyObservers(this._value);
-        }                             
+        }
+
+        public set width(value: string | number ) {
+            if (this._width.toString(this._host) === value) {
+                return;
+            }
+
+            if (this._width.fromString(value)) {
+                this._height.fromString(value);
+                this._markAsDirty();
+            }
+        }
+
+        public set height(value: string | number ) {
+            if (this._height.toString(this._host) === value) {
+                return;
+            }
+
+            if (this._height.fromString(value)) {
+                this._width.fromString(value);
+                this._markAsDirty();
+            }
+        }
+
+        public get size(): string | number {
+            return this.width;
+        }
+
+        public set size(value: string | number){
+            this.width = value;
+        }              
 
         constructor(public name?: string) {
             super(name);
             this.value = new BABYLON.Color3(.88, .1, .1);
-            this.width = "200px";
-            this.height = "200px";
+            this.size = "200px";
             this.isPointerBlocker = true;
         }
 

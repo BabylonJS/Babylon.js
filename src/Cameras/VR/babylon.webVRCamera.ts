@@ -61,7 +61,9 @@ module BABYLON {
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
+        public nonVRControllers: Array<Gamepad> = [];
         private _onControllersAttached: (controllers: Array<WebVRController>) => void;
+        private _onNonVRControllerAttached: (controller: Gamepad) => void;
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -164,6 +166,13 @@ module BABYLON {
             if (this.controllers.length >= 2) {
                 callback(this.controllers);
             }
+        }
+
+        public set onNonVRControllerAttached(callback: (controller: Gamepad) => void) {
+            this._onNonVRControllerAttached = callback;
+            this.nonVRControllers.forEach((controller) => {
+                callback(controller)
+            });
         }
 
         public getControllerByName(name: string): WebVRController {
@@ -405,6 +414,12 @@ module BABYLON {
                         if (this._onControllersAttached && this.controllers.length >= 2) {
                             this._onControllersAttached(this.controllers);
                         }
+                    }
+                }
+                else {
+                    this.nonVRControllers.push(gp);
+                    if (this._onNonVRControllerAttached) {
+                        this._onNonVRControllerAttached(gp);
                     }
                 }
             });
