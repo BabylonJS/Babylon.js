@@ -27,7 +27,11 @@ module BABYLON.GUI {
             super(name);
         }
 
-        public getChildByName(name: string) {
+        protected _getTypeName(): string {
+            return "Container";
+        }           
+
+        public getChildByName(name: string): Control {
             for (var child of this._children) {
                 if (child.name === name) {
                     return child;
@@ -35,7 +39,17 @@ module BABYLON.GUI {
             }
 
             return null;
-        }
+        }       
+
+        public getChildByType(name: string, type: string): Control {
+            for (var child of this._children) {
+                if (child.typeName === type) {
+                    return child;
+                }
+            }
+
+            return null;
+        }            
 
         public containsControl(control: Control): boolean {
             return this._children.indexOf(control) !== -1;

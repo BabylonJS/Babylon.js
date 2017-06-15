@@ -69,10 +69,13 @@ module BABYLON.GUI {
 
         constructor(public name?: string) {
             super(name);
-
             this.isPointerBlocker = true;
         }
 
+        protected _getTypeName(): string {
+            return "CheckBox";
+        }
+        
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 

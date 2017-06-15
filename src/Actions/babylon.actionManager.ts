@@ -334,10 +334,17 @@
                         var parameter = action.getTriggerParameter();
 
                         if (parameter && parameter !== evt.sourceEvent.keyCode) {
-                            var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                            var actualkey = String.fromCharCode(unicode).toLowerCase();
-                            if (actualkey !== parameter.toLowerCase()) {
+                            if (!parameter.toLowerCase) {
                                 continue;
+                            }
+                            var lowerCase = parameter.toLowerCase();
+
+                            if (lowerCase !== evt.sourceEvent.key) {
+                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                if (actualkey !== lowerCase) {
+                                    continue;
+                                }
                             }
                         }
                     }

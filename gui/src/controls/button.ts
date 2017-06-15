@@ -9,6 +9,7 @@ module BABYLON.GUI {
 
         constructor(public name?: string) {
             super(name);
+          
             this.thickness = 1;
             this.isPointerBlocker = true;
 
@@ -29,6 +30,10 @@ module BABYLON.GUI {
                 this.scaleX += 0.05;
                 this.scaleY += 0.05;
             }                      
+        }
+
+        protected _getTypeName(): string {
+            return "Button";
         }
 
         // While being a container, the button behaves like a control.

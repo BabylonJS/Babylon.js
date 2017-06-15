@@ -69,16 +69,7 @@
                 this._boxBlurPostprocess.dispose();
             }
 
-            var textureType: number;
-            var caps = this._scene.getEngine().getCaps();
-            if (this._useFullFloat) {
-                textureType = Engine.TEXTURETYPE_FLOAT;
-            }
-            else {
-                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            }
-
-            this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value, textureType);
+            this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value, this._textureType);
             this._boxBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
             });
@@ -172,7 +163,6 @@
         private _currentFaceIndex = 0;
         private _currentFaceIndexCache = 0;
 
-        private _useFullFloat = true;
         private _textureType: number;
         private _isCube = false;
 
@@ -193,12 +183,13 @@
 
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
-            if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
-                this._useFullFloat = true;
+            if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
                 this._textureType = Engine.TEXTURETYPE_FLOAT;
             }
+            else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+                this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            }
             else {
-                this._useFullFloat = false;
                 this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
             }
 
@@ -367,8 +358,8 @@
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
 
-            if (this._useFullFloat) {
-                defines.push("#define FULLFLOAT");
+            if (this._textureType !== Engine.TEXTURETYPE_UNSIGNED_INT) {
+                defines.push("#define FLOAT");
             }
 
             if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {

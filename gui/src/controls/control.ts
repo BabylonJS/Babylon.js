@@ -52,6 +52,10 @@ module BABYLON.GUI {
         
         // Properties
 
+        public get typeName(): string {
+            return this._getTypeName();
+        }
+
         /**
         * An event triggered when the pointer move over the control.
         * @type {BABYLON.Observable}
@@ -389,6 +393,10 @@ module BABYLON.GUI {
 
         // Functions
         constructor(public name?: string) {
+        }
+
+        protected _getTypeName(): string {
+            return "Control";
         }
 
         public linkWithMesh(mesh: AbstractMesh): void {

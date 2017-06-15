@@ -142,6 +142,10 @@ module BABYLON.GUI {
             this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;            
         }
 
+        protected _getTypeName(): string {
+            return "Line";
+        }              
+
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
