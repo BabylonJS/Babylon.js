@@ -20152,6 +20152,25 @@ var BABYLON;
             return this;
         };
         /**
+         * This method will force the computation of normals for the mesh.
+         * Please note that the mesh must have normals vertex data already.
+         * Returns the Mesh.
+         */
+        Mesh.prototype.recomputeNormals = function () {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var indices = this.getIndices();
+            var normals;
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            }
+            else {
+                normals = [];
+            }
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            return this;
+        };
+        /**
          * Creates a un-shared specific occurence of the geometry for the mesh.
          * Returns the Mesh.
          */
@@ -33810,6 +33829,7 @@ var BABYLON;
          */
         function DirectionalLight(name, direction, scene) {
             var _this = _super.call(this, name, scene) || this;
+            _this._shadowFrustumSize = 0;
             _this._shadowOrthoScale = 0.5;
             _this.autoUpdateExtends = true;
             // Cache
@@ -33821,6 +33841,23 @@ var BABYLON;
             _this.direction = direction;
             return _this;
         }
+        Object.defineProperty(DirectionalLight.prototype, "shadowFrustumSize", {
+            /**
+             * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+             */
+            get: function () {
+                return this._shadowFrustumSize;
+            },
+            /**
+             * Specifies a fix frustum size for the shadow generation.
+             */
+            set: function (value) {
+                this._shadowFrustumSize = value;
+                this.forceProjectionMatrixCompute();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DirectionalLight.prototype, "shadowOrthoScale", {
             get: function () {
                 return this._shadowOrthoScale;
@@ -33846,9 +33883,29 @@ var BABYLON;
         };
         /**
          * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight.
+         * Returns the DirectionalLight Shadow projection matrix.
          */
         DirectionalLight.prototype._setDefaultShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
+            if (this.shadowFrustumSize > 0) {
+                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix, viewMatrix);
+            }
+            else {
+                this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
+            }
+        };
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        DirectionalLight.prototype._setDefaultFixedFrustumShadowProjectionMatrix = function (matrix, viewMatrix) {
+            var activeCamera = this.getScene().activeCamera;
+            BABYLON.Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+        };
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        DirectionalLight.prototype._setDefaultAutoExtendShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
             // Check extends
             if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
@@ -33907,6 +33964,9 @@ var BABYLON;
     }(BABYLON.ShadowLight));
     __decorate([
         BABYLON.serialize()
+    ], DirectionalLight.prototype, "shadowFrustumSize", null);
+    __decorate([
+        BABYLON.serialize()
     ], DirectionalLight.prototype, "shadowOrthoScale", null);
     __decorate([
         BABYLON.serialize()
@@ -33955,6 +34015,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SpotLight.prototype, "shadowAngleScale", {
+            get: function () {
+                return this._shadowAngleScale;
+            },
+            /**
+             * Allows scaling the angle of the light for shadow generation only.
+             */
+            set: function (value) {
+                this._shadowAngleScale = value;
+                this.forceProjectionMatrixCompute();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Returns the string "SpotLight".
          */
@@ -33973,7 +34047,9 @@ var BABYLON;
          */
         SpotLight.prototype._setDefaultShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var activeCamera = this.getScene().activeCamera;
-            BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            this._shadowAngleScale = this._shadowAngleScale || 1;
+            var angle = this._shadowAngleScale * this._angle;
+            BABYLON.Matrix.PerspectiveFovLHToRef(angle, 1.0, this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
         };
         SpotLight.prototype._buildUniformLayout = function () {
             this._uniformBuffer.addUniform("vLightData", 4);
@@ -34005,6 +34081,12 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], SpotLight.prototype, "angle", null);
+    __decorate([
+        BABYLON.serialize()
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+    ], SpotLight.prototype, "shadowAngleScale", null);
     __decorate([
         BABYLON.serialize()
     ], SpotLight.prototype, "exponent", void 0);

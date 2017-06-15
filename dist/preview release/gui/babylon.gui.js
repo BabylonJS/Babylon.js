@@ -3110,8 +3110,10 @@ var BABYLON;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
+                _this.value = new BABYLON.Color3(.88, .1, .1);
+                _this.width = "200px";
+                _this.height = "200px";
                 _this.isPointerBlocker = true;
-                _this.value = BABYLON.Color3.White();
                 return _this;
             }
             Object.defineProperty(ColorPicker.prototype, "value", {
@@ -3125,8 +3127,8 @@ var BABYLON;
                     this._value.copyFrom(value);
                     this._RGBtoHSV(this._value, this._tmpColor);
                     this._h = this._tmpColor.r;
-                    this._s = this._tmpColor.g;
-                    this._v = this._tmpColor.b;
+                    this._s = Math.max(this._tmpColor.g, 0.00001);
+                    this._v = Math.max(this._tmpColor.b, 0.00001);
                     this._markAsDirty();
                     this.onValueChangedObservable.notifyObservers(this._value);
                 },
@@ -3170,11 +3172,11 @@ var BABYLON;
                 context.strokeStyle = '#ffffff';
                 context.stroke();
             };
-            ColorPicker.prototype._createColorWheelImage = function (context, radius, thickness) {
-                ColorPicker._ColorWheelCanvas = document.createElement("canvas");
-                ColorPicker._ColorWheelCanvas.width = radius * 2;
-                ColorPicker._ColorWheelCanvas.height = radius * 2;
-                var context = ColorPicker._ColorWheelCanvas.getContext("2d");
+            ColorPicker.prototype._createColorWheelCanvas = function (radius, thickness) {
+                var canvas = document.createElement("canvas");
+                canvas.width = radius * 2;
+                canvas.height = radius * 2;
+                var context = canvas.getContext("2d");
                 var image = context.getImageData(0, 0, radius * 2, radius * 2);
                 var data = image.data;
                 var color = this._tmpColor;
@@ -3194,12 +3196,28 @@ var BABYLON;
                         data[index] = color.r * 255;
                         data[index + 1] = color.g * 255;
                         data[index + 2] = color.b * 255;
-                        var alphaRatio = (distSq - minDistSq) / (maxDistSq - minDistSq);
-                        if (alphaRatio < 0.2) {
-                            data[index + 3] = 255 * (alphaRatio / 0.2);
+                        var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                        //apply less alpha to bigger color pickers
+                        var alphaAmount = .2;
+                        var maxAlpha = .2;
+                        var minAlpha = .04;
+                        var lowerRadius = 50;
+                        var upperRadius = 150;
+                        if (radius < lowerRadius) {
+                            alphaAmount = maxAlpha;
                         }
-                        else if (alphaRatio > 0.8) {
-                            data[index + 3] = 255 * (1.0 - ((alphaRatio - 0.8) / 0.2));
+                        else if (radius > upperRadius) {
+                            alphaAmount = minAlpha;
+                        }
+                        else {
+                            alphaAmount = (minAlpha - maxAlpha) * (radius - lowerRadius) / (upperRadius - lowerRadius) + maxAlpha;
+                        }
+                        var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                        if (alphaRatio < alphaAmount) {
+                            data[index + 3] = 255 * (alphaRatio / alphaAmount);
+                        }
+                        else if (alphaRatio > 1 - alphaAmount) {
+                            data[index + 3] = 255 * (1.0 - ((alphaRatio - (1 - alphaAmount)) / alphaAmount));
                         }
                         else {
                             data[index + 3] = 255;
@@ -3207,6 +3225,7 @@ var BABYLON;
                     }
                 }
                 context.putImageData(image, 0, 0);
+                return canvas;
             };
             ColorPicker.prototype._RGBtoHSV = function (color, result) {
                 var r = color.r;
@@ -3282,10 +3301,10 @@ var BABYLON;
                     var wheelThickness = radius * .2;
                     var left = this._currentMeasure.left;
                     var top = this._currentMeasure.top;
-                    if (!ColorPicker._ColorWheelCanvas) {
-                        this._createColorWheelImage(context, radius, wheelThickness);
+                    if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
+                        this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                     }
-                    context.drawImage(ColorPicker._ColorWheelCanvas, left, top);
+                    context.drawImage(this._colorWheelCanvas, left, top);
                     this._updateSquareProps();
                     this._drawGradientSquare(this._h, this._squareLeft, this._squareTop, this._squareSize, this._squareSize, context);
                     var cx = this._squareLeft + this._squareSize * this._s;
