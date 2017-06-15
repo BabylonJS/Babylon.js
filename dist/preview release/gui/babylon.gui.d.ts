@@ -526,7 +526,7 @@ declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class ColorPicker extends Control {
         name: string;
-        private static _ColorWheelCanvas;
+        private _colorWheelCanvas;
         private _value;
         private _tmpColor;
         private _pointerStartedOnSquare;
@@ -544,7 +544,7 @@ declare module BABYLON.GUI {
         private _updateSquareProps();
         private _drawGradientSquare(hueValue, left, top, width, height, context);
         private _drawCircle(centerX, centerY, radius, context);
-        private _createColorWheelImage(context, radius, thickness);
+        private _createColorWheelCanvas(radius, thickness);
         private _RGBtoHSV(color, result);
         private _HSVtoRGB(hue, saturation, value, result);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
