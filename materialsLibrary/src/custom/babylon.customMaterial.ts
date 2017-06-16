@@ -556,8 +556,8 @@ vColor=color;\n\
          public static ShaderIndexer = 1;
          public CustomParts :  ShaderSpecialParts;
          public ShaderVersion : CustomShaderStructure ;
-         public IsCreatedShader : bool;
-         public CreatedShaderName : string;
+         _isCreatedShader : bool;
+         _createdShaderName : string;
          _customUniform : string[];
          _newUniforms : string[];
          _newUniformInstances : any[];
@@ -599,8 +599,9 @@ vColor=color;\n\
          }
          public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) : string {
             
-            if(this.IsCreatedShader) return this.CreatedShaderName;
-              this.IsCreatedShader  = false;
+            if(this._isCreatedShader) return this._createdShaderName;
+              this._isCreatedShader  = false;
+            
             CustomMaterial.ShaderIndexer++;
             var name = name+"custom_"+CustomMaterial.ShaderIndexer;
 
@@ -629,8 +630,8 @@ vColor=color;\n\
             .replace('#[Fragment_Custom_Alpha]',(this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#[Fragment_Before_FragColor]',(this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : "")) ;
  
-             this.IsCreatedShader  = true;
-              this.CreatedShaderName = name;
+             this._isCreatedShader  = true;
+              this._createdShaderName = name;
            
              return name ;
          }
