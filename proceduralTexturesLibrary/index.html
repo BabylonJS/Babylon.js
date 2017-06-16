@@ -50,6 +50,7 @@
 	<script src="test/addMarblePT.js"></script>
 	<script src="test/addStarfieldPT.js"></script>
 	<script src="test/addNormalMapPT.js"></script>
+	<script src="test/addPerlinNoisePT.js"></script>
 	<script>
 		BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
@@ -191,6 +192,9 @@
 				// Normal Map Procedural Texture
 				var normalMapPT = addNormalMapPT();
 				normalMapPT.baseTexture = diffuseTexture;
+
+				// Perlin Noise Procedural Texture
+				var perlinNoisePT = addPerlinNoisePT();
 								
 				// Default to std
 				var currentTexture = diffuseTexture;
@@ -307,7 +311,7 @@
 					}
 				}
 				
-				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield', 'normalMap']).onFinishChange(function () {
+				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield', 'normalMap', 'perlinNoise']).onFinishChange(function () {
 					resetPTOptions();
 					switch (options.texture) {
 						case "fire":
@@ -344,6 +348,9 @@
 							break;
 						case "normalMap":
 							currentTexture = normalMapPT;
+							break;
+						case "perlinNoise":
+							currentTexture = perlinNoisePT;
 							break;
 						case "none":
 						default:
