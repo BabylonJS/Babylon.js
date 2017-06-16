@@ -47581,7 +47581,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var Gamepads = (function () {
-        function Gamepads(ongamedpadconnected) {
+        function Gamepads(ongamedpadconnected, ongamedpaddisconnected) {
             var _this = this;
             this.babylonGamepads = [];
             this.oneGamepadConnected = false;
@@ -47590,6 +47590,7 @@ var BABYLON;
             this.gamepadSupport = (navigator.getGamepads ||
                 navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
             this._callbackGamepadConnected = ongamedpadconnected;
+            this._callbackGamepadDisconnected = ongamedpaddisconnected;
             if (this.gamepadSupport) {
                 //first add already-connected gamepads
                 this._updateGamepadObjects();
@@ -47602,7 +47603,7 @@ var BABYLON;
                         _this._onGamepadConnected(evt.gamepad);
                     };
                     this._onGamepadDisonnectedEvent = function (evt) {
-                        _this._onGamepadDisconnected(evt);
+                        _this._onGamepadDisconnected(evt.gamepad);
                     };
                     window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                     window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
@@ -47619,8 +47620,16 @@ var BABYLON;
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisonnectedEvent = null;
             }
+            this.oneGamepadConnected = false;
+            this._stopMonitoringGamepads();
+            this.babylonGamepads = [];
         };
         Gamepads.prototype._onGamepadConnected = function (gamepad) {
+            // Protection code for Chrome which has a very buggy gamepad implementation...
+            // And raises a connected event on disconnection for instance
+            if (gamepad.index in this.babylonGamepads) {
+                return;
+            }
             var newGamepad = this._addNewGamepad(gamepad);
             if (this._callbackGamepadConnected)
                 this._callbackGamepadConnected(newGamepad);
@@ -47644,18 +47653,23 @@ var BABYLON;
             this.babylonGamepads.push(newGamepad);
             return newGamepad;
         };
-        Gamepads.prototype._onGamepadDisconnected = function (evt) {
+        Gamepads.prototype._onGamepadDisconnected = function (gamepad) {
             // Remove the gamepad from the list of gamepads to monitor.
             for (var i in this.babylonGamepads) {
-                if (this.babylonGamepads[i].index == evt.gamepad.index) {
+                if (this.babylonGamepads[i].index == gamepad.index) {
                     this.babylonGamepads.splice(+i, 1);
+                    console.log("gamepad removed from collection");
                     break;
                 }
             }
             // If no gamepads are left, stop the polling loop.
             if (this.babylonGamepads.length == 0) {
+                console.log("No more gamepad connected. Collection empty.");
                 this._stopMonitoringGamepads();
+                this.oneGamepadConnected = false;
             }
+            if (this._callbackGamepadDisconnected)
+                this._callbackGamepadDisconnected(gamepad);
         };
         Gamepads.prototype._startMonitoringGamepads = function () {
             if (!this.isMonitoring) {
@@ -47668,7 +47682,7 @@ var BABYLON;
         };
         Gamepads.prototype._checkGamepadsStatus = function () {
             var _this = this;
-            // updating gamepad objects
+            // Hack to be compatible Chrome
             this._updateGamepadObjects();
             for (var i in this.babylonGamepads) {
                 this.babylonGamepads[i].update();
@@ -47685,9 +47699,8 @@ var BABYLON;
                 }
             }
         };
-        // This function is called only on Chrome, which does not yet support
-        // connection/disconnection events, but requires you to monitor
-        // an array for changes.
+        // This function is called only on Chrome, which does not properly support
+        // connection/disconnection events and forces you to recopy again the gamepad object
         Gamepads.prototype._updateGamepadObjects = function () {
             var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
             for (var i = 0; i < gamepads.length; i++) {
@@ -47699,6 +47712,7 @@ var BABYLON;
                         }
                     }
                     else {
+                        // Forced to copy again this object for Chrome for unknown reason
                         this.babylonGamepads[i].browserGamepad = gamepads[i];
                     }
                 }
@@ -47785,13 +47799,10 @@ var BABYLON;
     BABYLON.Gamepad = Gamepad;
     var GenericPad = (function (_super) {
         __extends(GenericPad, _super);
-        function GenericPad(id, index, gamepad) {
-            var _this = _super.call(this, id, index, gamepad) || this;
-            _this.id = id;
-            _this.index = index;
-            _this.gamepad = gamepad;
+        function GenericPad(id, index, browserGamepad) {
+            var _this = _super.call(this, id, index, browserGamepad) || this;
             _this.type = Gamepad.GENERIC;
-            _this._buttons = new Array(gamepad.buttons.length);
+            _this._buttons = new Array(browserGamepad.buttons.length);
             return _this;
         }
         GenericPad.prototype.onbuttondown = function (callback) {
@@ -47814,7 +47825,7 @@ var BABYLON;
         GenericPad.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var index = 0; index < this._buttons.length; index++) {
-                this._buttons[index] = this._setButtonValue(this.gamepad.buttons[index].value, this._buttons[index], index);
+                this._buttons[index] = this._setButtonValue(this.browserGamepad.buttons[index].value, this._buttons[index], index);
             }
         };
         return GenericPad;
