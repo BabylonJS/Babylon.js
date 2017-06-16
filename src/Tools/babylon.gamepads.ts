@@ -92,14 +92,12 @@
             for (var i in this.babylonGamepads) {
                 if (this.babylonGamepads[i].index == gamepad.index) {
                     this.babylonGamepads.splice(+i, 1);
-                    console.log("gamepad removed from collection");
                     break;
                 }
             }
 
             // If no gamepads are left, stop the polling loop.
             if (this.babylonGamepads.length == 0) {
-                console.log("No more gamepad connected. Collection empty.");
                 this._stopMonitoringGamepads();
                 this.oneGamepadConnected = false;
             }
