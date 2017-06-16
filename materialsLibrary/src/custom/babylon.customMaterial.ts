@@ -556,7 +556,7 @@ vColor=color;\n\
          public static ShaderIndexer = 1;
          public CustomParts :  ShaderSpecialParts;
          public ShaderVersion : CustomShaderStructure ;
-         _isCreatedShader : bool;
+         _isCreatedShader : boolean;
          _createdShaderName : string;
          _customUniform : string[];
          _newUniforms : string[];
