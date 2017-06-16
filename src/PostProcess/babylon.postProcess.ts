@@ -9,7 +9,7 @@
         public clearColor: Color4;
         public autoClear = true;
         public alphaMode = Engine.ALPHA_DISABLE;
-        public alphaConstants: Color4;        
+        public alphaConstants: Color4;       
 
         /*
             Enable Pixel Perfect mode where texture is not scaled to be power of 2.
@@ -38,6 +38,7 @@
         protected _indexParameters: any;
         private _shareOutputWithPostProcess: PostProcess;
         private _texelSize = Vector2.Zero();
+        private _forcedOutputTexture: WebGLTexture;
         
         // Events
 
@@ -113,7 +114,11 @@
 
         public get outputTexture(): WebGLTexture {
             return this._textures.data[this._currentRenderTextureInd];
-        }      
+        }   
+
+        public set outputTexture(value: WebGLTexture) {
+            this._forcedOutputTexture = value;
+        }   
 
         public getCamera(): Camera {
             return this._camera;
@@ -122,6 +127,10 @@
         public get texelSize(): Vector2 {
             if (this._shareOutputWithPostProcess) {
                 return this._shareOutputWithPostProcess.texelSize;
+            }
+
+            if (this._forcedOutputTexture) {
+                this._texelSize.copyFromFloats(1.0 / this._forcedOutputTexture._width, 1.0 / this._forcedOutputTexture._height);
             }
 
             return this._texelSize;
@@ -193,8 +202,8 @@
             this.width = -1;
         }
 
-        public activate(camera: Camera, sourceTexture?: WebGLTexture): void {
-            if (!this._shareOutputWithPostProcess) {
+        public activate(camera: Camera, sourceTexture?: WebGLTexture, forceDepthStencil?: boolean): void {            
+            if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
                 camera = camera || this._camera;
 
                 var scene = camera.getScene();
@@ -229,8 +238,8 @@
                     let textureSize = { width: this.width, height: this.height };
                     let textureOptions = { 
                         generateMipMaps: false, 
-                        generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
-                        generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                        generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0, 
+                        generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                         samplingMode: this.renderTargetSamplingMode, 
                         type: this._textureType 
                     };
@@ -253,7 +262,15 @@
                 });
             }
 
-            var target = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
+            var target: WebGLTexture;
+                        
+            if (this._shareOutputWithPostProcess) {
+                target = this._shareOutputWithPostProcess.outputTexture;
+            } else if (this._forcedOutputTexture) {
+                target = this._forcedOutputTexture;
+            } else {
+                target = this.outputTexture;
+            }
 
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
@@ -285,6 +302,10 @@
                 return this._shareOutputWithPostProcess.aspectRatio;
             }
 
+            if (this._forcedOutputTexture) {
+                var size = this._forcedOutputTexture._width / this._forcedOutputTexture._height;
+            }
+
             return this.width / this.height;
         }
         
@@ -306,7 +327,14 @@
             }            
 
             // Texture            
-            var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
+            var source: WebGLTexture;                        
+            if (this._shareOutputWithPostProcess) {
+                source = this._shareOutputWithPostProcess.outputTexture;
+            } else if (this._forcedOutputTexture) {
+                source = this._forcedOutputTexture;
+            } else {
+                source = this.outputTexture;
+            }            
             this._effect._bindTexture("textureSampler", source);
 
             // Parameters
@@ -317,7 +345,7 @@
         }
 
         private _disposeTextures() {
-            if (this._shareOutputWithPostProcess) {
+            if (this._shareOutputWithPostProcess || this._forcedOutputTexture) {
                 return;
             }
 
