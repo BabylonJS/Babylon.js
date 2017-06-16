@@ -28176,12 +28176,12 @@ var BABYLON;
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         };
         // Methods
-        PostProcessManager.prototype._prepareFrame = function (sourceTexture) {
-            var postProcesses = this._scene.activeCamera._postProcesses;
+        PostProcessManager.prototype._prepareFrame = function (sourceTexture, postProcesses) {
+            var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
             }
-            postProcesses[0].activate(this._scene.activeCamera, sourceTexture);
+            postProcesses[0].activate(this._scene.activeCamera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
             return true;
         };
         PostProcessManager.prototype.directRender = function (postProcesses, targetTexture) {
@@ -43005,6 +43005,40 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        RenderTargetTexture.prototype.addPostProcess = function (postProcess) {
+            if (!this._postProcessManager) {
+                this._postProcessManager = new BABYLON.PostProcessManager(this.getScene());
+                this._postProcesses = new Array();
+            }
+            this._postProcesses.push(postProcess);
+            this._postProcesses[0].autoClear = false;
+        };
+        RenderTargetTexture.prototype.clearPostProcesses = function (dispose) {
+            if (!this._postProcesses) {
+                return;
+            }
+            if (dispose) {
+                for (var _i = 0, _a = this._postProcesses; _i < _a.length; _i++) {
+                    var postProcess = _a[_i];
+                    postProcess.dispose();
+                    postProcess = null;
+                }
+            }
+            this._postProcesses = [];
+        };
+        RenderTargetTexture.prototype.removePostProcess = function (postProcess) {
+            if (!this._postProcesses) {
+                return;
+            }
+            var index = this._postProcesses.indexOf(postProcess);
+            if (index === -1) {
+                return;
+            }
+            this._postProcesses.splice(index, 1);
+            if (this._postProcesses.length > 0) {
+                this._postProcesses[0].autoClear = false;
+            }
+        };
         RenderTargetTexture.prototype._shouldRender = function () {
             if (this._currentRefreshId === -1) {
                 this._currentRefreshId = 1;
@@ -43156,7 +43190,10 @@ var BABYLON;
             var scene = this.getScene();
             var engine = scene.getEngine();
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+            if (this._postProcessManager) {
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            }
+            else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
                 if (this.isCube) {
                     engine.bindFramebuffer(this._texture, faceIndex);
                 }
@@ -43177,7 +43214,10 @@ var BABYLON;
             }
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
-            if (useCameraPostProcess) {
+            if (this._postProcessManager) {
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+            }
+            else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
             }
             if (!this._doNotChangeAspectRatio) {
@@ -43250,6 +43290,11 @@ var BABYLON;
             return serializationObject;
         };
         RenderTargetTexture.prototype.dispose = function () {
+            if (this._postProcessManager) {
+                this._postProcessManager.dispose();
+                this._postProcessManager = null;
+            }
+            this.clearPostProcesses(true);
             _super.prototype.dispose.call(this);
         };
         return RenderTargetTexture;
@@ -43400,6 +43445,8 @@ var BABYLON;
             _this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
             _this._transformMatrix = BABYLON.Matrix.Zero();
             _this._mirrorMatrix = BABYLON.Matrix.Zero();
+            _this._blurKernel = 0;
+            _this._blurRatio = 0.6;
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
@@ -43417,6 +43464,49 @@ var BABYLON;
             });
             return _this;
         }
+        Object.defineProperty(MirrorTexture.prototype, "blurRatio", {
+            get: function () {
+                return this._blurRatio;
+            },
+            set: function (value) {
+                if (this._blurRatio === value) {
+                    return;
+                }
+                this._blurRatio = value;
+                this._preparePostProcesses();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MirrorTexture.prototype, "blurKernel", {
+            get: function () {
+                return this._blurKernel;
+            },
+            set: function (value) {
+                if (this._blurKernel === value) {
+                    return;
+                }
+                this._blurKernel = value;
+                this._preparePostProcesses();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MirrorTexture.prototype._preparePostProcesses = function () {
+            this.clearPostProcesses(true);
+            if (this._blurKernel) {
+                var engine = this.getScene().getEngine();
+                var textureType = engine.getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX.autoClear = false;
+                this._blurX.alwaysForcePOT = false;
+                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurY.autoClear = false;
+                this._blurY.alwaysForcePOT = true;
+                this.addPostProcess(this._blurX);
+                this.addPostProcess(this._blurY);
+            }
+        };
         MirrorTexture.prototype.clone = function () {
             var textureSize = this.getSize();
             var newTexture = new MirrorTexture(this.name, textureSize.width, this.getScene(), this._renderTargetOptions.generateMipMaps, this._renderTargetOptions.type, this._renderTargetOptions.samplingMode, this._renderTargetOptions.generateDepthBuffer);
@@ -43921,6 +44011,9 @@ var BABYLON;
             get: function () {
                 return this._textures.data[this._currentRenderTextureInd];
             },
+            set: function (value) {
+                this._forcedOutputTexture = value;
+            },
             enumerable: true,
             configurable: true
         });
@@ -43931,6 +44024,9 @@ var BABYLON;
             get: function () {
                 if (this._shareOutputWithPostProcess) {
                     return this._shareOutputWithPostProcess.texelSize;
+                }
+                if (this._forcedOutputTexture) {
+                    this._texelSize.copyFromFloats(1.0 / this._forcedOutputTexture._width, 1.0 / this._forcedOutputTexture._height);
                 }
                 return this._texelSize;
             },
@@ -43955,9 +44051,9 @@ var BABYLON;
         PostProcess.prototype.markTextureDirty = function () {
             this.width = -1;
         };
-        PostProcess.prototype.activate = function (camera, sourceTexture) {
+        PostProcess.prototype.activate = function (camera, sourceTexture, forceDepthStencil) {
             var _this = this;
-            if (!this._shareOutputWithPostProcess) {
+            if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
                 camera = camera || this._camera;
                 var scene = camera.getScene();
                 var maxSize = camera.getEngine().getCaps().maxTextureSize;
@@ -43985,8 +44081,8 @@ var BABYLON;
                     var textureSize = { width: this.width, height: this.height };
                     var textureOptions = {
                         generateMipMaps: false,
-                        generateDepthBuffer: camera._postProcesses.indexOf(this) === 0,
-                        generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                        generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
+                        generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                         samplingMode: this.renderTargetSamplingMode,
                         type: this._textureType
                     };
@@ -44003,7 +44099,16 @@ var BABYLON;
                     }
                 });
             }
-            var target = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
+            var target;
+            if (this._shareOutputWithPostProcess) {
+                target = this._shareOutputWithPostProcess.outputTexture;
+            }
+            else if (this._forcedOutputTexture) {
+                target = this._forcedOutputTexture;
+            }
+            else {
+                target = this.outputTexture;
+            }
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
                 this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight);
@@ -44033,6 +44138,9 @@ var BABYLON;
                 if (this._shareOutputWithPostProcess) {
                     return this._shareOutputWithPostProcess.aspectRatio;
                 }
+                if (this._forcedOutputTexture) {
+                    var size = this._forcedOutputTexture._width / this._forcedOutputTexture._height;
+                }
                 return this.width / this.height;
             },
             enumerable: true,
@@ -44053,7 +44161,16 @@ var BABYLON;
                 this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
             }
             // Texture            
-            var source = this._shareOutputWithPostProcess ? this._shareOutputWithPostProcess.outputTexture : this.outputTexture;
+            var source;
+            if (this._shareOutputWithPostProcess) {
+                source = this._shareOutputWithPostProcess.outputTexture;
+            }
+            else if (this._forcedOutputTexture) {
+                source = this._forcedOutputTexture;
+            }
+            else {
+                source = this.outputTexture;
+            }
             this._effect._bindTexture("textureSampler", source);
             // Parameters
             this._effect.setVector2("scale", this._scaleRatio);
@@ -44061,7 +44178,7 @@ var BABYLON;
             return this._effect;
         };
         PostProcess.prototype._disposeTextures = function () {
-            if (this._shareOutputWithPostProcess) {
+            if (this._shareOutputWithPostProcess || this._forcedOutputTexture) {
                 return;
             }
             if (this._textures.length > 0) {
@@ -50105,7 +50222,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.lensRenderingPipeline.js.map
 
-/// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
 
 
 
@@ -50172,6 +50288,7 @@ var BABYLON;
             _this._hdrCurrentLuminance = 1.0;
             _this._motionBlurSamples = 64;
             // Getters and setters
+            _this._bloomEnabled = true;
             _this._depthOfFieldEnabled = true;
             _this._lensFlareEnabled = true;
             _this._hdrEnabled = true;
@@ -50233,6 +50350,34 @@ var BABYLON;
             _this.MotionBlurEnabled = false;
             return _this;
         }
+        Object.defineProperty(StandardRenderingPipeline.prototype, "BloomEnabled", {
+            get: function () {
+                return this._bloomEnabled;
+            },
+            set: function (enabled) {
+                if (enabled && !this._bloomEnabled) {
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
+                    for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                        this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
+                        this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
+                    }
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+                }
+                else if (!enabled && this._bloomEnabled) {
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
+                    for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                        this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
+                        this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
+                    }
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+                }
+                this._bloomEnabled = enabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(StandardRenderingPipeline.prototype, "DepthOfFieldEnabled", {
             get: function () {
                 return this._depthOfFieldEnabled;
@@ -50512,7 +50657,7 @@ var BABYLON;
             var time = 0;
             var lastTime = 0;
             this.hdrPostProcess.onApply = function (effect) {
-                effect.setTextureFromPostProcess("textureAdderSampler", _this._currentHDRSource);
+                effect.setTextureFromPostProcess("textureAdderSampler", _this._bloomEnabled ? _this._currentHDRSource : _this.originalPostProcess);
                 time += scene.getEngine().getDeltaTime();
                 if (outputLiminance < 0) {
                     outputLiminance = _this._hdrCurrentLuminance;
@@ -50547,7 +50692,7 @@ var BABYLON;
             var resolution = new BABYLON.Vector2(0, 0);
             // Lens flare
             this.lensFlarePostProcess.onApply = function (effect) {
-                effect.setTextureFromPostProcess("textureSampler", _this.gaussianBlurHPostProcesses[0]);
+                effect.setTextureFromPostProcess("textureSampler", _this._bloomEnabled ? _this.gaussianBlurHPostProcesses[0] : _this.originalPostProcess);
                 effect.setTexture("lensColorSampler", _this.lensColorTexture);
                 effect.setFloat("strength", _this.lensFlareStrength);
                 effect.setFloat("ghostDispersal", _this.lensFlareGhostDispersal);
@@ -50714,6 +50859,9 @@ var BABYLON;
     __decorate([
         BABYLON.serialize()
     ], StandardRenderingPipeline.prototype, "motionStrength", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], StandardRenderingPipeline.prototype, "BloomEnabled", null);
     __decorate([
         BABYLON.serialize()
     ], StandardRenderingPipeline.prototype, "DepthOfFieldEnabled", null);

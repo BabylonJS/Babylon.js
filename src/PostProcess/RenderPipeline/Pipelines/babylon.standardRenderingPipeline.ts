@@ -1,6 +1,4 @@
-﻿/// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         /**
         * Public members
@@ -95,10 +93,43 @@ module BABYLON {
         private _motionBlurSamples: number = 64;
 
         // Getters and setters
+        private _bloomEnabled: boolean = true;
         private _depthOfFieldEnabled: boolean = true;
         private _lensFlareEnabled: boolean = true;
         private _hdrEnabled: boolean = true;
         private _motionBlurEnabled: boolean = true;
+
+        public set BloomEnabled(enabled: boolean) {
+            if (enabled && !this._bloomEnabled) {
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
+
+                for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
+                    this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
+                }
+
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+            }
+            else if (!enabled && this._bloomEnabled) {
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
+
+                for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
+                    this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
+                }
+
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+            }
+
+            this._bloomEnabled = enabled;
+        }
+
+        @serialize()
+        public get BloomEnabled(): boolean {
+            return this._bloomEnabled;
+        }
 
         public set DepthOfFieldEnabled(enabled: boolean) {
             var blurIndex = this.gaussianBlurHPostProcesses.length - 1;
@@ -500,7 +531,7 @@ module BABYLON {
             var lastTime = 0;
 
             this.hdrPostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("textureAdderSampler", this._currentHDRSource);
+                effect.setTextureFromPostProcess("textureAdderSampler", this._bloomEnabled ? this._currentHDRSource : this.originalPostProcess);
 
                 time += scene.getEngine().getDeltaTime();
 
@@ -546,7 +577,7 @@ module BABYLON {
 
             // Lens flare
             this.lensFlarePostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("textureSampler", this.gaussianBlurHPostProcesses[0]);
+                effect.setTextureFromPostProcess("textureSampler", this._bloomEnabled ? this.gaussianBlurHPostProcesses[0] : this.originalPostProcess);
                 effect.setTexture("lensColorSampler", this.lensColorTexture);
                 effect.setFloat("strength", this.lensFlareStrength);
                 effect.setFloat("ghostDispersal", this.lensFlareGhostDispersal);

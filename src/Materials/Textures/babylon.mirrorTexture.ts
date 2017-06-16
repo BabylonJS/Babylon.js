@@ -8,6 +8,37 @@ module BABYLON {
         private _mirrorMatrix = Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
+        private _blurX: BlurPostProcess;
+        private _blurY: BlurPostProcess;
+        private _blurKernel = 0;
+        private _blurRatio = 0.6;
+
+        public set blurRatio(value: number) {
+            if (this._blurRatio === value) {
+                return;
+            }
+
+            this._blurRatio = value;
+            this._preparePostProcesses();
+        }
+
+        public get blurRatio(): number {
+            return this._blurRatio;
+        }
+
+        public set blurKernel(value: number) {
+            if (this._blurKernel === value) {
+                return;
+            }
+
+            this._blurKernel = value;
+            this._preparePostProcesses();
+        }
+
+        public get blurKernel(): number {
+            return this._blurKernel;
+        }        
+
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
@@ -33,7 +64,28 @@ module BABYLON {
 
                 delete scene.clipPlane;
             });
-        }
+        }     
+
+        private _preparePostProcesses(): void {
+            this.clearPostProcesses(true);
+
+            if (this._blurKernel) {
+                var engine = this.getScene().getEngine();
+
+                var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
+
+                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX.autoClear = false;
+                this._blurX.alwaysForcePOT = false;
+
+                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurY.autoClear = false;
+                this._blurY.alwaysForcePOT = true;
+
+                this.addPostProcess(this._blurX);
+                this.addPostProcess(this._blurY);   
+            }
+        }   
 
         public clone(): MirrorTexture {
             var textureSize = this.getSize();
