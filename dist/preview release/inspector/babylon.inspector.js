@@ -2966,10 +2966,6 @@ var INSPECTOR;
             var arr = [];
             // Tab containign mesh already in results
             var alreadyIn = [];
-            // Returns true if the id of the given object starts and ends with '###'
-            var shouldExcludeThisMesh = function (obj) {
-                return (obj.name && obj.name.indexOf('###') == 0 && obj.name.lastIndexOf('###', 0) === 0);
-            };
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);
@@ -2997,7 +2993,7 @@ var INSPECTOR;
             var instances = this._inspector.scene;
             for (var _i = 0, _a = instances.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
-                if (alreadyIn.indexOf(mesh) == -1) {
+                if (alreadyIn.indexOf(mesh) == -1 && !INSPECTOR.Helpers.IsSystemName(mesh.name)) {
                     var node = createNode(mesh);
                     arr.push(node);
                 }

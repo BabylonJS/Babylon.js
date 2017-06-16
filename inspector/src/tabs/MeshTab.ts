@@ -11,11 +11,6 @@ module INSPECTOR{
             let arr = [];
             // Tab containign mesh already in results
             let alreadyIn = [];
-            
-            // Returns true if the id of the given object starts and ends with '###'
-            let shouldExcludeThisMesh = (obj:BABYLON.Node) : boolean => {
-                return (obj.name && obj.name.indexOf('###') == 0 && obj.name.lastIndexOf('###', 0) === 0);
-            };
 
             // Recursive method building the tree panel
             let createNode = (obj : BABYLON.AbstractMesh) => {
@@ -43,7 +38,7 @@ module INSPECTOR{
             // get all meshes from the first scene
             let instances = this._inspector.scene;
             for (let mesh of instances.meshes) {
-                if (alreadyIn.indexOf(mesh) == -1) {
+                if (alreadyIn.indexOf(mesh) == -1 && !Helpers.IsSystemName(mesh.name)) {
                     let node = createNode(mesh);
                     arr.push(node);
                 }
