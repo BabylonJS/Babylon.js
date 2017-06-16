@@ -1273,6 +1273,15 @@
                     "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
                 ],
                 "output": "babylon.normalMapProceduralTexture.js"
+            },
+            {
+                "files": [
+                    "../../proceduralTexturesLibrary/src/perlinNoise/babylon.perlinNoiseProceduralTexture.ts"
+                ],
+                "shaderFiles":[
+                    "../../proceduralTexturesLibrary/src/perlinNoise/perlinNoiseProceduralTexture.fragment.fx"
+                ],
+                "output": "babylon.perlinNoiseProceduralTexture.js"
             }
         ],
         "build": {
