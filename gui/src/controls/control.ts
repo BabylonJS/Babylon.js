@@ -868,7 +868,7 @@ module BABYLON.GUI {
                 block.style.verticalAlign = "baseline";
                 fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
             } finally {
-                div.remove();
+                document.body.removeChild(div);
             }
             var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
             Control._FontHeightSizes[font] = result;
@@ -879,7 +879,7 @@ module BABYLON.GUI {
         public static AddHeader(control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
             let panel = new BABYLON.GUI.StackPanel("panel");        
             let isHorizontal = options ? options.isHorizontal : true;
-            let controlFirst = options ? options.controlFirst : false;
+            let controlFirst = options ? options.controlFirst : true;
 
             panel.isVertical = !isHorizontal;
 

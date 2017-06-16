@@ -1391,7 +1391,7 @@ var BABYLON;
                     fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
                 }
                 finally {
-                    div.remove();
+                    document.body.removeChild(div);
                 }
                 var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
                 Control._FontHeightSizes[font] = result;
@@ -1401,7 +1401,7 @@ var BABYLON;
             Control.AddHeader = function (control, text, size, options) {
                 var panel = new BABYLON.GUI.StackPanel("panel");
                 var isHorizontal = options ? options.isHorizontal : true;
-                var controlFirst = options ? options.controlFirst : false;
+                var controlFirst = options ? options.controlFirst : true;
                 panel.isVertical = !isHorizontal;
                 var header = new BABYLON.GUI.TextBlock("header");
                 header.text = text;
