@@ -539,6 +539,9 @@ declare module BABYLON.GUI {
         private _v;
         onValueChangedObservable: Observable<Color3>;
         value: Color3;
+        width: string | number;
+        height: string | number;
+        size: string | number;
         constructor(name?: string);
         protected _getTypeName(): string;
         private _updateSquareProps();

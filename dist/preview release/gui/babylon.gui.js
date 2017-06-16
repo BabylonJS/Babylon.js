@@ -3111,8 +3111,7 @@ var BABYLON;
                 // Events
                 _this._pointerIsDown = false;
                 _this.value = new BABYLON.Color3(.88, .1, .1);
-                _this.width = "200px";
-                _this.height = "200px";
+                _this.size = "200px";
                 _this.isPointerBlocker = true;
                 return _this;
             }
@@ -3131,6 +3130,42 @@ var BABYLON;
                     this._v = Math.max(this._tmpColor.b, 0.00001);
                     this._markAsDirty();
                     this.onValueChangedObservable.notifyObservers(this._value);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColorPicker.prototype, "width", {
+                set: function (value) {
+                    if (this._width.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._width.fromString(value)) {
+                        this._height.fromString(value);
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColorPicker.prototype, "height", {
+                set: function (value) {
+                    if (this._height.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._height.fromString(value)) {
+                        this._width.fromString(value);
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColorPicker.prototype, "size", {
+                get: function () {
+                    return this.width;
+                },
+                set: function (value) {
+                    this.width = value;
                 },
                 enumerable: true,
                 configurable: true
