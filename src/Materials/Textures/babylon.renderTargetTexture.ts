@@ -40,6 +40,9 @@
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         public useCameraPostProcesses: boolean;
+        
+        private _postProcessManager: PostProcessManager;
+        private _postProcesses: PostProcess[];
 
         // Events
 
@@ -176,6 +179,49 @@
         public set refreshRate(value: number) {
             this._refreshRate = value;
             this.resetRefreshCounter();
+        }
+
+        public addPostProcess(postProcess: PostProcess): void {
+            if (!this._postProcessManager) {
+                this._postProcessManager = new PostProcessManager(this.getScene());
+                this._postProcesses = new Array<PostProcess>();
+            }
+
+            this._postProcesses.push(postProcess);
+            this._postProcesses[0].autoClear = false;
+        }
+
+        public clearPostProcesses(dispose?: boolean): void {
+            if (!this._postProcesses) {
+                return;
+            }
+
+            if (dispose) {
+                for (var postProcess of this._postProcesses) {
+                    postProcess.dispose();
+                    postProcess = null;
+                }
+            }
+
+            this._postProcesses = [];
+        }
+
+        public removePostProcess(postProcess: PostProcess): void {
+            if (!this._postProcesses) {
+                return;
+            }
+
+            var index = this._postProcesses.indexOf(postProcess);
+
+            if (index === -1) {
+                return;
+            }
+
+            this._postProcesses.splice(index, 1);
+
+            if (this._postProcesses.length > 0) {
+                this._postProcesses[0].autoClear = false;
+            }
         }
 
         public _shouldRender(): boolean {
@@ -358,7 +404,10 @@
             var engine = scene.getEngine();
 
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+            if (this._postProcessManager) {
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            }
+            else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
                 if (this.isCube) {
                     engine.bindFramebuffer(this._texture, faceIndex);
                 } else {
@@ -382,7 +431,10 @@
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
-            if (useCameraPostProcess) {
+            if (this._postProcessManager) {
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+            }
+            else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
             }
 
@@ -486,6 +538,13 @@
         }
 
         public dispose(): void {
+            if (this._postProcessManager) {
+                this._postProcessManager.dispose();
+                this._postProcessManager = null;
+            }
+
+            this.clearPostProcesses(true);
+
             super.dispose();
         }
     }
