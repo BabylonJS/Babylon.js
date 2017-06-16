@@ -1391,7 +1391,7 @@ var BABYLON;
                     fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
                 }
                 finally {
-                    div.remove();
+                    document.body.removeChild(div);
                 }
                 var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
                 Control._FontHeightSizes[font] = result;
