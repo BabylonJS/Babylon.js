@@ -68,13 +68,6 @@ module INSPECTOR {
                     updateFct:() => { return this._scene.lights.length.toString()}
                 });
 
-                elemLabel = this._createStatLabel("Total lights", this._panel);
-                elemValue = Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({ 
-                    elem:elemValue, 
-                    updateFct:() => { return this._scene.lights.length.toString()}
-                });
-
                 elemLabel = this._createStatLabel("Total vertices", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
