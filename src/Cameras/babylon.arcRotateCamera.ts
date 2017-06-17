@@ -267,7 +267,7 @@ module BABYLON {
             if (!super._isSynchronizedViewMatrix())
                 return false;
 
-            return this._cache._target.equals(this._target)
+            return this._cache._target.equals(this._getTargetPosition())
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
