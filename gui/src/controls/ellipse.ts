@@ -28,11 +28,14 @@ module BABYLON.GUI {
         protected _localDraw(context: CanvasRenderingContext2D): void {
             context.save();
 
-            context.beginPath();
-            context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
-                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-            context.closePath();
+            context.translate(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2);
+            context.scale(this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2);
 
+            context.beginPath();
+            context.arc(0, 0, 1, 0, 2 * Math.PI);
+
+            context.restore();
+            
             if (this._background) {
                 context.fillStyle = this._background;
 
@@ -61,8 +64,12 @@ module BABYLON.GUI {
         }
 
        protected _clipForChildren(context: CanvasRenderingContext2D) {
+            context.translate(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2);
+            context.scale(this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2);
             context.beginPath();
-            context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, 0, 0, 2 * Math.PI);
+
+            context.arc(0, 0, 1, 0, 2 * Math.PI);
+            
             context.clip();
         }
     }    
