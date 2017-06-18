@@ -105,21 +105,16 @@ module BABYLON.GUI {
                 let actualHeight = this._currentMeasure.height - this._thickness;
 
                 // Outer
-                context.translate(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2);
-                context.scale(this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2);
-
-                context.beginPath();
-                context.arc(0, 0, 1, 0, 2 * Math.PI);
-
-                context.restore();
-
+                Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
+                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+                
                 context.fillStyle = this._background;
                 context.fill();
 
                 context.strokeStyle = this.color;
                 context.lineWidth = this._thickness;
 
-                context.stroke(); 
+                context.stroke();
 
                 // Inner
                 if (this._isChecked) {
@@ -127,14 +122,9 @@ module BABYLON.GUI {
                     let offsetWidth = actualWidth * this._checkSizeRatio;
                     let offseHeight = actualHeight * this._checkSizeRatio;
 
-                    context.translate(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2);
-                    context.scale(offsetWidth / 2 - this._thickness / 2, offseHeight / 2  - this._thickness / 2);
+                    Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
+                                    offsetWidth / 2 - this._thickness / 2, offseHeight / 2  - this._thickness / 2, context);
 
-                    context.beginPath();
-                    context.arc(0, 0, 1, 0, 2 * Math.PI);
-
-                    context.restore();
-                    
                     context.fill();
                 }
 

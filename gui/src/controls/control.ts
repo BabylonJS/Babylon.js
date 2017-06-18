@@ -904,5 +904,19 @@ module BABYLON.GUI {
 
             return panel;
         }
+
+        protected static drawEllipse(x:number, y:number, width:number, height:number, context:CanvasRenderingContext2D):void{
+
+            context.translate(x, y);
+            context.scale(width, height);
+
+            context.beginPath();
+            context.arc(0, 0, 1, 0, 2 * Math.PI);
+            context.closePath();
+
+            context.scale(1/width, 1/height);
+            context.translate(-x, -y);
+            
+        }
     }    
 }
