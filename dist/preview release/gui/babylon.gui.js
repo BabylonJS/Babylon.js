@@ -148,6 +148,10 @@ var BABYLON;
                     }
                 }
             };
+            AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
+                var engine = scene.getEngine();
+                return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
                 if (this._layerToDispose) {
                     if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -156,8 +160,7 @@ var BABYLON;
                 }
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
-                    var engine = scene.getEngine();
-                    var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                    var globalViewport = this._getGlobalViewport(scene);
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
                         var mesh = control._linkedMesh;
@@ -998,6 +1001,23 @@ var BABYLON;
             });
             Control.prototype._getTypeName = function () {
                 return "Control";
+            };
+            Control.prototype.moveToVector3 = function (position, scene) {
+                if (!this._host || this._root !== this._host._rootContainer) {
+                    BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
+                    return;
+                }
+                this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                var engine = scene.getEngine();
+                var globalViewport = this._host._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+                this._moveToProjectedPosition(projectedPosition);
+                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                    this.isVisible = false;
+                    return;
+                }
+                this.isVisible = true;
             };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root !== this._host._rootContainer) {
