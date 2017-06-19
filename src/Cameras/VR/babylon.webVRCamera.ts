@@ -3,7 +3,6 @@ declare var VRDisplay;
 declare var VRFrameData;
 
 module BABYLON {
-
     /**
      * This is a copy of VRPose.
      * IMPORTANT!! The data is right-hand data.
@@ -247,7 +246,6 @@ module BABYLON {
             }
         }
 
-
         /**
          * WebVR's attach control will start broadcasting frames to the device.
          * Note that in certain browsers (chrome for example) this function must be called
@@ -347,7 +345,6 @@ module BABYLON {
                 this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             }
 
-
             let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
             // should the view matrix be updated with scale and position offset?
@@ -412,6 +409,23 @@ module BABYLON {
 
                         //did we find enough controllers? Great! let the developer know.
                         if (this._onControllersAttached && this.controllers.length >= 2) {
+                            // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
+                            // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
+                            // So we're overriding setting left & right manually to be sure
+                            let firstViveWandDetected = false;
+
+                            for (let i=0; i<this.controllers.length; i++) {
+                                if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
+                                    if (!firstViveWandDetected) {
+                                        firstViveWandDetected = true;
+                                        this.controllers[i].hand = "left";
+                                    }
+                                    else {
+                                        this.controllers[i].hand = "right";
+                                    }
+                                }
+                            }
+
                             this._onControllersAttached(this.controllers);
                         }
                     }
