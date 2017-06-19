@@ -43450,7 +43450,8 @@ var BABYLON;
             _this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
             _this._transformMatrix = BABYLON.Matrix.Zero();
             _this._mirrorMatrix = BABYLON.Matrix.Zero();
-            _this._blurKernel = 0;
+            _this._blurKernelX = 0;
+            _this._blurKernelY = 0;
             _this._blurRatio = 1.0;
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
@@ -43484,14 +43485,36 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(MirrorTexture.prototype, "blurKernel", {
+            set: function (value) {
+                this.blurKernelX = value;
+                this.blurKernelY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MirrorTexture.prototype, "blurKernelX", {
             get: function () {
-                return this._blurKernel;
+                return this._blurKernelX;
             },
             set: function (value) {
-                if (this._blurKernel === value) {
+                if (this._blurKernelX === value) {
                     return;
                 }
-                this._blurKernel = value;
+                this._blurKernelX = value;
+                this._preparePostProcesses();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MirrorTexture.prototype, "blurKernelY", {
+            get: function () {
+                return this._blurKernelY;
+            },
+            set: function (value) {
+                if (this._blurKernelY === value) {
+                    return;
+                }
+                this._blurKernelY = value;
                 this._preparePostProcesses();
             },
             enumerable: true,
@@ -43499,10 +43522,10 @@ var BABYLON;
         });
         MirrorTexture.prototype._preparePostProcesses = function () {
             this.clearPostProcesses(true);
-            if (this._blurKernel) {
+            if (this._blurKernelX && this._blurKernelY) {
                 var engine = this.getScene().getEngine();
                 var textureType = engine.getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
-                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
                 if (this._blurRatio === 1) {
                     this._blurX.outputTexture = this._texture;
@@ -43510,12 +43533,9 @@ var BABYLON;
                 else {
                     this._blurX.alwaysForcePOT = true;
                 }
-                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
-                this._blurY.alwaysForcePOT = true;
-                if (this._blurRatio !== 1) {
-                    this._blurY.alwaysForcePOT = true;
-                }
+                this._blurY.alwaysForcePOT = this._blurRatio !== 1;
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
             }
