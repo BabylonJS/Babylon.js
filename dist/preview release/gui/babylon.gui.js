@@ -1241,7 +1241,7 @@ var BABYLON;
                 return true;
             };
             Control.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible) {
+                if (!this.isHitTestVisible || !this.isVisible) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
@@ -1423,6 +1423,15 @@ var BABYLON;
                     header.paddingRight = "5px";
                 }
                 return panel;
+            };
+            Control.drawEllipse = function (x, y, width, height, context) {
+                context.translate(x, y);
+                context.scale(width, height);
+                context.beginPath();
+                context.arc(0, 0, 1, 0, 2 * Math.PI);
+                context.closePath();
+                context.scale(1 / width, 1 / height);
+                context.translate(-x, -y);
             };
             return Control;
         }());
@@ -1867,9 +1876,7 @@ var BABYLON;
             };
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
-                context.beginPath();
-                context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                context.closePath();
+                GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 if (this._background) {
                     context.fillStyle = this._background;
                     context.fill();
@@ -1891,8 +1898,7 @@ var BABYLON;
                 this._measureForChildren.top += this._thickness;
             };
             Ellipse.prototype._clipForChildren = function (context) {
-                context.beginPath();
-                context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, 0, 0, 2 * Math.PI);
+                GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
                 context.clip();
             };
             return Ellipse;
@@ -2557,10 +2563,8 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
-                    // Outer                
-                    context.beginPath();
-                    context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                    context.closePath();
+                    // Outer
+                    GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                     context.fillStyle = this._background;
                     context.fill();
                     context.strokeStyle = this.color;
@@ -2571,9 +2575,7 @@ var BABYLON;
                         context.fillStyle = this.color;
                         var offsetWidth = actualWidth * this._checkSizeRatio;
                         var offseHeight = actualHeight * this._checkSizeRatio;
-                        context.beginPath();
-                        context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                        context.closePath();
+                        GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, context);
                         context.fill();
                     }
                 }

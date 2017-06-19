@@ -261,6 +261,7 @@ declare module BABYLON.GUI {
             isHorizontal: boolean;
             controlFirst: boolean;
         }): StackPanel;
+        protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void;
     }
 }
 

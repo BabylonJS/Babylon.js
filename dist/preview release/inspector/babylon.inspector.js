@@ -18,10 +18,6 @@ var INSPECTOR;
             // Save HTML document and window
             Inspector.DOCUMENT = window.document;
             Inspector.WINDOW = window;
-            // Load the Canvas2D library if it's not already done
-            if (!BABYLON.Canvas2D) {
-                BABYLON.Tools.LoadScript("https://www.babylonjs.com/babylon.canvas2d.js", function () { });
-            }
             // POPUP MODE
             if (popup) {
                 // Build the inspector in the given parent
@@ -963,87 +959,6 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=TextureAdapter.js.map
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var INSPECTOR;
-(function (INSPECTOR) {
-    var Canvas2DAdapter = (function (_super) {
-        __extends(Canvas2DAdapter, _super);
-        function Canvas2DAdapter(obj) {
-            return _super.call(this, obj) || this;
-        }
-        /** Returns the name displayed in the tree */
-        Canvas2DAdapter.prototype.id = function () {
-            var str = '';
-            if (this._obj.id) {
-                str = this._obj.id;
-            } // otherwise nothing displayed        
-            return str;
-        };
-        /** Returns the type of this object - displayed in the tree */
-        Canvas2DAdapter.prototype.type = function () {
-            return INSPECTOR.Helpers.GET_TYPE(this._obj);
-        };
-        /** Returns the list of properties to be displayed for this adapter */
-        Canvas2DAdapter.prototype.getProperties = function () {
-            var _this = this;
-            var propertiesLines = [];
-            if (this._obj.propDic) {
-                var dico = this._obj.propDic;
-                dico.forEach(function (name, propInfo) {
-                    var property = new INSPECTOR.Property(name, _this.actualObject);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(property));
-                });
-            }
-            // TODO REMOVE THIS WHEN PROPERTIES WILL BE DECORATED
-            var toAddDirty = [
-                'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
-                'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
-                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo',
-                '_cachedTexture', 'actualOpacity'
-            ];
-            for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
-                var dirty = toAddDirty_1[_i];
-                var infos = new INSPECTOR.Property(dirty, this.actualObject);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
-        };
-        Canvas2DAdapter.prototype.getTools = function () {
-            var tools = [];
-            tools.push(new INSPECTOR.Checkbox(this));
-            tools.push(new INSPECTOR.DebugArea(this));
-            return tools;
-        };
-        /// TOOLS ///
-        Canvas2DAdapter.prototype.setVisible = function (b) {
-            this._obj.levelVisible = b;
-        };
-        Canvas2DAdapter.prototype.isVisible = function () {
-            return this._obj.levelVisible;
-        };
-        /** Overrides super */
-        Canvas2DAdapter.prototype.debug = function (b) {
-            this._obj["displayDebugAreas"] = b;
-        };
-        /** Overrides super.highlight */
-        Canvas2DAdapter.prototype.highlight = function (b) {
-        };
-        return Canvas2DAdapter;
-    }(INSPECTOR.Adapter));
-    INSPECTOR.Canvas2DAdapter = Canvas2DAdapter;
-})(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=Canvas2DAdapter.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2083,6 +1998,8 @@ var INSPECTOR;
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+//# sourceMappingURL=HDRCubeTextureElement.js.map
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2832,63 +2749,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Canvas2DTab = (function (_super) {
-        __extends(Canvas2DTab, _super);
-        function Canvas2DTab(tabbar, inspector) {
-            return _super.call(this, tabbar, 'Canvas2D', inspector) || this;
-        }
-        /* Overrides */
-        Canvas2DTab.prototype._getTree = function () {
-            var _this = this;
-            var arr = [];
-            // get all canvas2D
-            var instances = BABYLON.Canvas2D.instances || [];
-            // Recursive method building the tree panel
-            var createNode = function (obj) {
-                if (obj.children && obj.children.length > 0) {
-                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.Canvas2DAdapter(obj));
-                    for (var _i = 0, _a = obj.children; _i < _a.length; _i++) {
-                        var child = _a[_i];
-                        if (!INSPECTOR.Helpers.IsSystemName(child.id)) {
-                            var n = createNode(child);
-                            node.add(n);
-                        }
-                    }
-                    node.update();
-                    return node;
-                }
-                else {
-                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.Canvas2DAdapter(obj));
-                }
-            };
-            for (var _i = 0, instances_1 = instances; _i < instances_1.length; _i++) {
-                var inst = instances_1[_i];
-                if (INSPECTOR.Helpers.IsSystemName(inst.id)) {
-                    continue;
-                }
-                var c2d = inst;
-                var nodes = createNode(c2d);
-                arr.push(nodes);
-            }
-            return arr;
-        };
-        return Canvas2DTab;
-    }(INSPECTOR.PropertyTab));
-    INSPECTOR.Canvas2DTab = Canvas2DTab;
-})(INSPECTOR || (INSPECTOR = {}));
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var INSPECTOR;
-(function (INSPECTOR) {
     var LightTab = (function (_super) {
         __extends(LightTab, _super);
         function LightTab(tabbar, inspector) {
@@ -3516,12 +3376,6 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return _this._scene.lights.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total lights", _this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
-                _this._updatableProperties.push({
-                    elem: elemValue,
-                    updateFct: function () { return _this._scene.lights.length.toString(); }
-                });
                 elemLabel = _this._createStatLabel("Total vertices", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
@@ -3771,10 +3625,6 @@ var INSPECTOR;
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
-            // Add only the tab canvas2D if Canvas2D is defined
-            if (BABYLON.Canvas2D) {
-                _this._tabs.push(new INSPECTOR.Canvas2DTab(_this, _this._inspector));
-            }
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));

@@ -280,6 +280,10 @@
 
         compileAndRun = function () {
             try {
+                var waitRing = document.getElementById("waitDiv");
+                if (waitRing) {
+                    waitRing.style.display = "none";
+                }
 
                 if (!BABYLON.Engine.isSupported()) {
                     showError("Your browser does not support WebGL", null);
