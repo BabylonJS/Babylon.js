@@ -58,7 +58,7 @@
     )();
 
     export class Collider {
-        public radius = new Vector3(1, 1, 1);
+        public radius = Vector3.One();
         public retry = 0;
         public velocity: Vector3;
         public basePoint: Vector3;
