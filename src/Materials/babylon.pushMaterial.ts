@@ -65,6 +65,8 @@
             if (flag & Material.MiscDirtyFlag) {
                 this._markAllSubMeshesAsMiscDirty();
             }
+
+            this.getScene().resetCachedMaterial();
         }
 
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
