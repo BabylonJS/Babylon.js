@@ -1,5 +1,4 @@
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../../dist/preview release/canvas2D/babylon.canvas2D.d.ts"/>
 
 var Test = (function () {
     function Test(canvasId) {
@@ -28,7 +27,6 @@ var Test = (function () {
             }
         });
         this.scene.executeWhenReady(function () {
-            _this._initGame();
             _this.engine.runRenderLoop(function () {
                 _this.scene.render();
             });
@@ -214,78 +212,8 @@ var Test = (function () {
             b.position.z = Math.sin(r) * d;
             cubes.push(b);
         }
-        var canvas = new BABYLON.ScreenSpaceCanvas2D(scene, {
-            id: "ScreenCanvas",
-            cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS
-
-        });
-        i = 0;
-        for (var _i = 0, cubes_1 = cubes; _i < cubes_1.length; _i++) {
-            var cube = cubes_1[_i];
-            new BABYLON.Group2D({
-                parent: canvas, id: "GroupTag #" + i, width: 80, height: 40, trackNode: cube, origin: BABYLON.Vector2.Zero(),
-                children: [
-                    new BABYLON.Rectangle2D({
-                        id: "firstRect", width: 80, height: 26, x: 0, y: 0, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080FF", children: [
-                            new BABYLON.Text2D(cube.name, { marginAlignment: "h: center, v:center", fontName: "bold 12px Arial" })
-                        ]
-                    })
-                ]
-            });
-            ++i;
-        }
-
 
         this.scene = scene;
-    };
-    Test.prototype._initGame = function () {
-        this._createCanvas();
-    };
-    /**
-     * Create the canvas2D
-     */
-    Test.prototype._createCanvas = function () {
-        // object hierarchy  g1 -> g2 -> rect
-
-        // when cachingStrategy is 1 or 2 - everything is rendered
-        // when it is 3 - only direct children of g1 are rendered
-        var canvas = new BABYLON.ScreenSpaceCanvas2D(this.scene,
-            {
-                id: "ScreenCanvas",
-                cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE
-            });           // 1
-        // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS });      // 2 
-        // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS });           // 3
-
-        canvas.createCanvasProfileInfoCanvas();
-
-        // parent group            
-        var g1 = new BABYLON.Group2D({
-            parent: canvas, id: "G1",
-            x: 50, y: 50, size: new BABYLON.Size(60, 60)
-        });
-
-        // just to see it    
-        let frame1 = new BABYLON.Rectangle2D({
-            parent: g1,
-            x: 0, y: 0, size: g1.size, border: "#FF0000FF"
-        });
-
-        // child group
-        let g2 = new BABYLON.Group2D({
-            parent: g1, id: "G2",
-            x: 10, y: 10, size: new BABYLON.Size(40, 40)
-        });
-
-        // just to see it
-        let frame2 = new BABYLON.Rectangle2D({ parent: g2, x: 0, y: 0, size: g2.size, border: "#0000FFFF" });
-
-        let rect = new BABYLON.Rectangle2D({
-            parent: g2, x: 10, y: 10, size: new BABYLON.Size(20, 20),
-            fill: "#00FF00FF"
-        });
-
-        return canvas;
     };
     return Test;
 }());
