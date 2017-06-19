@@ -492,16 +492,6 @@ body {
 }
 @media (max-width: 1475px) {
     .navBar1600 { display: none; }
-    .navBar1475 { display: block; }
-    .navBar1030 { display: none; }
-    .navBar750 { display: none; }
-
-    .navbar .select .toDisplayBig ul {
-        column-count: 3;
-    }
-}
-@media (max-width: 1030px) {
-    .navBar1600 { display: none; }
     .navBar1475 { display: none; }
     .navBar1030 { display: block; }
     .navBar750 { display: none; }
@@ -518,6 +508,9 @@ body {
     .removeOnPhone {
         display : none !important;
     }
+    .navbar .select .toDisplayBig {
+        width:350px;
+    }    
     .navbar .select .toDisplayBig ul {
         column-count: 1;
     }
