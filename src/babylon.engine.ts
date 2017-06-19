@@ -2204,7 +2204,15 @@
             }
 
             // Z offset
-            this._depthCullingState.zOffset = zOffset;
+            this.setZOffset(zOffset);
+        }
+
+        public setZOffset(value: number): void {
+            this._depthCullingState.zOffset = value;
+        }
+
+        public getZOffset():number {
+            return this._depthCullingState.zOffset;
         }
 
         public setDepthBuffer(enable: boolean): void {
