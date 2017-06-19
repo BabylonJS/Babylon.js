@@ -809,7 +809,7 @@
          * Please note that the mesh must have normals vertex data already.
          * Returns the Mesh. 
          */
-        public recomputeNormals(): Mesh {
+        public recomputeNormals(markDataAsUpdatable?: boolean): Mesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals: number[] | Float32Array;
@@ -820,7 +820,7 @@
                 normals = [];
             }
             VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+            this.setVerticesData(VertexBuffer.NormalKind, normals, markDataAsUpdatable);
 
             return this;
         }
