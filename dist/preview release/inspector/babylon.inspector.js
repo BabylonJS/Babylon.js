@@ -3516,12 +3516,6 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return _this._scene.lights.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total lights", _this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
-                _this._updatableProperties.push({
-                    elem: elemValue,
-                    updateFct: function () { return _this._scene.lights.length.toString(); }
-                });
                 elemLabel = _this._createStatLabel("Total vertices", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
