@@ -18,8 +18,8 @@ void main(void)
 {
 	vec2 tc = HmdWarp(vUV);
 	if (tc.x <0.0 || tc.x>1.0 || tc.y<0.0 || tc.y>1.0)
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
 	else{
-		gl_FragColor = vec4(texture2D(textureSampler, tc).rgb, 1.0);
+		gl_FragColor = texture2D(textureSampler, tc);
 	}
 }
