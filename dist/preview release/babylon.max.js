@@ -62712,6 +62712,21 @@ var BABYLON;
                         _this.controllers.push(webVrController);
                         //did we find enough controllers? Great! let the developer know.
                         if (_this._onControllersAttached && _this.controllers.length >= 2) {
+                            // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
+                            // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
+                            // So we're overriding setting left & right manually to be sure
+                            var firstViveWandDetected = false;
+                            for (var i = 0; i < _this.controllers.length; i++) {
+                                if (_this.controllers[i].controllerType === BABYLON.PoseEnabledControllerType.VIVE) {
+                                    if (!firstViveWandDetected) {
+                                        firstViveWandDetected = true;
+                                        _this.controllers[i].hand = "left";
+                                    }
+                                    else {
+                                        _this.controllers[i].hand = "right";
+                                    }
+                                }
+                            }
                             _this._onControllersAttached(_this.controllers);
                         }
                     }
