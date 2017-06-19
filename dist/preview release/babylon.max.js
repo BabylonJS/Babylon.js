@@ -8909,7 +8909,13 @@ var BABYLON;
                 }
             }
             // Z offset
-            this._depthCullingState.zOffset = zOffset;
+            this.setZOffset(zOffset);
+        };
+        Engine.prototype.setZOffset = function (value) {
+            this._depthCullingState.zOffset = value;
+        };
+        Engine.prototype.getZOffset = function () {
+            return this._depthCullingState.zOffset;
         };
         Engine.prototype.setDepthBuffer = function (enable) {
             this._depthCullingState.depthTest = enable;
@@ -64378,6 +64384,7 @@ var BABYLON;
 (function (BABYLON) {
     var OutlineRenderer = (function () {
         function OutlineRenderer(scene) {
+            this.zOffset = 1;
             this._scene = scene;
         }
         OutlineRenderer.prototype.render = function (subMesh, batch, useOverlay) {
@@ -64406,7 +64413,9 @@ var BABYLON;
                 this._effect.setTexture("diffuseSampler", alphaTexture);
                 this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
+            engine.setZOffset(-this.zOffset);
             mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { _this._effect.setMatrix("world", world); });
+            engine.setZOffset(0);
         };
         OutlineRenderer.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
