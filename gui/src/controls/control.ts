@@ -696,7 +696,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this.isHitTestVisible) {
+            if (!this.isHitTestVisible || !this.isVisible) {
                 return false;
             }
 

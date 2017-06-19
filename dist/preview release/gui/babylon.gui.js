@@ -1241,7 +1241,7 @@ var BABYLON;
                 return true;
             };
             Control.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible) {
+                if (!this.isHitTestVisible || !this.isVisible) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
