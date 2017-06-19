@@ -21,8 +21,8 @@ module BABYLON {
         private _parent: Bone;
 
         private _scaleMatrix = Matrix.Identity();
-        private _scaleVector = new Vector3(1, 1, 1);
-        private _negateScaleChildren = new Vector3(1, 1, 1);
+        private _scaleVector = Vector3.One();
+        private _negateScaleChildren = Vector3.One();
         private _scalingDeterminant = 1;
 
         get _matrix():Matrix{
