@@ -20165,7 +20165,7 @@ var BABYLON;
          * Please note that the mesh must have normals vertex data already.
          * Returns the Mesh.
          */
-        Mesh.prototype.recomputeNormals = function () {
+        Mesh.prototype.recomputeNormals = function (markDataAsUpdatable) {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals;
@@ -20176,7 +20176,7 @@ var BABYLON;
                 normals = [];
             }
             BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, markDataAsUpdatable);
             return this;
         };
         /**
@@ -43451,7 +43451,7 @@ var BABYLON;
             _this._transformMatrix = BABYLON.Matrix.Zero();
             _this._mirrorMatrix = BABYLON.Matrix.Zero();
             _this._blurKernel = 0;
-            _this._blurRatio = 0.6;
+            _this._blurRatio = 1.0;
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
@@ -43504,10 +43504,18 @@ var BABYLON;
                 var textureType = engine.getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
                 this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
-                this._blurX.alwaysForcePOT = false;
+                if (this._blurRatio === 1) {
+                    this._blurX.outputTexture = this._texture;
+                }
+                else {
+                    this._blurX.alwaysForcePOT = true;
+                }
                 this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
                 this._blurY.alwaysForcePOT = true;
+                if (this._blurRatio !== 1) {
+                    this._blurY.alwaysForcePOT = true;
+                }
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
             }
@@ -44110,6 +44118,8 @@ var BABYLON;
             }
             else if (this._forcedOutputTexture) {
                 target = this._forcedOutputTexture;
+                this.width = this._forcedOutputTexture._width;
+                this.height = this._forcedOutputTexture._height;
             }
             else {
                 target = this.outputTexture;

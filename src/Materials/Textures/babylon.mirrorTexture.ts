@@ -11,7 +11,7 @@ module BABYLON {
         private _blurX: BlurPostProcess;
         private _blurY: BlurPostProcess;
         private _blurKernel = 0;
-        private _blurRatio = 0.6;
+        private _blurRatio = 1.0;
 
         public set blurRatio(value: number) {
             if (this._blurRatio === value) {
@@ -76,11 +76,20 @@ module BABYLON {
 
                 this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
-                this._blurX.alwaysForcePOT = false;
+
+                if (this._blurRatio === 1) {
+                    this._blurX.outputTexture = this._texture;
+                } else {
+                    this._blurX.alwaysForcePOT = true;
+                }
 
                 this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
                 this._blurY.alwaysForcePOT = true;
+
+                if (this._blurRatio !== 1) {
+                    this._blurY.alwaysForcePOT = true;
+                }
 
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);   
