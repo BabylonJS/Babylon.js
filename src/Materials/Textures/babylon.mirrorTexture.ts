@@ -10,8 +10,9 @@ module BABYLON {
 
         private _blurX: BlurPostProcess;
         private _blurY: BlurPostProcess;
-        private _blurKernel = 0;
-        private _blurRatio = 0.6;
+        private _blurKernelX = 0;
+        private _blurKernelY = 0;
+        private _blurRatio = 1.0;
 
         public set blurRatio(value: number) {
             if (this._blurRatio === value) {
@@ -27,17 +28,35 @@ module BABYLON {
         }
 
         public set blurKernel(value: number) {
-            if (this._blurKernel === value) {
+            this.blurKernelX = value;
+            this.blurKernelY = value;
+        }        
+
+        public set blurKernelX(value: number) {
+            if (this._blurKernelX === value) {
                 return;
             }
 
-            this._blurKernel = value;
+            this._blurKernelX = value;
             this._preparePostProcesses();
         }
 
-        public get blurKernel(): number {
-            return this._blurKernel;
+        public get blurKernelX(): number {
+            return this._blurKernelX;
         }        
+
+        public set blurKernelY(value: number) {
+            if (this._blurKernelY === value) {
+                return;
+            }
+
+            this._blurKernelY = value;
+            this._preparePostProcesses();
+        }
+
+        public get blurKernelY(): number {
+            return this._blurKernelY;
+        }             
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
@@ -69,18 +88,23 @@ module BABYLON {
         private _preparePostProcesses(): void {
             this.clearPostProcesses(true);
 
-            if (this._blurKernel) {
+            if (this._blurKernelX && this._blurKernelY) {
                 var engine = this.getScene().getEngine();
 
                 var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
 
-                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
-                this._blurX.alwaysForcePOT = false;
 
-                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                if (this._blurRatio === 1) {
+                    this._blurX.outputTexture = this._texture;
+                } else {
+                    this._blurX.alwaysForcePOT = true;
+                }
+
+                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
-                this._blurY.alwaysForcePOT = true;
+                this._blurY.alwaysForcePOT = this._blurRatio !== 1;
 
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);   
