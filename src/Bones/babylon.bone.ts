@@ -21,66 +21,48 @@ module BABYLON {
         private _parent: Bone;
 
         private _scaleMatrix = Matrix.Identity();
-        private _scaleVector = Vector3.One();
-        private _negateScaleChildren = Vector3.One();
+        private _scaleVector = new Vector3(1, 1, 1);
+        private _negateScaleChildren = new Vector3(1, 1, 1);
         private _scalingDeterminant = 1;
 
-        get _matrix(): Matrix {
+        get _matrix():Matrix{
             return this._localMatrix;
         }
 
-        set _matrix(val: Matrix) {
-            if (this._localMatrix) {
+        set _matrix(val:Matrix){
+            if(this._localMatrix){
                 this._localMatrix.copyFrom(val);
-            } else {
+            }else{
                 this._localMatrix = val;
             }
         }
-
-        constructor(public name: string, skeleton: Skeleton, parentBone: Bone = null, matrix?: Matrix, restPose?: Matrix) {
+        
+        constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._localMatrix = matrix ? matrix : Matrix.Identity();
-            this._baseMatrix = this._localMatrix.clone();
-            this._restPose = restPose ? restPose : this._localMatrix.clone();
+            this._localMatrix = matrix;
+            this._baseMatrix = matrix.clone();
+            this._restPose = restPose ? restPose : matrix.clone();
 
             skeleton.bones.push(this);
 
-            this.setParent(parentBone, false);
+            if (parentBone) {
+                this._parent = parentBone;
+                parentBone.children.push(this);
+            } else {
+                this._parent = null;
+            }
 
             this._updateDifferenceMatrix();
+
+            if (this.getAbsoluteTransform().determinant() < 0) {
+                this._scalingDeterminant *= -1;
+            }
         }
 
         // Members
-        public getSkeleton(): Skeleton {
-            return this._skeleton;
-        }
-
         public getParent(): Bone {
             return this._parent;
-        }
-
-        public setParent(parent: Bone, updateDifferenceMatrix: boolean = true): void {
-            if (this._parent === parent) {
-                return;
-            }
-
-            if (this._parent) {
-                var index = this._parent.children.indexOf(this);
-                if (index !== -1) {
-                    this._parent.children.splice(index);
-                }
-            }
-
-            this._parent = parent;
-
-            if (this._parent) {
-                this._parent.children.push(this);
-            }
-
-            if (updateDifferenceMatrix) {
-                this._updateDifferenceMatrix();
-            }
         }
 
         public getLocalMatrix(): Matrix {
@@ -172,8 +154,6 @@ module BABYLON {
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index]._updateDifferenceMatrix();
             }
-
-            this._scalingDeterminant = (this._absoluteTransform.determinant() < 0 ? -1 : 1);
         }
 
         public markAsDirty(): void {

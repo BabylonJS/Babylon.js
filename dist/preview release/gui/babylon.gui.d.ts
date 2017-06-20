@@ -30,7 +30,6 @@ declare module BABYLON.GUI {
         removeControl(control: Control): AdvancedDynamicTexture;
         dispose(): void;
         private _onResize();
-        _getGlobalViewport(scene: Scene): Viewport;
         private _checkUpdate(camera);
         private _render();
         private _doPicking(x, y, type);
@@ -215,9 +214,6 @@ declare module BABYLON.GUI {
         readonly centerY: number;
         constructor(name?: string);
         protected _getTypeName(): string;
-        getLocalCoordinates(globalCoordinates: Vector2): Vector2;
-        getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
-        moveToVector3(position: Vector3, scene: Scene): void;
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         _markMatrixAsDirty(): void;
