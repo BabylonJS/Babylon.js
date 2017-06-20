@@ -268,9 +268,6 @@
                 target = this._shareOutputWithPostProcess.outputTexture;
             } else if (this._forcedOutputTexture) {
                 target = this._forcedOutputTexture;
-
-                this.width = this._forcedOutputTexture._width;
-                this.height = this._forcedOutputTexture._height;
             } else {
                 target = this.outputTexture;
             }
