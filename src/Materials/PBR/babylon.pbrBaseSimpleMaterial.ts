@@ -11,77 +11,77 @@
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights = 4;
 
         /**
          * If sets to true, disables all the lights affecting the material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting = false;
 
         /**
          * Environment Texture used in the material (this is use for both reflection and environment lighting).
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_reflectionTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectionTexture")
         public environmentTexture: BaseTexture;
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertNormalMapX = false;
 
         /**
          * If sets to true, y component of normal map value will invert (y = 1.0 - y).
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertNormalMapY = false;
 
         /**
          * Normal map used in the model.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_bumpTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_bumpTexture")
         public normalTexture: BaseTexture;
 
         /**
          * Emissivie color used to self-illuminate the model.
          */
         @serializeAsColor3("emissive")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveColor = new Color3(0, 0, 0);
 
         /**
          * Emissivie texture used to self-illuminate the model.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveTexture: BaseTexture;
 
         /**
          * Occlusion Channel Strenght.
          */
         @serialize()
-        @expandToProperty(null, "_ambientTextureStrength")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTextureStrength")
         public occlusionStrength: number = 1.0;
 
         /**
          * Occlusion Texture of the material (adding extra occlusion effects).
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_ambientTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTexture")
         public occlusionTexture: BaseTexture;
 
         /**
          * Defines the alpha limits in alpha test mode.
          */
         @serialize()
-        @expandToProperty(null, "_alphaCutOff")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_alphaCutOff")
         public alphaCutOff: number;
 
         protected _transparencyMode: number = PBRMaterial.PBRMATERIAL_OPAQUE;
@@ -96,6 +96,9 @@
          * Sets the transparency mode of the material.
          */
         public set transparencyMode(value: number) {
+            if (this._transparencyMode === value) {
+                return;
+            }
             this._transparencyMode = value;
             if (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND) {
                 this._forceAlphaTest = true;
@@ -103,6 +106,8 @@
             else {
                 this._forceAlphaTest = false;
             }
+            
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         /**
@@ -116,8 +121,12 @@
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
          */
         public set doubleSided(value: boolean) {
+            if (this._twoSidedLighting === value) {
+                return;
+            }
             this._twoSidedLighting = value;
             this.backFaceCulling = !value;
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         /**
