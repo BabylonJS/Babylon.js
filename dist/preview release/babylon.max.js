@@ -20195,25 +20195,6 @@ var BABYLON;
             return this;
         };
         /**
-         * This method will force the computation of normals for the mesh.
-         * Please note that the mesh must have normals vertex data already.
-         * Returns the Mesh.
-         */
-        Mesh.prototype.recomputeNormals = function (markDataAsUpdatable) {
-            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var indices = this.getIndices();
-            var normals;
-            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            }
-            else {
-                normals = [];
-            }
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, markDataAsUpdatable);
-            return this;
-        };
-        /**
          * Creates a un-shared specific occurence of the geometry for the mesh.
          * Returns the Mesh.
          */

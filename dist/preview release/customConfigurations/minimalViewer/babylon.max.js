@@ -841,6 +841,12 @@ var __extends = (this && this.__extends) || (function () {
             return new Vector2(0, 0);
         };
         /**
+         * Returns a new Vector2(1, 1)
+         */
+        Vector2.One = function () {
+            return new Vector2(1, 1);
+        };
+        /**
          * Returns a new Vector2 set from the passed index element of the passed array.
          */
         Vector2.FromArray = function (array, offset) {
@@ -1376,6 +1382,12 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector3.Zero = function () {
             return new Vector3(0.0, 0.0, 0.0);
+        };
+        /**
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         */
+        Vector3.One = function () {
+            return new Vector3(1.0, 1.0, 1.0);
         };
         /**
          * Returns a new Vector3 set to (0.0, 1.0, 0.0)
@@ -2039,6 +2051,12 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector4.Zero = function () {
             return new Vector4(0.0, 0.0, 0.0, 0.0);
+        };
+        /**
+         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         */
+        Vector4.One = function () {
+            return new Vector4(1.0, 1.0, 1.0, 1.0);
         };
         /**
          * Returns a new normalized Vector4 from the passed one.
@@ -8909,7 +8927,13 @@ var BABYLON;
                 }
             }
             // Z offset
-            this._depthCullingState.zOffset = zOffset;
+            this.setZOffset(zOffset);
+        };
+        Engine.prototype.setZOffset = function (value) {
+            this._depthCullingState.zOffset = value;
+        };
+        Engine.prototype.getZOffset = function () {
+            return this._depthCullingState.zOffset;
         };
         Engine.prototype.setDepthBuffer = function (enable) {
             this._depthCullingState.depthTest = enable;
@@ -11181,9 +11205,9 @@ var BABYLON;
             _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
-            _this.position = new BABYLON.Vector3(0.0, 0.0, 0.0);
-            _this._rotation = new BABYLON.Vector3(0.0, 0.0, 0.0);
-            _this._scaling = new BABYLON.Vector3(1.0, 1.0, 1.0);
+            _this.position = BABYLON.Vector3.Zero();
+            _this._rotation = BABYLON.Vector3.Zero();
+            _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
             _this.visibility = 1.0;
             _this.alphaIndex = Number.MAX_VALUE;
@@ -19082,10 +19106,6 @@ var BABYLON;
             _this._deleteBuffer = deleteBuffer;
             _this._format = format;
             scene = _this.getScene();
-            if (!url) {
-                return _this;
-            }
-            _this._texture = _this._getFromCache(url, noMipmap, samplingMode);
             var load = function () {
                 if (_this._onLoadObservarble && _this._onLoadObservarble.hasObservers()) {
                     _this.onLoadObservable.notifyObservers(true);
@@ -19097,6 +19117,12 @@ var BABYLON;
                     scene.resetCachedMaterial();
                 }
             };
+            if (!url) {
+                _this._delayedOnLoad = load;
+                _this._delayedOnError = onError;
+                return _this;
+            }
+            _this._texture = _this._getFromCache(url, noMipmap, samplingMode);
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     _this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, null, _this._format);
@@ -19137,7 +19163,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Texture.prototype.updateURL = function (url) {
+            this.url = url;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+            this.delayLoad();
+        };
         Texture.prototype.delayLoad = function () {
+            var _this = this;
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
@@ -19147,6 +19179,14 @@ var BABYLON;
                 this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
+                }
+            }
+            else {
+                if (this._texture.isReady) {
+                    BABYLON.Tools.SetImmediate(function () { return _this._delayedOnLoad(); });
+                }
+                else {
+                    this._texture.onLoadedCallbacks.push(this._delayedOnLoad);
                 }
             }
         };
@@ -20152,25 +20192,6 @@ var BABYLON;
                 BABYLON.VertexData.ComputeNormals(positions, indices, normals);
                 this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
             }
-            return this;
-        };
-        /**
-         * This method will force the computation of normals for the mesh.
-         * Please note that the mesh must have normals vertex data already.
-         * Returns the Mesh.
-         */
-        Mesh.prototype.recomputeNormals = function () {
-            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var indices = this.getIndices();
-            var normals;
-            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            }
-            else {
-                normals = [];
-            }
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
             return this;
         };
         /**
@@ -24715,6 +24736,7 @@ var BABYLON;
             if (flag & BABYLON.Material.MiscDirtyFlag) {
                 this._markAllSubMeshesAsMiscDirty();
             }
+            this.getScene().resetCachedMaterial();
         };
         PushMaterial.prototype._markAllSubMeshesAsDirty = function (func) {
             for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
@@ -29629,7 +29651,7 @@ var BABYLON;
             var normals = sourceMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var position = options.position || BABYLON.Vector3.Zero();
             var normal = options.normal || BABYLON.Vector3.Up();
-            var size = options.size || new BABYLON.Vector3(1, 1, 1);
+            var size = options.size || BABYLON.Vector3.One();
             var angle = options.angle || 0;
             // Getting correct rotation
             if (!normal) {
@@ -33225,8 +33247,9 @@ var BABYLON;
             _this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
             _this._transformMatrix = BABYLON.Matrix.Zero();
             _this._mirrorMatrix = BABYLON.Matrix.Zero();
-            _this._blurKernel = 0;
-            _this._blurRatio = 0.6;
+            _this._blurKernelX = 0;
+            _this._blurKernelY = 0;
+            _this._blurRatio = 1.0;
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
@@ -33259,14 +33282,36 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(MirrorTexture.prototype, "blurKernel", {
+            set: function (value) {
+                this.blurKernelX = value;
+                this.blurKernelY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MirrorTexture.prototype, "blurKernelX", {
             get: function () {
-                return this._blurKernel;
+                return this._blurKernelX;
             },
             set: function (value) {
-                if (this._blurKernel === value) {
+                if (this._blurKernelX === value) {
                     return;
                 }
-                this._blurKernel = value;
+                this._blurKernelX = value;
+                this._preparePostProcesses();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MirrorTexture.prototype, "blurKernelY", {
+            get: function () {
+                return this._blurKernelY;
+            },
+            set: function (value) {
+                if (this._blurKernelY === value) {
+                    return;
+                }
+                this._blurKernelY = value;
                 this._preparePostProcesses();
             },
             enumerable: true,
@@ -33274,15 +33319,20 @@ var BABYLON;
         });
         MirrorTexture.prototype._preparePostProcesses = function () {
             this.clearPostProcesses(true);
-            if (this._blurKernel) {
+            if (this._blurKernelX && this._blurKernelY) {
                 var engine = this.getScene().getEngine();
                 var textureType = engine.getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
-                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
-                this._blurX.alwaysForcePOT = false;
-                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernel, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                if (this._blurRatio === 1) {
+                    this._blurX.outputTexture = this._texture;
+                }
+                else {
+                    this._blurX.alwaysForcePOT = true;
+                }
+                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
-                this._blurY.alwaysForcePOT = true;
+                this._blurY.alwaysForcePOT = this._blurRatio !== 1;
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
             }
@@ -35261,11 +35311,9 @@ var BABYLON;
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
                     // Fresnel
-                    if (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled ||
-                        this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled ||
-                        this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled ||
-                        this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled ||
-                        this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled) {
+                    if (this._diffuseFresnelParameters || this._opacityFresnelParameters ||
+                        this._emissiveFresnelParameters || this._refractionFresnelParameters ||
+                        this._reflectionFresnelParameters) {
                         defines.DIFFUSEFRESNEL = (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled);
                         defines.OPACITYFRESNEL = (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled);
                         defines.REFLECTIONFRESNEL = (this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled);
@@ -38294,7 +38342,7 @@ var BABYLON;
         return DebugLayer;
     }());
     // Get protocol used - http or https
-    DebugLayer.InspectorURL = window.location.href.split('/')[0] + '//www.babylonjs.com/babylon.inspector.bundle.js';
+    DebugLayer.InspectorURL = window.location.href.split('/')[0] + '//preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
 
@@ -41280,6 +41328,8 @@ var BABYLON;
             }
             else if (this._forcedOutputTexture) {
                 target = this._forcedOutputTexture;
+                this.width = this._forcedOutputTexture._width;
+                this.height = this._forcedOutputTexture._height;
             }
             else {
                 target = this.outputTexture;
