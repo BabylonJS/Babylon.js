@@ -20165,7 +20165,7 @@ var BABYLON;
          * Please note that the mesh must have normals vertex data already.
          * Returns the Mesh.
          */
-        Mesh.prototype.recomputeNormals = function () {
+        Mesh.prototype.recomputeNormals = function (markDataAsUpdatable) {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals;
@@ -20176,7 +20176,7 @@ var BABYLON;
                 normals = [];
             }
             BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, markDataAsUpdatable);
             return this;
         };
         /**
@@ -60524,7 +60524,7 @@ var BABYLON;
         return DebugLayer;
     }());
     // Get protocol used - http or https
-    DebugLayer.InspectorURL = window.location.href.split('/')[0] + '//www.babylonjs.com/babylon.inspector.bundle.js';
+    DebugLayer.InspectorURL = window.location.href.split('/')[0] + '//preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
 
