@@ -148,10 +148,6 @@ var BABYLON;
                     }
                 }
             };
-            AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
-                var engine = scene.getEngine();
-                return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-            };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
                 if (this._layerToDispose) {
                     if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -160,7 +156,8 @@ var BABYLON;
                 }
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
-                    var globalViewport = this._getGlobalViewport(scene);
+                    var engine = scene.getEngine();
+                    var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
                         var mesh = control._linkedMesh;
@@ -1002,33 +999,6 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
-            Control.prototype.getLocalCoordinates = function (globalCoordinates) {
-                var result = BABYLON.Vector2.Zero();
-                this.getLocalCoordinatesToRef(globalCoordinates, result);
-                return result;
-            };
-            Control.prototype.getLocalCoordinatesToRef = function (globalCoordinates, result) {
-                result.x = globalCoordinates.x - this._currentMeasure.left;
-                result.y = globalCoordinates.y - this._currentMeasure.top;
-                return this;
-            };
-            Control.prototype.moveToVector3 = function (position, scene) {
-                if (!this._host || this._root !== this._host._rootContainer) {
-                    BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
-                    return;
-                }
-                this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                var engine = scene.getEngine();
-                var globalViewport = this._host._getGlobalViewport(scene);
-                var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
-                this._moveToProjectedPosition(projectedPosition);
-                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                    this.isVisible = false;
-                    return;
-                }
-                this.isVisible = true;
-            };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
@@ -1603,9 +1573,6 @@ var BABYLON;
                 }
             };
             Container.prototype._draw = function (parentMeasure, context) {
-                if (!this.isVisible) {
-                    return;
-                }
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
@@ -1621,9 +1588,6 @@ var BABYLON;
                 context.restore();
             };
             Container.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible || !this.isVisible) {
-                    return false;
-                }
                 if (!_super.prototype.contains.call(this, x, y)) {
                     return false;
                 }

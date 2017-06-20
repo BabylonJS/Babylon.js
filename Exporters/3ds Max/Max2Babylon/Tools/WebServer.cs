@@ -18,10 +18,10 @@ namespace Max2Babylon
 
 <head>
     <title>Babylon.js</title>
-    <script type='text/javascript' src='https://preview.babylonjs.com/oimo.js'></script>
-    <script type='text/javascript' src='https://preview.babylonjs.com/cannon.js'></script>
-    <script type='text/javascript' src='https://preview.babylonjs.com/babylon.js'></script>
-    <script type='text/javascript' src='https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js'></script>
+    <script type='text/javascript' src='http://www.babylonjs.com/oimo.js'></script>
+    <script type='text/javascript' src='http://www.babylonjs.com/cannon.js'></script>
+    <script type='text/javascript' src='http://www.babylonjs.com/babylon.js'></script>
+    <script type='text/javascript' src='http://www.babylonjs.com/babylon.inspector.bundle.js'></script>
     <style type='text/css'>
         html, body, div, canvas {
             width: 100%;
