@@ -158,11 +158,6 @@ module BABYLON.GUI {
             }
         }
 
-        public _getGlobalViewport(scene: Scene): Viewport {
-            var engine = scene.getEngine();
-            return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-        }
-
         private _checkUpdate(camera: Camera): void {
             if (this._layerToDispose) {
                 if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -172,7 +167,8 @@ module BABYLON.GUI {
 
             if (this._isFullscreen && this._linkedControls.length) {
                 var scene = this.getScene();
-                var globalViewport = this._getGlobalViewport(scene);
+                var engine = scene.getEngine();
+                var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
                 for (var control of this._linkedControls) {
                     var mesh = control._linkedMesh;
