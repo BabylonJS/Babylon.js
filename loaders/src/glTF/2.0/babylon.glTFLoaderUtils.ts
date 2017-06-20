@@ -76,39 +76,6 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public static GetBufferFromBufferView(runtime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
-            byteOffset += (bufferView.byteOffset || 0);
-
-            var loadedBufferView = runtime.gltf.buffers[bufferView.buffer].loadedBufferView;
-            if (byteOffset + byteLength > loadedBufferView.byteLength) {
-                throw new Error("Buffer access is out of range");
-            }
-
-            var buffer = loadedBufferView.buffer;
-            byteOffset += loadedBufferView.byteOffset;
-
-            switch (componentType) {
-                case EComponentType.BYTE: return new Int8Array(buffer, byteOffset, byteLength);
-                case EComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, byteLength);
-                case EComponentType.SHORT: return new Int16Array(buffer, byteOffset, byteLength);
-                case EComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, byteLength);
-                case EComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, byteLength);
-                default: return new Float32Array(buffer, byteOffset, byteLength);
-            }
-        }
-
-        /**
-         * Returns a buffer from its accessor
-         * @param runtime: the GLTF runtime
-         * @param accessor: the GLTF accessor
-         */
-        public static GetBufferFromAccessor(runtime: IGLTFRuntime, accessor: IGLTFAccessor): ArrayBufferView {
-            var bufferView = runtime.gltf.bufferViews[accessor.bufferView];
-            var byteOffset = accessor.byteOffset || 0;
-            var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
-            return GLTFUtils.GetBufferFromBufferView(runtime, bufferView, byteOffset, byteLength, accessor.componentType);
-        }
-
         /**
          * Decodes a buffer view into a string
          * @param view: the buffer view
@@ -122,22 +89,6 @@ module BABYLON.GLTF2 {
             }
 
             return result;
-        }
-
-        /**
-         * Returns the default material of gltf.
-         * @param scene: the Babylon.js scene
-         */
-        public static GetDefaultMaterial(runtime: IGLTFRuntime): PBRMaterial {
-            if (!runtime.defaultMaterial) {
-                var material = new PBRMaterial("gltf_default", runtime.babylonScene);
-                material.sideOrientation = Material.CounterClockWiseSideOrientation;
-                material.metallic = 1;
-                material.roughness = 1;
-                runtime.defaultMaterial = material;
-            }
-
-            return runtime.defaultMaterial;
         }
     }
 }
