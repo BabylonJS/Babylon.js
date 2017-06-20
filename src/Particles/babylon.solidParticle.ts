@@ -6,7 +6,7 @@ module BABYLON {
         public position = Vector3.Zero();               // position
         public rotation = Vector3.Zero();               // rotation
         public rotationQuaternion: Quaternion;          // quaternion, will overwrite rotation
-        public scaling = new Vector3(1.0, 1.0, 1.0);    // scaling
+        public scaling = Vector3.One();                 // scaling
         public uvs = new Vector4(0.0, 0.0, 1.0, 1.0);   // uvs
         public velocity = Vector3.Zero();               // velocity
         public alive = true;                            // alive
