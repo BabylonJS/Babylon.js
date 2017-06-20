@@ -495,7 +495,7 @@ module BABYLON {
                     }
 
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                        // Bump texure can not be none blocking.
+                        // Bump texure can not be not blocking.
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {

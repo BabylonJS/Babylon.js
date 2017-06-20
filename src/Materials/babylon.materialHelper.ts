@@ -10,7 +10,7 @@
             }
         }
 
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean): void {
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean, forceAlphaTest = false): void {
             var changed = false;
 
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -18,7 +18,7 @@
                 changed = true;
             }
 
-            if (defines["ALPHATEST"] !== engine.getAlphaTesting()) {
+            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
@@ -33,9 +33,9 @@
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): void {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): boolean {
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
-                return;
+                return false;
             }               
 
             defines._normals = defines._needNormals;
@@ -84,6 +84,8 @@
                     defines["NUM_MORPH_INFLUENCERS"] = 0;
                 }
             }
+
+            return true;
         }
 
         public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
