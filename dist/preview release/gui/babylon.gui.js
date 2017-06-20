@@ -1603,6 +1603,9 @@ var BABYLON;
                 }
             };
             Container.prototype._draw = function (parentMeasure, context) {
+                if (!this.isVisible) {
+                    return;
+                }
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
@@ -1618,6 +1621,9 @@ var BABYLON;
                 context.restore();
             };
             Container.prototype._processPicking = function (x, y, type) {
+                if (!this.isHitTestVisible || !this.isVisible) {
+                    return false;
+                }
                 if (!_super.prototype.contains.call(this, x, y)) {
                     return false;
                 }
