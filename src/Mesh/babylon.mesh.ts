@@ -805,27 +805,6 @@
         }
 
         /**
-         * This method will force the computation of normals for the mesh.
-         * Please note that the mesh must have normals vertex data already.
-         * Returns the Mesh. 
-         */
-        public recomputeNormals(markDataAsUpdatable?: boolean): Mesh {
-            var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            var indices = this.getIndices();
-            var normals: number[] | Float32Array;
-            
-            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                normals = this.getVerticesData(VertexBuffer.NormalKind);
-            } else {
-                normals = [];
-            }
-            VertexData.ComputeNormals(positions, indices, normals);
-            this.setVerticesData(VertexBuffer.NormalKind, normals, markDataAsUpdatable);
-
-            return this;
-        }
-
-        /**
          * Creates a un-shared specific occurence of the geometry for the mesh.  
          * Returns the Mesh.  
          */
