@@ -841,6 +841,12 @@ var __extends = (this && this.__extends) || (function () {
             return new Vector2(0, 0);
         };
         /**
+         * Returns a new Vector2(1, 1)
+         */
+        Vector2.One = function () {
+            return new Vector2(1, 1);
+        };
+        /**
          * Returns a new Vector2 set from the passed index element of the passed array.
          */
         Vector2.FromArray = function (array, offset) {
@@ -1376,6 +1382,12 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector3.Zero = function () {
             return new Vector3(0.0, 0.0, 0.0);
+        };
+        /**
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         */
+        Vector3.One = function () {
+            return new Vector3(1.0, 1.0, 1.0);
         };
         /**
          * Returns a new Vector3 set to (0.0, 1.0, 0.0)
@@ -2039,6 +2051,12 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector4.Zero = function () {
             return new Vector4(0.0, 0.0, 0.0, 0.0);
+        };
+        /**
+         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         */
+        Vector4.One = function () {
+            return new Vector4(1.0, 1.0, 1.0, 1.0);
         };
         /**
          * Returns a new normalized Vector4 from the passed one.
@@ -11187,9 +11205,9 @@ var BABYLON;
             _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
-            _this.position = new BABYLON.Vector3(0.0, 0.0, 0.0);
-            _this._rotation = new BABYLON.Vector3(0.0, 0.0, 0.0);
-            _this._scaling = new BABYLON.Vector3(1.0, 1.0, 1.0);
+            _this.position = BABYLON.Vector3.Zero();
+            _this._rotation = BABYLON.Vector3.Zero();
+            _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
             _this.visibility = 1.0;
             _this.alphaIndex = Number.MAX_VALUE;
@@ -19088,10 +19106,6 @@ var BABYLON;
             _this._deleteBuffer = deleteBuffer;
             _this._format = format;
             scene = _this.getScene();
-            if (!url) {
-                return _this;
-            }
-            _this._texture = _this._getFromCache(url, noMipmap, samplingMode);
             var load = function () {
                 if (_this._onLoadObservarble && _this._onLoadObservarble.hasObservers()) {
                     _this.onLoadObservable.notifyObservers(true);
@@ -19103,6 +19117,12 @@ var BABYLON;
                     scene.resetCachedMaterial();
                 }
             };
+            if (!url) {
+                _this._delayedOnLoad = load;
+                _this._delayedOnError = onError;
+                return _this;
+            }
+            _this._texture = _this._getFromCache(url, noMipmap, samplingMode);
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     _this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, null, _this._format);
@@ -19143,7 +19163,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Texture.prototype.updateURL = function (url) {
+            this.url = url;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+            this.delayLoad();
+        };
         Texture.prototype.delayLoad = function () {
+            var _this = this;
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
@@ -19153,6 +19179,14 @@ var BABYLON;
                 this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
+                }
+            }
+            else {
+                if (this._texture.isReady) {
+                    BABYLON.Tools.SetImmediate(function () { return _this._delayedOnLoad(); });
+                }
+                else {
+                    this._texture.onLoadedCallbacks.push(this._delayedOnLoad);
                 }
             }
         };
@@ -37373,7 +37407,7 @@ var BABYLON;
     })();
     var Collider = (function () {
         function Collider() {
-            this.radius = new BABYLON.Vector3(1, 1, 1);
+            this.radius = BABYLON.Vector3.One();
             this.retry = 0;
             this.basePointWorld = BABYLON.Vector3.Zero();
             this.velocityWorld = BABYLON.Vector3.Zero();
@@ -38426,7 +38460,7 @@ var BABYLON;
             this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0); // color
             this.position = BABYLON.Vector3.Zero(); // position
             this.rotation = BABYLON.Vector3.Zero(); // rotation
-            this.scaling = new BABYLON.Vector3(1.0, 1.0, 1.0); // scaling
+            this.scaling = BABYLON.Vector3.One(); // scaling
             this.uvs = new BABYLON.Vector4(0.0, 0.0, 1.0, 1.0); // uvs
             this.velocity = BABYLON.Vector3.Zero(); // velocity
             this.alive = true; // alive
@@ -41501,7 +41535,7 @@ var BABYLON;
             var normals = sourceMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var position = options.position || BABYLON.Vector3.Zero();
             var normal = options.normal || BABYLON.Vector3.Up();
-            var size = options.size || new BABYLON.Vector3(1, 1, 1);
+            var size = options.size || BABYLON.Vector3.One();
             var angle = options.angle || 0;
             // Getting correct rotation
             if (!normal) {
@@ -52338,6 +52372,7 @@ var BABYLON;
     var Bone = (function (_super) {
         __extends(Bone, _super);
         function Bone(name, skeleton, parentBone, matrix, restPose) {
+            if (parentBone === void 0) { parentBone = null; }
             var _this = _super.call(this, name, skeleton.getScene()) || this;
             _this.name = name;
             _this.children = new Array();
@@ -52346,25 +52381,16 @@ var BABYLON;
             _this._absoluteTransform = new BABYLON.Matrix();
             _this._invertedAbsoluteTransform = new BABYLON.Matrix();
             _this._scaleMatrix = BABYLON.Matrix.Identity();
-            _this._scaleVector = new BABYLON.Vector3(1, 1, 1);
-            _this._negateScaleChildren = new BABYLON.Vector3(1, 1, 1);
+            _this._scaleVector = BABYLON.Vector3.One();
+            _this._negateScaleChildren = BABYLON.Vector3.One();
             _this._scalingDeterminant = 1;
             _this._skeleton = skeleton;
-            _this._localMatrix = matrix;
-            _this._baseMatrix = matrix.clone();
-            _this._restPose = restPose ? restPose : matrix.clone();
+            _this._localMatrix = matrix ? matrix : BABYLON.Matrix.Identity();
+            _this._baseMatrix = _this._localMatrix.clone();
+            _this._restPose = restPose ? restPose : _this._localMatrix.clone();
             skeleton.bones.push(_this);
-            if (parentBone) {
-                _this._parent = parentBone;
-                parentBone.children.push(_this);
-            }
-            else {
-                _this._parent = null;
-            }
+            _this.setParent(parentBone, false);
             _this._updateDifferenceMatrix();
-            if (_this.getAbsoluteTransform().determinant() < 0) {
-                _this._scalingDeterminant *= -1;
-            }
             return _this;
         }
         Object.defineProperty(Bone.prototype, "_matrix", {
@@ -52383,8 +52409,30 @@ var BABYLON;
             configurable: true
         });
         // Members
+        Bone.prototype.getSkeleton = function () {
+            return this._skeleton;
+        };
         Bone.prototype.getParent = function () {
             return this._parent;
+        };
+        Bone.prototype.setParent = function (parent, updateDifferenceMatrix) {
+            if (updateDifferenceMatrix === void 0) { updateDifferenceMatrix = true; }
+            if (this._parent === parent) {
+                return;
+            }
+            if (this._parent) {
+                var index = this._parent.children.indexOf(this);
+                if (index !== -1) {
+                    this._parent.children.splice(index);
+                }
+            }
+            this._parent = parent;
+            if (this._parent) {
+                this._parent.children.push(this);
+            }
+            if (updateDifferenceMatrix) {
+                this._updateDifferenceMatrix();
+            }
         };
         Bone.prototype.getLocalMatrix = function () {
             return this._localMatrix;
@@ -52472,6 +52520,7 @@ var BABYLON;
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index]._updateDifferenceMatrix();
             }
+            this._scalingDeterminant = (this._absoluteTransform.determinant() < 0 ? -1 : 1);
         };
         Bone.prototype.markAsDirty = function () {
             this._currentRenderId++;

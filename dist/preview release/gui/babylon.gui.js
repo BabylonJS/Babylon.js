@@ -1002,6 +1002,16 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
+            Control.prototype.getLocalCoordinates = function (globalCoordinates) {
+                var result = BABYLON.Vector2.Zero();
+                this.getLocalCoordinatesToRef(globalCoordinates, result);
+                return result;
+            };
+            Control.prototype.getLocalCoordinatesToRef = function (globalCoordinates, result) {
+                result.x = globalCoordinates.x - this._currentMeasure.left;
+                result.y = globalCoordinates.y - this._currentMeasure.top;
+                return this;
+            };
             Control.prototype.moveToVector3 = function (position, scene) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
