@@ -758,8 +758,6 @@
         private _externalData: StringDictionary<Object>;
         private _uid: string;
 
-        public offscreenRenderTarget: RenderTargetTexture = null;
-
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
@@ -2698,12 +2696,7 @@
             }
 
             if (needsRestoreFrameBuffer) {
-                if (this.offscreenRenderTarget) {
-                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-                }
-                else {
-                    engine.restoreDefaultFramebuffer(); // Restore back buffer
-                }
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
 
             this._renderTargetsDuration.endMonitoring(false);
@@ -2935,14 +2928,9 @@
                 this._renderId++;
             }
 
-            if (this.offscreenRenderTarget) {
-                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-            }
-            else {
-                // Restore back buffer
-                if (this.customRenderTargets.length > 0) {
-                    engine.restoreDefaultFramebuffer();
-                }
+            // Restore back buffer
+            if (this.customRenderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
             }
 
             this._renderTargetsDuration.endMonitoring();
