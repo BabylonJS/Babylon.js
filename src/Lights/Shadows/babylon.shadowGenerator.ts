@@ -4,11 +4,13 @@
      */
     export interface IShadowGenerator {
         getShadowMap(): RenderTargetTexture;
+        getShadowMapForRendering(): RenderTargetTexture;
  
         isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
         prepareDefines(defines: MaterialDefines, lightIndex: number): void;
         bindShadowLight(lightIndex: string, effect: Effect): void;
+        getTransformMatrix(): Matrix;
 
         recreateShadowMap(): void;
 
