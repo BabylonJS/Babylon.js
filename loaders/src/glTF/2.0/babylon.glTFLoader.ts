@@ -162,7 +162,10 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadScene(nodeNames: string[]): void {
+        private _loadScene(nodeNames: any): void {
+            nodeNames = (nodeNames === "") ? null : nodeNames;
+            nodeNames = (nodeNames instanceof Array) ? nodeNames : [nodeNames];
+
             var scene = this._gltf.scenes[this._gltf.scene || 0];
 
             this._traverseScene(nodeNames, scene, node => this._loadSkin(node));
