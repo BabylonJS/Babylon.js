@@ -189,7 +189,7 @@ module BABYLON {
                     "vDiffuseInfos", 
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "depthValues", "topColor", "bottomColor", "offset", "smoothness"
+                    "topColor", "bottomColor", "offset", "smoothness"
                 ];
                 var samplers = ["diffuseSampler"];
                 var uniformBuffers = [];

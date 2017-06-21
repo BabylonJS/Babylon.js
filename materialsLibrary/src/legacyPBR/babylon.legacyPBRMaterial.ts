@@ -636,7 +636,6 @@ module BABYLON {
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
-            var depthValuesAlreadySet = false;
             for (var light of mesh._lightSources) {
                 var useUbo = light._uniformBuffer.useUbo;
 
@@ -658,7 +657,7 @@ module BABYLON {
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex + "", effect, depthValuesAlreadySet);
+                    MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
                 }
 
                 light._uniformBuffer.update();
@@ -1148,7 +1147,6 @@ module BABYLON {
                         "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
                         "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                        "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
                         "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
                         "logarithmicDepthConstant",

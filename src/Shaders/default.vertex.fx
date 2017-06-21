@@ -1,5 +1,4 @@
 ﻿#include<__decl__defaultVertex>
-
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -66,7 +65,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
