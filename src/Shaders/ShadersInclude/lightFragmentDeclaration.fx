@@ -11,9 +11,13 @@
 			uniform samplerCube shadowSampler{X};
 		#else
 			varying vec4 vPositionFromLight{X};
+			varying float vDepthMetric{X};
+
 			uniform sampler2D shadowSampler{X};
+			uniform mat4 lightMatrix{X};
 		#endif
 		uniform vec3 shadowsInfo{X};
+		uniform vec2 depthValues{X};
 	#endif
 	#ifdef SPOTLIGHT{X}
 		uniform vec4 vLightDirection{X};

@@ -25,24 +25,32 @@
 		#endif
     #endif
 	#ifdef SHADOW{X}
-		#ifdef SHADOWESM{X}
+		#ifdef SHADOWCLOSEESM{X}
 			#if defined(SHADOWCUBE{X})
-				shadow = computeShadowWithESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
+				shadow = computeShadowWithCloseESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
 			#else
-				shadow = computeShadowWithESM(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
+				shadow = computeShadowWithCloseESM(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
 			#endif
-		#else	
-			#ifdef SHADOWPCF{X}
+		#else
+			#ifdef SHADOWESM{X}
 				#if defined(SHADOWCUBE{X})
-					shadow = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+					shadow = computeShadowWithESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
 				#else
-					shadow = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+					shadow = computeShadowWithESM(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
 				#endif
-			#else
-				#if defined(SHADOWCUBE{X})
-					shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x);
+			#else	
+				#ifdef SHADOWPCF{X}
+					#if defined(SHADOWCUBE{X})
+						shadow = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
+					#else
+						shadow = computeShadowWithPCF(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+					#endif
 				#else
-					shadow = computeShadow(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x);
+					#if defined(SHADOWCUBE{X})
+						shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+					#else
+						shadow = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x);
+					#endif
 				#endif
 			#endif
 		#endif

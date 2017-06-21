@@ -148,6 +148,7 @@ module BABYLON {
              this._uniformBuffer.addUniform("vLightDiffuse", 4);
              this._uniformBuffer.addUniform("vLightSpecular", 3);
              this._uniformBuffer.addUniform("shadowsInfo", 3);
+             this._uniformBuffer.addUniform("depthValues", 2);
              this._uniformBuffer.create();
         }
 
@@ -162,6 +163,22 @@ module BABYLON {
             }
             this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
             return this;
+        }
+
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+        public getDepthMinZ(activeCamera: Camera): number {
+            return 0.5;
+        }
+
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+        public getDepthMaxZ(activeCamera: Camera): number {
+             return 1.5;
         }
     }
 }  

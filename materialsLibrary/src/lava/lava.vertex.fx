@@ -52,7 +52,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 /* NOISE FUNCTIONS */
 ////// ASHIMA webgl noise

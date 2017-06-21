@@ -213,7 +213,6 @@ module BABYLON {
                     "vDiffuseInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "depthValues",
                     "time", "speed","movingSpeed",
                     "fogColor","fogDensity", "lowFrequencySpeed"
                 ];
