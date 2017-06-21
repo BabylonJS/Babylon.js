@@ -111,7 +111,7 @@
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
             Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, 
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
         protected _buildUniformLayout(): void {
@@ -119,6 +119,7 @@
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.addUniform("depthValues", 2);
             this._uniformBuffer.create();
         }
 
