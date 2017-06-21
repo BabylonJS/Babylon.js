@@ -73,7 +73,7 @@
             var angle = this._shadowAngleScale * this._angle;
             
             Matrix.PerspectiveFovLHToRef(angle, 1.0, 
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
         protected _buildUniformLayout(): void {
@@ -82,6 +82,7 @@
             this._uniformBuffer.addUniform("vLightSpecular", 3);
             this._uniformBuffer.addUniform("vLightDirection", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.addUniform("depthValues", 2);
             this._uniformBuffer.create();
         }
 

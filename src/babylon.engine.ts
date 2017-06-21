@@ -2825,14 +2825,6 @@
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            var colorRenderbuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 4, gl.RGBA8, width, height);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.RENDERBUFFER, colorRenderbuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, colorRenderbuffer);
-
             var width = size.width || size;
             var height = size.height || size;
             
@@ -2876,7 +2868,6 @@
                 gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
             
                 gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
-
 
                 if (generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
