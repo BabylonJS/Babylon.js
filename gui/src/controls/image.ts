@@ -12,6 +12,67 @@ module BABYLON.GUI {
         private _source: string;
         private _autoScale = false;
 
+        private _sourceLeft = 0;
+        private _sourceTop = 0;
+        private _sourceWidth= 0;
+        private _sourceHeight = 0;
+
+        public get sourceLeft(): number {
+            return this._sourceLeft;
+        }
+
+        public set sourceLeft(value: number) {
+            if (this._sourceLeft === value) {
+                return;
+            }
+
+            this._sourceLeft = value;
+
+            this._markAsDirty();
+        }   
+
+        public get sourceTop(): number {
+            return this._sourceTop;
+        }
+
+        public set sourceTop(value: number) {
+            if (this._sourceTop === value) {
+                return;
+            }
+
+            this._sourceTop = value;
+
+            this._markAsDirty();
+        }    
+
+        public get sourceWidth(): number {
+            return this._sourceWidth;
+        }
+
+        public set sourceWidth(value: number) {
+            if (this._sourceWidth === value) {
+                return;
+            }
+
+            this._sourceWidth = value;
+
+            this._markAsDirty();
+        }  
+
+        public get sourceHeight(): number {
+            return this._sourceHeight;
+        }
+
+        public set sourceHeight(value: number) {
+            if (this._sourceHeight === value) {
+                return;
+            }
+
+            this._sourceHeight = value;
+
+            this._markAsDirty();
+        }          
+
         public get autoScale(): boolean {
             return this._autoScale;
         }
@@ -84,7 +145,7 @@ module BABYLON.GUI {
             this._domImage.onload = () => {
                 this._onImageLoaded();
             }
-            
+            this._domImage.crossOrigin = "anonymous";
             this._domImage.src = value;
         }
 
@@ -108,31 +169,38 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            context.save();
+            context.save();          
+            let x = this._sourceLeft;
+            let y = this._sourceTop;
+
+            let width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+            let height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
 
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 if (this._loaded) {
                     switch (this._stretch) {
                         case Image.STRETCH_NONE:
-                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                            context.drawImage(this._domImage, x, y, width, height,
+                                              this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             break;
                         case Image.STRETCH_FILL:
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, 
+                            context.drawImage(this._domImage, x, y, width, height, 
                                                             this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             break;
                         case Image.STRETCH_UNIFORM:
-                            var hRatio = this._currentMeasure.width  / this._imageWidth;
-                            var vRatio =  this._currentMeasure.height / this._imageHeight;
+                            var hRatio = this._currentMeasure.width  / width;
+                            var vRatio =  this._currentMeasure.height / height;
                             var ratio = Math.min(hRatio, vRatio);
-                            var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                            var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2; 
+                            var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                            var centerY = (this._currentMeasure.height - height * ratio) / 2; 
 
-                            context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight,
-                                                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                            context.drawImage(this._domImage, x, y, width, height,
+                                                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                             break;
                         case Image.STRETCH_EXTEND:
-                            context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                            context.drawImage(this._domImage, x, y, width, height,
+                                              this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             if (this._autoScale) {
                                 this.synchronizeSizeWithContent();
                             } 
