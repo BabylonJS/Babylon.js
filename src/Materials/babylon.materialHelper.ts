@@ -216,7 +216,8 @@
                     "vLightDirection" + lightIndex,
                     "vLightGround" + lightIndex,
                     "lightMatrix" + lightIndex,
-                    "shadowsInfo" + lightIndex
+                    "shadowsInfo" + lightIndex,
+                    "depthValues" + lightIndex,
                 );
 
                 if (uniformBuffersList) {
@@ -308,15 +309,13 @@
         }
 
         // Bindings
-        public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect, depthValuesAlreadySet: boolean): boolean {
+        public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
             if (light.shadowEnabled && mesh.receiveShadows) {
                 var shadowGenerator = light.getShadowGenerator();
                 if (shadowGenerator) {
-                    depthValuesAlreadySet = shadowGenerator.bindShadowLight(lightIndex, effect, depthValuesAlreadySet);
+                    shadowGenerator.bindShadowLight(lightIndex, effect);
                 }
             }
-
-            return depthValuesAlreadySet;
         }
 
         public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
@@ -325,8 +324,6 @@
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
             var lightIndex = 0;
-            var depthValuesAlreadySet = false;
-
             for (var light of mesh._lightSources) {
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
@@ -341,7 +338,7 @@
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex + "", effect, depthValuesAlreadySet);
+                    this.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
                 }
                 light._uniformBuffer.update();
                 lightIndex++;

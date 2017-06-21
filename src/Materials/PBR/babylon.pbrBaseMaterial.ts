@@ -479,7 +479,6 @@
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
-            var depthValuesAlreadySet = false;
             for (var light of mesh._lightSources) {
                 let useUbo = light._uniformBuffer.useUbo;
                 let scaledIntensity = light.getScaledIntensity();
@@ -502,7 +501,7 @@
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex + "", effect, depthValuesAlreadySet);
+                    MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
                 }
 
                 light._uniformBuffer.update();
@@ -931,7 +930,6 @@
                         "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
                         "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                        "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
                         "vLightingIntensity",
                         "logarithmicDepthConstant",

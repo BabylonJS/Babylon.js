@@ -7,13 +7,12 @@
 		}
 	#endif
 
-	uniform vec2 depthValues;
-
-	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness)
+	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		depth = (depth + depthValues.x) / (depthValues.y);
 		depth = clamp(depth, 0., 1.0);
 
 		directionToLight = normalize(directionToLight);
@@ -32,12 +31,12 @@
 		return 1.0;
 	}
 
-	float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness)
+	float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness, vec2 depthValues)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-
-		depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		depth = (depth + depthValues.x) / (depthValues.y);
 		depth = clamp(depth, 0., 1.0);
 
 		directionToLight = normalize(directionToLight);
@@ -68,11 +67,12 @@
 		return  min(1.0, visibility + darkness);
 	}
 
-	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale)
+	float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		depth = (depth + depthValues.x) / (depthValues.y);
 		float shadowPixelDepth = clamp(depth, 0., 1.0);
 
 		directionToLight = normalize(directionToLight);
@@ -88,16 +88,40 @@
 		return esm;
 	}
 
-	float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
+	float computeShadowWithCloseESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
 	{
-		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-		depth = 0.5 * depth + vec3(0.5);
-		vec2 uv = depth.xy;
+		vec3 directionToLight = vPositionW - lightPosition;
+		float depth = length(directionToLight);
+		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+		depth = (depth + depthValues.x) / (depthValues.y);
+		float shadowPixelDepth = clamp(depth, 0., 1.0);
+
+		directionToLight = normalize(directionToLight);
+		directionToLight.y = -directionToLight.y;
+		
+		#ifndef SHADOWFLOAT
+			float shadowMapSample = unpack(textureCube(shadowSampler, directionToLight));
+		#else
+			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
+		#endif
+
+		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))) - darkness, 0., 1.);
+
+		return esm;
+	}
+
+	float computeShadow(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness)
+	{
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		clipSpace = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = clipSpace.xy;
 
 		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 		{
 			return 1.0;
 		}
+
+		float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
 
 		#ifndef SHADOWFLOAT
 			float shadow = unpack(texture2D(shadowSampler, uv));
@@ -105,23 +129,25 @@
 			float shadow = texture2D(shadowSampler, uv).x;
 		#endif
 
-		if (depth.z > shadow)
+		if (shadowPixelDepth > shadow)
 		{
 			return darkness;
 		}
 		return 1.;
 	}
 
-	float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float darkness)
+	float computeShadowWithPCF(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float mapSize, float darkness)
 	{
-		vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-		depth = 0.5 * depth + vec3(0.5);
-		vec2 uv = depth.xy;
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		clipSpace = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = clipSpace.xy;
 
 		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 		{
 			return 1.0;
 		}
+
+		float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
 
 		float visibility = 1.;
 
@@ -134,39 +160,71 @@
 		// Poisson Sampling
 
 		#ifndef SHADOWFLOAT
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < depth.z) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < depth.z) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < depth.z) visibility -= 0.25;
-			if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < depth.z) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
+			if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
 		#else
-			if (texture2D(shadowSampler, uv + poissonDisk[0] * mapSize).x < depth.z) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[1] * mapSize).x < depth.z) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < depth.z) visibility -= 0.25;
-			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < depth.z) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[0] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[1] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
+			if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
 		#endif
 
 		return  min(1.0, visibility + darkness);
 	}
 
-	float computeShadowWithESM(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float depthScale)
+	float computeShadowWithESM(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness, float depthScale)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-		vec3 depth = 0.5 * clipSpace + vec3(0.5);
-		vec2 uv = depth.xy;
-		float shadowPixelDepth = depth.z;
+		clipSpace = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = clipSpace.xy;
 
 		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 		{
 			return 1.0;
 		}
-	
+
+		float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
+
 		#ifndef SHADOWFLOAT
 			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
 		#else
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
 		#endif
 		
-		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);		
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);
+
+		// Apply fade out at frustum edge
+		// const float fadeDistance = 0.07;
+		// vec2 cs2 = clipSpace.xy * clipSpace.xy; //squarish falloff
+		// float mask = smoothstep(1.0, 1.0 - fadeDistance, dot(cs2, cs2));
+
+		// esm = mix(1.0, esm, mask);
+
+		return esm;
+	}
+
+	float computeShadowWithCloseESM(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness, float depthScale)
+	{
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		clipSpace = 0.5 * clipSpace + vec3(0.5);
+		vec2 uv = clipSpace.xy;
+
+		if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+		{
+			return 1.0;
+		}
+
+		float shadowPixelDepth = clamp(depthMetric, 0., 1.0);		
+		
+		#ifndef SHADOWFLOAT
+			float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+		#else
+			float shadowMapSample = texture2D(shadowSampler, uv).x;
+		#endif
+		
+		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))) - darkness, 0., 1.);
 
 		// Apply fade out at frustum edge
 		// const float fadeDistance = 0.07;
