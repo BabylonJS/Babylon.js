@@ -41,7 +41,7 @@ class World:
             self.fogEnd = world.mist_settings.depth
             self.fogDensity = world.fogDensity
         else:
-            world.fogMode = FOGMODE_NONE
+            self.fogMode = FOGMODE_NONE
         
         Logger.log('Python World class constructor completed')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +54,7 @@ class World:
         if needPhysics:
             write_bool(file_handler, 'physicsEnabled', True)
             
-        if hasattr(self, 'fogMode'):
+        if hasattr(self, 'fogMode') and (self.fogMode != FOGMODE_NONE):
             write_int(file_handler, 'fogMode', self.fogMode)
             write_color(file_handler, 'fogColor', self.fogColor)
             write_float(file_handler, 'fogStart', self.fogStart)
