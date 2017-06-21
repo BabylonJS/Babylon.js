@@ -10336,6 +10336,9 @@ var BABYLON;
             var shaders = this._gl.getAttachedShaders(program);
             return this._gl.getShaderSource(shaders[1]);
         };
+        Engine.prototype.getError = function () {
+            return this._gl.getError();
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
@@ -15591,7 +15594,6 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this.requireLightSorting = false;
             this._uniqueIdCounter = 0;
-            this.offscreenRenderTarget = null;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
             this._uid = null;
@@ -17522,12 +17524,7 @@ var BABYLON;
                 this._renderId++;
             }
             if (needsRestoreFrameBuffer) {
-                if (this.offscreenRenderTarget) {
-                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-                }
-                else {
-                    engine.restoreDefaultFramebuffer(); // Restore back buffer
-                }
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration.endMonitoring(false);
             // Prepare Frame
@@ -17714,14 +17711,9 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 this._renderId++;
             }
-            if (this.offscreenRenderTarget) {
-                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-            }
-            else {
-                // Restore back buffer
-                if (this.customRenderTargets.length > 0) {
-                    engine.restoreDefaultFramebuffer();
-                }
+            // Restore back buffer
+            if (this.customRenderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
