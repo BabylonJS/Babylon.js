@@ -21,6 +21,18 @@
         forceProjectionMatrixCompute(): void;
 
         getShadowDirection(faceIndex?: number): Vector3;
+
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+         getDepthMinZ(activeCamera: Camera): number;
+
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
     }
 
     export abstract class ShadowLight extends Light implements IShadowLight {
@@ -94,7 +106,7 @@
          * Return the depth scale used for the shadow map.
          */
         public getDepthScale(): number {
-            return 30.0;
+            return 50.0;
         }
 
         /**
@@ -162,6 +174,22 @@
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
 
             return this._worldMatrix;
+        }
+
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+        public getDepthMinZ(activeCamera: Camera): number {
+            return this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        }
+
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * @param activeCamera 
+         */
+        public getDepthMaxZ(activeCamera: Camera): number {
+             return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
         }
 
         /**

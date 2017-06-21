@@ -404,7 +404,7 @@ varying vec4 vColor;\n\
 #include<bumpVertexDeclaration>\n\
 #include<clipPlaneVertexDeclaration>\n\
 #include<fogVertexDeclaration>\n\
-#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]\n\
+#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\
 #include<morphTargetsVertexGlobalDeclaration>\n\
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]\n\
 #ifdef REFLECTIONMAP_SKYBOX\n\

@@ -11,19 +11,15 @@ vec4 pack(float depth)
 }
 #endif
 
-varying vec4 vPosition;
+varying float vDepthMetric;
 
 #ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-#ifdef CUBEMAP
-uniform vec3 lightPosition;
-uniform vec2 depthValues;
-#endif
-
 uniform vec2 biasAndScale;
+uniform vec2 depthValues;
 
 void main(void)
 {
@@ -32,21 +28,10 @@ void main(void)
 		discard;
 #endif
 
-#ifdef CUBEMAP
-	vec3 directionToLight = vPosition.xyz - lightPosition;
-	
-	float depth = length(directionToLight);
-	depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
-	depth = clamp(depth, 0., 1.0);
-#else
-	float depth = vPosition.z / vPosition.w;
-	depth = depth * 0.5 + 0.5;	
-#endif
-
-	depth += biasAndScale.x;
+	float depth = vDepthMetric;
 
 #ifdef ESM
-	depth = exp(-min(87., biasAndScale.y * depth));
+	depth = clamp(exp(-min(87., biasAndScale.y * depth)), 0., 1.);
 #endif
 
 #ifdef FLOAT
