@@ -2825,10 +2825,6 @@
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-          
-            var colorRenderbuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             var width = size.width || size;
             var height = size.height || size;
             
