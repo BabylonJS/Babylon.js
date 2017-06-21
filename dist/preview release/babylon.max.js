@@ -9464,9 +9464,6 @@ var BABYLON;
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            var colorRenderbuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             var width = size.width || size;
             var height = size.height || size;
             var textures = [];
@@ -33954,21 +33951,21 @@ var BABYLON;
          * Gets the minZ used for shadow according to both the scene and the light.
          *
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 0.5) / (0.5 + 5) -> (depth + 0.5) * 0.5.
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
          * @param activeCamera
          */
         DirectionalLight.prototype.getDepthMinZ = function (activeCamera) {
-            return 0.5;
+            return 1;
         };
         /**
          * Gets the maxZ used for shadow according to both the scene and the light.
          *
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 0.5) / (0.5 + 5) -> (depth + 0.5) * 0.5.
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
          * @param activeCamera
          */
         DirectionalLight.prototype.getDepthMaxZ = function (activeCamera) {
-            return 1.5;
+            return 1;
         };
         return DirectionalLight;
     }(BABYLON.ShadowLight));

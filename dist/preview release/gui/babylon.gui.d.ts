@@ -485,6 +485,14 @@ declare module BABYLON.GUI {
         private _stretch;
         private _source;
         private _autoScale;
+        private _sourceLeft;
+        private _sourceTop;
+        private _sourceWidth;
+        private _sourceHeight;
+        sourceLeft: number;
+        sourceTop: number;
+        sourceWidth: number;
+        sourceHeight: number;
         autoScale: boolean;
         stretch: number;
         domImage: HTMLImageElement;
