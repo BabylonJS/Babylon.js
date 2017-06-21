@@ -3903,6 +3903,10 @@
             return this._gl.getShaderSource(shaders[1]);
         }
 
+        public getError(): number {
+            return this._gl.getError();
+        }        
+
         // FPS
         public getFps(): number {
             return this.fps;
