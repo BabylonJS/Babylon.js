@@ -24,9 +24,7 @@
                     }
                     this[key] = value;
                     
-                    if (setCallback) {
-                        target[setCallback].apply(this);
-                    }
+                    target[setCallback].apply(this);
                 },
                 enumerable: true,
                 configurable: true

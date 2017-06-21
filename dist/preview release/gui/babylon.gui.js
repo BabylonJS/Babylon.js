@@ -2829,9 +2829,69 @@ var BABYLON;
                 _this._loaded = false;
                 _this._stretch = Image.STRETCH_FILL;
                 _this._autoScale = false;
+                _this._sourceLeft = 0;
+                _this._sourceTop = 0;
+                _this._sourceWidth = 0;
+                _this._sourceHeight = 0;
                 _this.source = url;
                 return _this;
             }
+            Object.defineProperty(Image.prototype, "sourceLeft", {
+                get: function () {
+                    return this._sourceLeft;
+                },
+                set: function (value) {
+                    if (this._sourceLeft === value) {
+                        return;
+                    }
+                    this._sourceLeft = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceTop", {
+                get: function () {
+                    return this._sourceTop;
+                },
+                set: function (value) {
+                    if (this._sourceTop === value) {
+                        return;
+                    }
+                    this._sourceTop = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceWidth", {
+                get: function () {
+                    return this._sourceWidth;
+                },
+                set: function (value) {
+                    if (this._sourceWidth === value) {
+                        return;
+                    }
+                    this._sourceWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceHeight", {
+                get: function () {
+                    return this._sourceHeight;
+                },
+                set: function (value) {
+                    if (this._sourceHeight === value) {
+                        return;
+                    }
+                    this._sourceHeight = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Image.prototype, "autoScale", {
                 get: function () {
                     return this._autoScale;
@@ -2903,6 +2963,7 @@ var BABYLON;
                     this._domImage.onload = function () {
                         _this._onImageLoaded();
                     };
+                    this._domImage.crossOrigin = "anonymous";
                     this._domImage.src = value;
                 },
                 enumerable: true,
@@ -2920,26 +2981,30 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
+                var x = this._sourceLeft;
+                var y = this._sourceTop;
+                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
                         switch (this._stretch) {
                             case Image.STRETCH_NONE:
-                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 break;
                             case Image.STRETCH_FILL:
-                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 break;
                             case Image.STRETCH_UNIFORM:
-                                var hRatio = this._currentMeasure.width / this._imageWidth;
-                                var vRatio = this._currentMeasure.height / this._imageHeight;
+                                var hRatio = this._currentMeasure.width / width;
+                                var vRatio = this._currentMeasure.height / height;
                                 var ratio = Math.min(hRatio, vRatio);
-                                var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                                var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
-                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                                var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                                var centerY = (this._currentMeasure.height - height * ratio) / 2;
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                                 break;
                             case Image.STRETCH_EXTEND:
-                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }

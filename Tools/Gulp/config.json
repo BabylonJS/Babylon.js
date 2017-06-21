@@ -27,8 +27,9 @@
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalViewer": [
                 "meshBuilder", "animations", "arcRotateCamera", "additionalTextures", "textureFormats", "debug",
-                "multiMaterial", "pbrMaterial", "pointLight", "directionalLight", "spotLight", "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing",
-                "colorCurves", "defaultRenderingPipeline"
+                "shadows", "pointLight", "directionalLight", "spotLight",
+                "multiMaterial", "pbrMaterial",
+                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -208,7 +209,6 @@
                 "bumpVertexDeclaration",
                 "clipPlaneVertexDeclaration",
                 "fogVertexDeclaration",
-                "shadowsVertexDeclaration",
                 "morphTargetsVertexGlobalDeclaration",
                 "morphTargetsVertexDeclaration",
                 "logDepthDeclaration",
@@ -268,7 +268,6 @@
                 "bumpVertexDeclaration",
                 "clipPlaneVertexDeclaration",
                 "fogVertexDeclaration",
-                "shadowsVertexDeclaration",
                 "morphTargetsVertexGlobalDeclaration",
                 "morphTargetsVertexDeclaration",
                 "logDepthDeclaration",
@@ -1404,7 +1403,6 @@
                     "../../inspector/src/adapters/CameraAdapter.ts",
                     "../../inspector/src/adapters/SoundAdapter.ts",
                     "../../inspector/src/adapters/TextureAdapter.ts",
-                    "../../inspector/src/adapters/Canvas2DAdapter.ts",
                     "../../inspector/src/adapters/LightAdapter.ts",
                     "../../inspector/src/adapters/MaterialAdapter.ts",
                     "../../inspector/src/adapters/MeshAdapter.ts",
@@ -1424,7 +1422,6 @@
                     "../../inspector/src/tabs/CameraTab.ts",
                     "../../inspector/src/tabs/SoundTab.ts",
                     "../../inspector/src/tabs/TextureTab.ts",
-                    "../../inspector/src/tabs/Canvas2DTab.ts",
                     "../../inspector/src/tabs/LightTab.ts",
                     "../../inspector/src/tabs/MaterialTab.ts",
                     "../../inspector/src/tabs/MeshTab.ts",
