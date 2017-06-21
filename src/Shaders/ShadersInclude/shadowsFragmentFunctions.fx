@@ -11,7 +11,6 @@
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
 		depth = (depth + depthValues.x) / (depthValues.y);
 		depth = clamp(depth, 0., 1.0);
 
@@ -35,7 +34,6 @@
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
 		depth = (depth + depthValues.x) / (depthValues.y);
 		depth = clamp(depth, 0., 1.0);
 
@@ -71,7 +69,6 @@
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
 		depth = (depth + depthValues.x) / (depthValues.y);
 		float shadowPixelDepth = clamp(depth, 0., 1.0);
 
@@ -92,7 +89,6 @@
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
 		float depth = length(directionToLight);
-		//depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
 		depth = (depth + depthValues.x) / (depthValues.y);
 		float shadowPixelDepth = clamp(depth, 0., 1.0);
 
