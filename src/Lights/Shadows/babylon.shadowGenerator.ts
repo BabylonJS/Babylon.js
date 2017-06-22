@@ -282,17 +282,19 @@
         private _currentFaceIndexCache = 0;
         private _textureType: number;
         private _isCube = false;
+        private _defaultTextureMatrix = Matrix.Identity();
 
         /**
          * Creates a ShadowGenerator object.  
          * A ShadowGenerator is the required tool to use the shadows.  
          * Each light casting shadows needs to use its own ShadowGenerator.  
          * Required parameters : 
-         * -  `mapSize` (integer), the size of the texture what stores the shadows. Example : 1024.    
-         * - `light` : the light object generating the shadows.  
+         * - `mapSize` (integer): the size of the texture what stores the shadows. Example : 1024.    
+         * - `light`: the light object generating the shadows.  
+         * - `useFullFloatFirst`: by default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          * Documentation : http://doc.babylonjs.com/tutorials/shadows  
          */
-        constructor(mapSize: number, light: IShadowLight) {
+        constructor(mapSize: number, light: IShadowLight, useFullFloatFirst?: boolean) {
             this._mapSize = mapSize;
             this._light = light;
             this._scene = light.getScene();
@@ -300,14 +302,27 @@
 
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
-            if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = Engine.TEXTURETYPE_FLOAT;
-            }
-            else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
-            }
-            else {
-                this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+
+            if (!useFullFloatFirst) {
+                if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+                    this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+                    this._textureType = Engine.TEXTURETYPE_FLOAT;
+                }
+                else {
+                    this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                }
+            } else {
+                if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+                    this._textureType = Engine.TEXTURETYPE_FLOAT;
+                }
+                else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+                    this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else {
+                    this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                }
             }
 
             this._initializeGenerator();
@@ -429,7 +444,7 @@
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
@@ -445,8 +460,10 @@
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
                     var alphaTexture = material.getAlphaTestTexture();
-                    this._effect.setTexture("diffuseSampler", alphaTexture);
-                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    if (alphaTexture) {
+                        this._effect.setTexture("diffuseSampler", alphaTexture);
+                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
                 }
 
                 // Bones
