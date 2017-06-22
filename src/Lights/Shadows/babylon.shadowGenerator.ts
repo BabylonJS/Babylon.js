@@ -430,7 +430,7 @@
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
