@@ -24128,7 +24128,7 @@ var BABYLON;
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
-            if (parsedMaterial.customType === "BABYLON.PBRMaterial" && !parsedMaterial.overloadedAlbedo) {
+            if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
                 parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
                 if (!BABYLON.LegacyPBRMaterial) {
                     BABYLON.Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
