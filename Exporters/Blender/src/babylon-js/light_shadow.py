@@ -113,6 +113,7 @@ class ShadowGenerator:
         self.lightId = lamp.name
         self.mapSize = lamp.data.shadowMapSize
         self.shadowBias = lamp.data.shadowBias
+        self.shadowStrength = lamp.data.shadowStrength
 
         if lamp.data.shadowMap == ESM_SHADOWS:
             self.useExponentialShadowMap = True
@@ -133,7 +134,8 @@ class ShadowGenerator:
         file_handler.write('{')
         write_int(file_handler, 'mapSize', self.mapSize, True)
         write_string(file_handler, 'lightId', self.lightId)
-        write_float(file_handler, 'bias', self.shadowBias)
+        write_float(file_handler, 'bias', self.shadowBias, precision = 5)
+        write_float(file_handler, 'darkness', self.shadowDarkness)
 
         if hasattr(self, 'useExponentialShadowMap') :
             write_bool(file_handler, 'useExponentialShadowMap', self.useExponentialShadowMap)
@@ -195,6 +197,11 @@ bpy.types.Lamp.shadowBlurBoxOffset = bpy.props.IntProperty(
     description='Setting when using a Blur Variance shadow map',
     default = 0
 )
+bpy.types.Lamp.shadowDarkness = bpy.props.FloatProperty(
+    name='Shadow Darkness',
+    description='Shadow Darkness',
+    default = 1
+)
 #===============================================================================
 class LightPanel(bpy.types.Panel):
     bl_label = get_title()
@@ -220,6 +227,10 @@ class LightPanel(bpy.types.Panel):
         row = layout.row()
         row.enabled = usingShadows
         row.prop(ob.data, 'shadowBias')
+        
+        row = layout.row()
+        row.enabled = usingShadows
+        row.prop(ob.data, 'shadowDarkness')
 
         box = layout.box()
         box.label(text="Blur ESM Shadows")
