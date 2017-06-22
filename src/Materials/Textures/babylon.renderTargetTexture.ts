@@ -118,6 +118,7 @@
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
+            scene = this.getScene();
 
             this.name = name;
             this.isRenderTarget = true;
@@ -399,7 +400,7 @@
             scene.resetCachedMaterial();
         }
 
-        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength:number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+        private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength:number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -537,6 +538,11 @@
             return serializationObject;
         }
 
+        // This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
+        public disposeFramebufferObjects(): void {
+            this.getScene().getEngine()._releaseFramebufferObjects(this.getInternalTexture());
+        }
+
         public dispose(): void {
             if (this._postProcessManager) {
                 this._postProcessManager.dispose();
@@ -544,6 +550,22 @@
             }
 
             this.clearPostProcesses(true);
+
+            // Remove from custom render targets
+            var scene = this.getScene();
+            var index = scene.customRenderTargets.indexOf(this);
+
+            if (index >= 0) {
+                scene.customRenderTargets.splice(index, 1);
+            }
+
+            for (var camera of scene.cameras) {
+                index = camera.customRenderTargets.indexOf(this);
+
+                if (index >= 0) {
+                    camera.customRenderTargets.splice(index, 1);
+                }
+            }
 
             super.dispose();
         }
