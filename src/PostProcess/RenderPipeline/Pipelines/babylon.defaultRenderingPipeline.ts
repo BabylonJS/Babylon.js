@@ -130,9 +130,9 @@
             this._cameras = cameras || [];
 
             // Initialize
+            this._scene = scene;
             var caps = this._scene.getEngine().getCaps();
             this._hdr = hdr && (caps.textureHalfFloatRender || caps.textureFloatRender);
-            this._scene = scene;
 
             // Misc
             if (this._hdr) {
