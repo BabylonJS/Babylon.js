@@ -20434,7 +20434,7 @@ var BABYLON;
             var callbackIndex;
             this.onBeforeRenderObservable.notifyObservers(this);
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             // Material
             var effectiveMaterial = subMesh.getMaterial();
             if (!effectiveMaterial) {
@@ -33015,11 +33015,12 @@ var BABYLON;
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
          * Required parameters :
-         * -  `mapSize` (integer), the size of the texture what stores the shadows. Example : 1024.
-         * - `light` : the light object generating the shadows.
+         * - `mapSize` (integer): the size of the texture what stores the shadows. Example : 1024.
+         * - `light`: the light object generating the shadows.
+         * - `useFullFloatFirst`: by default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          * Documentation : http://doc.babylonjs.com/tutorials/shadows
          */
-        function ShadowGenerator(mapSize, light) {
+        function ShadowGenerator(mapSize, light, useFullFloatFirst) {
             // Members
             this._bias = 0.00005;
             this._blurBoxOffset = 1;
@@ -33045,14 +33046,27 @@ var BABYLON;
             light._shadowGenerator = this;
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
-            if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
-            }
-            else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+            if (!useFullFloatFirst) {
+                if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                }
+                else {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                }
             }
             else {
-                this._textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                }
+                else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else {
+                    this._textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                }
             }
             this._initializeGenerator();
         }
@@ -33419,7 +33433,7 @@ var BABYLON;
             if (batch.mustReturn) {
                 return;
             }
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
@@ -39781,7 +39795,7 @@ var BABYLON;
             _this._hdr = hdr;
             _this._scene = scene;
             // Misc
-            _this._defaultPipelineTextureType = scene.getEngine().getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+            _this._defaultPipelineTextureType = !hdr ? BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT : (scene.getEngine().getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
             // Attach
             scene.postProcessRenderPipelineManager.addPipeline(_this);
             _this._buildPipeline();
@@ -39911,12 +39925,12 @@ var BABYLON;
             if (this.fxaaEnabled) {
                 this.fxaa = new BABYLON.FxaaPostProcess("fxaa", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FxaaPostProcessId, function () { return _this.fxaa; }, true));
-                this.fxaa.autoClear = !this.bloomEnabled && !this.imageProcessing;
+                this.fxaa.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
             else {
                 this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FinalMergePostProcessId, function () { return _this.finalMerge; }, true));
-                this.finalMerge.autoClear = !this.bloomEnabled && !this.imageProcessing;
+                this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
             if (this.bloomEnabled) {
                 if (this._hdr) {

@@ -134,7 +134,7 @@
             this._scene = scene;
 
             // Misc
-            this._defaultPipelineTextureType = scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
+            this._defaultPipelineTextureType = !hdr ? Engine.TEXTURETYPE_UNSIGNED_INT : (scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT);
 
             // Attach
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -201,12 +201,12 @@
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));  
 
-				this.fxaa.autoClear = !this.bloomEnabled && !this.imageProcessing;
+				this.fxaa.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
 			} else {
 				this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true)); 
                 
-				this.finalMerge.autoClear = !this.bloomEnabled && !this.imageProcessing;
+				this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
 			}
 
 			if (this.bloomEnabled) {
