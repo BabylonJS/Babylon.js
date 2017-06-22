@@ -113,7 +113,7 @@ class ShadowGenerator:
         self.lightId = lamp.name
         self.mapSize = lamp.data.shadowMapSize
         self.shadowBias = lamp.data.shadowBias
-        self.shadowStrength = lamp.data.shadowStrength
+        self.shadowDarkness = lamp.data.shadowDarkness
 
         if lamp.data.shadowMap == ESM_SHADOWS:
             self.useExponentialShadowMap = True
@@ -200,7 +200,9 @@ bpy.types.Lamp.shadowBlurBoxOffset = bpy.props.IntProperty(
 bpy.types.Lamp.shadowDarkness = bpy.props.FloatProperty(
     name='Shadow Darkness',
     description='Shadow Darkness',
-    default = 1
+    default = 1,
+    min = 0, 
+    max = 1
 )
 #===============================================================================
 class LightPanel(bpy.types.Panel):
