@@ -14,7 +14,7 @@
             var scene = this._scene;
             var engine = this._scene.getEngine();
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             if (!this.isReady(subMesh, hardwareInstancedRendering)) {
                 return;
