@@ -2466,17 +2466,21 @@ var BABYLON;
                 var _this = this;
                 this._loadAsync(meshesNames, scene, data, rootUrl, function () {
                     var meshes = [];
-                    for (var i = 0; i < _this._gltf.nodes.length; i++) {
-                        var node = _this._gltf.nodes[i];
-                        if (node.babylonNode instanceof BABYLON.AbstractMesh) {
-                            meshes.push(node.babylonNode);
+                    if (_this._gltf.nodes) {
+                        for (var i = 0; i < _this._gltf.nodes.length; i++) {
+                            var node = _this._gltf.nodes[i];
+                            if (node.babylonNode instanceof BABYLON.AbstractMesh) {
+                                meshes.push(node.babylonNode);
+                            }
                         }
                     }
                     var skeletons = [];
-                    for (var i = 0; i < _this._gltf.skins.length; i++) {
-                        var skin = _this._gltf.skins[i];
-                        if (skin.babylonSkeleton instanceof BABYLON.Skeleton) {
-                            skeletons.push(skin.babylonSkeleton);
+                    if (_this._gltf.skins) {
+                        for (var i = 0; i < _this._gltf.skins.length; i++) {
+                            var skin = _this._gltf.skins[i];
+                            if (skin.babylonSkeleton instanceof BABYLON.Skeleton) {
+                                skeletons.push(skin.babylonSkeleton);
+                            }
                         }
                     }
                     onSuccess(meshes, null, skeletons);
@@ -2567,6 +2571,8 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadScene = function (nodeNames) {
                 var _this = this;
+                nodeNames = (nodeNames === "") ? null : nodeNames;
+                nodeNames = (nodeNames instanceof Array) ? nodeNames : [nodeNames];
                 var scene = this._gltf.scenes[this._gltf.scene || 0];
                 this._traverseScene(nodeNames, scene, function (node) { return _this._loadSkin(node); });
                 this._traverseScene(nodeNames, scene, function (node, parentNode) { return _this._loadMesh(node, parentNode); });
