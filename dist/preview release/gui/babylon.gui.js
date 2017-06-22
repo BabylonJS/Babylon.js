@@ -28,6 +28,7 @@ var BABYLON;
                 _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
                 _this._idealWidth = 0;
                 _this._idealHeight = 0;
+                _this._renderAtIdealSize = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
@@ -78,6 +79,20 @@ var BABYLON;
                     this._idealHeight = value;
                     this.markAsDirty();
                     this._rootContainer._markAllAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "renderAtIdealSize", {
+                get: function () {
+                    return this._renderAtIdealSize;
+                },
+                set: function (value) {
+                    if (this._renderAtIdealSize === value) {
+                        return;
+                    }
+                    this._renderAtIdealSize = value;
+                    this._onResize();
                 },
                 enumerable: true,
                 configurable: true
@@ -140,6 +155,16 @@ var BABYLON;
                 var textureSize = this.getSize();
                 var renderWidth = engine.getRenderWidth();
                 var renderHeight = engine.getRenderHeight();
+                if (this._renderAtIdealSize) {
+                    if (this._idealWidth) {
+                        renderHeight = (renderHeight * this._idealWidth) / renderWidth;
+                        renderWidth = this._idealWidth;
+                    }
+                    else if (this._idealHeight) {
+                        renderWidth = (renderWidth * this._idealHeight) / renderHeight;
+                        renderHeight = this._idealHeight;
+                    }
+                }
                 if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                     this.scaleTo(renderWidth, renderHeight);
                     this.markAsDirty();
@@ -182,6 +207,7 @@ var BABYLON;
                 this.update();
             };
             AdvancedDynamicTexture.prototype._render = function () {
+                var engine = this.getScene().getEngine();
                 var textureSize = this.getSize();
                 var renderWidth = textureSize.width;
                 var renderHeight = textureSize.height;
@@ -200,6 +226,10 @@ var BABYLON;
                 this._rootContainer._draw(measure, context);
             };
             AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
+                var engine = this.getScene().getEngine();
+                var textureSize = this.getSize();
+                x = x * (textureSize.width / engine.getRenderWidth());
+                y = y * (textureSize.height / engine.getRenderHeight());
                 if (this._capturingControl) {
                     this._capturingControl._processObservables(type, x, y);
                     return;

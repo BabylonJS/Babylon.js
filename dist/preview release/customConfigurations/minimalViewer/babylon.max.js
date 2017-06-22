@@ -13892,6 +13892,7 @@ var BABYLON;
             _this.cameraRigMode = Camera.RIG_MODE_NONE;
             _this._rigCameras = new Array();
             _this._webvrViewMatrix = BABYLON.Matrix.Identity();
+            _this.customRenderTargets = new Array();
             // Cache
             _this._computedViewMatrix = BABYLON.Matrix.Identity();
             _this._projectionMatrix = new BABYLON.Matrix();
@@ -17484,6 +17485,9 @@ var BABYLON;
             this._renderTargetsDuration.beginMonitoring();
             var needsRestoreFrameBuffer = false;
             var beforeRenderTargetDate = BABYLON.Tools.Now;
+            if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
+                this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
+            }
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);

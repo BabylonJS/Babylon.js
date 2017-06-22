@@ -19,9 +19,11 @@ declare module BABYLON.GUI {
         private _fullscreenViewport;
         private _idealWidth;
         private _idealHeight;
+        private _renderAtIdealSize;
         background: string;
         idealWidth: number;
         idealHeight: number;
+        renderAtIdealSize: boolean;
         readonly layer: Layer;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;

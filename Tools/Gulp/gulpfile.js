@@ -319,7 +319,10 @@ var buildExternalLibrary = function (library, settings, watch) {
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", function (cb) {
+gulp.task("default", ["typescript-all"], function () {
+});
+
+gulp.task("mainBuild", function (cb) {
     runSequence("buildWorker", "build", cb);
 });
 
@@ -327,7 +330,7 @@ gulp.task("default", function (cb) {
  * Build the releasable files.
  */
 gulp.task("typescript", function (cb) {
-    runSequence("typescript-compile", "default", cb);
+    runSequence("typescript-compile", "mainBuild", cb);
 });
 
 /**
