@@ -44,18 +44,22 @@ module BABYLON.GLTF2 {
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
                 var meshes = [];
-                for (var i = 0; i < this._gltf.nodes.length; i++) {
-                    var node = this._gltf.nodes[i];
-                    if (node.babylonNode instanceof AbstractMesh) {
-                        meshes.push(<AbstractMesh>node.babylonNode);
+                if (this._gltf.nodes) {
+                    for (var i = 0; i < this._gltf.nodes.length; i++) {
+                        var node = this._gltf.nodes[i];
+                        if (node.babylonNode instanceof AbstractMesh) {
+                            meshes.push(<AbstractMesh>node.babylonNode);
+                        }
                     }
                 }
 
                 var skeletons = [];
-                for (var i = 0; i < this._gltf.skins.length; i++) {
-                    var skin = this._gltf.skins[i];
-                    if (skin.babylonSkeleton instanceof Skeleton) {
-                        skeletons.push(skin.babylonSkeleton);
+                if (this._gltf.skins) {
+                    for (var i = 0; i < this._gltf.skins.length; i++) {
+                        var skin = this._gltf.skins[i];
+                        if (skin.babylonSkeleton instanceof Skeleton) {
+                            skeletons.push(skin.babylonSkeleton);
+                        }
                     }
                 }
 
@@ -162,7 +166,10 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadScene(nodeNames: string[]): void {
+        private _loadScene(nodeNames: any): void {
+            nodeNames = (nodeNames === "") ? null : nodeNames;
+            nodeNames = (nodeNames instanceof Array) ? nodeNames : [nodeNames];
+
             var scene = this._gltf.scenes[this._gltf.scene || 0];
 
             this._traverseScene(nodeNames, scene, node => this._loadSkin(node));
