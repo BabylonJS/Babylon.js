@@ -51117,10 +51117,21 @@ var BABYLON;
             _this._bloomWeight = 0.15;
             _this._cameras = cameras || [];
             // Initialize
-            _this._hdr = hdr;
+            var caps = _this._scene.getEngine().getCaps();
+            _this._hdr = hdr && (caps.textureHalfFloatRender || caps.textureFloatRender);
             _this._scene = scene;
             // Misc
-            _this._defaultPipelineTextureType = !hdr ? BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT : (scene.getEngine().getCaps().textureFloatRender ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
+            if (_this._hdr) {
+                if (caps.textureHalfFloatRender) {
+                    _this._defaultPipelineTextureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (caps.textureFloatRender) {
+                    _this._defaultPipelineTextureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                }
+            }
+            else {
+                _this._defaultPipelineTextureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
             // Attach
             scene.postProcessRenderPipelineManager.addPipeline(_this);
             _this._buildPipeline();
