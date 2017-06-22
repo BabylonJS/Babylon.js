@@ -62,16 +62,17 @@
         private static _OnRightPickTrigger = 3;
         private static _OnCenterPickTrigger = 4;
         private static _OnPickDownTrigger = 5;
-        private static _OnPickUpTrigger = 6;
-        private static _OnLongPressTrigger = 7;
-        private static _OnPointerOverTrigger = 8;
-        private static _OnPointerOutTrigger = 9;
-        private static _OnEveryFrameTrigger = 10;
-        private static _OnIntersectionEnterTrigger = 11;
-        private static _OnIntersectionExitTrigger = 12;
-        private static _OnKeyDownTrigger = 13;
-        private static _OnKeyUpTrigger = 14;
-        private static _OnPickOutTrigger = 15;
+        private static _OnDoublePickTrigger = 6;
+        private static _OnPickUpTrigger = 7;
+        private static _OnLongPressTrigger = 8;
+        private static _OnPointerOverTrigger = 9;
+        private static _OnPointerOutTrigger = 10;
+        private static _OnEveryFrameTrigger = 11;
+        private static _OnIntersectionEnterTrigger = 12;
+        private static _OnIntersectionExitTrigger = 13;
+        private static _OnKeyDownTrigger = 14;
+        private static _OnKeyUpTrigger = 15;
+        private static _OnPickOutTrigger = 16;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -95,6 +96,10 @@
 
         public static get OnPickDownTrigger(): number {
             return ActionManager._OnPickDownTrigger;
+        }
+
+        public static get OnDoublePickTrigger(): number {
+            return ActionManager._OnDoublePickTrigger;
         }
 
         public static get OnPickUpTrigger(): number {
@@ -138,11 +143,12 @@
             return ActionManager._OnKeyUpTrigger;
         }
 
-        public static DragMovementThreshold = 10; // in pixels
-        public static LongPressDelay = 500; // in milliseconds
-        
+        public static Triggers = {};
+
         // Members
         public actions = new Array<Action>();
+
+        public hoverCursor: string = '';
 
         private _scene: Scene;
 
@@ -155,6 +161,14 @@
         // Methods
         public dispose(): void {
             var index = this._scene._actionManagers.indexOf(this);
+
+            for (var i = 0; i < this.actions.length; i++) {
+                var action = this.actions[i];
+                ActionManager.Triggers[action.trigger]--;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger]
+                }
+            }
 
             if (index > -1) {
                 this._scene._actionManagers.splice(index, 1);
@@ -232,6 +246,52 @@
         }
 
         /**
+         * Does exist one action manager with at least one trigger 
+         * @return {boolean} whether or not it exists one action manager with one trigger
+        **/
+        public static get HasTriggers(): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Does exist one action manager with at least one pick trigger 
+         * @return {boolean} whether or not it exists one action manager with one pick trigger
+        **/
+        public static get HasPickTriggers(): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    let t_int = parseInt(t);
+                    if (t_int >= ActionManager._OnPickTrigger && t_int <= ActionManager._OnPickUpTrigger) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Does exist one action manager that handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled by at least one action manager
+        **/
+        public static HasSpecificTrigger(trigger: number): boolean {
+            for (var t in ActionManager.Triggers) {
+                if (ActionManager.Triggers.hasOwnProperty(t)) {
+                    let t_int = parseInt(t);
+                    if (t_int === trigger) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
          * Registers an action to this action manager
          * @param {BABYLON.Action} action - the action to be registered
          * @return {BABYLON.Action} the action amended (prepared) after registration
@@ -245,6 +305,13 @@
             }
 
             this.actions.push(action);
+
+          if(ActionManager.Triggers[action.trigger]) {
+              ActionManager.Triggers[action.trigger]++;
+            }
+            else{
+              ActionManager.Triggers[action.trigger] = 1;
+            }
 
             action._actionManager = this;
             action._prepare();
@@ -266,11 +333,18 @@
                         || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
 
-                        if (parameter) {
-                            var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                            var actualkey = String.fromCharCode(unicode).toLowerCase();
-                            if (actualkey !== parameter.toLowerCase()) {
+                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                            if (!parameter.toLowerCase) {
                                 continue;
+                            }
+                            var lowerCase = parameter.toLowerCase();
+
+                            if (lowerCase !== evt.sourceEvent.key) {
+                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                if (actualkey !== lowerCase) {
+                                    continue;
+                                }
                             }
                         }
                     }
@@ -313,12 +387,20 @@
                 };
                 
                 var triggerOptions = this.actions[i].triggerOptions;
+
                 if (triggerOptions && typeof triggerOptions !== "number") {
                     if (triggerOptions.parameter instanceof Node) {
                         triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
                     }
                     else {
-                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                        var parameter = <any>{};
+                        Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
+
+                        if (triggerOptions.parameter.mesh) {
+                            parameter._meshId = triggerOptions.parameter.mesh.id;
+                        }
+
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
                     }
                 }
                 
@@ -499,6 +581,11 @@
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
                     var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
+
+                    if (value._meshId) {
+                        value.mesh = scene.getMeshByID(value._meshId);
+                    }
+
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else

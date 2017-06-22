@@ -1,6 +1,18 @@
 ﻿module BABYLON {
     export class FresnelParameters {
-        public isEnabled = true;
+        private _isEnabled = true;
+        public get isEnabled(): boolean {
+            return this._isEnabled;
+        }
+        public set isEnabled(value: boolean) {
+            if (this._isEnabled === value) {
+                return;
+            }
+
+            this._isEnabled = value;
+            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
+        }   
+
         public leftColor = Color3.White();
         public rightColor = Color3.Black();
         public bias = 0;
@@ -11,7 +23,7 @@
 
             Tools.DeepCopy(this, newFresnelParameters);
 
-            return new FresnelParameters;
+            return newFresnelParameters;
         }
 
         public serialize(): any {

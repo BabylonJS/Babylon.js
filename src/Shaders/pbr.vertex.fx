@@ -1,9 +1,14 @@
 ﻿precision highp float;
 
+#include<__decl__pbrVertex>
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
+#endif
+#ifdef TANGENT
+attribute vec4 tangent;
 #endif
 #ifdef UV1
 attribute vec2 uv;
@@ -20,53 +25,36 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
-uniform mat4 view;
-uniform mat4 viewProjection;
-
 #ifdef ALBEDO
 varying vec2 vAlbedoUV;
-uniform mat4 albedoMatrix;
-uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
-uniform mat4 ambientMatrix;
-uniform vec2 vAmbientInfos;
 #endif
 
 #ifdef OPACITY
 varying vec2 vOpacityUV;
-uniform mat4 opacityMatrix;
-uniform vec2 vOpacityInfos;
 #endif
 
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
-uniform vec2 vEmissiveInfos;
-uniform mat4 emissiveMatrix;
 #endif
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec2 vLightmapInfos;
-uniform mat4 lightmapMatrix;
 #endif
 
-#if defined(REFLECTIVITY)
+#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
-uniform vec2 vReflectivityInfos;
-uniform mat4 reflectivityMatrix;
+#endif
+
+#ifdef MICROSURFACEMAP
+varying vec2 vMicroSurfaceSamplerUV;
 #endif
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec3 vBumpInfos;
-uniform mat4 bumpMatrix;
-#endif
-
-#ifdef POINTSIZE
-uniform float pointSize;
 #endif
 
 // Output
@@ -79,40 +67,53 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-
+#include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
+
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
 
 void main(void) {
+	vec3 positionUpdated = position;
+#ifdef NORMAL
+	vec3 normalUpdated = normal;
+#endif
+#ifdef TANGENT
+    vec4 tangentUpdated = tangent;
+#endif
+
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
 #ifdef REFLECTIONMAP_SKYBOX
-    vPositionUVW = position;
+    vPositionUVW = positionUpdated;
 #endif 
 
 #include<instancesVertex>
 #include<bonesVertex>
 
-    gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+    gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
-    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-    vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+    vNormalW = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-    vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+    vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));
 #endif
 
     // Texture coordinates
@@ -178,7 +179,7 @@ void main(void) {
     }
 #endif
 
-#if defined(REFLECTIVITY)
+#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
     if (vReflectivityInfos.x == 0.)
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uv, 1.0, 0.0));
@@ -186,6 +187,17 @@ void main(void) {
     else
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
+#ifdef MICROSURFACEMAP
+    if (vMicroSurfaceSamplerInfos.x == 0.)
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv, 1.0, 0.0));
+    }
+    else
+    {
+        vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 
@@ -199,6 +211,9 @@ void main(void) {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
+
+    // TBN
+#include<bumpVertex>
 
     // Clip plane
 #include<clipPlaneVertex>

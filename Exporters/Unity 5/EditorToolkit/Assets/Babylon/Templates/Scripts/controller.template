@@ -1,0 +1,28 @@
+/* Babylon Scene Controller Template */
+/* <reference path="{*path*}/Assets/Babylon/Library/babylon.d.ts" /> */
+
+module PROJECT {
+    export class NewSceneController extends BABYLON.SceneController {
+
+        public ready() :void {
+            // Scene execute when ready
+            this.scene.activeCamera.attachControl(this.engine.getRenderingCanvas());
+        }
+
+        public start() :void {
+            // Start component function
+        }
+
+        public update() :void {
+            // Update render loop function
+        }
+
+        public after() :void {
+            // After render loop function
+        }
+
+        public destroy() :void {
+            // Destroy component function
+        }
+    }
+}

@@ -41,6 +41,9 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
+        public customShader: any = null;
+        public preventAutoStart: boolean = false;
+        
         /**
         * An event triggered when the system is disposed.
         * @type {BABYLON.Observable}
@@ -103,7 +106,7 @@
             this.id = name;
             this._capacity = capacity;
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             this._customEffect = customEffect;
 
@@ -447,9 +450,17 @@
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
-            var result = new ParticleSystem(name, this._capacity, this._scene);
+            var custom: Effect = null;
+            var program: any = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
+            result.customShader = program;
 
-            Tools.DeepCopy(this, result, ["particles"]);
+            Tools.DeepCopy(this, result, ["particles", "customShader"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
@@ -460,7 +471,9 @@
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
 
-            result.start();
+            if (!this.preventAutoStart) {
+                result.start();
+            }
 
             return result;
         }
@@ -509,16 +522,31 @@
             serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.textureMask = this.textureMask.asArray();
             serializationObject.blendMode = this.blendMode;
+            serializationObject.customShader = this.customShader;
+            serializationObject.preventAutoStart = this.preventAutoStart;
 
             return serializationObject;
         }
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            var custom: Effect = null;
+            var program: any = null;
+            if (parsedParticleSystem.customShader) {
+                program = parsedParticleSystem.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            particleSystem.customShader = program;
 
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Auto start
+            if (parsedParticleSystem.preventAutoStart) {
+                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
             // Texture
@@ -569,7 +597,7 @@
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
 
-            if (!parsedParticleSystem.preventAutoStart) {
+            if (!particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
 

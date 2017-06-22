@@ -32,47 +32,49 @@
             var or = parenthesisContent.split("||");
 
             for (var i in or) {
-                var ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
-                var and = ori.split("&&");
+                if (or.hasOwnProperty(i)) {
+                    var ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
+                    var and = ori.split("&&");
 
-                if (and.length > 1) {
-                    for (var j = 0; j < and.length; ++j) {
-                        var andj = AndOrNotEvaluator._SimplifyNegation(and[j].trim());
-                        if (andj !== "true" && andj !== "false") {
-                            if (andj[0] === "!") {
-                                result = !evaluateCallback(andj.substring(1));
+                    if (and.length > 1) {
+                        for (var j = 0; j < and.length; ++j) {
+                            var andj = AndOrNotEvaluator._SimplifyNegation(and[j].trim());
+                            if (andj !== "true" && andj !== "false") {
+                                if (andj[0] === "!") {
+                                    result = !evaluateCallback(andj.substring(1));
+                                }
+                                else {
+                                    result = evaluateCallback(andj);
+                                }
                             }
                             else {
-                                result = evaluateCallback(andj);
+                                result = andj === "true" ? true : false;
+                            }
+                            if (!result) { // no need to continue since 'false && ... && ...' will always return false
+                                ori = "false";
+                                break;
                             }
                         }
-                        else {
-                            result = andj === "true" ? true : false;
-                        }
-                        if (!result) { // no need to continue since 'false && ... && ...' will always return false
-                            ori = "false";
-                            break;
-                        }
                     }
-                }
 
-                if (result || ori === "true") { // no need to continue since 'true || ... || ...' will always return true
-                    result = true;
-                    break;
-                }
+                    if (result || ori === "true") { // no need to continue since 'true || ... || ...' will always return true
+                        result = true;
+                        break;
+                    }
 
-                // result equals false (or undefined)
+                    // result equals false (or undefined)
 
-                if (ori !== "true" && ori !== "false") {
-                    if (ori[0] === "!") {
-                        result = !evaluateCallback(ori.substring(1));
+                    if (ori !== "true" && ori !== "false") {
+                        if (ori[0] === "!") {
+                            result = !evaluateCallback(ori.substring(1));
+                        }
+                        else {
+                            result = evaluateCallback(ori);
+                        }
                     }
                     else {
-                        result = evaluateCallback(ori);
+                        result = ori === "true" ? true : false;
                     }
-                }
-                else {
-                    result = ori === "true" ? true : false;
                 }
             }
 

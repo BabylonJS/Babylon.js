@@ -10,13 +10,23 @@
         private _meshesWithPoseMatrix = new Array<AbstractMesh>();
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
+        private _synchronizedWithMesh: AbstractMesh;
 
         private _ranges: { [name: string]: AnimationRange; } = {};
+
+        private _lastAbsoluteTransformsUpdateId = -1;
+
+        // Events
+        /**
+         * An event triggered before computing the skeleton's matrices
+         * @type {BABYLON.Observable}
+         */
+        public onBeforeComputeObservable = new Observable<Skeleton>();
 
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             scene.skeletons.push(this);
 
@@ -29,6 +39,11 @@
             if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
                 return mesh._bonesTransformMatrices;
             }
+
+            if (!this._transformMatrices) {
+                this.prepare();
+            }
+
             return this._transformMatrices;
         }
 
@@ -200,6 +215,9 @@
         }
 
         public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void {
+
+            this.onBeforeComputeObservable.notifyObservers(this);
+
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
                 var parentBone = bone.getParent();
@@ -229,20 +247,24 @@
                 for (var index = 0; index < this._meshesWithPoseMatrix.length; index++) {
                     var mesh = this._meshesWithPoseMatrix[index];
 
+                    var poseMatrix = mesh.getPoseMatrix();
+
                     if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
                         mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
                     }
 
-                    var poseMatrix = mesh.getPoseMatrix();
+                    if (this._synchronizedWithMesh !== mesh) {
+                        this._synchronizedWithMesh = mesh;
 
-                    // Prepare bones
-                    for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
-                        var bone = this.bones[boneIndex];
+                        // Prepare bones
+                        for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
+                            var bone = this.bones[boneIndex];
 
-                        if (!bone.getParent()) {
-                            var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, Tmp.Matrix[0]);
-                            bone._updateDifferenceMatrix(Tmp.Matrix[0]);
+                            if (!bone.getParent()) {
+                                var matrix = bone.getBaseMatrix();
+                                matrix.multiplyToRef(poseMatrix, Tmp.Matrix[1]);
+                                bone._updateDifferenceMatrix(Tmp.Matrix[1]);
+                            }
                         }
                     }
 
@@ -339,7 +361,7 @@
                 var serializedBone: any = {
                     parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
                     name: bone.name,
-                    matrix: bone.getLocalMatrix().toArray(),
+                    matrix: bone.getBaseMatrix().toArray(),
                     rest: bone.getRestPose().toArray()
                 };
 
@@ -402,5 +424,29 @@
             }
             return skeleton;
         }
+
+        public computeAbsoluteTransforms (forceUpdate = false): void {
+
+            var renderId = this._scene.getRenderId();
+            
+            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate ) {
+                this.bones[0].computeAbsoluteTransforms();
+                this._lastAbsoluteTransformsUpdateId = renderId;
+            }
+            
+        }
+
+        public getPoseMatrix(): Matrix {
+            
+            var poseMatrix: Matrix;
+            
+            if(this._meshesWithPoseMatrix.length > 0){
+                poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
+            }
+
+            return poseMatrix;
+
+        }
+
     }
 }

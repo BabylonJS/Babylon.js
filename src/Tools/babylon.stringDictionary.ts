@@ -5,6 +5,17 @@
      * The value can be anything including 'null' but except 'undefined'
      */
     export class StringDictionary<T> {
+
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        public copyFrom(source: StringDictionary<T>) {
+            this.clear();
+            source.forEach((t, v) => this.add(t, v));
+        }
+
         /**
          * Get a value based from its key
          * @param key the given key to get the matching value from
@@ -87,6 +98,20 @@
             }
             this._data[key] = value;
             return true;
+        }
+
+        /**
+         * Get the element of the given key and remove it from the dictionary
+         * @param key
+         */
+        public getAndRemove(key: string): T {
+            let val = this.get(key);
+            if (val !== undefined) {
+                delete this._data[key];
+                --this._count;
+                return val;
+            }
+            return null;
         }
 
         /**

@@ -1,0 +1,20 @@
+/* Babylon Javascript Class Template */
+/* <reference path="{*path*}/Assets/Babylon/Library/babylon.bjs" /> */
+
+var PROJECT;
+(function (PROJECT) {
+
+    var NewScriptClass = (function () {
+        function NewScriptClass() {
+            this.hello = "Hello World";
+        }
+
+        NewScriptClass.prototype.sayHello = function (name) {
+            return "Hello, " + name;
+        };
+
+        return NewScriptClass;
+    }());
+    PROJECT.NewScriptClass = NewScriptClass;
+
+})(PROJECT || (PROJECT = {}));

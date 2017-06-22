@@ -2,12 +2,13 @@ module BABYLON {
     export class PostProcessRenderPipeline {
         private _engine: Engine;
 
-        private _renderEffects: any;
-        private _renderEffectsForIsolatedPass: any;
+        private _renderEffects: PostProcessRenderEffect[];
+        private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
-        private _cameras: Camera[];
+        protected _cameras: Camera[];
 
         // private
+        @serialize()
         public _name: string;
 
         private static PASS_EFFECT_NAME: string = "passEffect";
@@ -17,8 +18,8 @@ module BABYLON {
             this._engine = engine;
             this._name = name;
 
-            this._renderEffects = {};
-            this._renderEffectsForIsolatedPass = {};
+            this._renderEffects = new Array<PostProcessRenderEffect>();
+            this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
 
             this._cameras = [];
         }
@@ -172,6 +173,11 @@ module BABYLON {
                     this._renderEffectsForIsolatedPass[cameraName]._update();
                 }
             }
+        }
+
+        public _reset(): void {
+            this._renderEffects = new Array<PostProcessRenderEffect>();
+            this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
         }
 
         public dispose() {

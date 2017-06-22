@@ -1,3 +1,5 @@
+/// <reference path="babylon.freeCamera.ts" />
+
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class TouchCamera extends FreeCamera {
@@ -34,7 +36,7 @@ module BABYLON {
             this._setupInputs();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "TouchCamera";
         }
 

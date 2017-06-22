@@ -17,13 +17,13 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <NuGetPackageImportStamp>eeea6a2c</NuGetPackageImportStamp>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files\Autodesk\3ds Max 2013\bin\assemblies\</OutputPath>
+    <OutputPath>c:\Program Files\Autodesk\3ds Max 2013\bin\assemblies\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -46,15 +46,17 @@
       <HintPath>Refs\Autodesk.Max.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BabylonFileConverter">
-      <HintPath>Refs\BabylonFileConverter.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX">
+      <HintPath>..\packages\SharpDX.3.1.1\lib\net45\SharpDX.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>..\packages\SharpDX.Mathematics.3.1.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -69,8 +71,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BabylonActionCallback.cs" />
+    <Compile Include="Exporter\ActionBuilder\BabylonActionsBuilderActionItem.cs" />
     <Compile Include="BabylonPropertiesActionItem.cs" />
+    <Compile Include="Exporter\ActionBuilder\BabylonExporter.Action.cs" />
     <Compile Include="Exporter\BabylonExporter.Skeleton.cs" />
+    <Compile Include="Forms\ActionsBuilderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ActionsBuilderForm.Designer.cs">
+      <DependentUpon>ActionsBuilderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\LightPropertiesForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -135,9 +145,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
-    <Content Include="Refs\BabylonFileConverter.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Forms\ActionsBuilderForm.resx">
+      <DependentUpon>ActionsBuilderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\LightPropertiesForm.resx">
       <DependentUpon>LightPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -166,18 +178,27 @@
       <Project>{6150965a-658c-4263-89ad-4f980eb0675d}</Project>
       <Name>BabylonExport.Entities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BabylonFileConverter\BabylonFileConverter.csproj">
+      <Project>{a6b76356-1d1c-4c82-8199-a6406da85a95}</Project>
+      <Name>BabylonFileConverter</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
-  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>mkdir "$(OutDir)BabylonActionsBuilder"
+mkdir "$(OutDir)BabylonActionsBuilder\fonts"
+mkdir "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans"
+copy "$(SolutionDir)ActionsBuilder\Sources\fonts.css" "$(OutDir)BabylonActionsBuilder\fonts.css"
+copy "$(SolutionDir)ActionsBuilder\Sources\index.css" "$(OutDir)BabylonActionsBuilder\index.css"
+copy "$(SolutionDir)ActionsBuilder\Sources\index.html" "$(OutDir)BabylonActionsBuilder\index.html"
+copy "$(SolutionDir)ActionsBuilder\Sources\actionsbuilder.max.js" "$(OutDir)BabylonActionsBuilder\actionsbuilder.max.js"
+copy "$(SolutionDir)ActionsBuilder\Sources\raphael.js" "$(OutDir)BabylonActionsBuilder\raphael.js"
+copy "$(SolutionDir)babylon.max.js" "$(OutDir)BabylonActionsBuilder\babylon.max.js"
+copy "$(SolutionDir)ActionsBuilder\Sources\fonts\SinkinSans\" "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans\"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

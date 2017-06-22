@@ -20,9 +20,9 @@ void main(void) {
 
     for(int i=0; i < NUM_SAMPLES; i++) {
         tc -= deltaTexCoord;
-		vec4 sample = texture2D(lightScatteringSampler, tc) * 0.4;
-        sample *= illuminationDecay * weight;
-        color += sample;
+		vec4 dataSample = texture2D(lightScatteringSampler, tc) * 0.4;
+        dataSample *= illuminationDecay * weight;
+        color += dataSample;
         illuminationDecay *= decay;
     }
 

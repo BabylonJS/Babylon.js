@@ -31,6 +31,13 @@
 
     SceneLoader.RegisterPlugin({
         extensions: ".babylon",
+        canDirectLoad: (data: string) => {
+            if (data.indexOf("babylon") !== -1) { // We consider that the producer string is filled
+                return true;
+            }
+
+            return false;
+        },
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
@@ -191,16 +198,17 @@
                         }
                     }
                 }
+
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importMesh", parsedData.producer) + log);
+                Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log);
                 log = null;
                 throw err;
 
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importMesh", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
         },
@@ -254,6 +262,11 @@
                     scene.enablePhysics(physicsGravity, physicsPlugin);
                 }
                 
+                // Metadata
+                if (parsedData.metadata !== undefined) {
+                    scene.metadata = parsedData.metadata;
+                }
+                
                 //collisions, if defined. otherwise, default is true
                 if (parsedData.collisionsEnabled != undefined) {
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
@@ -301,6 +314,13 @@
                         var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                         log += (index === 0 ? "\n\tMultiMaterials:" : "");
                         log += "\n\t\t" + mmat.toString(fullDetails);
+                    }
+                }
+
+                // Morph targets
+                if (parsedData.morphTargetManagers) {
+                    for (var managerData of parsedData.morphTargetManagers) {
+                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
                     }
                 }
     
@@ -496,6 +516,36 @@
                         ShadowGenerator.Parse(parsedShadowGenerator, scene);
                     }
                 }
+                
+                // Lights exclusions / inclusions
+                for (index = 0, cache = scene.lights.length; index < cache; index++) {
+                    var light = scene.lights[index];
+                    // Excluded check
+                    if (light._excludedMeshesIds.length > 0) {
+                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
+                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
+
+                            if (excludedMesh) {
+                                light.excludedMeshes.push(excludedMesh);
+                            }
+                        }
+
+                        light._excludedMeshesIds = [];
+                    }
+
+                    // Included check
+                    if (light._includedOnlyMeshesIds.length > 0) {
+                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
+                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
+
+                            if (includedOnlyMesh) {
+                                light.includedOnlyMeshes.push(includedOnlyMesh);
+                            }
+                        }
+
+                        light._includedOnlyMeshesIds = [];
+                    }
+                }
     
                 // Actions (scene)
                 if (parsedData.actions) {
@@ -506,13 +556,13 @@
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importScene", parsedData.producer) + log);
+                Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log);
                 log = null;
                 throw err;
 
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importScene", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
         }

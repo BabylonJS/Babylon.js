@@ -1,10 +1,22 @@
 ﻿module BABYLON {
     export class BaseTexture {
+        public static DEFAULT_ANISOTROPIC_FILTERING_LEVEL = 4;
+
         @serialize()
         public name: string;
 
-        @serialize()
-        public hasAlpha = false;
+        @serialize("hasAlpha")
+        private _hasAlpha = false;
+        public set hasAlpha(value : boolean) {
+            if (this._hasAlpha === value) {
+                return;
+            }
+            this._hasAlpha = value;
+            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+        public get hasAlpha(): boolean {
+            return this._hasAlpha;
+        }    
 
         @serialize()
         public getAlphaFromRGB = false;
@@ -15,8 +27,18 @@
         @serialize()
         public coordinatesIndex = 0;
 
-        @serialize()
-        public coordinatesMode = Texture.EXPLICIT_MODE;
+        @serialize("coordinatesMode")
+        private _coordinatesMode = Texture.EXPLICIT_MODE;
+        public set coordinatesMode(value : number) {
+            if (this._coordinatesMode === value) {
+                return;
+            }
+            this._coordinatesMode = value;
+            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+        public get coordinatesMode(): number {
+            return this._coordinatesMode;
+        }            
 
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
@@ -25,13 +47,20 @@
         public wrapV = Texture.WRAP_ADDRESSMODE;
 
         @serialize()
-        public anisotropicFilteringLevel = 4;
+        public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
         @serialize()
         public isCube = false;
 
         @serialize()
         public isRenderTarget = false;
+
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
 
         public toString(): string {
             return this.name;
@@ -59,10 +88,16 @@
 
         private _scene: Scene;
         public _texture: WebGLTexture;
+        private _uid: string;
+
+        public get isBlocking(): boolean {
+            return true;
+        }
 
         constructor(scene: Scene) {
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._scene.textures.push(this);
+            this._uid = null;
         }
 
         public getScene(): Scene {
@@ -81,9 +116,14 @@
             return this._texture;
         }
 
+        public isReadyOrNotBlocking(): boolean {
+            return !this.isBlocking || this.isReady();
+        }
+
         public isReady(): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
-                return true;
+                this.delayLoad();
+                return false;
             }
 
             if (this._texture) {
@@ -170,6 +210,7 @@
             this.getScene().stopAnimation(this);
 
             // Remove from scene
+            this._scene._removePendingData(this);
             var index = this._scene.textures.indexOf(this);
 
             if (index >= 0) {

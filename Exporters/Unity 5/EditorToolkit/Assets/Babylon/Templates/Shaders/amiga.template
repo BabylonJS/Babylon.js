@@ -1,0 +1,106 @@
+﻿Shader "BabylonJS/NewShaderProgram" {
+	Properties {
+		_Color ("Color", Color) = (1,1,1,1)
+		_Brightness ("Intensity", Range(1.0, 10.0)) = 1.0
+		[NoScaleOffset] _MainTex ("Albedo (RGB)", 2D) = "white" {}
+		[ToggleOff] _BackFaceCulling ("Back Face Culling", Int) = 1
+		[ToggleOff] _NeedsAlphaTesting ("Needs Alpha Testing", Int) = 0
+		[ToggleOff] _NeedsAlphaBlending ("Needs Alpha Blending", Int) = 0
+		[Enum(Disable,0,Additive,1,Combine,2,Subtract,3,Multiply,4,Maximized,5,OneOne,6)] _AlphaMode ("Alpha Blending Mode", int) = 2
+	}
+	SubShader {
+		Tags { "RenderType"="Opaque" }
+		LOD 100
+		Pass {
+			CGPROGRAM
+
+			//////////////////////////////////////////////////////////
+			// BABYLON WEBGL RUNTIME SHADER PROGRAM SECTIONS (GLSL) //
+			//////////////////////////////////////////////////////////
+
+			#ifdef BABYLON
+			attributes: "position, normal, uv"
+			uniforms: "worldViewProjection, _Color, _Brightness"
+			samplers: ""
+			defines: ""
+			#endif //BABYLON-END
+
+
+			#ifdef VERTEX
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			uniform mat4 worldViewProjection;
+			precision highp float;
+
+			varying vec2 vUV;
+			
+			void main(void)
+			{
+				gl_Position = worldViewProjection * vec4(position, 1.0);
+				vUV = uv;
+			}
+			#endif //VERTEX-END
+
+
+			#ifdef FRAGMENT
+			precision highp float;
+
+			varying vec2 vUV;
+			uniform vec4 _Color;
+			uniform float _Brightness;
+			uniform sampler2D _MainTex;
+
+			void main(void)
+			{
+				// Texture Sample (Unlit)
+				gl_FragColor = texture2D(_MainTex, vUV) * _Color * _Brightness;
+			}
+			#endif //FRAGMENT-END 
+
+
+			////////////////////////////////////////////////////////
+			// DEFAULT UNITY EDITOR SHADER PROGRAM SECTION (HLSL) //
+			////////////////////////////////////////////////////////
+
+			#pragma vertex vert
+			#pragma fragment frag
+			
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
+			};
+
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+			};
+
+			float4 _Color;
+			float _Brightness;
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
+
+			v2f vert (appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				return o;
+			}
+			
+			fixed4 frag (v2f i) : SV_Target
+			{
+				// Texture Sample (Unlit)
+				return tex2D(_MainTex, i.uv) * _Color * _Brightness;
+			}
+
+			ENDCG
+		}
+	}
+	FallBack "Unlit/Texture"
+}

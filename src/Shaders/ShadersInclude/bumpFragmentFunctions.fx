@@ -1,11 +1,16 @@
 ﻿#ifdef BUMP
 	varying vec2 vBumpUV;
-	uniform vec3 vBumpInfos;
 	uniform sampler2D bumpSampler;
+#if defined(TANGENT) && defined(NORMAL) 
+	varying mat3 vTBN;
+#endif
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 	{
+		// flip the uv for the backface
+		uv = gl_FrontFacing ? uv : -uv;
+
 		// get edge vectors of the pixel triangle
 		vec3 dp1 = dFdx(p);
 		vec3 dp2 = dFdy(p);
@@ -18,12 +23,16 @@
 		vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
 		vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
 
+	#ifdef USERIGHTHANDEDSYSTEM
+		binormal = -binormal;
+	#endif
+
 		// construct a scale-invariant frame 
 		float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
 		return mat3(tangent * invmax, binormal * invmax, normal);
 	}
 
-	vec3 perturbNormal(vec3 viewDir, mat3 cotangentFrame, vec2 uv)
+	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
 

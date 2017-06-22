@@ -1,0 +1,10 @@
+{
+  "name": "BabylonJSActionsBuilder",
+  "version": "2.2.0",
+  "description": "",
+  "main": "",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-typescript": "^3.1.4"
+  }
+}

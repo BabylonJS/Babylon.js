@@ -1,5 +1,17 @@
 ﻿module BABYLON {
     export class MeshBuilder {
+        private static updateSideOrientation(orientation: number, scene: Scene): number {
+            if (orientation == Mesh.DOUBLESIDE) {
+                return Mesh.DOUBLESIDE;
+            }
+
+            if (orientation === undefined || orientation === null) {
+                return Mesh.FRONTSIDE;
+            }
+
+            return orientation;
+        }
+
         /**
          * Creates a box mesh.  
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#box  
@@ -8,11 +20,16 @@
          * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements).
          * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
             var box = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            box.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateBox(options);
 
             vertexData.applyToMesh(box, options.updatable);
@@ -29,11 +46,16 @@
          * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio  
          * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude).  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh {
+        public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
             var sphere = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            sphere.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -48,11 +70,16 @@
          * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.  
          * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
+        public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
             var disc = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            disc.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateDisc(options);
 
             vertexData.applyToMesh(disc, options.updatable);
@@ -68,11 +95,16 @@
          * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.    
          * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface.  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
             var sphere = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            sphere.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateIcoSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -92,16 +124,22 @@
          * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11.    
          * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon   
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
+         * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones.  
+         * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values.  
+         * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that 
+         * if you set `closePath` to `true`, there's one extra vertex per path in the geometry.  
+         * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean }, scene?: Scene): Mesh {
+        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }, scene?: Scene): Mesh {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
             var offset = options.offset;
-            var sideOrientation = options.sideOrientation;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
 
@@ -159,10 +197,29 @@
                 instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if (!(instance.areNormalsFrozen)) {
+                if (options.colors) {
+                    var colors = instance.getVerticesData(VertexBuffer.ColorKind);
+                    for (var c = 0; c < options.colors.length; c++) {
+                        colors[c * 4] = options.colors[c].r;
+                        colors[c * 4 + 1] = options.colors[c].g;
+                        colors[c * 4 + 2] = options.colors[c].b;
+                        colors[c * 4 + 3] = options.colors[c].a;
+                    }
+                    instance.updateVerticesData(VertexBuffer.ColorKind, colors, false, false);
+                }
+                if (options.uvs) {
+                    var uvs = instance.getVerticesData(VertexBuffer.UVKind);
+                    for (var i = 0; i < options.uvs.length; i++) {
+                        uvs[i * 2] = options.uvs[i].x;
+                        uvs[i * 2 + 1] = options.uvs[i].y;
+                    }
+                    instance.updateVerticesData(VertexBuffer.UVKind, uvs, false, false);
+                }
+                if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(VertexBuffer.NormalKind);
-                    VertexData.ComputeNormals(positions, indices, normals);
+                    var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
+                    VertexData.ComputeNormals(positions, indices, normals, params);
 
                     if ((<any>instance)._closePath) {
                         var indexFirst: number = 0;
@@ -183,8 +240,9 @@
                             normals[indexLast + 2] = normals[indexFirst + 2];
                         }
                     }
-
-                    instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    if (!(instance.areNormalsFrozen)) {
+                        instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    }
                 }
 
                 return instance;
@@ -227,11 +285,16 @@
          * If `enclose` is true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.    
          * Example how to set colors and textures on a sliced cylinder : http://www.html5gamedevs.com/topic/17945-creating-a-closed-slice-of-a-cylinder/#comment-106379  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number }, scene: any): Mesh {
+        public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var cylinder = new Mesh(name, scene);
+            
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            cylinder.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateCylinder(options);
 
             vertexData.applyToMesh(cylinder, options.updatable);
@@ -246,11 +309,16 @@
          * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5).  
          * The parameter `tessellation` sets the number of torus sides (postive integer, default 16).  
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh {
+        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torus = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            torus.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateTorus(options);
 
             vertexData.applyToMesh(torus, options.updatable);
@@ -266,11 +334,16 @@
          * The parameter `tubularSegments` sets the number of tubes to decompose the knot into (positive integer, default 32).  
          * The parameters `p` and `q` are the number of windings on each axis (positive integers, default 2 and 3).    
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh {
+        public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torusKnot = new Mesh(name, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            torusKnot.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateTorusKnot(options);
 
             vertexData.applyToMesh(torusKnot, options.updatable);
@@ -422,22 +495,23 @@
          * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape  
          * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.       
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+        public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
             var path = options.path;
             var shape = options.shape;
             var scale = options.scale || 1;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
 
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
         }
 
         /**
@@ -471,11 +545,12 @@
          * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape  
          * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.       
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+        public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
             var path = options.path;
             var shape = options.shape;
             var scaleFunction = options.scaleFunction || (() => { return 1; });
@@ -484,10 +559,10 @@
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
         }
 
         /**
@@ -503,18 +578,19 @@
          * The parameter `closed` (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc".        
          * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL          
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
+            var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
             var closed: boolean = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var cap = options.cap || Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -543,7 +619,7 @@
             }
 
             // lathe ribbon
-            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV }, scene);
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
             return lathe;
         }
 
@@ -554,12 +630,16 @@
          * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value than `size`).
          * The parameter `sourcePlane` is a Plane instance. It builds a mesh plane from a Math plane.    
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
+        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
             var plane = new Mesh(name, scene);
 
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            plane.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, options.updatable);
@@ -583,10 +663,11 @@
          * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.       
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, updatable?: boolean }, scene: any): Mesh {
+        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
-            ground._subdivisions = options.subdivisions || 1;
+            ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
+            ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
             ground._width = options.width || 1;
             ground._height = options.height || 1;
             ground._maxX = ground._width / 2;
@@ -633,6 +714,7 @@
          * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.  
          * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.     
          * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.   
+         * The parameter `colorFilter` (optional Color3, default (0.3, 0.59, 0.11) ) is the filter to apply to the image pixel colors to compute the height.  
          * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
          * This function is passed the newly built mesh : 
          * ```javascript
@@ -641,17 +723,19 @@
          * ```
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
             var width = options.width || 10.0;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1|0;
             var minHeight = options.minHeight || 0.0;
             var maxHeight = options.maxHeight || 10.0;
+            var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
 
             var ground = new GroundMesh(name, scene);
-            ground._subdivisions = subdivisions;
+            ground._subdivisionsX = subdivisions;
+            ground._subdivisionsY = subdivisions;
             ground._width = width;
             ground._height = height;
             ground._maxX = ground._width / 2.0;
@@ -676,10 +760,10 @@
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap({
-                    width, height,
-                    subdivisions,
-                    minHeight, maxHeight,
-                    buffer, bufferWidth, bufferHeight
+                    width: width, height: height,
+                    subdivisions: subdivisions,
+                    minHeight: minHeight, maxHeight: maxHeight, colorFilter: filter,
+                    buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight
                 });
 
                 vertexData.applyToMesh(ground, updatable);
@@ -696,6 +780,58 @@
 
             return ground;
         }
+
+        /**
+         * Creates a polygon mesh.
+         * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
+         * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
+         * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
+         * Remember you can only change the shape positions, not their number when updating a polygon.
+         */
+        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+			var shape = options.shape;
+			var holes = options.holes || [];
+			var depth = options.depth || 0;
+			var contours: Array<Vector2> = [];
+			var hole: Array<Vector2> = [];
+            
+			for(var i=0; i < shape.length; i++) {
+				contours[i] = new Vector2(shape[i].x, shape[i].z);
+			}
+			var epsilon = 0.00000001;
+			if(contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
+                contours.pop();
+			}
+			
+			var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
+			for(var hNb = 0; hNb < holes.length; hNb++) {
+				hole = [];
+				for(var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
+					hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
+				}
+				polygonTriangulation.addHole(hole);
+			}
+			var polygon = polygonTriangulation.build(options.updatable, depth);
+            polygon.sideOrientation = options.sideOrientation;
+			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
+            vertexData.applyToMesh(polygon, options.updatable);			
+			
+            return polygon;
+		};
+
+        /**
+         * Creates an extruded polygon mesh, with depth in the Y direction. 
+         * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements).
+         * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
+		*/
+
+		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
+			return MeshBuilder.CreatePolygon(name, options, scene);
+		};
+         
 
         /**
          * Creates a tube mesh.    
@@ -717,11 +853,12 @@
          * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL         
          * The optional parameter `instance` is an instance of an existing Tube object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#tube    
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation  
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.   
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
             var path = options.path;
             var radius = options.radius || 1.0;
             var tessellation = options.tessellation || 64|0;
@@ -729,7 +866,7 @@
             var cap = options.cap || Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
 
@@ -812,7 +949,7 @@
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, options.arc);
-            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV }, scene);
+            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
@@ -836,12 +973,16 @@
          * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
          * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored.    
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
+         * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.   
          */
-        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
+        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
             var polyhedron = new Mesh(name, scene);
 
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            polyhedron.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreatePolyhedron(options);
 
             vertexData.applyToMesh(polyhedron, options.updatable);
@@ -864,7 +1005,7 @@
             var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
             var position = options.position || Vector3.Zero();
             var normal = options.normal || Vector3.Up();
-            var size = options.size || new Vector3(1, 1, 1);
+            var size = options.size || Vector3.One();
             var angle = options.angle || 0;
 
             // Getting correct rotation
@@ -904,6 +1045,7 @@
 
                 // Get normal
                 result.normal = new Vector3(normals[vertexId * 3], normals[vertexId * 3 + 1], normals[vertexId * 3 + 2]);
+                result.normal = Vector3.TransformNormal(result.normal, transformMatrix);
 
                 return result;
             }; // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
@@ -1042,7 +1184,7 @@
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
 
-                    //TODO check for Int32Array
+                    //TODO check for Int32Array | Uint32Array | Uint16Array
                     (<number[]>vertexData.indices).push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
@@ -1064,7 +1206,7 @@
         }
 
         // Privates
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh, invertUV: boolean): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh, invertUV: boolean, frontUVs: Vector4, backUVs: Vector4): Mesh {
             // extrusion geometry
             var extrusionPathArray = (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) => {
                 var tangents = path3D.getTangents();
@@ -1104,7 +1246,7 @@
                     for (i = 0; i < shapePath.length; i++) {
                         barycenter.addInPlace(shapePath[i]);
                     }
-                    barycenter.scaleInPlace(1 / shapePath.length);
+                    barycenter.scaleInPlace(1.0 / shapePath.length);
                     for (i = 0; i < shapePath.length; i++) {
                         pointCap.push(barycenter);
                     }
@@ -1115,7 +1257,7 @@
                         break;
                     case Mesh.CAP_START:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         break;
                     case Mesh.CAP_END:
                         shapePaths[index] = shapePaths[index - 1];
@@ -1123,7 +1265,7 @@
                         break;
                     case Mesh.CAP_ALL:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         shapePaths[index] = shapePaths[index - 1];
                         shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
@@ -1137,7 +1279,7 @@
             if (instance) { // instance update
                 path3D = ((<any>instance).path3D).update(curve);
                 pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
-                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, scene, null, null, instance);
 
                 return instance;
             }
@@ -1146,7 +1288,7 @@
             var newShapePaths = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-            var extrudedGeneric = MeshBuilder.CreateRibbon(name, {pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV}, scene);
+            var extrudedGeneric = MeshBuilder.CreateRibbon(name, {pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs, backUVs: backUVs}, scene);
             (<any>extrudedGeneric).pathArray = pathArray;
             (<any>extrudedGeneric).path3D = path3D;
             (<any>extrudedGeneric).cap = cap;

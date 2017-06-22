@@ -76,7 +76,7 @@
         
         public onCollide: (collidedMesh: AbstractMesh) => void;
         
-        private _collider = new Collider();
+        private _collider: Collider;
         private _needMoveForGravity = false;
         private _oldPosition = Vector3.Zero();
         private _diffPosition = Vector3.Zero();
@@ -103,6 +103,17 @@
             this.cameraRotation = new Vector2(0, 0);
         }
 
+        // Collisions
+        private _collisionMask = -1;
+        
+        public get collisionMask(): number {
+            return this._collisionMask;
+        }
+        
+        public set collisionMask(mask: number) {
+            this._collisionMask = !isNaN(mask) ? mask : -1;
+        }
+	 
         public _collideWithWorld(velocity: Vector3): void {
             var globalPosition: Vector3;
 
@@ -113,8 +124,14 @@
             }
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
-            this._collider.radius = this.ellipsoid;
 
+            if (!this._collider) {
+                this._collider = new Collider();
+            }
+
+            this._collider.radius = this.ellipsoid;
+            this._collider.collisionMask = this._collisionMask;
+		
             //no need for clone, as long as gravity is not on.
             var actualVelocity = velocity;
 			
@@ -169,7 +186,7 @@
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
             } else {
-                this.position.addInPlace(this.cameraDirection);
+                super._updatePosition();
             }
         }
 
@@ -178,7 +195,7 @@
             super.dispose();
         }
         
-        public getTypeName(): string {
+        public getClassName(): string {
             return "FreeCamera";
         }
     }    

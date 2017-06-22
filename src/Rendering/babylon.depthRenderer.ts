@@ -25,7 +25,7 @@
             
             // set default depth value to 1.0 (far away)
             this._depthMap.onClearObservable.add((engine: Engine) => {
-                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
             });
 
             // Custom render function
@@ -44,7 +44,7 @@
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
