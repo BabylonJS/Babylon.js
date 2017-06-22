@@ -130,11 +130,21 @@
             this._cameras = cameras || [];
 
             // Initialize
-            this._hdr = hdr;
+            var caps = this._scene.getEngine().getCaps();
+            this._hdr = hdr && (caps.textureHalfFloatRender || caps.textureFloatRender);
             this._scene = scene;
 
             // Misc
-            this._defaultPipelineTextureType = !hdr ? Engine.TEXTURETYPE_UNSIGNED_INT : (scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT);
+            if (this._hdr) {
+                if (caps.textureHalfFloatRender) {
+                    this._defaultPipelineTextureType  = Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (caps.textureFloatRender) {
+                    this._defaultPipelineTextureType  = Engine.TEXTURETYPE_FLOAT;
+                }
+            } else {
+                this._defaultPipelineTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
 
             // Attach
             scene.postProcessRenderPipelineManager.addPipeline(this);
