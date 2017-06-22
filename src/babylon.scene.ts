@@ -2648,6 +2648,11 @@
             var needsRestoreFrameBuffer = false;
 
             var beforeRenderTargetDate = Tools.Now;
+
+            if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
+                this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
+            }
+
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
