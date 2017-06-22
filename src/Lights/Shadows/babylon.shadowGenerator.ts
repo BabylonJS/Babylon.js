@@ -282,6 +282,7 @@
         private _currentFaceIndexCache = 0;
         private _textureType: number;
         private _isCube = false;
+        private _defaultTextureMatrix = Matrix.Identity();
 
         /**
          * Creates a ShadowGenerator object.  
@@ -445,8 +446,10 @@
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
                     var alphaTexture = material.getAlphaTestTexture();
-                    this._effect.setTexture("diffuseSampler", alphaTexture);
-                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    if (alphaTexture) {
+                        this._effect.setTexture("diffuseSampler", alphaTexture);
+                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
                 }
 
                 // Bones
