@@ -39,7 +39,7 @@
         private _shareOutputWithPostProcess: PostProcess;
         private _texelSize = Vector2.Zero();
         private _forcedOutputTexture: WebGLTexture;
-        
+       
         // Events
 
         /**
@@ -180,15 +180,16 @@
             return this;
         }
         
-        public updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any) {
+        public updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any,
+                            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
                 ["position"],
                 uniforms || this._parameters,
                 samplers || this._samplers, 
                 defines !== undefined ? defines : "",
                 null,
-                null,
-                null,
+                onCompiled,
+                onError,
                 indexParameters || this._indexParameters
                 );
         }
