@@ -58,7 +58,7 @@
     )();
 
     export class Collider {
-        public radius = new Vector3(1, 1, 1);
+        public radius = Vector3.One();
         public retry = 0;
         public velocity: Vector3;
         public basePoint: Vector3;
@@ -85,6 +85,16 @@
         private _destinationPoint = Vector3.Zero();
         private _slidePlaneNormal = Vector3.Zero();
         private _displacementVector = Vector3.Zero();
+
+        private _collisionMask = -1;
+        
+        public get collisionMask(): number {
+            return this._collisionMask;
+        }
+        
+        public set collisionMask(mask: number) {
+            this._collisionMask = !isNaN(mask) ? mask : -1;
+        }
 
         // Methods
         public _initialize(source: Vector3, dir: Vector3, e: number): void {
@@ -319,7 +329,7 @@
             }
         }
 
-        public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
+        public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
             for (var i = indexStart; i < indexEnd; i += 3) {
                 var p1 = pts[indices[i] - decal];
                 var p2 = pts[indices[i + 1] - decal];

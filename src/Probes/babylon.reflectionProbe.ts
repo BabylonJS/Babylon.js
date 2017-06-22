@@ -59,6 +59,14 @@
             this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
         }
 
+        public get samples(): number {
+            return this._renderTargetTexture.samples;
+        }
+
+        public set samples(value: number) {
+            this._renderTargetTexture.samples = value;
+        }
+
         public get refreshRate(): number {
             return this._renderTargetTexture.refreshRate;
         }

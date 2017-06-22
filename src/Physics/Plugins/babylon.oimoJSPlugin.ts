@@ -1,13 +1,14 @@
 module BABYLON {
     declare var OIMO;
 
-    export class OimoJSPlugin {
+    export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any;
         public name: string = "OimoJSPlugin";
 
         constructor(iterations?: number) {
             this.world = new OIMO.World(1 / 60, 2, iterations, true);
+            this.world.worldscale(1);
             this.world.clear();
             //making sure no stats are calculated
             this.world.isNoStat = true;
@@ -95,7 +96,7 @@ module BABYLON {
                 };
 
                 var impostors = [impostor];
-                function addToArray(parent: IPhysicsEnabledObject) {
+                let addToArray = (parent: IPhysicsEnabledObject) => {
                     if (!parent.getChildMeshes) return;
                     parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
@@ -106,7 +107,7 @@ module BABYLON {
                 }
                 addToArray(impostor.object)
 
-                function checkWithEpsilon(value: number): number {
+                let  checkWithEpsilon = (value: number): number => {
                     return Math.max(value, PhysicsEngine.Epsilon);
                 }
 
@@ -364,10 +365,10 @@ module BABYLON {
             impostor.physicsBody.awake();
         }
 
-        public updateDistanceJoint(joint: IMotorEnabledJoint, maxDistance: number, minDistance?: number) {
-            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+        public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
+            joint.physicsJoint.limitMotor.upperLimit = maxDistance;
             if (minDistance !== void 0) {
-                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+                joint.physicsJoint.limitMotor.lowerLimit = minDistance;
             }
         }
 

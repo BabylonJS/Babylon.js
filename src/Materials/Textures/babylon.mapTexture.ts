@@ -6,7 +6,7 @@
 
         private _replacedViewport: Viewport;
 
-        constructor(name: string, scene: Scene, size: ISize, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, useMipMap: boolean=false) {
+        constructor(name: string, scene: Scene, size: ISize, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, useMipMap: boolean=false, margin=0) {
             super(null, scene, !useMipMap, false, samplingMode);
 
             this.name = name;
@@ -15,7 +15,7 @@
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
             // Create the rectPackMap that will allocate portion of the texture
-            this._rectPackingMap = new RectPackingMap(new Size(size.width, size.height));
+            this._rectPackingMap = new RectPackingMap(new Size(size.width, size.height), margin);
 
             // Create the texture that will store the content
             this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: !this.noMipmap, type: Engine.TEXTURETYPE_UNSIGNED_INT });

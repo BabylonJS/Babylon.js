@@ -28,6 +28,9 @@
             this._meshRank = rank;
             this._mesh = mesh;
 
+            if (rank < this._currentRank) {
+                this._currentRank = rank;
+            }
             if (rank > this._maxRank) {
                 this._maxRank = rank;
             }
@@ -38,23 +41,47 @@
         }
 
         public reduce(currentDefines: string): string {
-
-            var currentFallbacks = this._defines[this._currentRank];
-
-            for (var index = 0; index < currentFallbacks.length; index++) {
-                currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
-            }
-
-            if (this._mesh && this._currentRank === this._meshRank) {
+            // First we try to switch to CPU skinning
+            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
-            }
 
-            this._currentRank++;
+                var scene = this._mesh.getScene();
+                for (var index = 0; index < scene.meshes.length; index++) {
+                    var otherMesh = scene.meshes[index];
+
+                    if (otherMesh.material === this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
+                }
+            }
+            else {
+                var currentFallbacks = this._defines[this._currentRank];
+                if (currentFallbacks) {
+                    for (var index = 0; index < currentFallbacks.length; index++) {
+                        currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+                    }
+                }
+
+                this._currentRank++;
+            }
 
             return currentDefines;
         }
+    }
+
+    export class EffectCreationOptions {
+        public attributes: string[];
+        public uniformsNames: string[];
+        public uniformBuffersNames: string[];
+        public samplers: string[];
+        public defines: any;
+        public fallbacks: EffectFallbacks;
+        public onCompiled: (effect: Effect) => void;
+        public onError: (effect: Effect, errors: string) => void;
+        public indexParameters: any;
+        public maxSimultaneousLights: number;
     }
 
     export class Effect {
@@ -63,8 +90,11 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onBind: (effect: Effect) => void;
+        public uniqueId = 0;
 
+        private static _uniqueIdSeed = 0;
         private _engine: Engine;
+        private _uniformBuffersNames: { [key: string]: number } = {};
         private _uniformsNames: string[];
         private _samplers: string[];
         private _isReady = false;
@@ -74,22 +104,48 @@
         private _uniforms: WebGLUniformLocation[];
         public _key: string;
         private _indexParameters: any;
+        private _fallbacks: EffectFallbacks;
 
         private _program: WebGLProgram;
         private _valueCache: { [key: string]: any } = {};
+        private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
-            this._engine = engine;
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this.name = baseName;
-            this.defines = defines;
-            this._uniformsNames = uniformsNames.concat(samplers);
-            this._samplers = samplers;
-            this._attributesNames = attributesNames;
 
-            this.onError = onError;
-            this.onCompiled = onCompiled;
+            if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
+                var options = <EffectCreationOptions>attributesNamesOrOptions;
+                this._engine = <Engine>uniformsNamesOrEngine;
 
-            this._indexParameters = indexParameters;
+                this._attributesNames = options.attributes;
+                this._uniformsNames = options.uniformsNames.concat(options.samplers);
+                this._samplers = options.samplers;
+                this.defines = options.defines;
+                this.onError = options.onError;
+                this.onCompiled = options.onCompiled;
+                this._fallbacks = options.fallbacks;
+                this._indexParameters = options.indexParameters;  
+
+                if (options.uniformBuffersNames) {
+                    for (var i = 0; i < options.uniformBuffersNames.length; i++) {
+                        this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
+                    }          
+                }    
+            } else {
+                this._engine = engine;
+                this.defines = defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
+                this._samplers = samplers;
+                this._attributesNames = (<string[]>attributesNamesOrOptions);
+
+                this.onError = onError;
+                this.onCompiled = onCompiled;
+
+                this._indexParameters = indexParameters;
+                this._fallbacks = fallbacks;
+            }
+        
+            this.uniqueId = Effect._uniqueIdSeed++;
 
             var vertexSource;
             var fragmentSource;
@@ -116,13 +172,21 @@
 
             this._loadVertexShader(vertexSource, vertexCode => {
                 this._processIncludes(vertexCode, vertexCodeWithIncludes => {
-                    this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                        this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
-                            this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                    this._processShaderConversion(vertexCodeWithIncludes, false, migratedVertexCode => {
+                        this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+                            this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
+                                this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
+                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks);
+                                });
+                            });
                         });
                     });
                 });
             });
+        }
+
+        public get key(): string {
+            return this._key;
         }
 
         // Properties
@@ -168,6 +232,14 @@
             return this._compilationError;
         }
 
+        public getVertexShaderSource(): string {
+            return this._evaluateDefinesOnString(this._engine.getVertexShaderSource(this._program));
+        }
+
+        public getFragmentShaderSource(): string {
+            return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
+        }
+
         // Methods
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
             // DOM element ?
@@ -175,6 +247,13 @@
                 var vertexCode = Tools.GetDOMTextContent(vertex);
                 callback(vertexCode);
                 return;
+            }
+
+            // Base64 encoded ?
+            if (vertex.substr(0, 7) === "base64:") {
+            	var vertexBinary = window.atob(vertex.substr(7));
+            	callback(vertexBinary);
+            	return;
             }
 
             // Is in local store ?
@@ -203,6 +282,13 @@
                 return;
             }
 
+            // Base64 encoded ?
+            if (fragment.substr(0, 7) === "base64:") {
+            	var fragmentBinary = window.atob(fragment.substr(7));
+            	callback(fragmentBinary);
+            	return;
+            }
+
             // Is in local store ?
             if (Effect.ShadersStore[fragment + "PixelShader"]) {
                 callback(Effect.ShadersStore[fragment + "PixelShader"]);
@@ -226,17 +312,73 @@
             Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
-        private _dumpShadersName(): void {
+        private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
+            // Rebuild shaders source code
+            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
+            var prefix = shaderVersion + (defines ? defines + "\n" : "");
+            vertexCode = prefix + vertexCode;
+            fragmentCode = prefix + fragmentCode;
+
+            // Number lines of shaders source code
+            var i = 2;
+            var regex = /\n/gm;
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            i = 2;
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+
+            // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                Tools.Error("Vertex shader:" + this.name.vertexElement);
-                Tools.Error("Fragment shader:" + this.name.fragmentElement);
-            } else if (this.name.vertex) {
-                Tools.Error("Vertex shader:" + this.name.vertex);
-                Tools.Error("Fragment shader:" + this.name.fragment);
-            } else {
-                Tools.Error("Vertex shader:" + this.name);
-                Tools.Error("Fragment shader:" + this.name);
+                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
+            else if (this.name.vertex) {
+                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+            }
+            else {
+                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+            }
+        };
+
+        private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
+
+            var preparedSourceCode = this._processPrecision(sourceCode);
+
+            if (this._engine.webGLVersion == 1) {
+                callback(preparedSourceCode);
+                return;
+            }
+
+            // Already converted
+            if (preparedSourceCode.indexOf("#version 3") !== -1) {
+                callback(preparedSourceCode.replace("#version 300 es", ""));
+                return;
+            }
+            
+            // Remove extensions 
+            // #extension GL_OES_standard_derivatives : enable
+            // #extension GL_EXT_shader_texture_lod : enable
+            // #extension GL_EXT_frag_depth : enable
+            var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
+            var result = preparedSourceCode.replace(regex, "");
+
+            // Migrate to GLSL v300
+            result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/attribute[ \t]/g, "in ");
+            result = result.replace(/[ \t]attribute/g, " in");
+            
+            if (isFragment) {
+                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
+                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
+                result = result.replace(/texture2D\(/g, "texture(");
+                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
+                result = result.replace(/gl_FragColor/g, "glFragColor");
+                result = result.replace(/void\s+?main\(/g, "out vec4 glFragColor;\nvoid main(");
+            }
+            
+            callback(result);
         }
 
         private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
@@ -247,6 +389,16 @@
 
             while (match != null) {
                 var includeFile = match[1];
+
+                // Uniform declaration
+                if (includeFile.indexOf("__decl__") !== -1) {
+                    includeFile = includeFile.replace(/__decl__/, "");
+                    if (this._engine.webGLVersion != 1) {
+                        includeFile = includeFile.replace(/Vertex/, "Ubo");
+                        includeFile = includeFile.replace(/Fragment/, "Ubo");
+                    }
+                    includeFile = includeFile + "Declaration";
+                }
 
                 if (Effect.IncludesShadersStore[includeFile]) {
                     // Substitution
@@ -276,10 +428,22 @@
                                 maxIndex = this._indexParameters[indexSplits[1]];
                             }
 
-                            for (var i = minIndex; i <= maxIndex; i++) {
+                            for (var i = minIndex; i < maxIndex; i++) {
+                                if (this._engine.webGLVersion === 1) {
+                                    // Ubo replacement
+                                    sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                        return p1 + "{X}";
+                                    });
+                                }
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {
+                            if (this._engine.webGLVersion === 1) {
+                                // Ubo replacement
+                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    return p1 + "{X}";
+                                });
+                            }
                             includeContent = includeContent.replace(/\{X\}/g, indexString);
                         }
                     }
@@ -322,11 +486,13 @@
             try {
                 var engine = this._engine;
 
-                // Precision
-                vertexSourceCode = this._processPrecision(vertexSourceCode);
-                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
-
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
+
+                if (engine.webGLVersion > 1) {
+                    for (var name in this._uniformBuffersNames) {
+                        this.bindUniformBlock(name, this._uniformBuffersNames[name]);
+                    }
+                }
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
@@ -343,23 +509,30 @@
 
                 engine.bindSamplers(this);
 
+                this._compilationError = "";
                 this._isReady = true;
                 if (this.onCompiled) {
                     this.onCompiled(this);
                 }
             } catch (e) {
+                this._compilationError = e.message;
+
                 // Let's go through fallbacks then
+                Tools.Error("Unable to compile effect:");
+                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+                    return " " + uniform;
+                }));
+                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
+                    return " " + attribute;
+                }));
+                this._dumpShadersSource(vertexSourceCode, fragmentSourceCode, defines);
+                Tools.Error("Error: " + this._compilationError);
+
                 if (fallbacks && fallbacks.isMoreFallbacks) {
-                    Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
-                    this._dumpShadersName();
+                    Tools.Error("Trying next fallback.");
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else { // Sorry we did everything we can
-                    Tools.Error("Unable to compile effect: ");
-                    this._dumpShadersName();
-                    Tools.Error("Defines: " + defines);
-                    Tools.Error("Error: " + e.message);
-                    this._compilationError = e.message;
 
                     if (this.onError) {
                         this.onError(this, this._compilationError);
@@ -396,24 +569,15 @@
         }
 
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
-            var changed = false;
-            var cache: Matrix = this._valueCache[uniformName];
-            if (!cache || !(cache instanceof Matrix)) {
-                changed = true;
-                cache = new Matrix();
+            var cache = this._valueCache[uniformName];
+            var flag = matrix.updateFlag;
+            if (cache !== undefined && cache === flag) {
+                return false;
             }
 
-            var tm = cache.m;
-            var om = matrix.m;
-            for (var index = 0; index < 16; index++) {
-                if (tm[index] !== om[index]) {
-                    tm[index] = om[index];
-                    changed = true;
-                }
-            }
+            this._valueCache[uniformName] = flag;
 
-            this._valueCache[uniformName] = cache;
-            return changed;
+            return true;
         }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
@@ -489,6 +653,18 @@
             }
 
             return changed;
+        }
+
+        public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
+            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
+                return;
+            }
+            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
+            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
+        }
+
+        public bindUniformBlock(blockName: string, index: number): void {
+            this._engine.bindUniformBlock(this._program, blockName, index);
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {
@@ -576,6 +752,10 @@
         }
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+            if (!matrices) {
+                return;
+            }
+
             this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
 
@@ -670,6 +850,7 @@
         }
 
         public setColor3(uniformName: string, color3: Color3): Effect {
+
             if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
                 this._engine.setColor3(this.getUniform(uniformName), color3);
             }
@@ -681,6 +862,132 @@
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
+        }
+
+        private _recombineShader(node: any): string {
+            if (node.define) {
+                if (node.condition) {
+                    var defineIndex = this.defines.indexOf("#define " + node.define);
+                    if (defineIndex === -1) {
+                        return null;
+                    }
+
+                    var nextComma = this.defines.indexOf("\n", defineIndex);
+                    var defineValue = this.defines.substr(defineIndex + 7, nextComma - defineIndex - 7).replace(node.define, "").trim();
+                    var condition = defineValue + node.condition;
+                    if (!eval(condition)) {
+                        return null;
+                    }
+                }
+                else if (node.ndef) {
+                    if (this.defines.indexOf("#define " + node.define) !== -1) {
+                        return null;
+                    }
+                }
+                else if (this.defines.indexOf("#define " + node.define) === -1) {
+                    return null;
+                }
+            }
+
+            var result = "";
+            for (var index = 0; index < node.children.length; index++) {
+                var line = node.children[index];
+
+                if (line.children) {
+                    var combined = this._recombineShader(line);
+                    if (combined !== null) {
+                        result += combined + "\r\n";
+                    }
+
+                    continue;
+                }
+
+                if (line.length > 0) {
+                    result += line + "\r\n";
+                }
+            }
+
+            return result;
+        }
+
+        private _evaluateDefinesOnString(shaderString: string): string {
+            var root = <any>{
+                children: []
+            };
+            var currentNode = root;
+
+            var lines = shaderString.split("\n");
+
+            for (var index = 0; index < lines.length; index++) {
+                var line = lines[index].trim();
+
+                // #ifdef
+                var pos = line.indexOf("#ifdef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 7);
+
+                    var newNode = {
+                        condition: null,
+                        ndef: false,
+                        define: define,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #ifndef
+                var pos = line.indexOf("#ifndef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 8);
+
+                    newNode = {
+                        condition: null,
+                        define: define,
+                        ndef: true,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #if
+                var pos = line.indexOf("#if ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 4).trim();
+                    var conditionPos = define.indexOf(" ");
+
+                    newNode = {
+                        condition: define.substr(conditionPos + 1),
+                        define: define.substr(0, conditionPos),
+                        ndef: false,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #endif
+                pos = line.indexOf("#endif");
+                if (pos !== -1) {
+                    currentNode = currentNode.parent;
+                    continue;
+                }
+
+                currentNode.children.push(line);
+            }
+
+            // Recombine
+            return this._recombineShader(root);
         }
 
         // Statics

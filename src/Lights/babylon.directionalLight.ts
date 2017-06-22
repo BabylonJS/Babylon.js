@@ -1,17 +1,33 @@
-﻿module BABYLON {
-    export class DirectionalLight extends Light implements IShadowLight {
-        @serializeAsVector3()
-        public position: Vector3;
+﻿/// <reference path="babylon.light.ts" />
 
-        @serializeAsVector3()
-        public direction: Vector3
+module BABYLON {
+    export class DirectionalLight extends ShadowLight {
 
-        private _transformedDirection: Vector3;
-        public transformedPosition: Vector3;
-        private _worldMatrix: Matrix;
-
+        private _shadowFrustumSize = 0;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
         @serialize()
-        public shadowOrthoScale = 0.5;
+        public get shadowFrustumSize(): number {
+            return this._shadowFrustumSize
+        }
+        /**
+         * Specifies a fix frustum size for the shadow generation.
+         */
+        public set shadowFrustumSize(value: number) {
+            this._shadowFrustumSize = value;
+            this.forceProjectionMatrixCompute();
+        }
+
+        private _shadowOrthoScale = 0.5;
+        @serialize()
+        public get shadowOrthoScale(): number {
+            return this._shadowOrthoScale
+        }
+        public set shadowOrthoScale(value: number) {
+            this._shadowOrthoScale = value;
+            this.forceProjectionMatrixCompute();
+        }
 
         @serialize()
         public autoUpdateExtends = true;
@@ -22,23 +38,61 @@
         private _orthoTop = Number.MIN_VALUE;
         private _orthoBottom = Number.MAX_VALUE;
 
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).  
+         * The directional light is emitted from everywhere in the given direction.  
+         * It can cast shawdows.  
+         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         */
         constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
-
-            this.position = direction.scale(-1);
+            this.position = direction.scale(-1.0);
             this.direction = direction;
         }
 
-        public getAbsolutePosition(): Vector3 {
-            return this.transformedPosition ? this.transformedPosition : this.position;
+        /**
+         * Returns the string "DirectionalLight".  
+         */
+        public getClassName(): string {
+            return "DirectionalLight";
         }
 
-        public setDirectionToTarget(target: Vector3): Vector3 {
-            this.direction = Vector3.Normalize(target.subtract(this.position));
-            return this.direction;
+        /**
+         * Returns the integer 1.
+         */
+        public getTypeID(): number {
+            return Light.LIGHTTYPEID_DIRECTIONALLIGHT;
         }
 
-        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.  
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            if (this.shadowFrustumSize > 0) {
+                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix, viewMatrix);
+            }
+            else {
+                this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
+            }
+        }
+
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void {
+            var activeCamera = this.getScene().activeCamera;
+
+            Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize,
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
+        }
+
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.  
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
 
             // Check extends
@@ -86,65 +140,51 @@
 
             Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
                 this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                -activeCamera.maxZ, activeCamera.maxZ, matrix);
+                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
         }
 
-        public supportsVSM(): boolean {
-            return true;
+        protected _buildUniformLayout(): void {
+             this._uniformBuffer.addUniform("vLightData", 4);
+             this._uniformBuffer.addUniform("vLightDiffuse", 4);
+             this._uniformBuffer.addUniform("vLightSpecular", 3);
+             this._uniformBuffer.addUniform("shadowsInfo", 3);
+             this._uniformBuffer.addUniform("depthValues", 2);
+             this._uniformBuffer.create();
         }
 
-        public needRefreshPerFrame(): boolean {
-            return true;
-        }
-
-        public needCube(): boolean {
-            return false;
-        }
-
-        public getShadowDirection(faceIndex?: number): Vector3 {
-            return this.direction;
-        }
-
-        public computeTransformedPosition(): boolean {
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (!this.transformedPosition) {
-                    this.transformedPosition = Vector3.Zero();
-                }
-
-                Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
-                return true;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
+         * Returns the DirectionalLight.  
+         */
+        public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
+            if (this.computeTransformedInformation()) {
+               this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
+                return this;
             }
-
-            return false;
+            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
+            return this;
         }
 
-        public transferToEffect(effect: Effect, directionUniformName: string): void {
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (!this._transformedDirection) {
-                    this._transformedDirection = Vector3.Zero();
-                }
-
-                Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                effect.setFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
-
-                return;
-            }
-
-            effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
-        }
-
-        public _getWorldMatrix(): Matrix {
-            if (!this._worldMatrix) {
-                this._worldMatrix = Matrix.Identity();
-            }
-
-            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
-
-            return this._worldMatrix;
-        }
-
-        public getTypeID(): number {
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * 
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera 
+         */
+        public getDepthMinZ(activeCamera: Camera): number {
             return 1;
+        }
+
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * 
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera 
+         */
+        public getDepthMaxZ(activeCamera: Camera): number {
+             return 1;
         }
     }
 }  

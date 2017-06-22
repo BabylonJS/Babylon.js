@@ -1,3 +1,5 @@
+/// <reference path="babylon.touchCamera.ts" />
+
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class UniversalCamera extends TouchCamera {
@@ -32,7 +34,7 @@ module BABYLON {
             this.inputs.addGamepad();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "UniversalCamera";
         }
     }

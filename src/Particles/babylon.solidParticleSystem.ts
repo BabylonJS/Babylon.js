@@ -19,6 +19,10 @@
         */
         public billboard: boolean = false;
         /**
+         * Recompute normals when adding a shape
+         */
+        public recomputeNormals: boolean = true;
+        /**
         * This a counter ofr your own usage. It's not set by any SPS functions.
         */
         public counter: number = 0;
@@ -63,7 +67,7 @@
         private _isVisibilityBoxLocked = false;
         private _alwaysVisible: boolean = false;
         private _shapeCounter: number = 0;
-        private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
+        private _copy: SolidParticle = new SolidParticle(null, null, null, null, null, null);
         private _shape: Vector3[];
         private _shapeUV: number[];
         private _color: Color4 = new Color4(0, 0, 0, 0);
@@ -100,22 +104,37 @@
         private _sinYaw: number = 0.0;
         private _cosYaw: number = 0.0;
         private _w: number = 0.0;
+        private _mustUnrotateFixedNormals = false;
         private _minimum: Vector3 = Tmp.Vector3[0];
         private _maximum: Vector3 = Tmp.Vector3[1];
+        private _scale: Vector3 = Tmp.Vector3[2];
+        private _translation: Vector3 = Tmp.Vector3[3];
+        private _minBbox: Vector3 = Tmp.Vector3[4];
+        private _maxBbox: Vector3 = Tmp.Vector3[5];
+        private _particlesIntersect: boolean = false;
+        public _bSphereOnly: boolean = false;
+        public _bSphereRadiusFactor: number = 1.0;
 
 
         /**
         * Creates a SPS (Solid Particle System) object.
         * `name` (String) is the SPS name, this will be the underlying mesh name.  
         * `scene` (Scene) is the scene in which the SPS is added.  
-        * `updatable` (default true) : if the SPS must be updatable or immutable.  
-        * `isPickable` (default false) : if the solid particles must be pickable.  
+        * `updatable` (optional boolean, default true) : if the SPS must be updatable or immutable.  
+        * `isPickable` (optional boolean, default false) : if the solid particles must be pickable.  
+        * `particleIntersection` (optional boolean, default false) : if the solid particle intersections must be computed.    
+        * `boundingSphereOnly` (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).  
+        * `bSphereRadiusFactor` (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance. 
+        *  Example : bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.  
         */
-        constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean }) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
             this.name = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._camera = <TargetCamera>scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
+            this._particlesIntersect = options ? options.particleIntersection : false;
+            this._bSphereOnly= options ? options.boundingSphereOnly : false;
+            this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             } else {
@@ -139,9 +158,14 @@
             this._positions32 = new Float32Array(this._positions);
             this._uvs32 = new Float32Array(this._uvs);
             this._colors32 = new Float32Array(this._colors);
-            VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            if (this.recomputeNormals) {
+                VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
+            if (this._mustUnrotateFixedNormals) {  // the particles could be created already rotated in the mesh with a positionFunction
+                this._unrotateFixedNormals();
+            }
             var vertexData = new VertexData();
             vertexData.set(this._positions32, VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
@@ -187,6 +211,7 @@
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
 
             var f: number = 0;                              // facet counter
             var totalFacets: number = meshInd.length / 3;   // a facet is a triangle, so 3 indices
@@ -249,11 +274,16 @@
                 for (v = 0; v < shape.length; v++) {
                     shape[v].subtractInPlace(barycenter);
                 }
+                var bInfo;
+                if (this._particlesIntersect) {
+                    bInfo = new BoundingInfo(barycenter, barycenter);
+                }
                 var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, null, null);
 
                 // add the particle in the SPS
-                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, idx, 0, null);
-                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
+                var currentPos = this._positions.length;
+                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
+                this._addParticle(idx, currentPos, modelShape, this._shapeCounter, 0, bInfo);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
 
@@ -264,6 +294,36 @@
                 f += size;
             }
             return this;
+        }
+
+        // unrotate the fixed normals in case the mesh was built with pre-rotated particles, ex : use of positionFunction in addShape()
+        private _unrotateFixedNormals() {
+            var index = 0;
+            var idx = 0;
+            for (var p = 0; p < this.particles.length; p++) {
+                this._particle = this.particles[p];
+                this._shape = this._particle._model._shape;
+                if (this._particle.rotationQuaternion) {
+                    this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                } 
+                else {
+                    this._yaw = this._particle.rotation.y;
+                    this._pitch = this._particle.rotation.x;
+                    this._roll = this._particle.rotation.z;
+                    this._quaternionRotationYPR();
+                }
+                this._quaternionToRotationMatrix();
+                this._rotMatrix.invertToRef(this._invertMatrix);
+
+                for (var pt = 0; pt < this._shape.length; pt++) {
+                    idx = index + pt * 3;
+                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, this._normal);
+                    this._fixedNormal32[idx] = this._normal.x;
+                    this._fixedNormal32[idx + 1] = this._normal.y;
+                    this._fixedNormal32[idx + 2] = this._normal.z;
+                }
+                index = idx + 3;
+            } 
         }
 
         //reset copy
@@ -286,14 +346,16 @@
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options): void {
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options): SolidParticle {
             var i;
             var u = 0;
             var c = 0;
+            var n = 0;
 
             this._resetCopy();
             if (options && options.positionFunction) {        // call to custom positionFunction
                 options.positionFunction(this._copy, idx, idxInShape);
+                this._mustUnrotateFixedNormals = true;
             }
 
             if (this._copy.rotationQuaternion) {
@@ -342,6 +404,15 @@
                 colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
                 c += 4;
 
+                if (!this.recomputeNormals && meshNor) {
+                    this._normal.x = meshNor[n];
+                    this._normal.y = meshNor[n + 1];
+                    this._normal.z = meshNor[n + 2];
+                    Vector3.TransformNormalToRef(this._normal, this._rotMatrix, this._normal);
+                    normals.push(this._normal.x, this._normal.y, this._normal.z);
+                    n += 3;
+                }
+
             }
 
             for (i = 0; i < meshInd.length; i++) {
@@ -354,6 +425,7 @@
                     this.pickedParticles.push({ idx: idx, faceId: i });
                 }
             }
+            return this._copy;
         }
 
         // returns a shape array from positions array
@@ -376,8 +448,10 @@
         }
 
         // adds a new particle object in the particles array
-        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
-            this.particles.push(new SolidParticle(idx, idxpos, model, shapeId, idxInShape));
+        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): SolidParticle {
+            var sp = new SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo);
+            this.particles.push(sp);
+            return sp;
         }
 
         /**
@@ -393,6 +467,11 @@
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
+            var bbInfo;
+            if (this._particlesIntersect) {
+                bbInfo = mesh.getBoundingInfo();
+            }
 
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
@@ -403,11 +482,24 @@
             var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
 
             // particles
+            var sp;
+            var currentCopy;
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, idx, i, options);
+                var currentPos = this._positions.length;
+                currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
-                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i);
+                    sp = this._addParticle(idx, currentPos, modelShape, this._shapeCounter, i, bbInfo);
+                    sp.position.copyFrom(currentCopy.position);
+                    sp.rotation.copyFrom(currentCopy.rotation);
+                    if (currentCopy.rotationQuaternion) {
+                        sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
+                    }
+                    if (currentCopy.color) {
+                        sp.color.copyFrom(currentCopy.color);
+                    }
+                    sp.scaling.copyFrom(currentCopy.scaling);
+                    sp.uvs.copyFrom(currentCopy.uvs);
                 }
                 this._index += shape.length;
                 idx++;
@@ -454,26 +546,28 @@
                 this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
                 this._positions32[particle._pos + pt * 3 + 2] = this._copy.position.z + this._rotated.z;
             }
-            particle.position.x = 0;
-            particle.position.y = 0;
-            particle.position.z = 0;
-            particle.rotation.x = 0;
-            particle.rotation.y = 0;
-            particle.rotation.z = 0;
+            particle.position.x = 0.0;
+            particle.position.y = 0.0;
+            particle.position.z = 0.0;
+            particle.rotation.x = 0.0;
+            particle.rotation.y = 0.0;
+            particle.rotation.z = 0.0;
             particle.rotationQuaternion = null;
-            particle.scaling.x = 1;
-            particle.scaling.y = 1;
-            particle.scaling.z = 1;
+            particle.scaling.x = 1.0;
+            particle.scaling.y = 1.0;
+            particle.scaling.z = 1.0;
         }
 
         /**
-        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.  
+        * Returns the SPS.  
         */
-        public rebuildMesh(): void {
+        public rebuildMesh(): SolidParticleSystem {
             for (var p = 0; p < this.particles.length; p++) {
                 this._rebuildParticle(this.particles[p]);
             }
             this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
+            return this;
         }
 
 
@@ -483,9 +577,10 @@
         *  For an animated SPS, it is usually called within the render loop.
         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_   
+        * Returns the SPS.  
         */
-        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
+        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
             if (!this._updatable) {
                 return;
             }
@@ -507,40 +602,54 @@
 
             // if the particles will always face the camera
             if (this.billboard) {
+                this.mesh.computeWorldMatrix(true);
                 // compute the camera position and un-rotate it by the current mesh rotation
-                this._yaw = this.mesh.rotation.y;
-                this._pitch = this.mesh.rotation.x;
-                this._roll = this.mesh.rotation.z;
-                this._quaternionRotationYPR();
-                this._quaternionToRotationMatrix();
-                this._rotMatrix.invertToRef(this._invertMatrix);
-                this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
-                Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
-                this._cam_axisZ.normalize();
-
-                // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
-                Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
-                Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                this._cam_axisY.normalize();
-                this._cam_axisX.normalize();             
+                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
+                    this._quaternionToRotationMatrix();
+                    this._rotMatrix.invertToRef(this._invertMatrix);
+                    this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
+                    Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
+                    this._cam_axisZ.normalize();
+                    // same for camera up vector extracted from the cam view matrix
+                    var view = this._camera.getViewMatrix(true);
+                    Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
+                    Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
+                    this._cam_axisY.normalize();
+                    this._cam_axisX.normalize();
+                }             
             }
 
             Matrix.IdentityToRef(this._rotMatrix);
-            var idx = 0;
-            var index = 0;
-            var colidx = 0;
-            var colorIndex = 0;
-            var uvidx = 0;
-            var uvIndex = 0;
-            var pt = 0;
+            var idx = 0;            // current position index in the global array positions32
+            var index = 0;          // position start index in the global array positions32 of the current particle
+            var colidx = 0;         // current color index in the global array colors32
+            var colorIndex = 0;     // color start index in the global array colors32 of the current particle
+            var uvidx = 0;          // current uv index in the global array uvs32
+            var uvIndex = 0;        // uv start index in the global array uvs32 of the current particle
+            var pt = 0;             // current index in the particle model shape
 
+            if (this.mesh.isFacetDataEnabled) {
+                this._computeBoundingBox = true;
+            }
+
+            end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
             if (this._computeBoundingBox) {
-                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
-                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                if (start == 0 && end == this.nbParticles - 1) {        // all the particles are updated, then recompute the BBox from scratch
+                    Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
+                    Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                }
+                else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
+                    this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
+                    this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                }
             }
 
             // particle loop
-            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
+            
+            index = this.particles[start]._pos;
+            var vpos = (index / 3)|0;
+            colorIndex = vpos * 4;
+            uvIndex = vpos * 2;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -617,20 +726,19 @@
                             }
                         }
 
-                        // normals : if the particles can't be morphed then just rotate the normals, what if much more faster than ComputeNormals()
+                        // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
                         if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
                             this._normal.z = this._fixedNormal32[idx + 2];
 
-                            this._w = (this._normal.x * this._rotMatrix.m[3]) + (this._normal.y * this._rotMatrix.m[7]) + (this._normal.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                            this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                            this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                            this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                            this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]);
+                            this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]);
+                            this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]);
 
                             this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                             this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                          
                         }
 
                         if (this._computeParticleColor) {
@@ -644,8 +752,7 @@
                             this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
                             this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                         }
-                    }
-
+                    } 
                 } 
                 // particle not visible : scaled to zero and positioned to the camera position
                 else {
@@ -672,6 +779,41 @@
                     }
                 }
                 
+                // if the particle intersections must be computed : update the bbInfo
+                if (this._particlesIntersect) {
+                    var bInfo = this._particle._boundingInfo;
+                    var bBox = bInfo.boundingBox;
+                    var bSphere = bInfo.boundingSphere;                   
+                    if (!this._bSphereOnly) {
+                        // place, scale and rotate the particle bbox within the SPS local system, then update it
+                        for (var b = 0; b < bBox.vectors.length; b++) {
+                            this._vertex.x = this._particle._modelBoundingInfo.boundingBox.vectors[b].x * this._particle.scaling.x;
+                            this._vertex.y = this._particle._modelBoundingInfo.boundingBox.vectors[b].y * this._particle.scaling.y;
+                            this._vertex.z = this._particle._modelBoundingInfo.boundingBox.vectors[b].z * this._particle.scaling.z;
+                            this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                            this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
+                            this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
+                            this._rotated.z = ((this._vertex.x * this._rotMatrix.m[2]) + (this._vertex.y * this._rotMatrix.m[6]) + (this._vertex.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                            bBox.vectors[b].x = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                            bBox.vectors[b].y = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                            bBox.vectors[b].z = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        }
+                        bBox._update(this.mesh._worldMatrix);
+                    }
+                    // place and scale the particle bouding sphere in the SPS local system, then update it
+                    this._minBbox.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
+                    this._minBbox.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
+                    this._minBbox.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
+                    this._maxBbox.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
+                    this._maxBbox.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
+                    this._maxBbox.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
+                    bSphere.center.x = this._particle.position.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
+                    bSphere.center.y = this._particle.position.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
+                    bSphere.center.z = this._particle.position.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
+                    bSphere.radius = this._bSphereRadiusFactor * 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
+                    bSphere._update(this.mesh._worldMatrix);
+                }
+
                 // increment indexes for the next particle
                 index = idx + 3;
                 colorIndex = colidx + 4;
@@ -687,15 +829,18 @@
                     this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs32, false, false);
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
-                if (!this.mesh.areNormalsFrozen) {
-                    if (this._computeParticleVertex) {
+                if (!this.mesh.areNormalsFrozen || this.mesh.isFacetDataEnabled) {
+                    if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
-                        VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
+                        var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
+                        VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
-                        }
+                        }                       
                     }
-                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
+                    if (!this.mesh.areNormalsFrozen) {
+                        this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
+                    }
                 }
             }
             if (this._computeBoundingBox) {
@@ -703,6 +848,7 @@
                 this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
+            return this;
         }
 
         private _quaternionRotationYPR(): void {
@@ -741,7 +887,8 @@
         }
 
         /**
-        * Disposes the SPS
+        * Disposes the SPS.  
+        * Returns nothing.  
         */
         public dispose(): void {
             this.mesh.dispose();
@@ -762,12 +909,14 @@
 
         /**
         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility   
+        * Returns the SPS.  
         */
-        public refreshVisibleSize(): void {
+        public refreshVisibleSize(): SolidParticleSystem {
             if (!this._isVisibilityBoxLocked) {
                 this.mesh.refreshBoundingInfo();
             }
+            return this;
         }
 
         /** 

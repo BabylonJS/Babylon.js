@@ -1,3 +1,5 @@
+/// <reference path="..\Math\babylon.math.ts" />
+
 module BABYLON {
     class IndexedVector2 extends Vector2 {
         constructor(original: Vector2, public index: number) {

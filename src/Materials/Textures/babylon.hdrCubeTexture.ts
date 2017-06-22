@@ -25,6 +25,8 @@ module BABYLON {
         private _size: number;
         private _usePMREMGenerator: boolean;
         private _isBABYLONPreprocessed = false;
+        private _onLoad: () => void = null;
+        private _onError: () => void = null;
 
         /**
          * The texture URL.
@@ -47,6 +49,20 @@ module BABYLON {
          */
         public isPMREM = false;
 
+        protected _isBlocking: boolean = true;
+        /**
+         * Sets wether or not the texture is blocking during loading.
+         */
+        public set isBlocking(value: boolean) {
+            this._isBlocking = value;
+        }
+        /**
+         * Gets wether or not the texture is blocking during loading.
+         */
+        public get isBlocking(): boolean {
+            return this._isBlocking;
+        }
+
         /**
          * Instantiates an HDRTexture from the following parameters.
          * 
@@ -58,7 +74,7 @@ module BABYLON {
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
-        constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false) {
+        constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false, onLoad: () => void = null, onError: () => void = null) {
             super(scene);
 
             if (!url) {
@@ -70,6 +86,8 @@ module BABYLON {
             this.hasAlpha = false;
             this.isCube = true;
             this._textureMatrix = Matrix.Identity();
+            this._onLoad = onLoad;
+            this._onError = onError;
 
             if (size) {
                 this._isBABYLONPreprocessed = false;
@@ -228,12 +246,12 @@ module BABYLON {
                 return results;
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
                 callback,
-                mipmapGenerator);
+                mipmapGenerator, this._onLoad, this._onError);
         }
 
         /**
@@ -327,12 +345,12 @@ module BABYLON {
                 };
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
                 callback,
-                mipmapGenerator);
+                mipmapGenerator, this._onLoad, this._onError);
         }
 
         /**
@@ -384,12 +402,13 @@ module BABYLON {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size,
-                    texture.generateHarmonics, texture.useInGammaSpace, texture.usePMREMGenerator);
+                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap,
+                    parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
                 texture.coordinatesMode = parsedTexture.coordinatesMode;
+                texture.isBlocking = parsedTexture.isBlocking;
             }
             return texture;
         }
@@ -411,6 +430,8 @@ module BABYLON {
             serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
             serializationObject.customType = "BABYLON.HDRCubeTexture";
+            serializationObject.noMipmap = this._noMipmap;
+            serializationObject.isBlocking = this._isBlocking;
             
             return serializationObject;
         }
@@ -452,7 +473,7 @@ module BABYLON {
          * @param onError Method called if any error happens during download.
          * @return The packed binary data.
          */
-        public static generateBabylonHDR(url: string, size: number, callback: ((ArrayBuffer) => void), onError: (() => void) = null): void {
+        public static generateBabylonHDR(url: string, size: number, callback: ((ArrayBuffer: ArrayBuffer) => void), onError: (() => void) = null): void {
             // Needs the url tho create the texture.
             if (!url) {
                 return null;

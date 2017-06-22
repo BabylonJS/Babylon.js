@@ -120,6 +120,8 @@
         public run(scene: Scene, onSuccess: () => void, onError: () => void) {
             var img = new Image();
 
+            Tools.SetCorsBehavior(this.url, img);
+
             img.onload = () => {
                 this.image = img;
                 this.isCompleted = true;
@@ -143,9 +145,15 @@
         }
     }
 
-    export class TextureAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+    export interface ITextureAssetTask extends IAssetTask {
+        onSuccess: (task: ITextureAssetTask) => void;
+        onError: (task: ITextureAssetTask) => void;
+        texture: Texture;
+    }
+
+    export class TextureAssetTask implements ITextureAssetTask {
+        public onSuccess: (task: ITextureAssetTask) => void;
+        public onError: (task: ITextureAssetTask) => void;
 
         public isCompleted = false;
         public texture: Texture;
@@ -177,11 +185,79 @@
         }
     }
 
+    export class CubeTextureAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public texture: CubeTexture;
+
+        constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+
+            var onload = () => {
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            var onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+
+            this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
+        }
+    }
+
+      export class HDRCubeTextureAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public texture: HDRCubeTexture;
+
+        constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+
+            var onload = () => {
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            var onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+
+            this.texture = new HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.useInGammaSpace, this.usePMREMGenerator, onload, onerror);
+        }
+    }
+
     export class AssetsManager {
-        private _tasks = new Array<IAssetTask>();
         private _scene: Scene;
 
-        private _waitingTasksCount = 0;
+        protected tasks = new Array<IAssetTask>();
+        protected waitingTasksCount = 0;
 
         public onFinish: (tasks: IAssetTask[]) => void;
         public onTaskSuccess: (task: IAssetTask) => void;
@@ -195,45 +271,60 @@
 
         public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): IAssetTask {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
-            this._tasks.push(task);
+            this.tasks.push(task);
 
             return task;
         }
 
         public addTextFileTask(taskName: string, url: string): IAssetTask {
             var task = new TextFileAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
 
             return task;
         }
 
         public addBinaryFileTask(taskName: string, url: string): IAssetTask {
             var task = new BinaryFileAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
 
             return task;
         }
 
         public addImageTask(taskName: string, url: string): IAssetTask {
             var task = new ImageAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
 
             return task;
         }
 
-        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): IAssetTask {
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): ITextureAssetTask {
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
-            this._tasks.push(task);
+            this.tasks.push(task);
 
             return task;
         }
 
-        private _decreaseWaitingTasksCount(): void {
-            this._waitingTasksCount--;
 
-            if (this._waitingTasksCount === 0) {
+        public addCubeTextureTask(name: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): IAssetTask {
+            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
+            this.tasks.push(task);
+
+            return task;
+        }
+
+        public addHDRCubeTextureTask(name: string, url: string, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false): IAssetTask {
+            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
+            this.tasks.push(task);
+
+            return task;
+        }
+        
+        private _decreaseWaitingTasksCount(): void {
+            this.waitingTasksCount--;
+
+            if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    this.onFinish(this.tasks);
                 }
 
                 this._scene.getEngine().hideLoadingUI();
@@ -255,16 +346,16 @@
         }
 
         public reset(): AssetsManager {
-            this._tasks = new Array<IAssetTask>();
+            this.tasks = new Array<IAssetTask>();
             return this;
         }
 
         public load(): AssetsManager {
-            this._waitingTasksCount = this._tasks.length;
+            this.waitingTasksCount = this.tasks.length;
 
-            if (this._waitingTasksCount === 0) {
+            if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    this.onFinish(this.tasks);
                 }
                 return this;
             }
@@ -273,8 +364,8 @@
                 this._scene.getEngine().displayLoadingUI();
             }
 
-            for (var index = 0; index < this._tasks.length; index++) {
-                var task = this._tasks[index];
+            for (var index = 0; index < this.tasks.length; index++) {
+                var task = this.tasks[index];
                 this._runTask(task);
             }
 

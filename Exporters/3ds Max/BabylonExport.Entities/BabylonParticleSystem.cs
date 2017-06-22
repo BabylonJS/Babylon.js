@@ -6,6 +6,15 @@ namespace BabylonExport.Entities
     public class BabylonParticleSystem
     {
         [DataMember]
+        public string name { get; set; }
+
+        [DataMember]
+        public bool preventAutoStart { get; set; }
+
+        [DataMember]
+        public bool autoAnimate { get; set; }
+
+        [DataMember]
         public string emitterId { get; set; }
 
         [DataMember]
@@ -33,16 +42,13 @@ namespace BabylonExport.Entities
         public float[] colorDead { get; set; }
 
         [DataMember]
-        public float deadAlpha { get; set; }
-
-        [DataMember]
         public float emitRate { get; set; }
 
         [DataMember]
         public float updateSpeed { get; set; }
 
         [DataMember]
-        public int targetStopFrame { get; set; }
+        public float targetStopDuration { get; set; }
 
         [DataMember]
         public float minEmitPower { get; set; }
@@ -82,5 +88,19 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public bool linkToEmitter { get; set; }
+
+        [DataMember]
+        public object[] animations { get; set; }
+
+        [DataMember]
+        public object customShader { get; set; }
+
+        public BabylonParticleSystem()
+        {
+            this.preventAutoStart = true;
+            this.autoAnimate = false;
+            this.animations = null;
+            this.customShader = null;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="Tools\babylon.decorators.ts" />
+
+module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
@@ -15,6 +17,11 @@
 
         @serialize()
         public state = "";
+
+        @serialize()
+        public metadata: any = null;
+
+        public doNotSerialize = false;
 
         public animations = new Array<Animation>();
         private _ranges: { [name: string]: AnimationRange; } = {};
@@ -61,6 +68,24 @@
             return this._parentNode;
         }
 
+        public getClassName(): string {
+            return "Node";
+        }
+
+        /**
+        * An event triggered when the mesh is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Node>();
+
+        private _onDisposeObserver: Observer<Node>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
         /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
@@ -69,7 +94,7 @@
         constructor(name: string, scene: Scene) {
             this.name = name;
             this.id = name;
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
             this._initCache();
         }
 
@@ -239,16 +264,7 @@
             this._getDescendants(results, directDescendantsOnly, predicate);
 
             return results;
-        }
-        
-        /**
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
-         * @Deprecated, legacy support.
-         * use getDecendants instead.
-         */
-        public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            return this.getDescendants(true, predicate);
-        }
+        }    
         
         /**
          * Get all child-meshes of this node.
@@ -259,6 +275,13 @@
                 return ((!predicate || predicate(node)) && (node instanceof AbstractMesh));
             });
             return results;
+        }
+
+        /**
+         * Get all direct children of this node.
+        */
+        public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            return this.getDescendants(true, predicate);
         }
 
         public _setReady(state: boolean): void {
@@ -338,8 +361,12 @@
 
         public dispose(): void {
             this.parent = null;
-        }
 
+            // Callback
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
+        }
+        
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {

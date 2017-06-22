@@ -5,8 +5,35 @@
                 target.__serializableMembers = {};
             }
 
-            target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            if (!target.__serializableMembers[propertyKey]) {
+                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            }
         }
+    }
+
+    function generateExpandMember(setCallback: string, targetKey: string) {
+        return (target: any, propertyKey: string) => {
+            var key = targetKey || ("_" + propertyKey);
+            Object.defineProperty(target, propertyKey, {
+                get: function () {
+                    return this[key];
+                },
+                set: function (value) {
+                    if (this[key] === value) {
+                        return;
+                    }
+                    this[key] = value;
+                    
+                    target[setCallback].apply(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+        }
+    }
+
+    export function expandToProperty(callback: string, targetKey?: string) {
+        return generateExpandMember(callback, targetKey);
     }
 
     export function serialize(sourceName?: string) {
@@ -49,7 +76,9 @@
             }
 
             // Tags
-            serializationObject.tags = Tags.GetTags(entity);
+            if (Tags) {
+                serializationObject.tags = Tags.GetTags(entity);
+            }
 
             // Properties
             for (var property in (<any>entity).__serializableMembers) {
@@ -95,7 +124,9 @@
             var destination = creationFunction();
 
             // Tags
-            Tags.AddTagsTo(destination, source.tags);
+            if (Tags) {
+                Tags.AddTagsTo(destination, source.tags);
+            }
 
             // Properties
             for (var property in (<any>destination).__serializableMembers) {
@@ -140,7 +171,9 @@
             var destination = creationFunction();
 
             // Tags
-            Tags.AddTagsTo(destination, (<any>source).tags);
+            if (Tags) {
+                Tags.AddTagsTo(destination, (<any>source).tags);
+            }
 
             // Properties
             for (var property in (<any>destination).__serializableMembers) {

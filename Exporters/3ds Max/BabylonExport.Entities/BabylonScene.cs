@@ -37,7 +37,10 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public float[] gravity { get; set; }
-        
+
+        [DataMember]
+        public string physicsEngine { get; set; }
+
         [DataMember]
         public bool physicsEnabled { get; set; }
 
@@ -80,6 +83,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonActions actions { get; set; }
 
+        [DataMember]
+        public object metadata { get; set; }
+
+        [DataMember]
+        public bool workerCollisions { get; set; }
+
         public BabylonVector3 MaxVector { get; set; }
         public BabylonVector3 MinVector { get; set; }
 
@@ -119,7 +128,7 @@ namespace BabylonExport.Entities
             MinVector = new BabylonVector3 { X = float.MaxValue, Y = float.MaxValue, Z = float.MaxValue };
         }
 
-        public void Prepare(bool generateDefaultLight = true)
+        public void Prepare(bool generateDefaultLight = true, bool generateDefaultCamera = true)
         {
             meshes = MeshesList.ToArray();
             sounds = SoundsList.ToArray();
@@ -129,7 +138,7 @@ namespace BabylonExport.Entities
             shadowGenerators = ShadowGeneratorsList.ToArray();
             skeletons = SkeletonsList.ToArray();
 
-            if (CamerasList.Count == 0)
+            if (CamerasList.Count == 0 && generateDefaultCamera)
             {
                 var camera = new BabylonCamera { name = "Default camera", id = Guid.NewGuid().ToString() };
 

@@ -3,12 +3,47 @@
         dispose(): void;
     }
 
+    class ClickInfo {
+        private _singleClick = false;
+        private _doubleClick = false;
+        private _hasSwiped = false;
+        private _ignore = false;
+
+        public get singleClick(): boolean {
+            return this._singleClick;
+        }
+        public get doubleClick(): boolean {
+            return this._doubleClick;
+        }
+        public get hasSwiped(): boolean{
+            return this._hasSwiped;
+        }
+        public get ignore(): boolean{
+            return this._ignore;
+        }
+
+        public set singleClick(b: boolean) {
+            this._singleClick = b;
+        }
+        public set doubleClick(b: boolean) {
+            this._doubleClick = b;
+        }
+        public set hasSwiped(b: boolean) {
+            this._hasSwiped = b;
+        }
+        public set ignore(b: boolean) {
+            this._ignore = b;
+        }
+    }
+
     export class PointerEventTypes {
         static _POINTERDOWN = 0x01;
         static _POINTERUP = 0x02;
         static _POINTERMOVE = 0x04;
         static _POINTERWHEEL = 0x08;
         static _POINTERPICK = 0x10;
+        static _POINTERTAP = 0x20;
+        static _POINTERDOUBLETAP = 0x40;
 
         public static get POINTERDOWN(): number {
             return PointerEventTypes._POINTERDOWN;
@@ -29,12 +64,20 @@
         public static get POINTERPICK(): number {
             return PointerEventTypes._POINTERPICK;
         }
+        
+        public static get POINTERTAP(): number {
+            return PointerEventTypes._POINTERTAP;
+        }
+
+        public static get POINTERDOUBLETAP(): number {
+            return PointerEventTypes._POINTERDOUBLETAP;
+        }
     }
 
     export class PointerInfoBase {
         constructor(public type: number, public event: PointerEvent | MouseWheelEvent) {
         }
-        
+
     }
 
     /**
@@ -60,6 +103,55 @@
         constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
             super(type, event);
         }
+    }
+
+    /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    export class RenderingGroupInfo {
+        /**
+         * The Scene that being rendered
+         */
+        scene: Scene;
+
+        /**
+         * The camera currently used for the rendering pass
+         */
+        camera: Camera;
+
+        /**
+         * The ID of the renderingGroup being processed
+         */
+        renderingGroupId: number;
+
+        /**
+         * The rendering stage, can be either STAGE_PRECLEAR, STAGE_PREOPAQUE, STAGE_PRETRANSPARENT, STAGE_POSTTRANSPARENT
+         */
+        renderStage: number;
+
+        /**
+         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
+         * This stage will be fired no matter what
+         */
+        static STAGE_PRECLEAR = 1;
+
+        /**
+         * Called before opaque object are rendered.
+         * This stage will be fired only if there's 3D Opaque content to render
+         */
+        static STAGE_PREOPAQUE = 2;
+
+        /**
+         * Called after the opaque objects are rendered and before the transparent ones
+         * This stage will be fired only if there's 3D transparent content to render
+         */
+        static STAGE_PRETRANSPARENT = 3;
+
+        /**
+         * Called after the transparent object are rendered, last hook of the renderingGroup phase
+         * This stage will be fired no matter what
+         */
+        static STAGE_POSTTRANSPARENT = 4;
     }
 
     /**
@@ -94,17 +186,51 @@
 
         // Members
         public autoClear = true;
-        public clearColor: any = new Color3(0.2, 0.2, 0.3);
+        public autoClearDepthAndStencil = true;
+        public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
+        protected _environmentTexture: BaseTexture;
+        /**
+         * Texture used in all pbr material as the reflection texture.
+         * As in the majority of the scene they are the same (exception for multi room and so on),
+         * this is easier to reference from here than from all the materials.
+         */
+        public get environmentTexture(): BaseTexture {
+            return this._environmentTexture;
+        }
+        /**
+         * Texture used in all pbr material as the reflection texture.
+         * As in the majority of the scene they are the same (exception for multi room and so on),
+         * this is easier to set here than in all the materials.
+         */
+        public set environmentTexture(value: BaseTexture) {
+            this._environmentTexture = value;
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
         public forceWireframe = false;
-        public forcePointsCloud = false;
+        private _forcePointsCloud = false;
+        public set forcePointsCloud(value : boolean) {
+            if (this._forcePointsCloud === value) {
+                return;
+            }
+            this._forcePointsCloud = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forcePointsCloud(): boolean {
+            return this._forcePointsCloud;
+        }   
+
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
+
+        // Metadata
+        public metadata: any = null;
 
         // Events
 
@@ -233,6 +359,13 @@
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
+        /**
+         * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+         * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+         * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+         */
+        public onRenderingGroupObservable = new Observable<RenderingGroupInfo>();
+
         // Animations
         public animations: Animation[] = [];
 
@@ -244,21 +377,9 @@
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
 
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        /**
-         * @deprecated Use onPointerObservable instead
-         */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
@@ -276,13 +397,35 @@
             return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
         }
 
+        public static DragMovementThreshold = 10; // in pixels
+        public static LongPressDelay = 500; // in milliseconds
+        public static DoubleClickDelay = 300; // in milliseconds
+        public static ExclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
+
+        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
+        private _initActionManager: (act: ActionManager, clickInfo: ClickInfo) => ActionManager;
+        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
+        private _delayedSimpleClickTimeout;
+        private _previousDelayedSimpleClickTimeout;
+        private _meshPickProceed = false;
+
+        private _previousButtonPressed;
+        private _previousHasSwiped = false;
+        private _currentPickResult = null;
+        private _previousPickResult = null;
+        private _isButtonPressed = false;
+        private _doubleClickOccured = false;
+
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
         private _unTranslatedPointerX: number;
         private _unTranslatedPointerY: number;
         private _startingPointerPosition = new Vector2(0, 0);
+        private _previousStartingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
+        private _previousStartingPointerTime = 0;
+        
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -290,13 +433,52 @@
         private _onKeyDown: (evt: Event) => void;
         private _onKeyUp: (evt: Event) => void;
 
+        // Coordinate system
+        /**
+        * use right-handed coordinate system on this scene.
+        * @type {boolean}
+        */
+        private _useRightHandedSystem = false;
+        public set useRightHandedSystem(value: boolean) {
+            if (this._useRightHandedSystem === value) {
+                return;
+            }
+            this._useRightHandedSystem = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get useRightHandedSystem(): boolean {
+            return this._useRightHandedSystem;
+        }
+
         // Fog
         /**
         * is fog enabled on this scene.
         * @type {boolean}
         */
-        public fogEnabled = true;
-        public fogMode = Scene.FOGMODE_NONE;
+        private _fogEnabled = true;
+        public set fogEnabled(value : boolean) {
+            if (this._fogEnabled === value) {
+                return;
+            }
+            this._fogEnabled = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogEnabled(): boolean {
+            return this._fogEnabled;
+        }   
+
+        private _fogMode = Scene.FOGMODE_NONE;
+        public set fogMode(value : number) {
+            if (this._fogMode === value) {
+                return;
+            }
+            this._fogMode = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get fogMode(): number {
+            return this._fogMode;
+        }  
+
         public fogColor = new Color3(0.2, 0.2, 0.3);
         public fogDensity = 0.1;
         public fogStart = 0;
@@ -307,12 +489,35 @@
         * is shadow enabled on this scene.
         * @type {boolean}
         */
-        public shadowsEnabled = true;
+        private _shadowsEnabled = true;
+        public set shadowsEnabled(value : boolean) {
+            if (this._shadowsEnabled === value) {
+                return;
+            }
+            this._shadowsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+        }
+        public get shadowsEnabled(): boolean {
+            return this._shadowsEnabled;
+        }       
+
         /**
         * is light enabled on this scene.
         * @type {boolean}
         */
-        public lightsEnabled = true;
+        private _lightsEnabled = true;
+        public set lightsEnabled(value : boolean) {
+            if (this._lightsEnabled === value) {
+                return;
+            }
+            this._lightsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+        }
+
+        public get lightsEnabled(): boolean {
+            return this._lightsEnabled;
+        }
+
         /**
         * All of the lights added to this scene.
         * @see BABYLON.Light
@@ -343,10 +548,34 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        public defaultMaterial = new StandardMaterial("default material", this);
+        private _defaultMaterial: Material;
+
+        public get defaultMaterial(): Material {
+            if (!this._defaultMaterial) {
+                this._defaultMaterial = new StandardMaterial("default material", this);
+            }
+
+            return this._defaultMaterial;
+        }
+
+        public set defaultMaterial(value: Material) {
+            this._defaultMaterial = value;
+        }
 
         // Textures
-        public texturesEnabled = true;
+        private _texturesEnabled = true;
+        public set texturesEnabled(value : boolean) {
+            if (this._texturesEnabled === value) {
+                return;
+            }
+            this._texturesEnabled = value;
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
+        public get texturesEnabled(): boolean {
+            return this._texturesEnabled;
+        }     
+
         public textures = new Array<BaseTexture>();
 
         // Particles
@@ -359,10 +588,26 @@
 
         // Layers
         public layers = new Array<Layer>();
+        public highlightLayers = new Array<HighlightLayer>();
 
         // Skeletons
-        public skeletonsEnabled = true;
+        private _skeletonsEnabled = true;
+        public set skeletonsEnabled(value : boolean) {
+            if (this._skeletonsEnabled === value) {
+                return;
+            }
+            this._skeletonsEnabled = value;
+            this.markAllMaterialsAsDirty(Material.AttributesDirtyFlag);
+        }
+
+        public get skeletonsEnabled(): boolean {
+            return this._skeletonsEnabled;
+        }       
+
         public skeletons = new Array<Skeleton>();
+
+        // Morph targets
+        public morphTargetManagers = new Array<MorphTargetManager>();
 
         // Lens flares
         public lensFlaresEnabled = true;
@@ -377,7 +622,14 @@
         // Postprocesses
         public postProcessesEnabled = true;
         public postProcessManager: PostProcessManager;
-        public postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
+        private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
+        public get postProcessRenderPipelineManager(): PostProcessRenderPipelineManager {
+            if (!this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
+            }
+
+            return this._postProcessRenderPipelineManager;
+        }
 
         // Customs render targets
         public renderTargetsEnabled = true;
@@ -402,7 +654,7 @@
          * @type {BABYLON.ActionManager}
         */
         public actionManager: ActionManager;
-     
+
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 
@@ -423,29 +675,37 @@
         private _engine: Engine;
 
         // Performance counters
-        private _totalMeshesCounter           = new PerfCounter();
-        private _totalLightsCounter           = new PerfCounter();
-        private _totalMaterialsCounter        = new PerfCounter();
-        private _totalTexturesCounter         = new PerfCounter();
-        private _totalVertices                = new PerfCounter();
-        public  _activeIndices                = new PerfCounter();
-        public  _activeParticles              = new PerfCounter();
-        private _lastFrameDuration            = new PerfCounter();
+        private _totalMeshesCounter = new PerfCounter();
+        private _totalLightsCounter = new PerfCounter();
+        private _totalMaterialsCounter = new PerfCounter();
+        private _totalTexturesCounter = new PerfCounter();
+        private _totalVertices = new PerfCounter();
+        public _activeIndices = new PerfCounter();
+        public _activeParticles = new PerfCounter();
+        private _lastFrameDuration = new PerfCounter();
         private _evaluateActiveMeshesDuration = new PerfCounter();
-        private _renderTargetsDuration        = new PerfCounter();
-        public  _particlesDuration            = new PerfCounter();
-        private _renderDuration               = new PerfCounter();
-        public  _spritesDuration              = new PerfCounter();
-        public  _activeBones                  = new PerfCounter();
+        private _renderTargetsDuration = new PerfCounter();
+        public _particlesDuration = new PerfCounter();
+        private _renderDuration = new PerfCounter();
+        public _spritesDuration = new PerfCounter();
+        public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
 
-        private _animationStartDate: number;
+        private _animationTimeLast: number;
+        private _animationTime: number = 0;
+        public animationTimeScale: number = 1;
+
         public _cachedMaterial: Material;
+        public _cachedEffect: Effect;
+        public _cachedVisibility: number;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
         private _intermediateRendering = false;
+
+        private _viewUpdateFlag = -1;
+        private _projectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
         private _pendingData = [];//ANY
@@ -463,15 +723,22 @@
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
-        private _pickWithRayInverseMatrix: Matrix;
+        private _sceneUbo: UniformBuffer;
 
-        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+        private _pickWithRayInverseMatrix: Matrix;
+        
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
+        
         private _frustumPlanes: Plane[];
+        public get frustumPlanes(): Plane[] {
+            return this._frustumPlanes;
+        }
+
+        public requireLightSorting = false;
 
         private _selectionOctree: Octree<AbstractMesh>;
 
@@ -481,28 +748,29 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
+        private _geometryBufferRenderer: GeometryBufferRenderer;
 
         private _uniqueIdCounter = 0;
 
         private _pickedDownMesh: AbstractMesh;
+        private _pickedUpMesh: AbstractMesh;
         private _pickedDownSprite: Sprite;
+        private _externalData: StringDictionary<Object>;
+        private _uid: string;
 
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
          */
         constructor(engine: Engine) {
-            this._engine = engine;
+            this._engine = engine || Engine.LastCreatedEngine;
 
-            engine.scenes.push(this);
+            this._engine.scenes.push(this);
+            this._uid = null;
 
             this._renderingManager = new RenderingManager(this);
 
             this.postProcessManager = new PostProcessManager(this);
-
-            this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
-
-            this._boundingBoxRenderer = new BoundingBoxRenderer(this);
 
             if (OutlineRenderer) {
                 this._outlineRenderer = new OutlineRenderer(this);
@@ -521,6 +789,9 @@
 
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
+
+            // Uniform Buffer
+            this._createUbo();
         }
 
         // Properties
@@ -532,6 +803,9 @@
         }
 
         public set workerCollisions(enabled: boolean) {
+            if (!BABYLON.CollisionCoordinatorLegacy) {
+                return;
+            }
 
             enabled = (enabled && !!Worker);
 
@@ -549,7 +823,7 @@
             return this._workerCollisions;
         }
 
-        public get SelectionOctree(): Octree<AbstractMesh> {
+        public get selectionOctree(): Octree<AbstractMesh> {
             return this._selectionOctree;
         }
 
@@ -581,7 +855,23 @@
             return this._cachedMaterial;
         }
 
+        public getCachedEffect(): Effect {
+            return this._cachedEffect;
+        }
+
+        public getCachedVisibility(): number {
+            return this._cachedVisibility;
+        }
+
+        public isCachedMaterialValid(material: Material, effect: Effect, visibility: number = 0) {
+            return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
+        }
+
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
+            if (!this._boundingBoxRenderer) {
+                this._boundingBoxRenderer = new BoundingBoxRenderer(this);
+            }
+
             return this._boundingBoxRenderer;
         }
 
@@ -701,6 +991,12 @@
             }
         }
 
+        private _createUbo(): void {
+            this._sceneUbo = new UniformBuffer(this._engine, null, true);
+            this._sceneUbo.addUniform("viewProjection", 16);
+            this._sceneUbo.addUniform("view", 16);
+        }
+
         // Pointers handling
 
         /**
@@ -710,6 +1006,138 @@
         * @param attachMove defines if you want to attach events to pointermove
         */
         public attachControl(attachUp = true, attachDown = true, attachMove = true) {
+            this._initActionManager = (act: ActionManager, clickInfo: ClickInfo): ActionManager => {
+                if (!this._meshPickProceed) {
+                    let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
+                    this._currentPickResult = pickResult;
+                    if (pickResult) {
+                        act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    }
+                    this._meshPickProceed = true;
+                }
+                return act;
+            };
+
+            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => {
+                // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
+                if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
+                btn !== this._previousButtonPressed ) {
+                    this._doubleClickOccured = false;
+                    clickInfo.singleClick = true;
+                    clickInfo.ignore = false;
+                    cb(clickInfo, this._currentPickResult);
+                }
+            }
+
+            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void): void => {
+                    let clickInfo = new ClickInfo();
+                    this._currentPickResult = null;
+                    let act;
+
+                    let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
+                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
+                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                    if (!checkPicking && BABYLON.ActionManager && ActionManager.HasPickTriggers) {
+                        act = this._initActionManager(act, clickInfo);
+                        if (act)
+                            checkPicking = act.hasPickTriggers;
+                    }
+                    if (checkPicking) {
+                        let btn = evt.button;
+                        clickInfo.hasSwiped = Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
+                                              Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+
+                        if (!clickInfo.hasSwiped) {
+                            let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
+
+                            if (!checkSingleClickImmediately) {
+                                checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
+                                                              !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+
+                                if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                                    act = this._initActionManager(act, clickInfo);
+                                    if (act)
+                                        checkSingleClickImmediately = !act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                                }
+                            }
+
+                            if (checkSingleClickImmediately) {
+                                // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
+                                if (new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                                    btn !== this._previousButtonPressed ) {
+                                        clickInfo.singleClick = true;
+                                        cb(clickInfo, this._currentPickResult);
+                                }
+                            }
+                            // at least one double click is required to be check and exclusive double click is enabled
+                            else {
+                                // wait that no double click has been raised during the double click delay
+                                this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                                this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), Scene.DoubleClickDelay);
+                            }
+
+                            let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
+                                                   obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                            if (!checkDoubleClick && ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)){
+                                act = this._initActionManager(act, clickInfo);
+                                if (act)
+                                    checkDoubleClick = act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                            }
+                            if (checkDoubleClick) {
+                                // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
+                                if (btn === this._previousButtonPressed &&
+                                    new Date().getTime() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                                    !this._doubleClickOccured
+                                ) {
+                                    // pointer has not moved for 2 clicks, it's a double click
+                                    if (!clickInfo.hasSwiped &&
+                                        Math.abs(this._previousStartingPointerPosition.x - this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
+                                        Math.abs(this._previousStartingPointerPosition.y - this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
+                                        this._previousStartingPointerTime = 0;
+                                        this._doubleClickOccured = true;
+                                        clickInfo.doubleClick = true;
+                                        clickInfo.ignore = false;
+                                        if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
+                                            this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                                        cb(clickInfo, this._currentPickResult);
+                                    }
+                                    // if the two successive clicks are too far, it's just two simple clicks
+                                    else {
+                                        this._doubleClickOccured = false;
+                                        this._previousStartingPointerTime = this._startingPointerTime;
+                                        this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
+                                        this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
+                                        this._previousButtonPressed = btn;
+                                        this._previousHasSwiped = clickInfo.hasSwiped;
+                                        if (Scene.ExclusiveDoubleClickMode){
+                                            if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
+                                                this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                            }
+                                            this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                                            cb(clickInfo, this._previousPickResult);
+                                        }
+                                        else {
+                                            cb(clickInfo, this._currentPickResult);
+                                        }
+                                    }
+                                }
+                                // just the first click of the double has been raised
+                                else {
+                                    this._doubleClickOccured = false;
+                                    this._previousStartingPointerTime = this._startingPointerTime;
+                                    this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
+                                    this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
+                                    this._previousButtonPressed = btn;
+                                    this._previousHasSwiped = clickInfo.hasSwiped;
+                                }
+                            }
+                        }
+                    }
+                    clickInfo.ignore = true;
+                    cb(clickInfo, this._currentPickResult);
+            };
+
             var spritePredicate = (sprite: Sprite): boolean => {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
@@ -735,19 +1163,23 @@
                 var canvas = this._engine.getRenderingCanvas();
 
                 if (!this.pointerMovePredicate) {
-                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
                 }
 
                 // Meshes
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit && pickResult.pickedMesh) {
+                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
                     if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = this.hoverCursor;
+                        if (this._pointerOverMesh.actionManager.hoverCursor) {
+                            canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                        } else {
+                            canvas.style.cursor = this.hoverCursor;
+                        }
                     } else {
                         canvas.style.cursor = "";
                     }
@@ -756,9 +1188,13 @@
                     // Sprites
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
-                    if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = this.hoverCursor;
+                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         this.setPointerOverSprite(pickResult.pickedSprite);
+                        if (this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
+                            canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
+                        } else {
+                            canvas.style.cursor = this.hoverCursor;
+                        }
                     } else {
                         this.setPointerOverSprite(null);
                         // Restore pointer
@@ -778,6 +1214,10 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
+                this._isButtonPressed = true;
+                this._pickedDownMesh = null;
+                this._meshPickProceed = false;
+
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
@@ -800,7 +1240,7 @@
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                     };
                 }
 
@@ -808,40 +1248,41 @@
                 this._pickedDownMesh = null;
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit && pickResult.pickedMesh) {
-                    if (pickResult.pickedMesh.actionManager) {
-                        this._pickedDownMesh = pickResult.pickedMesh;
-                        if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
+                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                    this._pickedDownMesh = pickResult.pickedMesh;
+                    var actionManager = pickResult.pickedMesh.actionManager;
+                    if (actionManager) {
+                        if (actionManager.hasPickTriggers) {
+                            actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             switch (evt.button) {
                                 case 0:
-                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                                 case 1:
-                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                                 case 2:
-                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                             }
-                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         }
 
-                        if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
-                            var that = this;
-                            window.setTimeout(function () {
-                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
-                                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
-                                    false, that.cameraToUseForPointers);
+                        if (actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
+                            window.setTimeout((function () {
+                                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
+                                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh,
+                                    false, this.cameraToUseForPointers);
 
-                                if (pickResult.hit && pickResult.pickedMesh) {
-                                    if (pickResult.pickedMesh.actionManager) {
-                                        if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < ActionManager.DragMovementThreshold)) {
-                                            that._startingPointerTime = 0;
-                                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                        }
+                                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                                    if (this._isButtonPressed &&
+                                        ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                        (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
+                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                            this._startingPointerTime = 0;
+                                            actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     }
                                 }
-                            }, ActionManager.LongPressDelay);
+                            }).bind(this), Scene.LongPressDelay);
                         }
                     }
                 }
@@ -861,7 +1302,7 @@
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
-                    if (pickResult.hit && pickResult.pickedSprite) {
+                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             this._pickedDownSprite = pickResult.pickedSprite;
                             switch (evt.button) {
@@ -875,91 +1316,149 @@
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                                     break;
                             }
-                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                            if (pickResult.pickedSprite.actionManager) {
+                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                            }
                         }
                     }
                 }
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
+                this._isButtonPressed = false;
+                this._pickedUpMesh = null;
+                this._meshPickProceed = false;
+
                 this._updatePointerPosition(evt);
 
-                // PreObservable support
-                if (this.onPrePointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERUP;
-                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                    this.onPrePointerObservable.notifyObservers(pi, type);
-                    if (pi.skipOnPointerObservable) {
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable,  evt, (function(clickInfo, pickResult){
+                    // PreObservable support
+                    if (this.onPrePointerObservable.hasObservers()) {
+                        if (!clickInfo.ignore) {
+                            if (!clickInfo.hasSwiped) {
+                                if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                                    let type = PointerEventTypes.POINTERTAP;
+                                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    if (pi.skipOnPointerObservable) {
+                                        return;
+                                    }
+                                }
+                                if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                                    let type = PointerEventTypes.POINTERDOUBLETAP;
+                                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    if (pi.skipOnPointerObservable) {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            let type = PointerEventTypes.POINTERUP;
+                            let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                            this.onPrePointerObservable.notifyObservers(pi, type);
+                            if (pi.skipOnPointerObservable) {
+                                return;
+                            }
+                        }
+                    }
+
+                    if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
-                }
 
-                if (!this.cameraToUseForPointers && !this.activeCamera) {
-                    return;
-                }
+                    if (!this.pointerUpPredicate) {
+                        this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
+                            return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                        };
+                    }
 
-                if (!this.pointerUpPredicate) {
-                    this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)));
-                    };
-                }
+                    // Meshes
+                    if (!this._meshPickProceed && (BABYLON.ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
+                        this._initActionManager(null, clickInfo);
+                    }
+                    if (!pickResult) {
+                        pickResult = this._currentPickResult;
+                    }
 
-                // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerUpPredicate, false, this.cameraToUseForPointers);
-
-                if (pickResult.hit && pickResult.pickedMesh) {
-                    if (this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
-                        if (this.onPointerPick) {
-                            this.onPointerPick(evt, pickResult);
+                    if (pickResult && pickResult && pickResult.pickedMesh) {
+                        this._pickedUpMesh = pickResult.pickedMesh;
+                        if (this._pickedDownMesh === this._pickedUpMesh) {
+                            if (this.onPointerPick) {
+                                this.onPointerPick(evt, pickResult);
+                            }
+                            if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
+                                let type = PointerEventTypes.POINTERPICK;
+                                let pi = new PointerInfo(type, evt, pickResult);
+                                this.onPointerObservable.notifyObservers(pi, type);
+                            }
                         }
-                        if (this.onPointerObservable.hasObservers()) {
-                            let type = PointerEventTypes.POINTERPICK;
+                        if (pickResult.pickedMesh.actionManager) {
+                            if (clickInfo.ignore) {
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                            if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                            if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            }
+                        }
+                    }
+                    if (this._pickedDownMesh &&
+                        this._pickedDownMesh.actionManager && 
+                        this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
+                        this._pickedDownMesh !== this._pickedUpMesh) {
+                        this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                    }
+
+                    if (this.onPointerUp) {
+                        this.onPointerUp(evt, pickResult);
+                    }
+
+                    if (this.onPointerObservable.hasObservers()) {
+                        if (!clickInfo.ignore) {
+                            if (!clickInfo.hasSwiped) {
+                                if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                                    let type = PointerEventTypes.POINTERTAP;
+                                    let pi = new PointerInfo(type, evt, pickResult);
+                                    this.onPointerObservable.notifyObservers(pi, type);
+                                }
+                                if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                                    let type = PointerEventTypes.POINTERDOUBLETAP;
+                                    let pi = new PointerInfo(type, evt, pickResult);
+                                    this.onPointerObservable.notifyObservers(pi, type);
+                                }
+                            }
+                        }
+                        else {
+                            let type = PointerEventTypes.POINTERUP;
                             let pi = new PointerInfo(type, evt, pickResult);
                             this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
-                    if (pickResult.pickedMesh.actionManager) {
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
-                        if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
-                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                        }
-                    }
-                }
-                if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
-                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
-                }
+                    // Sprites
+                    if (this.spriteManagers.length > 0) {
+                        pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
-                if (this.onPointerUp) {
-                    this.onPointerUp(evt, pickResult);
-                }
-
-                if (this.onPointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERUP;
-                    let pi = new PointerInfo(type, evt, pickResult);
-                    this.onPointerObservable.notifyObservers(pi, type);
-                }
-
-                this._startingPointerTime = 0;
-
-                // Sprites
-                if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
-
-                    if (pickResult.hit && pickResult.pickedSprite) {
-                        if (pickResult.pickedSprite.actionManager) {
-                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-
-                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                        if (pickResult.hit && pickResult.pickedSprite) {
+                            if (pickResult.pickedSprite.actionManager) {
+                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                if (pickResult.pickedSprite.actionManager) {
+                                    if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
+                                        pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    }
+                                }
                             }
                         }
+                        if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== pickResult.pickedSprite) {
+                            this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                        }
                     }
-                    if (this._pickedDownSprite && this._pickedDownSprite !== pickResult.pickedSprite) {
-                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
-                    }
-
-                }
+                    this._previousPickResult = this._currentPickResult;
+                }).bind(this));
             };
 
             this._onKeyDown = (evt: Event) => {
@@ -1020,6 +1519,8 @@
                 return false;
             }
             var index: number;
+
+            // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
 
@@ -1028,8 +1529,17 @@
                 }
             }
 
+            // Meshes
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
+
+                if (!mesh.isEnabled()) {
+                    continue;
+                }
+
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
 
                 if (!mesh.isReady()) {
                     return false;
@@ -1048,6 +1558,8 @@
 
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
+            this._cachedEffect = null;
+            this._cachedVisibility = null;
         }
 
         public registerBeforeRender(func: () => void): void {
@@ -1128,6 +1640,10 @@
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
 
+            if(from > to && speedRatio > 0){
+                speedRatio *= -1;
+            }
+
             this.stopAnimation(target);
 
             if (!animatable) {
@@ -1179,13 +1695,14 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target 
-         * @see beginAnimation 
+         * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
+         * @see beginAnimation
          */
-        public stopAnimation(target: any): void {
+        public stopAnimation(target: any, animationName?: string): void {
             var animatable = this.getAnimatableByTarget(target);
 
             if (animatable) {
-                animatable.stop();
+                animatable.stop(animationName);
             }
         }
 
@@ -1194,19 +1711,19 @@
                 return;
             }
 
-            if (!this._animationStartDate) {
+            // Getting time
+            var now = Tools.Now;
+            if (!this._animationTimeLast) {
                 if (this._pendingData.length > 0) {
                     return;
                 }
-
-                this._animationStartDate = Tools.Now;
+                this._animationTimeLast = now;
             }
-            // Getting time
-            var now = Tools.Now;
-            var delay = now - this._animationStartDate;
-
+            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            this._animationTime += deltaTime;
+            this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
-                this._activeAnimatables[index]._animate(delay);
+                this._activeAnimatables[index]._animate(this._animationTime);
             }
         }
 
@@ -1224,6 +1741,12 @@
         }
 
         public setTransformMatrix(view: Matrix, projection: Matrix): void {
+            if (this._viewUpdateFlag === view.updateFlag && this._projectionUpdateFlag === projection.updateFlag) {
+                return;
+            }
+
+            this._viewUpdateFlag = view.updateFlag;
+            this._projectionUpdateFlag = projection.updateFlag;
             this._viewMatrix = view;
             this._projectionMatrix = projection;
 
@@ -1235,16 +1758,34 @@
             } else {
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
+
+            if (this._sceneUbo.useUbo) {
+                this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+                this._sceneUbo.updateMatrix("view", this._viewMatrix);
+                this._sceneUbo.update();
+            }
+        }
+
+        public getSceneUniformBuffer(): UniformBuffer {
+            return this._sceneUbo;
         }
 
         // Methods
 
+        public getUniqueId() {
+            var result = this._uniqueIdCounter;
+            this._uniqueIdCounter++;
+            return result;
+        }
+
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this._uniqueIdCounter++;
+            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
-            this.collisionCoordinator.onMeshAdded(newMesh);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onMeshAdded(newMesh);
+            }
 
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
@@ -1256,7 +1797,9 @@
                 this.meshes.splice(index, 1);
             }
             //notify the collision coordinator
-            this.collisionCoordinator.onMeshRemoved(toRemove);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onMeshRemoved(toRemove);
+            }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
 
@@ -1266,8 +1809,18 @@
         public removeSkeleton(toRemove: Skeleton): number {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if found 
                 this.skeletons.splice(index, 1);
+            }
+
+            return index;
+        }
+
+        public removeMorphTargetManager(toRemove: MorphTargetManager): number {
+            var index = this.morphTargetManagers.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found 
+                this.morphTargetManagers.splice(index, 1);
             }
 
             return index;
@@ -1278,6 +1831,7 @@
             if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
+                this.sortLightsByPriority();
             }
             this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
@@ -1308,13 +1862,21 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this._uniqueIdCounter++;
-            var position = this.lights.push(newLight);
+            newLight.uniqueId = this.getUniqueId();
+            this.lights.push(newLight);
+            this.sortLightsByPriority();
+
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
+        public sortLightsByPriority(): void {
+            if(this.requireLightSorting) {
+                this.lights.sort(Light.compareLightsPriority);
+            }
+        }
+
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this._uniqueIdCounter++;
+            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
@@ -1578,7 +2140,9 @@
             this._geometries.push(geometry);
 
             //notify the collision coordinator
-            this.collisionCoordinator.onGeometryAdded(geometry);
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onGeometryAdded(geometry);
+            }
 
             this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
@@ -1597,7 +2161,9 @@
                 this._geometries.splice(index, 1);
 
                 //notify the collision coordinator
-                this.collisionCoordinator.onGeometryDeleted(geometry);
+                if (this.collisionCoordinator) {
+                    this.collisionCoordinator.onGeometryDeleted(geometry);
+                }
 
                 this.onGeometryRemovedObservable.notifyObservers(geometry);
                 return true;
@@ -1797,8 +2363,92 @@
             return null;
         }
 
+        public getMorphTargetManagerById(id: number): MorphTargetManager {
+            for (var index = 0; index < this.morphTargetManagers.length; index++) {
+                if (this.morphTargetManagers[index].uniqueId === id) {
+                    return this.morphTargetManagers[index];
+                }
+            }
+
+            return null;
+        }
+
         public isActiveMesh(mesh: Mesh): boolean {
             return (this._activeMeshes.indexOf(mesh) !== -1);
+        }
+
+        /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null. 
+         */
+        public getHighlightLayerByName(name: string): HighlightLayer {
+            for (var index = 0; index < this.highlightLayers.length; index++) {
+                if (this.highlightLayers[index].name === name) {
+                    return this.highlightLayers[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Return a unique id as a string which can serve as an identifier for the scene
+         */
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
+
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            return this._externalData.add(key, data);
+        }
+
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                return null;
+            }
+            return <T>this._externalData.get(key);
+        }
+
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            return <T>this._externalData.getOrAddWithFactory(key, factory);
+        }
+
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        public removeExternalData(key): boolean {
+            return this._externalData.remove(key);
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
@@ -1806,7 +2456,7 @@
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
-                    this._boundingBoxRenderer.renderList.push(subMesh.getBoundingInfo().boundingBox);
+                    this.getBoundingBoxRenderer().renderList.push(subMesh.getBoundingInfo().boundingBox);
                 }
 
                 if (material) {
@@ -1838,8 +2488,9 @@
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
-            this._boundingBoxRenderer.reset();
-            this._edgesRenderers.reset();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.reset();
+            }
 
             // Meshes
             var meshes: AbstractMesh[];
@@ -1907,6 +2558,7 @@
                     if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
+                        this._renderingManager.dispatchParticles(particleSystem);
                     }
                 }
                 Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
@@ -1914,7 +2566,7 @@
             this._particlesDuration.endMonitoring(false);
         }
 
-        private _activeMesh(sourceMesh:AbstractMesh, mesh: AbstractMesh): void {
+        private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
@@ -1926,11 +2578,7 @@
             }
 
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                this._boundingBoxRenderer.renderList.push(sourceMesh.getBoundingInfo().boundingBox);
-            }
-
-            if (sourceMesh._edgesRenderer) {
-                this._edgesRenderers.push(sourceMesh._edgesRenderer);
+                this.getBoundingBoxRenderer().renderList.push(sourceMesh.getBoundingInfo().boundingBox);
             }
 
             if (mesh && mesh.subMeshes) {
@@ -1997,12 +2645,14 @@
 
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
+            var needsRestoreFrameBuffer = false;
+
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                    let renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
@@ -2013,14 +2663,49 @@
 
                 this._intermediateRendering = false;
                 this._renderId++;
+
+                needsRestoreFrameBuffer = true; // Restore back buffer
+            }
+
+            // Render HighlightLayer Texture
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                this._intermediateRendering = true;
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    let highlightLayer = this.highlightLayers[i];
+
+                    if (highlightLayer.shouldRender() &&
+                        (!highlightLayer.camera ||
+                            (highlightLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
+                            (highlightLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
+
+                        renderhighlights = true;
+
+                        let renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
+                        if (renderTarget._shouldRender()) {
+                            this._renderId++;
+                            renderTarget.render(false, false);
+                            needsRestoreFrameBuffer = true;
+                        }
+                    }
+                }
+
+                this._intermediateRendering = false;
+                this._renderId++;
+            }
+
+            if (needsRestoreFrameBuffer) {
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
+
             this._renderTargetsDuration.endMonitoring(false);
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
             this._renderDuration.beginMonitoring();
+
             // Backgrounds
             var layerIndex;
             var layer;
@@ -2028,7 +2713,7 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (layer.isBackground) {
+                    if (layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
                     }
                 }
@@ -2037,15 +2722,24 @@
 
             // Render
             Tools.StartPerformanceCounter("Main render");
+
+            // Activate HighlightLayer stencil
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(true);
+            }
+
             this._renderingManager.render(null, null, true, true);
+
+            // Restore HighlightLayer stencil
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(stencilState);
+            }
+
             Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
-            this._boundingBoxRenderer.render();
-
-            // Edges
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
-                this._edgesRenderers.data[edgesRendererIndex].render();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.render();
             }
 
             // Lens flares
@@ -2066,8 +2760,19 @@
                 engine.setDepthBuffer(false);
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
-                    if (!layer.isBackground) {
+                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
                         layer.render();
+                    }
+                }
+                engine.setDepthBuffer(true);
+            }
+
+            // Highlight Layer
+            if (renderhighlights) {
+                engine.setDepthBuffer(false);
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this.highlightLayers[i].render();
                     }
                 }
                 engine.setDepthBuffer(true);
@@ -2147,6 +2852,10 @@
         }
 
         public render(): void {
+            if (this.isDisposed) {
+                return;
+            }
+
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -2180,9 +2889,9 @@
 
             // Physics
             if (this._physicsEngine) {
-                Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                Tools.EndPerformanceCounter("Physics");
+               Tools.StartPerformanceCounter("Physics");
+               this._physicsEngine._step(deltaTime / 1000.0);
+               Tools.EndPerformanceCounter("Physics");
             }
 
             // Before render
@@ -2219,9 +2928,11 @@
                 this._renderId++;
             }
 
-            if (this.customRenderTargets.length > 0) { // Restore back buffer
+            // Restore back buffer
+            if (this.customRenderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
+
             this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
 
@@ -2238,7 +2949,9 @@
             }
 
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
+            if (this.autoClearDepthAndStencil || this.autoClear) {
+                this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            }
 
             // Shadows
             if (this.shadowsEnabled) {
@@ -2246,8 +2959,11 @@
                     var light = this.lights[lightIndex];
                     var shadowGenerator = light.getShadowGenerator();
 
-                    if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
-                        this._renderTargets.push(shadowGenerator.getShadowMap());
+                    if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
+                        var shadowMap = shadowGenerator.getShadowMap();
+                        if (shadowMap.getScene().textures.indexOf(shadowMap) !== -1) {
+                            this._renderTargets.push(shadowMap);
+                        }
                     }
                 }
             }
@@ -2257,16 +2973,21 @@
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
             }
 
+            // Geometry renderer
+            if (this._geometryBufferRenderer) {
+                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
+            }
+
             // RenderPipeline
-            this.postProcessRenderPipelineManager.update();
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager.update();
+            }
 
             // Multi-cameras?
             if (this.activeCameras.length > 0) {
-                var currentRenderId = this._renderId;
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                    this._renderId = currentRenderId;
                     if (cameraIndex > 0) {
-                        this._engine.clear(0, false, true);
+                        this._engine.clear(null, false, true, true);
                     }
 
                     this._processSubCameras(this.activeCameras[cameraIndex]);
@@ -2451,6 +3172,28 @@
             this._depthRenderer = null;
         }
 
+        public enableGeometryBufferRenderer(ratio: number = 1): GeometryBufferRenderer {
+            if (this._geometryBufferRenderer) {
+                return this._geometryBufferRenderer;
+            }
+
+            this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
+            if (!this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
+            }
+
+            return this._geometryBufferRenderer;
+        }
+
+        public disableGeometryBufferRenderer(): void {
+            if (!this._geometryBufferRenderer) {
+                return;
+            }
+
+            this._geometryBufferRenderer.dispose();
+            this._geometryBufferRenderer = null;
+        }
+
         public freezeMaterials(): void {
             for (var i = 0; i < this.materials.length; i++) {
                 this.materials[i].freeze();
@@ -2468,12 +3211,30 @@
             this.afterRender = null;
 
             this.skeletons = [];
+            this.morphTargetManagers = [];
 
-            this._boundingBoxRenderer.dispose();
+            this.importedMeshesFiles = new Array<string>();
 
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
+
+            // Smart arrays            
+            if (this.activeCamera) {
+                this.activeCamera._activeMeshes.dispose();
+                this.activeCamera = null;
+            }
+            this._activeMeshes.dispose();
+            this._renderingManager.dispose();
+            this._processedMaterials.dispose();
+            this._activeParticleSystems.dispose();
+            this._activeSkeletons.dispose();
+            this._softwareSkinnedMeshes.dispose();
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer.dispose();
+            }
+            this._meshesForIntersections.dispose();
+            this._toBeDisposed.dispose();
 
             // Debug layer
             if (this._debugLayer) {
@@ -2535,11 +3296,17 @@
             while (this.layers.length) {
                 this.layers[0].dispose();
             }
+            while (this.highlightLayers.length) {
+                this.highlightLayers[0].dispose();
+            }
 
             // Release textures
             while (this.textures.length) {
                 this.textures[0].dispose();
             }
+
+            // Release UBO
+            this._sceneUbo.dispose();
 
             // Post-processes
             this.postProcessManager.dispose();
@@ -2557,6 +3324,11 @@
             }
 
             this._engine.wipeCaches();
+            this._engine = null;
+        }
+
+        public get isDisposed(): boolean {
+            return !this._engine;
         }
 
         // Release sounds & sounds tracks
@@ -2624,6 +3396,10 @@
         }
 
         public createPickingRayInCameraSpace(x: number, y: number, camera: Camera): Ray {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var engine = this._engine;
 
             if (!camera) {
@@ -2644,6 +3420,10 @@
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): PickingInfo {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var pickingInfo = null;
 
             for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -2677,8 +3457,42 @@
             return pickingInfo || new PickingInfo();
         }
 
+        private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean): PickingInfo[] {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }            
+            var pickingInfos = new Array<PickingInfo>();
+
+            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+                var mesh = this.meshes[meshIndex];
+
+                if (predicate) {
+                    if (!predicate(mesh)) {
+                        continue;
+                    }
+                } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+                    continue;
+                }
+
+                var world = mesh.getWorldMatrix();
+                var ray = rayFunction(world);
+
+                var result = mesh.intersects(ray, false);
+                if (!result || !result.hit)
+                    continue;
+
+                pickingInfos.push(result);
+            }
+
+            return pickingInfos;
+        }
+
 
         private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
+            if (!BABYLON.PickingInfo) {
+                return null;
+            }
+
             var pickingInfo = null;
 
             camera = camera || this.activeCamera;
@@ -2709,27 +3523,27 @@
             return pickingInfo || new PickingInfo();
         }
 
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
         }
 
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         }
 
-        public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean) {
+        public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo {
             return this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
@@ -2737,6 +3551,28 @@
                 world.invertToRef(this._pickWithRayInverseMatrix);
                 return Ray.Transform(ray, this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
+        }
+
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): PickingInfo[] {
+            return this._internalMultiPick(world => this.createPickingRay(x, y, world, camera), predicate);
+        }
+
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="ray">Ray to use</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        public multiPickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean): PickingInfo[] {
+            return this._internalMultiPick(world => {
+                if (!this._pickWithRayInverseMatrix) {
+                    this._pickWithRayInverseMatrix = Matrix.Identity();
+                }
+                world.invertToRef(this._pickWithRayInverseMatrix);
+                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+            }, predicate);
         }
 
         public setPointerOverMesh(mesh: AbstractMesh): void {
@@ -2816,46 +3652,6 @@
             return this._physicsEngine !== undefined;
         }
 
-        /**
-         * 
-         * Sets the gravity of the physics engine (and NOT of the scene)
-         * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
-         */
-        public setGravity(gravity: Vector3): void {
-            Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'")
-            if (!this._physicsEngine) {
-                return;
-            }
-
-            this._physicsEngine.setGravity(gravity);
-        }
-
-        /**
-         * Legacy support, using the new API
-         * @Deprecated
-         */
-        public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
-            Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child")
-
-            if (parts.parts) { // Old API
-                options = parts;
-                parts = parts.parts;
-            }
-
-            var mainMesh: AbstractMesh = parts[0].mesh;
-            mainMesh.physicsImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options, this)
-            for (var index = 1; index < parts.length; index++) {
-                var mesh: AbstractMesh = parts[index].mesh;
-                if (mesh.parent !== mainMesh) {
-                    mesh.position = mesh.position.subtract(mainMesh.position);
-                    mesh.parent = mainMesh;
-                }
-                mesh.physicsImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options, this)
-
-            }
-            mainMesh.physicsImpostor.forceUpdate();
-        }
-
         public deleteCompoundImpostor(compound: any): void {
             var mesh: AbstractMesh = compound.parts[0].mesh;
             mesh.physicsImpostor.dispose(/*true*/);
@@ -2863,7 +3659,7 @@
         }
 
         // Misc.
-        public createDefaultCameraOrLight() {
+        public createDefaultCameraOrLight(createArcRotateCamera = false) {
             // Light
             if (this.lights.length === 0) {
                 new HemisphericLight("default light", Vector3.Up(), this);
@@ -2871,17 +3667,70 @@
 
             // Camera
             if (!this.activeCamera) {
-                var camera = new FreeCamera("default camera", Vector3.Zero(), this);
-
-                // Compute position
                 var worldExtends = this.getWorldExtends();
-                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                camera.setTarget(worldCenter);
-
+                var camera: TargetCamera;
+                var radius = worldSize.length() * 1.5;
+                if (createArcRotateCamera) {
+                    var arcRotateCamera = new ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                    arcRotateCamera.wheelPrecision = 100 / radius;
+                    camera = arcRotateCamera;
+                }
+                else {
+                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    freeCamera.setTarget(worldCenter);
+                    camera = freeCamera;
+                }
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 100;
+                camera.speed = radius * 0.2;
                 this.activeCamera = camera;
             }
+        }
+
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false): Mesh {
+            if (environmentTexture) {
+                this.environmentTexture = environmentTexture;
+            }
+
+            if (!this.environmentTexture) {
+                Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+
+            if (!this.environmentTexture) {
+                Tools.Warn("Can not create default skybox without environment texture.");
+                return;
+            }
+
+            // Skybox
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            if (pbr) {
+                let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
+                hdrSkyboxMaterial.backFaceCulling = false;
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                hdrSkyboxMaterial.microSurface = 1.0;
+                hdrSkyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = hdrSkyboxMaterial;
+            }
+            else {
+                let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
+                skyboxMaterial.backFaceCulling = false;
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
+                skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                skyboxMaterial.disableLighting = true;
+                hdrSkybox.infiniteDistance = true;
+                hdrSkybox.material = skyboxMaterial;
+            }
+
+            return hdrSkybox;
         }
 
         // Tags
@@ -2920,6 +3769,53 @@
 
         public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        }
+
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        public setRenderingOrder(renderingGroupId: number,
+            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null): void {
+
+            this._renderingManager.setRenderingOrder(renderingGroupId,
+                opaqueSortCompareFn,
+                alphaTestSortCompareFn,
+                transparentSortCompareFn);
+        }
+
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean,
+            depth = true,
+            stencil = true): void {
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
+        }
+
+        /**
+         * Will flag all materials as dirty to trigger new shader compilation
+         * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
+         */
+        public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+            for (var material of this.materials) {
+                if (predicate && !predicate(material)) {
+                    continue;
+                }
+                material.markAsDirty(flag);
+            }
         }
     }
 }

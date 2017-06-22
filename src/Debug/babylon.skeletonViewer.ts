@@ -64,6 +64,7 @@
 
         private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
             var len = bones.length;
+            var meshPos = this.mesh.position;
             for (var i = 0; i < len; i++) {
                 var bone = bones[i];
                 var points = this._debugLines[i];
@@ -73,12 +74,15 @@
                 }
                 this._getBonePosition(points[0], bone, meshMat);
                 this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+                points[0].subtractInPlace(meshPos);
+                points[1].subtractInPlace(meshPos);
             }
         }
 
         private _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void {
             var len = bones.length;
             var boneNum = 0;
+            var meshPos = this.mesh.position;
             for (var i = len - 1; i >= 0; i--) {
                 var childBone = bones[i];
                 var parentBone = childBone.getParent();
@@ -90,15 +94,17 @@
                     points = [Vector3.Zero(), Vector3.Zero()];
                     this._debugLines[boneNum] = points;
                 }
-                this._getBonePosition(points[0], childBone, meshMat);
-                this._getBonePosition(points[1], parentBone, meshMat);
+                childBone.getAbsolutePositionToRef(this.mesh, points[0]);
+                parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                points[0].subtractInPlace(meshPos);
+                points[1].subtractInPlace(meshPos);
                 boneNum++;
             }
         }
 
         public update() {
             if (this.autoUpdateBonesMatrices) {
-                this._updateBoneMatrix(this.skeleton.bones[0]);
+                this.skeleton.computeAbsoluteTransforms();
             }
 
             if (this.skeleton.bones[0].length === undefined) {
@@ -113,20 +119,8 @@
             } else {
                 BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
             }
+            this._debugMesh.position.copyFrom(this.mesh.position);
             this._debugMesh.color = this.color;
-        }
-
-        private _updateBoneMatrix(bone: Bone) {
-            if (bone.getParent()) {
-                bone.getLocalMatrix().multiplyToRef(bone.getParent().getAbsoluteTransform(), bone.getAbsoluteTransform());
-            }
-
-            var children = bone.children;
-            var len = children.length;
-
-            for (var i = 0; i < len; i++) {
-                this._updateBoneMatrix(children[i]);
-            }
         }
 
         public dispose() {

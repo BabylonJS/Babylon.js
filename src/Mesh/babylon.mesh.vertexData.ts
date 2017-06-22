@@ -1,16 +1,20 @@
 ﻿module BABYLON {
-    export interface IGetSetVerticesData {
+    export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
+
+    export interface IGetSetVerticesData
+    {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array | Float32Array;
-        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array;
+        getIndices(copyWhenShared?: boolean): IndicesArray;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[] | Int32Array): void;
+        setIndices(indices: IndicesArray): void;
     }
 
     export class VertexData {
         public positions: number[] | Float32Array;
         public normals: number[] | Float32Array;
+        public tangents: number[] | Float32Array;
         public uvs: number[] | Float32Array;
         public uvs2: number[] | Float32Array;
         public uvs3: number[] | Float32Array;
@@ -22,7 +26,7 @@
         public matricesWeights: number[] | Float32Array;
         public matricesIndicesExtra: number[] | Float32Array;
         public matricesWeightsExtra: number[] | Float32Array;
-        public indices: number[] | Int32Array;
+        public indices: IndicesArray;
 
         public set(data: number[] | Float32Array, kind: string) {
             switch (kind) {
@@ -31,6 +35,9 @@
                     break;
                 case VertexBuffer.NormalKind:
                     this.normals = data;
+                    break;
+                case VertexBuffer.TangentKind:
+                    this.tangents = data;
                     break;
                 case VertexBuffer.UVKind:
                     this.uvs = data;
@@ -68,29 +75,55 @@
             }
         }
 
-        public applyToMesh(mesh: Mesh, updatable?: boolean): void {
+        /**
+         * Associates the vertexData to the passed Mesh.  
+         * Sets it as updatable or not (default `false`).  
+         * Returns the VertexData.  
+         */
+        public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
             this._applyTo(mesh, updatable);
+            return this;
         }
 
-        public applyToGeometry(geometry: Geometry, updatable?: boolean): void {
+        /**
+         * Associates the vertexData to the passed Geometry.  
+         * Sets it as updatable or not (default `false`).  
+         * Returns the VertexData.  
+         */
+        public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
             this._applyTo(geometry, updatable);
+            return this;
         }
 
-        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): void {
+        /**
+         * Updates the associated mesh.  
+         * Returns the VertexData.  
+         */
+        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(mesh);
+            return this;
         }
 
-        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): void {
+        /**
+         * Updates the associated geometry.  
+         * Returns the VertexData.  
+         */
+        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(geometry);
+            return this;
         }
 
-        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean) {
+        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean): VertexData {
             if (this.positions) {
                 meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
             }
 
             if (this.normals) {
                 meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
+            }
+
+            if (this.tangents) {
+                meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
             }
 
             if (this.uvs) {
@@ -140,15 +173,20 @@
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         }
 
-        private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean) {
+        private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             if (this.positions) {
                 meshOrGeometry.updateVerticesData(VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
             }
 
             if (this.normals) {
                 meshOrGeometry.updateVerticesData(VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+            }
+
+            if (this.tangents) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.TangentKind, this.tangents, updateExtends, makeItUnique);
             }
 
             if (this.uvs) {
@@ -198,9 +236,14 @@
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         }
 
-        public transform(matrix: Matrix): void {
+        /**
+         * Transforms each position and each normal of the vertexData according to the passed Matrix.  
+         * Returns the VertexData.  
+         */
+        public transform(matrix: Matrix): VertexData {
             var transformed = Vector3.Zero();
             var index: number;
             if (this.positions) {
@@ -228,9 +271,30 @@
                     this.normals[index + 2] = transformed.z;
                 }
             }
+
+            if (this.tangents) {
+                var tangent = Vector4.Zero();
+                var tangentTransformed = Vector4.Zero();
+
+                for (index = 0; index < this.tangents.length; index += 4) {
+                    Vector4.FromArrayToRef(this.tangents, index, tangent);
+
+                    Vector4.TransformNormalToRef(tangent, matrix, tangentTransformed);
+                    this.tangents[index] = tangentTransformed.x;
+                    this.tangents[index + 1] = tangentTransformed.y;
+                    this.tangents[index + 2] = tangentTransformed.z;
+                    this.tangents[index + 3] = tangentTransformed.w;
+                }
+            }
+
+            return this;
         }
 
-        public merge(other: VertexData): void {
+        /**
+         * Merges the passed VertexData into the current one.  
+         * Returns the modified VertexData.  
+         */
+        public merge(other: VertexData): VertexData {
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -238,13 +302,14 @@
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
                 for (var index = 0; index < other.indices.length; index++) {
-                    //TODO check type - if Int32Array!
+                    //TODO check type - if Int32Array | Uint32Array | Uint16Array!
                     (<number[]>this.indices).push(other.indices[index] + offset);
                 }
             }
 
             this.positions = this._mergeElement(this.positions, other.positions);
             this.normals = this._mergeElement(this.normals, other.normals);
+            this.tangents = this._mergeElement(this.tangents, other.tangents);
             this.uvs = this._mergeElement(this.uvs, other.uvs);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
@@ -256,6 +321,7 @@
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
             this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+            return this;
         }
 
         private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array): number[] | Float32Array {
@@ -287,6 +353,10 @@
             }
         }
 
+        /**
+         * Serializes the VertexData.  
+         * Returns a serialized object.  
+         */
         public serialize(): any {
             var serializationObject = this.serialize();
 
@@ -296,6 +366,10 @@
 
             if (this.normals) {
                 serializationObject.normals = this.normals;
+            }
+
+            if (this.tangents) {
+                serializationObject.tangents = this.tangents;
             }
 
             if (this.uvs) {
@@ -350,67 +424,77 @@
         }
 
         // Statics
-        public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData {
-            return VertexData._ExtractFrom(mesh, copyWhenShared);
+        /**
+         * Returns the object VertexData associated to the passed mesh.  
+         */
+        public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
+            return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
         }
 
-        public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData {
-            return VertexData._ExtractFrom(geometry, copyWhenShared);
+        /**
+         * Returns the object VertexData associated to the passed geometry.  
+         */
+        public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
+            return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
         }
 
-        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean): VertexData {
+        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             var result = new VertexData();
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared);
+                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared);
+                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared, forceCopy);
+            }
+
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                result.tangents = meshOrGeometry.getVerticesData(VertexBuffer.TangentKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared);
+                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                result.uvs2 = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                result.uvs3 = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                result.uvs4 = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                result.uvs5 = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared);
+                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind, copyWhenShared);
+                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared);
+                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesExtraKind)) {
-                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesExtraKind, copyWhenShared, forceCopy);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
-                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
 
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
@@ -418,7 +502,10 @@
             return result;
         }
 
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
+        /**
+         * Creates the vertexData of the Ribbon.  
+         */
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
@@ -427,6 +514,8 @@
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var customUV = options.uvs;
+            var customColors = options.colors;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -457,7 +546,7 @@
 
             // positions and horizontal distances (u)
             var idc: number = 0;
-            var closePathCorr: number = (closePath) ? 1 : 0;
+            var closePathCorr: number = (closePath) ? 1 : 0;    // the final index will be +1 if closePath
             var path: Vector3[];
             var l: number;
             minlg = pathArray[0].length;
@@ -482,7 +571,7 @@
                     j++;
                 }
 
-                if (closePath) {
+                if (closePath) {        // an extra hidden vertex is added in the "positions" array
                     j--;
                     positions.push(path[0].x, path[0].y, path[0].z);
                     vectlg = path[j].subtract(path[0]).length();
@@ -536,14 +625,21 @@
             // uvs
             var u: number;
             var v: number;
-            for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = us[p][i] / uTotalDistance[p];
-                    v = vs[i][p] / vTotalDistance[i];
-                    if (invertUV) {
-                        uvs.push(v, u);
-                    } else {
-                        uvs.push(u, v);
+            if (customUV) {
+                for (p = 0; p < customUV.length; p++) {
+                    uvs.push(customUV[p].x, customUV[p].y);
+                }
+            }
+            else {
+                for (p = 0; p < pathArray.length; p++) {
+                    for (i = 0; i < minlg + closePathCorr; i++) {
+                        u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                        v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                        if (invertUV) {
+                            uvs.push(v, u);
+                        } else {
+                            uvs.push(u, v);
+                        }
                     }
                 }
             }
@@ -583,7 +679,7 @@
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
 
-            if (closePath) {
+            if (closePath) {        // update both the first and last vertex normals to their average value
                 var indexFirst: number = 0;
                 var indexLast: number = 0;
                 for (p = 0; p < pathArray.length; p++) {
@@ -604,15 +700,32 @@
             }
 
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+
+            // Colors
+            if (customColors) {
+                var colors = new Float32Array(customColors.length * 4);
+                for (var c = 0; c < customColors.length; c++) {
+                    colors[c * 4] = customColors[c].r;
+                    colors[c * 4 + 1] = customColors[c].g;
+                    colors[c * 4 + 2] = customColors[c].b;
+                    colors[c * 4 + 3] = customColors[c].a;
+                }
+            }
 
             // Result
             var vertexData = new VertexData();
-
+            var positions32 = new Float32Array(positions);
+            var normals32 = new Float32Array(normals);
+            var uvs32 = new Float32Array(uvs);
+            
             vertexData.indices = indices;
-            vertexData.positions = positions;
-            vertexData.normals = normals;
-            vertexData.uvs = uvs;
+            vertexData.positions = positions32;
+            vertexData.normals = normals32;
+            vertexData.uvs = uvs32;
+            if (customColors) {
+                vertexData.set(colors, VertexBuffer.ColorKind);
+            }
 
             if (closePath) {
                 (<any>vertexData)._idx = idx;
@@ -621,7 +734,10 @@
             return vertexData;
         }
 
-        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Box.  
+         */
+        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -709,7 +825,7 @@
             }
 
             // sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -727,7 +843,10 @@
             return vertexData;
         }
 
-        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Sphere.  
+         */
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
@@ -783,7 +902,7 @@
             }
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -796,11 +915,13 @@
             return vertexData;
         }
 
-        // Cylinder and cone
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Cylinder or Cone.  
+         */
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
-            var diameterBottom: number = options.diameterBottom || options.diameter || 1;
+            var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
             var hasRings: boolean = options.hasRings;
@@ -809,12 +930,12 @@
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
-
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
             var surfaceNb: number = 2 + (1 + quadNb) * ringNb;
             var f: number;
+
             for (f = 0; f < surfaceNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new Color4(1, 1, 1, 1);
@@ -1029,7 +1150,7 @@
             createCylinderCap(true);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
 
@@ -1044,7 +1165,10 @@
             return vertexData;
         }
 
-        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number }) {
+        /**
+         * Creates the VertexData of the Torus.  
+         */
+        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1098,7 +1222,7 @@
             }
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1112,6 +1236,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the LineSystem.  
+         */
         public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
             var indices = [];
             var positions = [];
@@ -1136,6 +1263,9 @@
             return vertexData;
         }
 
+        /**
+         * Create the VertexData of the DashedLines.  
+         */
         public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
             var dashSize = options.dashSize || 3;
             var gapSize = options.gapSize || 1;
@@ -1180,7 +1310,10 @@
             return vertexData;
         }
 
-        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Ground.  
+         */
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1189,28 +1322,29 @@
 
             var width: number = options.width || 1;
             var height: number = options.height || 1;
-            var subdivisions: number = options.subdivisions || 1;
+            var subdivisionsX: number = options.subdivisionsX || options.subdivisions || 1;
+            var subdivisionsY: number = options.subdivisionsY || options.subdivisions || 1;
 
-            for (row = 0; row <= subdivisions; row++) {
-                for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+            for (row = 0; row <= subdivisionsY; row++) {
+                for (col = 0; col <= subdivisionsX; col++) {
+                    var position = new Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsY - row) * height) / subdivisionsY - (height / 2.0));
                     var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsY);
                 }
             }
 
-            for (row = 0; row < subdivisions; row++) {
-                for (col = 0; col < subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + row * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+            for (row = 0; row < subdivisionsY; row++) {
+                for (col = 0; col < subdivisionsX; col++) {
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + row * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
 
-                    indices.push(col + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+                    indices.push(col + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
                 }
             }
 
@@ -1225,6 +1359,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the TiledGround.  
+         */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
             var xmin = options.xmin || -1.0;
             var zmin = options.zmin || -1.0;
@@ -1309,13 +1446,17 @@
             return vertexData;
         }
 
-        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
+        /**
+         * Creates the VertexData of the Ground designed from a heightmap.  
+         */
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
-
+            var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
+            
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
                 for (col = 0; col <= options.subdivisions; col++) {
@@ -1330,7 +1471,7 @@
                     var g = options.buffer[pos + 1] / 255.0;
                     var b = options.buffer[pos + 2] / 255.0;
 
-                    var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+                    var gradient = r * filter.r + g * filter.g + b * filter.b;
 
                     position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
 
@@ -1368,7 +1509,10 @@
             return vertexData;
         }
 
-        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Plane.  
+         */
+        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1408,7 +1552,7 @@
             indices.push(3);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1421,7 +1565,10 @@
             return vertexData;
         }
 
-        public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Disc or regular Polygon.  
+         */
+        public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
@@ -1459,7 +1606,7 @@
 
             // result
             VertexData.ComputeNormals(positions, indices, normals);
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
 
@@ -1471,7 +1618,76 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number }): VertexData {
+        /**
+         * Re-creates the VertexData of the Polygon for sideOrientation.  
+         */
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?, fColors?, frontUVs?: Vector4, backUVs?: Vector4) {
+			var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
+            var faceColors: Color4[] = fColors;
+            var colors = [];
+
+            // default face colors and UV if undefined
+            for (var f = 0; f < 3; f++) {
+                if (faceUV[f] === undefined) {
+                    faceUV[f] = new Vector4(0, 0, 1, 1);
+                }
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new Color4(1, 1, 1, 1);
+                }
+            }
+            
+            var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
+			var normals = polygon.getVerticesData(VertexBuffer.NormalKind);
+			var uvs = polygon.getVerticesData(VertexBuffer.UVKind);
+			var indices = polygon.getIndices();
+
+            // set face colours and textures
+            var idx: number = 0;
+            var face: number = 0;
+            for (var index = 0; index < normals.length; index += 3) { 
+                //Edge Face  no. 1
+                if(Math.abs(normals[index + 1]) == 0) {
+                   face = 1; 
+                }
+                //Top Face  no. 0
+                if(normals[index + 1] == 1) {
+                   face = 0; 
+                }
+                //Bottom Face  no. 2
+                if(normals[index + 1] == -1) {
+                   face = 2; 
+                }
+                idx = index / 3;
+                uvs[2*idx] = (1 - uvs[2*idx])*faceUV[face].x + uvs[2*idx]*faceUV[face].z;
+                uvs[2*idx + 1] = (1 - uvs[2*idx + 1])*faceUV[face].y + uvs[2*idx + 1]*faceUV[face].w;
+                if (faceColors) {
+                    colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
+                }
+            }
+
+			// sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs);
+            
+            // Result
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+
+            if (faceColors) {
+                var totalColors = (sideOrientation === Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                vertexData.colors = totalColors;
+            }
+
+            return vertexData;
+			
+		}
+
+        /**
+         * Creates the VertexData of the IcoSphere.  
+         */
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
@@ -1719,7 +1935,7 @@
 
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1732,7 +1948,10 @@
 
 
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
-        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Polyhedron.  
+         */
+        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
             // 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
@@ -1850,7 +2069,7 @@
             }
 
             VertexData.ComputeNormals(positions, indices, normals);
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             var vertexData = new VertexData();
             vertexData.positions = positions;
@@ -1864,7 +2083,10 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number }): VertexData {
+        /**
+         * Creates the VertexData of the Torus Knot.  
+         */
+        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1942,7 +2164,7 @@
             VertexData.ComputeNormals(positions, indices, normals);
 
             // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Result
             var vertexData = new VertexData();
@@ -1960,66 +2182,180 @@
          * @param {any} - positions (number[] or Float32Array)
          * @param {any} - indices   (number[] or Uint16Array)
          * @param {any} - normals   (number[] or Float32Array)
+         * options (optional) :
+         * facetPositions : optional array of facet positions (vector3)
+         * facetNormals : optional array of facet normals (vector3)
+         * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
+         * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
+         * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
+         * bbSize : optional bounding box size data, required for facetPartitioning computation
+         * bInfo : optional bounding info, required for facetPartitioning computation
          */
-        public static ComputeNormals(positions: any, indices: any, normals: any) {
-            var index = 0;
+        public static ComputeNormals(positions: any, indices: any, normals: any,
+            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any, useRightHandedSystem?: boolean }): void {
 
-            var p1p2x = 0.0;
-            var p1p2y = 0.0;
-            var p1p2z = 0.0;
-            var p3p2x = 0.0;
-            var p3p2y = 0.0;
-            var p3p2z = 0.0;
-            var faceNormalx = 0.0;
-            var faceNormaly = 0.0;
-            var faceNormalz = 0.0;
+            // temporary scalar variables
+            var index = 0;                      // facet index     
+            var p1p2x = 0.0;                    // p1p2 vector x coordinate
+            var p1p2y = 0.0;                    // p1p2 vector y coordinate
+            var p1p2z = 0.0;                    // p1p2 vector z coordinate
+            var p3p2x = 0.0;                    // p3p2 vector x coordinate
+            var p3p2y = 0.0;                    // p3p2 vector y coordinate
+            var p3p2z = 0.0;                    // p3p2 vector z coordinate
+            var faceNormalx = 0.0;              // facet normal x coordinate
+            var faceNormaly = 0.0;              // facet normal y coordinate
+            var faceNormalz = 0.0;              // facet normal z coordinate
+            var length = 0.0;                   // facet normal length before normalization
+            var v1x = 0;                        // vector1 x index in the positions array
+            var v1y = 0;                        // vector1 y index in the positions array
+            var v1z = 0;                        // vector1 z index in the positions array
+            var v2x = 0;                        // vector2 x index in the positions array
+            var v2y = 0;                        // vector2 y index in the positions array
+            var v2z = 0;                        // vector2 z index in the positions array
+            var v3x = 0;                        // vector3 x index in the positions array
+            var v3y = 0;                        // vector3 y index in the positions array
+            var v3z = 0;                        // vector3 z index in the positions array
+            var computeFacetNormals = false;
+            var computeFacetPositions = false;
+            var computeFacetPartitioning = false;
+            var faceNormalSign = 1;
+            if (options) {
+                computeFacetNormals = (options.facetNormals) ? true : false;
+                computeFacetPositions = (options.facetPositions) ? true : false;
+                computeFacetPartitioning = (options.facetPartitioning) ? true : false;
+                faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
+            }
 
-            var length = 0.0;
+            // facetPartitioning reinit if needed
+            if (computeFacetPartitioning) {
+                var ox = 0;                 // X partitioning index for facet position
+                var oy = 0;                 // Y partinioning index for facet position
+                var oz = 0;                 // Z partinioning index for facet position
+                var b1x = 0;                // X partitioning index for facet v1 vertex
+                var b1y = 0;                // Y partitioning index for facet v1 vertex
+                var b1z = 0;                // z partitioning index for facet v1 vertex
+                var b2x = 0;                // X partitioning index for facet v2 vertex
+                var b2y = 0;                // Y partitioning index for facet v2 vertex
+                var b2z = 0;                // Z partitioning index for facet v2 vertex
+                var b3x = 0;                // X partitioning index for facet v3 vertex
+                var b3y = 0;                // Y partitioning index for facet v3 vertex
+                var b3z = 0;                // Z partitioning index for facet v3 vertex
+                var block_idx_o = 0;        // facet barycenter block index
+                var block_idx_v1 = 0;       // v1 vertex block index
+                var block_idx_v2 = 0;       // v2 vertex block index
+                var block_idx_v3 = 0;       // v3 vertex block index  
 
-            var i1 = 0;
-            var i2 = 0;
-            var i3 = 0;
+                var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
+                bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
+                var xSubRatio = options.subDiv.X * options.ratio / options.bbSize.x;
+                var ySubRatio = options.subDiv.Y * options.ratio / options.bbSize.y;
+                var zSubRatio = options.subDiv.Z * options.ratio / options.bbSize.z;
+                var subSq = options.subDiv.max * options.subDiv.max;
+                options.facetPartitioning.length = 0;
+            }
 
+            // reset the normals
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
             }
 
-            // indice triplet = 1 face
+            // Loop : 1 indice triplet = 1 facet
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
-                i1 = indices[index * 3];            // get the indexes of each vertex of the face
-                i2 = indices[index * 3 + 1];
-                i3 = indices[index * 3 + 2];
 
-                p1p2x = positions[i1 * 3] - positions[i2 * 3];          // compute two vectors per face
-                p1p2y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
-                p1p2z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+                // get the indexes of the coordinates of each vertex of the facet
+                v1x = indices[index * 3] * 3;
+                v1y = v1x + 1;
+                v1z = v1x + 2;
+                v2x = indices[index * 3 + 1] * 3;
+                v2y = v2x + 1;
+                v2z = v2x + 2;
+                v3x = indices[index * 3 + 2] * 3;
+                v3y = v3x + 1;
+                v3z = v3x + 2;
 
-                p3p2x = positions[i3 * 3] - positions[i2 * 3];
-                p3p2y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
-                p3p2z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
+                p1p2x = positions[v1x] - positions[v2x];          // compute two vectors per facet : p1p2 and p3p2
+                p1p2y = positions[v1y] - positions[v2y];
+                p1p2z = positions[v1z] - positions[v2z];
 
-                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;            // compute the face normal with cross product
-                faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
-                faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
+                p3p2x = positions[v3x] - positions[v2x];
+                p3p2y = positions[v3y] - positions[v2y];
+                p3p2z = positions[v3z] - positions[v2z];
 
+                // compute the face normal with the cross product
+                faceNormalx = faceNormalSign * (p1p2y * p3p2z - p1p2z * p3p2y);
+                faceNormaly = faceNormalSign * (p1p2z * p3p2x - p1p2x * p3p2z);
+                faceNormalz = faceNormalSign * (p1p2x * p3p2y - p1p2y * p3p2x);
+                // normalize this normal and store it in the array facetData
                 length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
                 length = (length === 0) ? 1.0 : length;
-                faceNormalx /= length;                                  // normalize this normal
+                faceNormalx /= length;
                 faceNormaly /= length;
                 faceNormalz /= length;
 
-                normals[i1 * 3] += faceNormalx;                         // accumulate all the normals per face
-                normals[i1 * 3 + 1] += faceNormaly;
-                normals[i1 * 3 + 2] += faceNormalz;
-                normals[i2 * 3] += faceNormalx;
-                normals[i2 * 3 + 1] += faceNormaly;
-                normals[i2 * 3 + 2] += faceNormalz;
-                normals[i3 * 3] += faceNormalx;
-                normals[i3 * 3 + 1] += faceNormaly;
-                normals[i3 * 3 + 2] += faceNormalz;
-            }
+                if (computeFacetNormals) {
+                    options.facetNormals[index].x = faceNormalx;
+                    options.facetNormals[index].y = faceNormaly;
+                    options.facetNormals[index].z = faceNormalz;
+                }
 
+                if (computeFacetPositions) {
+                    // compute and the facet barycenter coordinates in the array facetPositions 
+                    options.facetPositions[index].x = (positions[v1x] + positions[v2x] + positions[v3x]) / 3.0;
+                    options.facetPositions[index].y = (positions[v1y] + positions[v2y] + positions[v3y]) / 3.0;
+                    options.facetPositions[index].z = (positions[v1z] + positions[v2z] + positions[v3z]) / 3.0;
+                }
+
+                if (computeFacetPartitioning) {
+                    // store the facet indexes in arrays in the main facetPartitioning array :
+                    // compute each facet vertex (+ facet barycenter) index in the partiniong array
+                    ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * options.ratio) * xSubRatio);
+                    oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * options.ratio) * ySubRatio);
+                    oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * options.ratio) * zSubRatio);
+                    b1x = Math.floor((positions[v1x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
+                    b1y = Math.floor((positions[v1y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
+                    b1z = Math.floor((positions[v1z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
+                    b2x = Math.floor((positions[v2x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
+                    b2y = Math.floor((positions[v2y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
+                    b2z = Math.floor((positions[v2z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
+                    b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
+                    b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
+                    b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
+
+                    block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
+                    block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
+                    block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
+                    block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
+
+                    options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] :new Array();
+                    options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] :new Array();
+                    options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] :new Array();
+                    options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] :new Array();
+
+                    // push each facet index in each block containing the vertex
+                    options.facetPartitioning[block_idx_v1].push(index);
+                    if (block_idx_v2 != block_idx_v1) {
+                        options.facetPartitioning[block_idx_v2].push(index);
+                    }
+                    if (!(block_idx_v3 == block_idx_v2 || block_idx_v3 == block_idx_v1)) {
+                        options.facetPartitioning[block_idx_v3].push(index);
+                    }
+                    if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
+                        options.facetPartitioning[block_idx_o].push(index);
+                    }
+                }
+
+                // compute the normals anyway
+                normals[v1x] += faceNormalx;                         // accumulate all the normals per face
+                normals[v1y] += faceNormaly;
+                normals[v1z] += faceNormalz;
+                normals[v2x] += faceNormalx;
+                normals[v2y] += faceNormaly;
+                normals[v2z] += faceNormalz;
+                normals[v3x] += faceNormalx;
+                normals[v3y] += faceNormaly;
+                normals[v3z] += faceNormalz;
+            }
             // last normalization of each normal
             for (index = 0; index < normals.length / 3; index++) {
                 faceNormalx = normals[index * 3];
@@ -2038,7 +2374,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array) {
+        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array, frontUVs?: Vector4, backUVs?: Vector4) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;
@@ -2085,13 +2421,27 @@
 
                     // uvs
                     var lu: number = uvs.length;
-                    for (var u: number = 0; u < lu; u++) {
-                        uvs[u + lu] = uvs[u];
+                    var u: number = 0;
+                    for (u = 0; u < lu; u++) {
+                        uvs[u + lu] = uvs[u];                       
+                    }
+                    var frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
+                    var backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0); 
+                    u = 0;
+                    for (i = 0; i < lu / 2; i++) {    
+                        uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];
+                        uvs[u + 1] = frontUVs.y + (frontUVs.w - frontUVs.y) * uvs[u + 1];
+                        uvs[u + lu] = backUVs.x + (backUVs.z - backUVs.x) * uvs[u + lu];
+                        uvs[u + lu + 1] = backUVs.y + (backUVs.w - backUVs.y) * uvs[u + lu + 1];
+                        u += 2;
                     }
                     break;
             }
         }
 
+        /**
+         * Creates a new VertexData from the imported parameters.  
+         */
         public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
             var vertexData = new VertexData();
 
@@ -2105,6 +2455,12 @@
             var normals = parsedVertexData.normals;
             if (normals) {
                 vertexData.set(normals, VertexBuffer.NormalKind);
+            }
+
+            // tangents
+            var tangents = parsedVertexData.tangents;
+            if (tangents) {
+                vertexData.set(tangents, VertexBuffer.TangentKind);
             }
 
             // uvs
@@ -2171,4 +2527,3 @@
         }
     }
 }
-

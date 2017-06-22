@@ -7,7 +7,8 @@
         public offset = new Vector2(0, 0);
         public alphaBlendingMode = Engine.ALPHA_COMBINE;
         public alphaTest: boolean;
-
+        public layerMask: number = 0x0FFFFFFF;
+        
         private _scene: Scene;
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
@@ -63,11 +64,11 @@
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
-
-            this._scene = scene;
+            
+            this._scene = scene || Engine.LastCreatedScene;
             this._scene.layers.push(this);
 
-            var engine = scene.getEngine();
+            var engine = this._scene.getEngine();
 
             // VBO
             var vertices = [];
@@ -134,7 +135,7 @@
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
 
             // Draw order
-            if (!this._alphaTestEffect) {
+            if (!this.alphaTest) {
                 engine.setAlphaMode(this.alphaBlendingMode);
                 engine.draw(true, 0, 6);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);

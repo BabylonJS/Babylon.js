@@ -29,7 +29,7 @@
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -43,7 +43,7 @@
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
             var impulse = new CANNON.Vec3(force.x, force.y, force.z);
 
-            impostor.physicsBody.applyImpulse(impulse, worldPoint);
+            impostor.physicsBody.applyForce(impulse, worldPoint);
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
@@ -153,21 +153,6 @@
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
-            //Not needed, Cannon has a collideConnected flag
-            /*if (!jointData.collision) {
-                //add 1st body to a collision group of its own, if it is not in 1
-                if (mainBody.collisionFilterGroup === 1) {
-                    mainBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                if (connectedBody.collisionFilterGroup === 1) {
-                    connectedBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                //add their mask to the collisionFilterMask of each other:
-                connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
-                mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                 case PhysicsJoint.Hinge2Joint:
@@ -242,7 +227,7 @@
             var returnValue;
             var extendSize = impostor.getObjectExtendSize();
             switch (impostor.type) {
-                case PhysicsEngine.SphereImpostor:
+                case PhysicsImpostor.SphereImpostor:
                     var radiusX = extendSize.x;
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
@@ -287,11 +272,11 @@
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
 
-            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSize.x, object.getBoundingInfo().boundingBox.extendSize.z);
+            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSizeWorld.x, object.getBoundingInfo().boundingBox.extendSizeWorld.z);
 
             var elementSize = dim * 2 / arraySize;
 
-            var minY = object.getBoundingInfo().boundingBox.extendSize.y;
+            var minY = object.getBoundingInfo().boundingBox.extendSizeWorld.y;
 
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
@@ -353,7 +338,6 @@
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var center = impostor.getObjectCenter();
-            var extendSize = impostor.getObjectExtendSize();
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
@@ -367,7 +351,7 @@
             }
 
             //If it is a heightfield, if should be centered.
-            if (impostor.type === PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === PhysicsImpostor.HeightmapImpostor) {
                 var mesh = <AbstractMesh>(<any>object);
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
@@ -383,21 +367,21 @@
                 mesh.rotationQuaternion = rotationQuaternion;
 
                 //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
-                var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
+                var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
 
                 //calculate the translation
-                var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
+                var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
 
-                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
                 //add it inverted to the delta 
-                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center.subtract(c));
-                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
+                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
-            } else if (impostor.type === PhysicsEngine.MeshImpostor) {
+            } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 this._tmpPosition.copyFrom(object.position);
             }
@@ -477,15 +461,6 @@
                 if (maxForce) {
                     this.setLimit(joint, maxForce);
                 }
-                //a hack for force application
-                /*var torque = new CANNON.Vec3();
-                var axis = joint.physicsJoint.axisB;
-                var body = joint.physicsJoint.bodyB;
-                var bodyTorque = body.torque;
-
-                axis.scale(force, torque);
-                body.vectorToWorldFrame(torque, torque);
-                bodyTorque.vadd(torque, bodyTorque);*/
             }
         }
 

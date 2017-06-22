@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.camera.ts" />
+
+module BABYLON {
     export class TargetCamera extends Camera {
 
         public cameraDirection = new Vector3(0, 0, 0);
@@ -48,7 +50,11 @@
                 return null;
             }
 
-            return this.lockedTarget.position || this.lockedTarget;
+            if (this.lockedTarget.absolutePosition) {
+                this.lockedTarget.computeWorldMatrix();
+            }
+
+            return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
         // Cache
@@ -136,16 +142,25 @@
             }
         }
 
+
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         */
         public getTarget(): Vector3 {
             return this._currentTarget;
         }
-
 
         public _decideIfNeedsToMove(): boolean {
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
         public _updatePosition(): void {
+            if (this.parent) {
+                this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
+                Vector3.TransformNormalToRef(this.cameraDirection, Tmp.Matrix[0], Tmp.Vector3[0]);
+                this.position.addInPlace(Tmp.Vector3[0]);
+                return;
+            }
             this.position.addInPlace(this.cameraDirection);
         }
         public _checkInputs(): void {
@@ -162,6 +177,14 @@
                 this.rotation.x += this.cameraRotation.x;
                 this.rotation.y += this.cameraRotation.y;
 
+                //rotate, if quaternion is set and rotation was used
+                if (this.rotationQuaternion) {
+                    var len = this.rotation.lengthSquared();
+                    if (len) {
+                        Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    }
+                }
+
 
                 if (!this.noRotationConstraint) {
                     var limit = (Math.PI / 2) * 0.95;
@@ -176,26 +199,26 @@
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
                     this.cameraDirection.x = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.y) < Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
                     this.cameraDirection.y = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.z) < Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
                     this.cameraDirection.z = 0;
                 }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
                     this.cameraRotation.x = 0;
                 }
 
-                if (Math.abs(this.cameraRotation.y) < Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
@@ -204,7 +227,7 @@
             super._checkInputs();
         }
 
-        private _updateCameraRotationMatrix() {
+        protected _updateCameraRotationMatrix() {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
                 //update the up vector!
@@ -227,7 +250,12 @@
                 this._currentTarget.copyFrom(this._getLockedTargetPosition());
             }
 
-            Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            if (this.getScene().useRightHandedSystem) {
+                Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            } else {
+                Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            }
+
             return this._viewMatrix;
         }
 
@@ -238,7 +266,7 @@
         public createRigCamera(name: string, cameraIndex: number): Camera {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
-                if (this.cameraRigMode === Camera.RIG_MODE_VR) {
+                if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
                     if (!this.rotationQuaternion) {
                         this.rotationQuaternion = new Quaternion();
                     }
@@ -274,8 +302,13 @@
                     break;
 
                 case Camera.RIG_MODE_VR:
-                    camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
-                    camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                    if (camLeft.rotationQuaternion) {
+                        camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                        camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                    } else {
+                        camLeft.rotation.copyFrom(this.rotation);
+                        camRight.rotation.copyFrom(this.rotation);
+                    }
                     camLeft.position.copyFrom(this.position);
                     camRight.position.copyFrom(this.position);
 
@@ -296,7 +329,7 @@
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "TargetCamera";
         }
     }

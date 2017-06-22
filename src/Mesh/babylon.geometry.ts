@@ -11,7 +11,7 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices: number[] | Int32Array;
+        private _indices: IndicesArray;
         private _vertexBuffers: { [key: string]: VertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
@@ -21,10 +21,14 @@
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
+        private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
+
+        // Cache
+        public _positions: Vector3[];
 
         /**
-         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y 
-         * @returns The Bias Vector 
+         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
+         * @returns The Bias Vector
          */
         public get boundingBias(): Vector2 {
             return this._boundingBias;
@@ -58,10 +62,14 @@
                 this._indices = [];
             }
 
+            if (this._engine.getCaps().vertexArrayObject) {
+                this._vertexArrayObjects = {};
+            }
+
             // applyToMesh
             if (mesh) {
-                if (mesh instanceof LinesMesh) {
-                    this.boundingBias = new Vector2(0, mesh.intersectionThreshold);
+                if (mesh.getClassName() === "LinesMesh") {
+                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 
@@ -86,6 +94,16 @@
             return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
         }
 
+        public get doNotSerialize(): boolean {
+            for (var index = 0; index < this._meshes.length; index++) {
+                if (!this._meshes[index].doNotSerialize) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
             this.notifyUpdate();
@@ -95,6 +113,13 @@
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
+        }
+
+        public removeVerticesData(kind: string) {
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].dispose();
+                delete this._vertexBuffers[kind];
+            }
         }
 
         public setVerticesBuffer(buffer: VertexBuffer): void {
@@ -112,13 +137,13 @@
                 this._totalVertices = data.length / stride;
 
                 this.updateExtend(data, stride);
+                this._resetPointsArrayCache();
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
 
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
-                    mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
@@ -126,6 +151,11 @@
             }
 
             this.notifyUpdate(kind);
+
+            if (this._vertexArrayObjects) {
+                this._disposeVertexArrayObjects();
+                this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+            }
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -165,10 +195,10 @@
 
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
+            this._resetPointsArrayCache();
 
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._resetPointsArrayCache();
                 if (updateExtends) {
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
@@ -181,6 +211,24 @@
             }
         }
 
+        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {
+            if (indexToBind === undefined) {
+                indexToBind = this._indexBuffer;
+            }
+
+            if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
+                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                return;
+            }
+
+            // Using VAO
+            if (!this._vertexArrayObjects[effect.key]) {
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+            }
+
+            this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
+        }
+
         public getTotalVertices(): number {
             if (!this.isReady()) {
                 return 0;
@@ -189,13 +237,13 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
             var orig = vertexBuffer.getData();
-            if (!copyWhenShared || this._meshes.length === 1) {
+            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             } else {
                 var len = orig.length;
@@ -247,10 +295,12 @@
             return result;
         }
 
-        public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
+        public setIndices(indices: IndicesArray, totalVertices?: number): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
+
+            this._disposeVertexArrayObjects();
 
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
@@ -277,7 +327,7 @@
             return this._indices.length;
         }
 
-        public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
+        public getIndices(copyWhenShared?: boolean): IndicesArray {
             if (!this.isReady()) {
                 return null;
             }
@@ -301,20 +351,23 @@
             return this._indexBuffer;
         }
 
+        public _releaseVertexArrayObject(effect: Effect) {
+            if (!effect || !this._vertexArrayObjects) {
+                return;
+            }
+
+            if (this._vertexArrayObjects[effect.key]) {
+                this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
+                delete this._vertexArrayObjects[effect.key];
+            }
+        }
+
         public releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
 
             if (index === -1) {
                 return;
-            }
-
-            for (var kind in this._vertexBuffers) {
-                this._vertexBuffers[kind].dispose();
-            }
-
-            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
-                this._indexBuffer = null;
             }
 
             meshes.splice(index, 1);
@@ -369,11 +422,11 @@
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
                 }
-                this._vertexBuffers[kind].getBuffer().references = numOfMeshes;
+                var buffer = this._vertexBuffers[kind].getBuffer();
+                if (buffer)
+                    buffer.references = numOfMeshes;
 
                 if (kind === VertexBuffer.PositionKind) {
-                    mesh._resetPointsArrayCache();
-
                     if (!this._extend) {
                         this.updateExtend(this._vertexBuffers[kind].getData());
                     }
@@ -398,6 +451,10 @@
         private notifyUpdate(kind?: string) {
             if (this.onGeometryUpdated) {
                 this.onGeometryUpdated(this, kind);
+            }
+
+            for (var mesh of this._meshes) {
+                mesh._markSubMeshesAsAttributesDirty();
             }
         }
 
@@ -475,8 +532,43 @@
             }
         }
 
+        // Cache
+        public _resetPointsArrayCache(): void
+        {
+            this._positions = null;
+        }
+
+        public _generatePointsArray(): boolean
+        {
+            if (this._positions)
+                return true;
+
+            this._positions = [];
+
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (!data) {
+                return false;
+            }
+
+            for (var index = 0; index < data.length; index += 3) {
+                this._positions.push(Vector3.FromArray(data, index));
+            }
+
+            return true;
+        }
+
         public isDisposed(): boolean {
             return this._isDisposed;
+        }
+
+        private _disposeVertexArrayObjects(): void {
+            if (this._vertexArrayObjects) {
+                for (var kind in this._vertexArrayObjects) {
+                    this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
+                }
+                this._vertexArrayObjects = {};
+            }
         }
 
         public dispose(): void {
@@ -487,6 +579,8 @@
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
+
+            this._disposeVertexArrayObjects();
 
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();
@@ -561,62 +655,103 @@
 
             serializationObject.id = this.id;
 
-            if (Tags.HasTags(this)) {
+            if (Tags && Tags.HasTags(this)) {
                 serializationObject.tags = Tags.GetTags(this);
             }
 
             return serializationObject;
         }
 
+        private toNumberArray(origin: Float32Array | IndicesArray) : number[] {
+            if (Array.isArray(origin)) {
+                return origin;
+            } else {
+                return Array.prototype.slice.call(origin);
+            }
+        }
+
         public serializeVerticeData(): any {
             var serializationObject = this.serialize();
 
             if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                serializationObject.positions = this.getVerticesData(VertexBuffer.PositionKind);
+                serializationObject.positions = this.toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
+                if (this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable) {
+                    serializationObject.positions._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                serializationObject.normals = this.getVerticesData(VertexBuffer.NormalKind);
+                serializationObject.normals = this.toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
+                if (this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable) {
+                    serializationObject.normals._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                serializationObject.uvs = this.getVerticesData(VertexBuffer.UVKind);
+                serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
+                if (this.getVertexBuffer(VertexBuffer.UVKind).isUpdatable) {
+                    serializationObject.uvs._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                serializationObject.uvs2 = this.getVerticesData(VertexBuffer.UV2Kind);
+                serializationObject.uv2s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
+                if (this.getVertexBuffer(VertexBuffer.UV2Kind).isUpdatable) {
+                    serializationObject.uv2s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                serializationObject.uvs3 = this.getVerticesData(VertexBuffer.UV3Kind);
+                serializationObject.uv3s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
+                if (this.getVertexBuffer(VertexBuffer.UV3Kind).isUpdatable) {
+                    serializationObject.uv3s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                serializationObject.uvs4 = this.getVerticesData(VertexBuffer.UV4Kind);
+                serializationObject.uv4s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
+                if (this.getVertexBuffer(VertexBuffer.UV4Kind).isUpdatable) {
+                    serializationObject.uv4s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                serializationObject.uvs5 = this.getVerticesData(VertexBuffer.UV5Kind);
+                serializationObject.uv5s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
+                if (this.getVertexBuffer(VertexBuffer.UV5Kind).isUpdatable) {
+                    serializationObject.uv5s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                serializationObject.uvs6 = this.getVerticesData(VertexBuffer.UV6Kind);
+                serializationObject.uv6s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
+                if (this.getVertexBuffer(VertexBuffer.UV6Kind).isUpdatable) {
+                    serializationObject.uv6s._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                serializationObject.colors = this.getVerticesData(VertexBuffer.ColorKind);
+                serializationObject.colors = this.toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
+                if (this.getVertexBuffer(VertexBuffer.ColorKind).isUpdatable) {
+                    serializationObject.colors._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-                serializationObject.matricesIndices = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
                 serializationObject.matricesIndices._isExpanded = true;
+                if (this.getVertexBuffer(VertexBuffer.MatricesIndicesKind).isUpdatable) {
+                    serializationObject.matricesIndices._updatable = true;
+                }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-                serializationObject.matricesWeights = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+                if (this.getVertexBuffer(VertexBuffer.MatricesWeightsKind).isUpdatable) {
+                    serializationObject.matricesWeights._updatable = true;
+                }
             }
 
-            serializationObject.indices = this.getIndices();
+            serializationObject.indices = this.toNumberArray(this.getIndices());
 
             return serializationObject;
         }
@@ -632,13 +767,14 @@
             return geometry.copy(id);
         }
 
-        // from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
-        // be aware Math.random() could cause collisions
+        /**
+         * You should now use Tools.RandomId(), this method is still here for legacy reasons.
+         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
+         * Be aware Math.random() could cause collisions, but:
+         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         */
         public static RandomId(): string {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
+            return Tools.RandomId();
         }
 
         public static ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
@@ -730,35 +866,36 @@
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
-                mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, false);
-                mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, false);
+                mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, parsedGeometry.positions._updatable);
+
+                mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, parsedGeometry.normals._updatable);
 
                 if (parsedGeometry.uvs) {
-                    mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, false);
+                    mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, parsedGeometry.uvs._updatable);
                 }
 
                 if (parsedGeometry.uvs2) {
-                    mesh.setVerticesData(VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
+                    mesh.setVerticesData(VertexBuffer.UV2Kind, parsedGeometry.uvs2, parsedGeometry.uvs2._updatable);
                 }
 
                 if (parsedGeometry.uvs3) {
-                    mesh.setVerticesData(VertexBuffer.UV3Kind, parsedGeometry.uvs3, false);
+                    mesh.setVerticesData(VertexBuffer.UV3Kind, parsedGeometry.uvs3, parsedGeometry.uvs3._updatable);
                 }
 
                 if (parsedGeometry.uvs4) {
-                    mesh.setVerticesData(VertexBuffer.UV4Kind, parsedGeometry.uvs4, false);
+                    mesh.setVerticesData(VertexBuffer.UV4Kind, parsedGeometry.uvs4, parsedGeometry.uvs4._updatable);
                 }
 
                 if (parsedGeometry.uvs5) {
-                    mesh.setVerticesData(VertexBuffer.UV5Kind, parsedGeometry.uvs5, false);
+                    mesh.setVerticesData(VertexBuffer.UV5Kind, parsedGeometry.uvs5, parsedGeometry.uvs5._updatable);
                 }
 
                 if (parsedGeometry.uvs6) {
-                    mesh.setVerticesData(VertexBuffer.UV6Kind, parsedGeometry.uvs6, false);
+                    mesh.setVerticesData(VertexBuffer.UV6Kind, parsedGeometry.uvs6, parsedGeometry.uvs6._updatable);
                 }
 
                 if (parsedGeometry.colors) {
-                    mesh.setVerticesData(VertexBuffer.ColorKind, Color4.CheckColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), false);
+                    mesh.setVerticesData(VertexBuffer.ColorKind, Color4.CheckColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), parsedGeometry.colors._updatable);
                 }
 
                 if (parsedGeometry.matricesIndices) {
@@ -774,10 +911,10 @@
                             floatIndices.push(matricesIndex >> 24);
                         }
 
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
                     } else {
                         delete parsedGeometry.matricesIndices._isExpanded;
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, parsedGeometry.matricesIndices._updatable);
                     }
                 }
 
@@ -794,19 +931,19 @@
                             floatIndices.push(matricesIndex >> 24);
                         }
 
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
                     } else {
                         delete parsedGeometry.matricesIndices._isExpanded;
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, false);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, parsedGeometry.matricesIndicesExtra._updatable);
                     }
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, false);
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
                 if (parsedGeometry.matricesWeightsExtra) {
-                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, false);
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
@@ -844,7 +981,9 @@
 
             var geometry = new Geometry(parsedVertexData.id, scene);
 
-            Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            if (Tags) {
+                Tags.AddTagsTo(geometry, parsedVertexData.tags);
+            }
 
             if (parsedVertexData.delayLoadingFile) {
                 geometry.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
@@ -939,7 +1078,7 @@
                 super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(kind: string, data: number[] | Int32Array | Float32Array, updatable?: boolean): void {
+            public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }
@@ -1009,7 +1148,9 @@
                 }
 
                 var box = new Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-                Tags.AddTagsTo(box, parsedBox.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(box, parsedBox.tags);
+                }
 
                 scene.pushGeometry(box, true);
 
@@ -1046,7 +1187,9 @@
                 }
 
                 var sphere = new Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-                Tags.AddTagsTo(sphere, parsedSphere.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(sphere, parsedSphere.tags);
+                }
 
                 scene.pushGeometry(sphere, true);
 
@@ -1102,7 +1245,9 @@
                 }
 
                 var cylinder = new Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-                Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+                }
 
                 scene.pushGeometry(cylinder, true);
 
@@ -1140,7 +1285,9 @@
                 }
 
                 var torus = new Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-                Tags.AddTagsTo(torus, parsedTorus.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(torus, parsedTorus.tags);
+                }
 
                 scene.pushGeometry(torus, true);
 
@@ -1178,7 +1325,9 @@
                 }
 
                 var ground = new Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-                Tags.AddTagsTo(ground, parsedGround.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(ground, parsedGround.tags);
+                }
 
                 scene.pushGeometry(ground, true);
 
@@ -1229,7 +1378,9 @@
                 }
 
                 var plane = new Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-                Tags.AddTagsTo(plane, parsedPlane.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(plane, parsedPlane.tags);
+                }
 
                 scene.pushGeometry(plane, true);
 
@@ -1270,7 +1421,9 @@
                 }
 
                 var torusKnot = new Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-                Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                if (Tags) {
+                    Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+                }
 
                 scene.pushGeometry(torusKnot, true);
 

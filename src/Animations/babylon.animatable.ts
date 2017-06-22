@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Animatable {
-        private _localDelayOffset: number;
-        private _pausedDelay: number;
+        private _localDelayOffset: number = null;
+        private _pausedDelay: number = null;
         private _animations = new Array<Animation>();
         private _paused = false;
         private _scene: Scene;
@@ -74,6 +74,14 @@
         public goToFrame(frame: number): void {
             var animations = this._animations;
 
+            if (animations[0]) {
+                var fps = animations[0].framePerSecond;
+                var currentFrame = animations[0].currentFrame;
+                var adjustTime = frame - currentFrame;
+                var delay = adjustTime * 1000 / fps;
+                this._localDelayOffset -= delay;
+            }
+
             for (var index = 0; index < animations.length; index++) {
                 animations[index].goToFrame(frame);
             }
@@ -90,35 +98,66 @@
             this._paused = false;
         }
 
-        public stop(): void {
-            var index = this._scene._activeAnimatables.indexOf(this);
+        public stop(animationName?: string): void {
+            
+            if (animationName) {
 
-            if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
+                var idx = this._scene._activeAnimatables.indexOf(this);
 
-                var animations = this._animations;
-                for (var index = 0; index < animations.length; index++) {
-                    animations[index].reset();
+                if (idx > -1) {
+
+                    var animations = this._animations;
+                    
+                    for (var index = animations.length - 1; index >= 0; index--) {
+                        if (typeof animationName === "string" && animations[index].name != animationName) {
+                            continue;
+                        }
+
+                        animations[index].reset();
+                        animations.splice(index, 1);
+                    }
+
+                    if (animations.length == 0) {
+                        this._scene._activeAnimatables.splice(idx, 1);
+
+                        if (this.onAnimationEnd) {
+                            this.onAnimationEnd();
+                        }
+                    }
                 }
 
-                if (this.onAnimationEnd) {
-                    this.onAnimationEnd();
+            } else {
+
+                var index = this._scene._activeAnimatables.indexOf(this);
+
+                if (index > -1) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    var animations = this._animations;
+                    
+                    for (var index = 0; index < animations.length; index++) {
+                        animations[index].reset();
+                    }
+                    
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                 }
+
             }
         }
 
         public _animate(delay: number): boolean {
             if (this._paused) {
                 this.animationStarted = false;
-                if (!this._pausedDelay) {
+                if (this._pausedDelay === null) {
                     this._pausedDelay = delay;
                 }
                 return true;
             }
 
-            if (!this._localDelayOffset) {
+            if (this._localDelayOffset === null) {
                 this._localDelayOffset = delay;
-            } else if (this._pausedDelay) {
+            } else if (this._pausedDelay !== null) {
                 this._localDelayOffset += delay - this._pausedDelay;
                 this._pausedDelay = null;
             }

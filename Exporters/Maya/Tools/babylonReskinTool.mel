@@ -1,0 +1,69 @@
+global proc reskinSelectedMeshes() {
+    $selection = `ls -sl`;
+    $selected = size($selection);
+    if ($selected > 0) {
+        $skinName = `textFieldGrp -q -text myReskinName`;
+        $copyName = `textFieldGrp -q -text myUvsetName`;
+        $regenerate = `radioButtonGrp -q -select myReskinGenerate`;
+        $influencers = `intSliderGrp -q -value myReskinInfluencers`;
+        if ($skinName != "") {
+            if ($copyName != "") {
+                for ($i = 0; $i < $selected; $i++) {
+                    string $selectedObject = $selection[$i];
+                    select $selectedObject;
+                    string $uvSets[] = `polyUVSet -q -allUVSets`;
+                    int $uvSize = `size($uvSets)`;
+                    if ($uvSize > 0) {
+                        string $defaultSet = $uvSets[0];
+                        if ($defaultSet != $copyName) {
+                            polyUVSet -copy -uvSet $defaultSet -nuv $copyName;
+                        }
+                    }
+                }
+                select $selection;
+            }
+            $textField_exists = `objExists $skinName`;
+            if ($textField_exists == 0) {
+                waitCursor -state 1;
+                $skinedCluster = $selection[0];
+                $skinnedJoints = `skinCluster -q -inf $skinedCluster`;
+                if ($selected > 1) {
+                    $duplicateObj = `duplicate $selection`;
+                    $createGrp = `group -n tempGroup`;
+                    $mergeType = ($regenerate - 1);
+                    $combine = `polyUnite -muv $mergeType -n $skinName $createGrp`;
+                    $deleteHistory = `delete -ch $combine`;
+                    delete $createGrp;
+                } else {
+                    $duplicateObj = `duplicate -n $skinName $selection`;
+                }
+                $jnt = `select -add $skinnedJoints $skinName`;
+                $selectionforBind = `ls -sl`;
+                $newskin = `skinCluster -mi $influencers $selectionforBind`;
+                $newSelect = `select -add $skinnedJoints $selection $skinName`;
+                $transfer = `copySkinWeights -nm -sa "closestPoint" -ia "closestJoint"`;
+                $cleared = `textFieldGrp -edit -text "" myReskinName`;
+                $deleted = `delete $selection`;
+                select -cl;
+                waitCursor -state 0;
+            } else {
+                error ("Skin name is already in use: " + $skinName);
+            }
+        } else {
+            error "No name specified for re-skining.";
+        }
+    } else {
+        error "No meshes selected for re-skining.";
+    }
+}
+
+global proc babylonReskinTool() {
+    string $window = `window -title "Reskin Geometry Tool"`;
+    columnLayout -adjustableColumn true;
+    textFieldGrp -label "Skin Name" -text "" myReskinName;
+    intSliderGrp -label "Max Influencers" -field true -minValue 1 -maxValue 4 -fieldMinValue 1 -fieldMaxValue 4 -value 4 myReskinInfluencers;
+    textFieldGrp -label "Copy Set Name" -text "" myUvsetName;
+    radioButtonGrp -label "UV Map Generation" -numberOfRadioButtons 3 -labelArray3 "No Merge" "Same Name" "Set Links" -select 2 myReskinGenerate;
+    button -label "Reskin Selected Meshes" -command "reskinSelectedMeshes()" myReskinButton; 
+    showWindow $window;
+}

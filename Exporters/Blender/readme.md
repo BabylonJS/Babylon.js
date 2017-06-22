@@ -3,7 +3,8 @@ Blender to Babylon.js exporter
 
 The [Blender export plugin](http://blogs.msdn.com/b/eternalcoding/archive/2013/06/28/babylon-js-how-to-load-a-babylon-file-produced-with-blender.aspx) supports the following features:
 
-For a discussion of Tower of Babel exporter, along with the difference this exporter, [See]{https://github.com/BabylonJS/Extensions/tree/master/TowerOfBabel)
+For a discussion of Tower of Babel exporter, along with the difference this exporter, see [ToB readme](https://github.com/BabylonJS/Extensions/tree/master/QueuedInterpolation/Blender).
+
 * **Cameras**
  * Name
  * Position
@@ -27,6 +28,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Energy
  * Diffuse color
  * Specular color
+ * Include only meshes in same Blender layer
  * Shadow maps, all types (For directional lights)
  * Actions exported as AnimationRanges
 * **Materials**
@@ -48,6 +50,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Procedural Texture Baking
  * Cycles Render Baking
  * Check Ready Only Once
+ * Maximum Simultaneous Lights
 * **Multi-materials**
  * Name
  * Child materials

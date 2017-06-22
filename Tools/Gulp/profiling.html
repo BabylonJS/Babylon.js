@@ -1,0 +1,213 @@
+<html>
+<head>
+    <title>Customize BJS for a specific Scene</title>
+    <meta charset="UTF-8">
+    <script src="../../dist/preview release/babylon.js"></script>
+    <style>
+    input.path {width:600px;}
+    input.filename {width:200px;}
+    em {color:red;}
+    </style>
+    
+</head>
+<body onload="readConfigFile()">
+Obtain a performance file by:
+<ol>
+	<li>Make sure scene uses Babylon MAX.</li>
+	<li>Add the temporary Javascript line <em>window.alert('Turn on Performance Recording')</em> just prior to Engine Instancing line.
+	<li>Load the scene, turn on performance profiling, &amp; click ok to the temporary alert.</li>
+	<li>Do anything that might call code in babylon.js not yet encountered.</li>
+	<li>Stop recording, and save the data as a file.</li>
+</ol>
+On this page:
+<ol>
+    <li>Select the branch to build the config against. <em>Be sure to change to that branch in repo</em>
+	<li>Select File with 'Browse' button below, and pick the file saved from above.</li>
+	<li>Make any changes of name to babylon file names &amp; directory..</li>
+	<li>Click Generate. Tip: change Firefox Option for Downloads to <em>Always ask me where to save files</em> to avoid having to move config with custom entries to Gulp Directory.</li>
+	<li>Copy the 'custom.cofig.json' file generated in Downloads directory to the Gulp directory.</li>
+	<li>Run: 'Gulp build-custom' then test with scene.  Tip: test with the generated max version.</li>
+	<li>If need stuff did not get recorded in performance file, then select file(s) &amp; click Generate again.</li>
+</ol>
+	<form>
+        BJS Version for Build: <select id="versions" onchange="readConfigFile()">
+            <option value="https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Tools/Gulp/config.json">Master</option>
+            <option value="https://raw.githubusercontent.com/BabylonJS/Babylon.js/preview/Tools/Gulp/config.json">Preview</option>
+            <option value="./config.json">Current Local Branch (Firefox only)</option>
+        </select><br>
+
+		<label>Profiling file: <input type="file" id="upload_file" name="upload" accept="text/*" multiple="" onchange="assignProfile(this.files[0])"/></label><br>
+		
+        Source of Performance Data: 
+		<input type="radio" name="browser" id="firefox" checked="checked"><label for="firefox"> Firefox</label>
+		<input type="radio" name="browser" id="chrome" disabled data-toggle="tooltip" title="Not yet implemented, Go for it!"><label for="chrome"> Chrome</label>
+		<input type="radio" name="browser" id="edge"   disabled data-toggle="tooltip" title="Not yet implemented, Go for it!"><label for="edge"> Edge</label><br><br>
+
+		Output Directory: <input class="path"     type="text" id="directory" maxlength="256" value="C:/"> (clear for default of <em>../../dist/preview release</em>)<br>
+		Base name:        <input class="basename" type="text" id="basename"  maxlength="32"  value="babylon.custom">  Generates basename.js & basename.max.js     
+		
+		<table border="1">     
+        	<tr><th colspan="2"><input type="button" value="Generate Custom Config" onclick="generate()"></th></tr>
+        	<tr><td>Found</td><td>Not Found: (Select those to keep anyway)</td></tr>
+        	
+        	<tr>
+        		<td><select id="found" multiple size="50" disabled></select></td>
+        		<td><select id="discards" multiple size="50"></select></td>
+           </tr>
+        </table> 
+
+	</form>
+	<script>
+	    //  each "WorkLoad" is a: [keep: boolean, name: string]
+	    //  search is initially the file name without the .js.  
+	    var workloads;
+	    //  each "File" is a: [workLoad: WorkLoad, fullPath: string, search]
+	    //  search is initially the file name without the .js.  
+	    var files;
+    	var reg = new RegExp('babylon\\.\\w+'); // all the letters of the base filename, but not including the .js
+	
+	    var FIRE_FOX = 0;
+	    var CHROME   = 1;
+	    var EDGE     = 3;
+	    var parsedConfig;
+	    
+	    function readConfigFile() {
+	    	var versions = document.getElementById("versions");
+	    	BABYLON.Tools.LoadFile(versions.options[versions.selectedIndex].value,
+	                function(data){
+	                 	parsedConfig = JSON.parse(data);
+	                 	allLoads = parsedConfig.buildConfigurations.all;
+	                 	workloads = new Array();
+	                 	files     = new Array();
+	                 	for (var i = 0, len = allLoads.length; i < len; i++) {
+	                 		var wkLoad = [false, allLoads[i]];
+	                 		workloads.push(wkLoad);
+	                 		var loadFiles = parsedConfig.workloads[allLoads[i]].files;
+
+	                 		for (var z = 0, fLen = loadFiles.length; z < fLen; z++){
+	                 			var file = loadFiles[z];
+	                 			var name = file.match(reg)[0].substring(8);  // remove the babylon.
+	                        	files[i] = [wkLoad, file, name];
+	                 		}   		
+	                 	}
+	                }, null, true
+	        );
+	    }
+	    
+	    /** add addition conditions to match a file to examples:
+	     *    appendSecondarySearches("math.js", "mathtools|color3");
+	     *    appendSecondarySearches("freeCamera.js", "freeCamera\\w+");
+	     *
+	     * additionals is a string with all separated with a '|'
+	     * not currently needed
+	     */
+	    function appendSecondarySearches(baseFilename, additionals) {
+	    	for (var i = 0, len = files.length; i < len; i++) {
+	    		if (files[i][1].indexOf(baseFilename) !== -1) {
+	    			files[i][2] += "|" + additionals;
+	    			return;
+	    		}
+	    	}
+	    	throw "'" + baseFilename + "' not found as a base file name";
+	    }
+	
+	    function assignProfile(file) {
+	        BABYLON.Tools.ReadFile(file, analyse, null, false);
+	    }
+	    
+	    function analyse(data){
+	    	// make sure max was used
+	    	if (!data.match('\\.max\\.js')) {
+	    		alert('babylon.max not detected. File rejected');
+	    		return;
+	    	}
+	    	var browser;
+	    	if (document.getElementById("firefox").checked) browser = FIRE_FOX;
+	    	if (document.getElementById("chrome" ).checked) browser = CHROME;
+	    	if (document.getElementById("edge"   ).checked) browser = EDGE;
+	    		    	
+			// clean out for prior runs
+	    	for (var i = 0, len = workloads.length; i < len; i++) {
+	    		workloads[i][0] = false;
+	    	}
+	    	
+	    	for (var i = 0, len = files.length; i < len; i++) {
+	    		var file = files[i];
+	    		var wkLoad = file[0];
+    			switch(browser) {
+    			case FIRE_FOX:
+	     			var exp = new RegExp('"(' + file[2] + ')(\\.prototype|\\.\\w)', 'i');
+    				if (data.match(exp) ) {
+    					wkLoad[0] = true;
+    				}
+    				break;
+    			case CHROME:
+    			case EDGE:
+    				window.alert("Code from your PR goes here!");
+    				return;
+    			}
+	    	}
+	    	
+			var found = document.getElementById("found");
+			found.options.length = 0;
+	    	
+			var discards = document.getElementById("discards");
+			discards.options.length = 0;
+			
+	    	// add onto the discard select when not found
+	    	for (var i = 0, len = workloads.length; i < len; i++) {
+    			var option = document.createElement("option");
+    			option.text = workloads[i][1];
+	    		if (!workloads[i][0]){
+	    			discards.add(option);
+	    		}else {
+	    			found.add(option);
+	    		}
+	    	}
+	    }
+	    
+	    function generate() {
+	    	// get all the ones from select
+			var discards = document.getElementById("discards");
+			var opt;
+			var asText = "";
+			for (var i = 0, len = discards.options.length; i < len; i++) {
+				opt = discards.options[i];
+                if (opt.selected) {	
+                	asText += opt.text;
+                }
+			}
+
+			var directory = document.getElementById("directory").value;
+			var basename  = document.getElementById("basename" ).value;
+			
+			if (directory.length === 0) directory = "../../dist/preview release";
+	    	parsedConfig.build.outputDirectory = directory;
+	    	parsedConfig.build.filename = basename + ".max.js";
+	    	parsedConfig.build.minFilename = basename + ".js";
+	    	parsedConfig.build.currentConfig = "custom";
+	    	
+	    	var neededLoads = [];
+		    for (var i = 0, len = workloads.length; i < len; i++) {
+		    	if (workloads[i][0] || asText.indexOf(workloads[i][1]) !== -1) {
+		    		neededLoads.push(workloads[i][1]);
+		    	}
+		    }
+		    parsedConfig.buildConfigurations["custom"] = neededLoads;
+		    
+            var blob = new Blob ( [ JSON.stringify(parsedConfig) ], { type : 'text/plain;charset=utf-8' } );
+
+            // turn blob into an object URL;
+            var objectUrl = (window.webkitURL || window.URL).createObjectURL(blob);
+
+            var link = window.document.createElement("a");
+            link.href = objectUrl;
+            link.download = "config.json";
+            var click = document.createEvent("MouseEvents");
+            click.initEvent("click", true, false);
+            link.dispatchEvent(click);	            
+	    }
+
+	</script>
+</body>
+</html>

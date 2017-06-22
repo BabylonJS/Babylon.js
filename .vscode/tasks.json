@@ -1,0 +1,44 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "gulp",
+    "isShellCommand": true,
+    "args": [],
+    "showOutput": "always",
+    "options": {
+        "cwd": "${workspaceRoot}/Tools/Gulp"
+    },
+    "tasks": [
+        { 
+            "taskName": "run",
+            // Hijack Test Command for easy shortcut
+            "isTestCommand": true,
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "typescript",
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "^([^\\s].*)\\((\\d+|\\,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "watching": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting \\'watch\\'",
+                    "endsPattern": "Finished \\'run\\'"
+                }
+            }
+        },
+        { 
+            "taskName": "typescript-all",
+            "isBuildCommand": true,
+            "problemMatcher": [
+                "$tsc"
+            ]
+        }
+    ]
+}

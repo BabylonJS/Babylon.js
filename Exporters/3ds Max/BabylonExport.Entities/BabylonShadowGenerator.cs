@@ -15,13 +15,19 @@ namespace BabylonExport.Entities
         public string lightId { get; set; }
 
         [DataMember]
-        public bool useVarianceShadowMap { get; set; }
+        public bool useExponentialShadowMap { get; set; }
 
         [DataMember]
         public bool usePoissonSampling { get; set; }
 
         [DataMember]
-        public bool useBlurVarianceShadowMap { get; set; }
+        public bool useBlurExponentialShadowMap { get; set; }
+
+        [DataMember]
+        public float? depthScale { get; set; }
+
+        [DataMember]
+        public float darkness { get; set; }
 
         [DataMember]
         public float blurScale { get; set; }
@@ -35,5 +41,14 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool forceBackFacesOnly { get; set; }
 
+        public BabylonShadowGenerator()
+        {
+            darkness = 0;
+            blurScale = 2;
+            blurBoxOffset = 0;
+            bias = 0.00005f;
+            depthScale = null;
+            forceBackFacesOnly = false;
+        }
     }
 }

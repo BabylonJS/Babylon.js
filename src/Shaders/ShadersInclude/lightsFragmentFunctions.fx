@@ -5,6 +5,9 @@ struct lightingInfo
 #ifdef SPECULARTERM
 	vec3 specular;
 #endif
+#ifdef NDOTL
+	float ndl;
+#endif
 };
 
 lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
@@ -26,6 +29,10 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 
 	// diffuse
 	float ndl = max(0., dot(vNormal, lightVectorW));
+#ifdef NDOTL
+	result.ndl = ndl;
+#endif
+
 	result.diffuse = ndl * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
@@ -47,7 +54,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 	float attenuation = max(0., 1.0 - length(direction) / range);
 
 	// diffuse
-	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));
+	float cosAngle = max(0., dot(lightDirection.xyz, -lightVectorW));
 
 	if (cosAngle >= lightDirection.w)
 	{
@@ -55,12 +62,15 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		attenuation *= cosAngle;
 
 		// Diffuse
-		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
+		float ndl = max(0., dot(vNormal, lightVectorW));
+#ifdef NDOTL
+		result.ndl = ndl;
+#endif
 		result.diffuse = ndl * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
 		// Specular
-		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
+		vec3 angleW = normalize(viewDirectionW + lightVectorW);
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, max(1., glossiness));
 
@@ -73,6 +83,9 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 #ifdef SPECULARTERM
 	result.specular = vec3(0.);
 #endif
+#ifdef NDOTL
+	result.ndl = 0.;
+#endif
 
 	return result;
 }
@@ -82,6 +95,10 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 	// Diffuse
 	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
+#ifdef NDOTL
+	result.ndl = ndl;
+#endif
+
 	result.diffuse = mix(groundColor, diffuseColor, ndl);
 
 #ifdef SPECULARTERM

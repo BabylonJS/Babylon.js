@@ -1,0 +1,18 @@
+.c2di-resize-bar-v {
+  height:100%;
+  width:$resizebar-width;
+  background-color: $background;
+  cursor: col-resize;
+  flex-shrink: 0;
+  border-left:1px solid $background-lighter;
+  border-right:1px solid $background-lighter;
+}
+.c2di-resize-bar-h {
+  width:100%;
+  height:$resizebar-width;
+  background-color: $background;
+  cursor: row-resize;
+  flex-shrink: 0;
+  border-top: 1px solid $background-lighter;
+  border-bottom: 1px solid $background-lighter;
+}

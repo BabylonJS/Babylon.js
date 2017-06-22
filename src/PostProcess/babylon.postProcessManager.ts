@@ -36,14 +36,14 @@
         }
 
         // Methods
-        public _prepareFrame(sourceTexture?: WebGLTexture): boolean {
-            var postProcesses = this._scene.activeCamera._postProcesses;
+        public _prepareFrame(sourceTexture?: WebGLTexture, postProcesses?: PostProcess[]): boolean {
+            var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
 
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
             }
 
-            postProcesses[0].activate(this._scene.activeCamera, sourceTexture);
+            postProcesses[0].activate(this._scene.activeCamera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
             return true;
         }
 
@@ -122,9 +122,10 @@
                 }
             }
 
-            // Restore depth buffer
+            // Restore states
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {

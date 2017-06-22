@@ -22,6 +22,7 @@
         private _frameCount = 0;
         private _manager: SpriteManager;
         private _time = 0;
+        private _onAnimationEnd: () => void;
 
         public get size(): number {
             return this.width;
@@ -40,7 +41,7 @@
             this.position = Vector3.Zero();
         }
 
-        public playAnimation(from: number, to: number, loop: boolean, delay: number): void {
+        public playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void {
             this._fromIndex = from;
             this._toIndex = to;
             this._loopAnimation = loop;
@@ -51,6 +52,8 @@
 
             this.cellIndex = from;
             this._time = 0;
+
+            this._onAnimationEnd = onAnimationEnd;
         }
 
         public stopAnimation(): void {
@@ -65,11 +68,14 @@
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
                 this.cellIndex += this._direction;
-                if (this.cellIndex == this._toIndex) {
+                if (this.cellIndex === this._toIndex) {
                     if (this._loopAnimation) {
                         this.cellIndex = this._fromIndex;
                     } else {
                         this._animationStarted = false;
+                        if (this._onAnimationEnd) {
+                            this._onAnimationEnd();
+                        }
                         if (this.disposeWhenFinishedAnimating) {
                             this.dispose();
                         }

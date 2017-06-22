@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<title>Shaders Library</title>
+	<script src="../assets/refs/dat.gui.min.js"></script>
+	<script src="../tools/DevLoader/BabylonLoader.js"></script>
+
+	<style>
+		html,
+		body {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+		
+		#renderCanvas {
+			width: 100%;
+			height: 100%;
+		}
+		
+		#fps {
+			position: absolute;
+			background-color: black;
+			border: 2px solid red;
+			text-align: center;
+			font-size: 16px;
+			color: white;
+			top: 15px;
+			left: 10px;
+			width: 60px;
+			height: 20px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="fps">0</div>
+	<canvas id="renderCanvas"></canvas>
+
+	<script>
+	BABYLONDEVTOOLS.Loader.load(function() {
+		if (BABYLON.Engine.isSupported()) {
+			var canvas = document.getElementById("renderCanvas");
+			var engine = new BABYLON.Engine(canvas, true);					
+			BABYLONDEVTOOLS.Loader.debugShortcut(engine);	
+			var divFps = document.getElementById("fps");
+
+			var scene = new BABYLON.Scene(engine);
+
+			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
+			camera.attachControl(canvas, true);
+			camera.minZ = 0.1;
+
+			// Lights
+			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+			
+			// Create meshes
+			var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);			
+
+			// Register a render loop to repeatedly render the scene
+			engine.runRenderLoop(function () {
+				scene.render();
+				divFps.innerHTML = engine.getFps().toFixed() + " fps";
+			});
+
+			// Resize
+			window.addEventListener("resize", function () {
+				engine.resize();
+			});
+
+			var aaPostProcess = new BABYLON.AsciiArtPostProcess("AsciiArt", camera);
+			var drPostProcess = new BABYLON.DigitalRainPostProcess("AsciiArt", camera);
+
+			//camera.detachPostProcess(aaPostProcess);
+			camera.detachPostProcess(drPostProcess);
+
+			var gui = new dat.GUI();
+			var options = {
+				postProcess: "asciiArt"
+			}
+
+			gui.add(options, 'postProcess', ['asciiArt', 'digitalRain']).onFinishChange(function () {
+				
+				switch (options.postProcess) {
+					case "asciiArt":
+						camera.detachPostProcess(aaPostProcess);
+						camera.detachPostProcess(drPostProcess);
+						camera.attachPostProcess(aaPostProcess);
+						break;
+					case "digitalRain":
+						camera.detachPostProcess(aaPostProcess);
+						camera.detachPostProcess(drPostProcess);
+						camera.attachPostProcess(drPostProcess);
+						break;
+				}
+			});
+		}
+	});
+
+	</script>
+</body>
+
+</html>

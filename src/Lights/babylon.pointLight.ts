@@ -1,95 +1,145 @@
 ﻿module BABYLON {
-    export class PointLight extends Light implements IShadowLight {
-        private _worldMatrix: Matrix;
-        public transformedPosition: Vector3;
+    export class PointLight extends ShadowLight {
 
-        @serializeAsVector3()
-        public position: Vector3;
+        private _shadowAngle = Math.PI / 2;
+        /**
+         * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         * This specifies what angle the shadow will use to be created.
+         * 
+         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
+         */
+        @serialize()
+        public get shadowAngle(): number {
+            return this._shadowAngle
+        }
+        /**
+         * Setter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         * This specifies what angle the shadow will use to be created.
+         * 
+         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
+         */
+        public set shadowAngle(value: number) {
+            this._shadowAngle = value;
+            this.forceProjectionMatrixCompute();
+        }
 
+        public get direction(): Vector3 {
+            return this._direction;
+        }
+
+        /**
+         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         */
+        public set direction(value: Vector3) {
+            var previousNeedCube = this.needCube();
+            this._direction = value;
+            if (this.needCube() !== previousNeedCube && this._shadowGenerator) {
+                this._shadowGenerator.recreateShadowMap();
+            }
+        }
+
+        /**
+         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.  
+         * A PointLight emits the light in every direction.  
+         * It can cast shadows.  
+         * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
+         * ```javascript
+         * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
+         * ```
+         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         */
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
-
             this.position = position;
         }
 
-        public getAbsolutePosition(): Vector3 {
-            return this.transformedPosition ? this.transformedPosition : this.position;
+        /**
+         * Returns the string "PointLight"
+         */
+        public getClassName(): string {
+            return "PointLight";
+        }
+        
+        /**
+         * Returns the integer 0.  
+         */
+        public getTypeID(): number {
+            return Light.LIGHTTYPEID_POINTLIGHT;
         }
 
-        public computeTransformedPosition(): boolean {
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (!this.transformedPosition) {
-                    this.transformedPosition = Vector3.Zero();
-                }
-
-                Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public transferToEffect(effect: Effect, positionUniformName: string): void {
-            if (this.parent && this.parent.getWorldMatrix) {
-                this.computeTransformedPosition();
-
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
-
-                return;
-            }
-
-            effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
-        }
-
+        /**
+         * Specifies wether or not the shadowmap should be a cube texture.
+         */
         public needCube(): boolean {
-            return true;
+            return !this.direction;
         }
 
-        public supportsVSM(): boolean {
-            return false;
-        }
-
-        public needRefreshPerFrame(): boolean {
-            return false;
-        }
-
+        /**
+         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).  
+         */
         public getShadowDirection(faceIndex?: number): Vector3 {
-            switch (faceIndex) {
-                case 0:
-                    return new Vector3(1, 0, 0);
-                case 1:
-                    return new Vector3(-1, 0, 0);
-                case 2:
-                    return new Vector3(0, -1, 0);
-                case 3:
-                    return new Vector3(0, 1, 0);
-                case 4:
-                    return new Vector3(0, 0, 1);
-                case 5:
-                    return new Vector3(0, 0, -1);
+            if (this.direction) {
+                return super.getShadowDirection(faceIndex);
+            }
+            else {
+                switch (faceIndex) {
+                    case 0:
+                        return new Vector3(1.0, 0.0, 0.0);
+                    case 1:
+                        return new Vector3(-1.0, 0.0, 0.0);
+                    case 2:
+                        return new Vector3(0.0, -1.0, 0.0);
+                    case 3:
+                        return new Vector3(0.0, 1.0, 0.0);
+                    case 4:
+                        return new Vector3(0.0, 0.0, 1.0);
+                    case 5:
+                        return new Vector3(0.0, 0.0, -1.0);
+                }
             }
 
             return Vector3.Zero();
         }
 
-        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+        /**
+         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings : 
+         * - fov = PI / 2
+         * - aspect ratio : 1.0
+         * - z-near and far equal to the active camera minZ and maxZ.  
+         * Returns the PointLight.  
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
-            Matrix.PerspectiveFovLHToRef(Math.PI / 2, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+            Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, 
+            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
-        public _getWorldMatrix(): Matrix {
-            if (!this._worldMatrix) {
-                this._worldMatrix = Matrix.Identity();
+        protected _buildUniformLayout(): void {
+            this._uniformBuffer.addUniform("vLightData", 4);
+            this._uniformBuffer.addUniform("vLightDiffuse", 4);
+            this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.addUniform("depthValues", 2);
+            this._uniformBuffer.create();
+        }
+
+        /**
+         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
+         * Returns the PointLight.  
+         */
+        public transferToEffect(effect: Effect, lightIndex: string): PointLight {
+            if (this.computeTransformedInformation()) {
+                this._uniformBuffer.updateFloat4("vLightData",
+                    this.transformedPosition.x,
+                    this.transformedPosition.y,
+                    this.transformedPosition.z,
+                    0.0,
+                    lightIndex); 
+                return this;
             }
 
-            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
-
-            return this._worldMatrix;
-        }
-
-        public getTypeID(): number {
-            return 0;
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            return this;
         }
     }
 } 

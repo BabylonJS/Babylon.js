@@ -8,7 +8,7 @@
 
 uniform vec4 vFogInfos;
 uniform vec3 vFogColor;
-varying float fFogDistance;
+varying vec3 vFogDistance;
 
 float CalcFogFactor()
 {
@@ -16,18 +16,19 @@ float CalcFogFactor()
 	float fogStart = vFogInfos.y;
 	float fogEnd = vFogInfos.z;
 	float fogDensity = vFogInfos.w;
+	float fogDistance = length(vFogDistance);
 
 	if (FOGMODE_LINEAR == vFogInfos.x)
 	{
-		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
+		fogCoeff = (fogEnd - fogDistance) / (fogEnd - fogStart);
 	}
 	else if (FOGMODE_EXP == vFogInfos.x)
 	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
+		fogCoeff = 1.0 / pow(E, fogDistance * fogDensity);
 	}
 	else if (FOGMODE_EXP2 == vFogInfos.x)
 	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
+		fogCoeff = 1.0 / pow(E, fogDistance * fogDistance * fogDensity * fogDensity);
 	}
 
 	return clamp(fogCoeff, 0.0, 1.0);
