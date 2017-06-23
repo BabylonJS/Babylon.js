@@ -1941,10 +1941,11 @@
 
             var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
-                if (onCompiled) {
-                    onCompiled(effect);
+                var compiledEffect = <Effect>this._compiledEffects[name];
+                if (onCompiled && compiledEffect.isReady()) {
+                    onCompiled(compiledEffect);
                 }
-                return this._compiledEffects[name];
+                return compiledEffect;
             }
 
             var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
