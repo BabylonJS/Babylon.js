@@ -207,7 +207,7 @@ namespace Max2Babylon
             // Animations
             var animations = new List<BabylonAnimation>();
             ExportFloatAnimation("uOffset", animations, key => new[] { uvGen.GetUOffs(key) });
-            ExportFloatAnimation("vOffset", animations, key => new[] { uvGen.GetVOffs(key) });
+            ExportFloatAnimation("vOffset", animations, key => new[] { -uvGen.GetVOffs(key) });
             ExportFloatAnimation("uScale", animations, key => new[] { uvGen.GetUScl(key) });
             ExportFloatAnimation("vScale", animations, key => new[] { uvGen.GetVScl(key) });
             ExportFloatAnimation("uAng", animations, key => new[] { uvGen.GetUAng(key) });
