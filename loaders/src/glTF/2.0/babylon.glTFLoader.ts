@@ -78,7 +78,7 @@ module BABYLON.GLTF2 {
 
             this._onLoaded = () => {
                 this._showMeshes();
-                this._startFirstAnimation();
+                this._startAnimations();
 
                 if (this._errors.length === 0) {
                     onSuccess();
@@ -130,15 +130,17 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _startFirstAnimation(): void {
+        private _startAnimations(): void {
             var animations = this._gltf.animations;
             if (!animations) {
                 return;
             }
 
-            var animation = animations[0];
-            for (var i = 0; i < animation.targets.length; i++) {
-                this._babylonScene.beginAnimation(animation.targets[i], 0, Number.MAX_VALUE, true);
+            for (var i = 0; i < animations.length; i++) {
+                var animation = animations[i];
+                for (var j = 0; j < animation.targets.length; j++) {
+                    this._babylonScene.beginAnimation(animation.targets[j], 0, Number.MAX_VALUE, true);
+                }
             }
         }
 
