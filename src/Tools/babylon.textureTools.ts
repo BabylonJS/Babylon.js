@@ -21,6 +21,7 @@
 			);
 
             var scene = texture.getScene();
+			var engine = scene.getEngine();
 
 			rtt.wrapU = texture.wrapU;
 			rtt.wrapV = texture.wrapV;
@@ -35,7 +36,7 @@
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
 
-            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT, true);
+            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT, true);
             passPostProcess.updateEffect(null, null, null, null, () => {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
@@ -43,9 +44,11 @@
 
                 scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
 
-                scene.getEngine().restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer();
                 rtt.disposeFramebufferObjects();
 				passPostProcess.dispose();
+
+				engine.resetTextureCache();
             });
 
 			return rtt;
