@@ -93,6 +93,7 @@
         public uniqueId = 0;
         public onCompileObservable = new Observable<Effect>();
         public onErrorObservable = new Observable<Effect>();
+        public onBindObservable = new Observable<Effect>();
 
         private static _uniqueIdSeed = 0;
         private _engine: Engine;

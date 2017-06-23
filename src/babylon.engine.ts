@@ -2029,6 +2029,7 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
+            effect.onBindObservable.notifyObservers(effect);
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
