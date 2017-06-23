@@ -8731,6 +8731,9 @@ var BABYLON;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
             var name = vertex + "+" + fragment + "@" + (defines ? defines : attributesNamesOrOptions.defines);
             if (this._compiledEffects[name]) {
+                if (onCompiled) {
+                    onCompiled(effect);
+                }
                 return this._compiledEffects[name];
             }
             var effect = new BABYLON.Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
@@ -66870,6 +66873,7 @@ var BABYLON;
             rtt.coordinatesIndex = texture.coordinatesIndex;
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            rtt._texture.isReady = false;
             var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, true);
             passPostProcess.updateEffect(null, null, null, null, function () {
                 passPostProcess.onApply = function (effect) {
@@ -66879,6 +66883,7 @@ var BABYLON;
                 engine.restoreDefaultFramebuffer();
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
+                rtt._texture.isReady = true;
                 engine.resetTextureCache();
             });
             return rtt;

@@ -1941,6 +1941,9 @@
 
             var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
+                if (onCompiled) {
+                    onCompiled(effect);
+                }
                 return this._compiledEffects[name];
             }
 
