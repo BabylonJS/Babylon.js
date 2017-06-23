@@ -856,6 +856,11 @@
                 camera._setupInputs();
             }
 
+            if ((<any>camera).setPosition) { // need to force position
+                camera.position.copyFromFloats(0, 0, 0);
+                (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
+            }
+
             // Target
             if (parsedCamera.target) {
                 if ((<any>camera).setTarget) {
