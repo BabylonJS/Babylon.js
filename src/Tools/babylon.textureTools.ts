@@ -37,8 +37,8 @@
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
 			rtt._texture.isReady = false;
 
-            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT, true);
-            passPostProcess.updateEffect(null, null, null, null, () => {
+            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+			passPostProcess.getEffect().executeWhenCompiled(() => {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
                 }
@@ -50,7 +50,6 @@
 				passPostProcess.dispose();
 
 				rtt._texture.isReady = true;
-				engine.resetTextureCache();
             });
 
 			return rtt;
