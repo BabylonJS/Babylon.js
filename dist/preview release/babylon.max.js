@@ -66857,6 +66857,7 @@ var BABYLON;
         TextureTools.CreateResizedCopy = function (texture, width, height) {
             var rtt = new BABYLON.RenderTargetTexture('resized' + texture.name, { width: width, height: height }, scene, !texture.noMipmap, true, texture._texture.type, false, texture._samplingMode, false);
             var scene = texture.getScene();
+            var engine = scene.getEngine();
             rtt.wrapU = texture.wrapU;
             rtt.wrapV = texture.wrapV;
             rtt.uOffset = texture.uOffset;
@@ -66869,15 +66870,16 @@ var BABYLON;
             rtt.coordinatesIndex = texture.coordinatesIndex;
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
-            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, true);
+            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, true);
             passPostProcess.updateEffect(null, null, null, null, function () {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
                 };
                 scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
-                scene.getEngine().restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer();
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
+                engine.resetTextureCache();
             });
             return rtt;
         };
