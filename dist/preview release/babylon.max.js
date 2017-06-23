@@ -8731,10 +8731,11 @@ var BABYLON;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
             var name = vertex + "+" + fragment + "@" + (defines ? defines : attributesNamesOrOptions.defines);
             if (this._compiledEffects[name]) {
-                if (onCompiled) {
-                    onCompiled(effect);
+                var compiledEffect = this._compiledEffects[name];
+                if (onCompiled && compiledEffect.isReady()) {
+                    onCompiled(compiledEffect);
                 }
-                return this._compiledEffects[name];
+                return compiledEffect;
             }
             var effect = new BABYLON.Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
@@ -22556,6 +22557,8 @@ var BABYLON;
         function Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
             var _this = this;
             this.uniqueId = 0;
+            this.onCompileObservable = new BABYLON.Observable();
+            this.onErrorObservable = new BABYLON.Observable();
             this._uniformBuffersNames = {};
             this._isReady = false;
             this._compilationError = "";
@@ -22670,6 +22673,17 @@ var BABYLON;
             return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
         };
         // Methods
+        Effect.prototype.executeWhenCompiled = function (func) {
+            var _this = this;
+            if (this.isReady()) {
+                func(this);
+                return;
+            }
+            var observer = this.onCompileObservable.add(function (effect) {
+                _this.onCompileObservable.remove(observer);
+                func(effect);
+            });
+        };
         Effect.prototype._loadVertexShader = function (vertex, callback) {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
@@ -22903,6 +22917,7 @@ var BABYLON;
                 if (this.onCompiled) {
                     this.onCompiled(this);
                 }
+                this.onCompileObservable.notifyObservers(this);
             }
             catch (e) {
                 this._compilationError = e.message;
@@ -22925,6 +22940,7 @@ var BABYLON;
                     if (this.onError) {
                         this.onError(this, this._compilationError);
                     }
+                    this.onErrorObservable.notifyObservers(this);
                 }
             }
         };
@@ -44096,6 +44112,9 @@ var BABYLON;
         PostProcess.prototype.getEngine = function () {
             return this._engine;
         };
+        PostProcess.prototype.getEffect = function () {
+            return this._effect;
+        };
         PostProcess.prototype.shareOutputWith = function (postProcess) {
             this._disposeTextures();
             this._shareOutputWithPostProcess = postProcess;
@@ -44103,9 +44122,6 @@ var BABYLON;
         };
         PostProcess.prototype.updateEffect = function (defines, uniforms, samplers, indexParameters, onCompiled, onError) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "", null, onCompiled, onError, indexParameters || this._indexParameters);
-            if (onCompiled && this._effect.isReady()) {
-                onCompiled(this._effect);
-            }
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -44282,10 +44298,9 @@ var BABYLON;
 (function (BABYLON) {
     var PassPostProcess = (function (_super) {
         __extends(PassPostProcess, _super);
-        function PassPostProcess(name, options, camera, samplingMode, engine, reusable, textureType, blockCompilation) {
+        function PassPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
-            if (blockCompilation === void 0) { blockCompilation = false; }
-            return _super.call(this, name, "pass", null, null, options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, blockCompilation) || this;
+            return _super.call(this, name, "pass", null, null, options, camera, samplingMode, engine, reusable, null, textureType) || this;
         }
         return PassPostProcess;
     }(BABYLON.PostProcess));
@@ -66874,8 +66889,8 @@ var BABYLON;
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
             rtt._texture.isReady = false;
-            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, true);
-            passPostProcess.updateEffect(null, null, null, null, function () {
+            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
+            passPostProcess.getEffect().executeWhenCompiled(function () {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
                 };
@@ -66884,7 +66899,6 @@ var BABYLON;
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
                 rtt._texture.isReady = true;
-                engine.resetTextureCache();
             });
             return rtt;
         };
