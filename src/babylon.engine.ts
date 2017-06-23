@@ -1428,8 +1428,9 @@
         public restoreDefaultFramebuffer(): void {
             this._currentRenderTarget = null;
             this.bindUnboundFramebuffer(null);
-
-            this.setViewport(this._cachedViewport);
+            if (this._cachedViewport) {
+                this.setViewport(this._cachedViewport);
+            }
 
             this.wipeCaches();
         }
