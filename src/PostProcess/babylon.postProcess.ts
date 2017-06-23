@@ -192,6 +192,10 @@
                 onError,
                 indexParameters || this._indexParameters
                 );
+            
+            if (onCompiled && this._effect.isReady()) {
+                onCompiled(this._effect);
+            }
         }
 
         public isReusable(): boolean {
