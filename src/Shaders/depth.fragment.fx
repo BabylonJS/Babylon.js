@@ -3,7 +3,7 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-uniform float far;
+varying float vDepthMetric;
 
 void main(void)
 {
@@ -12,6 +12,5 @@ void main(void)
 		discard;
 #endif
 
-	float depth = (gl_FragCoord.z / gl_FragCoord.w) / far;
-	gl_FragColor = vec4(depth, depth * depth, 0.0, 1.0);
+	gl_FragColor = vec4(vDepthMetric, vDepthMetric * vDepthMetric, 0.0, 1.0);
 }

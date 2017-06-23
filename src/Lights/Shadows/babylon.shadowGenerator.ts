@@ -398,6 +398,11 @@
                 this._kernelBlurXPostprocess.autoClear = false;
                 this._kernelBlurYPostprocess.autoClear = false;
 
+                if (this._textureType === Engine.TEXTURETYPE_UNSIGNED_INT) {
+                    (<BlurPostProcess>this._kernelBlurXPostprocess).packedFloat = true;
+                    (<BlurPostProcess>this._kernelBlurYPostprocess).packedFloat = true;
+                }
+
                 this._blurPostProcesses = [this._kernelBlurXPostprocess, this._kernelBlurYPostprocess];
             }
             else {
@@ -490,10 +495,8 @@
 
         private _applyFilterValues(): void {
             if (this.filter === ShadowGenerator.FILTER_NONE) {
-                this._shadowMap.anisotropicFilteringLevel = 1;
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             } else {
-                this._shadowMap.anisotropicFilteringLevel = 16;
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             }
         }
@@ -519,17 +522,18 @@
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    var alphaTexture = material.getAlphaTestTexture();
-
-                    if (alphaTexture.coordinatesIndex === 1) {
-                        attribs.push(VertexBuffer.UV2Kind);
-                        defines.push("#define UV2");
+                var alphaTexture = material.getAlphaTestTexture();
+                if (alphaTexture) {
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        if (alphaTexture.coordinatesIndex === 1) {
+                            attribs.push(VertexBuffer.UV2Kind);
+                            defines.push("#define UV2");
+                        }
                     }
                 }
             }
