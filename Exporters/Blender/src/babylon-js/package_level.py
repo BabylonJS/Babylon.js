@@ -4,8 +4,8 @@ from mathutils import Euler, Matrix
 
 from bpy import app
 from time import strftime
-MAX_FLOAT_PRECISION_INT = 4
-MAX_FLOAT_PRECISION = '%.' + str(MAX_FLOAT_PRECISION_INT) + 'f'
+FLOAT_PRECISION_DEFAULT = 4
+#MAX_FLOAT_PRECISION = '%.' + str(MAX_FLOAT_PRECISION_DEFAULT) + 'f'
 VERTEX_OUTPUT_PER_LINE = 50
 STRIP_LEADING_ZEROS_DEFAULT = False # false for .babylon
 #===============================================================================
@@ -92,8 +92,9 @@ def legal_js_identifier(input):
         out += '_' + prefix
     return out
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-def format_f(num, stripLeadingZero = STRIP_LEADING_ZEROS_DEFAULT):
-    s = MAX_FLOAT_PRECISION % num # rounds to N decimal places while changing to string
+def format_f(num, stripLeadingZero = STRIP_LEADING_ZEROS_DEFAULT, precision = FLOAT_PRECISION_DEFAULT):
+    fmt = '%.' + str(precision) + 'f'
+    s = fmt % num  # rounds to N decimal places
     s = s.rstrip('0') # strip trailing zeroes
     s = s.rstrip('.') # strip trailing .
     s = '0' if s == '-0' else s # nuke -0
@@ -267,8 +268,8 @@ def write_string(file_handler, name, string, noComma = False):
         file_handler.write(',')
     file_handler.write('"' + name + '":"' + string + '"')
 
-def write_float(file_handler, name, float):
-    file_handler.write(',"' + name + '":' + format_f(float))
+def write_float(file_handler, name, float, precision = FLOAT_PRECISION_DEFAULT):
+    file_handler.write(',"' + name + '":' + format_f(float, precision = precision))
 
 def write_int(file_handler, name, int, noComma = False):
     if noComma == False:

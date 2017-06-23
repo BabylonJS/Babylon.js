@@ -2421,188 +2421,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: AudioContext;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isLoaded;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
-        clone(): Sound;
-        getAudioBuffer(): AudioBuffer;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _inputAudioNode;
-        private _trackConvolver;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -2830,6 +2648,188 @@ declare module BABYLON {
         y2: number;
         constructor(x1?: number, y1?: number, x2?: number, y2?: number);
         easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: AudioContext;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isLoaded;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        clone(): Sound;
+        getAudioBuffer(): AudioBuffer;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _inputAudioNode;
+        private _trackConvolver;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
     }
 }
 
@@ -4544,61 +4544,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPlugin {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-    }
-}
-
-declare module BABYLON {
     class DirectionalLight extends ShadowLight {
         private _shadowFrustumSize;
         /**
@@ -5132,6 +5077,61 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
@@ -5398,6 +5398,9 @@ declare module BABYLON {
         onError: (effect: Effect, errors: string) => void;
         onBind: (effect: Effect) => void;
         uniqueId: number;
+        onCompileObservable: Observable<Effect>;
+        onErrorObservable: Observable<Effect>;
+        onBindObservable: Observable<Effect>;
         private static _uniqueIdSeed;
         private _engine;
         private _uniformBuffersNames;
@@ -5428,6 +5431,7 @@ declare module BABYLON {
         getCompilationError(): string;
         getVertexShaderSource(): string;
         getFragmentShaderSource(): string;
+        executeWhenCompiled(func: (effect: Effect) => void): void;
         _loadVertexShader(vertex: any, callback: (data: any) => void): void;
         _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
         private _dumpShadersSource(vertexCode, fragmentCode, defines);
@@ -8244,6 +8248,69 @@ declare module BABYLON {
         static Vector4: Vector4[];
         static Quaternion: Quaternion[];
         static Matrix: Matrix[];
+    }
+}
+
+declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Float32Array | number[]): void;
+        getPositions(): Float32Array;
+        setNormals(data: Float32Array | number[]): void;
+        getNormals(): Float32Array;
+        setTangents(data: Float32Array | number[]): void;
+        getTangents(): Float32Array;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        constructor(scene?: Scene);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _onInfluenceChanged(needUpdate);
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -11591,69 +11658,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Float32Array | number[]): void;
-        getPositions(): Float32Array;
-        setNormals(data: Float32Array | number[]): void;
-        getNormals(): Float32Array;
-        setTangents(data: Float32Array | number[]): void;
-        getTangents(): Float32Array;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        constructor(scene?: Scene);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _onInfluenceChanged(needUpdate);
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
     class Particle {
         position: Vector3;
         direction: Vector3;
@@ -12614,7 +12618,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class PassPostProcess extends PostProcess {
-        constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
     }
 }
 
@@ -12694,6 +12698,7 @@ declare module BABYLON {
         readonly texelSize: Vector2;
         constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: string, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
         getEngine(): Engine;
+        getEffect(): Effect;
         shareOutputWith(postProcess: PostProcess): PostProcess;
         updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
         isReusable(): boolean;
@@ -12893,6 +12898,13 @@ declare module BABYLON {
         readonly cubeTexture: RenderTargetTexture;
         readonly renderList: AbstractMesh[];
         attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
         dispose(): void;
     }
 }
@@ -14292,7 +14304,7 @@ declare module BABYLON {
          * @param height Desired height
          * @return Generated texture
          */
-        static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number): BABYLON.Texture;
+        static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number, useBilinearMode?: boolean): BABYLON.Texture;
     }
 }
 
@@ -15057,9 +15069,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
-}
-
 declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
@@ -15214,6 +15223,9 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
