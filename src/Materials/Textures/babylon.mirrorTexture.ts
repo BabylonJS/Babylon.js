@@ -96,7 +96,7 @@ module BABYLON {
                 this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
 
-                if (this._blurRatio === 1) {
+                if (this._blurRatio === 1 && this.samples < 2) {
                     this._blurX.outputTexture = this._texture;
                 } else {
                     this._blurX.alwaysForcePOT = true;

@@ -21,7 +21,7 @@
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_imageProcessing",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
-                "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer"
+                "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer", "textureTools"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
@@ -31,7 +31,7 @@
                 "multiMaterial", "pbrMaterial",
                 "meshBuilder", "layer",
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline",
-                "debug"
+                "debug", "textureTools"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -88,6 +88,16 @@
             "shaders" : [
                 "particles.vertex",
                 "particles.fragment"
+            ]
+        },         
+        "textureTools" : 
+        {
+            "files": [
+                "../../src/Tools/babylon.textureTools.js"
+            ],
+            "dependUpon" : [
+                "core",
+                "postProcesses"
             ]
         }, 
         "solidParticles" : 

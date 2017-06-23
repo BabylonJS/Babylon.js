@@ -53,7 +53,7 @@
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-                    this._effect.setFloat("far", scene.activeCamera.maxZ);
+                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.minZ + scene.activeCamera.maxZ);
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
@@ -141,7 +141,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("depth",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues"],
                     ["diffuseSampler"], join);
             }
 

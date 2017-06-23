@@ -20,6 +20,7 @@ module BABYLON.GUI {
         private _fullscreenViewport = new Viewport(0, 0, 1, 1);
         private _idealWidth = 0;
         private _idealHeight = 0;
+        private _renderAtIdealSize = false;
 
         public get background(): string {
             return this._background;
@@ -61,6 +62,19 @@ module BABYLON.GUI {
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
         }     
+
+        public get renderAtIdealSize(): boolean {
+            return this._renderAtIdealSize;
+        }
+
+        public set renderAtIdealSize(value: boolean) {
+            if (this._renderAtIdealSize === value) {
+                return;
+            }
+
+            this._renderAtIdealSize = value;
+            this._onResize();
+        }    
 
         public get layer(): Layer {
             return this._layerToDispose;
@@ -147,6 +161,16 @@ module BABYLON.GUI {
             var renderWidth = engine.getRenderWidth();
             var renderHeight = engine.getRenderHeight();
 
+            if (this._renderAtIdealSize) {
+                if (this._idealWidth) {
+                    renderHeight = (renderHeight * this._idealWidth) / renderWidth;
+                    renderWidth = this._idealWidth;
+                } else if (this._idealHeight) {
+                    renderWidth = (renderWidth * this._idealHeight) / renderHeight;
+                    renderHeight = this._idealHeight;                    
+                }
+            }
+
             if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                 this.scaleTo(renderWidth, renderHeight);
 
@@ -199,6 +223,7 @@ module BABYLON.GUI {
         }
 
         private _render(): void {
+            var engine = this.getScene().getEngine();
             var textureSize = this.getSize();
             var renderWidth = textureSize.width;
             var renderHeight = textureSize.height;
@@ -220,6 +245,11 @@ module BABYLON.GUI {
         }
 
         private _doPicking(x: number, y: number, type: number): void {
+            var engine = this.getScene().getEngine();
+            var textureSize = this.getSize();
+            x = x * (textureSize.width / engine.getRenderWidth());
+            y = y * (textureSize.height / engine.getRenderHeight());
+
             if (this._capturingControl) {
                 this._capturingControl._processObservables(type, x, y);
                 return;

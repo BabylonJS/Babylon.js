@@ -1428,8 +1428,9 @@
         public restoreDefaultFramebuffer(): void {
             this._currentRenderTarget = null;
             this.bindUnboundFramebuffer(null);
-
-            this.setViewport(this._cachedViewport);
+            if (this._cachedViewport) {
+                this.setViewport(this._cachedViewport);
+            }
 
             this.wipeCaches();
         }
@@ -3474,24 +3475,34 @@
             return rgbaData;
         }
 
-        public _releaseTexture(texture: WebGLTexture): void {
+        public _releaseFramebufferObjects(texture: WebGLTexture): void {
             var gl = this._gl;
 
             if (texture._framebuffer) {
                 gl.deleteFramebuffer(texture._framebuffer);
-            }
+                texture._framebuffer = null;
+            }            
 
             if (texture._depthStencilBuffer) {
                 gl.deleteRenderbuffer(texture._depthStencilBuffer);
+                texture._depthStencilBuffer = null;
             }
 
             if (texture._MSAAFramebuffer) {
                 gl.deleteFramebuffer(texture._MSAAFramebuffer);
+                texture._MSAAFramebuffer = null;
             }
 
             if (texture._MSAARenderBuffer) {
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
-            }
+                texture._MSAARenderBuffer = null;
+            }            
+        }
+
+        public _releaseTexture(texture: WebGLTexture): void {
+            var gl = this._gl;
+
+            this._releaseFramebufferObjects(texture);
 
             gl.deleteTexture(texture);
 

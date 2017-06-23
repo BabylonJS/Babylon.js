@@ -121,6 +121,7 @@
         public _rigPostProcess: PostProcess;
         protected _webvrViewMatrix = Matrix.Identity();
 
+        public customRenderTargets = new Array<RenderTargetTexture>();        
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();

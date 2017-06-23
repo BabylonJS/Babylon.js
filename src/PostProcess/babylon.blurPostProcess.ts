@@ -2,6 +2,7 @@
     export class BlurPostProcess extends PostProcess {
 		protected _kernel: number;
 		protected _idealKernel: number;
+		protected _packedFloat: boolean	= false;
 
 		/**
 		 * Sets the length in pixels of the blur sample region
@@ -22,6 +23,24 @@
 		 */
 		public get kernel(): number {
 			return this._idealKernel;
+		}
+
+		/**
+		 * Sets wether or not the blur needs to unpack/repack floats
+		 */
+		public set packedFloat(v: boolean) {
+			if (this._packedFloat === v) {
+				return;
+			}
+			this._packedFloat = v;
+            this._updateParameters();
+		}
+
+		/**
+		 * Gets wether or not the blur is unpacking/repacking floats
+		 */
+		public get packedFloat(): boolean {
+			return this._packedFloat;
 		}
 
         constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
@@ -113,6 +132,11 @@
                 defines += `#define KERNEL_DEP_WEIGHT${depCount} ${this._glslFloat(weights[i])}\r\n`;
                 depCount++;
 			}
+
+			if (this.packedFloat) {
+				defines += `#define PACKEDFLOAT 1`;
+			}
+
             this.updateEffect(defines, null, null, {
 				varyingCount: varyingCount,
 				depCount: depCount
