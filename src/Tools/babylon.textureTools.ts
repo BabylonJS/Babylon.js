@@ -7,7 +7,7 @@
 		 * @param height Desired height
 		 * @return Generated texture
 		 */
-		public static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number): BABYLON.Texture {
+		public static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number, useBilinearMode: boolean = true): BABYLON.Texture {
 			let rtt = new BABYLON.RenderTargetTexture(
 				'resized' + texture.name,
 				{ width: width, height: height },
@@ -37,7 +37,10 @@
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
 			rtt._texture.isReady = false;
 
-            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+			texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+			texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+            let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
 			passPostProcess.getEffect().executeWhenCompiled(() => {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
@@ -45,7 +48,7 @@
 
                 scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
 
-                engine.restoreDefaultFramebuffer();
+                engine.unBindFramebuffer(rtt.getInternalTexture());
                 rtt.disposeFramebufferObjects();
 				passPostProcess.dispose();
 

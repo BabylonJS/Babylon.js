@@ -8797,6 +8797,7 @@ var BABYLON;
             if (effect.onBind) {
                 effect.onBind(effect);
             }
+            effect.onBindObservable.notifyObservers(effect);
         };
         Engine.prototype.setIntArray = function (uniform, array) {
             if (!uniform)
@@ -22559,6 +22560,7 @@ var BABYLON;
             this.uniqueId = 0;
             this.onCompileObservable = new BABYLON.Observable();
             this.onErrorObservable = new BABYLON.Observable();
+            this.onBindObservable = new BABYLON.Observable();
             this._uniformBuffersNames = {};
             this._isReady = false;
             this._compilationError = "";
@@ -66872,7 +66874,8 @@ var BABYLON;
          * @param height Desired height
          * @return Generated texture
          */
-        TextureTools.CreateResizedCopy = function (texture, width, height) {
+        TextureTools.CreateResizedCopy = function (texture, width, height, useBilinearMode) {
+            if (useBilinearMode === void 0) { useBilinearMode = true; }
             var rtt = new BABYLON.RenderTargetTexture('resized' + texture.name, { width: width, height: height }, scene, !texture.noMipmap, true, texture._texture.type, false, texture._samplingMode, false);
             var scene = texture.getScene();
             var engine = scene.getEngine();
@@ -66889,13 +66892,15 @@ var BABYLON;
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
             rtt._texture.isReady = false;
-            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
+            texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            var passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, useBilinearMode ? BABYLON.Texture.BILINEAR_SAMPLINGMODE : BABYLON.Texture.NEAREST_SAMPLINGMODE, engine, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
             passPostProcess.getEffect().executeWhenCompiled(function () {
                 passPostProcess.onApply = function (effect) {
                     effect.setTexture("textureSampler", texture);
                 };
                 scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
-                engine.restoreDefaultFramebuffer();
+                engine.unBindFramebuffer(rtt.getInternalTexture());
                 rtt.disposeFramebufferObjects();
                 passPostProcess.dispose();
                 rtt._texture.isReady = true;
