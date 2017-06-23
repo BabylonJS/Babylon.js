@@ -37,6 +37,9 @@
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
 			rtt._texture.isReady = false;
 
+			texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+			texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
             let passPostProcess = new BABYLON.PassPostProcess("pass", 1, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
 			passPostProcess.getEffect().executeWhenCompiled(() => {
                 passPostProcess.onApply = function (effect) {
