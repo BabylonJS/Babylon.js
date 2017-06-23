@@ -22,13 +22,12 @@
 
             var scene = texture.getScene();
 
-			rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
 			rtt.wrapU = texture.wrapU;
 			rtt.wrapV = texture.wrapV;
             rtt.uOffset = texture.uOffset;
             rtt.vOffset = texture.vOffset;
             rtt.uScale = texture.uScale;
-            rtt.vScale = texture.vScale;            
+            rtt.vScale = texture.vScale;
             rtt.uAng = texture.uAng;
             rtt.vAng = texture.vAng;
             rtt.wAng = texture.wAng;
@@ -46,6 +45,7 @@
 
                 scene.getEngine().restoreDefaultFramebuffer();
                 rtt.disposeFramebufferObjects();
+				passPostProcess.dispose();
             });
 
 			return rtt;

@@ -32850,6 +32850,9 @@ var BABYLON;
         };
         PostProcess.prototype.updateEffect = function (defines, uniforms, samplers, indexParameters, onCompiled, onError) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "", null, onCompiled, onError, indexParameters || this._indexParameters);
+            if (onCompiled && this._effect.isReady()) {
+                onCompiled(this._effect);
+            }
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -44278,7 +44281,6 @@ var BABYLON;
         TextureTools.CreateResizedCopy = function (texture, width, height) {
             var rtt = new BABYLON.RenderTargetTexture('resized' + texture.name, { width: width, height: height }, scene, !texture.noMipmap, true, texture._texture.type, false, texture._samplingMode, false);
             var scene = texture.getScene();
-            rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
             rtt.wrapU = texture.wrapU;
             rtt.wrapV = texture.wrapV;
             rtt.uOffset = texture.uOffset;
@@ -44299,6 +44301,7 @@ var BABYLON;
                 scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
                 scene.getEngine().restoreDefaultFramebuffer();
                 rtt.disposeFramebufferObjects();
+                passPostProcess.dispose();
             });
             return rtt;
         };
