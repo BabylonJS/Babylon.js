@@ -348,7 +348,7 @@ var BABYLON;
                 this._rootUrl = rootUrl;
                 this._onLoaded = function () {
                     _this._showMeshes();
-                    _this._startFirstAnimation();
+                    _this._startAnimations();
                     if (_this._errors.length === 0) {
                         onSuccess();
                     }
@@ -391,14 +391,16 @@ var BABYLON;
                     }
                 }
             };
-            GLTFLoader.prototype._startFirstAnimation = function () {
+            GLTFLoader.prototype._startAnimations = function () {
                 var animations = this._gltf.animations;
                 if (!animations) {
                     return;
                 }
-                var animation = animations[0];
-                for (var i = 0; i < animation.targets.length; i++) {
-                    this._babylonScene.beginAnimation(animation.targets[i], 0, Number.MAX_VALUE, true);
+                for (var i = 0; i < animations.length; i++) {
+                    var animation = animations[i];
+                    for (var j = 0; j < animation.targets.length; j++) {
+                        this._babylonScene.beginAnimation(animation.targets[j], 0, Number.MAX_VALUE, true);
+                    }
                 }
             };
             GLTFLoader.prototype._clear = function () {

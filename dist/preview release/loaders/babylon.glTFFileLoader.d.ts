@@ -782,7 +782,7 @@ declare module BABYLON.GLTF2 {
         private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onError);
         private _loadData(data);
         private _showMeshes();
-        private _startFirstAnimation();
+        private _startAnimations();
         private _clear();
         private _loadScene(nodeNames);
         private _loadSkin(node);
