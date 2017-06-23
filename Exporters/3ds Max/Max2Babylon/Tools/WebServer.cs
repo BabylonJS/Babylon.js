@@ -54,6 +54,12 @@ namespace Max2Babylon
         BABYLON.SceneLoader.Load('', '###SCENE###', engine, function (newScene) {
             newScene.activeCamera.attachControl(canvas);
 
+            var keyboard = newScene.activeCamera.inputs.attached.keyboard;
+            keyboard.keysUp.push(87);
+            keyboard.keysDown.push(83);
+            keyboard.keysLeft.push(65);
+            keyboard.keysRight.push(68);
+
             engine.runRenderLoop(function() {
                 newScene.render();
             });

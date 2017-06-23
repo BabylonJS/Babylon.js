@@ -14593,6 +14593,10 @@ var BABYLON;
                 camera.inputs.parse(parsedCamera);
                 camera._setupInputs();
             }
+            if (camera.setPosition) {
+                camera.position.copyFromFloats(0, 0, 0);
+                camera.setPosition(BABYLON.Vector3.FromArray(parsedCamera.position));
+            }
             // Target
             if (parsedCamera.target) {
                 if (camera.setTarget) {

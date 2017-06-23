@@ -14593,6 +14593,10 @@ var BABYLON;
                 camera.inputs.parse(parsedCamera);
                 camera._setupInputs();
             }
+            if (camera.setPosition) {
+                camera.position.copyFromFloats(0, 0, 0);
+                camera.setPosition(BABYLON.Vector3.FromArray(parsedCamera.position));
+            }
             // Target
             if (parsedCamera.target) {
                 if (camera.setTarget) {
@@ -66699,6 +66703,15 @@ var BABYLON;
         });
         ReflectionProbe.prototype.attachToMesh = function (mesh) {
             this._attachedMesh = mesh;
+        };
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        ReflectionProbe.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
+            this._renderTargetTexture.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         };
         ReflectionProbe.prototype.dispose = function () {
             var index = this._scene.reflectionProbes.indexOf(this);
