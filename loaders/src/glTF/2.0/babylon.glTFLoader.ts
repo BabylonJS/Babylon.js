@@ -47,8 +47,8 @@ module BABYLON.GLTF2 {
                 if (this._gltf.nodes) {
                     for (var i = 0; i < this._gltf.nodes.length; i++) {
                         var node = this._gltf.nodes[i];
-                        if (node.babylonNode instanceof AbstractMesh) {
-                            meshes.push(<AbstractMesh>node.babylonNode);
+                        if (node.babylonMesh) {
+                            meshes.push(node.babylonMesh);
                         }
                     }
                 }
@@ -128,8 +128,8 @@ module BABYLON.GLTF2 {
             var nodes = this._gltf.nodes;
             for (var i = 0; i < nodes.length; i++) {
                 var node = nodes[i];
-                if (node.babylonNode instanceof Mesh) {
-                    node.babylonNode.isVisible = true;
+                if (node.babylonMesh) {
+                    node.babylonMesh.isVisible = true;
                 }
             }
         }
@@ -179,19 +179,14 @@ module BABYLON.GLTF2 {
         }
 
         private _loadSkin(node: IGLTFNode): boolean {
-            if (node.babylonNode) {
-                return false;
-            }
-
             if (node.skin !== undefined) {
                 var skin = this._gltf.skins[node.skin];
                 var skeletonId = "skeleton" + node.skin;
                 skin.babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+                skin.index = node.skin;
 
                 for (var i = 0; i < skin.joints.length; i++) {
-                    var jointIndex = skin.joints[i];
-                    var jointNode = this._gltf.nodes[jointIndex];
-                    jointNode.babylonNode = new Bone(jointNode.name || "bone" + jointIndex, skin.babylonSkeleton);
+                    this._createBone(this._gltf.nodes[skin.joints[i]], skin);
                 }
 
                 if (skin.skeleton === undefined) {
@@ -216,17 +211,16 @@ module BABYLON.GLTF2 {
         private _updateBone(node: IGLTFNode, parentNode: IGLTFNode, skin: IGLTFSkin, inverseBindMatrixData: Float32Array): boolean {
             var jointIndex = skin.joints.indexOf(node.index);
             if (jointIndex === -1) {
-                // TODO: handle non-joint in between two joints
-                throw new Error("Not implemented");
+                this._createBone(node, skin);
             }
 
-            var babylonBone = <Bone>node.babylonNode;
+            var babylonBone = node.babylonSkinToBones[skin.index];
 
             // TODO: explain the math
-            var matrix = Matrix.FromArray(inverseBindMatrixData, jointIndex * 16);
+            var matrix = jointIndex === -1 ? Matrix.Identity() : Matrix.FromArray(inverseBindMatrixData, jointIndex * 16);
             matrix.invertToRef(matrix);
             if (parentNode) {
-                babylonBone.setParent(<Bone>parentNode.babylonNode, false);
+                babylonBone.setParent(parentNode.babylonSkinToBones[skin.index], false);
                 matrix.multiplyToRef(babylonBone.getParent().getInvertedAbsoluteTransform(), matrix);
             }
 
@@ -234,18 +228,19 @@ module BABYLON.GLTF2 {
             return true;
         }
 
+        private _createBone(node: IGLTFNode, skin: IGLTFSkin): Bone {
+            var babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton);
+
+            node.babylonSkinToBones = node.babylonSkinToBones || {};
+            node.babylonSkinToBones[skin.index] = babylonBone;
+
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+            node.babylonAnimationTargets.push(babylonBone);
+
+            return babylonBone;
+        }
+
         private _loadMesh(node: IGLTFNode, parentNode: IGLTFNode): boolean {
-            if (node.babylonNode) {
-                if (node.babylonNode instanceof Bone) {
-                    if (node.mesh !== undefined) {
-                        // TODO: handle mesh attached to bone
-                        throw new Error("Not implemented");
-                    }
-                }
-
-                return false;
-            }
-
             var babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
             babylonMesh.isVisible = false;
 
@@ -256,8 +251,11 @@ module BABYLON.GLTF2 {
                 this._loadMeshData(node, mesh, babylonMesh);
             }
 
-            babylonMesh.parent = parentNode ? parentNode.babylonNode : null;
-            node.babylonNode = babylonMesh;
+            babylonMesh.parent = parentNode ? parentNode.babylonMesh : null;
+            node.babylonMesh = babylonMesh;
+
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+            node.babylonAnimationTargets.push(node.babylonMesh);
 
             if (node.skin !== undefined) {
                 var skin = this._gltf.skins[node.skin];
@@ -512,7 +510,7 @@ module BABYLON.GLTF2 {
             var samplerIndex = channel.sampler;
             var sampler = animation.samplers[samplerIndex];
 
-            var targetNode = this._gltf.nodes[channel.target.node].babylonNode;
+            var targetNode = this._gltf.nodes[channel.target.node];
             if (!targetNode) {
                 Tools.Warn("Animation channel target node (" + channel.target.node + ") does not exist");
                 return;
@@ -562,7 +560,7 @@ module BABYLON.GLTF2 {
                         return value;
                     },
                     "influence": () => {
-                        var numTargets = (<Mesh>targetNode).morphTargetManager.numTargets;
+                        var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
                         var value = new Array(numTargets);
                         for (var i = 0; i < numTargets; i++) {
                             value[i] = outputData[outputBufferOffset++];
@@ -592,10 +590,10 @@ module BABYLON.GLTF2 {
                 animation.targets = animation.targets || [];
 
                 if (targetPath === "influence") {
-                    var targetMesh = <Mesh>targetNode;
+                    var morphTargetManager = targetNode.babylonMesh.morphTargetManager;
 
-                    for (var targetIndex = 0; targetIndex < targetMesh.morphTargetManager.numTargets; targetIndex++) {
-                        var morphTarget = targetMesh.morphTargetManager.getTarget(targetIndex);
+                    for (var targetIndex = 0; targetIndex < morphTargetManager.numTargets; targetIndex++) {
+                        var morphTarget = morphTargetManager.getTarget(targetIndex);
                         var animationName = (animation.name || "anim" + animationIndex) + "_" + targetIndex;
                         var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys.map(key => ({
@@ -614,8 +612,11 @@ module BABYLON.GLTF2 {
                     var babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    targetNode.animations.push(babylonAnimation);
-                    animation.targets.push(targetNode);
+                    for (var i = 0; i < targetNode.babylonAnimationTargets.length; i++) {
+                        var target = targetNode.babylonAnimationTargets[i];
+                        target.animations.push(babylonAnimation.clone());
+                        animation.targets.push(target);
+                    }
                 }
             };
 
