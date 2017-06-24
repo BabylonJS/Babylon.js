@@ -23,7 +23,7 @@ namespace Max2Babylon
     <script type='text/javascript' src='https://preview.babylonjs.com/babylon.js'></script>
     <script type='text/javascript' src='https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js'></script>
     <style type='text/css'>
-        html, body, div, canvas {
+        html, body, canvas {
             width: 100%;
             height: 100%;
             padding: 0;
