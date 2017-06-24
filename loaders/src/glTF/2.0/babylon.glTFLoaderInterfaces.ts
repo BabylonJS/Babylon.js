@@ -218,7 +218,9 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index?: number;
-        babylonNode?: Node;
+        babylonMesh?: Mesh;
+        babylonSkinToBones?: { [skin: number]: Bone };
+        babylonAnimationTargets?: Node[];
     }
 
     export interface IGLTFSampler extends IGLTFChildRootProperty {
@@ -238,6 +240,7 @@ module BABYLON.GLTF2 {
         joints: number[];
 
         // Runtime values
+        index?: number;
         babylonSkeleton?: Skeleton;
     }
 
