@@ -777,24 +777,22 @@ module BABYLON.GLTF2 {
             material.babylonMaterial.roughness = 1;
 
             var properties = material.pbrMetallicRoughness;
-            if (!properties) {
-                return;
-            }
+            if (properties) {
+                material.babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
+                material.babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
+                material.babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
 
-            material.babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
-            material.babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
-            material.babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
+                if (properties.baseColorTexture) {
+                    material.babylonMaterial.albedoTexture = this._loadTexture(properties.baseColorTexture);
+                    this._loadAlphaProperties(material);
+                }
 
-            if (properties.baseColorTexture) {
-                material.babylonMaterial.albedoTexture = this._loadTexture(properties.baseColorTexture);
-                this._loadAlphaProperties(material);
-            }
-
-            if (properties.metallicRoughnessTexture) {
-                material.babylonMaterial.metallicTexture = this._loadTexture(properties.metallicRoughnessTexture);
-                material.babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
-                material.babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
-                material.babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                if (properties.metallicRoughnessTexture) {
+                    material.babylonMaterial.metallicTexture = this._loadTexture(properties.metallicRoughnessTexture);
+                    material.babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
+                    material.babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
+                    material.babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                }
             }
 
             return material.babylonMaterial;
