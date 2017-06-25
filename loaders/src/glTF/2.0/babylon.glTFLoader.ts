@@ -281,10 +281,12 @@ module BABYLON.GLTF2 {
             vertexData.positions = [];
             vertexData.indices = [];
 
+            var subMeshInfos: { materialIndex: number, verticesStart: number, verticesCount: number, indicesStart: number, indicesCount: number }[] = [];
+
             var primitivesLoaded = 0;
             var numPrimitives = mesh.primitives.length;
             for (var i = 0; i < numPrimitives; i++) {
-                var primitive = mesh.primitives[i];
+                let primitive = mesh.primitives[i];
                 if (primitive.mode && primitive.mode !== EMeshPrimitiveMode.TRIANGLES) {
                     // TODO: handle other primitive modes
                     throw new Error("Not implemented");
@@ -295,13 +297,26 @@ module BABYLON.GLTF2 {
                 this._loadVertexDataAsync(primitive, subVertexData => {
                     this._loadMorphTargetsData(mesh, primitive, subVertexData, babylonMesh);
 
-                    var subMesh = new SubMesh(multiMaterial.subMaterials.length, vertexData.positions.length, subVertexData.positions.length, vertexData.indices.length, subVertexData.indices.length, babylonMesh);
+                    subMeshInfos.push({
+                        materialIndex: multiMaterial.subMaterials.length,
+                        verticesStart: vertexData.positions.length,
+                        verticesCount: subVertexData.positions.length,
+                        indicesStart: vertexData.indices.length,
+                        indicesCount: subVertexData.indices.length
+                    });
+
                     var subMaterial = primitive.material === undefined ? this._getDefaultMaterial() : GLTFLoaderExtension.LoadMaterial(primitive.material);
                     multiMaterial.subMaterials.push(subMaterial);
                     vertexData.merge(subVertexData);
 
                     if (++primitivesLoaded === numPrimitives) {
                         geometry.setAllVerticesData(vertexData, false);
+
+                        // Sub meshes must be created after setting vertex data because of mesh._createGlobalSubMesh.
+                        for (var i = 0; i < subMeshInfos.length; i++) {
+                            var info = subMeshInfos[i];
+                            new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh);
+                        }
                     }
                 });
             }
