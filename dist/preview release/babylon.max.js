@@ -33041,6 +33041,10 @@ var BABYLON;
                     this._target.copyFrom(pos);
                 }
             }
+            var lockedTargetPosition = this._getLockedTargetPosition();
+            if (lockedTargetPosition) {
+                return lockedTargetPosition;
+            }
             return this._target;
         };
         // Synchronized
