@@ -247,9 +247,12 @@ module BABYLON.GUI {
         private _doPicking(x: number, y: number, type: number): void {
             var engine = this.getScene().getEngine();
             var textureSize = this.getSize();
-            x = x * (textureSize.width / engine.getRenderWidth());
-            y = y * (textureSize.height / engine.getRenderHeight());
 
+            if (this._isFullscreen) {
+                x = x * (textureSize.width / engine.getRenderWidth());
+                y = y * (textureSize.height / engine.getRenderHeight());
+            }
+            
             if (this._capturingControl) {
                 this._capturingControl._processObservables(type, x, y);
                 return;
