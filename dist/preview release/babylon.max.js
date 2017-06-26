@@ -23994,8 +23994,6 @@ var BABYLON;
         /**
          * Child classes can use it to update shaders
          */
-        Material.prototype.markAsDirty = function (flag) {
-        };
         Material.prototype.getClassName = function () {
             return "Material";
         };
@@ -24095,6 +24093,57 @@ var BABYLON;
                 }
             }
             return result;
+        };
+        Material.prototype.markAsDirty = function (flag) {
+            if (flag & Material.TextureDirtyFlag) {
+                this._markAllSubMeshesAsTexturesDirty();
+            }
+            if (flag & Material.LightDirtyFlag) {
+                this._markAllSubMeshesAsLightsDirty();
+            }
+            if (flag & Material.FresnelDirtyFlag) {
+                this._markAllSubMeshesAsFresnelDirty();
+            }
+            if (flag & Material.AttributesDirtyFlag) {
+                this._markAllSubMeshesAsAttributesDirty();
+            }
+            if (flag & Material.MiscDirtyFlag) {
+                this._markAllSubMeshesAsMiscDirty();
+            }
+            this.getScene().resetCachedMaterial();
+        };
+        Material.prototype._markAllSubMeshesAsDirty = function (func) {
+            for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (!mesh.subMeshes) {
+                    continue;
+                }
+                for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                    var subMesh = _c[_b];
+                    if (subMesh.getMaterial() !== this) {
+                        continue;
+                    }
+                    if (!subMesh._materialDefines) {
+                        return;
+                    }
+                    func(subMesh._materialDefines);
+                }
+            }
+        };
+        Material.prototype._markAllSubMeshesAsTexturesDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
+        };
+        Material.prototype._markAllSubMeshesAsFresnelDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsFresnelDirty(); });
+        };
+        Material.prototype._markAllSubMeshesAsLightsDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsLightDirty(); });
+        };
+        Material.prototype._markAllSubMeshesAsAttributesDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsAttributesDirty(); });
+        };
+        Material.prototype._markAllSubMeshesAsMiscDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsMiscDirty(); });
         };
         Material.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
             // Animations
@@ -24743,57 +24792,6 @@ var BABYLON;
         PushMaterial.prototype._mustRebind = function (scene, effect, visibility) {
             if (visibility === void 0) { visibility = 0; }
             return scene.isCachedMaterialValid(this, effect, visibility);
-        };
-        PushMaterial.prototype.markAsDirty = function (flag) {
-            if (flag & BABYLON.Material.TextureDirtyFlag) {
-                this._markAllSubMeshesAsTexturesDirty();
-            }
-            if (flag & BABYLON.Material.LightDirtyFlag) {
-                this._markAllSubMeshesAsLightsDirty();
-            }
-            if (flag & BABYLON.Material.FresnelDirtyFlag) {
-                this._markAllSubMeshesAsFresnelDirty();
-            }
-            if (flag & BABYLON.Material.AttributesDirtyFlag) {
-                this._markAllSubMeshesAsAttributesDirty();
-            }
-            if (flag & BABYLON.Material.MiscDirtyFlag) {
-                this._markAllSubMeshesAsMiscDirty();
-            }
-            this.getScene().resetCachedMaterial();
-        };
-        PushMaterial.prototype._markAllSubMeshesAsDirty = function (func) {
-            for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
-                var mesh = _a[_i];
-                if (!mesh.subMeshes) {
-                    continue;
-                }
-                for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
-                    var subMesh = _c[_b];
-                    if (subMesh.getMaterial() !== this) {
-                        continue;
-                    }
-                    if (!subMesh._materialDefines) {
-                        return;
-                    }
-                    func(subMesh._materialDefines);
-                }
-            }
-        };
-        PushMaterial.prototype._markAllSubMeshesAsTexturesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
-        };
-        PushMaterial.prototype._markAllSubMeshesAsFresnelDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsFresnelDirty(); });
-        };
-        PushMaterial.prototype._markAllSubMeshesAsLightsDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsLightDirty(); });
-        };
-        PushMaterial.prototype._markAllSubMeshesAsAttributesDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsAttributesDirty(); });
-        };
-        PushMaterial.prototype._markAllSubMeshesAsMiscDirty = function () {
-            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsMiscDirty(); });
         };
         return PushMaterial;
     }(BABYLON.Material));
@@ -47123,10 +47121,40 @@ var BABYLON;
         __extends(MultiMaterial, _super);
         function MultiMaterial(name, scene) {
             var _this = _super.call(this, name, scene, true) || this;
-            _this.subMaterials = new Array();
             scene.multiMaterials.push(_this);
+            _this.subMaterials = new Array();
             return _this;
         }
+        Object.defineProperty(MultiMaterial.prototype, "subMaterials", {
+            get: function () {
+                return this._subMaterials;
+            },
+            set: function (value) {
+                this._subMaterials = value;
+                this._hookArray(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MultiMaterial.prototype._hookArray = function (array) {
+            var _this = this;
+            var oldPush = array.push;
+            array.push = function () {
+                var items = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    items[_i] = arguments[_i];
+                }
+                var result = oldPush.apply(array, items);
+                _this._markAllSubMeshesAsTexturesDirty();
+                return result;
+            };
+            var oldSplice = array.splice;
+            array.splice = function (index, deleteCount) {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+                _this._markAllSubMeshesAsTexturesDirty();
+                return deleted;
+            };
+        };
         // Properties
         MultiMaterial.prototype.getSubMaterial = function (index) {
             if (index < 0 || index >= this.subMaterials.length) {
