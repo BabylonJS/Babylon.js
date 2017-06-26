@@ -44506,9 +44506,11 @@ var BABYLON;
                 if (this._light.needCube()) {
                     if (value === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
                         this.useExponentialShadowMap = true;
+                        return;
                     }
                     else if (value === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
                         this.useCloseExponentialShadowMap = true;
+                        return;
                     }
                 }
                 if (this._filter === value) {
