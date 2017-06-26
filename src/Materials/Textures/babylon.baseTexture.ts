@@ -241,5 +241,31 @@
 
             return serializationObject;
         }
+
+        public static WhenAllReady(textures: BaseTexture[], onLoad: () => void): void {
+            var numReady = 0;
+
+            for (var i = 0; i < textures.length; i++) {
+                var texture = textures[i];
+
+                if (texture.isReady()) {
+                    if (++numReady === textures.length) {
+                        onLoad();
+                    }
+                }
+                else {
+                    var observable = (texture as any).onLoadObservable as Observable<Texture>;
+
+                    let callback = () => {
+                        observable.removeCallback(callback);
+                        if (++numReady === textures.length) {
+                            onLoad();
+                        }
+                    };
+
+                    observable.add(callback);
+                }
+            }
+        }
     }
 } 

@@ -485,6 +485,10 @@
             }
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            return [];
+        }
+
         public clone(name: string): Material {
             return null;
         }

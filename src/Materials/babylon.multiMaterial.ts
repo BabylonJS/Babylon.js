@@ -17,6 +17,10 @@
             return this.subMaterials[index];
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => subMaterial.getActiveTextures()));
+        }
+
         // Methods
         public getClassName(): string {
             return "MultiMaterial";
