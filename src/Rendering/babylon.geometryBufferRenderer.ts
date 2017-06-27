@@ -3,6 +3,7 @@ module BABYLON {
         private _scene: Scene;
         private _multiRenderTarget: MultiRenderTarget;
         private _effect: Effect;
+        private _ratio: number;
 
         private _viewMatrix = Matrix.Zero();
         private _projectionMatrix = Matrix.Zero();
@@ -10,6 +11,8 @@ module BABYLON {
         private _worldViewProjection = Matrix.Zero();
 
         private _cachedDefines: string;
+
+        private _enablePosition: boolean = false;
 
         public set renderList(meshes: Mesh[]) {
             this._multiRenderTarget.renderList = meshes;
@@ -19,12 +22,106 @@ module BABYLON {
             return this._multiRenderTarget.isSupported;
         }
 
+        public get enablePosition(): boolean {
+            return this._enablePosition;
+        }
+
+        public set enablePosition(enable: boolean) {
+            this._enablePosition = enable;
+            this.dispose();
+            this._createRenderTargets();
+        }
+
         constructor(scene: Scene, ratio: number = 1) {
             this._scene = scene;
-            var engine = scene.getEngine();
+            this._ratio = ratio;
 
             // Render target
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, 2, this._scene, { generateMipMaps : false, generateDepthTexture: true });
+            this._createRenderTargets();
+        }
+
+        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+            var material: any = subMesh.getMaterial();
+
+            if (material && material.disableDepthWrite) {
+                return false;
+            }
+
+            var defines = [];
+
+            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+
+            var mesh = subMesh.getMesh();
+            var scene = mesh.getScene();
+
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    attribs.push(VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    attribs.push(VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Buffers
+            if (this._enablePosition) {
+                defines.push("#define POSITION");
+            }
+
+            // Bones
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
+            }
+
+            // Get correct effect      
+            var join = defines.join("\n");
+            if (this._cachedDefines !== join) {
+                this._cachedDefines = join;
+                this._effect = this._scene.getEngine().createEffect("geometry",
+                    attribs,
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
+                    ["diffuseSampler"], join);
+            }
+
+            return this._effect.isReady();
+        }
+
+        public getGBuffer(): MultiRenderTarget {
+            return this._multiRenderTarget;
+        }
+
+        // Methods
+        public dispose(): void {
+            this.getGBuffer().dispose();
+        }
+
+        private _createRenderTargets(): void {
+            var engine = this._scene.getEngine();
+            var count = this._enablePosition ? 3 : 2;
+
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps : false, generateDepthTexture: true });
             if (!this.isSupported) {
                 return null;
             }
@@ -95,79 +192,6 @@ module BABYLON {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
             };
-
-        }
-
-        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-            var material: any = subMesh.getMaterial();
-
-            if (material && material.disableDepthWrite) {
-                return false;
-            }
-
-            var defines = [];
-
-            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
-
-            var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
-
-            // Alpha test
-            if (material && material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
-                }
-            }
-
-            // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                attribs.push(VertexBuffer.MatricesIndicesKind);
-                attribs.push(VertexBuffer.MatricesWeightsKind);
-                if (mesh.numBoneInfluencers > 4) {
-                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                }
-                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
-            } else {
-                defines.push("#define NUM_BONE_INFLUENCERS 0");
-            }
-
-            // Instances
-            if (useInstances) {
-                defines.push("#define INSTANCES");
-                attribs.push("world0");
-                attribs.push("world1");
-                attribs.push("world2");
-                attribs.push("world3");
-            }
-
-            // Get correct effect      
-            var join = defines.join("\n");
-            if (this._cachedDefines !== join) {
-                this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("geometry",
-                    attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
-                    ["diffuseSampler"], join);
-            }
-
-            return this._effect.isReady();
-        }
-
-        public getGBuffer(): MultiRenderTarget {
-            return this._multiRenderTarget;
-        }
-
-        // Methods
-        public dispose(): void {
-            this.getGBuffer().dispose();
         }
     }
 } 

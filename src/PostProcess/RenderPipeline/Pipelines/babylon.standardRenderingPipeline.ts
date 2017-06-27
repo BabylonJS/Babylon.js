@@ -11,6 +11,12 @@
         public gaussianBlurVPostProcesses: PostProcess[] = [];
         public textureAdderPostProcess: PostProcess = null;
 
+        public vlsPostProcess: PostProcess = null;
+        public vlsSmoothXPostProcess: BlurPostProcess = null;
+        public vlsSmoothYPostProcess: BlurPostProcess = null;
+        public vlsMergePostProces: PostProcess = null;
+        public vlsFinalPostProcess: PostProcess = null;
+
         public luminancePostProcess: PostProcess = null;
         public luminanceDownSamplePostProcesses: PostProcess[] = [];
         public hdrPostProcess: PostProcess = null;
@@ -45,6 +51,15 @@
         public exposure: number = 1.0;
         @serializeAsTexture("lensTexture")
         public lensTexture: Texture = null;
+
+        @serialize()
+        public volumetricLightCoefficient: number = 0.2;
+        @serialize()
+        public volumetricLightPower: number = 4.0;
+        @serialize()
+        public volumetricLightBlurScale: number = 64.0;
+
+        public sourceLight: SpotLight | DirectionalLight = null;
 
         @serialize()
         public hdrMinimumLuminance: number = 1.0;
@@ -84,7 +99,6 @@
         * Private members
         */
         private _scene: Scene;
-        private _depthRenderer: DepthRenderer = null;
         private _currentDepthOfFieldSource: PostProcess = null;
 
         private _currentHDRSource: PostProcess = null;
@@ -95,6 +109,7 @@
         // Getters and setters
         private _bloomEnabled: boolean = true;
         private _depthOfFieldEnabled: boolean = true;
+        private _vlsEnabled: boolean = true;
         private _lensFlareEnabled: boolean = true;
         private _hdrEnabled: boolean = true;
         private _motionBlurEnabled: boolean = true;
@@ -104,23 +119,25 @@
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
 
-                for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                for (var i = 0; i < 4; i++) {
                     this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
                     this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
                 }
 
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRBaseDepthOfFieldSource", this._cameras);
             }
             else if (!enabled && this._bloomEnabled) {
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRDownSampleX4", this._cameras);
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRBrightPass", this._cameras);
 
-                for (var i = 0; i < this.gaussianBlurHPostProcesses.length - 1; i++) {
+                for (var i = 0; i < 4; i++) {
                     this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + i, this._cameras);
                     this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurV" + i, this._cameras);
                 }
 
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRTextureAdder", this._cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRBaseDepthOfFieldSource", this._cameras);
             }
 
             this._bloomEnabled = enabled;
@@ -138,7 +155,6 @@
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRDepthOfField", this._scene.cameras);
-                this._depthRenderer = this._scene.enableDepthRenderer();
             }
             else if (!enabled && this._depthOfFieldEnabled) {
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._cameras);
@@ -208,10 +224,39 @@
             return this._hdrEnabled;
         }
 
+        @serialize()
+        public get VLSEnabled(): boolean {
+            return this._vlsEnabled;
+        }
+
+        public set VLSEnabled(enabled) {
+            var geometry = this._scene.enableGeometryBufferRenderer();
+            if (!geometry.isSupported) {
+                Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
+                return;
+            }
+
+            if (enabled && !this._vlsEnabled) {
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRVLS", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRVLSSmoothX", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRVLSSmoothY", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRVLSMerge", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRVLSFinal", this._scene.cameras);
+            }
+            else if (!enabled && this._vlsEnabled) {
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRVLS", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRVLSSmoothX", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRVLSSmoothY", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRVLSMerge", this._scene.cameras);
+                this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRVLSFinal", this._scene.cameras);
+            }
+
+            this._vlsEnabled = enabled;
+        }
+
         public set MotionBlurEnabled(enabled: boolean) {
             if (enabled && !this._motionBlurEnabled) {
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRMotionBlur", this._scene.cameras);
-                this._depthRenderer = this._scene.enableDepthRenderer();
             }
             else if (!enabled && this._motionBlurEnabled) {
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRMotionBlur", this._scene.cameras);
@@ -282,6 +327,13 @@
             this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBaseDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
 
+            // Create volumetric light
+            this._createVolumetricLightPostProcess(scene, ratio);
+
+            // Create volumetric light final post-process
+            this.vlsFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.vlsFinalPostProcess; }, true));
+
             // Create lens flare post-process
             this._createLensFlarePostProcess(scene, ratio);
 
@@ -319,6 +371,7 @@
             this.LensFlareEnabled = false;
             this.DepthOfFieldEnabled = false;
             this.HDREnabled = false;
+            this.VLSEnabled = false;
             this.MotionBlurEnabled = false;
         }
 
@@ -443,6 +496,68 @@
 
             // Add to pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRTextureAdder", () => { return this.textureAdderPostProcess; }, true));
+        }
+
+        private _createVolumetricLightPostProcess(scene: Scene, ratio: number): void {
+            var geometryRenderer = scene.enableGeometryBufferRenderer();
+            geometryRenderer.enablePosition = true;
+
+            var geometry = geometryRenderer.getGBuffer();
+
+            // Base post-process
+            this.vlsPostProcess = new PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower"], ["shadowMapSampler", "positionSampler" ], ratio / 8, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS");
+
+            this.vlsPostProcess.onApply = (effect: Effect) => {
+                if (this.sourceLight && this.sourceLight.getShadowGenerator()) {
+                    var generator = <ShadowGenerator>this.sourceLight.getShadowGenerator();
+
+                    effect.setTexture("shadowMapSampler", generator.getShadowMap());
+                    effect.setTexture("positionSampler", geometry.textures[2]);
+
+                    effect.setColor3("sunColor", this.sourceLight.diffuse);
+                    effect.setVector3("sunDirection", this.sourceLight.getShadowDirection());
+                    
+                    effect.setVector3("cameraPosition", scene.activeCamera.globalPosition);
+                    effect.setMatrix("shadowViewProjection", generator.getTransformMatrix());
+
+                    effect.setFloat("scatteringCoefficient", this.volumetricLightCoefficient);
+                    effect.setFloat("scatteringPower", this.volumetricLightPower);
+                }
+            };
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLS", () => { return this.vlsPostProcess; }, true));
+
+            // Smooth
+            this.vlsSmoothXPostProcess = new BABYLON.BlurPostProcess("HDRVLSSmoothX", new BABYLON.Vector2(1.0, 0), 10.0, ratio / 4, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this.vlsSmoothXPostProcess.alwaysForcePOT = true;
+            this.vlsSmoothXPostProcess.autoClear = false;
+            this.vlsSmoothXPostProcess.onActivateObservable.add(() => {
+                let dw = this.vlsSmoothXPostProcess.width / scene.getEngine().getRenderingCanvas().width;
+                this.vlsSmoothXPostProcess.kernel = this.volumetricLightBlurScale * dw;
+            });
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSSmoothX", () => { return this.vlsSmoothXPostProcess; }, true));
+
+            this.vlsSmoothYPostProcess = new BABYLON.BlurPostProcess("HDRVLSSmoothY", new BABYLON.Vector2(0, 1.0), 10.0, ratio / 4, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this.vlsSmoothYPostProcess.alwaysForcePOT = true;
+            this.vlsSmoothYPostProcess.autoClear = false;
+            this.vlsSmoothYPostProcess.onActivateObservable.add(() => {
+                let dh = this.vlsSmoothYPostProcess.height / scene.getEngine().getRenderingCanvas().height;
+                this.vlsSmoothYPostProcess.kernel = this.volumetricLightBlurScale * dh;
+            });
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSSmoothY", () => { return this.vlsSmoothYPostProcess; }, true));
+
+            // Merge
+            this.vlsMergePostProces = new PostProcess("HDRVLSMerge", "standard", [], ["originalSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLSMERGE");
+
+            this.vlsMergePostProces.onApply = (effect: Effect) => {
+                effect.setTextureFromPostProcess("originalSampler", this._bloomEnabled ? this.textureAdderFinalPostProcess : this.originalPostProcess);
+
+                this._currentDepthOfFieldSource = this.vlsFinalPostProcess;
+            };
+
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSMerge", () => { return this.vlsMergePostProces; }, true));
         }
 
         // Create luminance
@@ -607,7 +722,7 @@
             );
 
             this.lensFlareComposePostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("otherSampler", this.textureAdderFinalPostProcess);
+                effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
                 effect.setTexture("lensDirtSampler", this.lensFlareDirtTexture);
                 effect.setTexture("lensStarSampler", this.lensStarTexture);
 
@@ -638,7 +753,7 @@
             this.depthOfFieldPostProcess = new PostProcess("HDRDepthOfField", "standard", ["distance"], ["otherSampler", "depthSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DEPTH_OF_FIELD", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.depthOfFieldPostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
-                effect.setTexture("depthSampler", this._depthRenderer.getDepthMap());
+                effect.setTexture("depthSampler", this._getDepthTexture());
 
                 effect.setFloat("distance", this.depthOfFieldDistance);
             };
@@ -677,10 +792,19 @@
                 effect.setFloat("motionScale", motionScale);
                 effect.setFloat("motionStrength", this.motionStrength);
 
-                effect.setTexture("depthSampler", this._depthRenderer.getDepthMap());
+                effect.setTexture("depthSampler", this._getDepthTexture());
             };
 
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRMotionBlur", () => { return this.motionBlurPostProcess; }, true));
+        }
+
+        private _getDepthTexture(): Texture {
+            var geometry = this._scene.enableGeometryBufferRenderer();
+            if (geometry.isSupported) {
+                return geometry.getGBuffer().textures[0];
+            }
+
+            return this._scene.enableDepthRenderer().getDepthMap();
         }
 
         // Dispose
