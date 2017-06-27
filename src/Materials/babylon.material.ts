@@ -522,7 +522,6 @@
             scene.registerBeforeRender(beforeRenderCallback);
         }
        
-
         public markAsDirty(flag: number): void {
             if (flag & Material.TextureDirtyFlag) {
                 this._markAllSubMeshesAsTexturesDirty();
