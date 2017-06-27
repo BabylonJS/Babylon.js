@@ -171,8 +171,13 @@ void main(void) {
 
 #ifndef LINKREFRACTIONTOTRANSPARENCY
 	#if defined(ALPHATEST) && defined(ALPHATESTVALUE)
-		if (alpha < ALPHATESTVALUE)
+		if (alpha <= ALPHATESTVALUE)
 			discard;
+			
+			#ifndef ALPHABLEND
+				// Prevent to blend with the canvas.
+				alpha = 1.0;
+			#endif
 	#endif
 #endif
 
