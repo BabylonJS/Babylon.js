@@ -505,7 +505,7 @@
             var geometry = geometryRenderer.getGBuffer();
 
             // Base post-process
-            this.vlsPostProcess = new PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"], ["shadowMapSampler", "positionSampler" ], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS");
+            this.vlsPostProcess = new PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"], ["shadowMapSampler", "positionSampler" ], ratio / 8, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS");
 
             var depthValues = Vector2.Zero();
 
