@@ -10,9 +10,9 @@ var INSPECTOR;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
             // Load the GUI library if it's not already done
-            //if (!BABYLON.GUI) {
-            BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", function () { });
-            //}
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", function () { });
+            }
             //get Tabbar initialTab
             this._initialTab = initialTab;
             //get parentElement of our Inspector
@@ -424,7 +424,7 @@ var INSPECTOR;
             format: function (ellipse) { return ellipse.name; }
         },
         'Image': {
-            type: BABYLON.GUI.Image,
+            //type: BABYLON.GUI.Image,
             properties: ['_imageWidth',
                 '_imageHeight',
                 '_loaded',

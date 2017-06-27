@@ -125,7 +125,6 @@ declare module INSPECTOR {
             format: (ellipse: BABYLON.GUI.Ellipse) => string;
         };
         'Image': {
-            type: typeof BABYLON.GUI.Image;
             properties: string[];
             format: (image: BABYLON.GUI.Image) => string;
         };

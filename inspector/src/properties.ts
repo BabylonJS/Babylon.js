@@ -106,7 +106,7 @@ module INSPECTOR {
             format: (ellipse: BABYLON.GUI.Ellipse) => { return ellipse.name }
         },
         'Image': {
-            type: BABYLON.GUI.Image,
+            //type: BABYLON.GUI.Image,
             properties: ['_imageWidth', 
                 '_imageHeight',
                 '_loaded',
