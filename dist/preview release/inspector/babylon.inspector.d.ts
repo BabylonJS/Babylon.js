@@ -100,6 +100,63 @@ declare module INSPECTOR {
             properties: string[];
             format: (tex: BABYLON.Texture) => string;
         };
+        'ValueAndUnit': {
+            properties: string[];
+            format: (valueAndUnit: BABYLON.GUI.ValueAndUnit) => BABYLON.GUI.ValueAndUnit;
+        };
+        'Control': {
+            properties: string[];
+            format: (control: BABYLON.GUI.Control) => string;
+        };
+        'Button': {
+            properties: any[];
+            format: (button: BABYLON.GUI.Button) => string;
+        };
+        'ColorPicker': {
+            properties: string[];
+            format: (colorPicker: BABYLON.GUI.ColorPicker) => string;
+        };
+        'Checkbox': {
+            properties: string[];
+            format: (checkbox: BABYLON.GUI.Checkbox) => string;
+        };
+        'Ellipse': {
+            properties: string[];
+            format: (ellipse: BABYLON.GUI.Ellipse) => string;
+        };
+        'Image': {
+            type: typeof BABYLON.GUI.Image;
+            properties: string[];
+            format: (image: BABYLON.GUI.Image) => string;
+        };
+        'Line': {
+            properties: string[];
+            format: (line: BABYLON.GUI.Line) => string;
+        };
+        'RadioButton': {
+            properties: string[];
+            format: (radioButton: BABYLON.GUI.RadioButton) => string;
+        };
+        'Rectangle': {
+            properties: string[];
+            format: (rectangle: BABYLON.GUI.Rectangle) => string;
+        };
+        'Slider': {
+            properties: string[];
+            format: (slider: BABYLON.GUI.Slider) => string;
+        };
+        'StackPanel': {
+            properties: string[];
+            format: (stackPanel: BABYLON.GUI.StackPanel) => string;
+        };
+        'TextBlock': {
+            properties: string[];
+            format: (textBlock: BABYLON.GUI.TextBlock) => string;
+        };
+        'Container': {
+            properties: string[];
+            format: (container: BABYLON.GUI.Container) => string;
+        };
         'MapTexture': {
             type: typeof BABYLON.MapTexture;
         };
@@ -322,6 +379,21 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class GUIAdapter extends Adapter implements IToolVisible {
+        constructor(obj: BABYLON.GUI.Control);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setVisible(b: boolean): void;
+        isVisible(): boolean;
     }
 }
 
@@ -799,6 +871,13 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class CameraTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class GUITab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }

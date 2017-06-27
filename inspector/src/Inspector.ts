@@ -40,6 +40,11 @@ module INSPECTOR {
             colorBot?: string
         }) {
 
+            // Load the GUI library if it's not already done
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => { });
+            }
+
             //get Tabbar initialTab
             this._initialTab = initialTab;
 
