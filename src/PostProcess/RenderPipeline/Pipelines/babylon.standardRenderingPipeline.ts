@@ -125,6 +125,10 @@
         }
 
         public set BloomEnabled(enabled: boolean) {
+            if (this._bloomEnabled === enabled) {
+                return;
+            }
+
             this._bloomEnabled = enabled;
             this._buildPipeline();
         }
@@ -135,6 +139,10 @@
         }
 
         public set DepthOfFieldEnabled(enabled: boolean) {
+            if (this._depthOfFieldEnabled === enabled) {
+                return;
+            }
+
             this._depthOfFieldEnabled = enabled;
             this._buildPipeline();
         }
@@ -145,6 +153,10 @@
         }
 
         public set LensFlareEnabled(enabled: boolean) {
+            if (this._lensFlareEnabled === enabled) {
+                return;
+            }
+
             this._lensFlareEnabled = enabled;
             this._buildPipeline();
         }
@@ -155,6 +167,10 @@
         }
 
         public set HDREnabled(enabled: boolean) {
+            if (this._hdrEnabled === enabled) {
+                return;
+            }
+
             this._hdrEnabled = enabled;
             this._buildPipeline();
         }
@@ -165,6 +181,10 @@
         }
 
         public set VLSEnabled(enabled) {
+            if (this._vlsEnabled === enabled) {
+                return;
+            }
+
             if (enabled) {
                 var geometry = this._scene.enableGeometryBufferRenderer();
                 if (!geometry.isSupported) {
@@ -178,6 +198,20 @@
         }
 
         @serialize()
+        public get MotionBlurEnabled(): boolean {
+            return this._motionBlurEnabled;
+        }
+
+        public set MotionBlurEnabled(enabled: boolean) {
+            if (this._motionBlurEnabled === enabled) {
+                return;
+            }
+
+            this._motionBlurEnabled = enabled;
+            this._buildPipeline();
+        }
+
+        @serialize()
         public get volumetricLightStepsCount(): number {
             return this._volumetricLightStepsCount;
         }
@@ -185,16 +219,6 @@
         public set volumetricLightStepsCount(count: number) {
             this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
             this._volumetricLightStepsCount = count;
-        }
-
-        @serialize()
-        public get MotionBlurEnabled(): boolean {
-            return this._motionBlurEnabled;
-        }
-
-        public set MotionBlurEnabled(enabled: boolean) {
-            this._motionBlurEnabled = enabled;
-            this._buildPipeline();
         }
 
         @serialize()
