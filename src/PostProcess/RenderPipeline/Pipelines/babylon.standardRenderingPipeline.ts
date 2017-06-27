@@ -505,7 +505,9 @@
             var geometry = geometryRenderer.getGBuffer();
 
             // Base post-process
-            this.vlsPostProcess = new PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower"], ["shadowMapSampler", "positionSampler" ], ratio / 8, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS");
+            this.vlsPostProcess = new PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"], ["shadowMapSampler", "positionSampler" ], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS");
+
+            var depthValues = Vector2.Zero();
 
             this.vlsPostProcess.onApply = (effect: Effect) => {
                 if (this.sourceLight && this.sourceLight.getShadowGenerator()) {
@@ -522,6 +524,10 @@
 
                     effect.setFloat("scatteringCoefficient", this.volumetricLightCoefficient);
                     effect.setFloat("scatteringPower", this.volumetricLightPower);
+
+                    depthValues.x = generator.getLight().getDepthMinZ(this._scene.activeCamera);
+                    depthValues.y = generator.getLight().getDepthMaxZ(this._scene.activeCamera);
+                    effect.setVector2("depthValues", depthValues);
                 }
             };
 
