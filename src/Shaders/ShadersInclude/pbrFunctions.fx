@@ -86,17 +86,16 @@ vec3 FresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor, vec3 reflectance90)
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90)
 {
     float alphaG = convertRoughnessToAverageSlope(roughness);
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
     float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
-
-    vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, reflectance90);
-
     float specTerm = max(0., visibility * distribution) * NdotL;
-    return fresnel * specTerm * kPi; // TODO: audit pi constants
+
+    vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
+    return vec3(specTerm, specTerm, specTerm);
 }
 
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
@@ -106,14 +105,11 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
     float diffuseFresnelNV = pow(clamp(1.0 - NdotL, 0.000001, 1.), 5.0);
     float diffuseFresnelNL = pow(clamp(1.0 - NdotV, 0.000001, 1.), 5.0);
     float diffuseFresnel90 = 0.5 + 2.0 * VdotH * VdotH * roughness;
-    float diffuseFresnelTerm =
+    float fresnel =
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
-
-    return diffuseFresnelTerm * NdotL;
-    // PI Test
-    // diffuseFresnelTerm /= kPi;
+    return fresnel * NdotL / kPi;
 }
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
@@ -131,7 +127,7 @@ float adjustRoughnessFromLightProperties(float roughness, float lightRadius, flo
 
 float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 {
-    float kReflectivityNoAlphaWorkflow_SmoothnessMax = 0.95;
+    const float kReflectivityNoAlphaWorkflow_SmoothnessMax = 0.95;
 
     float reflectivityLuminance = getLuminance(reflectivityColor);
     float reflectivityLuma = sqrt(reflectivityLuminance);
