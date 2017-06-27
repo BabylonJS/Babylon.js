@@ -113,7 +113,6 @@ void main(void)
 #endif
 
 #if defined(VLS)
-#define NB_STEPS 50.0
 #define PI 3.1415926535897932384626433832795
 
 uniform mat4 shadowViewProjection;
