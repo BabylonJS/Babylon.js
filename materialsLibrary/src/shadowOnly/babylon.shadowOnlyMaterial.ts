@@ -105,7 +105,7 @@ module BABYLON {
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                                 "vFogInfos", "vFogColor", "pointSize",
                                 "mBones",
-                                "vClipPlane", "depthValues"
+                                "vClipPlane"
                 ];
                 var samplers = [];
                 

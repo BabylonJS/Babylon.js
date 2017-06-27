@@ -91,6 +91,9 @@
         public onError: (effect: Effect, errors: string) => void;
         public onBind: (effect: Effect) => void;
         public uniqueId = 0;
+        public onCompileObservable = new Observable<Effect>();
+        public onErrorObservable = new Observable<Effect>();
+        public onBindObservable = new Observable<Effect>();
 
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
@@ -241,6 +244,18 @@
         }
 
         // Methods
+        public executeWhenCompiled(func: (effect: Effect) => void): void {
+            if (this.isReady()) {
+                func(this);
+                return;
+            }
+            
+            var observer = this.onCompileObservable.add((effect) => {
+                this.onCompileObservable.remove(observer);
+                func(effect);
+            });
+        }
+
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
@@ -514,6 +529,7 @@
                 if (this.onCompiled) {
                     this.onCompiled(this);
                 }
+                this.onCompileObservable.notifyObservers(this);
             } catch (e) {
                 this._compilationError = e.message;
 
@@ -537,6 +553,7 @@
                     if (this.onError) {
                         this.onError(this, this._compilationError);
                     }
+                    this.onErrorObservable.notifyObservers(this);
                 }
             }
         }

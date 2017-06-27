@@ -1,12 +1,42 @@
 ﻿module BABYLON {
     export class MultiMaterial extends Material {
-        public subMaterials = new Array<Material>();
+        private _subMaterials: Material[];
+        public get subMaterials(): Material[] {
+            return this._subMaterials;
+        }
 
+        public set subMaterials(value: Material[]) {
+            this._subMaterials = value;
+            this._hookArray(value);
+        }
+        
         constructor(name: string, scene: Scene) {
             super(name, scene, true);
-
+            
             scene.multiMaterials.push(this);
+
+            this.subMaterials = new Array<Material>();
         }
+
+        private _hookArray(array: Material[]): void {
+            var oldPush = array.push;
+            array.push = (...items: Material[]) => {
+                var result = oldPush.apply(array, items);
+
+                this._markAllSubMeshesAsTexturesDirty();
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this._markAllSubMeshesAsTexturesDirty();
+
+                return deleted;
+            }
+        }    
 
         // Properties
         public getSubMaterial(index) {

@@ -157,7 +157,7 @@ module BABYLON {
                                 "vFogInfos", "vFogColor", "pointSize",
                                 "vDiffuseInfos", 
                                 "mBones",
-                                "vClipPlane", "diffuseMatrix", "depthValues"
+                                "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
                 var uniformBuffers = [];

@@ -874,6 +874,12 @@
             return new Vector2(0, 0);
         }
         /**
+         * Returns a new Vector2(1, 1)
+         */
+        public static One(): Vector2 {
+            return new Vector2(1, 1);
+        }
+        /**
          * Returns a new Vector2 set from the passed index element of the passed array.
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector2 {
@@ -1463,10 +1469,16 @@
         }
 
         /**
-         * Returns a new Vector3 set to (0.0, 0.0, 0.0).  
+         * Returns a new Vector3 set to (0.0, 0.0, 0.0).
          */
         public static Zero(): Vector3 {
             return new Vector3(0.0, 0.0, 0.0);
+        }
+        /**
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         */
+        public static One(): Vector3 {
+            return new Vector3(1.0, 1.0, 1.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 1.0, 0.0)
@@ -2198,6 +2210,12 @@
          */
         public static Zero(): Vector4 {
             return new Vector4(0.0, 0.0, 0.0, 0.0);
+        }
+        /**
+         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         */
+        public static One(): Vector4 {
+            return new Vector4(1.0, 1.0, 1.0, 1.0);
         }
         /**
          * Returns a new normalized Vector4 from the passed one.  

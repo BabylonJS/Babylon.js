@@ -45,7 +45,7 @@
          * This impacts both the direct diffuse and specular highlights.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public directIntensity: number = 1.0;
         
         /**
@@ -53,7 +53,7 @@
          * This helps controlling the emissive effect without modifying the emissive color.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveIntensity: number = 1.0;
         
         /**
@@ -61,7 +61,7 @@
          * either through harmonics for rough material or through the refelction for shiny ones.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public environmentIntensity: number = 1.0;
         
         /**
@@ -69,14 +69,14 @@
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public specularIntensity: number = 1.0;
 
         /**
          * Debug Control allowing disabling the bump map on this material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public disableBumpMap: boolean = false;
 
         /**
@@ -85,7 +85,7 @@
          * This corresponds to a photographic exposure.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public cameraExposure: number = 1.0;
         
         /**
@@ -93,7 +93,7 @@
          * This property is here and not in the camera to allow controlling contrast without full screen post process.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public cameraContrast: number = 1.0;
         
         /**
@@ -101,7 +101,7 @@
          * This allows special effects like sepia, black and white to sixties rendering style. 
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public cameraColorGradingTexture: BaseTexture = null;
         
         /**
@@ -111,54 +111,54 @@
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         @serializeAsColorCurves()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public cameraColorCurves: ColorCurves = null;
 
         /**
          * AKA Diffuse Texture in standard nomenclature.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoTexture: BaseTexture;
         
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTexture: BaseTexture;
 
         /**
          * AKA Occlusion Texture Intensity in other nomenclature.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTextureStrength: number = 1.0;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityTexture: BaseTexture;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionTexture: BaseTexture;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveTexture: BaseTexture;
         
         /**
          * AKA Specular texture in other nomenclature.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectivityTexture: BaseTexture;
 
         /**
          * Used to switch from specular/glossiness to metallic/roughness workflow.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public metallicTexture: BaseTexture;
 
         /**
@@ -166,7 +166,7 @@
          * Can also be used to scale the metalness values of the metallic texture.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public metallic: number;
 
         /**
@@ -174,7 +174,7 @@
          * Can also be used to scale the roughness values of the metallic texture.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public roughness: number;
 
         /**
@@ -182,74 +182,74 @@
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public microSurfaceTexture: BaseTexture;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public bumpTexture: BaseTexture;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
         public lightmapTexture: BaseTexture;
 
         @serializeAsTexture()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public refractionTexture: BaseTexture;
 
         @serializeAsColor3("ambient")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientColor = new Color3(0, 0, 0);
 
         /**
          * AKA Diffuse Color in other nomenclature.
          */
         @serializeAsColor3("albedo")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoColor = new Color3(1, 1, 1);
         
         /**
          * AKA Specular Color in other nomenclature.
          */
         @serializeAsColor3("reflectivity")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectivityColor = new Color3(1, 1, 1);
 
         @serializeAsColor3("reflection")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionColor = new Color3(0.0, 0.0, 0.0);
 
         @serializeAsColor3("emissive")
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveColor = new Color3(0, 0, 0);
         
         /**
          * AKA Glossiness in other nomenclature.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public microSurface = 0.9;
 
         /**
          * source material index of refraction (IOR)' / 'destination material IOR.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public indexOfRefraction = 0.66;
         
         /**
          * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertRefractionY = false;
 
         @serializeAsFresnelParameters()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveFresnelParameters: FresnelParameters;
 
         /**
@@ -257,11 +257,11 @@
          * Materials half opaque for instance using refraction could benefit from this control.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public linkRefractionWithTransparency = false;
 
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
         
         /**
@@ -269,14 +269,14 @@
          * A light for instance can be thought as emissive.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useEmissiveAsIllumination = false;
         
         /**
          * Secifies that the alpha is coming form the albedo channel alpha channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAlphaFromAlbedoTexture = false;
         
         /**
@@ -284,49 +284,49 @@
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useSpecularOverAlpha = true;
         
         /**
          * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useMicroSurfaceFromReflectivityMapAlpha = false;
 
         /**
          * Specifies if the metallic texture contains the roughness information in its alpha channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRoughnessFromMetallicTextureAlpha = true;
 
         /**
          * Specifies if the metallic texture contains the roughness information in its green channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRoughnessFromMetallicTextureGreen = false;
 
         /**
          * Specifies if the metallic texture contains the metallness information in its blue channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useMetallnessFromMetallicTextureBlue = false;
 
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAmbientOcclusionFromMetallicTextureRed = false;
 
         /**
          * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAmbientInGrayScale = false;
         
         /**
@@ -334,7 +334,7 @@
          * The material will try to infer what glossiness each pixel should be.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAutoMicroSurfaceFromReflectivityMap = false;
         
         /**
@@ -342,7 +342,7 @@
          * the creation of the material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useScalarInLinearSpace = false;
         
         /**
@@ -351,7 +351,7 @@
          * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public usePhysicalLightFalloff = true;
         
         /**
@@ -359,63 +359,63 @@
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRadianceOverAlpha = true;
         
         /**
          * Allows using the bump map in parallax mode.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useParallax = false;
 
         /**
          * Allows using the bump map in parallax occlusion mode.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useParallaxOcclusion = false;
 
         /**
          * Controls the scale bias of the parallax mode.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public parallaxScaleBias = 0.05;
         
         /**
          * If sets to true, disables all the lights affecting the material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting = false;
 
         /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights = 4;  
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertNormalMapX = false;
 
         /**
          * If sets to true, y component of normal map value will invert (y = 1.0 - y).
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertNormalMapY = false;
 
         /**
          * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public twoSidedLighting = false;
 
         /**

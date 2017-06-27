@@ -44,7 +44,7 @@
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
@@ -53,7 +53,7 @@
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-                    this._effect.setFloat("far", scene.activeCamera.maxZ);
+                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.minZ + scene.activeCamera.maxZ);
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
@@ -141,7 +141,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("depth",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues"],
                     ["diffuseSampler"], join);
             }
 

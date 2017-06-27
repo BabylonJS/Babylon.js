@@ -127,6 +127,9 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {      
+            if (!this.isVisible) {
+                return;
+            }
             context.save();
            
             this._applyStates(context);
@@ -145,6 +148,10 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
+            if (!this.isHitTestVisible || !this.isVisible) {
+                return false;
+            }
+
             if (!super.contains(x, y)) {
                 return false;
             }

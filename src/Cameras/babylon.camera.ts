@@ -121,6 +121,7 @@
         public _rigPostProcess: PostProcess;
         protected _webvrViewMatrix = Matrix.Identity();
 
+        public customRenderTargets = new Array<RenderTargetTexture>();        
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -853,6 +854,11 @@
                 camera.inputs.parse(parsedCamera);
 
                 camera._setupInputs();
+            }
+
+            if ((<any>camera).setPosition) { // need to force position
+                camera.position.copyFromFloats(0, 0, 0);
+                (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
             }
 
             // Target

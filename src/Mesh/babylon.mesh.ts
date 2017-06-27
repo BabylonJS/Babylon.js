@@ -805,27 +805,6 @@
         }
 
         /**
-         * This method will force the computation of normals for the mesh.
-         * Please note that the mesh must have normals vertex data already.
-         * Returns the Mesh. 
-         */
-        public recomputeNormals(): Mesh {
-            var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            var indices = this.getIndices();
-            var normals: number[] | Float32Array;
-            
-            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                normals = this.getVerticesData(VertexBuffer.NormalKind);
-            } else {
-                normals = [];
-            }
-            VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
-
-            return this;
-        }
-
-        /**
          * Creates a un-shared specific occurence of the geometry for the mesh.  
          * Returns the Mesh.  
          */
@@ -1127,7 +1106,7 @@
             this.onBeforeRenderObservable.notifyObservers(this);
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             // Material
             var effectiveMaterial = subMesh.getMaterial();

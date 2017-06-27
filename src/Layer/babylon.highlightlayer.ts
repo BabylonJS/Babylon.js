@@ -412,7 +412,7 @@ module BABYLON {
                     return;
                 };
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
                 var highlightLayerMesh = this._meshes[mesh.uniqueId];
                 var material = subMesh.getMaterial();

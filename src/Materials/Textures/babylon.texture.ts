@@ -96,11 +96,6 @@
             this._format = format;
 
             scene = this.getScene();
-            if (!url) {
-                return;
-            }
-
-            this._texture = this._getFromCache(url, noMipmap, samplingMode);
 
             let load = () => {
                 if (this._onLoadObservarble && this._onLoadObservarble.hasObservers()) {
@@ -114,6 +109,14 @@
                     scene.resetCachedMaterial();
                 }
             }
+
+            if (!url) {
+                this._delayedOnLoad = load;
+                this._delayedOnError = onError;
+                return;
+            }
+
+            this._texture = this._getFromCache(url, noMipmap, samplingMode);
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
@@ -136,6 +139,12 @@
             }
         }
 
+        public updateURL(url: string): void {
+            this.url = url;
+            this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+            this.delayLoad();
+        }
+
         public delayLoad(): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -148,6 +157,12 @@
                 this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
+                }
+            } else {
+                if (this._texture.isReady) {
+                    Tools.SetImmediate(() => this._delayedOnLoad());
+                } else {
+                    this._texture.onLoadedCallbacks.push(this._delayedOnLoad);
                 }
             }
         }
