@@ -18,12 +18,12 @@ namespace Max2Babylon
 
 <head>
     <title>Babylon.js</title>
-    <script type='text/javascript' src='http://www.babylonjs.com/oimo.js'></script>
-    <script type='text/javascript' src='http://www.babylonjs.com/cannon.js'></script>
-    <script type='text/javascript' src='http://www.babylonjs.com/babylon.js'></script>
-    <script type='text/javascript' src='http://www.babylonjs.com/babylon.inspector.bundle.js'></script>
+    <script type='text/javascript' src='https://preview.babylonjs.com/oimo.js'></script>
+    <script type='text/javascript' src='https://preview.babylonjs.com/cannon.js'></script>
+    <script type='text/javascript' src='https://preview.babylonjs.com/babylon.js'></script>
+    <script type='text/javascript' src='https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js'></script>
     <style type='text/css'>
-        html, body, div, canvas {
+        html, body, canvas {
             width: 100%;
             height: 100%;
             padding: 0;
@@ -53,6 +53,12 @@ namespace Max2Babylon
        
         BABYLON.SceneLoader.Load('', '###SCENE###', engine, function (newScene) {
             newScene.activeCamera.attachControl(canvas);
+
+            var keyboard = newScene.activeCamera.inputs.attached.keyboard;
+            keyboard.keysUp.push(87);
+            keyboard.keysDown.push(83);
+            keyboard.keysLeft.push(65);
+            keyboard.keysRight.push(68);
 
             engine.runRenderLoop(function() {
                 newScene.render();

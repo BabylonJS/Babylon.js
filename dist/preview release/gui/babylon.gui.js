@@ -28,6 +28,7 @@ var BABYLON;
                 _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
                 _this._idealWidth = 0;
                 _this._idealHeight = 0;
+                _this._renderAtIdealSize = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
@@ -78,6 +79,20 @@ var BABYLON;
                     this._idealHeight = value;
                     this.markAsDirty();
                     this._rootContainer._markAllAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "renderAtIdealSize", {
+                get: function () {
+                    return this._renderAtIdealSize;
+                },
+                set: function (value) {
+                    if (this._renderAtIdealSize === value) {
+                        return;
+                    }
+                    this._renderAtIdealSize = value;
+                    this._onResize();
                 },
                 enumerable: true,
                 configurable: true
@@ -140,6 +155,16 @@ var BABYLON;
                 var textureSize = this.getSize();
                 var renderWidth = engine.getRenderWidth();
                 var renderHeight = engine.getRenderHeight();
+                if (this._renderAtIdealSize) {
+                    if (this._idealWidth) {
+                        renderHeight = (renderHeight * this._idealWidth) / renderWidth;
+                        renderWidth = this._idealWidth;
+                    }
+                    else if (this._idealHeight) {
+                        renderWidth = (renderWidth * this._idealHeight) / renderHeight;
+                        renderHeight = this._idealHeight;
+                    }
+                }
                 if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
                     this.scaleTo(renderWidth, renderHeight);
                     this.markAsDirty();
@@ -147,6 +172,10 @@ var BABYLON;
                         this._rootContainer._markAllAsDirty();
                     }
                 }
+            };
+            AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
+                var engine = scene.getEngine();
+                return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
                 if (this._layerToDispose) {
@@ -156,8 +185,7 @@ var BABYLON;
                 }
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
-                    var engine = scene.getEngine();
-                    var globalViewport = this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+                    var globalViewport = this._getGlobalViewport(scene);
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
                         var mesh = control._linkedMesh;
@@ -179,6 +207,7 @@ var BABYLON;
                 this.update();
             };
             AdvancedDynamicTexture.prototype._render = function () {
+                var engine = this.getScene().getEngine();
                 var textureSize = this.getSize();
                 var renderWidth = textureSize.width;
                 var renderHeight = textureSize.height;
@@ -197,6 +226,12 @@ var BABYLON;
                 this._rootContainer._draw(measure, context);
             };
             AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
+                var engine = this.getScene().getEngine();
+                var textureSize = this.getSize();
+                if (this._isFullscreen) {
+                    x = x * (textureSize.width / engine.getRenderWidth());
+                    y = y * (textureSize.height / engine.getRenderHeight());
+                }
                 if (this._capturingControl) {
                     this._capturingControl._processObservables(type, x, y);
                     return;
@@ -999,6 +1034,33 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
+            Control.prototype.getLocalCoordinates = function (globalCoordinates) {
+                var result = BABYLON.Vector2.Zero();
+                this.getLocalCoordinatesToRef(globalCoordinates, result);
+                return result;
+            };
+            Control.prototype.getLocalCoordinatesToRef = function (globalCoordinates, result) {
+                result.x = globalCoordinates.x - this._currentMeasure.left;
+                result.y = globalCoordinates.y - this._currentMeasure.top;
+                return this;
+            };
+            Control.prototype.moveToVector3 = function (position, scene) {
+                if (!this._host || this._root !== this._host._rootContainer) {
+                    BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
+                    return;
+                }
+                this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                var engine = scene.getEngine();
+                var globalViewport = this._host._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+                this._moveToProjectedPosition(projectedPosition);
+                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                    this.isVisible = false;
+                    return;
+                }
+                this.isVisible = true;
+            };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
@@ -1241,7 +1303,7 @@ var BABYLON;
                 return true;
             };
             Control.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible) {
+                if (!this.isHitTestVisible || !this.isVisible) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
@@ -1424,6 +1486,15 @@ var BABYLON;
                 }
                 return panel;
             };
+            Control.drawEllipse = function (x, y, width, height, context) {
+                context.translate(x, y);
+                context.scale(width, height);
+                context.beginPath();
+                context.arc(0, 0, 1, 0, 2 * Math.PI);
+                context.closePath();
+                context.scale(1 / width, 1 / height);
+                context.translate(-x, -y);
+            };
             return Control;
         }());
         // Statics
@@ -1564,6 +1635,9 @@ var BABYLON;
                 }
             };
             Container.prototype._draw = function (parentMeasure, context) {
+                if (!this.isVisible) {
+                    return;
+                }
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
@@ -1579,6 +1653,9 @@ var BABYLON;
                 context.restore();
             };
             Container.prototype._processPicking = function (x, y, type) {
+                if (!this.isHitTestVisible || !this.isVisible) {
+                    return false;
+                }
                 if (!_super.prototype.contains.call(this, x, y)) {
                     return false;
                 }
@@ -1867,9 +1944,7 @@ var BABYLON;
             };
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
-                context.beginPath();
-                context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                context.closePath();
+                GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 if (this._background) {
                     context.fillStyle = this._background;
                     context.fill();
@@ -1891,8 +1966,7 @@ var BABYLON;
                 this._measureForChildren.top += this._thickness;
             };
             Ellipse.prototype._clipForChildren = function (context) {
-                context.beginPath();
-                context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, 0, 0, 2 * Math.PI);
+                GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
                 context.clip();
             };
             return Ellipse;
@@ -2557,10 +2631,8 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
-                    // Outer                
-                    context.beginPath();
-                    context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                    context.closePath();
+                    // Outer
+                    GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                     context.fillStyle = this._background;
                     context.fill();
                     context.strokeStyle = this.color;
@@ -2571,9 +2643,7 @@ var BABYLON;
                         context.fillStyle = this.color;
                         var offsetWidth = actualWidth * this._checkSizeRatio;
                         var offseHeight = actualHeight * this._checkSizeRatio;
-                        context.beginPath();
-                        context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                        context.closePath();
+                        GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, context);
                         context.fill();
                     }
                 }
@@ -2791,9 +2861,69 @@ var BABYLON;
                 _this._loaded = false;
                 _this._stretch = Image.STRETCH_FILL;
                 _this._autoScale = false;
+                _this._sourceLeft = 0;
+                _this._sourceTop = 0;
+                _this._sourceWidth = 0;
+                _this._sourceHeight = 0;
                 _this.source = url;
                 return _this;
             }
+            Object.defineProperty(Image.prototype, "sourceLeft", {
+                get: function () {
+                    return this._sourceLeft;
+                },
+                set: function (value) {
+                    if (this._sourceLeft === value) {
+                        return;
+                    }
+                    this._sourceLeft = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceTop", {
+                get: function () {
+                    return this._sourceTop;
+                },
+                set: function (value) {
+                    if (this._sourceTop === value) {
+                        return;
+                    }
+                    this._sourceTop = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceWidth", {
+                get: function () {
+                    return this._sourceWidth;
+                },
+                set: function (value) {
+                    if (this._sourceWidth === value) {
+                        return;
+                    }
+                    this._sourceWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "sourceHeight", {
+                get: function () {
+                    return this._sourceHeight;
+                },
+                set: function (value) {
+                    if (this._sourceHeight === value) {
+                        return;
+                    }
+                    this._sourceHeight = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Image.prototype, "autoScale", {
                 get: function () {
                     return this._autoScale;
@@ -2865,6 +2995,7 @@ var BABYLON;
                     this._domImage.onload = function () {
                         _this._onImageLoaded();
                     };
+                    this._domImage.crossOrigin = "anonymous";
                     this._domImage.src = value;
                 },
                 enumerable: true,
@@ -2882,26 +3013,30 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
+                var x = this._sourceLeft;
+                var y = this._sourceTop;
+                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
                         switch (this._stretch) {
                             case Image.STRETCH_NONE:
-                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 break;
                             case Image.STRETCH_FILL:
-                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 break;
                             case Image.STRETCH_UNIFORM:
-                                var hRatio = this._currentMeasure.width / this._imageWidth;
-                                var vRatio = this._currentMeasure.height / this._imageHeight;
+                                var hRatio = this._currentMeasure.width / width;
+                                var vRatio = this._currentMeasure.height / height;
                                 var ratio = Math.min(hRatio, vRatio);
-                                var centerX = (this._currentMeasure.width - this._imageWidth * ratio) / 2;
-                                var centerY = (this._currentMeasure.height - this._imageHeight * ratio) / 2;
-                                context.drawImage(this._domImage, 0, 0, this._imageWidth, this._imageHeight, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, this._imageWidth * ratio, this._imageHeight * ratio);
+                                var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                                var centerY = (this._currentMeasure.height - height * ratio) / 2;
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                                 break;
                             case Image.STRETCH_EXTEND:
-                                context.drawImage(this._domImage, this._currentMeasure.left, this._currentMeasure.top);
+                                context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }

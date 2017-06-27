@@ -32,10 +32,6 @@ module INSPECTOR {
             this._tabs.push(this._meshTab);
             this._tabs.push(new ShaderTab(this, this._inspector));
             this._tabs.push(new LightTab(this, this._inspector));
-            // Add only the tab canvas2D if Canvas2D is defined
-            if (BABYLON.Canvas2D) {
-                this._tabs.push(new Canvas2DTab(this, this._inspector));
-            }
             this._tabs.push(new MaterialTab(this, this._inspector));
 
             this._tabs.push(new CameraTab(this, this._inspector));

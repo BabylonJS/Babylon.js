@@ -9,6 +9,59 @@ body {
     overflow: hidden;
     font-family: sans-serif;
 }
+#waitDiv {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: black;
+    opacity: 0.8;
+    top:0px;
+    left:0px;
+    z-index: 10;
+    flex-direction: column;
+}
+
+#waitLogo {
+    -webkit-animation: spin1 2s infinite ease-in-out;
+    -moz-animation: spin1 2s infinite ease-in-out;
+    -o-animation: spin1 2s infinite ease-in-out;
+    -ms-animation: spin1 2s infinite ease-in-out;
+    animation: spin1 2s infinite ease-in-out;
+    -webkit-transform-origin: 50% 50%;
+    -moz-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;    
+}
+
+@-webkit-keyframes spin1 {
+0% { -webkit-transform: rotate(0deg);}
+100% { -webkit-transform: rotate(360deg);}
+}
+@-moz-keyframes spin1 {
+0% { -moz-transform: rotate(0deg);}
+100% { -moz-transform: rotate(360deg);}
+}
+@-o-keyframes spin1 {
+0% { -o-transform: rotate(0deg);}
+100% { -o-transform: rotate(360deg);}
+}
+@-ms-keyframes spin1 {
+0% { -ms-transform: rotate(0deg);}
+100% { -ms-transform: rotate(360deg);}
+}
+@keyframes spin1 {
+0% { transform: rotate(0deg);}
+100% { transform: rotate(360deg);}
+} 
+
+#waitTitle {
+    text-align: center;
+    font-size: 38px;
+    color: #15A4FA;
+}
 .wrapper {
     height: calc(100% - 40px - 30px); /* nvabar top and bottom*/
     width: 100%;
@@ -465,16 +518,6 @@ body {
 }
 @media (max-width: 1475px) {
     .navBar1600 { display: none; }
-    .navBar1475 { display: block; }
-    .navBar1030 { display: none; }
-    .navBar750 { display: none; }
-
-    .navbar .select .toDisplayBig ul {
-        column-count: 3;
-    }
-}
-@media (max-width: 1030px) {
-    .navBar1600 { display: none; }
     .navBar1475 { display: none; }
     .navBar1030 { display: block; }
     .navBar750 { display: none; }
@@ -491,6 +534,9 @@ body {
     .removeOnPhone {
         display : none !important;
     }
+    .navbar .select .toDisplayBig {
+        width:350px;
+    }    
     .navbar .select .toDisplayBig ul {
         column-count: 1;
     }

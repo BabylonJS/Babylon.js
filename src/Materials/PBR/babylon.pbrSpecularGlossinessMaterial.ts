@@ -11,7 +11,7 @@
          * Specifies the diffuse Color of the material.
          */
         @serializeAsColor3()
-        @expandToProperty(null, "_albedoColor")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public diffuseColor: Color3;
         
         /**
@@ -19,28 +19,28 @@
          * channel.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_albedoTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
         public diffuseTexture: BaseTexture;
 
         /**
          * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
          */
         @serializeAsColor3()
-        @expandToProperty(null, "_reflectivityColor")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityColor")
         public specularColor: Color3;
 
         /**
          * Specifies the glossiness of the material. This indicates "how sharp is the reflection".
          */
         @serialize()
-        @expandToProperty(null, "_microSurface")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_microSurface")
         public glossiness: number;
         
         /**
          * Spectifies both the specular color RGB and the glossiness A of the material per pixels.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_reflectivityTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityTexture")
         public specularGlossinessTexture: BaseTexture;
 
         /**

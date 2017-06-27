@@ -1,5 +1,5 @@
 ﻿{
-  "root": "https://cdn.rawgit.com/BabylonJS/Website/06ecbea7",
+  "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [   
  {
       "title": "Sponza",
@@ -155,6 +155,14 @@
       "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
       "functionToCall": "CreateAdvancedShadowsTestScene",
       "referenceImage": "advancedShadows.png",
+      "replace": "/ground, /Ground"
+    },
+    {
+      "title": "point light shadows",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
+      "functionToCall": "CreatePointLightShadowScene",
+      "referenceImage": "pointLightShadows.png",
       "replace": "/ground, /Ground"
     },
     {

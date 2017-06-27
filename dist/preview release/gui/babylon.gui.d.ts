@@ -19,9 +19,11 @@ declare module BABYLON.GUI {
         private _fullscreenViewport;
         private _idealWidth;
         private _idealHeight;
+        private _renderAtIdealSize;
         background: string;
         idealWidth: number;
         idealHeight: number;
+        renderAtIdealSize: boolean;
         readonly layer: Layer;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
@@ -30,6 +32,7 @@ declare module BABYLON.GUI {
         removeControl(control: Control): AdvancedDynamicTexture;
         dispose(): void;
         private _onResize();
+        _getGlobalViewport(scene: Scene): Viewport;
         private _checkUpdate(camera);
         private _render();
         private _doPicking(x, y, type);
@@ -214,6 +217,9 @@ declare module BABYLON.GUI {
         readonly centerY: number;
         constructor(name?: string);
         protected _getTypeName(): string;
+        getLocalCoordinates(globalCoordinates: Vector2): Vector2;
+        getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
+        moveToVector3(position: Vector3, scene: Scene): void;
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         _markMatrixAsDirty(): void;
@@ -261,6 +267,7 @@ declare module BABYLON.GUI {
             isHorizontal: boolean;
             controlFirst: boolean;
         }): StackPanel;
+        protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void;
     }
 }
 
@@ -480,6 +487,14 @@ declare module BABYLON.GUI {
         private _stretch;
         private _source;
         private _autoScale;
+        private _sourceLeft;
+        private _sourceTop;
+        private _sourceWidth;
+        private _sourceHeight;
+        sourceLeft: number;
+        sourceTop: number;
+        sourceWidth: number;
+        sourceHeight: number;
         autoScale: boolean;
         stretch: number;
         domImage: HTMLImageElement;

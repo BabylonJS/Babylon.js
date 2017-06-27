@@ -15,23 +15,23 @@
     
     #ifdef SHADOW{X}
         #ifdef SHADOWESM{X}
-			#if defined(POINTLIGHT{X})
-				notShadowLevel = computeShadowWithESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
+			#if defined(SHADOWCUBE{X})
+				notShadowLevel = computeShadowWithESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
 			#else
-				notShadowLevel = computeShadowWithESM(light{X}.vPositionFromLight, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
+				notShadowLevel = computeShadowWithESM(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z);
 			#endif
         #else
             #ifdef SHADOWPCF{X}
-                #if defined(POINTLIGHT{X})
-                    notShadowLevel = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+                #if defined(SHADOWCUBE{X})
+                    notShadowLevel = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
                 #else
-                    notShadowLevel = computeShadowWithPCF(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
+                    notShadowLevel = computeShadowWithPCF(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x);
                 #endif
             #else
-                #if defined(POINTLIGHT{X})
-                    notShadowLevel = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x);
+                #if defined(SHADOWCUBE{X})
+                    notShadowLevel = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
                 #else
-                    notShadowLevel = computeShadow(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x);
+                    notShadowLevel = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x);
                 #endif
             #endif
         #endif

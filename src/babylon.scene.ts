@@ -758,8 +758,6 @@
         private _externalData: StringDictionary<Object>;
         private _uid: string;
 
-        public offscreenRenderTarget: RenderTargetTexture = null;
-
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
@@ -2650,6 +2648,11 @@
             var needsRestoreFrameBuffer = false;
 
             var beforeRenderTargetDate = Tools.Now;
+
+            if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
+                this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
+            }
+
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -2698,12 +2701,7 @@
             }
 
             if (needsRestoreFrameBuffer) {
-                if (this.offscreenRenderTarget) {
-                    engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-                }
-                else {
-                    engine.restoreDefaultFramebuffer(); // Restore back buffer
-                }
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
 
             this._renderTargetsDuration.endMonitoring(false);
@@ -2935,14 +2933,9 @@
                 this._renderId++;
             }
 
-            if (this.offscreenRenderTarget) {
-                engine.bindFramebuffer(this.offscreenRenderTarget._texture);
-            }
-            else {
-                // Restore back buffer
-                if (this.customRenderTargets.length > 0) {
-                    engine.restoreDefaultFramebuffer();
-                }
+            // Restore back buffer
+            if (this.customRenderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
             }
 
             this._renderTargetsDuration.endMonitoring();
@@ -3066,6 +3059,10 @@
 
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                // for VR cameras
+                if (listeningCamera.rigCameras) {
+                    listeningCamera = listeningCamera.rigCameras[0];
+                }
                 var mat = Matrix.Invert(listeningCamera.getViewMatrix());
                 var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();

@@ -14,12 +14,14 @@ module BABYLON.GLTF2 {
             super("KHR_materials_pbrSpecularGlossiness");
         }
 
-        protected loadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): boolean {
-            var material = GLTFLoader.LoadMaterial(runtime, index);
-            if (!material || !material.extensions) return false;
+        protected loadMaterial(index: number): Material {
+            var material = GLTFLoader.LoadMaterial(index);
+            if (!material || !material.extensions) return null;
 
             var properties: IGLTFMaterialsPbrSpecularGlossiness = material.extensions[this.name];
-            if (!properties) return false;
+            if (!properties) return null;
+
+            GLTFLoader.LoadCommonMaterialProperties(material);
 
             //
             // Load Factors
@@ -33,49 +35,17 @@ module BABYLON.GLTF2 {
             // Load Textures
             //
 
-            var commonMaterialPropertiesSuccess = false;
-
-            var checkSuccess = () => {
-                if ((!properties.diffuseTexture || material.babylonMaterial.albedoTexture) &&
-                    (!properties.specularGlossinessTexture || material.babylonMaterial.reflectivityTexture) &&
-                    commonMaterialPropertiesSuccess) {
-                    onSuccess();
-                }
-            };
-
             if (properties.diffuseTexture) {
-                GLTFLoader.LoadTextureAsync(runtime, properties.diffuseTexture,
-                    texture => {
-                        material.babylonMaterial.albedoTexture = texture;
-                        GLTFLoader.LoadAlphaProperties(runtime, material);
-                        checkSuccess();
-                    },
-                    () => {
-                        Tools.Warn("Failed to load diffuse texture");
-                        onError();
-                    });
+                material.babylonMaterial.albedoTexture = GLTFLoader.LoadTexture(properties.diffuseTexture);
+                GLTFLoader.LoadAlphaProperties(material);
             }
 
             if (properties.specularGlossinessTexture) {
-                GLTFLoader.LoadTextureAsync(runtime, properties.specularGlossinessTexture,
-                    texture => {
-                        material.babylonMaterial.reflectivityTexture = texture;
-                        material.babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
-                        checkSuccess();
-                    },
-                    () => {
-                        Tools.Warn("Failed to load metallic roughness texture");
-                        onError();
-                    });
+                material.babylonMaterial.reflectivityTexture = GLTFLoader.LoadTexture(properties.specularGlossinessTexture);
+                material.babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
-            GLTFLoader.LoadCommonMaterialPropertiesAsync(runtime, material,
-                () => {
-                    commonMaterialPropertiesSuccess = true;
-                    checkSuccess();
-                }, onError);
-
-            return true;
+            return material.babylonMaterial;
         }
     }
 

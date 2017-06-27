@@ -29,6 +29,8 @@ declare module BABYLON {
         static ShaderIndexer: number;
         CustomParts: ShaderSpecialParts;
         ShaderVersion: CustomShaderStructure;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
         _newUniformInstances: any[];

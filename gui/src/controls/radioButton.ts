@@ -104,19 +104,17 @@ module BABYLON.GUI {
                 let actualWidth = this._currentMeasure.width - this._thickness;
                 let actualHeight = this._currentMeasure.height - this._thickness;
 
-                // Outer                
-                context.beginPath();
-                context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
-                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-                context.closePath();
-
+                // Outer
+                Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
+                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+                
                 context.fillStyle = this._background;
                 context.fill();
 
                 context.strokeStyle = this.color;
                 context.lineWidth = this._thickness;
 
-                context.stroke(); 
+                context.stroke();
 
                 // Inner
                 if (this._isChecked) {
@@ -124,10 +122,8 @@ module BABYLON.GUI {
                     let offsetWidth = actualWidth * this._checkSizeRatio;
                     let offseHeight = actualHeight * this._checkSizeRatio;
 
-                    context.beginPath();
-                    context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
-                                    offsetWidth / 2 - this._thickness / 2, offseHeight / 2  - this._thickness / 2, 0, 0, 2 * Math.PI);
-                    context.closePath();
+                    Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
+                                    offsetWidth / 2 - this._thickness / 2, offseHeight / 2  - this._thickness / 2, context);
 
                     context.fill();
                 }

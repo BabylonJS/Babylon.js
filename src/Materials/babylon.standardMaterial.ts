@@ -495,7 +495,7 @@ module BABYLON {
                     }
 
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                        // Bump texure can not be none blocking.
+                        // Bump texure can not be not blocking.
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {
@@ -563,11 +563,9 @@ module BABYLON {
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
                     // Fresnel
-                    if (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled ||
-                        this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled ||
-                        this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled ||
-                        this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled ||
-                        this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled) {
+                    if (this._diffuseFresnelParameters || this._opacityFresnelParameters ||
+                        this._emissiveFresnelParameters || this._refractionFresnelParameters ||
+                        this._reflectionFresnelParameters) {
 
                         defines.DIFFUSEFRESNEL = (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled);
 
@@ -703,7 +701,6 @@ module BABYLON {
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                    "depthValues",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
                 ];

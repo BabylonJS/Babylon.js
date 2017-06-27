@@ -383,7 +383,7 @@ varying vec4 vColor;\n\
 #include<bumpVertexDeclaration>\n\
 #include<clipPlaneVertexDeclaration>\n\
 #include<fogVertexDeclaration>\n\
-#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]\n\
+#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\
 #include<morphTargetsVertexGlobalDeclaration>\n\
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]\n\
 #ifdef REFLECTIONMAP_SKYBOX\n\
@@ -572,6 +572,9 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            if (this._isCreatedShader)
+                return this._createdShaderName;
+            this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
             var name = name + "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
@@ -598,6 +601,8 @@ vColor=color;\n\
                 .replace('#[Fragment_Custom_Diffuse]', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
                 .replace('#[Fragment_Custom_Alpha]', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
                 .replace('#[Fragment_Before_FragColor]', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            this._isCreatedShader = true;
+            this._createdShaderName = name;
             return name;
         };
         CustomMaterial.prototype.SelectVersion = function (ver) {

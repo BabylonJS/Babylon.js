@@ -399,6 +399,42 @@ module BABYLON.GUI {
             return "Control";
         }
 
+        public getLocalCoordinates(globalCoordinates: Vector2): Vector2 {
+            var result = Vector2.Zero();
+
+            this.getLocalCoordinatesToRef(globalCoordinates, result);
+
+            return result;
+        }
+
+        public getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control {
+            result.x = globalCoordinates.x - this._currentMeasure.left;
+            result.y = globalCoordinates.y - this._currentMeasure.top;
+            return this;
+        }
+
+        public moveToVector3(position: Vector3, scene: Scene): void {
+            if (!this._host || this._root !== this._host._rootContainer) {
+                Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
+                return;
+            }
+            
+            this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+            var engine = scene.getEngine();
+            var globalViewport = this._host._getGlobalViewport(scene);
+            var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+
+            this._moveToProjectedPosition(projectedPosition);
+
+            if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                this.isVisible = false;
+                return;
+            }
+            this.isVisible = true;
+        }
+
         public linkWithMesh(mesh: AbstractMesh): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
@@ -696,7 +732,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this.isHitTestVisible) {
+            if (!this.isHitTestVisible || !this.isVisible) {
                 return false;
             }
 
@@ -903,6 +939,20 @@ module BABYLON.GUI {
             }
 
             return panel;
+        }
+
+        protected static drawEllipse(x:number, y:number, width:number, height:number, context:CanvasRenderingContext2D):void{
+
+            context.translate(x, y);
+            context.scale(width, height);
+
+            context.beginPath();
+            context.arc(0, 0, 1, 0, 2 * Math.PI);
+            context.closePath();
+
+            context.scale(1/width, 1/height);
+            context.translate(-x, -y);
+            
         }
     }    
 }

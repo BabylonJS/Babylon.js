@@ -46,8 +46,9 @@ module BABYLON {
          * @param {string} name Name of the uniform, as used in the uniform block in the shader.
          * @param {number} x
          * @param {number} y
+         * @param {string} [suffix] Suffix to add to the uniform name.
          */
-        public updateFloat2: (name: string, x: number, y: number) => void;
+        public updateFloat2: (name: string, x: number, y: number, suffix?: string) => void;
 
         /**
          * Wrapper for updateUniform.
@@ -484,11 +485,11 @@ module BABYLON {
             this.updateUniform(name, UniformBuffer._tempBuffer, 1);
         }
 
-        private _updateFloat2ForEffect(name: string, x: number, y: number) {
-            this._currentEffect.setFloat2(name, x, y);
+        private _updateFloat2ForEffect(name: string, x: number, y: number, suffix = "") {
+            this._currentEffect.setFloat2(name + suffix, x, y);
         }
 
-        private _updateFloat2ForUniform(name: string, x: number, y: number) {
+        private _updateFloat2ForUniform(name: string, x: number, y: number, suffix = "") {
             UniformBuffer._tempBuffer[0] = x;
             UniformBuffer._tempBuffer[1] = y;
             this.updateUniform(name, UniformBuffer._tempBuffer, 2);

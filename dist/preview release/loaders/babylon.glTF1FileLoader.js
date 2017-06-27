@@ -759,6 +759,9 @@ var BABYLON;
                         continue;
                     }
                     var children = joint.children;
+                    if (!children) {
+                        continue;
+                    }
                     foundBone = false;
                     for (var k = 0; k < children.length; k++) {
                         if (children[k] === id) {

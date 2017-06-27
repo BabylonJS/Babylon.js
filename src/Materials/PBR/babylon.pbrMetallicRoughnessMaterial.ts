@@ -14,7 +14,7 @@
          * of the material.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_albedoColor")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public baseColor: Color3;
         
         /**
@@ -22,7 +22,7 @@
          * well as opacity information in the alpha channel.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_albedoTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
         public baseTexture: BaseTexture;
 
         /**
@@ -30,7 +30,7 @@
          * Can also be used to scale the metalness values of the metallic texture.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public metallic: number;
 
         /**
@@ -38,7 +38,7 @@
          * Can also be used to scale the roughness values of the metallic texture.
          */
         @serialize()
-        @expandToProperty(null)
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public roughness: number;
 
         /**
@@ -46,7 +46,7 @@
          * roughness value in the G channel to keep better precision.
          */
         @serializeAsTexture()
-        @expandToProperty(null, "_metallicTexture")
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_metallicTexture")
         public metallicRoughnessTexture: BaseTexture;
 
         /**

@@ -130,7 +130,6 @@ module BABYLON {
             this._multiRenderTarget.refreshRate = 1;
             this._multiRenderTarget.renderParticles = false;
             this._multiRenderTarget.renderList = null;
-
             
             // set default depth value to 1.0 (far away)
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
@@ -153,7 +152,7 @@ module BABYLON {
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);

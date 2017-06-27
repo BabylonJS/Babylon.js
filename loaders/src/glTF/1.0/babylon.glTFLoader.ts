@@ -523,6 +523,9 @@ module BABYLON.GLTF1 {
                 }
 
                 var children = joint.children;
+                if (!children) {
+                    continue;
+                }
                 foundBone = false;
 
                 for (var k = 0; k < children.length; k++) {

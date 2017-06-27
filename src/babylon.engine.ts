@@ -1428,8 +1428,9 @@
         public restoreDefaultFramebuffer(): void {
             this._currentRenderTarget = null;
             this.bindUnboundFramebuffer(null);
-
-            this.setViewport(this._cachedViewport);
+            if (this._cachedViewport) {
+                this.setViewport(this._cachedViewport);
+            }
 
             this.wipeCaches();
         }
@@ -1940,7 +1941,11 @@
 
             var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
-                return this._compiledEffects[name];
+                var compiledEffect = <Effect>this._compiledEffects[name];
+                if (onCompiled && compiledEffect.isReady()) {
+                    onCompiled(compiledEffect);
+                }
+                return compiledEffect;
             }
 
             var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
@@ -2024,6 +2029,7 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
+            effect.onBindObservable.notifyObservers(effect);
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
@@ -2204,7 +2210,15 @@
             }
 
             // Z offset
-            this._depthCullingState.zOffset = zOffset;
+            this.setZOffset(zOffset);
+        }
+
+        public setZOffset(value: number): void {
+            this._depthCullingState.zOffset = value;
+        }
+
+        public getZOffset():number {
+            return this._depthCullingState.zOffset;
         }
 
         public setDepthBuffer(enable: boolean): void {
@@ -2817,14 +2831,6 @@
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            var colorRenderbuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 4, gl.RGBA8, width, height);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.RENDERBUFFER, colorRenderbuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, colorRenderbuffer);
-
             var width = size.width || size;
             var height = size.height || size;
             
@@ -2868,7 +2874,6 @@
                 gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
             
                 gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
-
 
                 if (generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -3475,24 +3480,34 @@
             return rgbaData;
         }
 
-        public _releaseTexture(texture: WebGLTexture): void {
+        public _releaseFramebufferObjects(texture: WebGLTexture): void {
             var gl = this._gl;
 
             if (texture._framebuffer) {
                 gl.deleteFramebuffer(texture._framebuffer);
-            }
+                texture._framebuffer = null;
+            }            
 
             if (texture._depthStencilBuffer) {
                 gl.deleteRenderbuffer(texture._depthStencilBuffer);
+                texture._depthStencilBuffer = null;
             }
 
             if (texture._MSAAFramebuffer) {
                 gl.deleteFramebuffer(texture._MSAAFramebuffer);
+                texture._MSAAFramebuffer = null;
             }
 
             if (texture._MSAARenderBuffer) {
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
-            }
+                texture._MSAARenderBuffer = null;
+            }            
+        }
+
+        public _releaseTexture(texture: WebGLTexture): void {
+            var gl = this._gl;
+
+            this._releaseFramebufferObjects(texture);
 
             gl.deleteTexture(texture);
 
@@ -3903,6 +3918,10 @@
 
             return this._gl.getShaderSource(shaders[1]);
         }
+
+        public getError(): number {
+            return this._gl.getError();
+        }        
 
         // FPS
         public getFps(): number {

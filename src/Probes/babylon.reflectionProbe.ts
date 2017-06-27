@@ -91,6 +91,16 @@
             this._attachedMesh = mesh;
         }
         
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
+            this._renderTargetTexture.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+        }
+
         public dispose() {
             var index = this._scene.reflectionProbes.indexOf(this);
 

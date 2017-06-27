@@ -28,10 +28,8 @@ module BABYLON.GUI {
         protected _localDraw(context: CanvasRenderingContext2D): void {
             context.save();
 
-            context.beginPath();
-            context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
-                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, 0, 0, 2 * Math.PI);
-            context.closePath();
+            Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
+                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
 
             if (this._background) {
                 context.fillStyle = this._background;
@@ -61,8 +59,9 @@ module BABYLON.GUI {
         }
 
        protected _clipForChildren(context: CanvasRenderingContext2D) {
-            context.beginPath();
-            context.ellipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, 0, 0, 2 * Math.PI);
+
+            Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
+            
             context.clip();
         }
     }    

@@ -53,11 +53,6 @@ module INSPECTOR {
             Inspector.DOCUMENT = window.document;
             Inspector.WINDOW = window;
 
-            // Load the Canvas2D library if it's not already done
-            if (!BABYLON.Canvas2D) {
-                BABYLON.Tools.LoadScript("https://www.babylonjs.com/babylon.canvas2d.js", () => { });
-            }
-
             // POPUP MODE
             if (popup) {
                 // Build the inspector in the given parent

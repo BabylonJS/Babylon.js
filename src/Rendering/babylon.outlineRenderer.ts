@@ -4,6 +4,8 @@
         private _effect: Effect;
         private _cachedDefines: string;
 
+        public zOffset = 1;
+
         constructor(scene: Scene) {
             this._scene = scene;
         }
@@ -12,7 +14,7 @@
             var scene = this._scene;
             var engine = this._scene.getEngine();
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             if (!this.isReady(subMesh, hardwareInstancedRendering)) {
                 return;
@@ -40,8 +42,12 @@
                 this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
 
+            engine.setZOffset(-this.zOffset);
+
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => { this._effect.setMatrix("world", world)});
+
+            engine.setZOffset(0);
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {

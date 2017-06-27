@@ -11,6 +11,7 @@
 			vec3 vLightGround;
 		#endif
 		vec3 shadowsInfo;
+		vec2 depthValues;
 	} light{X};
 
 #ifdef SHADOW{X}
@@ -18,7 +19,10 @@
 		uniform samplerCube shadowSampler{X};
 	#else
 		varying vec4 vPositionFromLight{X};
+		varying float vDepthMetric{X};
+
 		uniform sampler2D shadowSampler{X};
+		uniform mat4 lightMatrix{X};
 	#endif
 #endif
 

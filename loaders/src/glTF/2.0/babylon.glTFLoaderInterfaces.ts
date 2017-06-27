@@ -103,6 +103,9 @@ module BABYLON.GLTF2 {
     export interface IGLTFAnimation extends IGLTFChildRootProperty {
         channels: IGLTFAnimationChannel[];
         samplers: IGLTFAnimationSampler[];
+
+        // Runtime values
+        targets?: any[];
     }
 
     export interface IGLTFAssetProfile extends IGLTFProperty {
@@ -121,8 +124,9 @@ module BABYLON.GLTF2 {
         uri?: string;
         byteLength: number;
 
-        // Loaded buffer (optimize)
-        loadedBufferView: ArrayBufferView
+        // Runtime values
+        loadedData: ArrayBufferView;
+        loadedObservable: Observable<IGLTFBuffer>;
     }
 
     export interface IGLTFBufferView extends IGLTFChildRootProperty {
@@ -184,7 +188,7 @@ module BABYLON.GLTF2 {
         alphaCutoff: number;
         doubleSided?: boolean;
 
-        // Babylon.js values (optimize)
+        // Runtime values
         babylonMaterial?: PBRMaterial;
     }
 
@@ -212,8 +216,11 @@ module BABYLON.GLTF2 {
         translation?: number[];
         weights?: number[];
 
-        // Babylon.js values (optimize)
-        babylonNode?: Node;
+        // Runtime values
+        index?: number;
+        babylonMesh?: Mesh;
+        babylonSkinToBones?: { [skin: number]: Bone };
+        babylonAnimationTargets?: Node[];
     }
 
     export interface IGLTFSampler extends IGLTFChildRootProperty {
@@ -232,7 +239,8 @@ module BABYLON.GLTF2 {
         skeleton?: number;
         joints: number[];
 
-        // Babylon.js values (optimize)
+        // Runtime values
+        index?: number;
         babylonSkeleton?: Skeleton;
     }
 
@@ -240,9 +248,9 @@ module BABYLON.GLTF2 {
         sampler?: number;
         source: number;
 
-        // Babylon.js values (optimize, one per coordinate index)
-        babylonTextures: Texture[];
-        blobURL: string;
+        // Runtime values (one per coordinate index)
+        babylonTextures?: Texture[];
+        blobURL?: string;
     }
 
     export interface IGLTFTextureInfo {
@@ -269,31 +277,5 @@ module BABYLON.GLTF2 {
         scenes?: IGLTFScene[];
         skins?: IGLTFSkin[];
         textures?: IGLTFTexture[];
-    }
-
-    export interface IGLTFRuntime {
-        gltf: IGLTF;
-
-        babylonScene: Scene;
-        rootUrl: string;
-
-        importOnlyMeshes: boolean;
-        importMeshesNames?: string[];
-
-        defaultMaterial?: PBRMaterial;
-    }
-
-    /**
-    * Bones
-    */
-    export interface INodeToRoot {
-        bone: Bone;
-        node: IGLTFNode;
-        index: number;
-    }
-
-    export interface IJointNode {
-        node: IGLTFNode;
-        index: number;
     }
 }

@@ -24,10 +24,10 @@
  - New kernel based blur. [Demo](https://www.babylonjs-playground.com/#FBH4J7#1) ([deltakosh](https://github.com/deltakosh))
  - New highlights postprocess ([deltakosh](https://github.com/deltakosh))
  - New DefaultRenderingPipeline to enable image processing effect. [Demo](https://www.babylonjs-playground.com/#Y3C0HQ) ([deltakosh](https://github.com/deltakosh))
- - Sepctor.js New WebGL debugger: [more info here](http://spector.babylonjs.com) ([Sebastien Vandenberghe](https://github.com/sebavan))
+ - Spector.js New WebGL debugger: [more info here](http://spector.babylonjs.com) ([Sebastien Vandenberghe](https://github.com/sebavan))
+ - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
-- New `mesh.recomputeNormals` function ([deltakosh](https://github.com/deltakosh))
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
 - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
 - Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))
@@ -65,6 +65,7 @@
 - Added glTF 2.0 loader with versioning support ([bghgary](https://github.com/bghgary), thanks to [BeardedGnome](https://github.com/BeardedGnome) for animation updates)
 - New `Motion Blur` effect added into `StandardRenderingPipeline` [Demo](http://www.babylonjs.com/Demos/MotionBlur/) ([Julien Moreau-Mathis](https://github.com/julien-moreau))
 - Allow the BlackAndWhite post process to adjust the degree in subsequent frames, for `Welcome to Wonderland`	types of animation ([jcpalmer](https://github.com/Palmer-JC))
+- New `BABYLON.TextureTools.CreateResizedCopy` function to create a copy of a texture and chage its size ([deltakosh](https://github.com/deltakosh)) 
  
 ### Bug fixes
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 

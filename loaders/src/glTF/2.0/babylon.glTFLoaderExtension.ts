@@ -14,35 +14,24 @@ module BABYLON.GLTF2 {
             return this._name;
         }
 
-        protected postCreateRuntime(runtime: IGLTFRuntime): void {}
-
-        // Return true to stop other extensions from loading materials.
-        protected loadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): boolean { return false; }
+        protected loadMaterial(index: number): Material { return null; }
 
         // ---------
         // Utilities
         // ---------
 
-        public static PostCreateRuntime(runtime: IGLTFRuntime): void {
+        public static LoadMaterial(index: number): Material {
             for (var extensionName in GLTFLoader.Extensions) {
                 var extension = GLTFLoader.Extensions[extensionName];
                 if (extension.enabled) {
-                    extension.postCreateRuntime(runtime);
-                }
-            }
-        }
-
-        public static LoadMaterialAsync(runtime: IGLTFRuntime, index: number, onSuccess: () => void, onError: () => void): void {
-            for (var extensionName in GLTFLoader.Extensions) {
-                var extension = GLTFLoader.Extensions[extensionName];
-                if (extension.enabled) {
-                    if (extension.loadMaterialAsync(runtime, index, onSuccess, onError)) {
-                        return;
+                    var babylonMaterial = extension.loadMaterial(index);
+                    if (babylonMaterial) {
+                        return babylonMaterial;
                     }
                 }
             }
 
-            GLTFLoader.LoadCoreMaterialAsync(runtime, index, onSuccess, onError);
+            return GLTFLoader.LoadCoreMaterial(index);
         }
     }
 }
