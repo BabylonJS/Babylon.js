@@ -22207,41 +22207,51 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.mesh.js.map
 
+
 var BABYLON;
 (function (BABYLON) {
-    var SubMesh = (function () {
-        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox) {
-            if (createBoundingBox === void 0) { createBoundingBox = true; }
-            this.materialIndex = materialIndex;
-            this.verticesStart = verticesStart;
-            this.verticesCount = verticesCount;
-            this.indexStart = indexStart;
-            this.indexCount = indexCount;
-            this._renderId = 0;
-            this._mesh = mesh;
-            this._renderingMesh = renderingMesh || mesh;
-            mesh.subMeshes.push(this);
-            this._trianglePlanes = [];
-            this._id = mesh.subMeshes.length - 1;
-            if (createBoundingBox) {
-                this.refreshBoundingInfo();
-                mesh.computeWorldMatrix(true);
-            }
+    var BaseSubMesh = (function () {
+        function BaseSubMesh() {
         }
-        Object.defineProperty(SubMesh.prototype, "effect", {
+        Object.defineProperty(BaseSubMesh.prototype, "effect", {
             get: function () {
                 return this._materialEffect;
             },
             enumerable: true,
             configurable: true
         });
-        SubMesh.prototype.setEffect = function (effect, defines) {
+        BaseSubMesh.prototype.setEffect = function (effect, defines) {
             if (this._materialEffect === effect) {
                 return;
             }
             this._materialDefines = defines;
             this._materialEffect = effect;
         };
+        return BaseSubMesh;
+    }());
+    BABYLON.BaseSubMesh = BaseSubMesh;
+    var SubMesh = (function (_super) {
+        __extends(SubMesh, _super);
+        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox) {
+            if (createBoundingBox === void 0) { createBoundingBox = true; }
+            var _this = _super.call(this) || this;
+            _this.materialIndex = materialIndex;
+            _this.verticesStart = verticesStart;
+            _this.verticesCount = verticesCount;
+            _this.indexStart = indexStart;
+            _this.indexCount = indexCount;
+            _this._renderId = 0;
+            _this._mesh = mesh;
+            _this._renderingMesh = renderingMesh || mesh;
+            mesh.subMeshes.push(_this);
+            _this._trianglePlanes = [];
+            _this._id = mesh.subMeshes.length - 1;
+            if (createBoundingBox) {
+                _this.refreshBoundingInfo();
+                mesh.computeWorldMatrix(true);
+            }
+            return _this;
+        }
         Object.defineProperty(SubMesh.prototype, "IsGlobal", {
             get: function () {
                 return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
@@ -22481,7 +22491,7 @@ var BABYLON;
             return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         };
         return SubMesh;
-    }());
+    }(BaseSubMesh));
     BABYLON.SubMesh = SubMesh;
 })(BABYLON || (BABYLON = {}));
 
@@ -24093,6 +24103,24 @@ var BABYLON;
                 }
             }
             return result;
+        };
+        // Force shader compilation including textures ready check
+        Material.prototype.forceCompilation = function (mesh, onCompiled) {
+            var _this = this;
+            var subMesh = new BABYLON.BaseSubMesh();
+            var scene = this.getScene();
+            var beforeRenderCallback = function () {
+                if (subMesh._materialDefines) {
+                    subMesh._materialDefines._renderId = -1;
+                }
+                if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                    scene.unregisterBeforeRender(beforeRenderCallback);
+                    if (onCompiled) {
+                        onCompiled(_this);
+                    }
+                }
+            };
+            scene.registerBeforeRender(beforeRenderCallback);
         };
         Material.prototype.markAsDirty = function (flag) {
             if (flag & Material.TextureDirtyFlag) {
