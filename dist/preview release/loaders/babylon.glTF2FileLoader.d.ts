@@ -214,7 +214,11 @@ declare module BABYLON.GLTF2 {
         translation?: number[];
         weights?: number[];
         index?: number;
-        babylonNode?: Node;
+        babylonMesh?: Mesh;
+        babylonSkinToBones?: {
+            [skin: number]: Bone;
+        };
+        babylonAnimationTargets?: Node[];
     }
     interface IGLTFSampler extends IGLTFChildRootProperty {
         magFilter?: ETextureMagFilter;
@@ -229,6 +233,7 @@ declare module BABYLON.GLTF2 {
         inverseBindMatrices?: number;
         skeleton?: number;
         joints: number[];
+        index?: number;
         babylonSkeleton?: Skeleton;
     }
     interface IGLTFTexture extends IGLTFChildRootProperty {
@@ -292,6 +297,7 @@ declare module BABYLON.GLTF2 {
         private _loadScene(nodeNames);
         private _loadSkin(node);
         private _updateBone(node, parentNode, skin, inverseBindMatrixData);
+        private _createBone(node, skin);
         private _loadMesh(node, parentNode);
         private _loadMeshData(node, mesh, babylonMesh);
         private _loadVertexDataAsync(primitive, onSuccess);

@@ -17839,6 +17839,10 @@ var BABYLON;
             }
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                // for VR cameras
+                if (listeningCamera.rigCameras) {
+                    listeningCamera = listeningCamera.rigCameras[0];
+                }
                 var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
                 var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();

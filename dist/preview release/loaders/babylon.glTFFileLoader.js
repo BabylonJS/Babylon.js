@@ -2472,8 +2472,8 @@ var BABYLON;
                     if (_this._gltf.nodes) {
                         for (var i = 0; i < _this._gltf.nodes.length; i++) {
                             var node = _this._gltf.nodes[i];
-                            if (node.babylonNode instanceof BABYLON.AbstractMesh) {
-                                meshes.push(node.babylonNode);
+                            if (node.babylonMesh) {
+                                meshes.push(node.babylonMesh);
                             }
                         }
                     }
@@ -2539,8 +2539,8 @@ var BABYLON;
                 var nodes = this._gltf.nodes;
                 for (var i = 0; i < nodes.length; i++) {
                     var node = nodes[i];
-                    if (node.babylonNode instanceof BABYLON.Mesh) {
-                        node.babylonNode.isVisible = true;
+                    if (node.babylonMesh) {
+                        node.babylonMesh.isVisible = true;
                     }
                 }
             };
@@ -2584,17 +2584,13 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadSkin = function (node) {
                 var _this = this;
-                if (node.babylonNode) {
-                    return false;
-                }
                 if (node.skin !== undefined) {
                     var skin = this._gltf.skins[node.skin];
                     var skeletonId = "skeleton" + node.skin;
                     skin.babylonSkeleton = new BABYLON.Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+                    skin.index = node.skin;
                     for (var i = 0; i < skin.joints.length; i++) {
-                        var jointIndex = skin.joints[i];
-                        var jointNode = this._gltf.nodes[jointIndex];
-                        jointNode.babylonNode = new BABYLON.Bone(jointNode.name || "bone" + jointIndex, skin.babylonSkeleton);
+                        this._createBone(this._gltf.nodes[skin.joints[i]], skin);
                     }
                     if (skin.skeleton === undefined) {
                         // TODO: handle when skeleton is not defined
@@ -2614,30 +2610,28 @@ var BABYLON;
             GLTFLoader.prototype._updateBone = function (node, parentNode, skin, inverseBindMatrixData) {
                 var jointIndex = skin.joints.indexOf(node.index);
                 if (jointIndex === -1) {
-                    // TODO: handle non-joint in between two joints
-                    throw new Error("Not implemented");
+                    this._createBone(node, skin);
                 }
-                var babylonBone = node.babylonNode;
+                var babylonBone = node.babylonSkinToBones[skin.index];
                 // TODO: explain the math
-                var matrix = BABYLON.Matrix.FromArray(inverseBindMatrixData, jointIndex * 16);
+                var matrix = jointIndex === -1 ? BABYLON.Matrix.Identity() : BABYLON.Matrix.FromArray(inverseBindMatrixData, jointIndex * 16);
                 matrix.invertToRef(matrix);
                 if (parentNode) {
-                    babylonBone.setParent(parentNode.babylonNode, false);
+                    babylonBone.setParent(parentNode.babylonSkinToBones[skin.index], false);
                     matrix.multiplyToRef(babylonBone.getParent().getInvertedAbsoluteTransform(), matrix);
                 }
                 babylonBone.updateMatrix(matrix);
                 return true;
             };
+            GLTFLoader.prototype._createBone = function (node, skin) {
+                var babylonBone = new BABYLON.Bone(node.name || "bone" + node.index, skin.babylonSkeleton);
+                node.babylonSkinToBones = node.babylonSkinToBones || {};
+                node.babylonSkinToBones[skin.index] = babylonBone;
+                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+                node.babylonAnimationTargets.push(babylonBone);
+                return babylonBone;
+            };
             GLTFLoader.prototype._loadMesh = function (node, parentNode) {
-                if (node.babylonNode) {
-                    if (node.babylonNode instanceof BABYLON.Bone) {
-                        if (node.mesh !== undefined) {
-                            // TODO: handle mesh attached to bone
-                            throw new Error("Not implemented");
-                        }
-                    }
-                    return false;
-                }
                 var babylonMesh = new BABYLON.Mesh(node.name || "mesh" + node.index, this._babylonScene);
                 babylonMesh.isVisible = false;
                 this._loadTransform(node, babylonMesh);
@@ -2645,8 +2639,10 @@ var BABYLON;
                     var mesh = this._gltf.meshes[node.mesh];
                     this._loadMeshData(node, mesh, babylonMesh);
                 }
-                babylonMesh.parent = parentNode ? parentNode.babylonNode : null;
-                node.babylonNode = babylonMesh;
+                babylonMesh.parent = parentNode ? parentNode.babylonMesh : null;
+                node.babylonMesh = babylonMesh;
+                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+                node.babylonAnimationTargets.push(node.babylonMesh);
                 if (node.skin !== undefined) {
                     var skin = this._gltf.skins[node.skin];
                     babylonMesh.skeleton = skin.babylonSkeleton;
@@ -2883,7 +2879,7 @@ var BABYLON;
                 var channel = animation.channels[channelIndex];
                 var samplerIndex = channel.sampler;
                 var sampler = animation.samplers[samplerIndex];
-                var targetNode = this._gltf.nodes[channel.target.node].babylonNode;
+                var targetNode = this._gltf.nodes[channel.target.node];
                 if (!targetNode) {
                     BABYLON.Tools.Warn("Animation channel target node (" + channel.target.node + ") does not exist");
                     return;
@@ -2928,7 +2924,7 @@ var BABYLON;
                             return value;
                         },
                         "influence": function () {
-                            var numTargets = targetNode.morphTargetManager.numTargets;
+                            var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
                             var value = new Array(numTargets);
                             for (var i = 0; i < numTargets; i++) {
                                 value[i] = outputData[outputBufferOffset++];
@@ -2954,9 +2950,9 @@ var BABYLON;
                     }
                     animation.targets = animation.targets || [];
                     if (targetPath === "influence") {
-                        var targetMesh = targetNode;
-                        for (var targetIndex = 0; targetIndex < targetMesh.morphTargetManager.numTargets; targetIndex++) {
-                            var morphTarget = targetMesh.morphTargetManager.getTarget(targetIndex);
+                        var morphTargetManager = targetNode.babylonMesh.morphTargetManager;
+                        for (var targetIndex = 0; targetIndex < morphTargetManager.numTargets; targetIndex++) {
+                            var morphTarget = morphTargetManager.getTarget(targetIndex);
                             var animationName = (animation.name || "anim" + animationIndex) + "_" + targetIndex;
                             var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                             babylonAnimation.setKeys(keys.map(function (key) { return ({
@@ -2973,8 +2969,11 @@ var BABYLON;
                         var animationName = animation.name || "anim" + animationIndex;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
-                        targetNode.animations.push(babylonAnimation);
-                        animation.targets.push(targetNode);
+                        for (var i = 0; i < targetNode.babylonAnimationTargets.length; i++) {
+                            var target = targetNode.babylonAnimationTargets[i];
+                            target.animations.push(babylonAnimation.clone());
+                            animation.targets.push(target);
+                        }
                     }
                 };
                 this._loadAccessorAsync(this._gltf.accessors[sampler.input], function (data) {
