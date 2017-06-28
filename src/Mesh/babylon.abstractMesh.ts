@@ -784,7 +784,39 @@
             }
             return this;
         }
+        
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
+         * The passed axis is also normalized.  
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        public rotateAround(point: BABYLON.Vector3, axis: BABYLON.Vector3, amount: number): BABYLON.AbstractMesh {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation = BABYLON.Vector3.Zero();
+            }
+            let translation: BABYLON.Vector3 = point.subtract(this.getAbsolutePosition());
+            let mTranslate: BABYLON.Matrix = BABYLON.Matrix.Translation(translation.x, translation.y, translation.z);
+            let mTranslateInvert: BABYLON.Matrix = mTranslate.clone();
+            mTranslateInvert.invert();
+            let mRotation: BABYLON.Matrix = BABYLON.Matrix.RotationAxis(axis, amount);
+            let transform: BABYLON.Matrix = mTranslateInvert.multiply(mRotation).multiply(mTranslate);
 
+            let t = BABYLON.Vector3.Zero();
+            let r = BABYLON.Quaternion.Identity();
+            let s = BABYLON.Vector3.One();
+
+            transform.decompose(s, r, t);
+
+            this.position.addInPlace(t);
+            this.rotationQuaternion.multiplyInPlace(r);
+
+            return this;
+         }
+        
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.  
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
