@@ -271,7 +271,6 @@ module BABYLON.GLTF2 {
 
         private _loadMeshData(node: IGLTFNode, mesh: IGLTFMesh, babylonMesh: Mesh): void {
             babylonMesh.name = mesh.name || babylonMesh.name;
-            babylonMesh.subMeshes = [];
 
             var multiMaterial = new MultiMaterial(babylonMesh.name, this._babylonScene);
             babylonMesh.material = multiMaterial;
@@ -312,7 +311,9 @@ module BABYLON.GLTF2 {
                     if (++primitivesLoaded === numPrimitives) {
                         geometry.setAllVerticesData(vertexData, false);
 
-                        // Sub meshes must be created after setting vertex data because of mesh._createGlobalSubMesh.
+                        // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
+                        // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
+                        babylonMesh.subMeshes = [];
                         for (var i = 0; i < subMeshInfos.length; i++) {
                             var info = subMeshInfos[i];
                             new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh);
