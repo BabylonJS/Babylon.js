@@ -108,16 +108,11 @@ module BABYLON.GLTF2 {
         targets?: any[];
     }
 
-    export interface IGLTFAssetProfile extends IGLTFProperty {
-        api?: string;
-        version?: string;
-    }
-
     export interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
         generator?: string;
-        profile?: IGLTFAssetProfile;
         version: string;
+        minVersion?: string;
     }
 
     export interface IGLTFBuffer extends IGLTFChildRootProperty {
@@ -189,6 +184,7 @@ module BABYLON.GLTF2 {
         doubleSided?: boolean;
 
         // Runtime values
+        index?: number;
         babylonMaterial?: PBRMaterial;
     }
 
