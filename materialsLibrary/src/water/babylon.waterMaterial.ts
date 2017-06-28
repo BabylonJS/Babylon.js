@@ -548,6 +548,16 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._bumpTexture) {
+                activeTextures.push(this._bumpTexture);
+            }
+
+            return activeTextures;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
