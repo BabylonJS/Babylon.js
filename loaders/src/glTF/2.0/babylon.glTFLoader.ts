@@ -169,13 +169,35 @@ module BABYLON.GLTF2 {
         }
 
         private _loadScene(nodeNames: any): void {
-            nodeNames = (nodeNames === "") ? null : nodeNames;
-            nodeNames = (nodeNames instanceof Array) ? nodeNames : [nodeNames];
-
             var scene = this._gltf.scenes[this._gltf.scene || 0];
+            var nodeIndices = scene.nodes;
 
-            this._traverseScene(nodeNames, scene, node => this._loadSkin(node));
-            this._traverseScene(nodeNames, scene, (node, parentNode) => this._loadMesh(node, parentNode));
+            this._traverseNodes(nodeIndices, (node, index, parentNode) => {
+                node.index = index;
+                node.parent = parentNode;
+                return true;
+            });
+
+            if (nodeNames) {
+                if (!(nodeNames instanceof Array)) {
+                    nodeNames = [nodeNames];
+                }
+
+                var filteredNodeIndices = new Array<number>();
+                this._traverseNodes(nodeIndices, node => {
+                    if (nodeNames.indexOf(node.name) === -1) {
+                        return true;
+                    }
+
+                    filteredNodeIndices.push(node.index);
+                    return false;
+                });
+
+                nodeIndices = filteredNodeIndices;
+            }
+
+            this._traverseNodes(nodeIndices, node => this._loadSkin(node));
+            this._traverseNodes(nodeIndices, node => this._loadMesh(node));
         }
 
         private _loadSkin(node: IGLTFNode): boolean {
@@ -201,7 +223,7 @@ module BABYLON.GLTF2 {
 
                 var accessor = this._gltf.accessors[skin.inverseBindMatrices];
                 this._loadAccessorAsync(accessor, data => {
-                    this._traverseNode(null, skin.skeleton, (node, parent) => this._updateBone(node, parent, skin, <Float32Array>data));
+                    this._traverseNode(skin.skeleton, (node, index, parent) => this._updateBone(node, parent, skin, <Float32Array>data));
                 });
             }
 
@@ -240,7 +262,7 @@ module BABYLON.GLTF2 {
             return babylonBone;
         }
 
-        private _loadMesh(node: IGLTFNode, parentNode: IGLTFNode): boolean {
+        private _loadMesh(node: IGLTFNode): boolean {
             var babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
             babylonMesh.isVisible = false;
 
@@ -251,7 +273,7 @@ module BABYLON.GLTF2 {
                 this._loadMeshData(node, mesh, babylonMesh);
             }
 
-            babylonMesh.parent = parentNode ? parentNode.babylonMesh : null;
+            babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
             node.babylonMesh = babylonMesh;
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
@@ -470,39 +492,22 @@ module BABYLON.GLTF2 {
             babylonMesh.scaling = scaling;
         }
 
-        private _traverseScene(nodeNames: string[], scene: IGLTFScene, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean): void {
-            var nodes = scene.nodes;
-
-            if (nodes) {
-                for (var i = 0; i < nodes.length; i++) {
-                    this._traverseNode(nodeNames, nodes[i], action);
-                }
+        private _traverseNodes(indices: number[], action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
+            for (var i = 0; i < indices.length; i++) {
+                this._traverseNode(indices[i], action, parentNode);
             }
         }
 
-        private _traverseNode(nodeNames: string[], index: number, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
+        private _traverseNode(index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
             var node = this._gltf.nodes[index];
 
-            if (nodeNames) {
-                if (nodeNames.indexOf(node.name)) {
-                    // load all children
-                    nodeNames = null;
-                }
-                else {
-                    // skip this node tree
-                    return;
-                }
-            }
-
-            node.index = index;
-
-            if (!action(node, parentNode)) {
+            if (!action(node, index, parentNode)) {
                 return;
             }
 
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {
-                    this._traverseNode(nodeNames, node.children[i], action, node);
+                    this._traverseNode(node.children[i], action, node);
                 }
             }
         }
