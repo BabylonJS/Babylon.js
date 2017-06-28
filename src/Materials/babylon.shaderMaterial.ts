@@ -356,6 +356,23 @@
             this._afterBind(mesh);
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            for (var name in this._textures) {
+                activeTextures.push(this._textures[name]);
+            }
+
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    activeTextures.push(array[index]);
+                }
+            }
+
+            return activeTextures;
+        }
+
         public clone(name: string): ShaderMaterial {
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
 
