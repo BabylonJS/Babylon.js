@@ -105,7 +105,7 @@
      * For more information, please refer to the documentation : 
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    export abstract class PBRBaseMaterial extends BABYLON.PushMaterial {
+    export abstract class PBRBaseMaterial extends PushMaterial {
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
