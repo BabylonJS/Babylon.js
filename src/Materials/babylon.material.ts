@@ -394,7 +394,7 @@
             return true;
         }
 
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
             return false;            
         }
 
@@ -482,6 +482,10 @@
             }
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            return [];
+        }
+
         public clone(name: string): Material {
             return null;
         }
@@ -500,6 +504,28 @@
             return result;
         }
 
+        // Force shader compilation including textures ready check
+        public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void): void {
+            var subMesh = new BaseSubMesh();
+            var scene = this.getScene();
+
+            var beforeRenderCallback = () => {
+                if (subMesh._materialDefines) {
+                    subMesh._materialDefines._renderId = -1;
+                }
+
+                if (this.isReadyForSubMesh(mesh, subMesh)) {
+                    scene.unregisterBeforeRender(beforeRenderCallback);
+
+                    if (onCompiled) {
+                        onCompiled(this);
+                    }
+                }
+            };
+
+            scene.registerBeforeRender(beforeRenderCallback);
+        }
+       
         public markAsDirty(flag: number): void {
             if (flag & Material.TextureDirtyFlag) {
                 this._markAllSubMeshesAsTexturesDirty();

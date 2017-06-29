@@ -92,6 +92,7 @@ declare module BABYLON {
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;

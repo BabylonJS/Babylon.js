@@ -247,6 +247,13 @@ var BABYLON;
             }
             return results;
         };
+        NormalMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+            return activeTextures;
+        };
         NormalMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();

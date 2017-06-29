@@ -1,5 +1,22 @@
 ﻿module BABYLON {
-    export class SubMesh implements ICullable {
+    export class BaseSubMesh {
+        public _materialDefines: MaterialDefines;
+        public _materialEffect: Effect;
+
+        public get effect(): Effect {
+            return this._materialEffect;
+        }       
+
+        public setEffect(effect: Effect, defines?: MaterialDefines) {
+            if (this._materialEffect === effect) {
+                return;
+            }
+            this._materialDefines = defines;
+            this._materialEffect = effect;
+        }         
+    }
+
+    export class SubMesh extends BaseSubMesh implements ICullable {
         public linesIndexCount: number;
 
         private _mesh: AbstractMesh;
@@ -15,23 +32,10 @@
         public _distanceToCamera: number;
         public _id: number;
 
-        public _materialDefines: MaterialDefines;
-        public _materialEffect: Effect;
         private _currentMaterial: Material;
 
-        public get effect(): Effect {
-            return this._materialEffect;
-        }
-
-        public setEffect(effect: Effect, defines?: MaterialDefines) {
-            if (this._materialEffect === effect) {
-                return;
-            }
-            this._materialDefines = defines;
-            this._materialEffect = effect;
-        }
-
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+            super();
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;
             mesh.subMeshes.push(this);

@@ -271,6 +271,13 @@ var BABYLON;
             }
             return results;
         };
+        LavaMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+            return activeTextures;
+        };
         LavaMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();

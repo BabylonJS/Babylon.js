@@ -3059,6 +3059,10 @@
 
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                // for VR cameras
+                if (listeningCamera.rigCameras) {
+                    listeningCamera = listeningCamera.rigCameras[0];
+                }
                 var mat = Matrix.Invert(listeningCamera.getViewMatrix());
                 var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
