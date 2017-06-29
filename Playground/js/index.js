@@ -92,6 +92,7 @@
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
+                        xhr.onreadystatechange = null;
                         blockEditorChange = true;
                         jsEditor.setValue(xhr.responseText);
                         jsEditor.setPosition({ lineNumber: 0, column: 0 });
@@ -142,8 +143,8 @@
                                 a.innerHTML = (index + 1) + " - " + scripts[index];
                                 a.scriptLinkIndex = index + 1;
                                 a.onclick = onScriptClick;
-                                option.scriptLinkIndex = index + 1;
-                                option.onclick = onScriptClick;
+                                // option.scriptLinkIndex = index + 1;
+                                // option.onclick = onScriptClick;
 
                                 option.appendChild(a);
 

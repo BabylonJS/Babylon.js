@@ -5626,6 +5626,7 @@ declare module BABYLON {
         bindViewProjection(effect: Effect): void;
         protected _afterBind(mesh: Mesh): void;
         unbind(): void;
+        getActiveTextures(): BaseTexture[];
         clone(name: string): Material;
         getBindedMeshes(): AbstractMesh[];
         forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void): void;
@@ -5672,6 +5673,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         private _hookArray(array);
         getSubMaterial(index: any): Material;
+        getActiveTextures(): BaseTexture[];
         getClassName(): string;
         isReady(mesh?: AbstractMesh): boolean;
         clone(name: string, cloneChildren?: boolean): MultiMaterial;
@@ -5733,6 +5735,7 @@ declare module BABYLON {
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         bindOnlyWorldMatrix(world: Matrix): void;
         bind(world: Matrix, mesh?: Mesh): void;
+        getActiveTextures(): BaseTexture[];
         clone(name: string): ShaderMaterial;
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
         serialize(): any;
@@ -5921,6 +5924,7 @@ declare module BABYLON {
         unbind(): void;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
         clone(name: string): StandardMaterial;
         serialize(): any;
@@ -12884,36 +12888,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -13174,6 +13148,36 @@ declare module BABYLON {
          * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -15240,7 +15244,7 @@ declare module BABYLON {
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    abstract class PBRBaseMaterial extends BABYLON.PushMaterial {
+    abstract class PBRBaseMaterial extends PushMaterial {
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
          * This impacts both the direct diffuse and specular highlights.
@@ -15840,6 +15844,7 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene);
         getClassName(): string;
+        getActiveTextures(): BaseTexture[];
         clone(name: string): PBRMaterial;
         serialize(): any;
         static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
@@ -15893,6 +15898,10 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
          * Serialize the material to a parsable JSON object.
          */
         serialize(): any;
@@ -15943,6 +15952,10 @@ declare module BABYLON {
          * Return the currrent class name of the material.
          */
         getClassName(): string;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
         /**
          * Serialize the material to a parsable JSON object.
          */
@@ -16004,6 +16017,7 @@ declare module BABYLON {
         releaseInternalTexture(): void;
         dispose(): void;
         serialize(): any;
+        static WhenAllReady(textures: BaseTexture[], onLoad: () => void): void;
     }
 }
 
@@ -16510,7 +16524,7 @@ declare module BABYLON {
         protected _format: number;
         private _delayedOnLoad;
         private _delayedOnError;
-        private _onLoadObservarble;
+        private _onLoadObservable;
         protected _isBlocking: boolean;
         isBlocking: boolean;
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, deleteBuffer?: boolean, format?: number);
@@ -16521,7 +16535,7 @@ declare module BABYLON {
         getTextureMatrix(): Matrix;
         getReflectionTextureMatrix(): Matrix;
         clone(): Texture;
-        readonly onLoadObservable: Observable<boolean>;
+        readonly onLoadObservable: Observable<Texture>;
         static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture;
         static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;

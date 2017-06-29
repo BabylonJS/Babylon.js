@@ -285,6 +285,16 @@ var BABYLON;
             }
             return results;
         };
+        FurMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+            if (this._heightTexture) {
+                activeTextures.push(this._heightTexture);
+            }
+            return activeTextures;
+        };
         FurMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();

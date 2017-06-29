@@ -259,6 +259,9 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    /**
+     * Function that add gui objects properties to the variable PROPERTIES
+     */
     function loadGUIProperties(): void;
 }
 

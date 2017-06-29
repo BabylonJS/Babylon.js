@@ -9,6 +9,7 @@ var INSPECTOR;
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
+            //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
             INSPECTOR.loadGUIProperties();
             //get Tabbar initialTab
             this._initialTab = initialTab;
@@ -710,6 +711,9 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
+    /**
+     * Function that add gui objects properties to the variable PROPERTIES
+     */
     function loadGUIProperties() {
         var PROPERTIES_GUI = {
             'ValueAndUnit': {

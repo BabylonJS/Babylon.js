@@ -18,6 +18,7 @@ declare module BABYLON {
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): SimpleMaterial;
         serialize(): any;

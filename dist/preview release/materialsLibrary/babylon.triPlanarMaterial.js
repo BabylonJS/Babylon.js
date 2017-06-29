@@ -251,6 +251,28 @@ var BABYLON;
             }
             return results;
         };
+        TriPlanarMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._diffuseTextureX) {
+                activeTextures.push(this._diffuseTextureX);
+            }
+            if (this._diffuseTextureY) {
+                activeTextures.push(this._diffuseTextureY);
+            }
+            if (this._diffuseTextureZ) {
+                activeTextures.push(this._diffuseTextureZ);
+            }
+            if (this._normalTextureX) {
+                activeTextures.push(this._normalTextureX);
+            }
+            if (this._normalTextureY) {
+                activeTextures.push(this._normalTextureY);
+            }
+            if (this._normalTextureZ) {
+                activeTextures.push(this._normalTextureZ);
+            }
+            return activeTextures;
+        };
         TriPlanarMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.mixTexture) {
                 this.mixTexture.dispose();
