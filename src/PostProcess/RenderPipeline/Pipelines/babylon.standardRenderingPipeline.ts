@@ -797,45 +797,64 @@
             for (var i = 0; i < this._cameras.length; i++) {
                 var camera = this._cameras[i];
 
-                if (this.originalPostProcess) { this.originalPostProcess.dispose(camera); this.originalPostProcess = null; }
+                if (this.originalPostProcess) { this.originalPostProcess.dispose(camera); }
 
-                if (this.downSampleX4PostProcess) { this.downSampleX4PostProcess.dispose(camera); this.downSampleX4PostProcess = null; }
-                if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); this.brightPassPostProcess = null; }
-                if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); this.textureAdderPostProcess = null; }
-                if (this.textureAdderFinalPostProcess) { this.textureAdderFinalPostProcess.dispose(camera); this.textureAdderFinalPostProcess = null; }
+                if (this.downSampleX4PostProcess) { this.downSampleX4PostProcess.dispose(camera); }
+                if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); }
+                if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); }
+                if (this.textureAdderFinalPostProcess) { this.textureAdderFinalPostProcess.dispose(camera); }
                 
-                if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); this.volumetricLightPostProcess = null; }
-                if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); this.volumetricLightSmoothXPostProcess = null; }
-                if (this.volumetricLightSmoothYPostProcess) { this.volumetricLightSmoothYPostProcess.dispose(camera); this.volumetricLightSmoothYPostProcess = null; }
-                if (this.volumetricLightMergePostProces) { this.volumetricLightMergePostProces.dispose(camera); this.volumetricLightMergePostProces = null; }
-                if (this.volumetricLightFinalPostProcess) { this.volumetricLightFinalPostProcess.dispose(camera); this.volumetricLightFinalPostProcess = null; }
+                if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); }
+                if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); }
+                if (this.volumetricLightSmoothYPostProcess) { this.volumetricLightSmoothYPostProcess.dispose(camera); }
+                if (this.volumetricLightMergePostProces) { this.volumetricLightMergePostProces.dispose(camera); }
+                if (this.volumetricLightFinalPostProcess) { this.volumetricLightFinalPostProcess.dispose(camera); }
             
-                if (this.lensFlarePostProcess) { this.lensFlarePostProcess.dispose(camera); this.lensFlarePostProcess = null; }
-                if (this.lensFlareComposePostProcess) { this.lensFlareComposePostProcess.dispose(camera); this.lensFlareComposePostProcess = null; }
+                if (this.lensFlarePostProcess) { this.lensFlarePostProcess.dispose(camera); }
+                if (this.lensFlareComposePostProcess) { this.lensFlareComposePostProcess.dispose(camera); }
 
                 for (var j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
                     this.luminanceDownSamplePostProcesses[j].dispose(camera);
                 }
-                this.luminanceDownSamplePostProcesses = [];
 
-                if (this.luminancePostProcess) { this.luminancePostProcess.dispose(camera); this.luminancePostProcess = null; }
-                if (this.hdrPostProcess) { this.hdrPostProcess.dispose(camera); this.hdrPostProcess = null; }
-                if (this.hdrFinalPostProcess) { this.hdrFinalPostProcess.dispose(camera); this.hdrFinalPostProcess = null; }
+                if (this.luminancePostProcess) { this.luminancePostProcess.dispose(camera); }
+                if (this.hdrPostProcess) { this.hdrPostProcess.dispose(camera); }
+                if (this.hdrFinalPostProcess) { this.hdrFinalPostProcess.dispose(camera); }
             
-                if (this.depthOfFieldPostProcess) { this.depthOfFieldPostProcess.dispose(camera); this.depthOfFieldPostProcess = null; }
+                if (this.depthOfFieldPostProcess) { this.depthOfFieldPostProcess.dispose(camera); }
 
-                if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); this.motionBlurPostProcess = null; }
+                if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }
 
                 for (var j = 0; j < this.gaussianBlurHPostProcesses.length; j++) {
                     this.gaussianBlurHPostProcesses[j].dispose(camera);
                 }
-                this.gaussianBlurHPostProcesses = [];
 
                 for (var j = 0; j < this.gaussianBlurVPostProcesses.length; j++) {
                     this.gaussianBlurVPostProcesses[j].dispose(camera);
                 }
-                this.gaussianBlurVPostProcesses = [];
             }
+
+            this.originalPostProcess = null;
+            this.downSampleX4PostProcess = null;
+            this.brightPassPostProcess = null;
+            this.textureAdderPostProcess = null;
+            this.textureAdderFinalPostProcess = null;
+            this.volumetricLightPostProcess = null;
+            this.volumetricLightSmoothXPostProcess = null;
+            this.volumetricLightSmoothYPostProcess = null;
+            this.volumetricLightMergePostProces = null;
+            this.volumetricLightFinalPostProcess = null;
+            this.lensFlarePostProcess = null;
+            this.lensFlareComposePostProcess = null;
+            this.luminancePostProcess = null;
+            this.hdrPostProcess = null;
+            this.hdrFinalPostProcess = null;
+            this.depthOfFieldPostProcess = null;
+            this.motionBlurPostProcess = null;
+
+            this.luminanceDownSamplePostProcesses = [];
+            this.gaussianBlurHPostProcesses = [];
+            this.gaussianBlurVPostProcesses = [];
         }
 
         // Dispose
