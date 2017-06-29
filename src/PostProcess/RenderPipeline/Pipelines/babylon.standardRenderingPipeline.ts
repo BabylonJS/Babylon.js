@@ -102,7 +102,6 @@
         private _currentDepthOfFieldSource: PostProcess = null;
         private _basePostProcess: PostProcess;
 
-        private _currentHDRSource: PostProcess = null;
         private _hdrCurrentLuminance: number = 1.0;
 
         private _floatTextureType: number;
@@ -278,6 +277,15 @@
 
             this._currentDepthOfFieldSource = this.originalPostProcess;
 
+            if (this._vlsEnabled) {
+                // Create volumetric light
+                this._createVolumetricLightPostProcess(scene, ratio);
+        
+                // Create volumetric light final post-process
+                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
+            }
+
             if (this._bloomEnabled) {
                 // Create down sample X4 post-process
                 this._createDownSampleX4PostProcess(scene, ratio / 2);
@@ -297,15 +305,6 @@
                 // Create depth-of-field source post-process
                 this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBaseDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
-            }
-        
-            if (this._vlsEnabled) {
-                // Create volumetric light
-                this._createVolumetricLightPostProcess(scene, ratio);
-        
-                // Create volumetric light final post-process
-                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
-                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
             }
 
             if (this._lensFlareEnabled) {
@@ -457,13 +456,12 @@
         private _createTextureAdderPostProcess(scene: Scene, ratio: number): void {
             this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.textureAdderPostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("otherSampler", this.originalPostProcess);
+                effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
                 effect.setTexture("lensSampler", this.lensTexture);
 
                 effect.setFloat("exposure", this.exposure);
 
                 this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess;
-                this._currentHDRSource = this.textureAdderFinalPostProcess;
             };
 
             // Add to pipeline
@@ -537,10 +535,9 @@
             this.volumetricLightMergePostProces = new PostProcess("HDRVLSMerge", "standard", [], ["originalSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLSMERGE");
 
             this.volumetricLightMergePostProces.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("originalSampler", this._bloomEnabled ? this.textureAdderFinalPostProcess : this.originalPostProcess);
+                effect.setTextureFromPostProcess("originalSampler", this.originalPostProcess);
 
                 this._currentDepthOfFieldSource = this.volumetricLightFinalPostProcess;
-                this._currentHDRSource = this.volumetricLightFinalPostProcess;
             };
 
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSMerge", () => { return this.volumetricLightMergePostProces; }, true));
@@ -632,7 +629,7 @@
             var lastTime = 0;
 
             this.hdrPostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("textureAdderSampler", this._bloomEnabled ? this._currentHDRSource : this.originalPostProcess);
+                effect.setTextureFromPostProcess("textureAdderSampler", this._currentDepthOfFieldSource);
 
                 time += scene.getEngine().getDeltaTime();
 
@@ -730,7 +727,6 @@
                 effect.setMatrix("lensStarMatrix", lensStarMatrix);
 
                 this._currentDepthOfFieldSource = this.lensFlareFinalPostProcess;
-                this._currentHDRSource = this.lensFlareFinalPostProcess;
             };
         }
 
