@@ -185,7 +185,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index?: number;
-        babylonMaterial?: PBRMaterial;
+        babylonMaterial?: Material;
     }
 
     export interface IGLTFMeshPrimitive extends IGLTFProperty {
