@@ -4499,51 +4499,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
     class DirectionalLight extends ShadowLight {
         private _shadowFrustumSize;
         /**
@@ -5073,6 +5028,51 @@ declare module BABYLON {
          * Return the SpotLight.
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -8254,69 +8254,6 @@ declare module BABYLON {
         static Vector4: Vector4[];
         static Quaternion: Quaternion[];
         static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Float32Array | number[]): void;
-        getPositions(): Float32Array;
-        setNormals(data: Float32Array | number[]): void;
-        getNormals(): Float32Array;
-        setTangents(data: Float32Array | number[]): void;
-        getTangents(): Float32Array;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        constructor(scene?: Scene);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _onInfluenceChanged(needUpdate);
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -11666,6 +11603,69 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Float32Array | number[]): void;
+        getPositions(): Float32Array;
+        setNormals(data: Float32Array | number[]): void;
+        getNormals(): Float32Array;
+        setTangents(data: Float32Array | number[]): void;
+        getTangents(): Float32Array;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        constructor(scene?: Scene);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _onInfluenceChanged(needUpdate);
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
     class Particle {
         position: Vector3;
         direction: Vector3;
@@ -12982,17 +12982,21 @@ declare module BABYLON {
         private _scene;
         private _multiRenderTarget;
         private _effect;
+        private _ratio;
         private _viewMatrix;
         private _projectionMatrix;
         private _transformMatrix;
         private _worldViewProjection;
         private _cachedDefines;
+        private _enablePosition;
         renderList: Mesh[];
         readonly isSupported: boolean;
+        enablePosition: boolean;
         constructor(scene: Scene, ratio?: number);
         isReady(subMesh: SubMesh, useInstances: boolean): boolean;
         getGBuffer(): MultiRenderTarget;
         dispose(): void;
+        private _createRenderTargets();
     }
 }
 
@@ -17413,9 +17417,14 @@ declare module BABYLON {
         originalPostProcess: PostProcess;
         downSampleX4PostProcess: PostProcess;
         brightPassPostProcess: PostProcess;
-        gaussianBlurHPostProcesses: PostProcess[];
-        gaussianBlurVPostProcesses: PostProcess[];
+        blurHPostProcesses: PostProcess[];
+        blurVPostProcesses: PostProcess[];
         textureAdderPostProcess: PostProcess;
+        volumetricLightPostProcess: PostProcess;
+        volumetricLightSmoothXPostProcess: BlurPostProcess;
+        volumetricLightSmoothYPostProcess: BlurPostProcess;
+        volumetricLightMergePostProces: PostProcess;
+        volumetricLightFinalPostProcess: PostProcess;
         luminancePostProcess: PostProcess;
         luminanceDownSamplePostProcesses: PostProcess[];
         hdrPostProcess: PostProcess;
@@ -17429,11 +17438,12 @@ declare module BABYLON {
         brightThreshold: number;
         blurWidth: number;
         horizontalBlur: boolean;
-        gaussianCoefficient: number;
-        gaussianMean: number;
-        gaussianStandardDeviation: number;
         exposure: number;
         lensTexture: Texture;
+        volumetricLightCoefficient: number;
+        volumetricLightPower: number;
+        volumetricLightBlurScale: number;
+        sourceLight: SpotLight | DirectionalLight;
         hdrMinimumLuminance: number;
         hdrDecreaseRate: number;
         hdrIncreaseRate: number;
@@ -17452,21 +17462,26 @@ declare module BABYLON {
         * Private members
         */
         private _scene;
-        private _depthRenderer;
         private _currentDepthOfFieldSource;
-        private _currentHDRSource;
+        private _basePostProcess;
         private _hdrCurrentLuminance;
-        private _motionBlurSamples;
+        private _floatTextureType;
+        private _ratio;
         private _bloomEnabled;
         private _depthOfFieldEnabled;
+        private _vlsEnabled;
         private _lensFlareEnabled;
         private _hdrEnabled;
         private _motionBlurEnabled;
+        private _motionBlurSamples;
+        private _volumetricLightStepsCount;
         BloomEnabled: boolean;
         DepthOfFieldEnabled: boolean;
         LensFlareEnabled: boolean;
         HDREnabled: boolean;
+        VLSEnabled: boolean;
         MotionBlurEnabled: boolean;
+        volumetricLightStepsCount: number;
         motionBlurSamples: number;
         /**
          * @constructor
@@ -17477,17 +17492,24 @@ declare module BABYLON {
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess?: PostProcess, cameras?: Camera[]);
+        private _buildPipeline();
         private _createDownSampleX4PostProcess(scene, ratio);
         private _createBrightPassPostProcess(scene, ratio);
-        private _createGaussianBlurPostProcesses(scene, ratio, indice, blurWidthKey?);
+        private _createBlurPostProcesses(scene, ratio, indice, blurWidthKey?);
         private _createTextureAdderPostProcess(scene, ratio);
+        private _createVolumetricLightPostProcess(scene, ratio);
         private _createLuminancePostProcesses(scene, textureType);
         private _createHdrPostProcess(scene, ratio);
         private _createLensFlarePostProcess(scene, ratio);
         private _createDepthOfFieldPostProcess(scene, ratio);
         private _createMotionBlurPostProcess(scene, ratio);
+        private _getDepthTexture();
+        private _disposePostProcesses();
         dispose(): void;
         serialize(): any;
+        /**
+         * Static members
+         */
         static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline;
         static LuminanceSteps: number;
     }

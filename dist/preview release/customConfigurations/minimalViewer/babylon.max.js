@@ -17840,7 +17840,7 @@ var BABYLON;
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
                 // for VR cameras
-                if (listeningCamera.rigCameras) {
+                if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                     listeningCamera = listeningCamera.rigCameras[0];
                 }
                 var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
@@ -40239,37 +40239,37 @@ var BABYLON;
                 var camera = this._cameras[i];
                 if (this.pass) {
                     this.pass.dispose(camera);
-                    this.pass = null;
                 }
                 if (this.highlights) {
                     this.highlights.dispose(camera);
-                    this.highlights = null;
                 }
                 if (this.blurX) {
                     this.blurX.dispose(camera);
-                    this.blurX = null;
                 }
                 if (this.blurY) {
                     this.blurY.dispose(camera);
-                    this.blurY = null;
                 }
                 if (this.copyBack) {
                     this.copyBack.dispose(camera);
-                    this.copyBack = null;
                 }
                 if (this.imageProcessing) {
                     this.imageProcessing.dispose(camera);
-                    this.imageProcessing = null;
                 }
                 if (this.fxaa) {
                     this.fxaa.dispose(camera);
-                    this.fxaa = null;
                 }
                 if (this.finalMerge) {
                     this.finalMerge.dispose(camera);
-                    this.finalMerge = null;
                 }
             }
+            this.pass = null;
+            this.highlights = null;
+            this.blurX = null;
+            this.blurY = null;
+            this.copyBack = null;
+            this.imageProcessing = null;
+            this.fxaa = null;
+            this.finalMerge = null;
         };
         // Dispose
         DefaultRenderingPipeline.prototype.dispose = function () {
