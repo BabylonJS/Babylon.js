@@ -72,7 +72,8 @@
 - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
 - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
 - Fixed SPS particle initial status when used as updatable with a `positionFunction` in `addShape()` ([jerome](https://github.com/jbousquie))  
-- Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+- Fixed SPS particle access `start` index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+- Fixed SPS billboard mode when used with a parented camera ([jerome](https://github.com/jbousquie)) 
 
 ### API Documentation
 - File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
