@@ -615,15 +615,11 @@ declare module BABYLON.GLTF2 {
         samplers: IGLTFAnimationSampler[];
         targets?: any[];
     }
-    interface IGLTFAssetProfile extends IGLTFProperty {
-        api?: string;
-        version?: string;
-    }
     interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
         generator?: string;
-        profile?: IGLTFAssetProfile;
         version: string;
+        minVersion?: string;
     }
     interface IGLTFBuffer extends IGLTFChildRootProperty {
         uri?: string;
@@ -681,6 +677,7 @@ declare module BABYLON.GLTF2 {
         alphaMode?: string;
         alphaCutoff: number;
         doubleSided?: boolean;
+        index?: number;
         babylonMaterial?: PBRMaterial;
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
@@ -709,6 +706,7 @@ declare module BABYLON.GLTF2 {
         translation?: number[];
         weights?: number[];
         index?: number;
+        parent?: IGLTFNode;
         babylonMesh?: Mesh;
         babylonSkinToBones?: {
             [skin: number]: Bone;
@@ -767,24 +765,26 @@ declare module BABYLON.GLTF2 {
 declare module BABYLON.GLTF2 {
     class GLTFLoader implements IGLTFLoader {
         private _gltf;
-        private _pendingCount;
-        private _onLoaded;
         private _errors;
         private _babylonScene;
         private _rootUrl;
         private _defaultMaterial;
+        private _onSuccess;
+        private _onError;
+        private _renderReady;
+        private _renderPendingCount;
+        private _loaderPendingCount;
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        static LoadMaterial(index: number): IGLTFMaterial;
-        static LoadCoreMaterial(index: number): Material;
-        static LoadCommonMaterialProperties(material: IGLTFMaterial): void;
-        static LoadAlphaProperties(material: IGLTFMaterial): void;
-        static LoadTexture(textureInfo: IGLTFTextureInfo): Texture;
+        readonly gltf: IGLTF;
+        readonly babylonScene: Scene;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void;
         private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onError);
+        private _onRenderReady();
+        private _onLoaderComplete();
         private _loadData(data);
         private _showMeshes();
         private _startAnimations();
@@ -793,27 +793,30 @@ declare module BABYLON.GLTF2 {
         private _loadSkin(node);
         private _updateBone(node, parentNode, skin, inverseBindMatrixData);
         private _createBone(node, skin);
-        private _loadMesh(node, parentNode);
+        private _loadMesh(node);
         private _loadMeshData(node, mesh, babylonMesh);
         private _loadVertexDataAsync(primitive, onSuccess);
         private _createMorphTargets(node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsData(mesh, primitive, vertexData, babylonMesh);
         private _loadTransform(node, babylonMesh);
-        private _traverseScene(nodeNames, scene, action);
-        private _traverseNode(nodeNames, index, action, parentNode?);
+        private _traverseNodes(indices, action, parentNode?);
+        private _traverseNode(index, action, parentNode?);
         private _loadAnimations();
         private _loadAnimationChannel(animation, animationIndex, channelIndex);
         private _loadBufferAsync(index, onSuccess);
         private _loadBufferViewAsync(bufferView, byteOffset, byteLength, componentType, onSuccess);
         private _loadAccessorAsync(accessor, onSuccess);
-        private _addPendingData(data);
-        private _removePendingData(data);
+        addPendingData(data: any): void;
+        removePendingData(data: any): void;
+        addLoaderPendingData(data: any): void;
+        removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
-        private _loadMaterial(index);
-        private _loadCoreMaterial(index);
-        private _loadCommonMaterialProperties(material);
-        private _loadAlphaProperties(material);
-        private _loadTexture(textureInfo);
+        private _loadMaterialMetallicRoughnessProperties(material);
+        loadMaterial(index: number, assign: (material: Material) => void): void;
+        createPbrMaterial(material: IGLTFMaterial): void;
+        loadMaterialBaseProperties(material: IGLTFMaterial): void;
+        loadMaterialAlphaProperties(material: IGLTFMaterial): void;
+        loadTexture(textureInfo: IGLTFTextureInfo): Texture;
     }
 }
 
@@ -859,19 +862,28 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
-        private _name;
         enabled: boolean;
-        constructor(name: string);
-        readonly name: string;
-        protected loadMaterial(index: number): Material;
-        static LoadMaterial(index: number): Material;
+        readonly abstract name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        static _Extensions: GLTFLoaderExtension[];
+        static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        private static _ApplyExtensions(action);
     }
 }
 
 
-declare module BABYLON.GLTF2 {
-    class GLTFMaterialsPbrSpecularGlossinessExtension extends GLTFLoaderExtension {
-        constructor();
-        protected loadMaterial(index: number): Material;
+declare module BABYLON.GLTF2.Extensions {
+    class MSFTLOD extends GLTFLoaderExtension {
+        readonly name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        private loadMaterialLOD(loader, material, materialLODs, lod, assign);
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
+        readonly name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
     }
 }
