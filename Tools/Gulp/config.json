@@ -1410,6 +1410,7 @@
                 "files": [
                     "../../inspector/src/Inspector.ts",
                     "../../inspector/src/properties.ts",
+                    "../../inspector/src/properties_gui.ts",
                     "../../inspector/src/gui/BasicElement.ts",
                     "../../inspector/src/adapters/Adapter.ts",
                     "../../inspector/src/adapters/CameraAdapter.ts",

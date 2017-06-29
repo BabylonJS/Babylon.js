@@ -65,7 +65,7 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
-    const PROPERTIES: {
+    var PROPERTIES: {
         format: (obj: any) => any;
         'type_not_defined': {
             properties: any[];
@@ -99,62 +99,6 @@ declare module INSPECTOR {
             type: typeof BABYLON.Texture;
             properties: string[];
             format: (tex: BABYLON.Texture) => string;
-        };
-        'ValueAndUnit': {
-            properties: string[];
-            format: (valueAndUnit: any) => any;
-        };
-        'Control': {
-            properties: string[];
-            format: (control: any) => any;
-        };
-        'Button': {
-            properties: any[];
-            format: (button: any) => any;
-        };
-        'ColorPicker': {
-            properties: string[];
-            format: (colorPicker: any) => any;
-        };
-        'Checkbox': {
-            properties: string[];
-            format: (checkbox: any) => any;
-        };
-        'Ellipse': {
-            properties: string[];
-            format: (ellipse: any) => any;
-        };
-        'Image': {
-            properties: string[];
-            format: (image: any) => any;
-        };
-        'Line': {
-            properties: string[];
-            format: (line: any) => any;
-        };
-        'RadioButton': {
-            properties: string[];
-            format: (radioButton: any) => any;
-        };
-        'Rectangle': {
-            properties: string[];
-            format: (rectangle: any) => any;
-        };
-        'Slider': {
-            properties: string[];
-            format: (slider: any) => any;
-        };
-        'StackPanel': {
-            properties: string[];
-            format: (stackPanel: any) => any;
-        };
-        'TextBlock': {
-            properties: string[];
-            format: (textBlock: any) => any;
-        };
-        'Container': {
-            properties: string[];
-            format: (container: any) => any;
         };
         'MapTexture': {
             type: typeof BABYLON.MapTexture;
@@ -312,6 +256,10 @@ declare module INSPECTOR {
             type: typeof BABYLON.WorldSpaceCanvas2DNode;
         };
     };
+}
+
+declare module INSPECTOR {
+    function loadGUIProperties(): void;
 }
 
 declare module INSPECTOR {

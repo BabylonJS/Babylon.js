@@ -9,10 +9,7 @@ var INSPECTOR;
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
-            // Load the GUI library if it's not already done
-            if (!BABYLON.GUI) {
-                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", function () { });
-            }
+            INSPECTOR.loadGUIProperties();
             //get Tabbar initialTab
             this._initialTab = initialTab;
             //get parentElement of our Inspector
@@ -378,106 +375,6 @@ var INSPECTOR;
             ],
             format: function (tex) { return tex.name; }
         },
-        'ValueAndUnit': {
-            //type: BABYLON.GUI.ValueAndUnit,
-            properties: ['_value', 'unit'],
-            format: function (valueAndUnit) { return valueAndUnit; }
-        },
-        'Control': {
-            //type: BABYLON.GUI.Control,
-            properties: [
-                '_alpha',
-                '_fontFamily',
-                '_color',
-                '_scaleX',
-                '_scaleY',
-                '_rotation',
-                '_currentMeasure',
-                '_width',
-                '_height',
-                '_left',
-                '_top',
-                '_linkedMesh',
-                'isHitTestVisible',
-                'isPointerBlocker',
-            ],
-            format: function (control) { return control.name; }
-        },
-        'Button': {
-            //type: BABYLON.GUI.Button,
-            properties: [],
-            format: function (button) { return button.name; }
-        },
-        'ColorPicker': {
-            //type: BABYLON.GUI.ColorPicker,
-            properties: ['_value'],
-            format: function (colorPicker) { return colorPicker.name; }
-        },
-        'Checkbox': {
-            //type: BABYLON.GUI.Checkbox,
-            properties: ['_isChecked', '_background'],
-            format: function (checkbox) { return checkbox.name; }
-        },
-        'Ellipse': {
-            //type: BABYLON.GUI.Ellipse,
-            properties: ['_thickness'],
-            format: function (ellipse) { return ellipse.name; }
-        },
-        'Image': {
-            //type: BABYLON.GUI.Image,
-            properties: ['_imageWidth',
-                '_imageHeight',
-                '_loaded',
-                '_source',
-            ],
-            format: function (image) { return image.name; }
-        },
-        'Line': {
-            //type: BABYLON.GUI.Line,
-            properties: ['_lineWidth',
-                '_background',
-                '_x1',
-                '_y1',
-                '_x2',
-                '_y2',
-            ],
-            format: function (line) { return line.name; }
-        },
-        'RadioButton': {
-            //type: BABYLON.GUI.RadioButton,
-            properties: ['_isChecked', '_background'],
-            format: function (radioButton) { return radioButton.name; }
-        },
-        'Rectangle': {
-            //type: BABYLON.GUI.Rectangle,
-            properties: ['_thickness', '_cornerRadius'],
-            format: function (rectangle) { return rectangle.name; }
-        },
-        'Slider': {
-            //type: BABYLON.GUI.Slider,
-            properties: ['_minimum',
-                '_maximum',
-                '_value',
-                '_background',
-                '_borderColor',
-            ],
-            format: function (slider) { return slider.name; }
-        },
-        'StackPanel': {
-            //type: BABYLON.GUI.StackPanel,
-            properties: ['_isVertical'],
-            format: function (stackPanel) { return stackPanel.name; }
-        },
-        'TextBlock': {
-            //type: BABYLON.GUI.TextBlock,
-            properties: ['_text', '_textWrapping'],
-            format: function (textBlock) { return textBlock.name; }
-        },
-        'Container': {
-            //type: BABYLON.GUI.Container,
-            properties: ['_background'],
-            format: function (container) { return container.name; }
-        },
         'MapTexture': {
             type: BABYLON.MapTexture
         },
@@ -810,6 +707,122 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=properties.js.map
+
+var INSPECTOR;
+(function (INSPECTOR) {
+    function loadGUIProperties() {
+        var PROPERTIES_GUI = {
+            'ValueAndUnit': {
+                type: BABYLON.GUI.ValueAndUnit,
+                properties: ['_value', 'unit'],
+                format: function (valueAndUnit) { return valueAndUnit; }
+            },
+            'Control': {
+                type: BABYLON.GUI.Control,
+                properties: [
+                    '_alpha',
+                    '_fontFamily',
+                    '_color',
+                    '_scaleX',
+                    '_scaleY',
+                    '_rotation',
+                    '_currentMeasure',
+                    '_width',
+                    '_height',
+                    '_left',
+                    '_top',
+                    '_linkedMesh',
+                    'isHitTestVisible',
+                    'isPointerBlocker',
+                ],
+                format: function (control) { return control.name; }
+            },
+            'Button': {
+                type: BABYLON.GUI.Button,
+                properties: [],
+                format: function (button) { return button.name; }
+            },
+            'ColorPicker': {
+                type: BABYLON.GUI.ColorPicker,
+                properties: ['_value'],
+                format: function (colorPicker) { return colorPicker.name; }
+            },
+            'Checkbox': {
+                type: BABYLON.GUI.Checkbox,
+                properties: ['_isChecked', '_background'],
+                format: function (checkbox) { return checkbox.name; }
+            },
+            'Ellipse': {
+                type: BABYLON.GUI.Ellipse,
+                properties: ['_thickness'],
+                format: function (ellipse) { return ellipse.name; }
+            },
+            'Image': {
+                type: BABYLON.GUI.Image,
+                properties: [
+                    '_imageWidth',
+                    '_imageHeight',
+                    '_loaded',
+                    '_source',
+                ],
+                format: function (image) { return image.name; }
+            },
+            'Line': {
+                type: BABYLON.GUI.Line,
+                properties: ['_lineWidth',
+                    '_background',
+                    '_x1',
+                    '_y1',
+                    '_x2',
+                    '_y2',
+                ],
+                format: function (line) { return line.name; }
+            },
+            'RadioButton': {
+                type: BABYLON.GUI.RadioButton,
+                properties: ['_isChecked', '_background'],
+                format: function (radioButton) { return radioButton.name; }
+            },
+            'Rectangle': {
+                type: BABYLON.GUI.Rectangle,
+                properties: ['_thickness', '_cornerRadius'],
+                format: function (rectangle) { return rectangle.name; }
+            },
+            'Slider': {
+                type: BABYLON.GUI.Slider,
+                properties: [
+                    '_minimum',
+                    '_maximum',
+                    '_value',
+                    '_background',
+                    '_borderColor',
+                ],
+                format: function (slider) { return slider.name; }
+            },
+            'StackPanel': {
+                type: BABYLON.GUI.StackPanel,
+                properties: ['_isVertical'],
+                format: function (stackPanel) { return stackPanel.name; }
+            },
+            'TextBlock': {
+                type: BABYLON.GUI.TextBlock,
+                properties: ['_text', '_textWrapping'],
+                format: function (textBlock) { return textBlock.name; }
+            },
+            'Container': {
+                type: BABYLON.GUI.Container,
+                properties: ['_background'],
+                format: function (container) { return container.name; }
+            },
+        };
+        for (var prop in PROPERTIES_GUI) {
+            INSPECTOR.PROPERTIES[prop] = PROPERTIES_GUI[prop];
+        }
+    }
+    INSPECTOR.loadGUIProperties = loadGUIProperties;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=properties_gui.js.map
 
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -2196,8 +2209,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.CubeTextureElement = CubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=CubeTextureElement.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
