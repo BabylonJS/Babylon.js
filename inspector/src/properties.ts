@@ -60,7 +60,7 @@ module INSPECTOR {
             format: (tex: BABYLON.Texture) => { return tex.name }
         },
         'ValueAndUnit': {
-            //type: BABYLON.GUI.ValueAndUnit,
+            type: BABYLON.GUI.ValueAndUnit,
             properties: ['_value', 'unit'],
             format: (valueAndUnit: BABYLON.GUI.ValueAndUnit) => 
                 { return valueAndUnit }

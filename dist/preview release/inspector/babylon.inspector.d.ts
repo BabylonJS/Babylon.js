@@ -102,59 +102,59 @@ declare module INSPECTOR {
         };
         'ValueAndUnit': {
             properties: string[];
-            format: (valueAndUnit: BABYLON.GUI.ValueAndUnit) => BABYLON.GUI.ValueAndUnit;
+            format: (valueAndUnit: any) => any;
         };
         'Control': {
             properties: string[];
-            format: (control: BABYLON.GUI.Control) => string;
+            format: (control: any) => any;
         };
         'Button': {
             properties: any[];
-            format: (button: BABYLON.GUI.Button) => string;
+            format: (button: any) => any;
         };
         'ColorPicker': {
             properties: string[];
-            format: (colorPicker: BABYLON.GUI.ColorPicker) => string;
+            format: (colorPicker: any) => any;
         };
         'Checkbox': {
             properties: string[];
-            format: (checkbox: BABYLON.GUI.Checkbox) => string;
+            format: (checkbox: any) => any;
         };
         'Ellipse': {
             properties: string[];
-            format: (ellipse: BABYLON.GUI.Ellipse) => string;
+            format: (ellipse: any) => any;
         };
         'Image': {
             properties: string[];
-            format: (image: BABYLON.GUI.Image) => string;
+            format: (image: any) => any;
         };
         'Line': {
             properties: string[];
-            format: (line: BABYLON.GUI.Line) => string;
+            format: (line: any) => any;
         };
         'RadioButton': {
             properties: string[];
-            format: (radioButton: BABYLON.GUI.RadioButton) => string;
+            format: (radioButton: any) => any;
         };
         'Rectangle': {
             properties: string[];
-            format: (rectangle: BABYLON.GUI.Rectangle) => string;
+            format: (rectangle: any) => any;
         };
         'Slider': {
             properties: string[];
-            format: (slider: BABYLON.GUI.Slider) => string;
+            format: (slider: any) => any;
         };
         'StackPanel': {
             properties: string[];
-            format: (stackPanel: BABYLON.GUI.StackPanel) => string;
+            format: (stackPanel: any) => any;
         };
         'TextBlock': {
             properties: string[];
-            format: (textBlock: BABYLON.GUI.TextBlock) => string;
+            format: (textBlock: any) => any;
         };
         'Container': {
             properties: string[];
-            format: (container: BABYLON.GUI.Container) => string;
+            format: (container: any) => any;
         };
         'MapTexture': {
             type: typeof BABYLON.MapTexture;

@@ -42,6 +42,7 @@ module INSPECTOR {
 
             // Load the GUI library if it's not already done
             if (!BABYLON.GUI) {
+                console.log('erf');
                 BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => { });
             }
 
