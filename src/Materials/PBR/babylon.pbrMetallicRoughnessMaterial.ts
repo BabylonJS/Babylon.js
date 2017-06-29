@@ -69,6 +69,23 @@
         }
 
         /**
+         * Return the active textures of the material.
+         */
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this.baseTexture) {
+                activeTextures.push(this.baseTexture);
+            }
+
+            if (this.metallicRoughnessTexture) {
+                activeTextures.push(this.metallicRoughnessTexture);
+            }
+
+            return activeTextures;
+        }
+
+        /**
          * Serialize the material to a parsable JSON object.
          */
         public serialize(): any {

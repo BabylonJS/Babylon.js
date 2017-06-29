@@ -607,7 +607,7 @@
                 if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
                     this._quaternionToRotationMatrix();
                     this._rotMatrix.invertToRef(this._invertMatrix);
-                    this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
+                    this._camera.getDirectionToRef(this._axisZ, this._camDir);
                     Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
                     this._cam_axisZ.normalize();
                     // same for camera up vector extracted from the cam view matrix
@@ -760,9 +760,9 @@
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
-                        this._positions32[idx] = this._camera.position.x;
-                        this._positions32[idx + 1] = this._camera.position.y;
-                        this._positions32[idx + 2] = this._camera.position.z;
+                        this._positions32[idx] = this._camera.globalPosition.x;
+                        this._positions32[idx + 1] = this._camera.globalPosition.y;
+                        this._positions32[idx + 2] = this._camera.globalPosition.z;
                         this._normals32[idx] = 0.0;
                         this._normals32[idx + 1] = 0.0;
                         this._normals32[idx + 2] = 0.0;

@@ -15,6 +15,7 @@
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
         public POINTSIZE = false;
         public FOG = false;
@@ -82,7 +83,7 @@
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
         
-        public ALPHATESTVALUE = 0.4;
+        public ALPHATESTVALUE = 0.5;
         public LDROUTPUT = true;
 
         constructor() {
@@ -92,7 +93,7 @@
 
         public reset(): void {
             super.reset();
-            this.ALPHATESTVALUE = 0.4;
+            this.ALPHATESTVALUE = 0.5;
             this.PBR = true;
         }
     }
@@ -104,7 +105,7 @@
      * For more information, please refer to the documentation : 
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    export abstract class PBRBaseMaterial extends BABYLON.PushMaterial {
+    export abstract class PBRBaseMaterial extends PushMaterial {
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -790,7 +791,8 @@
                         defines.METALLICWORKFLOW = true;
                     }   
 
-                    defines.ALPHATESTVALUE = this._alphaCutOff;                 
+                    defines.ALPHATESTVALUE = this._alphaCutOff;
+                    defines.ALPHABLEND = this.needAlphaBlending();
                 }
             }
 

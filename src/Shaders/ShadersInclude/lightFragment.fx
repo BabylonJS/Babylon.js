@@ -4,13 +4,13 @@
     #else
 		#ifdef PBR
 			#ifdef SPOTLIGHT{X}
-				info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR90, NdotL);
+				info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, NdotL);
 			#endif
 			#ifdef HEMILIGHT{X}
-				info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, roughness, NdotV, specularEnvironmentR90, NdotL);
+				info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, NdotL);
 			#endif
 			#if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-				info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR90, NdotL);
+				info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, NdotL);
 			#endif
 		#else
 			#ifdef SPOTLIGHT{X}
@@ -57,6 +57,7 @@
 	#else
 		shadow = 1.;
 	#endif
+
 	#ifdef CUSTOMUSERLIGHTING
 		diffuseBase += computeCustomDiffuseLighting(info, diffuseBase, shadow);
 		#ifdef SPECULARTERM

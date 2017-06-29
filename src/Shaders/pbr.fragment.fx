@@ -161,7 +161,7 @@ void main(void) {
 
 #ifdef ALBEDO
 	vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
-	#ifdef ALPHAFROMALBEDO
+	#if defined(ALPHAFROMALBEDO) || defined(ALPHATEST)
 		alpha *= albedoTexture.a;
 	#endif
 
@@ -171,8 +171,13 @@ void main(void) {
 
 #ifndef LINKREFRACTIONTOTRANSPARENCY
 	#if defined(ALPHATEST) && defined(ALPHATESTVALUE)
-		if (alpha < ALPHATESTVALUE)
+		if (alpha <= ALPHATESTVALUE)
 			discard;
+			
+			#ifndef ALPHABLEND
+				// Prevent to blend with the canvas.
+				alpha = 1.0;
+			#endif
 	#endif
 #endif
 
@@ -264,13 +269,13 @@ void main(void) {
 #endif
 
 	// Compute N dot V.
-	float NdotV = max(0.00000000001, dot(normalW, viewDirectionW));
+	float NdotV = clamp(dot(normalW, viewDirectionW),0., 1.) + 0.00001;
 
 	// Adapt microSurface.
-	microSurface = clamp(microSurface, 0., 1.) * 0.98;
+	microSurface = clamp(microSurface, 0., 1.);
 
 	// Compute roughness.
-	float roughness = clamp(1. - microSurface, 0.000001, 1.0);
+	float roughness = 1. - microSurface;
 
 	#ifdef LIGHTMAP
   		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
@@ -518,7 +523,8 @@ void main(void) {
 	vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
 	vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb;
-	surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
+	surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor;
+	surfaceEmissiveColor *=  vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL
@@ -580,8 +586,6 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular + environmentRadiance + refr
 	finalColor.rgb = toneMaps(finalColor.rgb);
 #endif
 
-	finalColor.rgb = toGammaSpace(finalColor.rgb);
-
 #include<logDepthFragment>
 #include<fogFragment>(color, finalColor)
 
@@ -590,6 +594,8 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular + environmentRadiance + refr
 #endif
 
 #ifdef LDROUTPUT
+	finalColor.rgb = toGammaSpace(finalColor.rgb);
+
 	finalColor.rgb = clamp(finalColor.rgb, 0., 1.);
 
 	#ifdef CAMERACOLORGRADING
@@ -599,12 +605,16 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular + environmentRadiance + refr
 	#ifdef CAMERACOLORCURVES
 		finalColor.rgb = applyColorCurves(finalColor.rgb);
 	#endif
+#else
+	//sanitize output incase invalid normals or tangents have caused div by 0 or undefined behavior
+	//this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
+	finalColor.rgb = clamp(finalColor.rgb, 0., 30.0);
 #endif
 
 	gl_FragColor = finalColor;
 
 	// Normal Display.
-	// gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
+	//gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
 
 	// Ambient reflection color.
 	// gl_FragColor = vec4(ambientReflectionColor, 1.0);
@@ -615,11 +625,23 @@ vec4 finalColor = vec4(finalDiffuse + finalSpecular + environmentRadiance + refr
 	// Base color.
 	// gl_FragColor = vec4(surfaceAlbedo.rgb, 1.0);
 
+	// Diffuse Direct Lighting
+	// gl_FragColor = vec4(diffuseBase.rgb, 1.0);
+
+	// Specular Lighting
+	// gl_FragColor = vec4(specularBase.rgb, 1.0);
+
+	// Final Specular
+	// gl_FragColor = vec4(finalSpecular.rgb, 1.0);
+
 	// Specular color.
 	// gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
 
 	// MicroSurface color.
 	// gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);
+
+	// Roughness.
+	// gl_FragColor = vec4(roughness, roughness, roughness, 1.0);
 
 	// Specular Map
 	// gl_FragColor = vec4(reflectivityMapColor.rgb, 1.0);
