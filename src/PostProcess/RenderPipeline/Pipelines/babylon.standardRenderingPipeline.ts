@@ -7,8 +7,8 @@
         public originalPostProcess: PostProcess;
         public downSampleX4PostProcess: PostProcess = null;
         public brightPassPostProcess: PostProcess = null;
-        public gaussianBlurHPostProcesses: PostProcess[] = [];
-        public gaussianBlurVPostProcesses: PostProcess[] = [];
+        public blurHPostProcesses: PostProcess[] = [];
+        public blurVPostProcesses: PostProcess[] = [];
         public textureAdderPostProcess: PostProcess = null;
 
         public volumetricLightPostProcess: PostProcess = null;
@@ -37,15 +37,9 @@
         public brightThreshold: number = 1.0;
 
         @serialize()
-        public blurWidth: number = 2.0;
+        public blurWidth: number = 512.0;
         @serialize()
         public horizontalBlur: boolean = false;
-        @serialize()
-        public gaussianCoefficient: number = 0.25;
-        @serialize()
-        public gaussianMean: number = 1.0;
-        @serialize()
-        public gaussianStandardDeviation: number = 1.0;
 
         @serialize()
         public exposure: number = 1.0;
@@ -87,7 +81,7 @@
         public depthOfFieldDistance: number = 10.0;
 
         @serialize()
-        public depthOfFieldBlurWidth: number = 2.0;
+        public depthOfFieldBlurWidth: number = 64.0;
 
         @serialize()
         public motionStrength: number = 1.0;
@@ -294,10 +288,7 @@
                 this._createBrightPassPostProcess(scene, ratio / 2);
 
                 // Create gaussian blur post-processes (down sampling blurs)
-                this._createGaussianBlurPostProcesses(scene, ratio / 2, 0);
-                this._createGaussianBlurPostProcesses(scene, ratio / 4, 1);
-                this._createGaussianBlurPostProcesses(scene, ratio / 8, 2);
-                this._createGaussianBlurPostProcesses(scene, ratio / 16, 3);
+                this._createBlurPostProcesses(scene, ratio / 4, 1);
 
                 // Create texture adder post-process
                 this._createTextureAdderPostProcess(scene, ratio);
@@ -330,7 +321,7 @@
 
             if (this._depthOfFieldEnabled) {
                 // Create gaussian blur used by depth-of-field
-                this._createGaussianBlurPostProcesses(scene, ratio / 2, 5, "depthOfFieldBlurWidth");
+                this._createBlurPostProcesses(scene, ratio / 2, 3, "depthOfFieldBlurWidth");
 
                 // Create depth-of-field post-process
                 this._createDepthOfFieldPostProcess(scene, ratio);
@@ -394,62 +385,28 @@
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass", () => { return this.brightPassPostProcess; }, true));
         }
 
-        // Create gaussian blur H&V post-processes
-        private _createGaussianBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
-            var blurOffsets = new Array<number>(9);
-            var blurWeights = new Array<number>(9);
-            var uniforms: string[] = ["blurOffsets", "blurWeights", "blurWidth"];
+        // Create blur H&V post-processes
+        private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
+            var engine = scene.getEngine();
 
-            var callback = (height: boolean) => {
-                return (effect: Effect) => {
-                    // Weights
-                    var x: number = 0.0;
+            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
-                    for (var i = 0; i < 9; i++) {
-                        x = (i - 4.0) / 4.0;
-                        blurWeights[i] =
-                            this.gaussianCoefficient
-                            * (1.0 / Math.sqrt(2.0 * Math.PI * this.gaussianStandardDeviation))
-                            * Math.exp((-((x - this.gaussianMean) * (x - this.gaussianMean))) / (2.0 * this.gaussianStandardDeviation * this.gaussianStandardDeviation));
-                    }
+            blurX.onActivateObservable.add(() => {
+                let dw = blurX.width / engine.getRenderingCanvas().width;
+                blurX.kernel = this[blurWidthKey] * dw;
+            });
 
-                    var lastOutputDimensions: any = {
-                        width: scene.getEngine().getRenderWidth(),
-                        height: scene.getEngine().getRenderHeight()
-                    };
+            blurY.onActivateObservable.add(() => {
+                let dw = blurY.height / engine.getRenderingCanvas().height;
+                blurY.kernel = this.horizontalBlur ? 64 * dw : this[blurWidthKey] * dw;
+            });
 
-                    for (var i = 0; i < 9; i++) {
-                        var value = (i - 4.0) * (1.0 / (height === true ? lastOutputDimensions.height : lastOutputDimensions.width));
-                        blurOffsets[i] = value;
-                    }
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurH" + indice, () => { return blurX; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurV" + indice, () => { return blurY; }, true));
 
-                    effect.setArray("blurOffsets", blurOffsets);
-                    effect.setArray("blurWeights", blurWeights);
-
-                    if (height) {
-                        effect.setFloat("blurWidth", this.horizontalBlur ? 1.0 : this[blurWidthKey]);
-                    }
-                    else {
-                        effect.setFloat("blurWidth", this[blurWidthKey]);
-                    }
-                };
-            };
-
-            // Create horizontal gaussian blur post-processes
-            var gaussianBlurHPostProcess = new PostProcess("HDRGaussianBlurH_" + ratio + "_" + indice, "standard", uniforms, [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define GAUSSIAN_BLUR_H", Engine.TEXTURETYPE_UNSIGNED_INT);
-            gaussianBlurHPostProcess.onApply = callback(false);
-
-            // Create vertical gaussian blur post-process
-            var gaussianBlurVPostProcess = new PostProcess("HDRGaussianBlurV_" + ratio + "_" + indice, "standard", uniforms, [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define GAUSSIAN_BLUR_V", Engine.TEXTURETYPE_UNSIGNED_INT);
-            gaussianBlurVPostProcess.onApply = callback(true);
-
-            // Add to pipeline
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurH" + indice, () => { return gaussianBlurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurV" + indice, () => { return gaussianBlurVPostProcess; }, true));
-
-            // Finish
-            this.gaussianBlurHPostProcesses.push(gaussianBlurHPostProcess);
-            this.gaussianBlurVPostProcesses.push(gaussianBlurVPostProcess);
+            this.blurHPostProcesses.push(blurX);
+            this.blurVPostProcesses.push(blurY);
         }
 
         // Create texture adder post-process
@@ -511,25 +468,7 @@
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLS", () => { return this.volumetricLightPostProcess; }, true));
 
             // Smooth
-            this.volumetricLightSmoothXPostProcess = new BABYLON.BlurPostProcess("HDRVLSSmoothX", new BABYLON.Vector2(1.0, 0), 10.0, ratio / 4, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this.volumetricLightSmoothXPostProcess.alwaysForcePOT = true;
-            this.volumetricLightSmoothXPostProcess.autoClear = false;
-            this.volumetricLightSmoothXPostProcess.onActivateObservable.add(() => {
-                let dw = this.volumetricLightSmoothXPostProcess.width / scene.getEngine().getRenderingCanvas().width;
-                this.volumetricLightSmoothXPostProcess.kernel = this.volumetricLightBlurScale * dw;
-            });
-
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSSmoothX", () => { return this.volumetricLightSmoothXPostProcess; }, true));
-
-            this.volumetricLightSmoothYPostProcess = new BABYLON.BlurPostProcess("HDRVLSSmoothY", new BABYLON.Vector2(0, 1.0), 10.0, ratio / 4, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this.volumetricLightSmoothYPostProcess.alwaysForcePOT = true;
-            this.volumetricLightSmoothYPostProcess.autoClear = false;
-            this.volumetricLightSmoothYPostProcess.onActivateObservable.add(() => {
-                let dh = this.volumetricLightSmoothYPostProcess.height / scene.getEngine().getRenderingCanvas().height;
-                this.volumetricLightSmoothYPostProcess.kernel = this.volumetricLightBlurScale * dh;
-            });
-
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSSmoothY", () => { return this.volumetricLightSmoothYPostProcess; }, true));
+            this._createBlurPostProcesses(scene, ratio / 4, 0, "volumetricLightBlurScale");
 
             // Merge
             this.volumetricLightMergePostProces = new PostProcess("HDRVLSMerge", "standard", [], ["originalSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLSMERGE");
@@ -666,7 +605,7 @@
             this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
 
-            this._createGaussianBlurPostProcesses(scene, ratio / 4, 4);
+            this._createBlurPostProcesses(scene, ratio / 4, 2);
 
             this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));
@@ -675,7 +614,7 @@
 
             // Lens flare
             this.lensFlarePostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("textureSampler", this._bloomEnabled ? this.gaussianBlurHPostProcesses[0] : this.originalPostProcess);
+                effect.setTextureFromPostProcess("textureSampler", this._bloomEnabled ? this.blurHPostProcesses[0] : this.originalPostProcess);
                 effect.setTexture("lensColorSampler", this.lensColorTexture);
                 effect.setFloat("strength", this.lensFlareStrength);
                 effect.setFloat("ghostDispersal", this.lensFlareGhostDispersal);
@@ -821,12 +760,12 @@
 
                 if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }
 
-                for (var j = 0; j < this.gaussianBlurHPostProcesses.length; j++) {
-                    this.gaussianBlurHPostProcesses[j].dispose(camera);
+                for (var j = 0; j < this.blurHPostProcesses.length; j++) {
+                    this.blurHPostProcesses[j].dispose(camera);
                 }
 
-                for (var j = 0; j < this.gaussianBlurVPostProcesses.length; j++) {
-                    this.gaussianBlurVPostProcesses[j].dispose(camera);
+                for (var j = 0; j < this.blurVPostProcesses.length; j++) {
+                    this.blurVPostProcesses[j].dispose(camera);
                 }
             }
 
@@ -849,8 +788,8 @@
             this.motionBlurPostProcess = null;
 
             this.luminanceDownSamplePostProcesses = [];
-            this.gaussianBlurHPostProcesses = [];
-            this.gaussianBlurVPostProcesses = [];
+            this.blurHPostProcesses = [];
+            this.blurVPostProcesses = [];
         }
 
         // Dispose
