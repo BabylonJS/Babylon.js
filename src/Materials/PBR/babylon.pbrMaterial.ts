@@ -432,6 +432,56 @@
             return "PBRMaterial";
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._albedoTexture) {
+                activeTextures.push(this._albedoTexture);
+            }
+
+            if (this._ambientTexture) {
+                activeTextures.push(this._ambientTexture);
+            }
+
+            if (this._opacityTexture) {
+                activeTextures.push(this._opacityTexture);
+            }
+
+            if (this._reflectionTexture) {
+                activeTextures.push(this._reflectionTexture);
+            }
+
+            if (this._emissiveTexture) {
+                activeTextures.push(this._emissiveTexture);
+            }
+
+            if (this._reflectionTexture) {
+                activeTextures.push(this._reflectionTexture);
+            }
+
+            if (this._metallicTexture) {
+                activeTextures.push(this._metallicTexture);
+            }
+
+            if (this._microSurfaceTexture) {
+                activeTextures.push(this._microSurfaceTexture);
+            }
+
+            if (this._bumpTexture) {
+                activeTextures.push(this._bumpTexture);
+            }
+
+            if (this._lightmapTexture) {
+                activeTextures.push(this._lightmapTexture);
+            }
+
+            if (this._refractionTexture) {
+                activeTextures.push(this._refractionTexture);
+            }
+
+            return activeTextures;
+        }
+
         public clone(name: string): PBRMaterial {
             return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
         }

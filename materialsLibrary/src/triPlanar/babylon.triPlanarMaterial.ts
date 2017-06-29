@@ -332,6 +332,36 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTextureX) {
+                activeTextures.push(this._diffuseTextureX);
+            }
+
+            if (this._diffuseTextureY) {
+                activeTextures.push(this._diffuseTextureY);
+            }
+
+            if (this._diffuseTextureZ) {
+                activeTextures.push(this._diffuseTextureZ);
+            }
+
+            if (this._normalTextureX) {
+                activeTextures.push(this._normalTextureX);
+            }
+
+            if (this._normalTextureY) {
+                activeTextures.push(this._normalTextureY);
+            }
+
+            if (this._normalTextureZ) {
+                activeTextures.push(this._normalTextureZ);
+            }
+
+            return activeTextures;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.mixTexture) {
                 this.mixTexture.dispose();

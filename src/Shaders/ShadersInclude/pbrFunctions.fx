@@ -95,7 +95,7 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
     float specTerm = max(0., visibility * distribution) * NdotL;
 
     vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
-    return vec3(specTerm, specTerm, specTerm);
+    return fresnel * specTerm;
 }
 
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
