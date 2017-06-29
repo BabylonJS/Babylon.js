@@ -17840,7 +17840,7 @@ var BABYLON;
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
                 // for VR cameras
-                if (listeningCamera.rigCameras) {
+                if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                     listeningCamera = listeningCamera.rigCameras[0];
                 }
                 var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
