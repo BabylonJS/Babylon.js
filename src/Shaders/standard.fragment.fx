@@ -64,30 +64,6 @@ void main(void)
 }
 #endif
 
-#if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)
-uniform float blurOffsets[9];
-uniform float blurWeights[9];
-uniform float blurWidth;
-
-void main(void)
-{
-	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
-
-	for (int i = 0; i < 9; i++) {
-#ifdef GAUSSIAN_BLUR_H
-		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
-#else
-		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
-#endif
-	}
-
-	color.a = 1.0;
-	gl_FragColor = color;
-}
-#endif
-
 #if defined(TEXTURE_ADDER)
 uniform sampler2D otherSampler;
 uniform sampler2D lensSampler;
