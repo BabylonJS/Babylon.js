@@ -2,36 +2,36 @@
 
 module BABYLON.GLTF2 {
     export abstract class GLTFLoaderExtension {
-        private _name: string;
-
         public enabled: boolean = true;
 
-        public constructor(name: string) {
-            this._name = name;
-        }
+        public abstract get name(): string;
 
-        public get name(): string {
-            return this._name;
-        }
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean { return false; }
 
-        protected loadMaterial(index: number): Material { return null; }
-
-        // ---------
+        //
         // Utilities
-        // ---------
+        //
 
-        public static LoadMaterial(index: number): Material {
-            for (var extensionName in GLTFLoader.Extensions) {
-                var extension = GLTFLoader.Extensions[extensionName];
-                if (extension.enabled) {
-                    var babylonMaterial = extension.loadMaterial(index);
-                    if (babylonMaterial) {
-                        return babylonMaterial;
-                    }
+        public static _Extensions: GLTFLoaderExtension[] = [];
+
+        public static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean {
+            return this._ApplyExtensions(extension => extension.loadMaterial(loader, material, assign));
+        }
+
+        private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
+            var extensions = GLTFLoaderExtension._Extensions;
+            if (!extensions) {
+                return;
+            }
+
+            for (var i = 0; i < extensions.length; i++) {
+                var extension = extensions[i];
+                if (extension.enabled && action(extension)) {
+                    return true;
                 }
             }
 
-            return GLTFLoader.LoadCoreMaterial(index);
+            return false;
         }
     }
 }
