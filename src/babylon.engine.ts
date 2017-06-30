@@ -573,6 +573,8 @@
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        private _dummyFramebuffer: WebGLFramebuffer;
+
         private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
 
@@ -3840,6 +3842,10 @@
             // Unbind
             this.unbindAllAttributes();
 
+            if (this._dummyFramebuffer) {
+                this._gl.deleteFramebuffer(this._dummyFramebuffer);
+            }
+
             this._gl = null;
 
             //WebVR
@@ -3955,6 +3961,29 @@
                 this.fps = 1000.0 / (sum / (length - 1));
             }
         }
+
+        public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1): Uint8Array {
+            let gl = this._gl;
+            if (!this._dummyFramebuffer) {
+                this._dummyFramebuffer = gl.createFramebuffer();
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
+
+            if (faceIndex > -1) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);            
+            } else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            }
+
+            let readFormat = gl.RGBA;
+            let readType = gl.UNSIGNED_BYTE;
+            let buffer = new Uint8Array(4 * width * height);
+            gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            return buffer;
+        }    
 
         private _canRenderToFloatFramebuffer(): boolean {
             if (this._webGLVersion > 1) {
