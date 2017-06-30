@@ -28,6 +28,7 @@
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
+- new `Texture.readPixels()` function to read texture content ([deltakosh](https://github.com/deltakosh))
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
 - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
 - Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))

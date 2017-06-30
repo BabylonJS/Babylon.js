@@ -10277,6 +10277,9 @@ var BABYLON;
             this.releaseEffects();
             // Unbind
             this.unbindAllAttributes();
+            if (this._dummyFramebuffer) {
+                this._gl.deleteFramebuffer(this._dummyFramebuffer);
+            }
             this._gl = null;
             //WebVR
             this.disableVR();
@@ -10378,6 +10381,26 @@ var BABYLON;
                 }
                 this.fps = 1000.0 / (sum / (length - 1));
             }
+        };
+        Engine.prototype._readTexturePixels = function (texture, width, height, faceIndex) {
+            if (faceIndex === void 0) { faceIndex = -1; }
+            var gl = this._gl;
+            if (!this._dummyFramebuffer) {
+                this._dummyFramebuffer = gl.createFramebuffer();
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
+            if (faceIndex > -1) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            }
+            var readFormat = gl.RGBA;
+            var readType = gl.UNSIGNED_BYTE;
+            var buffer = new Uint8Array(4 * width * height);
+            gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            return buffer;
         };
         Engine.prototype._canRenderToFloatFramebuffer = function () {
             if (this._webGLVersion > 1) {
@@ -19005,6 +19028,18 @@ var BABYLON;
         };
         BaseTexture.prototype.clone = function () {
             return null;
+        };
+        BaseTexture.prototype.readPixels = function (faceIndex) {
+            if (faceIndex === void 0) { faceIndex = 0; }
+            if (!this._texture) {
+                return null;
+            }
+            var size = this.getSize();
+            var engine = this.getScene().getEngine();
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+            }
+            return engine._readTexturePixels(this._texture, size.width, size.height);
         };
         BaseTexture.prototype.releaseInternalTexture = function () {
             if (this._texture) {

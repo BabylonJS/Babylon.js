@@ -198,6 +198,21 @@
             return null;
         }
 
+        public readPixels(faceIndex = 0): Uint8Array {
+            if (!this._texture) {
+                return null;
+            }
+
+            var size = this.getSize();
+            var engine = this.getScene().getEngine();
+
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+            }
+
+            return engine._readTexturePixels(this._texture, size.width, size.height);
+        }
+
         public releaseInternalTexture(): void {
             if (this._texture) {
                 this._scene.getEngine().releaseInternalTexture(this._texture);
