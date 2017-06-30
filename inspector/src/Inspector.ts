@@ -40,6 +40,9 @@ module INSPECTOR {
             colorBot?: string
         }) {
 
+            //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+            loadGUIProperties();
+
             //get Tabbar initialTab
             this._initialTab = initialTab;
 

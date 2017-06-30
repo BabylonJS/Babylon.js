@@ -65,7 +65,7 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
-    const PROPERTIES: {
+    var PROPERTIES: {
         format: (obj: any) => any;
         'type_not_defined': {
             properties: any[];
@@ -260,6 +260,13 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     /**
+     * Function that add gui objects properties to the variable PROPERTIES
+     */
+    function loadGUIProperties(): void;
+}
+
+declare module INSPECTOR {
+    /**
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
@@ -322,6 +329,21 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+    }
+}
+
+declare module INSPECTOR {
+    class GUIAdapter extends Adapter implements IToolVisible {
+        constructor(obj: BABYLON.GUI.Control);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setVisible(b: boolean): void;
+        isVisible(): boolean;
     }
 }
 
@@ -799,6 +821,13 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class CameraTab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class GUITab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
