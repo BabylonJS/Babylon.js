@@ -586,6 +586,17 @@
                 engine.switchFullscreen(true);
             }
         }
+        var editorGoFullscreen = function () {
+            var editorDiv = document.getElementById("jsEditor");
+            if (editorDiv.requestFullscreen) {
+            editorDiv.requestFullscreen();
+            } else if (editorDiv.mozRequestFullScreen) {
+            editorDiv.mozRequestFullScreen();
+            } else if (editorDiv.webkitRequestFullscreen) {
+            editorDiv.webkitRequestFullscreen();
+            }
+
+        }
 
         var toggleEditor = function () {
             var editorButton = document.getElementById("editorButton1600");
@@ -887,6 +898,8 @@
         setToMultipleID("editorButton", "click", toggleEditor);
         // FullScreen
         setToMultipleID("fullscreenButton", "click", goFullscreen);
+        // Editor fullScreen
+        setToMultipleID("editorFullscreenButton", "click", editorGoFullscreen);
         // Format
         setToMultipleID("formatButton", "click", formatCode);
         // Debug
