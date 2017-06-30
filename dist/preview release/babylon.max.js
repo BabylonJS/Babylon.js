@@ -24177,7 +24177,7 @@ var BABYLON;
             return result;
         };
         // Force shader compilation including textures ready check
-        Material.prototype.forceCompilation = function (mesh, options, onCompiled) {
+        Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
@@ -24187,7 +24187,7 @@ var BABYLON;
                     subMesh._materialDefines._renderId = -1;
                 }
                 var alphaTestState = engine.getAlphaTesting();
-                engine.setAlphaTesting(options.alphaTest);
+                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     scene.unregisterBeforeRender(beforeRenderCallback);
                     if (onCompiled) {
@@ -30019,6 +30019,9 @@ var BABYLON;
             return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
         };
         PBRBaseMaterial.prototype.needAlphaTesting = function () {
+            if (this._forceAlphaTest) {
+                return true;
+            }
             if (this._linkRefractionWithTransparency) {
                 return false;
             }

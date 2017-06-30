@@ -445,6 +445,10 @@
         }
 
         public needAlphaTesting(): boolean {
+            if (this._forceAlphaTest) {
+                return true;
+            }
+
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
