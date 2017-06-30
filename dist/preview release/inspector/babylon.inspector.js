@@ -9,6 +9,8 @@ var INSPECTOR;
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
+            //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+            INSPECTOR.loadGUIProperties();
             //get Tabbar initialTab
             this._initialTab = initialTab;
             //get parentElement of our Inspector
@@ -710,6 +712,125 @@ var INSPECTOR;
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
+     * Function that add gui objects properties to the variable PROPERTIES
+     */
+    function loadGUIProperties() {
+        var PROPERTIES_GUI = {
+            'ValueAndUnit': {
+                type: BABYLON.GUI.ValueAndUnit,
+                properties: ['_value', 'unit'],
+                format: function (valueAndUnit) { return valueAndUnit; }
+            },
+            'Control': {
+                type: BABYLON.GUI.Control,
+                properties: [
+                    '_alpha',
+                    '_fontFamily',
+                    '_color',
+                    '_scaleX',
+                    '_scaleY',
+                    '_rotation',
+                    '_currentMeasure',
+                    '_width',
+                    '_height',
+                    '_left',
+                    '_top',
+                    '_linkedMesh',
+                    'isHitTestVisible',
+                    'isPointerBlocker',
+                ],
+                format: function (control) { return control.name; }
+            },
+            'Button': {
+                type: BABYLON.GUI.Button,
+                properties: [],
+                format: function (button) { return button.name; }
+            },
+            'ColorPicker': {
+                type: BABYLON.GUI.ColorPicker,
+                properties: ['_value'],
+                format: function (colorPicker) { return colorPicker.name; }
+            },
+            'Checkbox': {
+                type: BABYLON.GUI.Checkbox,
+                properties: ['_isChecked', '_background'],
+                format: function (checkbox) { return checkbox.name; }
+            },
+            'Ellipse': {
+                type: BABYLON.GUI.Ellipse,
+                properties: ['_thickness'],
+                format: function (ellipse) { return ellipse.name; }
+            },
+            'Image': {
+                type: BABYLON.GUI.Image,
+                properties: [
+                    '_imageWidth',
+                    '_imageHeight',
+                    '_loaded',
+                    '_source',
+                ],
+                format: function (image) { return image.name; }
+            },
+            'Line': {
+                type: BABYLON.GUI.Line,
+                properties: ['_lineWidth',
+                    '_background',
+                    '_x1',
+                    '_y1',
+                    '_x2',
+                    '_y2',
+                ],
+                format: function (line) { return line.name; }
+            },
+            'RadioButton': {
+                type: BABYLON.GUI.RadioButton,
+                properties: ['_isChecked', '_background'],
+                format: function (radioButton) { return radioButton.name; }
+            },
+            'Rectangle': {
+                type: BABYLON.GUI.Rectangle,
+                properties: ['_thickness', '_cornerRadius'],
+                format: function (rectangle) { return rectangle.name; }
+            },
+            'Slider': {
+                type: BABYLON.GUI.Slider,
+                properties: [
+                    '_minimum',
+                    '_maximum',
+                    '_value',
+                    '_background',
+                    '_borderColor',
+                ],
+                format: function (slider) { return slider.name; }
+            },
+            'StackPanel': {
+                type: BABYLON.GUI.StackPanel,
+                properties: ['_isVertical'],
+                format: function (stackPanel) { return stackPanel.name; }
+            },
+            'TextBlock': {
+                type: BABYLON.GUI.TextBlock,
+                properties: ['_text', '_textWrapping'],
+                format: function (textBlock) { return textBlock.name; }
+            },
+            'Container': {
+                type: BABYLON.GUI.Container,
+                properties: ['_background'],
+                format: function (container) { return container.name; }
+            },
+        };
+        for (var prop in PROPERTIES_GUI) {
+            INSPECTOR.PROPERTIES[prop] = PROPERTIES_GUI[prop];
+        }
+    }
+    INSPECTOR.loadGUIProperties = loadGUIProperties;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=properties_gui.js.map
+
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
@@ -848,6 +969,147 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=CameraAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var GUIAdapter = (function (_super) {
+        __extends(GUIAdapter, _super);
+        function GUIAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        GUIAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        GUIAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        GUIAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Control'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            if (this._obj instanceof BABYLON.GUI.Button) {
+                for (var _b = 0, _c = INSPECTOR.PROPERTIES['Button'].properties; _b < _c.length; _b++) {
+                    var dirty = _c[_b];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.ColorPicker) {
+                for (var _d = 0, _e = INSPECTOR.PROPERTIES['ColorPicker'].properties; _d < _e.length; _d++) {
+                    var dirty = _e[_d];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Checkbox) {
+                for (var _f = 0, _g = INSPECTOR.PROPERTIES['Checkbox'].properties; _f < _g.length; _f++) {
+                    var dirty = _g[_f];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Ellipse) {
+                for (var _h = 0, _j = INSPECTOR.PROPERTIES['Ellipse'].properties; _h < _j.length; _h++) {
+                    var dirty = _j[_h];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Image) {
+                for (var _k = 0, _l = INSPECTOR.PROPERTIES['Image'].properties; _k < _l.length; _k++) {
+                    var dirty = _l[_k];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Line) {
+                for (var _m = 0, _o = INSPECTOR.PROPERTIES['Line'].properties; _m < _o.length; _m++) {
+                    var dirty = _o[_m];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.RadioButton) {
+                for (var _p = 0, _q = INSPECTOR.PROPERTIES['RadioButton'].properties; _p < _q.length; _p++) {
+                    var dirty = _q[_p];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Rectangle) {
+                for (var _r = 0, _s = INSPECTOR.PROPERTIES['Rectangle'].properties; _r < _s.length; _r++) {
+                    var dirty = _s[_r];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Slider) {
+                for (var _t = 0, _u = INSPECTOR.PROPERTIES['Slider'].properties; _t < _u.length; _t++) {
+                    var dirty = _u[_t];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.StackPanel) {
+                for (var _v = 0, _w = INSPECTOR.PROPERTIES['StackPanel'].properties; _v < _w.length; _v++) {
+                    var dirty = _w[_v];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.TextBlock) {
+                for (var _x = 0, _y = INSPECTOR.PROPERTIES['TextBlock'].properties; _x < _y.length; _x++) {
+                    var dirty = _y[_x];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Container) {
+                for (var _z = 0, _0 = INSPECTOR.PROPERTIES['Container'].properties; _z < _0.length; _z++) {
+                    var dirty = _0[_z];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            return propertiesLines;
+        };
+        GUIAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        GUIAdapter.prototype.setVisible = function (b) {
+            this._obj.isVisible = b;
+        };
+        GUIAdapter.prototype.isVisible = function () {
+            return this._obj.isVisible;
+        };
+        return GUIAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.GUIAdapter = GUIAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=GUIAdapter.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1952,8 +2214,6 @@ var INSPECTOR;
     INSPECTOR.CubeTextureElement = CubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=CubeTextureElement.js.map
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1997,8 +2257,6 @@ var INSPECTOR;
     }(INSPECTOR.CubeTextureElement));
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=HDRCubeTextureElement.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2567,6 +2825,61 @@ var INSPECTOR;
         return CameraTab;
     }(INSPECTOR.PropertyTab));
     INSPECTOR.CameraTab = CameraTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var GUITab = (function (_super) {
+        __extends(GUITab, _super);
+        function GUITab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'GUI', inspector) || this;
+        }
+        /* Overrides super */
+        GUITab.prototype._getTree = function () {
+            var _this = this;
+            var arr = [];
+            // Recursive method building the tree panel
+            var createNode = function (obj) {
+                var descendants = obj.children;
+                if (descendants && descendants.length > 0) {
+                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.GUIAdapter(obj));
+                    for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                        var child = descendants_1[_i];
+                        var n = createNode(child);
+                        node.add(n);
+                    }
+                    node.update();
+                    return node;
+                }
+                else {
+                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.GUIAdapter(obj));
+                }
+            };
+            // get all textures from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.textures; _i < _a.length; _i++) {
+                var tex = _a[_i];
+                //only get GUI's textures
+                if (tex instanceof BABYLON.GUI.AdvancedDynamicTexture) {
+                    var node = createNode(tex._rootContainer);
+                    arr.push(node);
+                }
+            }
+            return arr;
+        };
+        return GUITab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.GUITab = GUITab;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -3626,6 +3939,7 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
