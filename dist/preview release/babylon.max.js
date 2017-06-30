@@ -24177,20 +24177,24 @@ var BABYLON;
             return result;
         };
         // Force shader compilation including textures ready check
-        Material.prototype.forceCompilation = function (mesh, onCompiled) {
+        Material.prototype.forceCompilation = function (mesh, options, onCompiled) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
+            var engine = scene.getEngine();
             var beforeRenderCallback = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
+                var alphaTestState = engine.getAlphaTesting();
+                engine.setAlphaTesting(options.alphaTest);
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     scene.unregisterBeforeRender(beforeRenderCallback);
                     if (onCompiled) {
                         onCompiled(_this);
                     }
                 }
+                engine.setAlphaTesting(alphaTestState);
             };
             scene.registerBeforeRender(beforeRenderCallback);
         };
@@ -50864,7 +50868,7 @@ var BABYLON;
                 }
                 if (enabled) {
                     var geometry = this._scene.enableGeometryBufferRenderer();
-                    if (!geometry.isSupported) {
+                    if (!geometry) {
                         BABYLON.Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                         return;
                     }
@@ -51263,7 +51267,7 @@ var BABYLON;
         };
         StandardRenderingPipeline.prototype._getDepthTexture = function () {
             var geometry = this._scene.enableGeometryBufferRenderer();
-            if (geometry.isSupported) {
+            if (geometry) {
                 return geometry.getGBuffer().textures[0];
             }
             return this._scene.enableDepthRenderer().getDepthMap();
