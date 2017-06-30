@@ -180,7 +180,7 @@
 
             if (enabled) {
                 var geometry = this._scene.enableGeometryBufferRenderer();
-                if (!geometry.isSupported) {
+                if (!geometry) {
                     Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                     return;
                 }
@@ -721,7 +721,7 @@
 
         private _getDepthTexture(): Texture {
             var geometry = this._scene.enableGeometryBufferRenderer();
-            if (geometry.isSupported) {
+            if (geometry) {
                 return geometry.getGBuffer().textures[0];
             }
 
