@@ -183,6 +183,8 @@
         updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        getDebugMesh(imposter:PhysicsImpostor, scene:Scene);
+        syncMeshWithImposter(mesh:AbstractMesh, imposter:PhysicsImpostor);
         dispose();
     }
 }
