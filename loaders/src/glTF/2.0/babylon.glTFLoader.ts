@@ -2,6 +2,7 @@
 
 module BABYLON.GLTF2 {
     export class GLTFLoader implements IGLTFLoader {
+        private _parent: GLTFFileLoader;
         private _gltf: IGLTF;
         private _errors: string[];
         private _babylonScene: Scene;
@@ -38,6 +39,10 @@ module BABYLON.GLTF2 {
 
         public get babylonScene(): Scene {
             return this._babylonScene;
+        }
+
+        public constructor(parent: GLTFFileLoader) {
+            this._parent = parent;
         }
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
@@ -106,6 +111,8 @@ module BABYLON.GLTF2 {
             this._errors.forEach(error => Tools.Error(error));
             this._errors = [];
             this._clear();
+
+            this._parent.onComplete();
         }
 
         private _loadData(data: IGLTFLoaderData): void {
@@ -346,10 +353,12 @@ module BABYLON.GLTF2 {
                             if (this._renderReady) {
                                 babylonSubMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
                                     babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
+                                    this._parent.onMaterialLoaded(babylonSubMaterial);
                                 });
                             }
                             else {
                                 babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
+                                this._parent.onMaterialLoaded(babylonSubMaterial);
                             }
                         });
                     }
@@ -360,7 +369,8 @@ module BABYLON.GLTF2 {
                         // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                         // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
                         babylonMesh.subMeshes = [];
-                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));                    }
+                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));
+                    }
                 });
             }
         }
@@ -977,15 +987,16 @@ module BABYLON.GLTF2 {
             babylonTexture.coordinatesIndex = texCoord;
             babylonTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
             babylonTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            babylonTexture.name = texture.name;
+            babylonTexture.name = texture.name || "texture" + textureInfo.index;
 
             // Cache the texture
             texture.babylonTextures = texture.babylonTextures || [];
             texture.babylonTextures[texCoord] = babylonTexture;
 
+            this._parent.onTextureLoaded(babylonTexture);
             return babylonTexture;
         }
     }
 
-    BABYLON.GLTFFileLoader.GLTFLoaderV2 = new GLTFLoader();
+    BABYLON.GLTFFileLoader.CreateGLTFLoaderV2 = parent => new GLTFLoader(parent);
 }
