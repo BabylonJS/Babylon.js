@@ -250,6 +250,31 @@ var BABYLON;
             }
             return results;
         };
+        TerrainMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._mixTexture) {
+                activeTextures.push(this._mixTexture);
+            }
+            if (this._diffuseTexture1) {
+                activeTextures.push(this._diffuseTexture1);
+            }
+            if (this._diffuseTexture2) {
+                activeTextures.push(this._diffuseTexture2);
+            }
+            if (this._diffuseTexture3) {
+                activeTextures.push(this._diffuseTexture3);
+            }
+            if (this._bumpTexture1) {
+                activeTextures.push(this._bumpTexture1);
+            }
+            if (this._bumpTexture2) {
+                activeTextures.push(this._bumpTexture2);
+            }
+            if (this._bumpTexture3) {
+                activeTextures.push(this._bumpTexture3);
+            }
+            return activeTextures;
+        };
         TerrainMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.mixTexture) {
                 this.mixTexture.dispose();

@@ -213,6 +213,64 @@ var Test = (function () {
             cubes.push(b);
         }
 
+        // gui
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+        var picker = new BABYLON.GUI.ColorPicker();
+        picker.height = "150px";
+        picker.width = "150px";
+        picker.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+        var checkbox = new BABYLON.GUI.Checkbox();
+        checkbox.width = "20px";
+        checkbox.height = "20px";
+
+        var slider = new BABYLON.GUI.Slider();
+        slider.minimum = 0;
+        slider.maximum = 2 * Math.PI;
+        slider.value = 0;
+        slider.height = "20px";
+        slider.width = "200px";
+
+        var line = new BABYLON.GUI.Line();
+        line.x1 = 10;
+        line.y1 = 10;
+        line.x2 = 1000;
+        line.y2 = 500;
+
+        var panel = new BABYLON.GUI.StackPanel();    
+
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but", "Click Me");
+        button.width = 0.2;
+        button.height = "40px";
+        button.color = "white";
+        button.background = "green";
+        panel.addControl(button);     
+
+        var button2 = BABYLON.GUI.Button.CreateSimpleButton("but2", "Click Me also!");
+        button2.width = 0.2;
+        button2.height = "40px";
+        button2.color = "white";
+        button2.background = "green";
+        panel.addControl(button2);     
+
+        var ellipse1 = new BABYLON.GUI.Ellipse();
+        ellipse1.width = "100px"
+        ellipse1.height = "100px";
+        ellipse1.color = "Orange";
+        ellipse1.thickness = 4;
+        ellipse1.background = "green";
+
+
+        advancedTexture.addControl(ellipse1);    
+        advancedTexture.addControl(panel);   
+        advancedTexture.addControl(picker);    
+        advancedTexture.addControl(checkbox);    
+        advancedTexture.addControl(slider);    
+        advancedTexture.addControl(line);    
+        advancedTexture.addControl(checkbox);    
+
+
         this.scene = scene;
     };
     return Test;

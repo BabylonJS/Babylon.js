@@ -28,6 +28,7 @@
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
+- new `Texture.readPixels()` function to read texture content ([deltakosh](https://github.com/deltakosh))
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
 - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
 - Added `ArcRotateCamera.panningInertia` to decouple inertia from panning inertia ([deltakosh](https://github.com/deltakosh))
@@ -72,7 +73,8 @@
 - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
 - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
 - Fixed SPS particle initial status when used as updatable with a `positionFunction` in `addShape()` ([jerome](https://github.com/jbousquie))  
-- Fixed SPS particle access start index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+- Fixed SPS particle access `start` index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
+- Fixed SPS billboard mode when used with a parented camera ([jerome](https://github.com/jbousquie)) 
 
 ### API Documentation
 - File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  

@@ -1,4 +1,4 @@
-﻿#ifdef SHADOWS
+#ifdef SHADOWS
 	#ifndef SHADOWFLOAT
 		float unpack(vec4 color)
 		{
@@ -81,7 +81,7 @@
 			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
 		#endif
 
-		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);	
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample, 0., 1. - darkness);	
 		return esm;
 	}
 
@@ -101,7 +101,7 @@
 			float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
 		#endif
 
-		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))) - darkness, 0., 1.);
+		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))), darkness, 1.);
 
 		return esm;
 	}
@@ -189,7 +189,7 @@
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
 		#endif
 		
-		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample - darkness, 0., 1.);
+		float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample, 0., 1. - darkness);
 
 		// Apply fade out at frustum edge
 		// const float fadeDistance = 0.07;
@@ -220,7 +220,7 @@
 			float shadowMapSample = texture2D(shadowSampler, uv).x;
 		#endif
 		
-		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))) - darkness, 0., 1.);
+		float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))), darkness, 1.);
 
 		// Apply fade out at frustum edge
 		// const float fadeDistance = 0.07;

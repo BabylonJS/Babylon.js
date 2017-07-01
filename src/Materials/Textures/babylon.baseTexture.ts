@@ -198,6 +198,21 @@
             return null;
         }
 
+        public readPixels(faceIndex = 0): Uint8Array {
+            if (!this._texture) {
+                return null;
+            }
+
+            var size = this.getSize();
+            var engine = this.getScene().getEngine();
+
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+            }
+
+            return engine._readTexturePixels(this._texture, size.width, size.height);
+        }
+
         public releaseInternalTexture(): void {
             if (this._texture) {
                 this._scene.getEngine().releaseInternalTexture(this._texture);
@@ -240,6 +255,32 @@
             Animation.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
+        }
+
+        public static WhenAllReady(textures: BaseTexture[], onLoad: () => void): void {
+            var numReady = 0;
+
+            for (var i = 0; i < textures.length; i++) {
+                var texture = textures[i];
+
+                if (texture.isReady()) {
+                    if (++numReady === textures.length) {
+                        onLoad();
+                    }
+                }
+                else {
+                    var observable = (texture as any).onLoadObservable as Observable<Texture>;
+
+                    let callback = () => {
+                        observable.removeCallback(callback);
+                        if (++numReady === textures.length) {
+                            onLoad();
+                        }
+                    };
+
+                    observable.add(callback);
+                }
+            }
         }
     }
 } 
