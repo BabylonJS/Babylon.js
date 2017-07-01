@@ -6,6 +6,10 @@ module BABYLON {
         public world: any;
         public name: string = "OimoJSPlugin";
 
+        private _debugBoxMesh:Mesh;
+        private _debugSphereMesh:Mesh;
+        private _debugMaterial:StandardMaterial;
+        
         constructor(iterations?: number) {
             this.world = new OIMO.World(1 / 60, 2, iterations, true);
             this.world.worldscale(1);
@@ -388,7 +392,82 @@ module BABYLON {
             }
         }
 
+        private _getDebugMaterial(scene:Scene):Material{
+            if(!this._debugMaterial){
+                this._debugMaterial = new StandardMaterial('', scene);
+                this._debugMaterial.wireframe = true;
+            }
+            
+            return this._debugMaterial;
+        }
+
+        private _getDebugBoxMesh(scene:Scene):AbstractMesh{
+            if(!this._debugBoxMesh){
+                this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene); 
+                this._debugBoxMesh.renderingGroupId = 1;
+                this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
+                this._debugBoxMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugBoxMesh);             
+            }
+
+            return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+        }
+
+        private _getDebugSphereMesh(scene:Scene):AbstractMesh{
+            if(!this._debugSphereMesh){
+                this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene); 
+                this._debugSphereMesh.renderingGroupId = 1;
+                this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
+                this._debugSphereMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugSphereMesh);
+            }
+
+            return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        }
+
+        public getDebugMesh(impostor:PhysicsImpostor, scene:Scene):AbstractMesh{
+            var body = impostor.physicsBody;
+            var shape = body.shapes;
+            var mesh:AbstractMesh;
+            
+            if (shape.halfWidth) {
+                mesh = this._getDebugBoxMesh(scene);
+                mesh.scaling.x = shape.halfWidth * 2;
+                mesh.scaling.y = shape.halfHeight * 2;
+                mesh.scaling.z = shape.halfDepth * 2;
+            } else if(shape.radius){	
+                mesh = this._getDebugSphereMesh(scene);            
+                mesh.scaling.x = shape.radius * 2;
+                mesh.scaling.y = shape.radius * 2;
+                mesh.scaling.z = shape.radius * 2;	
+            }
+
+            return mesh;
+        }
+
+        public syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor){
+            var body = impostor.physicsBody;
+
+            mesh.position.x = body.position.x;
+            mesh.position.y = body.position.y;
+            mesh.position.z = body.position.z;
+            
+            mesh.rotationQuaternion.x = body.orientation.x;
+            mesh.rotationQuaternion.y = body.orientation.y;
+            mesh.rotationQuaternion.z = body.orientation.z;
+            mesh.rotationQuaternion.w = body.orientation.s;
+        }
+
         public dispose() {
+            if(this._debugBoxMesh){
+                this._debugBoxMesh.dispose();
+            }
+            if(this._debugSphereMesh){
+                this._debugSphereMesh.dispose();
+            }
+            if(this._debugMaterial){
+                this._debugMaterial.dispose();
+            }
             this.world.clear();
         }
     }
