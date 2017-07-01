@@ -12,6 +12,7 @@
 
         private _debugBoxMesh:Mesh;
         private _debugSphereMesh:Mesh;
+        private _debugMaterial:StandardMaterial;
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (!this.isSupported()) {
@@ -472,35 +473,51 @@
             joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
         }
 
-        public getDebugMesh(imposter:PhysicsImpostor, scene:Scene):AbstractMesh{
+        private _getDebugMaterial(scene:Scene):Material{
+            if(!this._debugMaterial){
+                this._debugMaterial = new StandardMaterial('', scene);
+                this._debugMaterial.wireframe = true;
+            }
+            
+            return this._debugMaterial;
+        }
 
-            var body = imposter.physicsBody;
+        private _getDebugBoxMesh(scene:Scene):AbstractMesh{
+            if(!this._debugBoxMesh){
+                this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene); 
+                this._debugBoxMesh.renderingGroupId = 1;
+                this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
+                this._debugBoxMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugBoxMesh);             
+            }
+
+            return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+        }
+
+        private _getDebugSphereMesh(scene:Scene):AbstractMesh{
+            if(!this._debugSphereMesh){
+                this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene); 
+                this._debugSphereMesh.renderingGroupId = 1;
+                this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
+                this._debugSphereMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugSphereMesh);
+            }
+
+            return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        }
+
+        public getDebugMesh(impostor:PhysicsImpostor, scene:Scene):AbstractMesh{
+            var body = impostor.physicsBody;
             var shape = body.shapes[0];
-            var mesh:InstancedMesh;
+            var mesh:AbstractMesh;
             
             if (shape.halfExtents) {
-                if(!this._debugBoxMesh){
-                    this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene); 
-                    this._debugBoxMesh.renderingGroupId = 1;
-                    this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
-                    this._debugBoxMesh.material = new StandardMaterial('', scene);
-                    this._debugBoxMesh.material.wireframe = true;
-                    scene.removeMesh(this._debugBoxMesh);             
-                }
-                mesh = this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+                mesh = this._getDebugBoxMesh(scene);
                 mesh.scaling.x = shape.halfExtents.x * 2;
                 mesh.scaling.y = shape.halfExtents.y * 2;
                 mesh.scaling.z = shape.halfExtents.z * 2;
             } else if(shape.boundingSphereRadius){	
-                if(!this._debugSphereMesh){
-                    this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene); 
-                    this._debugSphereMesh.renderingGroupId = 1;
-                    this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
-                    this._debugSphereMesh.material = new StandardMaterial('', scene);
-                    this._debugSphereMesh.material.wireframe = true;
-                    scene.removeMesh(this._debugSphereMesh);
-                }	
-                mesh = this._debugSphereMesh.createInstance('physicsBodySphereViewInstance');            
+                mesh = this._getDebugSphereMesh(scene);            
                 mesh.scaling.x = shape.boundingSphereRadius * 2;
                 mesh.scaling.y = shape.boundingSphereRadius * 2;
                 mesh.scaling.z = shape.boundingSphereRadius * 2;	
@@ -509,9 +526,8 @@
             return mesh;
         }
 
-        public syncMeshWithImposter(mesh:AbstractMesh, imposter:PhysicsImpostor){
-
-            var body = imposter.physicsBody;
+        public syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor){
+            var body = impostor.physicsBody;
 
             mesh.position.x = body.position.x;
             mesh.position.y = body.position.y;
@@ -521,7 +537,6 @@
             mesh.rotationQuaternion.y = body.quaternion.y;
             mesh.rotationQuaternion.z = body.quaternion.z;
             mesh.rotationQuaternion.w = body.quaternion.w;
-
         }
 
         public dispose() {
@@ -530,6 +545,9 @@
             }
             if(this._debugSphereMesh){
                 this._debugSphereMesh.dispose();
+            }
+            if(this._debugMaterial){
+                this._debugMaterial.dispose();
             }
         }
     }
