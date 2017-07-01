@@ -30,9 +30,6 @@ uniform Material
 	uniform vec2 vMicrosurfaceTextureLods;
 	uniform vec4 vReflectivityColor;
 	uniform vec3 vEmissiveColor;
-	uniform vec4 opacityParts;
-	uniform vec4 emissiveLeftColor;
-	uniform vec4 emissiveRightColor;
 
 	uniform float pointSize;
 };

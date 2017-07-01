@@ -1,5 +1,5 @@
 module BABYLON {
-   export class StandardMaterialDefines extends MaterialDefines {
+   export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -57,13 +57,20 @@ module BABYLON {
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
-        public CAMERACOLORGRADING = false;
-        public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
         public USERIGHTHANDEDSYSTEM = false;
+
+        public IMAGEPROCESSING = false;
+        public VIGNETTE = false;
+        public VIGNETTEBLENDMODEMULTIPLY = false;
+        public VIGNETTEBLENDMODEOPAQUE = false;
+        public TONEMAPPING = false;
+        public CONTRAST = false;
+        public COLORCURVES = false;
+        public COLORGRADING = false;
 
         constructor() {
             super();
@@ -271,13 +278,157 @@ module BABYLON {
         public twoSidedLighting: boolean;     
 
         /**
-         * Color Grading 2D Lookup Texture.
-         * This allows special effects like sepia, black and white to sixties rendering style. 
+         * Default configuration related to image processing available in the standard Material.
          */
-        @serializeAsTexture("cameraColorGradingTexture")
-        private _cameraColorGradingTexture: BaseTexture;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorGradingTexture: BaseTexture;             
+        protected _imageProcessingConfiguration: ImageProcessing;
+
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        public get imageProcessingConfiguration(): ImageProcessing {
+            return this._imageProcessingConfiguration;
+        }
+
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         * 
+         * If sets to null, the scene one is in use.
+         */
+        public set imageProcessingConfiguration(value: ImageProcessing) {
+            this._attachImageProcessingConfiguration(value);
+        }
+
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver: Observer<ImageProcessing>;
+
+        /**
+         * Attaches a new image processing configuration to the Standard Material.
+         * @param configuration 
+         */
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessing): void {
+            if (configuration === this._imageProcessingConfiguration) {
+                return;
+            }
+
+            // Detaches observer.
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            }
+
+            // Pick the scene configuration if needed.
+            if (!configuration) {
+                this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = configuration;
+            }
+
+            // Attaches observer.
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._markAllSubMeshesAsTexturesDirty();
+            });
+
+            // Ensure the effect will be rebuilt.
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+
+        /**
+         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        public get colorCurves(): ColorCurves {
+            return this.imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        public set colorCurves(value: ColorCurves) {
+            this.imageProcessingConfiguration.colorCurves = value;
+        }
+
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        public get colorCurvesEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorCurvesEnabled;
+        }
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        public set colorCurvesEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorCurvesEnabled = value;
+        }
+
+        /**
+         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        public get colorGradingTexture(): BaseTexture {
+            return this.imageProcessingConfiguration.colorGradingTexture;
+        }
+        /**
+         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        public set colorGradingTexture(value: BaseTexture) {
+            this.imageProcessingConfiguration.colorGradingTexture = value;
+        }
+
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public get colorGradingEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorGradingEnabled;
+        }
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public set colorGradingEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorGradingEnabled = value;
+        }
+
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public get cameraExposure(): number {
+            return this._imageProcessingConfiguration.cameraExposure;
+        };
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public set cameraExposure(value: number) {
+            this._imageProcessingConfiguration.cameraExposure = value;
+        };
+        
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        public get cameraContrast(): number {
+            return this._imageProcessingConfiguration.cameraContrast;
+        }
+
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        public set cameraContrast(value: number) {
+            this._imageProcessingConfiguration.cameraContrast = value;
+        }
+        
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        public get cameraColorGradingTexture(): BaseTexture {
+            return this._imageProcessingConfiguration.colorGradingTexture;
+        }
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        public set cameraColorGradingTexture(value: BaseTexture) {
+            this._imageProcessingConfiguration.colorGradingTexture = value;
+        }
 
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
@@ -285,10 +436,18 @@ module BABYLON {
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        @serializeAsColorCurves("cameraColorCurves")
-        private _cameraColorCurves: ColorCurves = null;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorCurves: ColorCurves;             
+        public get cameraColorCurves(): ColorCurves {
+            return this._imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public set cameraColorCurves(value: ColorCurves) {
+            this._imageProcessingConfiguration.colorCurves = value;
+        }
 
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
@@ -300,6 +459,9 @@ module BABYLON {
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
+
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
 
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
@@ -525,17 +687,6 @@ module BABYLON {
                         defines.REFRACTION = false;
                     }
 
-                    if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        // Camera Color Grading can not be none blocking.
-                        if (!this._cameraColorGradingTexture.isReady()) {
-                            return false;
-                        } else {
-                            defines.CAMERACOLORGRADING = true;
-                        }
-                    } else {
-                        defines.CAMERACOLORGRADING = false;
-                    }
-
                     defines.TWOSIDEDLIGHTING = !this._backFaceCulling && this._twoSidedLighting;
                 } else {
                     defines.DIFFUSE = false;
@@ -546,10 +697,13 @@ module BABYLON {
                     defines.LIGHTMAP = false;
                     defines.BUMP = false;
                     defines.REFRACTION = false;
-                    defines.CAMERACOLORGRADING = false;
                 }
 
-                defines.CAMERACOLORCURVES = (this._cameraColorCurves !== undefined && this._cameraColorCurves !== null);
+                if (!this.imageProcessingConfiguration.isReady()) {
+                    return false;
+                }
+
+                this.imageProcessingConfiguration.prepareDefines(defines);
 
                 defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
 
@@ -558,7 +712,7 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-            } 
+            }
 
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
@@ -709,12 +863,9 @@ module BABYLON {
 
                 var uniformBuffers = ["Material", "Scene"];
 
-                if (defines.CAMERACOLORCURVES) {
-                    ColorCurves.PrepareUniforms(uniforms);
-                }
-                if (defines.CAMERACOLORGRADING) {
-                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
-                }
+                ImageProcessing.PrepareUniforms(uniforms, defines);
+                ImageProcessing.PrepareSamplers(samplers, defines);
+
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
                     uniformBuffersNames: uniformBuffers,
@@ -970,10 +1121,6 @@ module BABYLON {
                             effect.setTexture("refraction2DSampler", this._refractionTexture);
                         }
                     }
-                    
-                    if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        ColorGradingTexture.Bind(this._cameraColorGradingTexture, effect);
-                    }
                 }
 
                 // Clip plane
@@ -1002,17 +1149,16 @@ module BABYLON {
 
                 // Morph targets
                 if (defines.NUM_MORPH_INFLUENCERS) {
-                    MaterialHelper.BindMorphTargetParameters(mesh, effect);                
+                    MaterialHelper.BindMorphTargetParameters(mesh, effect);
                 }
 
                 // Log. depth
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
-                // Color Curves
-                if (this._cameraColorCurves) {
-                    ColorCurves.Bind(this._cameraColorCurves, effect);
+                // image processing
+                if (this.imageProcessingConfiguration) {
+                    this.imageProcessingConfiguration.bind(this._activeEffect);
                 }
-
             }
 
             this._uniformBuffer.update();
@@ -1057,10 +1203,6 @@ module BABYLON {
             if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
                 results.push(this._refractionTexture);
             }
-            
-            if (this._cameraColorGradingTexture && this._cameraColorGradingTexture.animations && this._cameraColorGradingTexture.animations.length > 0) {
-                results.push(this._cameraColorGradingTexture);
-            }
 
             return results;
         }
@@ -1102,10 +1244,10 @@ module BABYLON {
                 if (this._refractionTexture) {
                     this._refractionTexture.dispose();
                 }
-                
-                if (this._cameraColorGradingTexture) {
-                    this._cameraColorGradingTexture.dispose();
-                }
+            }
+
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
