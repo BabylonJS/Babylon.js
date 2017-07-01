@@ -138,6 +138,7 @@
     <TypeScriptCompile Include="src\Debug\babylon.boneAxesViewer.ts" />
     <TypeScriptCompile Include="src\Debug\babylon.skeletonViewer.ts" />
     <TypeScriptCompile Include="src\Debug\babylon.debugLayer.ts" />
+    <TypeScriptCompile Include="src\Debug\babylon.physicsViewer.ts" />
     <TypeScriptCompile Include="src\Layer\babylon.highlightlayer.ts" />
     <TypeScriptCompile Include="src\Loading\babylon.sceneLoader.ts" />
     <TypeScriptCompile Include="src\Loading\Plugins\babylon.babylonFileLoader.ts" />
