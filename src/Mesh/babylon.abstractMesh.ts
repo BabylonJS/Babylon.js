@@ -792,30 +792,26 @@
          * Returns the AbstractMesh.
          * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
          */
-        public rotateAround(point: BABYLON.Vector3, axis: BABYLON.Vector3, amount: number): BABYLON.AbstractMesh {
+        public rotateAround(point: Vector3, axis: Vector3, amount: number): AbstractMesh {
             axis.normalize();
             if (!this.rotationQuaternion) {
-                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation = BABYLON.Vector3.Zero();
+                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation.copyFromFloats(0, 0, 0);
             }
-            let translation: BABYLON.Vector3 = point.subtract(this.getAbsolutePosition());
-            let mTranslate: BABYLON.Matrix = BABYLON.Matrix.Translation(translation.x, translation.y, translation.z);
-            let mTranslateInvert: BABYLON.Matrix = mTranslate.clone();
-            mTranslateInvert.invert();
-            let mRotation: BABYLON.Matrix = BABYLON.Matrix.RotationAxis(axis, amount);
-            let transform: BABYLON.Matrix = mTranslateInvert.multiply(mRotation).multiply(mTranslate);
+            point.subtractToRef(this.position, Tmp.Vector3[0]);
+            Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
+            Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
+            Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
 
-            let t = BABYLON.Vector3.Zero();
-            let r = BABYLON.Quaternion.Identity();
-            let s = BABYLON.Vector3.One();
+            Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
 
-            transform.decompose(s, r, t);
-
-            this.position.addInPlace(t);
-            this.rotationQuaternion.multiplyInPlace(r);
+            this.position.addInPlace(Tmp.Vector3[1]);
+            this.rotationQuaternion.multiplyInPlace(Tmp.Quaternion[0]);
 
             return this;
-         }
+        }
         
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.  
