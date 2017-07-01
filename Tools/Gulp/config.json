@@ -31,7 +31,8 @@
                 "multiMaterial", "pbrMaterial",
                 "meshBuilder", "layer",
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline",
-                "debug", "textureTools"
+                "debug", "textureTools", "hdr",
+                "loader"
         ],
         "distributed": ["minimalViewer"]
     },
@@ -1166,7 +1167,11 @@
                     "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctions.fx",
                     "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctionsCall.fx",
                     "../../materialsLibrary/src/legacyPBR/legacyPbrUboDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrVertexDeclaration.fx"
+                    "../../materialsLibrary/src/legacyPBR/legacyPbrVertexDeclaration.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyColorCurves.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyColorCurvesDefinition.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyColorGrading.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx",
                 ],
                 "output": "babylon.legacyPbrMaterial.js"
             }

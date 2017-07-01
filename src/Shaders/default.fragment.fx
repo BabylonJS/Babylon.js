@@ -99,15 +99,11 @@ varying vec3 vDirectionW;
 
 #endif
 
-#ifdef CAMERACOLORGRADING
-	#include<colorGradingDefinition>	
-	#include<colorGrading>
-#endif
+#include<imageProcessingDeclaration>
 
-#ifdef CAMERACOLORCURVES
-	#include<colorCurvesDefinition>
-	#include<colorCurves>
-#endif
+#include<helperFunctions>
+
+#include<imageProcessingFunctions>
 
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
@@ -361,12 +357,12 @@ void main(void) {
 #include<logDepthFragment>
 #include<fogFragment>
 
-#ifdef CAMERACOLORGRADING
-	color = colorGrades(color);
+// Apply image processing if relevant. As this applies in linear space, 
+// We first move from gamma to linear.
+#ifdef IMAGEPROCESSING
+	color.rgb = toLinearSpace(result.rgb);
+	color.rgb = applyImageProcessing(color);
 #endif
 
-#ifdef CAMERACOLORCURVES
-	color.rgb = applyColorCurves(color.rgb);
-#endif
 	gl_FragColor = color;
 }

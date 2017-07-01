@@ -3,25 +3,14 @@
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
 
 // PBR CUSTOM CONSTANTS
-const float kPi = 3.1415926535897932384626433832795;
 const float kRougnhessToAlphaScale = 0.1;
 const float kRougnhessToAlphaOffset = 0.29248125;
-
-float Square(float value)
-{
-    return value * value;
-}
-
-float getLuminance(vec3 color)
-{
-    return clamp(dot(color, vec3(0.2126, 0.7152, 0.0722)), 0., 1.);
-}
 
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
     const float kMinimumVariance = 0.0005;
-    float alphaG = Square(roughness) + kMinimumVariance;
+    float alphaG = square(roughness) + kMinimumVariance;
     return alphaG;
 }
 
@@ -68,9 +57,9 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
     // Note: alphaG is average slope (gradient) of the normals in slope-space.
     // It is also the (trigonometric) tangent of the median distribution value, i.e. 50% of normals have
     // a tangent (gradient) closer to the macrosurface than this slope.
-    float a2 = Square(alphaG);
+    float a2 = square(alphaG);
     float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
-    return a2 / (kPi * d * d);
+    return a2 / (PI * d * d);
 }
 
 vec3 fresnelSchlickGGX(float VdotH, vec3 reflectance0, vec3 reflectance90)
@@ -78,7 +67,7 @@ vec3 fresnelSchlickGGX(float VdotH, vec3 reflectance0, vec3 reflectance90)
     return reflectance0 + (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotH, 0., 1.), 5.0);
 }
 
-vec3 FresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
+vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
 {
     // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
     float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
@@ -109,7 +98,7 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
-    return fresnel * NdotL / kPi;
+    return fresnel * NdotL / PI;
 }
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
@@ -136,51 +125,9 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
     return microSurface;
 }
 
-vec3 toLinearSpace(vec3 color)
-{
-    return vec3(pow(color.r, 2.2), pow(color.g, 2.2), pow(color.b, 2.2));
+// For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
+// For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
+float fresnelGrazingReflectance(float reflectance0) {
+	float reflectance90 = clamp(reflectance0 * 25.0, 0.0, 1.0);
+	return reflectance90;
 }
-
-vec3 toGammaSpace(vec3 color)
-{
-    return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
-}
-
-#ifdef CAMERATONEMAP
-    vec3 toneMaps(vec3 color)
-    {
-        color = max(color, 0.0);
-
-        // TONE MAPPING / EXPOSURE
-        color.rgb = color.rgb * vCameraInfos.x;
-
-        float tuning = 1.5; // TODO: sync up so e.g. 18% greys are matched to exposure appropriately
-        // PI Test
-        // tuning *=  kPi;
-        vec3 tonemapped = 1.0 - exp2(-color.rgb * tuning); // simple local photographic tonemapper
-        color.rgb = mix(color.rgb, tonemapped, 1.0);
-        return color;
-    }
-#endif
-
-#ifdef CAMERACONTRAST
-    vec4 contrasts(vec4 color)
-    {
-        color = clamp(color, 0.0, 1.0);
-
-        vec3 resultHighContrast = color.rgb * color.rgb * (3.0 - 2.0 * color.rgb);
-        float contrast = vCameraInfos.y;
-        if (contrast < 1.0)
-        {
-            // Decrease contrast: interpolate towards zero-contrast image (flat grey)
-            color.rgb = mix(vec3(0.5, 0.5, 0.5), color.rgb, contrast);
-        }
-        else
-        {
-            // Increase contrast: apply simple shoulder-toe high contrast curve
-            color.rgb = mix(color.rgb, resultHighContrast, contrast - 1.0);
-        }
-
-        return color;
-    }
-#endif

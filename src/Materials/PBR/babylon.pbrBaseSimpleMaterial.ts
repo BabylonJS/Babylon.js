@@ -171,9 +171,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            this._useEmissiveAsIllumination = true;
             this._useAmbientInGrayScale = true;
-            this._useScalarInLinearSpace = true;
         }
     }
 }

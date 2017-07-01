@@ -68,6 +68,15 @@
         return generateSerializableMember(7, sourceName); // color curves
     }
 
+    export function serializeAsColor4(sourceName?: string) {
+        return generateSerializableMember(8, sourceName); // color 4
+    }
+
+    export function serializeAsImageProcessing(sourceName?: string) {
+        return generateSerializableMember(9, sourceName); // image processing
+    }
+
+
     export class SerializationHelper {
 
         public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -112,6 +121,12 @@
                             break;
                         case 7:     // Color Curves
                             serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
+                        case 8:     // Color 4
+                            serializationObject[targetPropertyName] = (<Color4>sourceProperty).asArray();
+                            break;
+                        case 9:     // Image Processing
+                            serializationObject[targetPropertyName] = (<ImageProcessing>sourceProperty).serialize();
                             break;
                     }
                 }
@@ -159,6 +174,12 @@
                             break;
                         case 7:     // Color Curves
                             destination[property] = ColorCurves.Parse(sourceProperty);
+                            break;
+                        case 8:     // Color 4
+                            destination[property] = Color4.FromArray(sourceProperty);
+                            break;
+                        case 9:     // Image Processing
+                            destination[property] = ImageProcessing.Parse(sourceProperty);
                             break;
                     }
                 }

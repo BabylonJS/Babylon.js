@@ -209,6 +209,19 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
+        protected _imageProcessingConfiguration: ImageProcessing;
+        /**
+         * Default image processing configuration used either in the rendering
+         * Forward main pass or through the imageProcessingPostProcess if present.
+         * As in the majority of the scene they are the same (exception for multi camera),
+         * this is easier to reference from here than from all the materials and post process.
+         * 
+         * No setter as we it is a shared configuration, you can set the values instead.
+         */
+        public get imageProcessingConfiguration(): ImageProcessing {
+            return this._imageProcessingConfiguration;
+        }
+
         public forceWireframe = false;
         private _forcePointsCloud = false;
         public set forcePointsCloud(value : boolean) {
@@ -792,6 +805,9 @@
 
             // Uniform Buffer
             this._createUbo();
+
+            // Default Image processing definition.
+            this._imageProcessingConfiguration = new ImageProcessingConfiguration();
         }
 
         // Properties

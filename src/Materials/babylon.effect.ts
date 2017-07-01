@@ -197,6 +197,10 @@
             return this._isReady;
         }
 
+        public getEngine(): Engine {
+            return this._engine;
+        }
+
         public getProgram(): WebGLProgram {
             return this._program;
         }
