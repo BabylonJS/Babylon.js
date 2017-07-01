@@ -112,7 +112,9 @@ module BABYLON.GLTF2 {
             this._errors = [];
             this._clear();
 
-            this._parent.onComplete();
+            if (this._parent.onComplete) {
+                this._parent.onComplete();
+            }
         }
 
         private _loadData(data: IGLTFLoaderData): void {
@@ -352,13 +354,11 @@ module BABYLON.GLTF2 {
                         this.loadMaterial(primitive.material, (babylonSubMaterial: Material) => {
                             if (this._renderReady) {
                                 babylonSubMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
-                                    babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
-                                    this._parent.onMaterialLoaded(babylonSubMaterial);
+                                    this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
                                 });
                             }
                             else {
-                                babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
-                                this._parent.onMaterialLoaded(babylonSubMaterial);
+                                this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
                             }
                         });
                     }
@@ -372,6 +372,14 @@ module BABYLON.GLTF2 {
                         subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));
                     }
                 });
+            }
+        }
+
+        private _assignMaterial(multiMaterial: MultiMaterial, index: number, subMaterial: Material): void {
+            multiMaterial.subMaterials[index] = subMaterial;
+
+            if (this._parent.onMaterialLoaded) {
+                this._parent.onMaterialLoaded(subMaterial);
             }
         }
 
@@ -993,7 +1001,10 @@ module BABYLON.GLTF2 {
             texture.babylonTextures = texture.babylonTextures || [];
             texture.babylonTextures[texCoord] = babylonTexture;
 
-            this._parent.onTextureLoaded(babylonTexture);
+            if (this._parent.onTextureLoaded) {
+                this._parent.onTextureLoaded(babylonTexture);
+            }
+
             return babylonTexture;
         }
     }
