@@ -7,16 +7,22 @@ module BABYLON {
     }
 
     export interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void) => void;
     }
 
     export class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        public static GLTFLoaderV1: IGLTFLoader = null;
-        public static GLTFLoaderV2: IGLTFLoader = null;
+        public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+        public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
+        // V1 options
         public static HomogeneousCoordinates: boolean = false;
         public static IncrementalLoading: boolean = true;
+
+        // V2 options
+        public onTextureLoaded: (texture: BaseTexture) => void;
+        public onMaterialLoaded: (material: Material) => void;
+        public onComplete: () => void;
 
         public extensions: ISceneLoaderPluginExtensions = {
             ".gltf": { isBinary: false },
@@ -79,19 +85,14 @@ module BABYLON {
                 }
             }
 
-            var loaders = {
-                1: GLTFFileLoader.GLTFLoaderV1,
-                2: GLTFFileLoader.GLTFLoaderV2
+            var createLoader = {
+                1: GLTFFileLoader.CreateGLTFLoaderV1,
+                2: GLTFFileLoader.CreateGLTFLoaderV2
             };
 
-            var loader = loaders[version.major];
-            if (loader === undefined) {
-                Tools.Error("Unsupported version");
-                return null;
-            }
-
+            var loader = createLoader[version.major](this);
             if (loader === null) {
-                Tools.Error("v" + version.major + " loader is not available");
+                Tools.Error("Unsupported version");
                 return null;
             }
 
@@ -279,5 +280,7 @@ module BABYLON {
         }
     }
 
-    BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    if (BABYLON.SceneLoader) {
+        BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    }
 }
