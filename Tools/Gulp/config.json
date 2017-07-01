@@ -1338,7 +1338,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFMaterialsPbrSpecularGlossinessExtension.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
                 ],
                 "output": "babylon.glTF2FileLoader.js"
             },
@@ -1355,7 +1356,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFMaterialsPbrSpecularGlossinessExtension.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }
@@ -1415,9 +1417,11 @@
                 "files": [
                     "../../inspector/src/Inspector.ts",
                     "../../inspector/src/properties.ts",
+                    "../../inspector/src/properties_gui.ts",
                     "../../inspector/src/gui/BasicElement.ts",
                     "../../inspector/src/adapters/Adapter.ts",
                     "../../inspector/src/adapters/CameraAdapter.ts",
+                    "../../inspector/src/adapters/GUIAdapter.ts",
                     "../../inspector/src/adapters/SoundAdapter.ts",
                     "../../inspector/src/adapters/TextureAdapter.ts",
                     "../../inspector/src/adapters/LightAdapter.ts",
@@ -1437,6 +1441,7 @@
                     "../../inspector/src/tabs/Tab.ts",
                     "../../inspector/src/tabs/PropertyTab.ts",
                     "../../inspector/src/tabs/CameraTab.ts",
+                    "../../inspector/src/tabs/GUITab.ts",
                     "../../inspector/src/tabs/SoundTab.ts",
                     "../../inspector/src/tabs/TextureTab.ts",
                     "../../inspector/src/tabs/LightTab.ts",

@@ -169,6 +169,11 @@
             for (var index = lightIndex; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + index] !== undefined) {
                     defines["LIGHT" + index] = false;
+                    defines["HEMILIGHT" + lightIndex] = false;
+                    defines["POINTLIGHT" + lightIndex] = false;
+                    defines["DIRLIGHT" + lightIndex] = false;                    
+                    defines["SPOTLIGHT" + lightIndex] = false;
+                    defines["SHADOW" + lightIndex] = false;
                 }
             }
 
