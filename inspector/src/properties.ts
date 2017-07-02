@@ -405,7 +405,15 @@ module INSPECTOR {
         },
         'WorldSpaceCanvas2DNode': {
             type: BABYLON.WorldSpaceCanvas2DNode
-        }
+        },
+        'PhysicsImpostor': {
+            type: BABYLON.PhysicsImpostor,
+            properties: [
+                'friction',
+                'mass',
+                'restitution',
+            ]
+        },
     }
 
 }

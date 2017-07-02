@@ -308,6 +308,9 @@ module INSPECTOR {
          */
         public dispose() {
             if (!this._popupMode) {
+                     
+                this._tabbar.getActiveTab().dispose();
+
                 // Get canvas
                 let canvas = this._scene.getEngine().getRenderingCanvas();
 

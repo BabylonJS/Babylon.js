@@ -145,9 +145,15 @@ module INSPECTOR {
         private _validateInput(e: KeyboardEvent) {
             if (e.keyCode == 13) {
                 // Enter : validate the new value
-                let newValue = this._input.value;
+                let newValue:any = this._input.value;
+
                 this.updateObject();
-                this._property.value = newValue;
+
+                if(typeof this._property.value === 'number'){
+                    this._property.value = parseFloat(newValue);
+                }else{
+                    this._property.value = newValue;
+                }
                 // Remove input
                 this.update();
                 // resume scheduler

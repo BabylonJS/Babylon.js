@@ -177,6 +177,11 @@
         getLinearVelocity(impostor: PhysicsImpostor) : Vector3;
         getAngularVelocity(impostor: PhysicsImpostor) : Vector3;
         setBodyMass(impostor: PhysicsImpostor, mass: number);
+        getBodyMass(impostor: PhysicsImpostor);
+        getBodyFriction(impostor: PhysicsImpostor);
+        setBodyFriction(impostor: PhysicsImpostor, friction: number);
+        getBodyRestitution(impostor: PhysicsImpostor);
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number);
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
         //Joint Update
