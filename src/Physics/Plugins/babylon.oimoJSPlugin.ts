@@ -361,6 +361,26 @@ module BABYLON {
             impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
         }
 
+        public getBodyMass(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.density;
+        }
+
+        public getBodyFriction(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.friction;
+        }
+
+        public setBodyFriction(impostor: PhysicsImpostor, friction:number) {
+            impostor.physicsBody.shapes.friction = friction;
+        }
+
+        public getBodyRestitution(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.restitution;
+        }
+
+        public setBodyRestitution(impostor: PhysicsImpostor, restitution:number) {
+            impostor.physicsBody.shapes.restitution = restitution;
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }
