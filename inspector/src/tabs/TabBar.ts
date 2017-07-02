@@ -34,7 +34,7 @@ module INSPECTOR {
             this._tabs.push(new LightTab(this, this._inspector));
             this._tabs.push(new MaterialTab(this, this._inspector));
             this._tabs.push(new GUITab(this, this._inspector));
-
+            this._tabs.push(new PhysicsTab(this, this._inspector));
             this._tabs.push(new CameraTab(this, this._inspector));
             this._tabs.push(new SoundTab(this, this._inspector));
 
