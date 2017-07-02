@@ -3,7 +3,7 @@ module INSPECTOR{
     export class PhysicsTab extends PropertyTab {
 
         public viewer:BABYLON.Debug.PhysicsViewer;
-                
+        
         constructor(tabbar:TabBar, inspector:Inspector) {
             super(tabbar, 'Physics', inspector); 
         }
@@ -29,9 +29,6 @@ module INSPECTOR{
             }
             return arr;
         }
-
-        public dispose() {
-            this._detailsPanel.dispose();
-        }
+        
     }
 }
