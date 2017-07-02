@@ -1699,7 +1699,7 @@
                     this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
 
                     if (vertexBuffer.getIsInstanced()) {
-                        this._gl.vertexAttribDivisor(order, 1);
+                        this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
                         if (!this._vaoRecordInProgress) {
                             this._currentInstanceLocations.push(order);
                             this._currentInstanceBuffers.push(buffer);
