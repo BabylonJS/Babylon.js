@@ -434,6 +434,26 @@
             impostor.physicsBody.updateMassProperties();
         }
 
+        public getBodyMass(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.mass;
+        }
+
+        public getBodyFriction(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.material.friction;
+        }
+
+        public setBodyFriction(impostor: PhysicsImpostor, friction:number) {
+            impostor.physicsBody.material.friction = friction;
+        }
+
+        public getBodyRestitution(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.material.restitution;
+        }
+
+        public setBodyRestitution(impostor: PhysicsImpostor, restitution:number) {
+            impostor.physicsBody.material.restitution = restitution;
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }
