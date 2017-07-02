@@ -210,7 +210,10 @@
         }
 
         public set volumetricLightStepsCount(count: number) {
-            this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+            if (this.volumetricLightPostProcess) {
+                this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+            }
+
             this._volumetricLightStepsCount = count;
         }
 
@@ -220,7 +223,10 @@
         }
 
         public set motionBlurSamples(samples: number) {
-            this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            if (this.motionBlurPostProcess) {
+                this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            }
+            
             this._motionBlurSamples = samples;
         }
 
