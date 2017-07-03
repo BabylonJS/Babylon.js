@@ -1,5 +1,5 @@
 module BABYLON {
-   export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingDefines {
+   export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -283,12 +283,12 @@ module BABYLON {
         /**
          * Default configuration related to image processing available in the standard Material.
          */
-        protected _imageProcessingConfiguration: ImageProcessing;
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
         /**
          * Gets the image processing configuration used either in this material.
          */
-        public get imageProcessingConfiguration(): ImageProcessing {
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
             return this._imageProcessingConfiguration;
         }
 
@@ -297,7 +297,7 @@ module BABYLON {
          * 
          * If sets to null, the scene one is in use.
          */
-        public set imageProcessingConfiguration(value: ImageProcessing) {
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
             this._attachImageProcessingConfiguration(value);
 
             // Ensure the effect will be rebuilt.
@@ -307,13 +307,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessing>;
+        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessing): void {
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -834,8 +834,8 @@ module BABYLON {
 
                 var uniformBuffers = ["Material", "Scene"];
 
-                ImageProcessing.PrepareUniforms(uniforms, defines);
-                ImageProcessing.PrepareSamplers(samplers, defines);
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

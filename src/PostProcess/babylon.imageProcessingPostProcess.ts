@@ -4,12 +4,12 @@
         /**
          * Default configuration related to image processing available in the PBR Material.
          */
-        protected _imageProcessingConfiguration: ImageProcessing;
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
         /**
          * Gets the image processing configuration used either in this material.
          */
-        public get imageProcessingConfiguration(): ImageProcessing {
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
             return this._imageProcessingConfiguration;
         }
 
@@ -18,20 +18,20 @@
          * 
          * If sets to null, the scene one is in use.
          */
-        public set imageProcessingConfiguration(value: ImageProcessing) {
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
             this._attachImageProcessingConfiguration(value);
         }
 
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessing>;
+        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessing): void {
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -280,7 +280,7 @@
         /**
          * Defines cache preventing GC.
          */
-        private _defines: IImageProcessingDefines & { FROMLINEARSPACE: boolean } = {
+        private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
             IMAGEPROCESSING: false,
             VIGNETTE: false,
             VIGNETTEBLENDMODEMULTIPLY: false,
@@ -322,10 +322,10 @@
             }
 
             var samplers = ["textureSampler"];
-            ImageProcessing.PrepareSamplers(samplers, this._defines);
+            ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
 
             var uniforms = [];
-            ImageProcessing.PrepareUniforms(uniforms, this._defines);
+            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
 
             this.updateEffect(defines, uniforms, samplers);
         }

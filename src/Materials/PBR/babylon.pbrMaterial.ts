@@ -378,7 +378,7 @@
         /**
          * Gets the image processing configuration used either in this material.
          */
-        public get imageProcessingConfiguration(): ImageProcessing {
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
             return this._imageProcessingConfiguration;
         }
 
@@ -387,7 +387,7 @@
          * 
          * If sets to null, the scene one is in use.
          */
-        public set imageProcessingConfiguration(value: ImageProcessing) {
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
             this._attachImageProcessingConfiguration(value);
 
             // Ensure the effect will be rebuilt.
