@@ -1042,12 +1042,10 @@ var BABYLON;
             GLTFLoader.prototype.createPbrMaterial = function (material) {
                 var babylonMaterial = new BABYLON.PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
                 babylonMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
-                babylonMaterial.useScalarInLinearSpace = true;
                 material.babylonMaterial = babylonMaterial;
             };
             GLTFLoader.prototype.loadMaterialBaseProperties = function (material) {
                 var babylonMaterial = material.babylonMaterial;
-                babylonMaterial.useEmissiveAsIllumination = (material.emissiveFactor || material.emissiveTexture) ? true : false;
                 babylonMaterial.emissiveColor = material.emissiveFactor ? BABYLON.Color3.FromArray(material.emissiveFactor) : new BABYLON.Color3(0, 0, 0);
                 if (material.doubleSided) {
                     babylonMaterial.backFaceCulling = false;
