@@ -430,7 +430,7 @@
         "loader" : 
         {
             "files": [
-                "../../src/Tools/babylon.loadingScreen.js",
+                "../../src/Loading/babylon.loadingScreen.js",
                 "../../src/Loading/babylon.sceneLoader.js",
                 "../../src/Loading/Plugins/babylon.babylonFileLoader.js",
                 "../../src/Tools/babylon.filesInput.js"
@@ -810,6 +810,7 @@
                 "../../src/Debug/babylon.boneAxesViewer.js",
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
+                "../../src/Debug/babylon.physicsViewer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon" : [
@@ -1442,6 +1443,7 @@
                     "../../inspector/src/adapters/LightAdapter.ts",
                     "../../inspector/src/adapters/MaterialAdapter.ts",
                     "../../inspector/src/adapters/MeshAdapter.ts",
+                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",                    
                     "../../inspector/src/details/DetailPanel.ts",
                     "../../inspector/src/details/Property.ts",
                     "../../inspector/src/details/PropertyLine.ts",
@@ -1457,6 +1459,7 @@
                     "../../inspector/src/tabs/PropertyTab.ts",
                     "../../inspector/src/tabs/CameraTab.ts",
                     "../../inspector/src/tabs/GUITab.ts",
+                    "../../inspector/src/tabs/PhysicsTab.ts",
                     "../../inspector/src/tabs/SoundTab.ts",
                     "../../inspector/src/tabs/TextureTab.ts",
                     "../../inspector/src/tabs/LightTab.ts",

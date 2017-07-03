@@ -44,6 +44,36 @@ module BABYLON {
         //If set, this is this impostor's parent
         private _parent: PhysicsImpostor;
 
+        private _isDisposed = false;
+
+        get isDisposed():boolean{
+            return this._isDisposed;
+        }
+
+        get mass():number{
+            return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
+        }
+
+        set mass(value:number){
+            this.setMass(value);
+        }
+
+        get friction():number{
+            return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
+        }
+
+        set friction(value:number){
+            this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
+        }
+
+        get restitution():number {
+            return this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this);
+        }
+
+        set restitution(value:number){
+            this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
+        }
+
         //set by the physics engine when adding this impostor to the array.
         public uniqueId: number;
 
@@ -436,6 +466,8 @@ module BABYLON {
                     }
                 })*/
             }
+
+            this._isDisposed = true;
         }
 
         public setDeltaPosition(position: Vector3) {
