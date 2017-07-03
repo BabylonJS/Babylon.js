@@ -327,17 +327,18 @@
             light.transferToEffect(effect, lightIndex + "");
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
             var lightIndex = 0;
             for (var light of mesh._lightSources) {
+                let scaledIntensity = light.getScaledIntensity();
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
-                light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range, lightIndex + "");
+                light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
                 if (defines["SPECULARTERM"]) {
-                    light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
+                    light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
                     light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
                 }
 
