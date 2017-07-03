@@ -1164,7 +1164,14 @@ module BABYLON {
                     ColorCurves.PrepareUniforms(uniforms);
                 }
                 if (this._defines.CAMERACOLORGRADING) {
-                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                    uniforms.push(
+                        "vCameraColorGradingInfos", 
+                        "vCameraColorGradingScaleOffset"
+                    );
+
+                    samplers.push(
+                        "cameraColorGrading2DSampler"
+                    );
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -1527,7 +1534,24 @@ module BABYLON {
                     }
 
                     if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
+                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+
+                        let x = this.cameraColorGradingTexture.level;                 // Texture Level
+                        let y = this.cameraColorGradingTexture.getSize().height;      // Texture Size example with 8
+                        let z = y - 1.0;                    // SizeMinusOne 8 - 1
+                        let w = 1 / y;                      // Space of 1 slice 1 / 8
+                        
+                        this._effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
+                        
+                        let slicePixelSizeU = w / y;    // Space of 1 pixel in U direction, e.g. 1/64
+                        let slicePixelSizeV = w;		// Space of 1 pixel in V direction, e.g. 1/8					    // Space of 1 pixel in V direction, e.g. 1/8
+                        
+                        let x2 = z * slicePixelSizeU;   // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
+                        let y2 = z / y;	                // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
+                        let z2 = 0.5 * slicePixelSizeU;	// Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
+                        let w2 = 0.5 * slicePixelSizeV;	// Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
+                        
+                        this._effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
                     }
                 }
 
@@ -1545,7 +1569,7 @@ module BABYLON {
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
+                    LegacyPBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
 
                 // View
