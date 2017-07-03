@@ -1527,6 +1527,73 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    var PhysicsImpostorAdapter = (function (_super) {
+        __extends(PhysicsImpostorAdapter, _super);
+        function PhysicsImpostorAdapter(obj, viewer) {
+            var _this = _super.call(this, obj) || this;
+            _this._isVisible = false;
+            _this._viewer = viewer;
+            return _this;
+        }
+        /** Returns the name displayed in the tree */
+        PhysicsImpostorAdapter.prototype.id = function () {
+            var str = '';
+            var physicsImposter = this._obj;
+            if (physicsImposter && physicsImposter.object) {
+                str = physicsImposter.object.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        PhysicsImpostorAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        PhysicsImpostorAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        PhysicsImpostorAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        PhysicsImpostorAdapter.prototype.setVisible = function (b) {
+            this._isVisible = b;
+            if (b) {
+                this._viewer.showImpostor(this._obj);
+            }
+            else {
+                this._viewer.hideImpostor(this._obj);
+            }
+        };
+        PhysicsImpostorAdapter.prototype.isVisible = function () {
+            return this._isVisible;
+        };
+        return PhysicsImpostorAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.PhysicsImpostorAdapter = PhysicsImpostorAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=PhysicsImpostorAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
     var DetailPanel = (function (_super) {
         __extends(DetailPanel, _super);
         function DetailPanel(dr) {
@@ -2119,8 +2186,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.ColorElement = ColorElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=ColorElement.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2937,7 +3002,7 @@ var INSPECTOR;
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
                 if (mesh.physicsImpostor) {
-                    arr.push(new INSPECTOR.TreeItem(this, new PhysicsImpostorAdapter(mesh.physicsImpostor, this.viewer)));
+                    arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.PhysicsImpostorAdapter(mesh.physicsImpostor, this.viewer)));
                 }
             }
             return arr;
