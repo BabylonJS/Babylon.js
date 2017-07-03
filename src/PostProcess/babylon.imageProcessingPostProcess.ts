@@ -293,6 +293,7 @@
             SAMPLER3DGREENDEPTH: false,
             SAMPLER3DBGRMAP: false,
             IMAGEPROCESSINGPOSTPROCESS: false,
+            EXPOSURE: false,
         }
 
         constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
@@ -324,7 +325,7 @@
             var samplers = ["textureSampler"];
             ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
 
-            var uniforms = [];
+            var uniforms = ["scale"];
             ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
 
             this.updateEffect(defines, uniforms, samplers);

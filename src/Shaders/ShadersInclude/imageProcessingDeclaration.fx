@@ -1,4 +1,6 @@
-﻿uniform float exposureLinear;
+﻿#ifdef EXPOSURE
+	uniform float exposureLinear;
+#endif
 
 #ifdef CONTRAST
 	uniform float contrast;
