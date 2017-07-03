@@ -444,6 +444,23 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
+        private _viewer;
+        private _isVisible;
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setVisible(b: boolean): void;
+        isVisible(): boolean;
+    }
+}
+
+declare module INSPECTOR {
     interface SortDirection {
         [property: string]: number;
     }

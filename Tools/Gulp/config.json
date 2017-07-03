@@ -1423,6 +1423,7 @@
                     "../../inspector/src/adapters/LightAdapter.ts",
                     "../../inspector/src/adapters/MaterialAdapter.ts",
                     "../../inspector/src/adapters/MeshAdapter.ts",
+                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",                    
                     "../../inspector/src/details/DetailPanel.ts",
                     "../../inspector/src/details/Property.ts",
                     "../../inspector/src/details/PropertyLine.ts",
