@@ -12,6 +12,9 @@ module BABYLON {
         CONTRAST: boolean;
         COLORCURVES: boolean;
         COLORGRADING: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
     }
 
     /**
@@ -28,7 +31,7 @@ module BABYLON {
         public colorCurves = new ColorCurves();
 
         @serialize()
-        private _colorCurvesEnabled = true;
+        private _colorCurvesEnabled = false;
         /**
          * Gets wether the color curves effect is enabled.
          */
@@ -54,7 +57,7 @@ module BABYLON {
         public colorGradingTexture: BaseTexture;
 
         @serialize()
-        private _colorGradingEnabled = true;
+        private _colorGradingEnabled = false;
         /**
          * Gets wether the color grading effect is enabled.
          */
@@ -62,7 +65,7 @@ module BABYLON {
             return this._colorGradingEnabled;
         }
         /**
-         * Gets wether the color grading effect is enabled.
+         * Sets wether the color grading effect is enabled.
          */
         public set colorGradingEnabled(value: boolean) {
             if (this._colorGradingEnabled === value) {
@@ -74,22 +77,68 @@ module BABYLON {
         }
 
         @serialize()
-        protected _cameraExposure = 1.0;
+        private _colorGradingWithGreenDepth = false;
         /**
-         * Gets Camera exposure used in the effect.
+         * Gets wether the color grading effect is using a green depth for the 3d Texture.
          */
-        public get cameraExposure(): number {
-            return this._cameraExposure;
+        public get colorGradingWithGreenDepth(): boolean {
+            return this._colorGradingWithGreenDepth;
         }
         /**
-         * Gets Camera exposure used in the effect.
+         * Sets wether the color grading effect is using a green depth for the 3d Texture.
          */
-        public set cameraExposure(value: number) {
-            if (this._cameraExposure === value) {
+        public set colorGradingWithGreenDepth(value: boolean) {
+            if (this._colorGradingWithGreenDepth === value) {
                 return;
             }
 
-            this._cameraExposure = value;
+            this._colorGradingWithGreenDepth = value;
+            this._updateParameters();
+        }
+
+        @serialize()
+        private _colorGradingBGR = false;
+        /**
+         * Gets wether the color grading texture contains BGR values.
+         */
+        public get colorGradingBGR(): boolean {
+            return this._colorGradingBGR;
+        }
+        /**
+         * Sets wether the color grading texture contains BGR values.
+         */
+        public set colorGradingBGR(value: boolean) {
+            if (this._colorGradingBGR === value) {
+                return;
+            }
+
+            this._colorGradingBGR = value;
+            this._updateParameters();
+        }
+
+        /**
+         * Camera exposure used in the effect.
+         */
+        @serialize()
+        public cameraExposure = Math.log(Math.PI) * Math.LOG2E;
+
+        @serialize()
+        private _toneMappingEnabled = false;
+        /**
+         * Gets wether the tone mapping effect is enabled.
+         */
+        public get toneMappingEnabled(): boolean {
+            return this._toneMappingEnabled;
+        }
+        /**
+         * Sets wether the tone mapping effect is enabled.
+         */
+        public set toneMappingEnabled(value: boolean) {
+            if (this._toneMappingEnabled === value) {
+                return;
+            }
+
+            this._toneMappingEnabled = value;
             this._updateParameters();
         }
 
@@ -171,7 +220,7 @@ module BABYLON {
         }
 
         @serialize()
-        private _vignetteEnabled = true;
+        private _vignetteEnabled = false;
         /**
          * Gets wether the vignette effect is enabled.
          */
@@ -187,6 +236,26 @@ module BABYLON {
             }
 
             this._vignetteEnabled = value;
+            this._updateParameters();
+        }
+
+        @serialize()
+        private _applyByPostProcess = false;
+        /**
+         * Gets wether the image processing is applied through a post process or not.
+         */
+        public get applyByPostProcess(): boolean {
+            return this._applyByPostProcess;
+        }
+        /**
+         * Sets wether the image processing is applied through a post process or not.
+         */
+        public set applyByPostProcess(value: boolean) {
+            if (this._applyByPostProcess === value) {
+                return;
+            }
+
+            this._applyByPostProcess = value;
             this._updateParameters();
         }
 
@@ -247,10 +316,13 @@ module BABYLON {
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessing._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
-            defines.TONEMAPPING = (this.cameraExposure !== 1.0);
+            defines.TONEMAPPING = this.toneMappingEnabled;
             defines.CONTRAST = (this.cameraContrast !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
+            defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
+            defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
+            defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
             defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.COLORCURVES || defines.COLORGRADING;
         }
 
@@ -276,7 +348,7 @@ module BABYLON {
             if (this._vignetteEnabled) {
                 var inverseWidth = 1 / effect.getEngine().getRenderWidth();
                 var inverseHeight = 1 / effect.getEngine().getRenderHeight();
-                effect.setFloat2("vInverseScreenSize", 1 / inverseWidth, 1 / inverseHeight);
+                effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
                 let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
                 let vignetteScaleX = vignetteScaleY * aspectRatio;

@@ -389,59 +389,49 @@
          */
         public set imageProcessingConfiguration(value: ImageProcessing) {
             this._attachImageProcessingConfiguration(value);
-        }
 
-        /**
-         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        public get colorCurves(): ColorCurves {
-            return this.imageProcessingConfiguration.colorCurves;
-        }
-        /**
-         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        public set colorCurves(value: ColorCurves) {
-            this.imageProcessingConfiguration.colorCurves = value;
+            // Ensure the effect will be rebuilt.
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         /**
          * Gets wether the color curves effect is enabled.
          */
-        public get colorCurvesEnabled(): boolean {
+        public get cameraColorCurvesEnabled(): boolean {
             return this.imageProcessingConfiguration.colorCurvesEnabled;
         }
         /**
          * Sets wether the color curves effect is enabled.
          */
-        public set colorCurvesEnabled(value: boolean) {
+        public set cameraColorCurvesEnabled(value: boolean) {
             this.imageProcessingConfiguration.colorCurvesEnabled = value;
-        }
-
-        /**
-         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        public get colorGradingTexture(): BaseTexture {
-            return this.imageProcessingConfiguration.colorGradingTexture;
-        }
-        /**
-         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        public set colorGradingTexture(value: BaseTexture) {
-            this.imageProcessingConfiguration.colorGradingTexture = value;
         }
 
         /**
          * Gets wether the color grading effect is enabled.
          */
-        public get colorGradingEnabled(): boolean {
+        public get cameraColorGradingEnabled(): boolean {
             return this.imageProcessingConfiguration.colorGradingEnabled;
         }
         /**
          * Gets wether the color grading effect is enabled.
          */
-        public set colorGradingEnabled(value: boolean) {
+        public set cameraColorGradingEnabled(value: boolean) {
             this.imageProcessingConfiguration.colorGradingEnabled = value;
         }
+
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get cameraToneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set cameraToneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
 
         /**
          * The camera exposure used on this material.
@@ -505,16 +495,6 @@
         public set cameraColorCurves(value: ColorCurves) {
             this._imageProcessingConfiguration.colorCurves = value;
         }
-
-        /**
-         * If true, it allows the output of the shader to be in hdr space (e.g. more than one) which is useful
-         * in combination of post process in float or half float mode.
-         * 
-         * This also disable the image procesing that require to be applied separately.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public hdrLinearOutput = false;
 
         /**
          * Instantiates a new PBRMaterial instance.

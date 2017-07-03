@@ -87,8 +87,9 @@
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
-
-        public HDRLINEAROUTPUT = false;
+        public SAMPLER3DGREENDEPTH = false;
+        public SAMPLER3DBGRMAP = false;
+        public IMAGEPROCESSINGPOSTPROCESS = false;
 
         constructor() {
             super();
@@ -360,9 +361,6 @@
          */
         protected _useAlphaFresnel = false;
 
-        @serialize()
-        protected _hdrLinearOutput = false;
-
         /**
          * Default configuration related to image processing available in the PBR Material.
          */
@@ -400,9 +398,6 @@
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
                 this._markAllSubMeshesAsTexturesDirty();
             });
-
-            // Ensure the effect will be rebuilt.
-            this._markAllSubMeshesAsTexturesDirty();
         }
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
@@ -731,7 +726,6 @@
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
-                defines.HDRLINEAROUTPUT = this._hdrLinearOutput;
                 defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;

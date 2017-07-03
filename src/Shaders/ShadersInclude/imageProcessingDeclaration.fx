@@ -1,4 +1,6 @@
-﻿#ifdef CONTRAST
+﻿uniform float cameraExposureLinear;
+
+#ifdef CONTRAST
 	uniform float contrast;
 #endif
 
@@ -6,10 +8,6 @@
 	uniform vec2 vInverseScreenSize;
 	uniform vec4 vignetteSettings1;
 	uniform vec4 vignetteSettings2;
-#endif
-
-#ifdef TONEMAPPING
-	uniform float cameraExposureLinear;
 #endif
 
 #ifdef COLORCURVES

@@ -21,7 +21,8 @@
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_imageProcessing",
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
-                "mapTexture", "dynamicFloatArray", "serialization", "probes", "layer", "textureTools"
+                "mapTexture", "dynamicFloatArray",
+                "imageProcessing", "serialization", "probes", "layer", "textureTools"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
@@ -30,7 +31,8 @@
                 "shadows", "pointLight", "directionalLight", "spotLight",
                 "multiMaterial", "pbrMaterial",
                 "meshBuilder", "layer",
-                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline",
+                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", 
+                "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline", "imageProcessing",
                 "debug", "textureTools", "hdr",
                 "loader"
         ],
@@ -244,10 +246,8 @@
                 "shadowsFragmentFunctions",
                 "fresnelFunction",
                 "reflectionFunction",
-                "colorGradingDefinition",
-                "colorGrading",
-                "colorCurvesDefinition",
-                "colorCurves",
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions",
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
                 "logDepthDeclaration",
@@ -299,12 +299,10 @@
                 "pbrUboDeclaration",
                 "fresnelFunction",
                 "reflectionFunction",
-                "colorGradingDefinition",
-                "colorCurvesDefinition",
                 "shadowsFragmentFunctions",
                 "pbrFunctions",
-                "colorGrading",
-                "colorCurves",
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions",
                 "harmonicsFunctions",
                 "pbrLightFunctions",
                 "helperFunctions",
@@ -570,7 +568,7 @@
                 "instancesVertex",
                 "bonesVertex"
             ]
-        },            
+        },
         "postProcesses" : 
         {
             "files": [
@@ -639,8 +637,12 @@
             ], 
             "shaders" : [
                 "imageProcessing.fragment"
+            ],
+            "shaderIncludes": [
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions"
             ]
-        },                                          
+        },
         "additionalPostProcesses" : 
         {
             "files": [
@@ -837,17 +839,30 @@
         {
             "files": [
                 "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"                       
+                "../../src/Materials/babylon.colorCurves.js"
             ],
             "dependUpon" : [
                 "core"
+            ]
+        },
+        "imageProcessing" : 
+        {
+            "files": [
+                "../../src/Materials/babylon.imageProcessing.js"
+            ],
+            "dependUpon" : [
+                "colorCurves"
+            ],
+            "shaderIncludes": [
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions"
             ]
         },
         "octrees" : 
         {
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
-                "../../src/Culling/Octrees/babylon.octreeBlock.js"                       
+                "../../src/Culling/Octrees/babylon.octreeBlock.js"
             ],
             "dependUpon" : [
                 "core"
@@ -1171,7 +1186,7 @@
                     "../../materialsLibrary/src/legacyPBR/legacyColorCurves.fx",
                     "../../materialsLibrary/src/legacyPBR/legacyColorCurvesDefinition.fx",
                     "../../materialsLibrary/src/legacyPBR/legacyColorGrading.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx",
+                    "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx"
                 ],
                 "output": "babylon.legacyPbrMaterial.js"
             }
