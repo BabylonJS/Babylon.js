@@ -431,7 +431,7 @@
         "loader" : 
         {
             "files": [
-                "../../src/Tools/babylon.loadingScreen.js",
+                "../../src/Loading/babylon.loadingScreen.js",
                 "../../src/Loading/babylon.sceneLoader.js",
                 "../../src/Loading/Plugins/babylon.babylonFileLoader.js",
                 "../../src/Tools/babylon.filesInput.js"

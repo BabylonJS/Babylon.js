@@ -5,14 +5,17 @@ declare module BABYLON {
         bin: ArrayBufferView;
     }
     interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void) => void;
     }
     class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        static GLTFLoaderV1: IGLTFLoader;
-        static GLTFLoaderV2: IGLTFLoader;
+        static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+        static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        onTextureLoaded: (texture: BaseTexture) => void;
+        onMaterialLoaded: (material: Material) => void;
+        onComplete: () => void;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void;
@@ -183,7 +186,7 @@ declare module BABYLON.GLTF2 {
         alphaCutoff: number;
         doubleSided?: boolean;
         index?: number;
-        babylonMaterial?: PBRMaterial;
+        babylonMaterial?: Material;
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
         attributes: {
@@ -269,6 +272,7 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     class GLTFLoader implements IGLTFLoader {
+        private _parent;
         private _gltf;
         private _errors;
         private _babylonScene;
@@ -285,6 +289,7 @@ declare module BABYLON.GLTF2 {
         static RegisterExtension(extension: GLTFLoaderExtension): void;
         readonly gltf: IGLTF;
         readonly babylonScene: Scene;
+        constructor(parent: GLTFFileLoader);
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void;
         private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onError);
@@ -300,6 +305,7 @@ declare module BABYLON.GLTF2 {
         private _createBone(node, skin);
         private _loadMesh(node);
         private _loadMeshData(node, mesh, babylonMesh);
+        private _assignMaterial(multiMaterial, index, subMaterial);
         private _loadVertexDataAsync(primitive, onSuccess);
         private _createMorphTargets(node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsData(mesh, primitive, vertexData, babylonMesh);
@@ -390,5 +396,6 @@ declare module BABYLON.GLTF2.Extensions {
     class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
         readonly name: string;
         protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        private _loadSpecularGlossinessProperties(loader, material, properties);
     }
 }

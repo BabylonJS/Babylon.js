@@ -53,17 +53,13 @@ var BABYLON;
                     return null;
                 }
             }
-            var loaders = {
-                1: GLTFFileLoader.GLTFLoaderV1,
-                2: GLTFFileLoader.GLTFLoaderV2
+            var createLoader = {
+                1: GLTFFileLoader.CreateGLTFLoaderV1,
+                2: GLTFFileLoader.CreateGLTFLoaderV2
             };
-            var loader = loaders[version.major];
-            if (loader === undefined) {
-                BABYLON.Tools.Error("Unsupported version");
-                return null;
-            }
+            var loader = createLoader[version.major](this);
             if (loader === null) {
-                BABYLON.Tools.Error("v" + version.major + " loader is not available");
+                BABYLON.Tools.Error("Unsupported version");
                 return null;
             }
             return loader;
@@ -193,8 +189,7 @@ var BABYLON;
         };
         return GLTFFileLoader;
     }());
-    GLTFFileLoader.GLTFLoaderV1 = null;
-    GLTFFileLoader.GLTFLoaderV2 = null;
+    // V1 options
     GLTFFileLoader.HomogeneousCoordinates = false;
     GLTFFileLoader.IncrementalLoading = true;
     BABYLON.GLTFFileLoader = GLTFFileLoader;
@@ -225,7 +220,9 @@ var BABYLON;
         };
         return BinaryReader;
     }());
-    BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    if (BABYLON.SceneLoader) {
+        BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    }
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.glTFFileLoader.js.map
@@ -1756,7 +1753,7 @@ var BABYLON;
         GLTFLoader.Extensions = {};
         GLTF1.GLTFLoader = GLTFLoader;
         ;
-        BABYLON.GLTFFileLoader.GLTFLoaderV1 = new GLTFLoader();
+        BABYLON.GLTFFileLoader.CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
 

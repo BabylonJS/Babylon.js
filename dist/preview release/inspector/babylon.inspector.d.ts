@@ -255,6 +255,10 @@ declare module INSPECTOR {
         'WorldSpaceCanvas2DNode': {
             type: typeof BABYLON.WorldSpaceCanvas2DNode;
         };
+        'PhysicsImpostor': {
+            type: typeof BABYLON.PhysicsImpostor;
+            properties: string[];
+        };
     };
 }
 
@@ -828,6 +832,14 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class GUITab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class PhysicsTab extends PropertyTab {
+        viewer: BABYLON.Debug.PhysicsViewer;
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
