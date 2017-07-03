@@ -9,8 +9,19 @@ var INSPECTOR;
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
-            //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
-            INSPECTOR.loadGUIProperties();
+            // Load GUI library if not already done
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", function () {
+                    //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                    INSPECTOR.loadGUIProperties();
+                }, function () {
+                    console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file");
+                });
+            }
+            else {
+                //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                INSPECTOR.loadGUIProperties();
+            }
             //get Tabbar initialTab
             this._initialTab = initialTab;
             //get parentElement of our Inspector
@@ -243,6 +254,7 @@ var INSPECTOR;
          */
         Inspector.prototype.dispose = function () {
             if (!this._popupMode) {
+                this._tabbar.getActiveTab().dispose();
                 // Get canvas
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 // restore canvas style
@@ -703,7 +715,15 @@ var INSPECTOR;
         },
         'WorldSpaceCanvas2DNode': {
             type: BABYLON.WorldSpaceCanvas2DNode
-        }
+        },
+        'PhysicsImpostor': {
+            type: BABYLON.PhysicsImpostor,
+            properties: [
+                'friction',
+                'mass',
+                'restitution',
+            ]
+        },
     };
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1507,6 +1527,73 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    var PhysicsImpostorAdapter = (function (_super) {
+        __extends(PhysicsImpostorAdapter, _super);
+        function PhysicsImpostorAdapter(obj, viewer) {
+            var _this = _super.call(this, obj) || this;
+            _this._isVisible = false;
+            _this._viewer = viewer;
+            return _this;
+        }
+        /** Returns the name displayed in the tree */
+        PhysicsImpostorAdapter.prototype.id = function () {
+            var str = '';
+            var physicsImposter = this._obj;
+            if (physicsImposter && physicsImposter.object) {
+                str = physicsImposter.object.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        PhysicsImpostorAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        PhysicsImpostorAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        PhysicsImpostorAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        PhysicsImpostorAdapter.prototype.setVisible = function (b) {
+            this._isVisible = b;
+            if (b) {
+                this._viewer.showImpostor(this._obj);
+            }
+            else {
+                this._viewer.hideImpostor(this._obj);
+            }
+        };
+        PhysicsImpostorAdapter.prototype.isVisible = function () {
+            return this._isVisible;
+        };
+        return PhysicsImpostorAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.PhysicsImpostorAdapter = PhysicsImpostorAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=PhysicsImpostorAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
     var DetailPanel = (function (_super) {
         __extends(DetailPanel, _super);
         function DetailPanel(dr) {
@@ -1816,7 +1903,12 @@ var INSPECTOR;
                 // Enter : validate the new value
                 var newValue = this._input.value;
                 this.updateObject();
-                this._property.value = newValue;
+                if (typeof this._property.value === 'number') {
+                    this._property.value = parseFloat(newValue);
+                }
+                else {
+                    this._property.value = newValue;
+                }
                 // Remove input
                 this.update();
                 // resume scheduler
@@ -2094,8 +2186,6 @@ var INSPECTOR;
     }(INSPECTOR.BasicElement));
     INSPECTOR.ColorElement = ColorElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=ColorElement.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2894,6 +2984,46 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    var PhysicsTab = (function (_super) {
+        __extends(PhysicsTab, _super);
+        function PhysicsTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Physics', inspector) || this;
+        }
+        /* Overrides super */
+        PhysicsTab.prototype._getTree = function () {
+            var arr = [];
+            var scene = this._inspector.scene;
+            if (!scene.isPhysicsEnabled()) {
+                return arr;
+            }
+            if (!this.viewer) {
+                this.viewer = new BABYLON.Debug.PhysicsViewer(scene);
+            }
+            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (mesh.physicsImpostor) {
+                    arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.PhysicsImpostorAdapter(mesh.physicsImpostor, this.viewer)));
+                }
+            }
+            return arr;
+        };
+        return PhysicsTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.PhysicsTab = PhysicsTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
     var SoundTab = (function (_super) {
         __extends(SoundTab, _super);
         function SoundTab(tabbar, inspector) {
@@ -3144,7 +3274,7 @@ var INSPECTOR;
                 var descendants = obj.getDescendants(true);
                 if (descendants.length > 0) {
                     var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
-                    alreadyIn.push(node);
+                    alreadyIn.push(obj);
                     for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                         var child = descendants_1[_i];
                         if (child instanceof BABYLON.AbstractMesh) {
@@ -3939,7 +4069,10 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
-            _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
+            if (BABYLON.GUI) {
+                _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
+            }
+            _this._tabs.push(new INSPECTOR.PhysicsTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);

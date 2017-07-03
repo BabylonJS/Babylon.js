@@ -255,6 +255,10 @@ declare module INSPECTOR {
         'WorldSpaceCanvas2DNode': {
             type: typeof BABYLON.WorldSpaceCanvas2DNode;
         };
+        'PhysicsImpostor': {
+            type: typeof BABYLON.PhysicsImpostor;
+            properties: string[];
+        };
     };
 }
 
@@ -436,6 +440,23 @@ declare module INSPECTOR {
          * Should be called only one time as it will fill this._axis
          */
         private _drawAxis();
+    }
+}
+
+declare module INSPECTOR {
+    class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
+        private _viewer;
+        private _isVisible;
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setVisible(b: boolean): void;
+        isVisible(): boolean;
     }
 }
 
@@ -828,6 +849,14 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class GUITab extends PropertyTab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        protected _getTree(): Array<TreeItem>;
+    }
+}
+
+declare module INSPECTOR {
+    class PhysicsTab extends PropertyTab {
+        viewer: BABYLON.Debug.PhysicsViewer;
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }

@@ -5,14 +5,17 @@ declare module BABYLON {
         bin: ArrayBufferView;
     }
     interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void) => void;
     }
     class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        static GLTFLoaderV1: IGLTFLoader;
-        static GLTFLoaderV2: IGLTFLoader;
+        static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+        static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        onTextureLoaded: (texture: BaseTexture) => void;
+        onMaterialLoaded: (material: Material) => void;
+        onComplete: () => void;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void;
