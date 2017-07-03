@@ -10,6 +10,7 @@ module BABYLON {
         VIGNETTEBLENDMODEOPAQUE: boolean;
         TONEMAPPING: boolean;
         CONTRAST: boolean;
+        EXPOSURE: boolean;
         COLORCURVES: boolean;
         COLORGRADING: boolean;
         SAMPLER3DGREENDEPTH: boolean;
@@ -120,7 +121,7 @@ module BABYLON {
          * Exposure used in the effect.
          */
         @serialize()
-        public exposure = Math.log(Math.PI) * Math.LOG2E;
+        public exposure = 1.0;
 
         @serialize()
         private _toneMappingEnabled = false;
@@ -278,7 +279,9 @@ module BABYLON {
          * @param defines the list of defines currently in use
          */
         public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
-            uniforms.push("exposureLinear");
+            if (defines.EXPOSURE) {
+                uniforms.push("exposureLinear");
+            }
             if (defines.CONTRAST) {
                 uniforms.push("contrast");
             }
@@ -316,12 +319,13 @@ module BABYLON {
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
             defines.TONEMAPPING = this.toneMappingEnabled;
             defines.CONTRAST = (this.contrast !== 1.0);
+            defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
-            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.COLORCURVES || defines.COLORGRADING;
+            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
         }
 
         /**
@@ -362,7 +366,7 @@ module BABYLON {
             }
 
             // Exposure
-            effect.setFloat("exposureLinear", Math.pow(2.0, -this.exposure) * Math.PI);
+            effect.setFloat("exposureLinear", this.exposure);
             
             // Contrast
             effect.setFloat("contrast", this.contrast);

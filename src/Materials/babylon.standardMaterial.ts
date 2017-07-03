@@ -74,6 +74,7 @@ module BABYLON {
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
+        public EXPOSURE = false;
 
         constructor() {
             super();
