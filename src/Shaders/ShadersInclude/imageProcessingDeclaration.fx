@@ -1,4 +1,4 @@
-﻿uniform float cameraExposureLinear;
+﻿uniform float exposureLinear;
 
 #ifdef CONTRAST
 	uniform float contrast;

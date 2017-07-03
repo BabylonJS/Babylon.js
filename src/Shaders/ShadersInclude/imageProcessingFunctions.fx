@@ -51,7 +51,7 @@ vec3 sampleTexture3D(sampler2D colorTransform, vec3 color, vec2 sampler3dSetting
 
 vec4 applyImageProcessing(vec4 result) {
 
-	result.rgb *= cameraExposureLinear;
+	result.rgb *= exposureLinear;
 
 #ifdef VIGNETTE
 		//vignette
