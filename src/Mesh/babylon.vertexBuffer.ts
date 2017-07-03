@@ -117,6 +117,13 @@
             return this._buffer.getIsInstanced();
         }
 
+        /**
+         * Returns the instancing divisor, zero for non-instanced (integer).  
+         */
+        public getInstanceDivisor(): number {
+            return this._buffer.instanceDivisor;
+        }
+
         // Methods
 
         /**

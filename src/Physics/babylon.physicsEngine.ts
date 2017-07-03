@@ -177,12 +177,19 @@
         getLinearVelocity(impostor: PhysicsImpostor) : Vector3;
         getAngularVelocity(impostor: PhysicsImpostor) : Vector3;
         setBodyMass(impostor: PhysicsImpostor, mass: number);
+        getBodyMass(impostor: PhysicsImpostor);
+        getBodyFriction(impostor: PhysicsImpostor);
+        setBodyFriction(impostor: PhysicsImpostor, friction: number);
+        getBodyRestitution(impostor: PhysicsImpostor);
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number);
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
         //Joint Update
         updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        getDebugMesh(impostor:PhysicsImpostor, scene:Scene);
+        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor);
         dispose();
     }
 }
