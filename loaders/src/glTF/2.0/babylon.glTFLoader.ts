@@ -879,14 +879,12 @@ module BABYLON.GLTF2 {
         public createPbrMaterial(material: IGLTFMaterial): void {
             var babylonMaterial = new PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
             babylonMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
-            babylonMaterial.useScalarInLinearSpace = true;
             material.babylonMaterial = babylonMaterial;
         }
 
         public loadMaterialBaseProperties(material: IGLTFMaterial): void {
             var babylonMaterial = material.babylonMaterial as PBRMaterial;
 
-            babylonMaterial.useEmissiveAsIllumination = (material.emissiveFactor || material.emissiveTexture) ? true : false;
             babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
             if (material.doubleSided) {
                 babylonMaterial.backFaceCulling = false;

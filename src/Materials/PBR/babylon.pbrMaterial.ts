@@ -80,41 +80,6 @@
         public disableBumpMap: boolean = false;
 
         /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraExposure: number = 1.0;
-        
-        /**
-         * The camera contrast used on this material.
-         * This property is here and not in the camera to allow controlling contrast without full screen post process.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraContrast: number = 1.0;
-        
-        /**
-         * Color Grading 2D Lookup Texture.
-         * This allows special effects like sepia, black and white to sixties rendering style. 
-         */
-        @serializeAsTexture()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorGradingTexture: BaseTexture = null;
-        
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        @serializeAsColorCurves()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorCurves: ColorCurves = null;
-
-        /**
          * AKA Diffuse Texture in standard nomenclature.
          */
         @serializeAsTexture()
@@ -244,14 +209,6 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public invertRefractionY = false;
 
-        @serializeAsFresnelParameters()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityFresnelParameters: FresnelParameters;
-
-        @serializeAsFresnelParameters()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveFresnelParameters: FresnelParameters;
-
         /**
          * This parameters will make the material used its opacity to control how much it is refracting aginst not.
          * Materials half opaque for instance using refraction could benefit from this control.
@@ -265,15 +222,7 @@
         public useLightmapAsShadowmap = false;
         
         /**
-         * In this mode, the emissive informtaion will always be added to the lighting once.
-         * A light for instance can be thought as emissive.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useEmissiveAsIllumination = false;
-        
-        /**
-         * Secifies that the alpha is coming form the albedo channel alpha channel.
+         * Specifies that the alpha is coming form the albedo channel alpha channel.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -336,14 +285,6 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAutoMicroSurfaceFromReflectivityMap = false;
-        
-        /**
-         * Allows to work with scalar in linear mode. This is definitely a matter of preferences and tools used during
-         * the creation of the material.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useScalarInLinearSpace = false;
         
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
@@ -417,6 +358,143 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public twoSidedLighting = false;
+
+        /**
+         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
+         * in your scene composition.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public premultiplyAlpha = false;
+
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useAlphaFresnel = false;
+
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+            return this._imageProcessingConfiguration;
+        }
+
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         * 
+         * If sets to null, the scene one is in use.
+         */
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+            this._attachImageProcessingConfiguration(value);
+
+            // Ensure the effect will be rebuilt.
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        public get cameraColorCurvesEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorCurvesEnabled;
+        }
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        public set cameraColorCurvesEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorCurvesEnabled = value;
+        }
+
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public get cameraColorGradingEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorGradingEnabled;
+        }
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public set cameraColorGradingEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorGradingEnabled = value;
+        }
+
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get cameraToneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set cameraToneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
+
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public get cameraExposure(): number {
+            return this._imageProcessingConfiguration.exposure;
+        };
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public set cameraExposure(value: number) {
+            this._imageProcessingConfiguration.exposure = value;
+        };
+        
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        public get cameraContrast(): number {
+            return this._imageProcessingConfiguration.contrast;
+        }
+
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        public set cameraContrast(value: number) {
+            this._imageProcessingConfiguration.contrast = value;
+        }
+        
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        public get cameraColorGradingTexture(): BaseTexture {
+            return this._imageProcessingConfiguration.colorGradingTexture;
+        }
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        public set cameraColorGradingTexture(value: BaseTexture) {
+            this._imageProcessingConfiguration.colorGradingTexture = value;
+        }
+
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public get cameraColorCurves(): ColorCurves {
+            return this._imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public set cameraColorCurves(value: ColorCurves) {
+            this._imageProcessingConfiguration.colorCurves = value;
+        }
 
         /**
          * Instantiates a new PBRMaterial instance.
