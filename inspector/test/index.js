@@ -213,6 +213,21 @@ var Test = (function () {
             cubes.push(b);
         }
 
+        //Other meshes
+        var box1 = BABYLON.MeshBuilder.CreateBox("box1", {size: 1}, scene);
+
+        var box2 = BABYLON.MeshBuilder.CreateBox("box2", {size: 1}, scene);
+        box2.position.x = 1.5;
+        box2.parent = box1;
+
+        var box3 = BABYLON.MeshBuilder.CreateBox("box3", {size: 1}, scene);
+        box3.position.x = 1.5;
+        box3.parent = box2;
+
+        var box4 = BABYLON.MeshBuilder.CreateBox("box4", {size: 1}, scene);
+        box4.position.x = 1.5;
+        box4.parent = box3;
+
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
