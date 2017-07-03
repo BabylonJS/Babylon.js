@@ -849,7 +849,7 @@
         "imageProcessing" : 
         {
             "files": [
-                "../../src/Materials/babylon.imageProcessing.js"
+                "../../src/Materials/babylon.imageProcessingConfiguration.js"
             ],
             "dependUpon" : [
                 "colorCurves"
