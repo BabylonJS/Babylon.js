@@ -7801,7 +7801,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.0-beta";
+                return "3.0-rc";
             },
             enumerable: true,
             configurable: true
@@ -40618,10 +40618,7 @@ var BABYLON;
             this._colorGradingEnabled = false;
             this._colorGradingWithGreenDepth = false;
             this._colorGradingBGR = false;
-            /**
-             * Exposure used in the effect.
-             */
-            this.exposure = 1.0;
+            this._exposure = 1.0;
             this._toneMappingEnabled = false;
             this._contrast = 1.0;
             /**
@@ -40733,6 +40730,26 @@ var BABYLON;
                     return;
                 }
                 this._colorGradingBGR = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "exposure", {
+            /**
+             * Gets the Exposure used in the effect.
+             */
+            get: function () {
+                return this._exposure;
+            },
+            /**
+             * Sets the Exposure used in the effect.
+             */
+            set: function (value) {
+                if (this._exposure === value) {
+                    return;
+                }
+                this._exposure = value;
                 this._updateParameters();
             },
             enumerable: true,
@@ -41009,7 +41026,7 @@ var BABYLON;
     ], ImageProcessingConfiguration.prototype, "_colorGradingBGR", void 0);
     __decorate([
         BABYLON.serialize()
-    ], ImageProcessingConfiguration.prototype, "exposure", void 0);
+    ], ImageProcessingConfiguration.prototype, "_exposure", void 0);
     __decorate([
         BABYLON.serialize()
     ], ImageProcessingConfiguration.prototype, "_toneMappingEnabled", void 0);
