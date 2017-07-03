@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    class PBRMaterialDefines extends MaterialDefines implements IImageProcessingDefines {
+    class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public PBR = true;
         public ALBEDO = false;
         public AMBIENT = false;
@@ -364,19 +364,19 @@
         /**
          * Default configuration related to image processing available in the PBR Material.
          */
-        @serializeAsImageProcessing()
-        protected _imageProcessingConfiguration: ImageProcessing;
+        @serializeAsImageProcessingConfiguration()
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessing>;
+        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessing): void {
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -853,8 +853,8 @@
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 var uniformBuffers = ["Material", "Scene"];
 
-                ImageProcessing.PrepareUniforms(uniforms, defines);
-                ImageProcessing.PrepareSamplers(samplers, defines);
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

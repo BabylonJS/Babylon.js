@@ -3,7 +3,7 @@ module BABYLON {
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
      */
-    export interface IImageProcessingDefines {
+    export interface IImageProcessingConfigurationDefines {
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
         VIGNETTEBLENDMODEMULTIPLY: boolean;
@@ -22,7 +22,7 @@ module BABYLON {
      * or through post processing effect depending on the use of the image processing pipeline in your scene 
      * or not.
      */
-    export class ImageProcessing {
+    export class ImageProcessingConfiguration {
 
         /**
          * Color curves setup used in the effect if colorCurvesEnabled is set to true 
@@ -200,7 +200,7 @@ module BABYLON {
         public cameraFov = 0.5;
 
         @serialize()
-        private _vignetteBlendMode = ImageProcessing.VIGNETTEMODE_MULTIPLY;
+        private _vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
         /**
          * Gets the vignette blend mode allowing different kind of effect.
          */
@@ -263,7 +263,7 @@ module BABYLON {
         * An event triggered when the configuration changes and requires Shader to Update some parameters.
         * @type {BABYLON.Observable}
         */
-        public onUpdateParameters = new Observable<ImageProcessing>();
+        public onUpdateParameters = new Observable<ImageProcessingConfiguration>();
 
         /**
          * Method called each time the image processing information changes requires to recompile the effect.
@@ -277,7 +277,7 @@ module BABYLON {
          * @param uniformsList The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
-        public static PrepareUniforms(uniforms: string[], defines: IImageProcessingDefines): void {
+        public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
             if (defines.CONTRAST) {
                 uniforms.push("contrast");
             }
@@ -302,7 +302,7 @@ module BABYLON {
          * @param uniformsList The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
-        public static PrepareSamplers(samplersList: string[], defines: IImageProcessingDefines): void {
+        public static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void {
             if (defines.COLORGRADING) {
                 samplersList.push("txColorTransform");
             }
@@ -312,9 +312,9 @@ module BABYLON {
          * Prepare the list of defines associated to the shader.
          * @param defines the list of defines to complete
          */
-        public prepareDefines(defines: IImageProcessingDefines): void {
+        public prepareDefines(defines: IImageProcessingConfigurationDefines): void {
             defines.VIGNETTE = this.vignetteEnabled;
-            defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessing._VIGNETTEMODE_MULTIPLY);
+            defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
             defines.TONEMAPPING = this.toneMappingEnabled;
             defines.CONTRAST = (this.cameraContrast !== 1.0);
@@ -387,8 +387,8 @@ module BABYLON {
          * Clones the current image processing instance.
          * @return The cloned image processing
          */
-        public clone(): ImageProcessing {
-            return SerializationHelper.Clone(() => new ImageProcessing(), this);
+        public clone(): ImageProcessingConfiguration {
+            return SerializationHelper.Clone(() => new ImageProcessingConfiguration(), this);
         }
 
         /**
@@ -404,8 +404,8 @@ module BABYLON {
          * @param source the JSON source to parse
          * @return The parsed image processing
          */      
-        public static Parse(source: any) : ImageProcessing {
-            return SerializationHelper.Parse(() => new ImageProcessing(), source, null, null);
+        public static Parse(source: any) : ImageProcessingConfiguration {
+            return SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
         }
 
         // Static constants associated to the image processing.

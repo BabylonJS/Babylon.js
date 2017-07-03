@@ -209,7 +209,7 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
-        protected _imageProcessingConfiguration: ImageProcessing;
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
          * Forward main pass or through the imageProcessingPostProcess if present.
@@ -218,7 +218,7 @@
          * 
          * No setter as we it is a shared configuration, you can set the values instead.
          */
-        public get imageProcessingConfiguration(): ImageProcessing {
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
             return this._imageProcessingConfiguration;
         }
 
@@ -807,7 +807,7 @@
             this._createUbo();
 
             // Default Image processing definition.
-            this._imageProcessingConfiguration = new ImageProcessing();
+            this._imageProcessingConfiguration = new ImageProcessingConfiguration();
         }
 
         // Properties

@@ -72,7 +72,7 @@
         return generateSerializableMember(8, sourceName); // color 4
     }
 
-    export function serializeAsImageProcessing(sourceName?: string) {
+    export function serializeAsImageProcessingConfiguration(sourceName?: string) {
         return generateSerializableMember(9, sourceName); // image processing
     }
 
@@ -126,7 +126,7 @@
                             serializationObject[targetPropertyName] = (<Color4>sourceProperty).asArray();
                             break;
                         case 9:     // Image Processing
-                            serializationObject[targetPropertyName] = (<ImageProcessing>sourceProperty).serialize();
+                            serializationObject[targetPropertyName] = (<ImageProcessingConfiguration>sourceProperty).serialize();
                             break;
                     }
                 }
@@ -179,7 +179,7 @@
                             destination[property] = Color4.FromArray(sourceProperty);
                             break;
                         case 9:     // Image Processing
-                            destination[property] = ImageProcessing.Parse(sourceProperty);
+                            destination[property] = ImageProcessingConfiguration.Parse(sourceProperty);
                             break;
                     }
                 }
