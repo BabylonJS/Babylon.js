@@ -3209,7 +3209,7 @@ var INSPECTOR;
                 var descendants = obj.getDescendants(true);
                 if (descendants.length > 0) {
                     var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
-                    alreadyIn.push(node);
+                    alreadyIn.push(obj);
                     for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                         var child = descendants_1[_i];
                         if (child instanceof BABYLON.AbstractMesh) {
