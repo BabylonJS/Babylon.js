@@ -1,5 +1,5 @@
 module BABYLON {
-   export class StandardMaterialDefines extends MaterialDefines {
+   export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -57,13 +57,24 @@ module BABYLON {
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
-        public CAMERACOLORGRADING = false;
-        public CAMERACOLORCURVES = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
         public USERIGHTHANDEDSYSTEM = false;
+
+        public IMAGEPROCESSING = false;
+        public VIGNETTE = false;
+        public VIGNETTEBLENDMODEMULTIPLY = false;
+        public VIGNETTEBLENDMODEOPAQUE = false;
+        public TONEMAPPING = false;
+        public CONTRAST = false;
+        public COLORCURVES = false;
+        public COLORGRADING = false;
+        public SAMPLER3DGREENDEPTH = false;
+        public SAMPLER3DBGRMAP = false;
+        public IMAGEPROCESSINGPOSTPROCESS = false;
+        public EXPOSURE = false;
 
         constructor() {
             super();
@@ -271,24 +282,144 @@ module BABYLON {
         public twoSidedLighting: boolean;     
 
         /**
-         * Color Grading 2D Lookup Texture.
-         * This allows special effects like sepia, black and white to sixties rendering style. 
+         * Default configuration related to image processing available in the standard Material.
          */
-        @serializeAsTexture("cameraColorGradingTexture")
-        private _cameraColorGradingTexture: BaseTexture;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorGradingTexture: BaseTexture;             
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         * Gets the image processing configuration used either in this material.
          */
-        @serializeAsColorCurves("cameraColorCurves")
-        private _cameraColorCurves: ColorCurves = null;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public cameraColorCurves: ColorCurves;             
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+            return this._imageProcessingConfiguration;
+        }
+
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         * 
+         * If sets to null, the scene one is in use.
+         */
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+            this._attachImageProcessingConfiguration(value);
+
+            // Ensure the effect will be rebuilt.
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+
+        /**
+         * Attaches a new image processing configuration to the Standard Material.
+         * @param configuration 
+         */
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+            if (configuration === this._imageProcessingConfiguration) {
+                return;
+            }
+
+            // Detaches observer.
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            }
+
+            // Pick the scene configuration if needed.
+            if (!configuration) {
+                this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = configuration;
+            }
+
+            // Attaches observer.
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._markAllSubMeshesAsTexturesDirty();
+            });
+        }
+
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        public get cameraColorCurvesEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorCurvesEnabled;
+        }
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        public set cameraColorCurvesEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorCurvesEnabled = value;
+        }
+
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public get cameraColorGradingEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorGradingEnabled;
+        }
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public set cameraColorGradingEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorGradingEnabled = value;
+        }
+
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get cameraToneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set cameraToneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
+
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public get cameraExposure(): number {
+            return this._imageProcessingConfiguration.exposure;
+        };
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        public set cameraExposure(value: number) {
+            this._imageProcessingConfiguration.exposure = value;
+        };
+        
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        public get cameraContrast(): number {
+            return this._imageProcessingConfiguration.contrast;
+        }
+
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        public set cameraContrast(value: number) {
+            this._imageProcessingConfiguration.contrast = value;
+        }
+        
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        public get cameraColorGradingTexture(): BaseTexture {
+            return this._imageProcessingConfiguration.colorGradingTexture;
+        }
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        public set cameraColorGradingTexture(value: BaseTexture) {
+            this._imageProcessingConfiguration.colorGradingTexture = value;
+        }
 
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
@@ -300,6 +431,9 @@ module BABYLON {
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
+
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
 
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
@@ -525,17 +659,6 @@ module BABYLON {
                         defines.REFRACTION = false;
                     }
 
-                    if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        // Camera Color Grading can not be none blocking.
-                        if (!this._cameraColorGradingTexture.isReady()) {
-                            return false;
-                        } else {
-                            defines.CAMERACOLORGRADING = true;
-                        }
-                    } else {
-                        defines.CAMERACOLORGRADING = false;
-                    }
-
                     defines.TWOSIDEDLIGHTING = !this._backFaceCulling && this._twoSidedLighting;
                 } else {
                     defines.DIFFUSE = false;
@@ -546,10 +669,13 @@ module BABYLON {
                     defines.LIGHTMAP = false;
                     defines.BUMP = false;
                     defines.REFRACTION = false;
-                    defines.CAMERACOLORGRADING = false;
                 }
 
-                defines.CAMERACOLORCURVES = (this._cameraColorCurves !== undefined && this._cameraColorCurves !== null);
+                if (!this.imageProcessingConfiguration.isReady()) {
+                    return false;
+                }
+
+                this.imageProcessingConfiguration.prepareDefines(defines);
 
                 defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
 
@@ -558,7 +684,7 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-            } 
+            }
 
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
@@ -709,12 +835,9 @@ module BABYLON {
 
                 var uniformBuffers = ["Material", "Scene"];
 
-                if (defines.CAMERACOLORCURVES) {
-                    ColorCurves.PrepareUniforms(uniforms);
-                }
-                if (defines.CAMERACOLORGRADING) {
-                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
-                }
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
                     uniformBuffersNames: uniformBuffers,
@@ -970,10 +1093,6 @@ module BABYLON {
                             effect.setTexture("refraction2DSampler", this._refractionTexture);
                         }
                     }
-                    
-                    if (this._cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        ColorGradingTexture.Bind(this._cameraColorGradingTexture, effect);
-                    }
                 }
 
                 // Clip plane
@@ -1002,17 +1121,14 @@ module BABYLON {
 
                 // Morph targets
                 if (defines.NUM_MORPH_INFLUENCERS) {
-                    MaterialHelper.BindMorphTargetParameters(mesh, effect);                
+                    MaterialHelper.BindMorphTargetParameters(mesh, effect);
                 }
 
                 // Log. depth
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
-                // Color Curves
-                if (this._cameraColorCurves) {
-                    ColorCurves.Bind(this._cameraColorCurves, effect);
-                }
-
+                // image processing
+                this._imageProcessingConfiguration.bind(this._activeEffect);
             }
 
             this._uniformBuffer.update();
@@ -1057,10 +1173,6 @@ module BABYLON {
             if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
                 results.push(this._refractionTexture);
             }
-            
-            if (this._cameraColorGradingTexture && this._cameraColorGradingTexture.animations && this._cameraColorGradingTexture.animations.length > 0) {
-                results.push(this._cameraColorGradingTexture);
-            }
 
             return results;
         }
@@ -1104,10 +1216,6 @@ module BABYLON {
                 activeTextures.push(this._refractionTexture);
             }
 
-            if (this._cameraColorGradingTexture) {
-                activeTextures.push(this._cameraColorGradingTexture);
-            }
-
             return activeTextures;
         }
 
@@ -1148,10 +1256,10 @@ module BABYLON {
                 if (this._refractionTexture) {
                     this._refractionTexture.dispose();
                 }
-                
-                if (this._cameraColorGradingTexture) {
-                    this._cameraColorGradingTexture.dispose();
-                }
+            }
+
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);

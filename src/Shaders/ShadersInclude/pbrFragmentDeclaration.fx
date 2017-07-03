@@ -44,15 +44,6 @@ uniform vec3 vReflectivityInfos;
 uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
-#ifdef OPACITYFRESNEL
-uniform vec4 opacityParts;
-#endif
-
-#ifdef EMISSIVEFRESNEL
-uniform vec4 emissiveLeftColor;
-uniform vec4 emissiveRightColor;
-#endif
-
 // Refraction Reflection
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
 uniform mat4 view;

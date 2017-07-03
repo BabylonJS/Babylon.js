@@ -7,7 +7,7 @@ window.preparePBR = function() {
     
     var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
 
-    var colorGradingTexture = new BABYLON.ColorGradingTexture("../assets/textures/ColorGrading.3DL", scene);
+    //var colorGradingTexture = new BABYLON.ColorGradingTexture("../assets/textures/ColorGrading.3DL", scene);
     
     // Uncomment for PMREM Generation
     // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
@@ -15,7 +15,12 @@ window.preparePBR = function() {
     pbr.refractionTexture = hdrTexture;
     pbr.linkRefractionWithTransparency = true;
     pbr.indexOfRefraction = 0.52;
-    
+
+	// var colorGrading = new BABYLON.ColorGradingTexture("../assets/textures/lateSunset.3DL", scene);
+	var colorGrading = new BABYLON.Texture("../assets/textures/colorGrade.png", scene, true);
+	pbr.cameraColorGradingTexture = colorGrading;
+	pbr.colorGradingEnabled = true;
+
 	pbr.reflectivityColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 	pbr.microSurface = 0.9;
     
