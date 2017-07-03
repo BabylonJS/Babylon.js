@@ -101,8 +101,6 @@ varying vec3 vDirectionW;
 
 #include<imageProcessingDeclaration>
 
-#include<helperFunctions>
-
 #include<imageProcessingFunctions>
 
 #include<bumpFragmentFunctions>
@@ -359,9 +357,13 @@ void main(void) {
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.
-#ifdef IMAGEPROCESSING
-	color.rgb = toLinearSpace(result.rgb);
-	color.rgb = applyImageProcessing(color);
+#ifdef IMAGEPROCESSINGPOSTPROCESS
+	color.rgb = toLinearSpace(color.rgb);
+#else
+	#ifdef IMAGEPROCESSING
+		color.rgb = toLinearSpace(color.rgb);
+		color = applyImageProcessing(color);
+	#endif
 #endif
 
 	gl_FragColor = color;

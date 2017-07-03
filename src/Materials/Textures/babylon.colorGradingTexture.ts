@@ -122,7 +122,6 @@ module BABYLON {
                         tempData[pixelStorageIndex + 0] = r;
                         tempData[pixelStorageIndex + 1] = g;
                         tempData[pixelStorageIndex + 2] = b;
-                        tempData[pixelStorageIndex + 3] = 0;
 
                         pixelIndexSlice++;
                         if (pixelIndexSlice % size == 0) {
@@ -137,8 +136,13 @@ module BABYLON {
                 }
 
                 for (let i = 0; i < tempData.length; i++) {
-                    var value = tempData[i];
-                    data[i] = (value / maxColor * 255);
+                    if (i > 0 && (i+1) % 4 === 0) {
+                        data[i] = 255;
+                    }
+                    else {
+                        var value = tempData[i];
+                        data[i] = (value / maxColor * 255);
+                    }
                 }
 
                 this.getScene().getEngine().updateTextureSize(texture, size * size, size);

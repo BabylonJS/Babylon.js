@@ -327,7 +327,7 @@
             light.transferToEffect(effect, lightIndex + "");
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, , usePhysicalLightFalloff = false) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
             var lightIndex = 0;
             for (var light of mesh._lightSources) {
                 let scaledIntensity = light.getScaledIntensity();

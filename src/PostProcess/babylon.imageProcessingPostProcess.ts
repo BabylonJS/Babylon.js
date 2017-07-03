@@ -126,6 +126,19 @@
         }
 
         /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get toneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set toneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
+
+        /**
          * Gets Camera contrast used in the effect.
          */
         public get cameraContrast(): number {
@@ -245,7 +258,7 @@
         }
 
         @serialize()
-        private _fromLinearSpace = false;
+        private _fromLinearSpace = true;
         /**
          * Gets wether the input of the processing is in Gamma or Linear Space.
          */
@@ -268,6 +281,7 @@
          * Defines cache preventing GC.
          */
         private _defines: IImageProcessingDefines & { FROMLINEARSPACE: boolean } = {
+            IMAGEPROCESSING: false,
             VIGNETTE: false,
             VIGNETTEBLENDMODEMULTIPLY: false,
             VIGNETTEBLENDMODEOPAQUE: false,
@@ -276,6 +290,9 @@
             COLORCURVES: false,
             COLORGRADING: false,
             FROMLINEARSPACE: false,
+            SAMPLER3DGREENDEPTH: false,
+            SAMPLER3DBGRMAP: false,
+            IMAGEPROCESSINGPOSTPROCESS: false,
         }
 
         constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
@@ -284,6 +301,8 @@
 
             // Setup the default processing configuration to the scene.
             this._attachImageProcessingConfiguration(null);
+
+            this.imageProcessingConfiguration.applyByPostProcess = true;
 
             this._updateParameters();
 
@@ -309,6 +328,16 @@
             ImageProcessing.PrepareUniforms(uniforms, this._defines);
 
             this.updateEffect(defines, uniforms, samplers);
+        }
+
+        public dispose(camera?: Camera): void {
+            super.dispose(camera);
+
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            }
+            
+            this.imageProcessingConfiguration.applyByPostProcess = false;
         }
     }
 }

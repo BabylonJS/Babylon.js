@@ -71,6 +71,9 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public SAMPLER3DGREENDEPTH = false;
+        public SAMPLER3DBGRMAP = false;
+        public IMAGEPROCESSINGPOSTPROCESS = false;
 
         constructor() {
             super();
@@ -296,6 +299,9 @@ module BABYLON {
          */
         public set imageProcessingConfiguration(value: ImageProcessing) {
             this._attachImageProcessingConfiguration(value);
+
+            // Ensure the effect will be rebuilt.
+            this._markAllSubMeshesAsTexturesDirty();
         }
 
         /**
@@ -329,62 +335,46 @@ module BABYLON {
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
                 this._markAllSubMeshesAsTexturesDirty();
             });
-
-            // Ensure the effect will be rebuilt.
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
-        /**
-         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        public get colorCurves(): ColorCurves {
-            return this.imageProcessingConfiguration.colorCurves;
-        }
-        /**
-         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        public set colorCurves(value: ColorCurves) {
-            this.imageProcessingConfiguration.colorCurves = value;
         }
 
         /**
          * Gets wether the color curves effect is enabled.
          */
-        public get colorCurvesEnabled(): boolean {
+        public get cameraColorCurvesEnabled(): boolean {
             return this.imageProcessingConfiguration.colorCurvesEnabled;
         }
         /**
          * Sets wether the color curves effect is enabled.
          */
-        public set colorCurvesEnabled(value: boolean) {
+        public set cameraColorCurvesEnabled(value: boolean) {
             this.imageProcessingConfiguration.colorCurvesEnabled = value;
-        }
-
-        /**
-         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        public get colorGradingTexture(): BaseTexture {
-            return this.imageProcessingConfiguration.colorGradingTexture;
-        }
-        /**
-         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        public set colorGradingTexture(value: BaseTexture) {
-            this.imageProcessingConfiguration.colorGradingTexture = value;
         }
 
         /**
          * Gets wether the color grading effect is enabled.
          */
-        public get colorGradingEnabled(): boolean {
+        public get cameraColorGradingEnabled(): boolean {
             return this.imageProcessingConfiguration.colorGradingEnabled;
         }
         /**
          * Gets wether the color grading effect is enabled.
          */
-        public set colorGradingEnabled(value: boolean) {
+        public set cameraColorGradingEnabled(value: boolean) {
             this.imageProcessingConfiguration.colorGradingEnabled = value;
         }
+
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get cameraToneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set cameraToneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
 
         /**
          * The camera exposure used on this material.
@@ -428,25 +418,6 @@ module BABYLON {
          */
         public set cameraColorGradingTexture(value: BaseTexture) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
-        }
-
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        public get cameraColorCurves(): ColorCurves {
-            return this._imageProcessingConfiguration.colorCurves;
-        }
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        public set cameraColorCurves(value: ColorCurves) {
-            this._imageProcessingConfiguration.colorCurves = value;
         }
 
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
@@ -1244,10 +1215,6 @@ module BABYLON {
 
             if (this._refractionTexture) {
                 activeTextures.push(this._refractionTexture);
-            }
-
-            if (this._cameraColorGradingTexture) {
-                activeTextures.push(this._cameraColorGradingTexture);
             }
 
             return activeTextures;

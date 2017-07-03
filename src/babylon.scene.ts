@@ -807,7 +807,7 @@
             this._createUbo();
 
             // Default Image processing definition.
-            this._imageProcessingConfiguration = new ImageProcessingConfiguration();
+            this._imageProcessingConfiguration = new ImageProcessing();
         }
 
         // Properties
