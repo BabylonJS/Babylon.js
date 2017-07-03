@@ -18,7 +18,7 @@ module INSPECTOR{
 
                 if (descendants.length > 0) {
                     let node = new TreeItem(this, new MeshAdapter(obj));
-                    alreadyIn.push(node);
+                    alreadyIn.push(obj);
                     for (let child of descendants) {     
                         if (child instanceof BABYLON.AbstractMesh) {
                             if (!Helpers.IsSystemName(child.name)) {  

@@ -867,6 +867,9 @@ module BABYLON {
         }
 
     }
-    //Add this loader into the register plugin
-    BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
+
+    if (BABYLON.SceneLoader) {
+        //Add this loader into the register plugin
+        BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
+    }
 }

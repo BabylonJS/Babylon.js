@@ -2,6 +2,7 @@
 
 module BABYLON.GLTF2 {
     export class GLTFLoader implements IGLTFLoader {
+        private _parent: GLTFFileLoader;
         private _gltf: IGLTF;
         private _errors: string[];
         private _babylonScene: Scene;
@@ -38,6 +39,10 @@ module BABYLON.GLTF2 {
 
         public get babylonScene(): Scene {
             return this._babylonScene;
+        }
+
+        public constructor(parent: GLTFFileLoader) {
+            this._parent = parent;
         }
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
@@ -106,6 +111,10 @@ module BABYLON.GLTF2 {
             this._errors.forEach(error => Tools.Error(error));
             this._errors = [];
             this._clear();
+
+            if (this._parent.onComplete) {
+                this._parent.onComplete();
+            }
         }
 
         private _loadData(data: IGLTFLoaderData): void {
@@ -345,11 +354,11 @@ module BABYLON.GLTF2 {
                         this.loadMaterial(primitive.material, (babylonSubMaterial: Material) => {
                             if (this._renderReady) {
                                 babylonSubMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
-                                    babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
+                                    this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
                                 });
                             }
                             else {
-                                babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
+                                this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
                             }
                         });
                     }
@@ -360,8 +369,17 @@ module BABYLON.GLTF2 {
                         // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                         // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
                         babylonMesh.subMeshes = [];
-                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));                    }
+                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));
+                    }
                 });
+            }
+        }
+
+        private _assignMaterial(multiMaterial: MultiMaterial, index: number, subMaterial: Material): void {
+            multiMaterial.subMaterials[index] = subMaterial;
+
+            if (this._parent.onMaterialLoaded) {
+                this._parent.onMaterialLoaded(subMaterial);
             }
         }
 
@@ -811,29 +829,31 @@ module BABYLON.GLTF2 {
         }
 
         private _loadMaterialMetallicRoughnessProperties(material: IGLTFMaterial): void {
+            var babylonMaterial = material.babylonMaterial as PBRMaterial;
+
             // Ensure metallic workflow
-            material.babylonMaterial.metallic = 1;
-            material.babylonMaterial.roughness = 1;
+            babylonMaterial.metallic = 1;
+            babylonMaterial.roughness = 1;
 
             var properties = material.pbrMetallicRoughness;
             if (!properties) {
                 return;
             }
 
-            material.babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
-            material.babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
-            material.babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
+            babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
+            babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
+            babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
 
             if (properties.baseColorTexture) {
-                material.babylonMaterial.albedoTexture = this.loadTexture(properties.baseColorTexture);
+                babylonMaterial.albedoTexture = this.loadTexture(properties.baseColorTexture);
                 this.loadMaterialAlphaProperties(material);
             }
 
             if (properties.metallicRoughnessTexture) {
-                material.babylonMaterial.metallicTexture = this.loadTexture(properties.metallicRoughnessTexture);
-                material.babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
-                material.babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
-                material.babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                babylonMaterial.metallicTexture = this.loadTexture(properties.metallicRoughnessTexture);
+                babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
+                babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
+                babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
             }
         }
 
@@ -857,52 +877,57 @@ module BABYLON.GLTF2 {
         }
 
         public createPbrMaterial(material: IGLTFMaterial): void {
-            material.babylonMaterial = new PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
-            material.babylonMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
-            material.babylonMaterial.useScalarInLinearSpace = true;
+            var babylonMaterial = new PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
+            babylonMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+            babylonMaterial.useScalarInLinearSpace = true;
+            material.babylonMaterial = babylonMaterial;
         }
 
         public loadMaterialBaseProperties(material: IGLTFMaterial): void {
-            material.babylonMaterial.useEmissiveAsIllumination = (material.emissiveFactor || material.emissiveTexture) ? true : false;
-            material.babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+            var babylonMaterial = material.babylonMaterial as PBRMaterial;
+
+            babylonMaterial.useEmissiveAsIllumination = (material.emissiveFactor || material.emissiveTexture) ? true : false;
+            babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
             if (material.doubleSided) {
-                material.babylonMaterial.backFaceCulling = false;
-                material.babylonMaterial.twoSidedLighting = true;
+                babylonMaterial.backFaceCulling = false;
+                babylonMaterial.twoSidedLighting = true;
             }
 
             if (material.normalTexture) {
-                material.babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
+                babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
                 if (material.normalTexture.scale !== undefined) {
-                    material.babylonMaterial.bumpTexture.level = material.normalTexture.scale;
+                    babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }
             }
 
             if (material.occlusionTexture) {
-                material.babylonMaterial.ambientTexture = this.loadTexture(material.occlusionTexture);
-                material.babylonMaterial.useAmbientInGrayScale = true;
+                babylonMaterial.ambientTexture = this.loadTexture(material.occlusionTexture);
+                babylonMaterial.useAmbientInGrayScale = true;
                 if (material.occlusionTexture.strength !== undefined) {
-                    material.babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
+                    babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
                 }
             }
 
             if (material.emissiveTexture) {
-                material.babylonMaterial.emissiveTexture = this.loadTexture(material.emissiveTexture);
+                babylonMaterial.emissiveTexture = this.loadTexture(material.emissiveTexture);
             }
         }
 
         public loadMaterialAlphaProperties(material: IGLTFMaterial): void {
+            var babylonMaterial = material.babylonMaterial as PBRMaterial;
+
             var alphaMode = material.alphaMode || "OPAQUE";
             switch (alphaMode) {
                 case "OPAQUE":
                     // default is opaque
                     break;
                 case "MASK":
-                    material.babylonMaterial.albedoTexture.hasAlpha = true;
-                    material.babylonMaterial.useAlphaFromAlbedoTexture = false;
+                    babylonMaterial.albedoTexture.hasAlpha = true;
+                    babylonMaterial.useAlphaFromAlbedoTexture = false;
                     break;
                 case "BLEND":
-                    material.babylonMaterial.albedoTexture.hasAlpha = true;
-                    material.babylonMaterial.useAlphaFromAlbedoTexture = true;
+                    babylonMaterial.albedoTexture.hasAlpha = true;
+                    babylonMaterial.useAlphaFromAlbedoTexture = true;
                     break;
                 default:
                     Tools.Warn("Invalid alpha mode '" + material.alphaMode + "'");
@@ -970,15 +995,19 @@ module BABYLON.GLTF2 {
             babylonTexture.coordinatesIndex = texCoord;
             babylonTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
             babylonTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            babylonTexture.name = texture.name;
+            babylonTexture.name = texture.name || "texture" + textureInfo.index;
 
             // Cache the texture
             texture.babylonTextures = texture.babylonTextures || [];
             texture.babylonTextures[texCoord] = babylonTexture;
 
+            if (this._parent.onTextureLoaded) {
+                this._parent.onTextureLoaded(babylonTexture);
+            }
+
             return babylonTexture;
         }
     }
 
-    BABYLON.GLTFFileLoader.GLTFLoaderV2 = new GLTFLoader();
+    BABYLON.GLTFFileLoader.CreateGLTFLoaderV2 = parent => new GLTFLoader(parent);
 }

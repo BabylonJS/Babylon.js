@@ -191,5 +191,7 @@ module BABYLON {
         }
     }
 
-    BABYLON.SceneLoader.RegisterPlugin(new STLFileLoader());
+    if (BABYLON.SceneLoader) {
+        BABYLON.SceneLoader.RegisterPlugin(new STLFileLoader());
+    }
 }

@@ -180,7 +180,7 @@
 
             if (enabled) {
                 var geometry = this._scene.enableGeometryBufferRenderer();
-                if (!geometry.isSupported) {
+                if (!geometry) {
                     Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                     return;
                 }
@@ -210,7 +210,10 @@
         }
 
         public set volumetricLightStepsCount(count: number) {
-            this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+            if (this.volumetricLightPostProcess) {
+                this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+            }
+
             this._volumetricLightStepsCount = count;
         }
 
@@ -220,7 +223,10 @@
         }
 
         public set motionBlurSamples(samples: number) {
-            this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            if (this.motionBlurPostProcess) {
+                this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            }
+            
             this._motionBlurSamples = samples;
         }
 
@@ -721,7 +727,7 @@
 
         private _getDepthTexture(): Texture {
             var geometry = this._scene.enableGeometryBufferRenderer();
-            if (geometry.isSupported) {
+            if (geometry) {
                 return geometry.getGBuffer().textures[0];
             }
 

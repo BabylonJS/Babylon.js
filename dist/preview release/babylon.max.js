@@ -8540,7 +8540,7 @@ var BABYLON;
                     var buffer = vertexBuffer.getBuffer();
                     this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
                     if (vertexBuffer.getIsInstanced()) {
-                        this._gl.vertexAttribDivisor(order, 1);
+                        this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
                         if (!this._vaoRecordInProgress) {
                             this._currentInstanceLocations.push(order);
                             this._currentInstanceBuffers.push(buffer);
@@ -10277,6 +10277,9 @@ var BABYLON;
             this.releaseEffects();
             // Unbind
             this.unbindAllAttributes();
+            if (this._dummyFramebuffer) {
+                this._gl.deleteFramebuffer(this._dummyFramebuffer);
+            }
             this._gl = null;
             //WebVR
             this.disableVR();
@@ -10378,6 +10381,26 @@ var BABYLON;
                 }
                 this.fps = 1000.0 / (sum / (length - 1));
             }
+        };
+        Engine.prototype._readTexturePixels = function (texture, width, height, faceIndex) {
+            if (faceIndex === void 0) { faceIndex = -1; }
+            var gl = this._gl;
+            if (!this._dummyFramebuffer) {
+                this._dummyFramebuffer = gl.createFramebuffer();
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
+            if (faceIndex > -1) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            }
+            var readFormat = gl.RGBA;
+            var readType = gl.UNSIGNED_BYTE;
+            var buffer = new Uint8Array(4 * width * height);
+            gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            return buffer;
         };
         Engine.prototype._canRenderToFloatFramebuffer = function () {
             if (this._webGLVersion > 1) {
@@ -11959,6 +11982,30 @@ var BABYLON;
                 rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
                 rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
+            return this;
+        };
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        AbstractMesh.prototype.rotateAround = function (point, axis, amount) {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+            point.subtractToRef(this.position, BABYLON.Tmp.Vector3[0]);
+            BABYLON.Matrix.TranslationToRef(BABYLON.Tmp.Vector3[0].x, BABYLON.Tmp.Vector3[0].y, BABYLON.Tmp.Vector3[0].z, BABYLON.Tmp.Matrix[0]);
+            BABYLON.Tmp.Matrix[0].invertToRef(BABYLON.Tmp.Matrix[2]);
+            BABYLON.Matrix.RotationAxisToRef(axis, amount, BABYLON.Tmp.Matrix[1]);
+            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[2]);
+            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[2]);
+            BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
+            this.position.addInPlace(BABYLON.Tmp.Vector3[1]);
+            this.rotationQuaternion.multiplyInPlace(BABYLON.Tmp.Quaternion[0]);
             return this;
         };
         /**
@@ -18525,6 +18572,7 @@ var BABYLON;
                 this.create();
             }
             this._instanced = instanced;
+            this._instanceDivisor = instanced ? 1 : 0;
         }
         Buffer.prototype.createVertexBuffer = function (kind, offset, size, stride) {
             // a lot of these parameters are ignored as they are overriden by the buffer
@@ -18546,6 +18594,22 @@ var BABYLON;
         Buffer.prototype.getIsInstanced = function () {
             return this._instanced;
         };
+        Object.defineProperty(Buffer.prototype, "instanceDivisor", {
+            get: function () {
+                return this._instanceDivisor;
+            },
+            set: function (value) {
+                this._instanceDivisor = value;
+                if (value == 0) {
+                    this._instanced = false;
+                }
+                else {
+                    this._instanced = true;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Buffer.prototype.create = function (data) {
             if (!data && this._buffer) {
@@ -18692,6 +18756,12 @@ var BABYLON;
          */
         VertexBuffer.prototype.getIsInstanced = function () {
             return this._buffer.getIsInstanced();
+        };
+        /**
+         * Returns the instancing divisor, zero for non-instanced (integer).
+         */
+        VertexBuffer.prototype.getInstanceDivisor = function () {
+            return this._buffer.instanceDivisor;
         };
         // Methods
         /**
@@ -19005,6 +19075,18 @@ var BABYLON;
         };
         BaseTexture.prototype.clone = function () {
             return null;
+        };
+        BaseTexture.prototype.readPixels = function (faceIndex) {
+            if (faceIndex === void 0) { faceIndex = 0; }
+            if (!this._texture) {
+                return null;
+            }
+            var size = this.getSize();
+            var engine = this.getScene().getEngine();
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+            }
+            return engine._readTexturePixels(this._texture, size.width, size.height);
         };
         BaseTexture.prototype.releaseInternalTexture = function () {
             if (this._texture) {
@@ -24142,20 +24224,24 @@ var BABYLON;
             return result;
         };
         // Force shader compilation including textures ready check
-        Material.prototype.forceCompilation = function (mesh, onCompiled) {
+        Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
+            var engine = scene.getEngine();
             var beforeRenderCallback = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
+                var alphaTestState = engine.getAlphaTesting();
+                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     scene.unregisterBeforeRender(beforeRenderCallback);
                     if (onCompiled) {
                         onCompiled(_this);
                     }
                 }
+                engine.setAlphaTesting(alphaTestState);
             };
             scene.registerBeforeRender(beforeRenderCallback);
         };
@@ -29980,6 +30066,9 @@ var BABYLON;
             return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
         };
         PBRBaseMaterial.prototype.needAlphaTesting = function () {
+            if (this._forceAlphaTest) {
+                return true;
+            }
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
@@ -45278,7 +45367,6 @@ var BABYLON;
             };
         }
         DefaultLoadingScreen.prototype.displayLoadingUI = function () {
-            var _this = this;
             if (this._loadingDiv) {
                 // Do not add a loading screen if there is already one  
                 return;
@@ -45305,41 +45393,27 @@ var BABYLON;
             this._loadingTextDiv.innerHTML = this._loadingText;
             // Loading img
             var imgBack = new Image();
-            imgBack.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAARbSURBVHhe7Z09aFNRFMc716kuLrq4FdyLq4Wi4CAoRQcR0UJBUBdRiuLSIYMo6CA4FF2sgw6CFAdFUOpSQYcWO4hD26UQCfXrIQrx/JJzw1OSWq3NPeL/B4Fy+0jg/HO+7j3vpUcI8b/Q39+/49ihfWdPHT94Yf/e3Se3bd263f8lus218TPn6vV6Ya8Wi/MzNRNmj18iusX9W1evmP1/EKNEIVG6CMbG6E3bt+fT++pHha8NoHdT72bLE8NDg7tGU64gLLndV4Wc4m8j/pS+vr4tGB/DT16v3Fyr8dvBe/jbit8BL0AES9LX1iPAz+BR/hFiLVCynj95dPzNy6fv3IZ/k4L3948Sq7FzYGBg4vLFGxitabuOFCbWNKGrMnbiUuo18KaV6tIHv6YtvL9/nOgE31jCktmrY7k6+/zhE4yP4Vf7hiNqh/BWWEl8mzDol4p22Lf7cIdvdUMEvv0Y2S9fE5S1hLzpqTsPkiep//gFGPnR3Yl7GL5p/xYFBrTwM+iXio3GqpwDGL5p/xYNIX7XG8Q6IJRgdIzf1KBBgafII7oMidhyQtVFaMA2Bt7il4huQRhaXphbcR2g4RXqBzKAGHiCCwGFVUAj/m/RTRDj29cvn10I0PZ3LghH5f4CL1EFlQmqqXK3jDDKFxmhQ3Yt6oQseUZGKmMnTpsOqc8o1F9kBOMjQlOLeqEeIyOc6JV6jYLJD/+XyIFvnzdgl9aXRQ5I2qZDK1SpospMqaoqON/wZZGDciLnMMiXRS7IF4hhqMTNTdk7CFu+LHLhR7BQqBvPDJUUQqCGvCMATHUgBmhWNgApmdOda9YpM+VwRYfuyyIXDK8hBlilNerLIheMZCKGwlUAyru6GlwOgPUbRxADdJ9FAChxXY864viyyEXqPxhc0M2TAfAbatSdRyHtXymhByEdRnE3ky+JnHAIhSA0h74kckETmHoQbSgGwJrCIRMEPSRIBCRIMAhZaYhaggQhJXUJEoRU9mofKwh+F22dLRRfEjlJM7w6KQwCoQpBOKTyJZETjmwRxKqtGV8SOSkNOGjKPQppBEgDDkFgpxdBVGkFgaYQQXRIFQSObk0P5ZFIpAZRHXsQ0r0hCluBWKkuvVbYCkQaCdL5ehBScudJP4yY+rLISdps1NBDEJKXMMmoSfggWC4ZQRR17oFYXph7hSiquIKQ+hJGTX1J5MYSPD/GVdNzsgLBwZVCVyAQAkF0ohiI/c1fS6tNXq9UfEnkhudmIQolsS+J3Hh/UtNDzQLhj42VKJFInqLwFYiUU5ToA+HdfI0JevUpQUAIn+vSz2lHIuUV/dJOIHhOY/IWVWGBIHQtzs88s9zyWBuTgcBLzGOmeNnfF/QslSDgMeQW85i3DOQxuipxAkCyZ8SIm4Omp+7MMlCB59j6sKZcMoM4iIEoeI2J9AKxrFobZx0v4vYInuHFS4J1GQRCAGaLEYQXfyMML5XSQgghhBBCCCH+cXp6vgNhKpSKX/XdOAAAAABJRU5ErkJggg==";
+            imgBack.src = "data:image/png;base64,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";
             imgBack.style.position = "absolute";
             imgBack.style.left = "50%";
             imgBack.style.top = "50%";
             imgBack.style.marginLeft = "-50px";
             imgBack.style.marginTop = "-50px";
-            imgBack.style.transition = "transform 1.0s ease";
-            imgBack.style.webkitTransition = "-webkit-transform 1.0s ease";
-            var deg = 360;
-            var onTransitionEnd = function () {
-                deg += 360;
-                imgBack.style.transform = "rotateZ(" + deg + "deg)";
-                imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
-            };
-            imgBack.addEventListener("transitionend", onTransitionEnd);
-            imgBack.addEventListener("webkitTransitionEnd", onTransitionEnd);
+            imgBack.style.animation = "spin1 2s infinite ease-in-out";
+            imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
+            imgBack.style.transformOrigin = "50% 50%";
+            imgBack.style.webkitTransformOrigin = "50% 50%";
+            // Generating keyframes
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            var keyFrames = "@-webkit-keyframes spin1 {                    0% { -webkit-transform: rotate(0deg);}\n                    100% { -webkit-transform: rotate(360deg);}\n                }                @keyframes spin1 {                    0% { transform: rotate(0deg);}\n                    100% { transform: rotate(360deg);}\n                }";
+            document.getElementsByTagName('head')[0].appendChild(style);
             this._loadingDiv.appendChild(imgBack);
-            // front image
-            var imgFront = new Image();
-            imgFront.src = "data:image/png;base64,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";
-            imgFront.style.position = "absolute";
-            imgFront.style.left = "50%";
-            imgFront.style.top = "50%";
-            imgFront.style.marginLeft = "-50px";
-            imgFront.style.marginTop = "-50px";
-            this._loadingDiv.appendChild(imgFront);
             this._resizeLoadingUI();
             window.addEventListener("resize", this._resizeLoadingUI);
             this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
             document.body.appendChild(this._loadingDiv);
-            setTimeout(function () {
-                _this._loadingDiv.style.opacity = "1";
-                imgBack.style.transform = "rotateZ(360deg)";
-                imgBack.style.webkitTransform = "rotateZ(360deg)";
-            }, 0);
+            this._loadingDiv.style.opacity = "1";
         };
         DefaultLoadingScreen.prototype.hideLoadingUI = function () {
             var _this = this;
@@ -50829,7 +50903,7 @@ var BABYLON;
                 }
                 if (enabled) {
                     var geometry = this._scene.enableGeometryBufferRenderer();
-                    if (!geometry.isSupported) {
+                    if (!geometry) {
                         BABYLON.Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                         return;
                     }
@@ -50859,7 +50933,9 @@ var BABYLON;
                 return this._volumetricLightStepsCount;
             },
             set: function (count) {
-                this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+                if (this.volumetricLightPostProcess) {
+                    this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
+                }
                 this._volumetricLightStepsCount = count;
             },
             enumerable: true,
@@ -50870,7 +50946,9 @@ var BABYLON;
                 return this._motionBlurSamples;
             },
             set: function (samples) {
-                this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+                if (this.motionBlurPostProcess) {
+                    this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+                }
                 this._motionBlurSamples = samples;
             },
             enumerable: true,
@@ -51228,7 +51306,7 @@ var BABYLON;
         };
         StandardRenderingPipeline.prototype._getDepthTexture = function () {
             var geometry = this._scene.enableGeometryBufferRenderer();
-            if (geometry.isSupported) {
+            if (geometry) {
                 return geometry.getGBuffer().textures[0];
             }
             return this._scene.enableDepthRenderer().getDepthMap();
@@ -58565,6 +58643,7 @@ var BABYLON;
             this._onAfterPhysicsStepCallbacks = new Array();
             this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
+            this._isDisposed = false;
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
             this._tmpRotationWithDelta = new BABYLON.Quaternion();
             /**
@@ -58655,6 +58734,43 @@ var BABYLON;
                 }
             }
         }
+        Object.defineProperty(PhysicsImpostor.prototype, "isDisposed", {
+            get: function () {
+                return this._isDisposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PhysicsImpostor.prototype, "mass", {
+            get: function () {
+                return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
+            },
+            set: function (value) {
+                this.setMass(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PhysicsImpostor.prototype, "friction", {
+            get: function () {
+                return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
+            },
+            set: function (value) {
+                this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PhysicsImpostor.prototype, "restitution", {
+            get: function () {
+                return this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this);
+            },
+            set: function (value) {
+                this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * This function will completly initialize this impostor.
          * It will create a new body - but only if this mesh has no parent.
@@ -58915,6 +59031,7 @@ var BABYLON;
                     }
                 })*/
             }
+            this._isDisposed = true;
         };
         PhysicsImpostor.prototype.setDeltaPosition = function (position) {
             this._deltaPosition.copyFrom(position);
@@ -59460,6 +59577,21 @@ var BABYLON;
             impostor.physicsBody.mass = mass;
             impostor.physicsBody.updateMassProperties();
         };
+        CannonJSPlugin.prototype.getBodyMass = function (impostor) {
+            return impostor.physicsBody.mass;
+        };
+        CannonJSPlugin.prototype.getBodyFriction = function (impostor) {
+            return impostor.physicsBody.material.friction;
+        };
+        CannonJSPlugin.prototype.setBodyFriction = function (impostor, friction) {
+            impostor.physicsBody.material.friction = friction;
+        };
+        CannonJSPlugin.prototype.getBodyRestitution = function (impostor) {
+            return impostor.physicsBody.material.restitution;
+        };
+        CannonJSPlugin.prototype.setBodyRestitution = function (impostor, restitution) {
+            impostor.physicsBody.material.restitution = restitution;
+        };
         CannonJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
         };
@@ -59492,8 +59624,71 @@ var BABYLON;
             joint.physicsJoint.motorEquation.maxForce = upperLimit;
             joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
         };
+        CannonJSPlugin.prototype._getDebugMaterial = function (scene) {
+            if (!this._debugMaterial) {
+                this._debugMaterial = new BABYLON.StandardMaterial('', scene);
+                this._debugMaterial.wireframe = true;
+            }
+            return this._debugMaterial;
+        };
+        CannonJSPlugin.prototype._getDebugBoxMesh = function (scene) {
+            if (!this._debugBoxMesh) {
+                this._debugBoxMesh = BABYLON.MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+                this._debugBoxMesh.renderingGroupId = 1;
+                this._debugBoxMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                this._debugBoxMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugBoxMesh);
+            }
+            return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+        };
+        CannonJSPlugin.prototype._getDebugSphereMesh = function (scene) {
+            if (!this._debugSphereMesh) {
+                this._debugSphereMesh = BABYLON.MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+                this._debugSphereMesh.renderingGroupId = 1;
+                this._debugSphereMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                this._debugSphereMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugSphereMesh);
+            }
+            return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        };
+        CannonJSPlugin.prototype.getDebugMesh = function (impostor, scene) {
+            var body = impostor.physicsBody;
+            var shape = body.shapes[0];
+            var mesh;
+            if (shape.halfExtents) {
+                mesh = this._getDebugBoxMesh(scene);
+                mesh.scaling.x = shape.halfExtents.x * 2;
+                mesh.scaling.y = shape.halfExtents.y * 2;
+                mesh.scaling.z = shape.halfExtents.z * 2;
+            }
+            else if (shape.boundingSphereRadius) {
+                mesh = this._getDebugSphereMesh(scene);
+                mesh.scaling.x = shape.boundingSphereRadius * 2;
+                mesh.scaling.y = shape.boundingSphereRadius * 2;
+                mesh.scaling.z = shape.boundingSphereRadius * 2;
+            }
+            return mesh;
+        };
+        CannonJSPlugin.prototype.syncMeshWithImpostor = function (mesh, impostor) {
+            var body = impostor.physicsBody;
+            mesh.position.x = body.position.x;
+            mesh.position.y = body.position.y;
+            mesh.position.z = body.position.z;
+            mesh.rotationQuaternion.x = body.quaternion.x;
+            mesh.rotationQuaternion.y = body.quaternion.y;
+            mesh.rotationQuaternion.z = body.quaternion.z;
+            mesh.rotationQuaternion.w = body.quaternion.w;
+        };
         CannonJSPlugin.prototype.dispose = function () {
-            //nothing to do, actually.
+            if (this._debugBoxMesh) {
+                this._debugBoxMesh.dispose();
+            }
+            if (this._debugSphereMesh) {
+                this._debugSphereMesh.dispose();
+            }
+            if (this._debugMaterial) {
+                this._debugMaterial.dispose();
+            }
         };
         return CannonJSPlugin;
     }());
@@ -59805,6 +60000,21 @@ var BABYLON;
             impostor.physicsBody.shapes.density = staticBody ? 1 : mass;
             impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
         };
+        OimoJSPlugin.prototype.getBodyMass = function (impostor) {
+            return impostor.physicsBody.shapes.density;
+        };
+        OimoJSPlugin.prototype.getBodyFriction = function (impostor) {
+            return impostor.physicsBody.shapes.friction;
+        };
+        OimoJSPlugin.prototype.setBodyFriction = function (impostor, friction) {
+            impostor.physicsBody.shapes.friction = friction;
+        };
+        OimoJSPlugin.prototype.getBodyRestitution = function (impostor) {
+            return impostor.physicsBody.shapes.restitution;
+        };
+        OimoJSPlugin.prototype.setBodyRestitution = function (impostor, restitution) {
+            impostor.physicsBody.shapes.restitution = restitution;
+        };
         OimoJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
         };
@@ -59831,7 +60041,71 @@ var BABYLON;
                 motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
         };
+        OimoJSPlugin.prototype._getDebugMaterial = function (scene) {
+            if (!this._debugMaterial) {
+                this._debugMaterial = new BABYLON.StandardMaterial('', scene);
+                this._debugMaterial.wireframe = true;
+            }
+            return this._debugMaterial;
+        };
+        OimoJSPlugin.prototype._getDebugBoxMesh = function (scene) {
+            if (!this._debugBoxMesh) {
+                this._debugBoxMesh = BABYLON.MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+                this._debugBoxMesh.renderingGroupId = 1;
+                this._debugBoxMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                this._debugBoxMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugBoxMesh);
+            }
+            return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+        };
+        OimoJSPlugin.prototype._getDebugSphereMesh = function (scene) {
+            if (!this._debugSphereMesh) {
+                this._debugSphereMesh = BABYLON.MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+                this._debugSphereMesh.renderingGroupId = 1;
+                this._debugSphereMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                this._debugSphereMesh.material = this._getDebugMaterial(scene);
+                scene.removeMesh(this._debugSphereMesh);
+            }
+            return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        };
+        OimoJSPlugin.prototype.getDebugMesh = function (impostor, scene) {
+            var body = impostor.physicsBody;
+            var shape = body.shapes;
+            var mesh;
+            if (shape.halfWidth) {
+                mesh = this._getDebugBoxMesh(scene);
+                mesh.scaling.x = shape.halfWidth * 2;
+                mesh.scaling.y = shape.halfHeight * 2;
+                mesh.scaling.z = shape.halfDepth * 2;
+            }
+            else if (shape.radius) {
+                mesh = this._getDebugSphereMesh(scene);
+                mesh.scaling.x = shape.radius * 2;
+                mesh.scaling.y = shape.radius * 2;
+                mesh.scaling.z = shape.radius * 2;
+            }
+            return mesh;
+        };
+        OimoJSPlugin.prototype.syncMeshWithImpostor = function (mesh, impostor) {
+            var body = impostor.physicsBody;
+            mesh.position.x = body.position.x;
+            mesh.position.y = body.position.y;
+            mesh.position.z = body.position.z;
+            mesh.rotationQuaternion.x = body.orientation.x;
+            mesh.rotationQuaternion.y = body.orientation.y;
+            mesh.rotationQuaternion.z = body.orientation.z;
+            mesh.rotationQuaternion.w = body.orientation.s;
+        };
         OimoJSPlugin.prototype.dispose = function () {
+            if (this._debugBoxMesh) {
+                this._debugBoxMesh.dispose();
+            }
+            if (this._debugSphereMesh) {
+                this._debugSphereMesh.dispose();
+            }
+            if (this._debugMaterial) {
+                this._debugMaterial.dispose();
+            }
             this.world.clear();
         };
         return OimoJSPlugin;
@@ -61147,6 +61421,87 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.debugLayer.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var Debug;
+    (function (Debug) {
+        var PhysicsViewer = (function () {
+            function PhysicsViewer(scene) {
+                this._impostors = [];
+                this._meshes = [];
+                this._numMeshes = 0;
+                this._scene = scene || BABYLON.Engine.LastCreatedScene;
+                this._physicsEnginePlugin = this._scene.getPhysicsEngine().getPhysicsPlugin();
+            }
+            PhysicsViewer.prototype._updateDebugMeshes = function () {
+                var plugin = this._physicsEnginePlugin;
+                for (var i = 0; i < this._numMeshes; i++) {
+                    if (this._impostors[i].isDisposed) {
+                        this.hideImpostor(this._impostors[i--]);
+                    }
+                    else {
+                        plugin.syncMeshWithImpostor(this._meshes[i], this._impostors[i]);
+                    }
+                }
+            };
+            PhysicsViewer.prototype.showImpostor = function (impostor) {
+                for (var i = 0; i < this._numMeshes; i++) {
+                    if (this._impostors[i] == impostor) {
+                        return;
+                    }
+                }
+                var debugMesh = this._physicsEnginePlugin.getDebugMesh(impostor, this._scene);
+                if (debugMesh) {
+                    this._impostors[this._numMeshes] = impostor;
+                    this._meshes[this._numMeshes] = debugMesh;
+                    if (this._numMeshes === 0) {
+                        this._renderFunction = this._updateDebugMeshes.bind(this);
+                        this._scene.registerBeforeRender(this._renderFunction);
+                    }
+                    this._numMeshes++;
+                }
+            };
+            PhysicsViewer.prototype.hideImpostor = function (impostor) {
+                var removed = false;
+                for (var i = 0; i < this._numMeshes; i++) {
+                    if (this._impostors[i] == impostor) {
+                        this._scene.removeMesh(this._meshes[i]);
+                        this._meshes[i].dispose();
+                        this._numMeshes--;
+                        if (this._numMeshes > 0) {
+                            this._meshes[i] = this._meshes[this._numMeshes];
+                            this._impostors[i] = this._impostors[this._numMeshes];
+                            this._meshes[this._numMeshes] = null;
+                            this._impostors[this._numMeshes] = null;
+                        }
+                        else {
+                            this._meshes[0] = null;
+                            this._impostors[0] = null;
+                        }
+                        removed = true;
+                        break;
+                    }
+                }
+                if (removed && this._numMeshes === 0) {
+                    this._scene.unregisterBeforeRender(this._renderFunction);
+                }
+            };
+            PhysicsViewer.prototype.dispose = function () {
+                for (var i = 0; i < this._numMeshes; i++) {
+                    this.hideImpostor(this._impostors[i]);
+                }
+                this._impostors.length = 0;
+                this._scene = null;
+                this._physicsEnginePlugin = null;
+            };
+            return PhysicsViewer;
+        }());
+        Debug.PhysicsViewer = PhysicsViewer;
+    })(Debug = BABYLON.Debug || (BABYLON.Debug = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.physicsViewer.js.map
 
 var BABYLON;
 (function (BABYLON) {
