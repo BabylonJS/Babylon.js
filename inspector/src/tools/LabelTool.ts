@@ -4,10 +4,10 @@ module INSPECTOR {
 
         /** True if label are displayed, false otherwise */
         private _isDisplayed         : boolean            = false;
-        private _canvas              : BABYLON.ScreenSpaceCanvas2D = null;
+        private _advancedTexture     : BABYLON.GUI.AdvancedDynamicTexture = null;
         private _labelInitialized    : boolean = false;
         private _scene               : BABYLON.Scene = null;
-        private _canvas2DLoaded      : boolean = false;
+        private _guiLoaded      : boolean = false;
 
         private _newMeshObserver       : BABYLON.Observer<BABYLON.AbstractMesh> = null;
         private _removedMeshObserver   : BABYLON.Observer<BABYLON.AbstractMesh> = null;
@@ -35,19 +35,16 @@ module INSPECTOR {
     
                 this._newMeshObserver = this._newLightObserver = this._newCameraObserver = this._removedMeshObserver = this._removedLightObserver = this._removedCameraObserver = null;
             }
-
-            this._canvas.dispose();
-            this._canvas = null;
         }
 
-        private _checkC2DLoaded(): boolean {
-            if (this._canvas2DLoaded === true) {
+        private _checkGUILoaded(): boolean {
+            if (this._guiLoaded === true) {
                 return true;
             }
-            if (BABYLON.Canvas2D) {
-                this._canvas2DLoaded = true;
+            if (BABYLON.GUI) {
+                this._guiLoaded = true;
             }
-            return this._canvas2DLoaded;
+            return this._guiLoaded;
         }
 
         private _initializeLabels() {
@@ -56,13 +53,13 @@ module INSPECTOR {
                 return;
             }
 
-            // Can't initialize them if the Canvas2D lib is not loaded yet
-            if (!this._checkC2DLoaded()) {
+            // Can't initialize them if the GUI lib is not loaded yet
+            if (!this._checkGUILoaded()) {
                 return;
             }
 
             // Create the canvas that will be used to display the labels
-            this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, {id: "###Label Canvas###"/*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/});
+            this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
             // Create label for all the Meshes, Lights and Cameras
             // Those that will be created/removed after this method is called will be taken care by the event handlers added below
@@ -71,7 +68,7 @@ module INSPECTOR {
                 this._createLabel(m);
             }
 
-            for (let l of this._scene.lights) {
+            /*for (let l of this._scene.lights) {
                 this._createLabel(l);
             }
 
@@ -103,44 +100,39 @@ module INSPECTOR {
 
             this._removedCameraObserver = this._scene.onCameraRemovedObservable.add((e, s) => {
                 this._removeLabel(e);
-            });
+            });*/
             
             this._labelInitialized = true;
         }
 
-        private _createLabel(node: BABYLON.Node): BABYLON.Group2D {
+        private _createLabel(mesh: BABYLON.AbstractMesh){//: BABYLON.Group2D {
             // Don't create label for "system nodes" (starting and ending with ###)
-            let name = node.name;
+            let name = mesh.name;
 
             if (Helpers.IsSystemName(name)) {
                 return;
             }
 
-            let labelGroup = new BABYLON.Group2D({ parent: this._canvas, id: `Label of ${node.name}`, trackNode: node, origin: BABYLON.Vector2.Zero(), 
-            children: [
-                    new BABYLON.Rectangle2D({ id: "LabelRect", x: 0, y: 0, width: 100, height: 30, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080B0", children: [
-                            new BABYLON.Text2D(node.name, { x: 10, y: 4, fontName: "bold 16px Arial", fontSignedDistanceField: true })
-                        ]
-                    })
-                ]}
-            );
+            if(mesh){
+                let rect1 = new BABYLON.GUI.Rectangle();
+                rect1.width = 0.1;
+                rect1.height = "20px";
+                this._advancedTexture.addControl(rect1);
 
-            let r = labelGroup.children[0] as BABYLON.Rectangle2D;
-            let t = r.children[0] as BABYLON.Text2D;
-            let ts = t.textSize.width;
-            r.width = ts + 20;
-            r.height = t.textSize.height + 12;
+                var label = new BABYLON.GUI.TextBlock();
+                label.text = name;
+                rect1.addControl(label);
 
-            labelGroup.addExternalData("owner", node);
-
-            return labelGroup;
+                rect1.linkWithMesh(mesh);   
+                rect1.linkOffsetY = -50;
+            }
         }
 
         private _removeLabel(node: BABYLON.Node) {
-            for (let g of this._canvas.children) {
-                let ed = g.getExternalData("owner");
+            for (let g of this._advancedTexture._rootContainer.children) {
+                let ed = g._linkedMesh;
                 if (ed === node) {
-                    g.dispose();
+                    this._advancedTexture.removeControl(g);
                     break;
                 }
             }
@@ -149,7 +141,7 @@ module INSPECTOR {
         // Action : Display/hide mesh names on the canvas
         public action() {
             // Don't toggle if the script is not loaded
-            if (!this._checkC2DLoaded()) {
+            if (!this._checkGUILoaded()) {
                 return;
             }
 
@@ -159,12 +151,12 @@ module INSPECTOR {
             // Check if we have to display the labels
             if (this._isDisplayed) {
                 this._initializeLabels();
-                this._canvas.levelVisible = true;
+                //this._canvas.levelVisible = true; //TODO
             } 
             
             // Or to hide them
             else {
-                this._canvas.levelVisible = false;
+                //this._canvas.levelVisible = false;//TODO
             }
         }
     }
