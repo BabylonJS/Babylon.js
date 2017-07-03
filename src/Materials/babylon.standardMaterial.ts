@@ -382,7 +382,7 @@ module BABYLON {
          * This corresponds to a photographic exposure.
          */
         public get cameraExposure(): number {
-            return this._imageProcessingConfiguration.cameraExposure;
+            return this._imageProcessingConfiguration.exposure;
         };
         /**
          * The camera exposure used on this material.
@@ -390,21 +390,21 @@ module BABYLON {
          * This corresponds to a photographic exposure.
          */
         public set cameraExposure(value: number) {
-            this._imageProcessingConfiguration.cameraExposure = value;
+            this._imageProcessingConfiguration.exposure = value;
         };
         
         /**
          * Gets The camera contrast used on this material.
          */
         public get cameraContrast(): number {
-            return this._imageProcessingConfiguration.cameraContrast;
+            return this._imageProcessingConfiguration.contrast;
         }
 
         /**
          * Sets The camera contrast used on this material.
          */
         public set cameraContrast(value: number) {
-            this._imageProcessingConfiguration.cameraContrast = value;
+            this._imageProcessingConfiguration.contrast = value;
         }
         
         /**
@@ -1127,9 +1127,7 @@ module BABYLON {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
                 // image processing
-                if (this.imageProcessingConfiguration) {
-                    this.imageProcessingConfiguration.bind(this._activeEffect);
-                }
+                this._imageProcessingConfiguration.bind(this._activeEffect);
             }
 
             this._uniformBuffer.update();

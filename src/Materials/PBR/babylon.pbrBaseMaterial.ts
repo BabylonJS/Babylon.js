@@ -1194,9 +1194,7 @@
                 }
 
                 // image processing
-                if (this._imageProcessingConfiguration) {
-                    this._imageProcessingConfiguration.bind(this._activeEffect);
-                }
+                this._imageProcessingConfiguration.bind(this._activeEffect);
 
                 // Log. depth
                 MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);

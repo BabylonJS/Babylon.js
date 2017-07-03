@@ -39,7 +39,7 @@ module BABYLON {
             return this._colorCurvesEnabled;
         }
         /**
-         * Gets wether the color curves effect is enabled.
+         * Sets wether the color curves effect is enabled.
          */
         public set colorCurvesEnabled(value: boolean) {
             if (this._colorCurvesEnabled === value) {
@@ -117,10 +117,10 @@ module BABYLON {
         }
 
         /**
-         * Camera exposure used in the effect.
+         * Exposure used in the effect.
          */
         @serialize()
-        public cameraExposure = Math.log(Math.PI) * Math.LOG2E;
+        public exposure = Math.log(Math.PI) * Math.LOG2E;
 
         @serialize()
         private _toneMappingEnabled = false;
@@ -143,22 +143,22 @@ module BABYLON {
         }
 
         @serialize()
-        protected _cameraContrast = 1.0;
+        protected _contrast = 1.0;
         /**
-         * Gets Camera contrast used in the effect.
+         * Gets the contrast used in the effect.
          */
-        public get cameraContrast(): number {
-            return this._cameraContrast;
+        public get contrast(): number {
+            return this._contrast;
         }
         /**
-         * Gets Camera contrast used in the effect.
+         * Sets the contrast used in the effect.
          */
-        public set cameraContrast(value: number) {
-            if (this._cameraContrast === value) {
+        public set contrast(value: number) {
+            if (this._contrast === value) {
                 return;
             }
 
-            this._cameraContrast = value;
+            this._contrast = value;
             this._updateParameters();
         }
 
@@ -197,7 +197,7 @@ module BABYLON {
          * Camera field of view used by the Vignette effect.
          */
         @serialize()
-        public cameraFov = 0.5;
+        public vignetteCameraFov = 0.5;
 
         @serialize()
         private _vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
@@ -278,11 +278,9 @@ module BABYLON {
          * @param defines the list of defines currently in use
          */
         public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
+            uniforms.push("exposureLinear");
             if (defines.CONTRAST) {
                 uniforms.push("contrast");
-            }
-            if (defines.TONEMAPPING) {
-                uniforms.push("cameraExposureLinear");
             }
             if (defines.COLORGRADING) {
                 uniforms.push("colorTransformSettings");
@@ -317,7 +315,7 @@ module BABYLON {
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
             defines.TONEMAPPING = this.toneMappingEnabled;
-            defines.CONTRAST = (this.cameraContrast !== 1.0);
+            defines.CONTRAST = (this.contrast !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
@@ -350,7 +348,7 @@ module BABYLON {
                 var inverseHeight = 1 / effect.getEngine().getRenderHeight();
                 effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
-                let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
+                let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
@@ -364,10 +362,10 @@ module BABYLON {
             }
 
             // Exposure
-            effect.setFloat("cameraExposureLinear", Math.pow(2.0, -this.cameraExposure) * Math.PI);
+            effect.setFloat("exposureLinear", Math.pow(2.0, -this.exposure) * Math.PI);
             
             // Contrast
-            effect.setFloat("contrast", this.cameraContrast);
+            effect.setFloat("contrast", this.contrast);
             
             // Color transform settings
             if (this.colorGradingTexture) {

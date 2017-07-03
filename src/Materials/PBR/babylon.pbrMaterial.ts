@@ -439,7 +439,7 @@
          * This corresponds to a photographic exposure.
          */
         public get cameraExposure(): number {
-            return this._imageProcessingConfiguration.cameraExposure;
+            return this._imageProcessingConfiguration.exposure;
         };
         /**
          * The camera exposure used on this material.
@@ -447,21 +447,21 @@
          * This corresponds to a photographic exposure.
          */
         public set cameraExposure(value: number) {
-            this._imageProcessingConfiguration.cameraExposure = value;
+            this._imageProcessingConfiguration.exposure = value;
         };
         
         /**
          * Gets The camera contrast used on this material.
          */
         public get cameraContrast(): number {
-            return this._imageProcessingConfiguration.cameraContrast;
+            return this._imageProcessingConfiguration.contrast;
         }
 
         /**
          * Sets The camera contrast used on this material.
          */
         public set cameraContrast(value: number) {
-            this._imageProcessingConfiguration.cameraContrast = value;
+            this._imageProcessingConfiguration.contrast = value;
         }
         
         /**
