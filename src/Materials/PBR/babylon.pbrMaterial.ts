@@ -222,7 +222,7 @@
         public useLightmapAsShadowmap = false;
         
         /**
-         * Secifies that the alpha is coming form the albedo channel alpha channel.
+         * Specifies that the alpha is coming form the albedo channel alpha channel.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -360,7 +360,7 @@
         public twoSidedLighting = false;
 
         /**
-         * Secifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
+         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
          * in your scene composition.
          */
         @serialize()
@@ -369,7 +369,7 @@
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or ocllude the blended part.
+         * And/Or occlude the blended part.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")

@@ -113,15 +113,15 @@
         }
 
         /**
-         * Gets Camera exposure used in the effect.
+         * Gets exposure used in the effect.
          */
-        public get cameraExposure(): number {
+        public get exposure(): number {
             return this.imageProcessingConfiguration.exposure;
         }
         /**
-         * Sets Camera exposure used in the effect.
+         * Sets exposure used in the effect.
          */
-        public set cameraExposure(value: number) {
+        public set exposure(value: number) {
             this.imageProcessingConfiguration.exposure = value;
         }
 
@@ -139,15 +139,15 @@
         };
 
         /**
-         * Gets Camera contrast used in the effect.
+         * Gets contrast used in the effect.
          */
-        public get cameraContrast(): number {
+        public get contrast(): number {
             return this.imageProcessingConfiguration.contrast;
         }
         /**
-         * Sets Camera contrast used in the effect.
+         * Sets contrast used in the effect.
          */
-        public set cameraContrast(value: number) {
+        public set contrast(value: number) {
             this.imageProcessingConfiguration.contrast = value;
         }
 
@@ -221,13 +221,13 @@
         /**
          * Gets Camera field of view used by the Vignette effect.
          */
-        public get cameraFov(): number {
+        public get vignetteCameraFov(): number {
             return this.imageProcessingConfiguration.vignetteCameraFov;
         }
         /**
          * Sets Camera field of view used by the Vignette effect.
          */
-        public set cameraFov(value: number) {
+        public set vignetteCameraFov(value: number) {
             this.imageProcessingConfiguration.vignetteCameraFov = value;
         }
 
