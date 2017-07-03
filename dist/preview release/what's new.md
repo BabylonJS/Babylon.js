@@ -28,6 +28,10 @@
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
+- Added a Physics tab to the inspector ([abow](https://github.com/abow))
+- New Debug.PhysicsViewer class for viewing PhysicsImpostors [Demo](http://www.babylonjs-playground.com/#CA51CM#2) ([abow](https://github.com/abow))
+- New ColorPicker for GUI [Demo](https://www.babylonjs-playground.com/#91I2RE#1) ([abow](https://github.com/abow))
+- Added slerp and limits to BoneLookController [Demo](https://www.babylonjs-playground.com/#1YEPX6#11) ([abow](https://github.com/abow)) 
 - new `Texture.readPixels()` function to read texture content ([deltakosh](https://github.com/deltakosh))
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
 - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
@@ -69,6 +73,11 @@
 - New `BABYLON.TextureTools.CreateResizedCopy` function to create a copy of a texture and chage its size ([deltakosh](https://github.com/deltakosh)) 
  
 ### Bug fixes
+- Fixed issue with FPS not decreasing when reflections are disabled ([abow](https://github.com/abow)) 
+- Fixed disappearing BoneAxesViewer ([abow](https://github.com/abow)) 
+- Fixed disappearing SkeletonViewer ([abow](https://github.com/abow)) 
+- Fixed billboarding for parented meshes ([abow](https://github.com/abow)) 
+- Fixed issue with BoneIKController and left-handed coordinate systems ([abow](https://github.com/abow)) 
 - Fixed a bug with spotlight direction ([deltakosh](https://github.com/deltakosh)) 
 - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
 - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
@@ -76,7 +85,7 @@
 - Fixed SPS particle access `start` index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 - Fixed SPS billboard mode when used with a parented camera ([jerome](https://github.com/jbousquie)) 
 
-### API Documentation
+### API Documentation 
 - File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
