@@ -1438,6 +1438,7 @@
                     "../../inspector/src/tabs/PropertyTab.ts",
                     "../../inspector/src/tabs/CameraTab.ts",
                     "../../inspector/src/tabs/GUITab.ts",
+                    "../../inspector/src/tabs/PhysicsTab.ts",
                     "../../inspector/src/tabs/SoundTab.ts",
                     "../../inspector/src/tabs/TextureTab.ts",
                     "../../inspector/src/tabs/LightTab.ts",
