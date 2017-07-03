@@ -117,11 +117,25 @@ module BABYLON {
             this._updateParameters();
         }
 
-        /**
-         * Exposure used in the effect.
-         */
         @serialize()
-        public exposure = 1.0;
+        public _exposure = 1.0;
+        /**
+         * Gets the Exposure used in the effect.
+         */
+        public get exposure(): number {
+            return this._exposure;
+        }
+        /**
+         * Sets the Exposure used in the effect.
+         */
+        public set exposure(value: number) {
+            if (this._exposure === value) {
+                return;
+            }
+
+            this._exposure = value;
+            this._updateParameters();
+        }
 
         @serialize()
         private _toneMappingEnabled = false;
