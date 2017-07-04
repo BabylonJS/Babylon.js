@@ -576,8 +576,8 @@ vColor=color;\n\
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
-            CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            CustomMaterial2.ShaderIndexer++;
+            var name = name + "custom_" + CustomMaterial2.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
