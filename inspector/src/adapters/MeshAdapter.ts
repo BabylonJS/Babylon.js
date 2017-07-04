@@ -92,9 +92,9 @@ module INSPECTOR {
             var m = this._obj.getWorldMatrix();
 
             // Axis
-            var x = new BABYLON.Vector3(8, 0, 0);
-            var y = new BABYLON.Vector3(0, 8, 0);
-            var z = new BABYLON.Vector3(0, 0, 8);
+            var x = new BABYLON.Vector3(8 / (this._obj as BABYLON.AbstractMesh).scaling.x, 0, 0);
+            var y = new BABYLON.Vector3(0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.y, 0);
+            var z = new BABYLON.Vector3(0, 0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.z);
             
             // Draw an axis of the given color
             let _drawAxis = (color, start, end): BABYLON.LinesMesh => {
