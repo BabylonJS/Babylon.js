@@ -33,6 +33,7 @@ class FCurveAnimatable:
             frameOffset = 0
 
             currentAction = object.animation_data.action
+            currentFrame = bpy.context.scene.frame_current
             for action in bpy.data.actions:
                 # get the range / assigning the action to the object
                 animationRange = AnimationRange.actionPrep(object, action, False, frameOffset)
@@ -54,6 +55,7 @@ class FCurveAnimatable:
                     frameOffset = animationRange.frame_end
 
             object.animation_data.action = currentAction
+            bpy.context.scene.frame_set(currentFrame)
             #Set Animations
             self.animations = []
             if supportsRotation and len(rotAnimation.frames) > 0:
