@@ -23,7 +23,8 @@
  - New `Cell Shading` material added into `Materials Library` [Demo](http://www.babylonjs.com/Demos/CellShading/) ([Julien Moreau-Mathis](https://github.com/julien-moreau))
  - New kernel based blur. [Demo](https://www.babylonjs-playground.com/#FBH4J7#1) ([deltakosh](https://github.com/deltakosh))
  - New highlights postprocess ([deltakosh](https://github.com/deltakosh))
- - New DefaultRenderingPipeline to enable image processing effect. [Demo](https://www.babylonjs-playground.com/#Y3C0HQ) ([deltakosh](https://github.com/deltakosh))
+ - New DefaultRenderingPipeline to enable image processing effect. [Demo](https://www.babylonjs-playground.com/#5XB8YT#1) ([deltakosh](https://github.com/deltakosh))
+ - New image processing postprocess. [Doc here](http://doc.babylonjs.com/tutorials/how_to_use_postprocesses#imageprocessing) ([deltakosh](https://github.com/deltakosh))
  - Spector.js New WebGL debugger: [more info here](http://spector.babylonjs.com) ([Sebastien Vandenberghe](https://github.com/sebavan))
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
