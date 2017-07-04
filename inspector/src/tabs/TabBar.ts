@@ -145,6 +145,15 @@ module INSPECTOR {
             }
         }
 
+        public getActiveTabIndex(): number {
+            for (let i = 0; i < this._tabs.length; i++) {
+                if(this._tabs[i].isActive()){
+                    return i;
+                }
+            }
+            return 0;
+        }
+
         public get inspector(): Inspector {
             return this._inspector;
         }

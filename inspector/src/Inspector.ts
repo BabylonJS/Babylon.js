@@ -390,5 +390,9 @@ module INSPECTOR {
                 });
             }
         }
+
+        public getActiveTabIndex():number {
+           return this._tabbar.getActiveTabIndex();
+        }
     }
 }
