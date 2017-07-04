@@ -213,6 +213,8 @@ var Test = (function () {
             cubes.push(b);
         }
 
+        scene.getMeshByName("Box #6").scaling.x = 2;
+
         //Other meshes
         var box1 = BABYLON.MeshBuilder.CreateBox("box1", {size: 1}, scene);
 
@@ -227,6 +229,13 @@ var Test = (function () {
         var box4 = BABYLON.MeshBuilder.CreateBox("box4", {size: 1}, scene);
         box4.position.x = 1.5;
         box4.parent = box3;
+
+        window.addEventListener("keydown", function (evt) {
+            sphere1.dispose();
+            var sphere7 = BABYLON.Mesh.CreateSphere("Sphere7", 10.0, 9.0, scene);
+            sphere7.position.x = 40;
+        });
+
 
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");

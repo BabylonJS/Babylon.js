@@ -23838,6 +23838,7 @@ var BABYLON;
             this._areTexturesDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
             this._normals = false;
             this._uvs = false;
             this._needNormals = false;
@@ -23857,6 +23858,7 @@ var BABYLON;
             this._areFresnelDirty = false;
             this._areLightsDirty = false;
             this._areMiscDirty = false;
+            this._areImageProcessingDirty = false;
         };
         MaterialDefines.prototype.markAsUnprocessed = function () {
             this._isDirty = true;
@@ -23867,6 +23869,11 @@ var BABYLON;
             this._areLightsDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsImageProcessingDirty = function () {
+            this._areImageProcessingDirty = true;
             this._isDirty = true;
         };
         MaterialDefines.prototype.markAsLightDirty = function () {
@@ -24322,6 +24329,9 @@ var BABYLON;
                     func(subMesh._materialDefines);
                 }
             }
+        };
+        Material.prototype._markAllSubMeshesAsImageProcessingDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsImageProcessingDirty(); });
         };
         Material.prototype._markAllSubMeshesAsTexturesDirty = function () {
             this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
@@ -28707,7 +28717,7 @@ var BABYLON;
             }
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(function (conf) {
-                _this._markAllSubMeshesAsTexturesDirty();
+                _this._markAllSubMeshesAsImageProcessingDirty();
             });
         };
         Object.defineProperty(StandardMaterial.prototype, "cameraColorCurvesEnabled", {
@@ -29029,14 +29039,16 @@ var BABYLON;
                     defines.BUMP = false;
                     defines.REFRACTION = false;
                 }
-                if (!this.imageProcessingConfiguration.isReady()) {
-                    return false;
-                }
-                this.imageProcessingConfiguration.prepareDefines(defines);
                 defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+            }
+            if (defines._areImageProcessingDirty) {
+                if (!this._imageProcessingConfiguration.isReady()) {
+                    return false;
+                }
+                this._imageProcessingConfiguration.prepareDefines(defines);
             }
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {
@@ -30208,7 +30220,7 @@ var BABYLON;
             }
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(function (conf) {
-                _this._markAllSubMeshesAsTexturesDirty();
+                _this._markAllSubMeshesAsImageProcessingDirty();
             });
         };
         Object.defineProperty(PBRBaseMaterial.prototype, "useLogarithmicDepth", {
@@ -30451,6 +30463,8 @@ var BABYLON;
                 defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
+            }
+            if (defines._areImageProcessingDirty) {
                 if (!this._imageProcessingConfiguration.isReady()) {
                     return false;
                 }

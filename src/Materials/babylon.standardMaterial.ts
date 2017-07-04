@@ -334,7 +334,7 @@ module BABYLON {
 
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
-                this._markAllSubMeshesAsTexturesDirty();
+                this._markAllSubMeshesAsImageProcessingDirty();
             });
         }
 
@@ -671,12 +671,6 @@ module BABYLON {
                     defines.REFRACTION = false;
                 }
 
-                if (!this.imageProcessingConfiguration.isReady()) {
-                    return false;
-                }
-
-                this.imageProcessingConfiguration.prepareDefines(defines);
-
                 defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
 
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
@@ -684,6 +678,14 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+            }
+
+            if (defines._areImageProcessingDirty) {
+                if (!this._imageProcessingConfiguration.isReady()) {
+                    return false;
+                }
+
+                this._imageProcessingConfiguration.prepareDefines(defines);
             }
 
             if (defines._areFresnelDirty) {
