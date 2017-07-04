@@ -64,7 +64,7 @@ module INSPECTOR {
             this._labelInitialized = true;
         }
 
-        private _createLabel(mesh: BABYLON.AbstractMesh){//: BABYLON.Group2D {
+        private _createLabel(mesh: BABYLON.AbstractMesh){
             // Don't create label for "system nodes" (starting and ending with ###)
             let name = mesh.name;
 
