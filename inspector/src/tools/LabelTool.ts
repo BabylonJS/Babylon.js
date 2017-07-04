@@ -8,13 +8,6 @@ module INSPECTOR {
         private _labelInitialized    : boolean = false;
         private _scene               : BABYLON.Scene = null;
         private _guiLoaded      : boolean = false;
-
-        private _newMeshObserver       : BABYLON.Observer<BABYLON.AbstractMesh> = null;
-        private _removedMeshObserver   : BABYLON.Observer<BABYLON.AbstractMesh> = null;
-        private _newLightObserver      : BABYLON.Observer<BABYLON.Light> = null;
-        private _removedLightObserver  : BABYLON.Observer<BABYLON.Light> = null;
-        private _newCameraObserver     : BABYLON.Observer<BABYLON.Camera> = null;
-        private _removedCameraObserver : BABYLON.Observer<BABYLON.Camera> = null;
         
         constructor(parent:HTMLElement, inspector:Inspector) {
             super('fa-tags', parent, inspector, 'Display mesh names on the canvas');
@@ -23,17 +16,9 @@ module INSPECTOR {
         }
 
         public dispose() {
-            if (this._newMeshObserver) {
-                this._scene.onNewMeshAddedObservable.remove(this._newMeshObserver);
-                this._scene.onMeshRemovedObservable.remove (this._removedMeshObserver);
 
-                this._scene.onNewLightAddedObservable.remove(this._newLightObserver);
-                this._scene.onLightRemovedObservable.remove (this._removedLightObserver);
-
-                this._scene.onNewCameraAddedObservable.remove(this._newCameraObserver);
-                this._scene.onCameraRemovedObservable.remove (this._removedCameraObserver);
-    
-                this._newMeshObserver = this._newLightObserver = this._newCameraObserver = this._removedMeshObserver = this._removedLightObserver = this._removedCameraObserver = null;
+            if(this._advancedTexture){
+                this._advancedTexture.dispose();
             }
         }
 
@@ -67,41 +52,15 @@ module INSPECTOR {
             for (let m of this._scene.meshes) {
                 this._createLabel(m);
             }
-
-            /*for (let l of this._scene.lights) {
-                this._createLabel(l);
-            }
-
-            for (let c of this._scene.cameras) {
-                this._createLabel(c);
-            }
-
-            // Add handlers for new/removed meshes, camera and lights
-
-            this._newMeshObserver = this._scene.onNewMeshAddedObservable.add((e, s) => {
-                this._createLabel(e);
-            });
-
-            this._removedMeshObserver = this._scene.onMeshRemovedObservable.add((e, s) => {
-                this._removeLabel(e);
-            });
-
-            this._newLightObserver = this._scene.onNewLightAddedObservable.add((e, s) => {
-                this._createLabel(e);
-            });
-
-            this._removedLightObserver = this._scene.onLightRemovedObservable.add((e, s) => {
-                this._removeLabel(e);
-            });
-
-            this._newCameraObserver = this._scene.onNewCameraAddedObservable.add((e, s) => {
-                this._createLabel(e);
-            });
-
-            this._removedCameraObserver = this._scene.onCameraRemovedObservable.add((e, s) => {
-                this._removeLabel(e);
-            });*/
             
+            this._scene.onNewMeshAddedObservable.add((m, s) => {
+                this._createLabel(m);
+            });
+
+            this._scene.onMeshRemovedObservable.add((m, s) => {
+                this._removeLabel(m);
+            });
+
             this._labelInitialized = true;
         }
 
@@ -115,23 +74,25 @@ module INSPECTOR {
 
             if(mesh){
                 let rect1 = new BABYLON.GUI.Rectangle();
-                rect1.width = 0.1;
-                rect1.height = "20px";
+                rect1.width = 4 + 10 * name.length + "px";
+                rect1.height = "22px";
+                rect1.background = "rgba(0,0,0,0.6)";
+                rect1.color = "black";
                 this._advancedTexture.addControl(rect1);
 
-                var label = new BABYLON.GUI.TextBlock();
+                let label = new BABYLON.GUI.TextBlock();
                 label.text = name;
+                label.fontSize = 12;
                 rect1.addControl(label);
 
-                rect1.linkWithMesh(mesh);   
-                rect1.linkOffsetY = -50;
+                rect1.linkWithMesh(mesh); 
             }
         }
 
-        private _removeLabel(node: BABYLON.Node) {
+        private _removeLabel(mesh: BABYLON.AbstractMesh) {
             for (let g of this._advancedTexture._rootContainer.children) {
                 let ed = g._linkedMesh;
-                if (ed === node) {
+                if (ed === mesh) {
                     this._advancedTexture.removeControl(g);
                     break;
                 }
@@ -151,12 +112,12 @@ module INSPECTOR {
             // Check if we have to display the labels
             if (this._isDisplayed) {
                 this._initializeLabels();
-                //this._canvas.levelVisible = true; //TODO
+                this._advancedTexture._rootContainer.isVisible = true;
             } 
             
             // Or to hide them
             else {
-                //this._canvas.levelVisible = false;//TODO
+                this._advancedTexture._rootContainer.isVisible = false;
             }
         }
     }

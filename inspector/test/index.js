@@ -228,6 +228,13 @@ var Test = (function () {
         box4.position.x = 1.5;
         box4.parent = box3;
 
+        window.addEventListener("keydown", function (evt) {
+            sphere1.dispose();
+            var sphere7 = BABYLON.Mesh.CreateSphere("Sphere7", 10.0, 9.0, scene);
+            sphere7.position.x = 40;
+        });
+
+
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
