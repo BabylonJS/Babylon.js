@@ -1437,6 +1437,7 @@
                     "../../inspector/src/gui/BasicElement.ts",
                     "../../inspector/src/adapters/Adapter.ts",
                     "../../inspector/src/adapters/CameraAdapter.ts",
+                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
                     "../../inspector/src/adapters/GUIAdapter.ts",
                     "../../inspector/src/adapters/SoundAdapter.ts",
                     "../../inspector/src/adapters/TextureAdapter.ts",
