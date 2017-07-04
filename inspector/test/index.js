@@ -213,6 +213,8 @@ var Test = (function () {
             cubes.push(b);
         }
 
+        scene.getMeshByName("Box #6").scaling.x = 2;
+
         //Other meshes
         var box1 = BABYLON.MeshBuilder.CreateBox("box1", {size: 1}, scene);
 
