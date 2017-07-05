@@ -399,6 +399,9 @@
                 if(scene){
                     if(showInspector){
                         scene.debugLayer.show({initialTab:initialTabIndex});
+                        scene.executeWhenReady(function(){
+                            scene.debugLayer._inspector.refresh();
+                        })
                     }else if(showDebugLayer){
                         scene.debugLayer.show();
                     }
