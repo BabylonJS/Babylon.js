@@ -78,6 +78,10 @@
             return activeTextures;
         }
 
+        public clone(name: string): PBRSpecularGlossinessMaterial {
+            return SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
+        }
+
         /**
          * Serialize the material to a parsable JSON object.
          */
