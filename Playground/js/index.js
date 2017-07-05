@@ -341,6 +341,7 @@
                         scene.render();
                     }
 
+                    fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 });
 
@@ -398,6 +399,9 @@
                 if(scene){
                     if(showInspector){
                         scene.debugLayer.show({initialTab:initialTabIndex});
+                        scene.executeWhenReady(function(){
+                            scene.debugLayer._inspector.refresh();
+                        })
                     }else if(showDebugLayer){
                         scene.debugLayer.show();
                     }
