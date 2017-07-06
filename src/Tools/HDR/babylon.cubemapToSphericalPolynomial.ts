@@ -43,12 +43,12 @@ module BABYLON.Internals {
             }
 
             var size = texture.getSize().width;
-            var right = texture.readPixels(0);
-            var left = texture.readPixels(1);
-            var up = texture.readPixels(2);
-            var down = texture.readPixels(3);
-            var front = texture.readPixels(4);
-            var back = texture.readPixels(5);
+            var right = <Float32Array>texture.readPixels(0);
+            var left = <Float32Array>texture.readPixels(1);
+            var up = <Float32Array>texture.readPixels(2);
+            var down = <Float32Array>texture.readPixels(3);
+            var front = <Float32Array>texture.readPixels(4);
+            var back = <Float32Array>texture.readPixels(5);
 
             var cubeInfo: CubeMapInfo = {
                 size,
