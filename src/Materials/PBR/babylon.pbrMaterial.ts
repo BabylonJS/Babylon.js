@@ -182,7 +182,7 @@
 
         @serializeAsColor3("reflection")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionColor = new Color3(0.0, 0.0, 0.0);
+        public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
         @serializeAsColor3("emissive")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")

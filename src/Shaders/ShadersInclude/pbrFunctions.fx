@@ -137,6 +137,6 @@ float environmentRadianceOcclusion(float ambientOcclusion, float NdotVUnclamped)
 
 float environmentHorizonOcclusion(vec3 reflection, vec3 normal) {
 	// http://marmosetco.tumblr.com/post/81245981087
-    float temp = clamp( 1.0 + 0.3 * dot(reflection, normal), 0.0, 1.0);
+    float temp = clamp( 1.0 + 1.1 * dot(reflection, normal), 0.0, 1.0);
     return square(temp);
 }
