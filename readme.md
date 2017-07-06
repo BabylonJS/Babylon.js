@@ -8,10 +8,10 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN
-- http://cdn.babylonjs.com/2-5/babylon.js
-- http://cdn.babylonjs.com/2-5/babylon.max.js
-- http://cdn.babylonjs.com/2-5/babylon.noworker.js
-- http://cdn.babylonjs.com/2-5/babylon.core.js
+- https://cdn.babylonjs.com/babylon.2.5.js
+- https://cdn.babylonjs.com/babylon.2.5.max.js
+- https://cdn.babylonjs.com/babylon.2.5.noworker.js
+- https://cdn.babylonjs.com/babylon.2.5.core.js
 
 For preview release you can use the following ones:
 
@@ -21,7 +21,7 @@ For preview release you can use the following ones:
 
 ## Preview release
 
-**3.0-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
+**3.0-rc** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
 If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation
