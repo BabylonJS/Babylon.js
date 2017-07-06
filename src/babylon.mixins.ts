@@ -121,6 +121,7 @@ interface WebGLTexture {
     _isDisabled: boolean;
     _generateStencilBuffer: boolean;
     _generateDepthBuffer: boolean;
+    _sphericalPolynomial: BABYLON.SphericalPolynomial;
 }
 
 interface WebGLBuffer {

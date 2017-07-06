@@ -53,6 +53,21 @@
         public isCube = false;
 
         @serialize()
+        public gammaSpace = true;
+
+        @serialize()
+        public invertZ = false;
+
+        @serialize()
+        public lodLevelInAlpha = false;
+
+        @serialize()
+        public lodGenerationOffset = 1.0;
+
+        @serialize()
+        public lodGenerationScale = 0.8;
+
+        @serialize()
         public isRenderTarget = false;
 
         public get uid(): string {
@@ -218,6 +233,19 @@
                 this._scene.getEngine().releaseInternalTexture(this._texture);
                 delete this._texture;
             }
+        }
+
+        public getSphericalPolynomial(): SphericalPolynomial {
+            if (!this._texture || !Internals.CubeMapToSphericalPolynomialTools || !this.isReady()) {
+                return null;
+            }
+
+            if (!this._texture._sphericalPolynomial) {
+                this._texture._sphericalPolynomial = 
+                    Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+            }
+
+            return this._texture._sphericalPolynomial;
         }
 
         public dispose(): void {
