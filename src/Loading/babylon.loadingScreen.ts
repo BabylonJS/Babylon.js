@@ -134,7 +134,9 @@ module BABYLON {
         // Resize
         private _resizeLoadingUI = () => {
             var canvasRect = this._renderingCanvas.getBoundingClientRect();
-            this._loadingDiv.style.position = "absolute";
+            var canvasPositioning = window.getComputedStyle(this._renderingCanvas).position;
+
+            this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
             this._loadingDiv.style.left = canvasRect.left + "px";
             this._loadingDiv.style.top = canvasRect.top + "px";
             this._loadingDiv.style.width = canvasRect.width + "px";
