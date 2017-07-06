@@ -116,11 +116,11 @@ module BABYLON.GUI {
             }
         }
 
-        public _parseLine(line: string='', context: CanvasRenderingContext2D): object {
+        protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
           return {text: line, width: context.measureText(line).width};
         }
 
-        public _parseLineWithTextWrapping(line: string='', context: CanvasRenderingContext2D): object {
+        protected _parseLineWithTextWrapping(line: string='', context: CanvasRenderingContext2D): object {
           var words = line.split(' ');
           var width = this._currentMeasure.width;
           var lineWidth = 0;
