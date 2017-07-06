@@ -1145,7 +1145,7 @@
                         }
                         else {
                             if (!reflectionTexture._lodTextureMid) {
-                                refractionTexture._generateFixedLodSamplers();
+                                reflectionTexture._generateFixedLodSamplers();
                             }
 
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);

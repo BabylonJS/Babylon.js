@@ -376,6 +376,14 @@
         public useAlphaFresnel = false;
 
         /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part.
+         */
+        @serializeAsTexture()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public environmentBRDFTexture: BaseTexture = null;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {

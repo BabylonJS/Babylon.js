@@ -74,24 +74,24 @@ uniform sampler2D microSurfaceSampler;
 // Refraction
 #ifdef REFRACTION
 	#ifdef REFRACTIONMAP_3D
-		#define sampleRefraction textureCube
+		#define sampleRefraction(s, c) textureCube(s, c)
 		
 		uniform samplerCube refractionSampler;
 
-		#ifndef LODBASEDMICROSFURACE
-			#define sampleRefractionLod textureCubeLodEXT
-
+		#ifdef LODBASEDMICROSFURACE
+			#define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
+		#else
 			uniform samplerCube refractionSamplerLow;
 			uniform samplerCube refractionSamplerHigh;
 		#endif		
 	#else
-		#define sampleRefraction texture2D
+		#define sampleRefraction(s, c) texture2D(s, c)
 		
 		uniform sampler2D refractionSampler;
 
-		#ifndef LODBASEDMICROSFURACE
-			#define sampleRefractionLod texture2DLodEXT
-
+		#ifdef LODBASEDMICROSFURACE
+			#define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
+		#else
 			uniform samplerCube refractionSamplerLow;
 			uniform samplerCube refractionSamplerHigh;
 		#endif
@@ -101,24 +101,24 @@ uniform sampler2D microSurfaceSampler;
 // Reflection
 #ifdef REFLECTION
 	#ifdef REFLECTIONMAP_3D
-		#define sampleReflection textureCube
+		#define sampleReflection(s, c) textureCube(s, c)
 
 		uniform samplerCube reflectionSampler;
 		
-		#ifndef LODBASEDMICROSFURACE
-			#define sampleReflectionLod textureCubeLodEXT
-
+		#ifdef LODBASEDMICROSFURACE
+			#define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+		#else
 			uniform samplerCube reflectionSamplerLow;
 			uniform samplerCube reflectionSamplerHigh;
 		#endif
 	#else
-		#define sampleReflection texture2D
+		#define sampleReflection(s, c) texture2D(s, c)
 
 		uniform sampler2D reflectionSampler;
 
-		#ifndef LODBASEDMICROSFURACE
-			#define sampleReflectionLod texture2DLodEXT
-
+		#ifdef LODBASEDMICROSFURACE
+			#define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+		#else
 			uniform samplerCube reflectionSamplerLow;
 			uniform samplerCube reflectionSamplerHigh;
 		#endif
@@ -504,8 +504,8 @@ void main(void) {
 	#endif
 
 	// _____________________________ Levels _____________________________________
-	environmentRadiance *= vReflectionColor.rgb * vReflectionInfos.x;
-	environmentIrradiance *= vReflectionColor.rgb;
+	environmentRadiance *= vReflectionInfos.x;
+	//environmentIrradiance *= vReflectionColor.rgb;
 #endif
 
 // ____________________________________________________________________________________
@@ -546,13 +546,13 @@ void main(void) {
 		float ambientMonochrome = getLuminance(ambientOcclusionColor);
 	#endif
 
-	vec3 seo = environmentRadianceOcclusion(ambientMonochrome, NdotVUnclamped);
+	float seo = environmentRadianceOcclusion(ambientMonochrome, NdotVUnclamped);
 	specularEnvironmentReflectance *= seo;
 
 	#ifdef BUMP
 		#ifdef REFLECTIONMAP_3D
-			vec3 hoo = environmentHorizonOcclusion(reflectionCoords, normalW);
-			specularEnvironmentReflectance *= hoo;
+			float eho = environmentHorizonOcclusion(reflectionCoords, normalW);
+			specularEnvironmentReflectance *= eho;
 		#endif
 	#endif
 #else
