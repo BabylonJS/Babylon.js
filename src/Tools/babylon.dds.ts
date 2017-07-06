@@ -52,6 +52,11 @@
     var FOURCC_DXT1 = FourCCToInt32("DXT1");
     var FOURCC_DXT3 = FourCCToInt32("DXT3");
     var FOURCC_DXT5 = FourCCToInt32("DXT5");
+    var FOURCC_DX10 = FourCCToInt32("DX10");
+    var FOURCC_D3DFMT_R16G16B16A16F = 113;
+    var FOURCC_D3DFMT_R32G32B32A32F = 116;
+
+    var DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
 
     var headerLengthInt = 31; // The header length in 32 bit ints
 
@@ -74,6 +79,9 @@
     var off_AMask = 26;
     var off_caps1 = 27;
     var off_caps2 = 28;
+    var off_caps3 = 29;
+    var off_caps4 = 30;
+    var off_dxgiFormat = 32
 
     export interface DDSInfo {
         width: number;
@@ -82,18 +90,40 @@
         isFourCC: boolean;
         isRGB: boolean;
         isLuminance: boolean;
-        isCube: boolean
+        isCube: boolean;
+        isCompressed: boolean;
+        dxgiFormat: number;
+        textureType: number;
     };
 
     export class DDSTools {
         public static GetDDSInfo(arrayBuffer: any): DDSInfo {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
+            var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
 
             var mipmapCount = 1;
             if (header[off_flags] & DDSD_MIPMAPCOUNT) {
                 mipmapCount = Math.max(1, header[off_mipmapCount]);
             }
 
+            var fourCC = header[off_pfFourCC];
+            var dxgiFormat = (fourCC === FOURCC_DX10) ? extendedHeader[off_dxgiFormat] : 0;
+            var textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+
+            switch (fourCC) {
+                case FOURCC_D3DFMT_R16G16B16A16F:  
+                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;                           
+                    break;
+                case FOURCC_D3DFMT_R32G32B32A32F:
+                    textureType = Engine.TEXTURETYPE_FLOAT;
+                    break;                    
+                case FOURCC_DX10:
+                    if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
+                        textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                        break;
+                    }
+            }
+  
             return {
                 width: header[off_width],
                 height: header[off_height],
@@ -101,20 +131,31 @@
                 isFourCC: (header[off_pfFlags] & DDPF_FOURCC) === DDPF_FOURCC,
                 isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
                 isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
-                isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP
+                isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP,
+                isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || FOURCC_DXT1 === FOURCC_DXT5),
+                dxgiFormat: dxgiFormat,
+                textureType: textureType
             };
         }
+    
+        private static GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint16Array {   
+            return new Uint16Array(arrayBuffer, dataOffset, dataLength);
+        }           
+
+        private static GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Float32Array {
+            return new Float32Array(arrayBuffer, dataOffset, dataLength);
+        }        
 
         private static GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer);
             var index = 0;
-            for (var y = height - 1; y >= 0; y--) {
+            for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = dataOffset + (x + y * width) * 4;
-                    byteArray[index + 2] = srcData[srcPos];
-                    byteArray[index + 1] = srcData[srcPos + 1];
                     byteArray[index] = srcData[srcPos + 2];
+                    byteArray[index + 1] = srcData[srcPos + 1];
+                    byteArray[index + 2] = srcData[srcPos];
                     byteArray[index + 3] = srcData[srcPos + 3];
                     index += 4;
                 }
@@ -127,12 +168,12 @@
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer);
             var index = 0;
-            for (var y = height - 1; y >= 0; y--) {
+            for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = dataOffset + (x + y * width) * 3;
-                    byteArray[index + 2] = srcData[srcPos];
-                    byteArray[index + 1] = srcData[srcPos + 1];
                     byteArray[index] = srcData[srcPos + 2];
+                    byteArray[index + 1] = srcData[srcPos + 1];
+                    byteArray[index + 2] = srcData[srcPos];
                     index += 3;
                 }
             }
@@ -144,7 +185,7 @@
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer);
             var index = 0;
-            for (var y = height - 1; y >= 0; y--) {
+            for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = dataOffset + (x + y * width);
                     byteArray[index] = srcData[srcPos];
@@ -155,9 +196,12 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(gl: WebGLRenderingContext, ext: any, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void {
+        public static UploadDDSLevels(engine: Engine, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void {
+            var gl = engine._gl;
+            var ext = engine.getCaps().s3tc;
+
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
-                fourCC, blockBytes, internalFormat,
+                fourCC, blockBytes, internalFormat, format,
                 width, height, dataLength, dataOffset,
                 byteArray, mipmapCount, i;
 
@@ -170,6 +214,16 @@
                 Tools.Error("Unsupported format, must contain a FourCC, RGB or LUMINANCE code");
                 return;
             }
+
+            if (info.isCompressed && !ext) {
+                Tools.Error("Compressed textures are not supported on this platform.");
+                return;
+            }
+
+            var bpp = header[off_RGBbpp];
+            dataOffset = header[off_size] + 4;
+
+            let computeFormats = false;
 
             if (info.isFourCC) {
                 fourCC = header[off_pfFourCC];
@@ -186,10 +240,29 @@
                     blockBytes = 16;
                     internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT5_EXT;
                     break;
+                case FOURCC_D3DFMT_R16G16B16A16F:  
+                    computeFormats = true;
+                    break;
+                case FOURCC_D3DFMT_R32G32B32A32F:
+                    computeFormats = true;
+                    break;                    
+                case FOURCC_DX10:
+                    // There is an additionnal header so dataOffset need to be changed
+                    dataOffset += 5 * 4; // 5 uints
+
+                    if (info.dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
+                        computeFormats = true;
+                        break;
+                    }
                 default:
                     console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
                     return;
                 }
+            }
+
+            if (computeFormats) {
+                format = engine._getWebGLTextureType(info.textureType);    
+                internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
             }
 
             mipmapCount = 1;
@@ -197,17 +270,24 @@
                 mipmapCount = Math.max(1, header[off_mipmapCount]);
             }
             
-            var bpp = header[off_RGBbpp];
-
             for (var face = 0; face < faces; face++) {
                 var sampler = faces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
 
                 width = header[off_width];
                 height = header[off_height];
-                dataOffset = header[off_size] + 4;
 
                 for (i = 0; i < mipmapCount; ++i) {
-                    if (info.isRGB) {
+                    if (!info.isCompressed && info.isFourCC) {
+                        dataLength = width * height * 4;
+                        var floatArray: ArrayBufferView;
+                        if (bpp === 128) {
+                            floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                        } else { // 64
+                            floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                        }
+
+                        gl.texImage2D(sampler, i, internalFormat, width, height, 0, gl.RGBA, format, floatArray);
+                    } else if (info.isRGB) {
                         if (bpp === 24) {
                             dataLength = width * height * 3;
                             byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
@@ -230,7 +310,7 @@
                         byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
                         gl.compressedTexImage2D(sampler, i, internalFormat, width, height, 0, byteArray);
                     }
-                    dataOffset += dataLength;
+                    dataOffset += width * height * (bpp / 8);
                     width *= 0.5;
                     height *= 0.5;
 

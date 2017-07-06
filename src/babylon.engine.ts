@@ -274,10 +274,6 @@
         private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
         private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
-        private static HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-        private static RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-        private static RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
-
         public static get NEVER(): number {
             return Engine._NEVER;
         }
@@ -722,6 +718,11 @@
                 this._glRenderer = "Unknown renderer";
             }
 
+            // Constants
+            this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
+            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.            
+
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
 
@@ -749,7 +750,7 @@
             this._caps.textureHalfFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float');
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'));
             if (this._webGLVersion > 1) {
-                Engine.HALF_FLOAT_OES = 0x140B;
+                this._gl.HALF_FLOAT_OES = 0x140B;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
 
@@ -2465,7 +2466,7 @@
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
-                            Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
+                            Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
                         }, samplingMode);
                     };
                 }
@@ -3120,16 +3121,15 @@
             texture.onLoadedCallbacks = [];
 
             var isKTX = false;
+            var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = rootUrl.substring(lastDot).toLowerCase();
             if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
-            }
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            if (isDDS) {
-                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            } else {
+                isDDS = (extension === ".dds");
             }
 
             if (isKTX) {
@@ -3163,9 +3163,11 @@
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+                    if (info.isCompressed) {
+                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+                    }
 
-                    Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 6);
+                    Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 6);
 
                     if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -3183,6 +3185,7 @@
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
+                    texture.type = info.textureType;
                 }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
@@ -3340,7 +3343,7 @@
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             }
-            else if (textureType === Engine.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             }
@@ -3962,7 +3965,7 @@
             }
         }
 
-        public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1): Uint8Array {
+        public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1, lodIndex = 0): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 this._dummyFramebuffer = gl.createFramebuffer();
@@ -3970,13 +3973,13 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
             if (faceIndex > -1) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);            
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, lodIndex);            
             } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
 
             let readFormat = gl.RGBA;
-            let readType = gl.UNSIGNED_BYTE;
+            let readType = (texture.type !== undefined) ? texture.type : gl.UNSIGNED_BYTE;
             let buffer = new Uint8Array(4 * width * height);
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             
@@ -4050,28 +4053,28 @@
             return successful;
         }
 
-        private _getWebGLTextureType(type: number): number {
+        public _getWebGLTextureType(type: number): number {
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 return this._gl.FLOAT;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
                 // Add Half Float Constant.
-                return Engine.HALF_FLOAT_OES;
+                return this._gl.HALF_FLOAT_OES;
             }
 
             return this._gl.UNSIGNED_BYTE;
         };
 
-        private _getRGBABufferInternalSizedFormat(type: number): number {
+        public _getRGBABufferInternalSizedFormat(type: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
-                return Engine.RGBA32F;
+                return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                return Engine.RGBA16F;
+                return this._gl.RGBA16F;
             }
 
             return this._gl.RGBA;
