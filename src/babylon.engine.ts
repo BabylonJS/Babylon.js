@@ -3963,7 +3963,7 @@
             }
 
             let readFormat = gl.RGBA;
-            let readType = (texture.type !== undefined) ? texture.type : gl.UNSIGNED_BYTE;
+            let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             let buffer = new Uint8Array(4 * width * height);
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             
