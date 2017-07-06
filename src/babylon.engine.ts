@@ -3042,6 +3042,14 @@
             return samples;
         }
 
+        public _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
+            this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
+        }
+
+        public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
+            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
+        }
+
         public createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture {
             var gl = this._gl;
 
