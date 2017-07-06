@@ -10430,7 +10430,7 @@ var BABYLON;
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
             var readFormat = gl.RGBA;
-            var readType = (texture.type !== undefined) ? texture.type : gl.UNSIGNED_BYTE;
+            var readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             var buffer = new Uint8Array(4 * width * height);
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -45569,7 +45569,8 @@ var BABYLON;
             // Resize
             this._resizeLoadingUI = function () {
                 var canvasRect = _this._renderingCanvas.getBoundingClientRect();
-                _this._loadingDiv.style.position = "absolute";
+                var canvasPositioning = window.getComputedStyle(_this._renderingCanvas).position;
+                _this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
                 _this._loadingDiv.style.left = canvasRect.left + "px";
                 _this._loadingDiv.style.top = canvasRect.top + "px";
                 _this._loadingDiv.style.width = canvasRect.width + "px";
@@ -60900,7 +60901,40 @@ var BABYLON;
                 bits += m & 1;
                 return bits;
             };
-            DDSTools.GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+            DDSTools._FromHalfFloat = function (value) {
+                var s = (value & 0x8000) >> 15;
+                var e = (value & 0x7C00) >> 10;
+                var f = value & 0x03FF;
+                if (e === 0) {
+                    return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
+                }
+                else if (e == 0x1F) {
+                    return f ? NaN : ((s ? -1 : 1) * Infinity);
+                }
+                return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
+            };
+            DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Float32Array(dataLength);
+                var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = DDSTools._FromHalfFloat(srcData[srcPos]);
+                        destArray[index + 1] = DDSTools._FromHalfFloat(srcData[srcPos + 1]);
+                        destArray[index + 2] = DDSTools._FromHalfFloat(srcData[srcPos + 2]);
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = DDSTools._FromHalfFloat(srcData[srcPos + 3]);
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
+            DDSTools._GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
                 if (DDSTools.StoreLODInAlphaChannel) {
                     var destArray = new Uint16Array(dataLength);
                     var srcData = new Uint16Array(arrayBuffer, dataOffset);
@@ -60919,7 +60953,7 @@ var BABYLON;
                 }
                 return new Uint16Array(arrayBuffer, dataOffset, dataLength);
             };
-            DDSTools.GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+            DDSTools._GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
                 if (DDSTools.StoreLODInAlphaChannel) {
                     var destArray = new Float32Array(dataLength);
                     var srcData = new Float32Array(arrayBuffer, dataOffset);
@@ -60938,7 +60972,7 @@ var BABYLON;
                 }
                 return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
-            DDSTools.GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -60954,7 +60988,7 @@ var BABYLON;
                 }
                 return byteArray;
             };
-            DDSTools.GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -60969,7 +61003,7 @@ var BABYLON;
                 }
                 return byteArray;
             };
-            DDSTools.GetLuminanceArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetLuminanceArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -61051,22 +61085,28 @@ var BABYLON;
                             dataLength = width * height * 4;
                             var floatArray;
                             if (bpp === 128) {
-                                floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            }
+                            else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                format = engine._getWebGLTextureType(info.textureType);
+                                internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                             }
                             else {
-                                floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                             }
                             engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                         }
                         else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
-                                byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                                 engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                             }
                             else {
                                 dataLength = width * height * 4;
-                                byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                                 engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         }
@@ -61075,7 +61115,7 @@ var BABYLON;
                             var unpaddedRowSize = width;
                             var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                             dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
-                            byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                             engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                         }
                         else {
