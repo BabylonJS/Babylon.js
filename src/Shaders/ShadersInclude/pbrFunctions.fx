@@ -14,30 +14,6 @@ float convertRoughnessToAverageSlope(float roughness)
     return alphaG;
 }
 
-// Based on Beckamm roughness to Blinn exponent + http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html 
-float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
-{
-    // do not take in account lower mips hence -1... and wait from proper preprocess.
-    // formula comes from approximation of the mathematical solution.
-    //float mip = maxMipLevel + kRougnhessToAlphaOffset + 0.5 * log2(alpha);
-    
-    // In the mean time 
-    // Always [0..1] goes from max mip to min mip in a log2 way.  
-    // Change 5 to nummip below.
-    // http://www.wolframalpha.com/input/?i=x+in+0..1+plot+(+5+%2B+0.3+%2B+0.1+*+5+*+log2(+(1+-+x)+*+(1+-+x)+%2B+0.0005))
-    float mip = kRougnhessToAlphaOffset + maxMipLevel + (maxMipLevel * kRougnhessToAlphaScale * log2(alpha));
-    
-    return clamp(mip, 0., maxMipLevel);
-}
-
-float getMipMapIndexFromAverageSlopeWithPMREM(float maxMipLevel, float alphaG)
-{
-    float specularPower = clamp(2. / alphaG - 2., 0.000001, 2048.);
-    
-    // Based on CubeMapGen for cosine power with 2048 spec default and 0.25 dropoff 
-    return clamp(- 0.5 * log2(specularPower) + 5.5, 0., maxMipLevel);
-}
-
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
 float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
 {
@@ -130,4 +106,24 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 float fresnelGrazingReflectance(float reflectance0) {
 	float reflectance90 = clamp(reflectance0 * 25.0, 0.0, 1.0);
 	return reflectance90;
+}
+
+// To enable 8 bit textures to be used we need to pack and unpack the LOD
+// Inverse alpha is used to work around low-alpha bugs in Edge and Firefox
+#define UNPACK_LOD(x) (1.0 - x) * 255.0
+
+float getLodFromAlphaG(float cubeMapDimensionPixels, float alphaG, float NdotV) {
+    float microsurfaceAverageSlope = alphaG;
+
+    // Compensate for solid angle change between half-vector measure (Blinn-Phong) and reflected-vector measure (Phong):
+    //  dWr = 4*cos(theta)*dWh,
+    // where dWr = solid angle (delta omega) in environment incident radiance (reflection-vector) measure;
+    // where dWh = solid angle (delta omega) in microfacet normal (half-vector) measure;
+    // so the relationship is proportional to cosine theta = NdotV.
+    // The constant factor of four is handled elsewhere as part of the scale/offset filter parameters.
+    microsurfaceAverageSlope *= sqrt(abs(NdotV));
+
+    float microsurfaceAverageSlopeTexels = microsurfaceAverageSlope * cubeMapDimensionPixels;
+    float lod = log2(microsurfaceAverageSlopeTexels);
+    return lod;
 }

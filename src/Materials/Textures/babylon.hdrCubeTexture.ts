@@ -88,6 +88,7 @@ module BABYLON {
             this._textureMatrix = Matrix.Identity();
             this._onLoad = onLoad;
             this._onError = onError;
+            this.gammaSpace = false;
 
             if (size) {
                 this._isBABYLONPreprocessed = false;
@@ -326,26 +327,28 @@ module BABYLON {
             }
 
             var mipmapGenerator = null;
-            if (!this._noMipmap &&
-                this._usePMREMGenerator) {
-                mipmapGenerator = (data: ArrayBufferView[]) => {
-                    // Custom setup of the generator matching with the PBR shader values.
-                    var generator = new BABYLON.Internals.PMREMGenerator(data,
-                        this._size,
-                        this._size,
-                        0,
-                        3,
-                        this.getScene().getEngine().getCaps().textureFloat,
-                        2048,
-                        0.25,
-                        false,
-                        true);
 
-                    return generator.filterCubeMap();
-                };
-            }
+            // TODO. Implement In code PMREM Generator following the LYS toolset generation.
+            // if (!this._noMipmap &&
+            //     this._usePMREMGenerator) {
+            //     mipmapGenerator = (data: ArrayBufferView[]) => {
+            //         // Custom setup of the generator matching with the PBR shader values.
+            //         var generator = new BABYLON.Internals.PMREMGenerator(data,
+            //             this._size,
+            //             this._size,
+            //             0,
+            //             3,
+            //             this.getScene().getEngine().getCaps().textureFloat,
+            //             2048,
+            //             0.25,
+            //             false,
+            //             true);
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
+            //         return generator.filterCubeMap();
+            //     };
+            // }
+
+            this._texture = this.getScene().getEngine().createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
@@ -396,6 +399,10 @@ module BABYLON {
 
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
+        }
+
+        public setReflectionTextureMatrix(value: Matrix): void {
+            this._textureMatrix = value;
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture {

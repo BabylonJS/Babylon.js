@@ -60,7 +60,10 @@ varying vec2 vBumpUV;
 // Output
 varying vec3 vPositionW;
 #ifdef NORMAL
-varying vec3 vNormalW;
+    varying vec3 vNormalW;
+    #ifdef USESPHERICALFROMREFLECTIONMAP
+        varying vec3 vEnvironmentIrradiance;
+    #endif
 #endif
 
 #ifdef VERTEXCOLOR
@@ -84,6 +87,8 @@ varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
+
+#include<harmonicsFunctions>
 
 void main(void) {
 	vec3 positionUpdated = position;
@@ -110,6 +115,13 @@ void main(void) {
 
 #ifdef NORMAL
     vNormalW = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
+    #ifdef USESPHERICALFROMREFLECTIONMAP
+        vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+        #ifdef REFLECTIONMAP_OPPOSITEZ
+            reflectionVector.z *= -1.0;
+        #endif
+        vEnvironmentIrradiance = environmentIrradianceJones(reflectionVector);
+    #endif
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)

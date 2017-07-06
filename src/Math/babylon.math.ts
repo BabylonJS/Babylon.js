@@ -50,6 +50,13 @@
         public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
         }
+
+        /**
+         * Returns the log2 of value.
+         */
+        public static Log2(value: number): number {
+            return Math.log(value) * Math.LOG2E;
+        }
     }
 
 
@@ -5103,6 +5110,64 @@
             this.L21 = this.L21.scale(scale);
             this.L22 = this.L22.scale(scale);
         }
+
+        public convertIncidentRadianceToIrradiance(): void
+        {
+            // Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
+            //
+            //      E_lm = A_l * L_lm
+            // 
+            // In spherical harmonics this convolution amounts to scaling factors for each frequency band.
+            // This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
+            // the scaling factors are given in equation 9.
+
+            // Constant (Band 0)
+            this.L00 = this.L00.scale(3.141593);
+
+            // Linear (Band 1)
+            this.L1_1 = this.L1_1.scale(2.094395);
+            this.L10 = this.L10.scale(2.094395);
+            this.L11 = this.L11.scale(2.094395);
+
+            // Quadratic (Band 2)
+            this.L2_2 = this.L2_2.scale(0.785398);
+            this.L2_1 = this.L2_1.scale(0.785398);
+            this.L20 = this.L20.scale(0.785398);
+            this.L21 = this.L21.scale(0.785398);
+            this.L22 = this.L22.scale(0.785398);
+        }
+
+        public convertIrradianceToLambertianRadiance(): void
+        {
+            // Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
+            //      L = (1/pi) * E * rho
+            // 
+            // This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
+
+            this.scale(1.0 / Math.PI);
+
+            // The resultant SH now represents outgoing radiance, so includes the Lambert 1/pi normalisation factor but without albedo (rho) applied
+            // (The pixel shader must apply albedo after texture fetches, etc).
+        }
+
+        public static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics
+        {
+            var result = new SphericalHarmonics();
+
+            result.L00 = polynomial.xx.scale(0.376127).add(polynomial.yy.scale(0.376127)).add(polynomial.zz.scale(0.376126));
+            result.L1_1 = polynomial.y.scale(0.977204);
+            result.L10 = polynomial.z.scale(0.977204);
+            result.L11 = polynomial.x.scale(0.977204);
+            result.L2_2 = polynomial.xy.scale(1.16538);
+            result.L2_1 = polynomial.yz.scale(1.16538);
+            result.L20 = polynomial.zz.scale(1.34567).subtract(polynomial.xx.scale(0.672834)).subtract(polynomial.yy.scale(0.672834));
+            result.L21 = polynomial.zx.scale(1.16538);
+            result.L22 = polynomial.xx.scale(1.16538).subtract(polynomial.yy.scale(1.16538));
+
+            result.scale(Math.PI);
+
+            return result;
+        }
     }
 
     // SphericalPolynomial
@@ -5139,7 +5204,22 @@
             result.zx = harmonics.L21.scale(0.858086);
             result.xy = harmonics.L2_2.scale(0.858086);
 
+            result.scale(1.0 / Math.PI);
+
             return result;
+        }
+
+        public scale(scale: number)
+        {
+            this.x = this.x.scale(scale);
+            this.y = this.y.scale(scale);
+            this.z = this.z.scale(scale);
+            this.xx = this.xx.scale(scale);
+            this.yy = this.yy.scale(scale);
+            this.zz = this.zz.scale(scale);
+            this.yz = this.yz.scale(scale);
+            this.zx = this.zx.scale(scale);
+            this.xy = this.xy.scale(scale);
         }
     }
 

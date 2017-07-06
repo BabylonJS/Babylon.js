@@ -124,7 +124,6 @@ varying vec3 vDirectionW;
 	#include<legacyColorCurves>
 #endif
 
-#include<harmonicsFunctions>
 #include<legacyPbrLightFunctions>
 
 mat3 transposeMat3(mat3 inMatrix) {

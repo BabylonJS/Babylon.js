@@ -82,6 +82,10 @@
             return this._textureMatrix;
         }
 
+        public setReflectionTextureMatrix(value: Matrix): void {
+            this._textureMatrix = value;
+        }
+
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
                 return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
