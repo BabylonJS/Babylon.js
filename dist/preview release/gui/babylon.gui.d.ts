@@ -471,6 +471,8 @@ declare module BABYLON.GUI {
         private _drawText(text, textWidth, y, context);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _parseLine(line: string, context: CanvasRenderingContext2D): object;
+        protected _parseLineWithTextWrapping(line: string, context: CanvasRenderingContext2D): object;
         protected _renderLines(context: CanvasRenderingContext2D): void;
     }
 }
