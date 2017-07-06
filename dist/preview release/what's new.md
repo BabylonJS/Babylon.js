@@ -29,10 +29,11 @@
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
+- New way to force compilation of materials. [Doc here](http://doc.babylonjs.com/tutorials/How_materials_work) ([deltakosh](https://github.com/deltakosh))
 - Added a Physics tab to the inspector ([abow](https://github.com/abow))
-- New Debug.PhysicsViewer class for viewing PhysicsImpostors [Demo](http://www.babylonjs-playground.com/#CA51CM#2) ([abow](https://github.com/abow))
-- New ColorPicker for GUI [Demo](https://www.babylonjs-playground.com/#91I2RE#1) ([abow](https://github.com/abow))
-- Added slerp and limits to BoneLookController [Demo](https://www.babylonjs-playground.com/#1YEPX6#11) ([abow](https://github.com/abow)) 
+- New Debug.PhysicsViewer class for viewing PhysicsImpostors. [Demo](http://www.babylonjs-playground.com/#CA51CM#2) ([abow](https://github.com/abow))
+- New ColorPicker for GUI. [Demo](https://www.babylonjs-playground.com/#91I2RE#1) ([abow](https://github.com/abow))
+- Added slerp and limits to BoneLookController. [Demo](https://www.babylonjs-playground.com/#1YEPX6#11) ([abow](https://github.com/abow)) 
 - new `Texture.readPixels()` function to read texture content ([deltakosh](https://github.com/deltakosh))
 - New helpers to use ExtrudePolygon. [Demo](http://www.babylonjs-playground.com/#RNCYVM#10) ([Cubees](https://github.com/Cubees))
 - PostProcess can now use alpha blending and share outputs ([deltakosh](https://github.com/deltakosh))
