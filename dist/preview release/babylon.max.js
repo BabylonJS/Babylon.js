@@ -45569,7 +45569,8 @@ var BABYLON;
             // Resize
             this._resizeLoadingUI = function () {
                 var canvasRect = _this._renderingCanvas.getBoundingClientRect();
-                _this._loadingDiv.style.position = "absolute";
+                var canvasPositioning = window.getComputedStyle(_this._renderingCanvas).position;
+                _this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
                 _this._loadingDiv.style.left = canvasRect.left + "px";
                 _this._loadingDiv.style.top = canvasRect.top + "px";
                 _this._loadingDiv.style.width = canvasRect.width + "px";
