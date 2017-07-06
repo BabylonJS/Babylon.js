@@ -651,6 +651,28 @@
                 return null;
             }
 
+            // Check if we need to recreate the submeshes
+            if (this.subMeshes && this.subMeshes.length > 0) {
+                var totalIndices = this.getIndices().length;
+                let needToRecreate = false;
+    
+                for (var submesh of this.subMeshes) {
+                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                        needToRecreate = true;
+                        break;
+                    }
+
+                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                        needToRecreate = true;
+                        break;
+                    }
+                }
+
+                if (!needToRecreate) {
+                    return;
+                }
+            }
+
             this.releaseSubMeshes();
             return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
         }
