@@ -215,7 +215,7 @@
          */
         protected _reflectivityColor = new Color3(1, 1, 1);
 
-        protected _reflectionColor = new Color3(0.0, 0.0, 0.0);
+        protected _reflectionColor = new Color3(1, 1, 1);
 
         protected _emissiveColor = new Color3(0, 0, 0);
         

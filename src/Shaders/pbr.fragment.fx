@@ -505,7 +505,8 @@ void main(void) {
 
 	// _____________________________ Levels _____________________________________
 	environmentRadiance *= vReflectionInfos.x;
-	//environmentIrradiance *= vReflectionColor.rgb;
+	environmentRadiance *= vReflectionColor.rgb;
+	environmentIrradiance *= vReflectionColor.rgb;
 #endif
 
 // ____________________________________________________________________________________
@@ -754,4 +755,12 @@ void main(void) {
 	//// Emissive Color
 	//vec2 test = vEmissiveUV * 0.5 + 0.5;
 	//gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
+
+	// Specular Environment Occlusion
+	//gl_FragColor = vec4(seo, seo, seo, 1.0);
+
+	//// Horizon Environment Occlusion
+	//gl_FragColor = vec4(eho, eho, eho, 1.0);
+
+	//gl_FragColor = vec4(seo * eho, seo * eho, seo * eho, 1.0);
 }
