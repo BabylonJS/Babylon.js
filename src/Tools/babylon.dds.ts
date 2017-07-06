@@ -286,16 +286,16 @@
                             floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                         }
 
-                        gl.texImage2D(sampler, i, internalFormat, width, height, 0, gl.RGBA, format, floatArray);
+                        engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                     } else if (info.isRGB) {
                         if (bpp === 24) {
                             dataLength = width * height * 3;
                             byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            gl.texImage2D(sampler, i, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
+                            engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                         } else { // 32
                             dataLength = width * height * 4;
                             byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            gl.texImage2D(sampler, i, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
+                            engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                         }
                     } else if (info.isLuminance) {
                         var unpackAlignment = gl.getParameter(gl.UNPACK_ALIGNMENT);
@@ -304,11 +304,11 @@
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
                         byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                        gl.texImage2D(sampler, i, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
+                        engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                     } else {
                         dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
                         byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
-                        gl.compressedTexImage2D(sampler, i, internalFormat, width, height, 0, byteArray);
+                        engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
                     }
                     dataOffset += width * height * (bpp / 8);
                     width *= 0.5;
