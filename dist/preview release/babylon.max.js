@@ -9647,6 +9647,12 @@ var BABYLON;
             this.bindUnboundFramebuffer(null);
             return samples;
         };
+        Engine.prototype._uploadDataToTexture = function (target, lod, internalFormat, width, height, format, type, data) {
+            this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
+        };
+        Engine.prototype._uploadCompressedDataToTexture = function (target, lod, internalFormat, width, height, data) {
+            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
+        };
         Engine.prototype.createRenderTargetCubeTexture = function (size, options) {
             var gl = this._gl;
             var texture = gl.createTexture();
@@ -20226,6 +20232,25 @@ var BABYLON;
             var totalVertices = this.getTotalVertices();
             if (!totalVertices || !this.getIndices()) {
                 return null;
+            }
+            // Check if we need to recreate the submeshes
+            if (this.subMeshes && this.subMeshes.length > 0) {
+                var totalIndices = this.getIndices().length;
+                var needToRecreate = false;
+                for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                    var submesh = _a[_i];
+                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                        needToRecreate = true;
+                        break;
+                    }
+                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                        needToRecreate = true;
+                        break;
+                    }
+                }
+                if (!needToRecreate) {
+                    return;
+                }
             }
             this.releaseSubMeshes();
             return new BABYLON.SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
@@ -60840,19 +60865,86 @@ var BABYLON;
                     textureType: textureType
                 };
             };
-            DDSTools.GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._ToHalfFloat = function (value) {
+                if (!DDSTools._FloatView) {
+                    DDSTools._FloatView = new Float32Array(1);
+                    DDSTools._Int32View = new Int32Array(DDSTools._FloatView.buffer);
+                }
+                DDSTools._FloatView[0] = value;
+                var x = DDSTools._Int32View[0];
+                var bits = (x >> 16) & 0x8000; /* Get the sign */
+                var m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
+                var e = (x >> 23) & 0xff; /* Using int is faster here */
+                /* If zero, or denormal, or exponent underflows too much for a denormal
+                * half, return signed zero. */
+                if (e < 103) {
+                    return bits;
+                }
+                /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
+                if (e > 142) {
+                    bits |= 0x7c00;
+                    /* If exponent was 0xff and one mantissa bit was set, it means NaN,
+                    * not Inf, so make sure we set one mantissa bit too. */
+                    bits |= ((e == 255) ? 0 : 1) && (x & 0x007fffff);
+                    return bits;
+                }
+                /* If exponent underflows but not too much, return a denormal */
+                if (e < 113) {
+                    m |= 0x0800;
+                    /* Extra rounding may overflow and set mantissa to 0 and exponent
+                    * to 1, which is OK. */
+                    bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+                    return bits;
+                }
+                bits |= ((e - 112) << 10) | (m >> 1);
+                bits += m & 1;
+                return bits;
+            };
+            DDSTools.GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                if (DDSTools.StoreLODInAlphaChannel) {
+                    var destArray = new Uint16Array(dataLength);
+                    var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                    var index = 0;
+                    for (var y = 0; y < height; y++) {
+                        for (var x = 0; x < width; x++) {
+                            var srcPos = (x + y * width) * 4;
+                            destArray[index] = srcData[srcPos];
+                            destArray[index + 1] = srcData[srcPos + 1];
+                            destArray[index + 2] = srcData[srcPos + 2];
+                            destArray[index + 3] = DDSTools._ToHalfFloat(lod);
+                            index += 4;
+                        }
+                    }
+                    return destArray;
+                }
                 return new Uint16Array(arrayBuffer, dataOffset, dataLength);
             };
-            DDSTools.GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools.GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                if (DDSTools.StoreLODInAlphaChannel) {
+                    var destArray = new Float32Array(dataLength);
+                    var srcData = new Float32Array(arrayBuffer, dataOffset);
+                    var index = 0;
+                    for (var y = 0; y < height; y++) {
+                        for (var x = 0; x < width; x++) {
+                            var srcPos = (x + y * width) * 4;
+                            destArray[index] = srcData[srcPos];
+                            destArray[index + 1] = srcData[srcPos + 1];
+                            destArray[index + 2] = srcData[srcPos + 2];
+                            destArray[index + 3] = lod;
+                            index += 4;
+                        }
+                    }
+                    return destArray;
+                }
                 return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
             DDSTools.GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
-                var srcData = new Uint8Array(arrayBuffer);
+                var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
                 for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
-                        var srcPos = dataOffset + (x + y * width) * 4;
+                        var srcPos = (x + y * width) * 4;
                         byteArray[index] = srcData[srcPos + 2];
                         byteArray[index + 1] = srcData[srcPos + 1];
                         byteArray[index + 2] = srcData[srcPos];
@@ -60864,11 +60956,11 @@ var BABYLON;
             };
             DDSTools.GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
-                var srcData = new Uint8Array(arrayBuffer);
+                var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
                 for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
-                        var srcPos = dataOffset + (x + y * width) * 3;
+                        var srcPos = (x + y * width) * 3;
                         byteArray[index] = srcData[srcPos + 2];
                         byteArray[index + 1] = srcData[srcPos + 1];
                         byteArray[index + 2] = srcData[srcPos];
@@ -60879,11 +60971,11 @@ var BABYLON;
             };
             DDSTools.GetLuminanceArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
-                var srcData = new Uint8Array(arrayBuffer);
+                var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
                 for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
-                        var srcPos = dataOffset + (x + y * width);
+                        var srcPos = (x + y * width);
                         byteArray[index] = srcData[srcPos];
                         index++;
                     }
@@ -60959,23 +61051,23 @@ var BABYLON;
                             dataLength = width * height * 4;
                             var floatArray;
                             if (bpp === 128) {
-                                floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                             }
                             else {
-                                floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                             }
-                            gl.texImage2D(sampler, i, internalFormat, width, height, 0, gl.RGBA, format, floatArray);
+                            engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                         }
                         else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
                                 byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                                gl.texImage2D(sampler, i, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
+                                engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                             }
                             else {
                                 dataLength = width * height * 4;
                                 byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                                gl.texImage2D(sampler, i, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
+                                engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         }
                         else if (info.isLuminance) {
@@ -60984,12 +61076,12 @@ var BABYLON;
                             var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                             dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
                             byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            gl.texImage2D(sampler, i, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
+                            engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                         }
                         else {
                             dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
                             byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
-                            gl.compressedTexImage2D(sampler, i, internalFormat, width, height, 0, byteArray);
+                            engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
                         }
                         dataOffset += width * height * (bpp / 8);
                         width *= 0.5;
@@ -61001,6 +61093,7 @@ var BABYLON;
             };
             return DDSTools;
         }());
+        DDSTools.StoreLODInAlphaChannel = false;
         Internals.DDSTools = DDSTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
