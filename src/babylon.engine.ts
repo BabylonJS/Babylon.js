@@ -3988,7 +3988,19 @@
 
             let readFormat = gl.RGBA;
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-            let buffer = new Uint8Array(4 * width * height);
+            let buffer: ArrayBufferView;
+
+            switch (readType) {
+                case gl.UNSIGNED_BYTE:
+                    buffer = new Uint8Array(4 * width * height);
+                    break;
+                case gl.FLOAT:
+                    buffer = new Float32Array(4 * width * height);
+                    break;            
+                case gl.HALF_FLOAT_OES:
+                    buffer = new Uint16Array(4 * width * height);
+                    break;                          
+            }
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
