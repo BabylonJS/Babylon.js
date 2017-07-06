@@ -4006,7 +4006,12 @@ var __extends = (this && this.__extends) || (function () {
             this.width = width;
             this.height = height;
         }
-        Viewport.prototype.toGlobal = function (renderWidth, renderHeight) {
+        Viewport.prototype.toGlobal = function (renderWidthOrEngine, renderHeight) {
+            if (renderWidthOrEngine._gl) {
+                var engine = renderWidthOrEngine;
+                return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            }
+            var renderWidth = renderWidthOrEngine;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         /**
@@ -9186,7 +9191,7 @@ var BABYLON;
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
-                            BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 1);
+                            //     Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
                         }, samplingMode);
                     };
                 }
@@ -9749,9 +9754,7 @@ var BABYLON;
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    if (info.isCompressed) {
-                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-                    }
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
                     BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 6);
                     if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -10431,7 +10434,18 @@ var BABYLON;
             }
             var readFormat = gl.RGBA;
             var readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-            var buffer = new Uint8Array(4 * width * height);
+            var buffer;
+            switch (readType) {
+                case gl.UNSIGNED_BYTE:
+                    buffer = new Uint8Array(4 * width * height);
+                    break;
+                case gl.FLOAT:
+                    buffer = new Float32Array(4 * width * height);
+                    break;
+                case gl.HALF_FLOAT_OES:
+                    buffer = new Uint16Array(4 * width * height);
+                    break;
+            }
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             return buffer;
@@ -45614,8 +45628,8 @@ var BABYLON;
             imgBack.style.position = "absolute";
             imgBack.style.left = "50%";
             imgBack.style.top = "50%";
-            imgBack.style.marginLeft = "-50px";
-            imgBack.style.marginTop = "-50px";
+            imgBack.style.marginLeft = "-60px";
+            imgBack.style.marginTop = "-60px";
             imgBack.style.animation = "spin1 2s infinite ease-in-out";
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";
