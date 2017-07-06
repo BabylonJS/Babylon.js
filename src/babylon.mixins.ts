@@ -50,6 +50,10 @@ interface WebGLRenderingContext {
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
 
+    HALF_FLOAT_OES: number;
+    RGBA16F: number;
+    RGBA32F: number;
+    
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
