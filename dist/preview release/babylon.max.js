@@ -10430,7 +10430,7 @@ var BABYLON;
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
             var readFormat = gl.RGBA;
-            var readType = (texture.type !== undefined) ? texture.type : gl.UNSIGNED_BYTE;
+            var readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             var buffer = new Uint8Array(4 * width * height);
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
