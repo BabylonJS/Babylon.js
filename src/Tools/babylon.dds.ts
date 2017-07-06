@@ -97,6 +97,8 @@
     };
 
     export class DDSTools {
+        public static StoreLODInAlphaChannel = false;
+
         public static GetDDSInfo(arrayBuffer: any): DDSInfo {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
             var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
@@ -137,22 +139,102 @@
                 textureType: textureType
             };
         }
+
+        // ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript
+        private static _FloatView: Float32Array;
+        private static _Int32View: Int32Array;
+        private static _ToHalfFloat(value: number): number {
+            if (!DDSTools._FloatView) {
+                DDSTools._FloatView = new Float32Array(1);
+                DDSTools._Int32View = new Int32Array(DDSTools._FloatView.buffer);
+            }
+            
+            DDSTools._FloatView[0] = value;
+            var x = DDSTools._Int32View[0];
+
+            var bits = (x >> 16) & 0x8000; /* Get the sign */
+            var m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
+            var e = (x >> 23) & 0xff; /* Using int is faster here */
+
+            /* If zero, or denormal, or exponent underflows too much for a denormal
+            * half, return signed zero. */
+            if (e < 103) {
+                return bits;
+            }
+
+            /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
+            if (e > 142) {
+                bits |= 0x7c00;
+                /* If exponent was 0xff and one mantissa bit was set, it means NaN,
+                * not Inf, so make sure we set one mantissa bit too. */
+                bits |= ((e == 255) ? 0 : 1) && (x & 0x007fffff);
+                return bits;
+            }
+
+            /* If exponent underflows but not too much, return a denormal */
+            if (e < 113) {
+                m |= 0x0800;
+                /* Extra rounding may overflow and set mantissa to 0 and exponent
+                * to 1, which is OK. */
+                bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+                return bits;
+            }
+
+            bits |= ((e - 112) << 10) | (m >> 1);
+            bits += m & 1;
+            return bits;
+        }
     
-        private static GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint16Array {   
+        private static GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {   
+            if (DDSTools.StoreLODInAlphaChannel) {
+                var destArray = new Uint16Array(dataLength);
+                var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = srcData[srcPos];
+                        destArray[index + 1] = srcData[srcPos + 1];
+                        destArray[index + 2] = srcData[srcPos + 2];
+                        destArray[index + 3] = DDSTools._ToHalfFloat(lod)
+                        index += 4;
+                    }
+                }
+
+                return destArray;
+            }
+
             return new Uint16Array(arrayBuffer, dataOffset, dataLength);
         }           
 
-        private static GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Float32Array {
+        private static GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
+            if (DDSTools.StoreLODInAlphaChannel) {
+                var destArray = new Float32Array(dataLength);
+                var srcData = new Float32Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = srcData[srcPos];
+                        destArray[index + 1] = srcData[srcPos + 1];
+                        destArray[index + 2] = srcData[srcPos + 2];
+                        destArray[index + 3] = lod;
+                        index += 4;
+                    }
+                }
+
+                return destArray;
+            }            
             return new Float32Array(arrayBuffer, dataOffset, dataLength);
         }        
 
         private static GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
-            var srcData = new Uint8Array(arrayBuffer);
+            var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
-                    var srcPos = dataOffset + (x + y * width) * 4;
+                    var srcPos = (x + y * width) * 4;
                     byteArray[index] = srcData[srcPos + 2];
                     byteArray[index + 1] = srcData[srcPos + 1];
                     byteArray[index + 2] = srcData[srcPos];
@@ -166,11 +248,11 @@
 
         private static GetRGBArrayBuffer(width: number, height: number, dataOffset:number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {            
             var byteArray = new Uint8Array(dataLength);
-            var srcData = new Uint8Array(arrayBuffer);
+            var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
-                    var srcPos = dataOffset + (x + y * width) * 3;
+                    var srcPos = (x + y * width) * 3;
                     byteArray[index] = srcData[srcPos + 2];
                     byteArray[index + 1] = srcData[srcPos + 1];
                     byteArray[index + 2] = srcData[srcPos];
@@ -183,11 +265,11 @@
 
         private static GetLuminanceArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
-            var srcData = new Uint8Array(arrayBuffer);
+            var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
-                    var srcPos = dataOffset + (x + y * width);
+                    var srcPos = (x + y * width);
                     byteArray[index] = srcData[srcPos];
                     index++;
                 }
@@ -281,9 +363,9 @@
                         dataLength = width * height * 4;
                         var floatArray: ArrayBufferView;
                         if (bpp === 128) {
-                            floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                         } else { // 64
-                            floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                         }
 
                         engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
