@@ -107,6 +107,7 @@ interface WebGLTexture {
     generateMipMaps: boolean;
     samples: number;
     type: number;
+    format: number;
     onLoadedCallbacks: Array<Function>;
     _size: number;
     _baseWidth: number;
