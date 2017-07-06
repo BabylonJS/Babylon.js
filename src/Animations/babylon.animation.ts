@@ -653,7 +653,12 @@
             this.setValue(currentValue);
             // Check events
             for (var index = 0; index < this._events.length; index++) {
-                if (currentFrame >= this._events[index].frame) {
+                // Make sure current frame has passed event frame and that event frame is within the current range
+                // Also, handle both forward and reverse animations
+                if (
+                    (range > 0 && currentFrame >= this._events[index].frame && this._events[index].frame >= from) ||
+                    (range < 0 && currentFrame <= this._events[index].frame && this._events[index].frame <= from)
+                ){
                     var event = this._events[index];
                     if (!event.isDone) {
                         // If event should be done only once, remove it.

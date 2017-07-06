@@ -398,7 +398,7 @@
 
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
-                this._markAllSubMeshesAsTexturesDirty();
+                this._markAllSubMeshesAsImageProcessingDirty();
             });
         }
 
@@ -729,7 +729,9 @@
                 defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
+            }
 
+            if (defines._areImageProcessingDirty) {
                 if (!this._imageProcessingConfiguration.isReady()) {
                     return false;
                 }

@@ -213,7 +213,15 @@
             return null;
         }
 
-        public readPixels(faceIndex = 0): Uint8Array {
+        public get textureType(): number {
+            if (!this._texture) {
+                return Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
+
+            return (this._texture.type !== undefined) ? this._texture.type : Engine.TEXTURETYPE_UNSIGNED_INT;
+        }
+
+        public readPixels(faceIndex = 0, lodIndex = 0): ArrayBufferView {
             if (!this._texture) {
                 return null;
             }
@@ -222,10 +230,10 @@
             var engine = this.getScene().getEngine();
 
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex, lodIndex);
             }
 
-            return engine._readTexturePixels(this._texture, size.width, size.height);
+            return engine._readTexturePixels(this._texture, size.width, size.height, -1, lodIndex);
         }
 
         public releaseInternalTexture(): void {

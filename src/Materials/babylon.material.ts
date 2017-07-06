@@ -9,6 +9,7 @@
         public _areTexturesDirty = true;
         public _areFresnelDirty = true;
         public _areMiscDirty = true;    
+        public _areImageProcessingDirty = true;  
 
         public _normals = false;
         public _uvs = false;
@@ -27,6 +28,7 @@
             this._areFresnelDirty = false;
             this._areLightsDirty = false;
             this._areMiscDirty = false;
+            this._areImageProcessingDirty = false;
         }
 
         public markAsUnprocessed() {
@@ -39,8 +41,14 @@
             this._areLightsDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
             this._isDirty = true;
         }
+
+        public markAsImageProcessingDirty() {
+            this._areImageProcessingDirty = true;
+            this._isDirty = true;
+        }        
 
         public markAsLightDirty() {
             this._areLightsDirty = true;
@@ -574,6 +582,10 @@
                 }
             }
         }
+
+        protected _markAllSubMeshesAsImageProcessingDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines.markAsImageProcessingDirty());
+        }        
 
         protected _markAllSubMeshesAsTexturesDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());
