@@ -3277,22 +3277,17 @@
                 gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
             }
 
-            var facesIndex = [
-                gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-            ];
-
             // Data are known to be in +X +Y +Z -X -Y -Z
-            for (let index = 0; index < facesIndex.length; index++) {
-                let faceData = data[index];
+            for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+                let faceData = data[faceIndex];
 
                 if (compression) {
-                    gl.compressedTexImage2D(facesIndex[index], level, this.getCaps().s3tc[compression], texture._width, texture._height, 0, faceData);
+                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, this.getCaps().s3tc[compression], texture._width, texture._height, 0, faceData);
                 } else {
                     if (needConversion) {
                         faceData = this._convertRGBtoRGBATextureData(faceData, texture._width, texture._height, type);
                     }
-                    gl.texImage2D(facesIndex[index], level, internalSizedFomat, texture._width, texture._height, 0, internalFormat, textureType, faceData);
+                    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture._width, texture._height, 0, internalFormat, textureType, faceData);
                 }
             }
 
@@ -3311,6 +3306,7 @@
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.references = 1;
+            texture.noMipmap = !generateMipMaps;
 
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
@@ -3365,8 +3361,6 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
-            this._loadedTexturesCache.push(texture);
-
             return texture;
         }
 
@@ -3382,6 +3376,7 @@
             var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode);
             scene._addPendingData(texture);
             texture.url = url;
+            this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
                 scene._removePendingData(texture);
@@ -3391,19 +3386,11 @@
             };
             
             var internalCallback = (data) => {
-                var rgbeDataArrays = callback(data);
-
-                var facesIndex = [
-                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                ];
-
                 var width = texture._width;
                 var height = texture._height;
-                if (mipmmapGenerator) {
+                var faceDataArrays = callback(data);
 
-                    // TODO Remove this once Proper CubeMap Blur... This has nothing to do in engine...
-                    // I ll remove ASAP.
+                if (mipmmapGenerator) {
                     var textureType = this._getWebGLTextureType(type);
                     var internalFormat = this._getInternalFormat(format);
                     var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
@@ -3416,28 +3403,17 @@
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-                    var arrayTemp: ArrayBufferView[] = [];
-                    // Data are known to be in +X +Y +Z -X -Y -Z
-                    // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
-                    arrayTemp.push(rgbeDataArrays[0]); // +X
-                    arrayTemp.push(rgbeDataArrays[3]); // -X
-                    arrayTemp.push(rgbeDataArrays[1]); // +Y
-                    arrayTemp.push(rgbeDataArrays[4]); // -Y
-                    arrayTemp.push(rgbeDataArrays[2]); // +Z
-                    arrayTemp.push(rgbeDataArrays[5]); // -Z
-
-                    var mipData = mipmmapGenerator(arrayTemp);
-                    // mipData is order in +X -X +Y -Y +Z -Z
-                    var mipFaces = [0, 2, 4, 1, 3, 5];
+                    
+                    var mipData = mipmmapGenerator(faceDataArrays);
                     for (var level = 0; level < mipData.length; level++) {
                         var mipSize = width >> level;
 
-                        for (let mipIndex in mipFaces) {
-                            let mipFaceData = mipData[level][mipFaces[mipIndex]];
+                        for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
+                            let mipFaceData = mipData[level][faceIndex];
                             if (needConversion) {
                                 mipFaceData = this._convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
                             }
-                            gl.texImage2D(facesIndex[mipIndex], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
+                            gl.texImage2D(faceIndex, level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
                         }
                     }
 
@@ -3445,7 +3421,7 @@
                 }
                 else {
                     texture.generateMipMaps = !noMipmap;
-                    this.updateRawCubeTexture(texture, rgbeDataArrays, format, type, invertY);
+                    this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 
                 texture.isReady = true;
@@ -3994,7 +3970,42 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
             return buffer;
-        }    
+        }
+
+        public _createCubeTextureFromLOD(texture: BaseTexture, name: string, lodIndex: number): BaseTexture {
+            if (!texture.isCube) {
+                return null;
+            }
+
+            const gl = this._gl;
+            const maxSize = texture.getSize().width;
+            const numLod = MathTools.Log2(maxSize);
+            const targetSize = Math.pow(2, numLod - lodIndex);
+
+            var data: ArrayBufferView[] = [];
+            for (var i = 0; i < 6; i++) {
+                data.push(texture.readPixels(i, lodIndex));
+            }
+
+            const glTextureFromLod = this.createRawCubeTexture(data, targetSize, texture.textureFormat, texture.textureType, false, false, texture._texture.samplingMode);
+
+            // Wrap in a base texture for easy binding.
+            var lodTexture = new BaseTexture(texture.getScene());
+            lodTexture.isCube = true;
+            lodTexture.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            lodTexture.coordinatesIndex = texture.coordinatesIndex;
+            lodTexture.coordinatesMode = texture.coordinatesMode;
+            lodTexture.gammaSpace = texture.gammaSpace;
+            lodTexture.getAlphaFromRGB = texture.getAlphaFromRGB;
+            lodTexture.hasAlpha = texture.hasAlpha;
+            lodTexture.invertZ = texture.invertZ;
+            lodTexture.level = texture.level;
+            lodTexture.name = name;
+            lodTexture.wrapU = texture.wrapU;
+            lodTexture.wrapV = texture.wrapV;
+
+            return lodTexture;
+        }
 
         private _canRenderToFloatFramebuffer(): boolean {
             if (this._webGLVersion > 1) {

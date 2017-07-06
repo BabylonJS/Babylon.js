@@ -1124,33 +1124,13 @@
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture);
-
-                            const mipSlices = 3;
-                            const reflectionTextureWidth = reflectionTexture.getSize().width;
-                            for (let i = 0; i < mipSlices; i++) {
-                                //initialize lod texture if it doesn't already exist
-                                if (lod == null && reflectionTextureWidth) {
-                                    //compute LOD from even spacing in smoothness (matching shader calculation)
-                                    let smoothness = i / (mipSlices - 1);
-                                    let roughness = 1 - smoothness;
-                                    const kMinimumVariance = 0.0005;
-                                    let alphaG = roughness * roughness + kMinimumVariance;
-                                    let microsurfaceAverageSlopeTexels = alphaG * reflectionTextureWidth;
-
-                                    let environmentSpecularLOD = reflectionTexture.lodGenerationScale * ( MathTools.Log2(microsurfaceAverageSlopeTexels)) + reflectionTexture.lodGenerationOffset;
-
-                                    let maxLODIndex = MathTools.Log2(reflectionTextureWidth);
-                                    let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
-
-
-                                    lod = TextureUtils.GetBabylonCubeTexture(this._engineScene, new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE, [environmentSpecular.source[mipmapIndex]]), Scene._EnvironmentSingleMipSampling, false);
-                                    (<any>environmentSpecular)[lodKey] = lod;
-                                }
-                                
+                            if (!reflectionTexture._lodTextureMid) {
+                                refractionTexture._generateFixedLodSamplers();
                             }
+
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
                         }
                     }
 
@@ -1159,9 +1139,13 @@
                             this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture);
+                            if (!refractionTexture._lodTextureMid) {
+                                refractionTexture._generateFixedLodSamplers();
+                            }
+
+                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture._lodTextureMid || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture._lodTextureLow || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture._lodTextureHigh || refractionTexture);
                         }
                     }
 
