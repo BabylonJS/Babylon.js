@@ -107,9 +107,6 @@ declare module BABYLON {
         private static _GREATER;
         private static _GEQUAL;
         private static _NOTEQUAL;
-        private static HALF_FLOAT_OES;
-        private static RGBA16F;
-        private static RGBA32F;
         static readonly NEVER: number;
         static readonly ALWAYS: number;
         static readonly LESS: number;
@@ -505,6 +502,8 @@ declare module BABYLON {
         createMultipleRenderTarget(size: any, options: any): WebGLTexture[];
         private _setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height, samples?);
         updateRenderTargetTextureSampleCount(texture: WebGLTexture, samples: number): number;
+        _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView): void;
+        _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView): void;
         createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture;
         createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad?: () => void, onError?: () => void, format?: number): WebGLTexture;
         updateTextureSize(texture: WebGLTexture, width: number, height: number): void;
@@ -571,12 +570,12 @@ declare module BABYLON {
         getFps(): number;
         getDeltaTime(): number;
         private _measureFps();
-        _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex?: number): Uint8Array;
+        _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex?: number, lodIndex?: number): ArrayBufferView;
         private _canRenderToFloatFramebuffer();
         private _canRenderToHalfFloatFramebuffer();
         private _canRenderToFramebuffer(type);
-        private _getWebGLTextureType(type);
-        private _getRGBABufferInternalSizedFormat(type);
+        _getWebGLTextureType(type: number): number;
+        _getRGBABufferInternalSizedFormat(type: number): number;
         static isSupported(): boolean;
     }
 }
@@ -626,6 +625,9 @@ interface WebGLRenderingContext {
     READ_FRAMEBUFFER: number;
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
+    HALF_FLOAT_OES: number;
+    RGBA16F: number;
+    RGBA32F: number;
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
     readonly COLOR_ATTACHMENT0: number;
@@ -2095,6 +2097,237 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
+    class Animatable {
+        target: any;
+        fromFrame: number;
+        toFrame: number;
+        loopAnimation: boolean;
+        speedRatio: number;
+        onAnimationEnd: any;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _animations;
+        private _paused;
+        private _scene;
+        animationStarted: boolean;
+        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
+        getAnimations(): Animation[];
+        appendAnimations(target: any, animations: Animation[]): void;
+        getAnimationByTargetProperty(property: string): Animation;
+        reset(): void;
+        enableBlending(blendingSpeed: number): void;
+        disableBlending(): void;
+        goToFrame(frame: number): void;
+        pause(): void;
+        restart(): void;
+        stop(animationName?: string): void;
+        _animate(delay: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    class AnimationRange {
+        name: string;
+        from: number;
+        to: number;
+        constructor(name: string, from: number, to: number);
+        clone(): AnimationRange;
+    }
+    /**
+     * Composed of a frame, and an action function
+     */
+    class AnimationEvent {
+        frame: number;
+        action: () => void;
+        onlyOnce: boolean;
+        isDone: boolean;
+        constructor(frame: number, action: () => void, onlyOnce?: boolean);
+    }
+    class PathCursor {
+        private path;
+        private _onchange;
+        value: number;
+        animations: Animation[];
+        constructor(path: Path2);
+        getPoint(): Vector3;
+        moveAhead(step?: number): PathCursor;
+        moveBack(step?: number): PathCursor;
+        move(step: number): PathCursor;
+        private ensureLimits();
+        private markAsDirty(propertyName);
+        private raiseOnChange();
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+    class Animation {
+        name: string;
+        targetProperty: string;
+        framePerSecond: number;
+        dataType: number;
+        loopMode: number;
+        enableBlending: boolean;
+        private _keys;
+        private _offsetsCache;
+        private _highLimitsCache;
+        private _stopped;
+        _target: any;
+        private _blendingFactor;
+        private _easingFunction;
+        private _events;
+        targetPropertyPath: string[];
+        currentFrame: number;
+        allowMatricesInterpolation: boolean;
+        blendingSpeed: number;
+        private _originalBlendValue;
+        private _ranges;
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation;
+        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
+        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
+        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number, enableBlending?: boolean);
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Add an event to this animation.
+         */
+        addEvent(event: AnimationEvent): void;
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        removeEvents(frame: number): void;
+        createRange(name: string, from: number, to: number): void;
+        deleteRange(name: string, deleteFrames?: boolean): void;
+        getRange(name: string): AnimationRange;
+        reset(): void;
+        isStopped(): boolean;
+        getKeys(): Array<{
+            frame: number;
+            value: any;
+        }>;
+        getHighestFrame(): number;
+        getEasingFunction(): IEasingFunction;
+        setEasingFunction(easingFunction: EasingFunction): void;
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
+        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        clone(): Animation;
+        setKeys(values: Array<{
+            frame: number;
+            value: any;
+        }>): void;
+        private _getKeyValue(value);
+        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
+        setValue(currentValue: any, blend?: boolean): void;
+        goToFrame(frame: number): void;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
+        serialize(): any;
+        private static _ANIMATIONTYPE_FLOAT;
+        private static _ANIMATIONTYPE_VECTOR3;
+        private static _ANIMATIONTYPE_QUATERNION;
+        private static _ANIMATIONTYPE_MATRIX;
+        private static _ANIMATIONTYPE_COLOR3;
+        private static _ANIMATIONTYPE_VECTOR2;
+        private static _ANIMATIONTYPE_SIZE;
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        static readonly ANIMATIONTYPE_FLOAT: number;
+        static readonly ANIMATIONTYPE_VECTOR3: number;
+        static readonly ANIMATIONTYPE_VECTOR2: number;
+        static readonly ANIMATIONTYPE_SIZE: number;
+        static readonly ANIMATIONTYPE_QUATERNION: number;
+        static readonly ANIMATIONTYPE_MATRIX: number;
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
+        static readonly ANIMATIONLOOPMODE_CYCLE: number;
+        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
+        static Parse(parsedAnimation: any): Animation;
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
+    }
+}
+
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static readonly EASINGMODE_EASEIN: number;
+        static readonly EASINGMODE_EASEOUT: number;
+        static readonly EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        setEasingMode(easingMode: number): void;
+        getEasingMode(): number;
+        easeInCore(gradient: number): number;
+        ease(gradient: number): number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        amplitude: number;
+        constructor(amplitude?: number);
+        easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        bounces: number;
+        bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        oscillations: number;
+        springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        exponent: number;
+        constructor(exponent?: number);
+        easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        power: number;
+        constructor(power?: number);
+        easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
     class Action {
         triggerOptions: any;
         trigger: number;
@@ -2429,237 +2662,6 @@ declare module BABYLON {
         _prepare(): void;
         execute(): void;
         serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    class Animatable {
-        target: any;
-        fromFrame: number;
-        toFrame: number;
-        loopAnimation: boolean;
-        speedRatio: number;
-        onAnimationEnd: any;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _animations;
-        private _paused;
-        private _scene;
-        animationStarted: boolean;
-        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
-        getAnimations(): Animation[];
-        appendAnimations(target: any, animations: Animation[]): void;
-        getAnimationByTargetProperty(property: string): Animation;
-        reset(): void;
-        enableBlending(blendingSpeed: number): void;
-        disableBlending(): void;
-        goToFrame(frame: number): void;
-        pause(): void;
-        restart(): void;
-        stop(animationName?: string): void;
-        _animate(delay: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    class AnimationRange {
-        name: string;
-        from: number;
-        to: number;
-        constructor(name: string, from: number, to: number);
-        clone(): AnimationRange;
-    }
-    /**
-     * Composed of a frame, and an action function
-     */
-    class AnimationEvent {
-        frame: number;
-        action: () => void;
-        onlyOnce: boolean;
-        isDone: boolean;
-        constructor(frame: number, action: () => void, onlyOnce?: boolean);
-    }
-    class PathCursor {
-        private path;
-        private _onchange;
-        value: number;
-        animations: Animation[];
-        constructor(path: Path2);
-        getPoint(): Vector3;
-        moveAhead(step?: number): PathCursor;
-        moveBack(step?: number): PathCursor;
-        move(step: number): PathCursor;
-        private ensureLimits();
-        private markAsDirty(propertyName);
-        private raiseOnChange();
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-    class Animation {
-        name: string;
-        targetProperty: string;
-        framePerSecond: number;
-        dataType: number;
-        loopMode: number;
-        enableBlending: boolean;
-        private _keys;
-        private _offsetsCache;
-        private _highLimitsCache;
-        private _stopped;
-        _target: any;
-        private _blendingFactor;
-        private _easingFunction;
-        private _events;
-        targetPropertyPath: string[];
-        currentFrame: number;
-        allowMatricesInterpolation: boolean;
-        blendingSpeed: number;
-        private _originalBlendValue;
-        private _ranges;
-        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation;
-        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
-        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
-        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number, enableBlending?: boolean);
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Add an event to this animation.
-         */
-        addEvent(event: AnimationEvent): void;
-        /**
-         * Remove all events found at the given frame
-         * @param frame
-         */
-        removeEvents(frame: number): void;
-        createRange(name: string, from: number, to: number): void;
-        deleteRange(name: string, deleteFrames?: boolean): void;
-        getRange(name: string): AnimationRange;
-        reset(): void;
-        isStopped(): boolean;
-        getKeys(): Array<{
-            frame: number;
-            value: any;
-        }>;
-        getHighestFrame(): number;
-        getEasingFunction(): IEasingFunction;
-        setEasingFunction(easingFunction: EasingFunction): void;
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
-        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
-        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
-        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
-        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
-        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        clone(): Animation;
-        setKeys(values: Array<{
-            frame: number;
-            value: any;
-        }>): void;
-        private _getKeyValue(value);
-        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
-        setValue(currentValue: any, blend?: boolean): void;
-        goToFrame(frame: number): void;
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
-        serialize(): any;
-        private static _ANIMATIONTYPE_FLOAT;
-        private static _ANIMATIONTYPE_VECTOR3;
-        private static _ANIMATIONTYPE_QUATERNION;
-        private static _ANIMATIONTYPE_MATRIX;
-        private static _ANIMATIONTYPE_COLOR3;
-        private static _ANIMATIONTYPE_VECTOR2;
-        private static _ANIMATIONTYPE_SIZE;
-        private static _ANIMATIONLOOPMODE_RELATIVE;
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        static readonly ANIMATIONTYPE_SIZE: number;
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        static readonly ANIMATIONLOOPMODE_CYCLE: number;
-        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
-        static Parse(parsedAnimation: any): Animation;
-        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
-    }
-}
-
-declare module BABYLON {
-    interface IEasingFunction {
-        ease(gradient: number): number;
-    }
-    class EasingFunction implements IEasingFunction {
-        private static _EASINGMODE_EASEIN;
-        private static _EASINGMODE_EASEOUT;
-        private static _EASINGMODE_EASEINOUT;
-        static readonly EASINGMODE_EASEIN: number;
-        static readonly EASINGMODE_EASEOUT: number;
-        static readonly EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        setEasingMode(easingMode: number): void;
-        getEasingMode(): number;
-        easeInCore(gradient: number): number;
-        ease(gradient: number): number;
-    }
-    class CircleEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BackEase extends EasingFunction implements IEasingFunction {
-        amplitude: number;
-        constructor(amplitude?: number);
-        easeInCore(gradient: number): number;
-    }
-    class BounceEase extends EasingFunction implements IEasingFunction {
-        bounces: number;
-        bounciness: number;
-        constructor(bounces?: number, bounciness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class CubicEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class ElasticEase extends EasingFunction implements IEasingFunction {
-        oscillations: number;
-        springiness: number;
-        constructor(oscillations?: number, springiness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class ExponentialEase extends EasingFunction implements IEasingFunction {
-        exponent: number;
-        constructor(exponent?: number);
-        easeInCore(gradient: number): number;
-    }
-    class PowerEase extends EasingFunction implements IEasingFunction {
-        power: number;
-        constructor(power?: number);
-        easeInCore(gradient: number): number;
-    }
-    class QuadraticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuarticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuinticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class SineEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
-        easeInCore(gradient: number): number;
     }
 }
 
@@ -3324,6 +3326,626 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        private _collisionMask;
+        collisionMask: number;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Uint32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
+    }
+}
+
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class PhysicsViewer {
+        protected _impostors: Array<PhysicsImpostor>;
+        protected _meshes: Array<AbstractMesh>;
+        protected _scene: Scene;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
+        private _renderFunction;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: PhysicsImpostor): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Ray;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Highlight layer options. This helps customizing the behaviour
+     * of the highlight layer.
+     */
+    interface IHighlightLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio?: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
+         * of the picture to blur (the smaller the faster).
+         */
+        blurTextureSizeRatio?: number;
+        /**
+         * How big in texel of the blur texture is the vertical blur.
+         */
+        blurVerticalSize?: number;
+        /**
+         * How big in texel of the blur texture is the horizontal blur.
+         */
+        blurHorizontalSize?: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default is combine.
+         */
+        alphaBlendingMode?: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera?: Camera;
+    }
+    /**
+     * The highlight layer Helps adding a glow effect around a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
+     */
+    class HighlightLayer {
+        name: string;
+        /**
+         * The neutral color used during the preparation of the glow effect.
+         * This is black by default as the blend operation is a blend operation.
+         */
+        static neutralColor: Color4;
+        /**
+         * Stencil value used for glowing meshes.
+         */
+        static glowingMeshStencilReference: number;
+        /**
+         * Stencil value used for the other meshes in the scene.
+         */
+        static normalMeshStencilReference: number;
+        private _scene;
+        private _engine;
+        private _options;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _downSamplePostprocess;
+        private _horizontalBlurPostprocess;
+        private _verticalBlurPostprocess;
+        private _cachedDefines;
+        private _glowMapGenerationEffect;
+        private _glowMapMergeEffect;
+        private _blurTexture;
+        private _mainTexture;
+        private _mainTextureDesiredSize;
+        private _meshes;
+        private _maxSize;
+        private _shouldRender;
+        private _instanceGlowingMeshStencilReference;
+        private _excludedMeshes;
+        /**
+         * Specifies whether or not the inner glow is ACTIVE in the layer.
+         */
+        innerGlow: boolean;
+        /**
+         * Specifies whether or not the outer glow is ACTIVE in the layer.
+         */
+        outerGlow: boolean;
+        /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        isEnabled: boolean;
+        /**
+         * Gets the horizontal size of the blur.
+         */
+        /**
+         * Specifies the horizontal size of the blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Gets the vertical size of the blur.
+         */
+        /**
+         * Specifies the vertical size of the blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * Gets the camera attached to the layer.
+         */
+        readonly camera: Camera;
+        /**
+         * An event triggered when the highlight layer has been disposed.
+         * @type {BABYLON.Observable}
+         */
+        onDisposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer is about rendering the main texture with the glowy parts.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeRenderMainTextureObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer is being blurred.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer has been blurred.
+         * @type {BABYLON.Observable}
+         */
+        onAfterBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the glowing blurred texture is being merged in the scene.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeComposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the glowing blurred texture has been merged in the scene.
+         * @type {BABYLON.Observable}
+         */
+        onAfterComposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer changes its size.
+         * @type {BABYLON.Observable}
+         */
+        onSizeChangedObservable: Observable<HighlightLayer>;
+        /**
+         * Instantiates a new highlight Layer and references it to the scene..
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: IHighlightLayerOptions);
+        /**
+         * Creates the render target textures and post processes used in the highlight layer.
+         */
+        private createTextureAndPostProcesses();
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        private isReady(subMesh, useInstances, emissiveTexture);
+        /**
+         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+         */
+        render(): void;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
+         * @param mesh The mesh to exclude from the highlight layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
+          * @param mesh The mesh to highlight
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
+         * @param mesh The mesh to highlight
+         * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
+         */
+        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
+        /**
+         * Remove a mesh from the highlight layer in order to make it stop glowing.
+         * @param mesh The mesh to highlight
+         */
+        removeMesh(mesh: Mesh): void;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         */
+        shouldRender(): boolean;
+        /**
+         * Sets the main texture desired size which is the closest power of two
+         * of the engine canvas size.
+         */
+        private setMainTextureSize();
+        /**
+         * Force the stencil to the normal expected value for none glowing parts
+         */
+        private defaultStencilReference(mesh);
+        /**
+         * Dispose only the render target textures and post process.
+         */
+        private disposeTextureAndPostProcesses();
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        alphaBlendingMode: number;
+        alphaTest: boolean;
+        layerMask: number;
+        private _scene;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _alphaTestEffect;
+        /**
+        * An event triggered when the layer is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<Layer>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onBeforeRenderObservable: Observable<Layer>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: () => void;
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onAfterRenderObservable: Observable<Layer>;
+        private _onAfterRenderObserver;
+        onAfterRender: () => void;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -3793,671 +4415,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        private _collisionMask;
-        collisionMask: number;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Uint32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class PhysicsViewer {
-        protected _impostors: Array<PhysicsImpostor>;
-        protected _meshes: Array<AbstractMesh>;
-        protected _scene: Scene;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
-        private _renderFunction;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: PhysicsImpostor): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Ray;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Highlight layer options. This helps customizing the behaviour
-     * of the highlight layer.
-     */
-    interface IHighlightLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio?: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-         * of the picture to blur (the smaller the faster).
-         */
-        blurTextureSizeRatio?: number;
-        /**
-         * How big in texel of the blur texture is the vertical blur.
-         */
-        blurVerticalSize?: number;
-        /**
-         * How big in texel of the blur texture is the horizontal blur.
-         */
-        blurHorizontalSize?: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default is combine.
-         */
-        alphaBlendingMode?: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera?: Camera;
-    }
-    /**
-     * The highlight layer Helps adding a glow effect around a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
-     */
-    class HighlightLayer {
-        name: string;
-        /**
-         * The neutral color used during the preparation of the glow effect.
-         * This is black by default as the blend operation is a blend operation.
-         */
-        static neutralColor: Color4;
-        /**
-         * Stencil value used for glowing meshes.
-         */
-        static glowingMeshStencilReference: number;
-        /**
-         * Stencil value used for the other meshes in the scene.
-         */
-        static normalMeshStencilReference: number;
-        private _scene;
-        private _engine;
-        private _options;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _downSamplePostprocess;
-        private _horizontalBlurPostprocess;
-        private _verticalBlurPostprocess;
-        private _cachedDefines;
-        private _glowMapGenerationEffect;
-        private _glowMapMergeEffect;
-        private _blurTexture;
-        private _mainTexture;
-        private _mainTextureDesiredSize;
-        private _meshes;
-        private _maxSize;
-        private _shouldRender;
-        private _instanceGlowingMeshStencilReference;
-        private _excludedMeshes;
-        /**
-         * Specifies whether or not the inner glow is ACTIVE in the layer.
-         */
-        innerGlow: boolean;
-        /**
-         * Specifies whether or not the outer glow is ACTIVE in the layer.
-         */
-        outerGlow: boolean;
-        /**
-         * Specifies wether the highlight layer is enabled or not.
-         */
-        isEnabled: boolean;
-        /**
-         * Gets the horizontal size of the blur.
-         */
-        /**
-         * Specifies the horizontal size of the blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Gets the vertical size of the blur.
-         */
-        /**
-         * Specifies the vertical size of the blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * Gets the camera attached to the layer.
-         */
-        readonly camera: Camera;
-        /**
-         * An event triggered when the highlight layer has been disposed.
-         * @type {BABYLON.Observable}
-         */
-        onDisposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer is about rendering the main texture with the glowy parts.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeRenderMainTextureObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer is being blurred.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer has been blurred.
-         * @type {BABYLON.Observable}
-         */
-        onAfterBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the glowing blurred texture is being merged in the scene.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeComposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the glowing blurred texture has been merged in the scene.
-         * @type {BABYLON.Observable}
-         */
-        onAfterComposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer changes its size.
-         * @type {BABYLON.Observable}
-         */
-        onSizeChangedObservable: Observable<HighlightLayer>;
-        /**
-         * Instantiates a new highlight Layer and references it to the scene..
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: IHighlightLayerOptions);
-        /**
-         * Creates the render target textures and post processes used in the highlight layer.
-         */
-        private createTextureAndPostProcesses();
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        private isReady(subMesh, useInstances, emissiveTexture);
-        /**
-         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
-         */
-        render(): void;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
-         * @param mesh The mesh to exclude from the highlight layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
-          * @param mesh The mesh to highlight
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
-         * @param mesh The mesh to highlight
-         * @param color The color of the highlight
-         * @param glowEmissiveOnly Extract the glow from the emissive texture
-         */
-        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
-        /**
-         * Remove a mesh from the highlight layer in order to make it stop glowing.
-         * @param mesh The mesh to highlight
-         */
-        removeMesh(mesh: Mesh): void;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         */
-        shouldRender(): boolean;
-        /**
-         * Sets the main texture desired size which is the closest power of two
-         * of the engine canvas size.
-         */
-        private setMainTextureSize();
-        /**
-         * Force the stencil to the normal expected value for none glowing parts
-         */
-        private defaultStencilReference(mesh);
-        /**
-         * Dispose only the render target textures and post process.
-         */
-        private disposeTextureAndPostProcesses();
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        alphaBlendingMode: number;
-        alphaTest: boolean;
-        layerMask: number;
-        private _scene;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _alphaTestEffect;
-        /**
-        * An event triggered when the layer is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<Layer>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        /**
-        * An event triggered before rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onBeforeRenderObservable: Observable<Layer>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: () => void;
-        /**
-        * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onAfterRenderObservable: Observable<Layer>;
-        private _onAfterRenderObserver;
-        onAfterRender: () => void;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -4568,6 +4525,51 @@ declare module BABYLON {
         static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
         static Transform(ray: Ray, matrix: Matrix): Ray;
         static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -5105,6 +5107,2127 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
+    class SIMDHelper {
+        private static _isEnabled;
+        static readonly IsEnabled: boolean;
+        static DisableSIMD(): void;
+        static EnableSIMD(): void;
+    }
+}
+
+declare module BABYLON {
+    const ToGammaSpace: number;
+    const ToLinearSpace = 2.2;
+    const Epsilon = 0.001;
+    class MathTools {
+        /**
+         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
+         */
+        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
+        /**
+         * Returns a string : the upper case translation of the number i to hexadecimal.
+         */
+        static ToHex(i: number): string;
+        /**
+         * Returns -1 if value is negative and +1 is value is positive.
+         * Returns the value itself if it's equal to zero.
+         */
+        static Sign(value: number): number;
+        /**
+         * Returns the value itself if it's between min and max.
+         * Returns min if the value is lower than min.
+         * Returns max if the value is greater than max.
+         */
+        static Clamp(value: number, min?: number, max?: number): number;
+    }
+    class Scalar {
+        /**
+         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+         */
+        static Lerp(start: number, end: number, amount: number): number;
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
+    }
+    class Color3 {
+        r: number;
+        g: number;
+        b: number;
+        /**
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
+         */
+        constructor(r?: number, g?: number, b?: number);
+        /**
+         * Returns a string with the Color3 current values.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color3".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Color3 hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.
+         * Returns the Color3.
+         */
+        toArray(array: number[] | Float32Array, index?: number): Color3;
+        /**
+         * Returns a new Color4 object from the current Color3 and the passed alpha.
+         */
+        toColor4(alpha?: number): Color4;
+        /**
+         * Returns a new array populated with 3 numeric elements : red, green and blue values.
+         */
+        asArray(): number[];
+        /**
+         * Returns the luminance value (float).
+         */
+        toLuminance(): number;
+        /**
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.
+         * Returns this new object.
+         */
+        multiply(otherColor: Color3): Color3;
+        /**
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".
+         * Returns the current Color3.
+         */
+        multiplyToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.
+         */
+        equals(otherColor: Color3): boolean;
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.
+         */
+        equalsFloats(r: number, g: number, b: number): boolean;
+        /**
+         * Multiplies in place each rgb value by scale.
+         * Returns the updated Color3.
+         */
+        scale(scale: number): Color3;
+        /**
+         * Multiplies the rgb values by scale and stores the result into "result".
+         * Returns the unmodified current Color3.
+         */
+        scaleToRef(scale: number, result: Color3): Color3;
+        /**
+         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.
+         */
+        add(otherColor: Color3): Color3;
+        /**
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".
+         * Returns the unmodified current Color3.
+         */
+        addToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .
+         */
+        subtract(otherColor: Color3): Color3;
+        /**
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".
+         * Returns the unmodified current Color3.
+         */
+        subtractToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Returns a new Color3 copied the current one.
+         */
+        clone(): Color3;
+        /**
+         * Copies the rgb values from the source in the current Color3.
+         * Returns the updated Color3.
+         */
+        copyFrom(source: Color3): Color3;
+        /**
+         * Updates the Color3 rgb values from the passed floats.
+         * Returns the Color3.
+         */
+        copyFromFloats(r: number, g: number, b: number): Color3;
+        /**
+         * Updates the Color3 rgb values from the passed floats.
+         * Returns the Color3.
+         */
+        set(r: number, g: number, b: number): Color3;
+        /**
+         * Returns the Color3 hexadecimal code as a string.
+         */
+        toHexString(): string;
+        /**
+         * Returns a new Color3 converted to linear space.
+         */
+        toLinearSpace(): Color3;
+        /**
+         * Converts the Color3 values to linear space and stores the result in "convertedColor".
+         * Returns the unmodified Color3.
+         */
+        toLinearSpaceToRef(convertedColor: Color3): Color3;
+        /**
+         * Returns a new Color3 converted to gamma space.
+         */
+        toGammaSpace(): Color3;
+        /**
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor".
+         * Returns the unmodified Color3.
+         */
+        toGammaSpaceToRef(convertedColor: Color3): Color3;
+        /**
+         * Creates a new Color3 from the string containing valid hexadecimal values.
+         */
+        static FromHexString(hex: string): Color3;
+        /**
+         * Creates a new Vector3 from the startind index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Color3;
+        /**
+         * Creates a new Color3 from integer values ( < 256).
+         */
+        static FromInts(r: number, g: number, b: number): Color3;
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.
+         */
+        static Lerp(start: Color3, end: Color3, amount: number): Color3;
+        static Red(): Color3;
+        static Green(): Color3;
+        static Blue(): Color3;
+        static Black(): Color3;
+        static White(): Color3;
+        static Purple(): Color3;
+        static Magenta(): Color3;
+        static Yellow(): Color3;
+        static Gray(): Color3;
+        static Random(): Color3;
+    }
+    class Color4 {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        /**
+         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.
+         */
+        constructor(r: number, g: number, b: number, a: number);
+        /**
+         * Adds in place the passed Color4 values to the current Color4.
+         * Returns the updated Color4.
+         */
+        addInPlace(right: any): Color4;
+        /**
+         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.
+         */
+        asArray(): number[];
+        /**
+         * Stores from the starting index in the passed array the Color4 successive values.
+         * Returns the Color4.
+         */
+        toArray(array: number[], index?: number): Color4;
+        /**
+         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.
+         */
+        add(right: Color4): Color4;
+        /**
+         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.
+         */
+        subtract(right: Color4): Color4;
+        /**
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result".
+         * Returns the Color4.
+         */
+        subtractToRef(right: Color4, result: Color4): Color4;
+        /**
+         * Creates a new Color4 with the current Color4 values multiplied by scale.
+         */
+        scale(scale: number): Color4;
+        /**
+         * Multiplies the current Color4 values by scale and stores the result in "result".
+         * Returns the Color4.
+         */
+        scaleToRef(scale: number, result: Color4): Color4;
+        /**
+          * Multipy an RGBA Color4 value by another and return a new Color4 object
+          * @param color The Color4 (RGBA) value to multiply by
+          * @returns A new Color4.
+          */
+        multiply(color: Color4): Color4;
+        /**
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in
+         * @returns the result Color4.
+         */
+        multiplyToRef(color: Color4, result: Color4): Color4;
+        /**
+         * Returns a string with the Color4 values.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color4"
+         */
+        getClassName(): string;
+        /**
+         * Return the Color4 hash code as a number.
+         */
+        getHashCode(): number;
+        /**
+         * Creates a new Color4 copied from the current one.
+         */
+        clone(): Color4;
+        /**
+         * Copies the passed Color4 values into the current one.
+         * Returns the updated Color4.
+         */
+        copyFrom(source: Color4): Color4;
+        /**
+         * Copies the passed float values into the current one.
+         * Returns the updated Color4.
+         */
+        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Copies the passed float values into the current one.
+         * Returns the updated Color4.
+         */
+        set(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Returns a string containing the hexadecimal Color4 code.
+         */
+        toHexString(): string;
+        /**
+         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.
+         */
+        static FromHexString(hex: string): Color4;
+        /**
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         */
+        static Lerp(left: Color4, right: Color4, amount: number): Color4;
+        /**
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         */
+        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
+        /**
+         * Creates a new Color4 from the starting index element of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Color4;
+        /**
+         * Creates a new Color4 from the passed integers ( < 256 ).
+         */
+        static FromInts(r: number, g: number, b: number, a: number): Color4;
+        static CheckColors4(colors: number[], count: number): number[];
+    }
+    class Vector2 {
+        x: number;
+        y: number;
+        /**
+         * Creates a new Vector2 from the passed x and y coordinates.
+         */
+        constructor(x: number, y: number);
+        /**
+         * Returns a string with the Vector2 coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Vector2"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Vector2 hash code as a number.
+         */
+        getHashCode(): number;
+        /**
+         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.
+         * Returns the Vector2.
+         */
+        toArray(array: number[] | Float32Array, index?: number): Vector2;
+        /**
+         * Returns a new array with 2 elements : the Vector2 coordinates.
+         */
+        asArray(): number[];
+        /**
+         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.
+         * Returns the updated Vector2.
+         */
+        copyFrom(source: Vector2): Vector2;
+        /**
+         * Sets the Vector2 coordinates with the passed floats.
+         * Returns the updated Vector2.
+         */
+        copyFromFloats(x: number, y: number): Vector2;
+        /**
+         * Sets the Vector2 coordinates with the passed floats.
+         * Returns the updated Vector2.
+         */
+        set(x: number, y: number): Vector2;
+        /**
+         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.
+         */
+        add(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates.
+         * Returns the Vector2.
+         */
+        addToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.
+         * Returns the updated Vector2.
+         */
+        addInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.
+         */
+        addVector3(otherVector: Vector3): Vector2;
+        /**
+         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.
+         */
+        subtract(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.
+         * Returns the Vector2.
+         */
+        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.
+         * Returns the updated Vector2.
+         */
+        subtractInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Multiplies in place the current Vector2 coordinates by the passed ones.
+         * Returns the updated Vector2.
+         */
+        multiplyInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.
+         */
+        multiply(otherVector: Vector2): Vector2;
+        /**
+         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.
+         * Returns the Vector2.
+         */
+        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.
+         */
+        multiplyByFloats(x: number, y: number): Vector2;
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.
+         */
+        divide(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.
+         * Returns the Vector2.
+         */
+        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 with current Vector2 negated coordinates.
+         */
+        negate(): Vector2;
+        /**
+         * Multiply the Vector2 coordinates by scale.
+         * Returns the updated Vector2.
+         */
+        scaleInPlace(scale: number): Vector2;
+        /**
+         * Returns a new Vector2 scaled by "scale" from the current Vector2.
+         */
+        scale(scale: number): Vector2;
+        /**
+         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
+         */
+        equals(otherVector: Vector2): boolean;
+        /**
+         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.
+         */
+        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
+        /**
+         * Returns the vector length (float).
+         */
+        length(): number;
+        /**
+         * Returns the vector squared length (float);
+         */
+        lengthSquared(): number;
+        /**
+         * Normalize the vector.
+         * Returns the updated Vector2.
+         */
+        normalize(): Vector2;
+        /**
+         * Returns a new Vector2 copied from the Vector2.
+         */
+        clone(): Vector2;
+        /**
+         * Returns a new Vector2(0, 0)
+         */
+        static Zero(): Vector2;
+        /**
+         * Returns a new Vector2(1, 1)
+         */
+        static One(): Vector2;
+        /**
+         * Returns a new Vector2 set from the passed index element of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
+        /**
+         * Sets "result" from the passed index element of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
+        /**
+         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
+         */
+        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
+         * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
+         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate.
+         */
+        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         */
+        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
+         */
+        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
+        /**
+         * Returns the dot product (float) of the vector "left" and the vector "right".
+         */
+        static Dot(left: Vector2, right: Vector2): number;
+        /**
+         * Returns a new Vector2 equal to the normalized passed vector.
+         */
+        static Normalize(vector: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the minimal coordinate values from the "left" and "right" vectors.
+         */
+        static Minimize(left: Vector2, right: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors.
+         */
+        static Maximize(left: Vector2, right: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the transformed coordinates of the passed vector by the passed transformation matrix.
+         */
+        static Transform(vector: Vector2, transformation: Matrix): Vector2;
+        /**
+         * Transforms the passed vector coordinates by the passed transformation matrix and stores the result in the vector "result" coordinates.
+         */
+        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
+        /**
+         * Boolean : True if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
+         */
+        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
+        /**
+         * Returns the distance (float) between the vectors "value1" and "value2".
+         */
+        static Distance(value1: Vector2, value2: Vector2): number;
+        /**
+         * Returns the squared distance (float) between the vectors "value1" and "value2".
+         */
+        static DistanceSquared(value1: Vector2, value2: Vector2): number;
+        /**
+         * Returns a new Vecto2 located at the center of the vectors "value1" and "value2".
+         */
+        static Center(value1: Vector2, value2: Vector2): Vector2;
+        /**
+         * Returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
+         */
+        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
+    }
+    class Vector3 {
+        x: number;
+        y: number;
+        z: number;
+        /**
+         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
+         * A Vector3 is the main object used in 3D geometry.
+         * It can represent etiher the coordinates of a point the space, either a direction.
+         */
+        constructor(x: number, y: number, z: number);
+        /**
+         * Returns a string with the Vector3 coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Vector3"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Vector hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Returns a new array with three elements : the coordinates the Vector3.
+         */
+        asArray(): number[];
+        /**
+         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.
+         * Returns the Vector3.
+         */
+        toArray(array: number[] | Float32Array, index?: number): Vector3;
+        /**
+         * Returns a new Quaternion object, computed from the Vector3 coordinates.
+         */
+        toQuaternion(): Quaternion;
+        /**
+         * Adds the passed vector to the current Vector3.
+         * Returns the updated Vector3.
+         */
+        addInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Returns a new Vector3, result of the addition the current Vector3 and the passed vector.
+         */
+        add(otherVector: Vector3): Vector3;
+        /**
+         * Adds the current Vector3 to the passed one and stores the result in the vector "result".
+         * Returns the current Vector3.
+         */
+        addToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Subtract the passed vector from the current Vector3.
+         * Returns the updated Vector3.
+         */
+        subtractInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3.
+         */
+        subtract(otherVector: Vector3): Vector3;
+        /**
+         * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".
+         * Returns the current Vector3.
+         */
+        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates.
+         */
+        subtractFromFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result.
+         * Returns the current Vector3.
+         */
+        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 set with the current Vector3 negated coordinates.
+         */
+        negate(): Vector3;
+        /**
+         * Multiplies the Vector3 coordinates by the float "scale".
+         * Returns the updated Vector3.
+         */
+        scaleInPlace(scale: number): Vector3;
+        /**
+         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale".
+         */
+        scale(scale: number): Vector3;
+        /**
+         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates.
+         * Returns the current Vector3.
+         */
+        scaleToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Boolean : True if the current Vector3 and the passed vector coordinates are strictly equal.
+         */
+        equals(otherVector: Vector3): boolean;
+        /**
+         * Boolean : True if the current Vector3 and the passed vector coordinates are distant less than epsilon.
+         */
+        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
+        /**
+         * Boolean : True if the current Vector3 coordinate equal the passed floats.
+         */
+        equalsToFloats(x: number, y: number, z: number): boolean;
+        /**
+         * Muliplies the current Vector3 coordinates by the passed ones.
+         * Returns the updated Vector3.
+         */
+        multiplyInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector.
+         */
+        multiply(otherVector: Vector3): Vector3;
+        /**
+         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result".
+         * Returns the current Vector3.
+         */
+        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 set witth the result of the mulliplication of the current Vector3 coordinates by the passed floats.
+         */
+        multiplyByFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Returns a new Vector3 set witth the result of the division of the current Vector3 coordinates by the passed ones.
+         */
+        divide(otherVector: Vector3): Vector3;
+        /**
+         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result".
+         * Returns the current Vector3.
+         */
+        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.
+         * Returns the updated Vector3.
+         */
+        MinimizeInPlace(other: Vector3): Vector3;
+        /**
+         * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.
+         * Returns the updated Vector3.
+         */
+        MaximizeInPlace(other: Vector3): Vector3;
+        /**
+         * Returns the length of the Vector3 (float).
+         */
+        length(): number;
+        /**
+         * Returns the squared length of the Vector3 (float).
+         */
+        lengthSquared(): number;
+        /**
+         * Normalize the current Vector3.
+         * Returns the updated Vector3.
+         */
+        normalize(): Vector3;
+        /**
+         * Returns a new Vector3 copied from the current Vector3.
+         */
+        clone(): Vector3;
+        /**
+         * Copies the passed vector coordinates to the current Vector3 ones.
+         * Returns the updated Vector3.
+         */
+        copyFrom(source: Vector3): Vector3;
+        /**
+         * Copies the passed floats to the current Vector3 coordinates.
+         * Returns the updated Vector3.
+         */
+        copyFromFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Copies the passed floats to the current Vector3 coordinates.
+         * Returns the updated Vector3.
+         */
+        set(x: number, y: number, z: number): Vector3;
+        /**
+         *
+         */
+        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArray instead.
+         */
+        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
+        /**
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
+         * This function is deprecated.  Use FromArrayToRef instead.
+         */
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the passed floats.
+         */
+        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
+        /**
+         * Returns a new Vector3 set to (0.0, 0.0, 0.0).
+         */
+        static Zero(): Vector3;
+        /**
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         */
+        static One(): Vector3;
+        /**
+         * Returns a new Vector3 set to (0.0, 1.0, 0.0)
+         */
+        static Up(): Vector3;
+        /**
+         * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         */
+        static Forward(): Vector3;
+        /**
+         * Returns a new Vector3 set to (1.0, 0.0, 0.0)
+         */
+        static Right(): Vector3;
+        /**
+         * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
+         */
+        static Left(): Vector3;
+        /**
+         * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.
+         * This method computes tranformed coordinates only, not transformed direction vectors.
+         */
+        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
+        /**
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector.
+         * This method computes tranformed coordinates only, not transformed direction vectors.
+         */
+        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z).
+         * This method computes tranformed coordinates only, not transformed direction vectors.
+         */
+        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        /**
+         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z).
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        /**
+         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4".
+         */
+        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max".
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one.
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one.
+         */
+        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
+        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end".
+         */
+        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
+        /**
+         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end".
+         */
+        static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void;
+        /**
+         * Returns the dot product (float) between the vectors "left" and "right".
+         */
+        static Dot(left: Vector3, right: Vector3): number;
+        /**
+         * Returns a new Vector3 as the cross product of the vectors "left" and "right".
+         * The cross product is then orthogonal to both "left" and "right".
+         */
+        static Cross(left: Vector3, right: Vector3): Vector3;
+        /**
+         * Sets the passed vector "result" with the cross product of "left" and "right".
+         * The cross product is then orthogonal to both "left" and "right".
+         */
+        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        /**
+         * Returns a new Vector3 as the normalization of the passed vector.
+         */
+        static Normalize(vector: Vector3): Vector3;
+        /**
+         * Sets the passed vector "result" with the normalization of the passed first vector.
+         */
+        static NormalizeToRef(vector: Vector3, result: Vector3): void;
+        private static _viewportMatrixCache;
+        private static _matrixCache;
+        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
+        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
+        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
+        static Minimize(left: Vector3, right: Vector3): Vector3;
+        static Maximize(left: Vector3, right: Vector3): Vector3;
+        /**
+         * Returns the distance (float) between the vectors "value1" and "value2".
+         */
+        static Distance(value1: Vector3, value2: Vector3): number;
+        /**
+         * Returns the squared distance (float) between the vectors "value1" and "value2".
+         */
+        static DistanceSquared(value1: Vector3, value2: Vector3): number;
+        /**
+         * Returns a new Vector3 located at the center between "value1" and "value2".
+         */
+        static Center(value1: Vector3, value2: Vector3): Vector3;
+        /**
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         * Returns a new Vector3.
+         */
+        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.
+         */
+        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
+    }
+    class Vector4 {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        /**
+         * Creates a Vector4 object from the passed floats.
+         */
+        constructor(x: number, y: number, z: number, w: number);
+        /**
+         * Returns the string with the Vector4 coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Vector4".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Vector4 hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Returns a new array populated with 4 elements : the Vector4 coordinates.
+         */
+        asArray(): number[];
+        /**
+         * Populates the passed array from the passed index with the Vector4 coordinates.
+         * Returns the Vector4.
+         */
+        toArray(array: number[] | Float32Array, index?: number): Vector4;
+        /**
+         * Adds the passed vector to the current Vector4.
+         * Returns the updated Vector4.
+         */
+        addInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 as the result of the addition of the current Vector4 and the passed one.
+         */
+        add(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the result of the addition of the current Vector4 and the passed one.
+         * Returns the current Vector4.
+         */
+        addToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Subtract in place the passed vector from the current Vector4.
+         * Returns the updated Vector4.
+         */
+        subtractInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 with the result of the subtraction of the passed vector from the current Vector4.
+         */
+        subtract(otherVector: Vector4): Vector4;
+        /**
+         * Sets the passed vector "result" with the result of the subtraction of the passed vector from the current Vector4.
+         * Returns the current Vector4.
+         */
+        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         */
+        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Sets the passed vector "result" set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         * Returns the current Vector4.
+         */
+        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the current Vector4 negated coordinates.
+         */
+        negate(): Vector4;
+        /**
+         * Multiplies the current Vector4 coordinates by scale (float).
+         * Returns the updated Vector4.
+         */
+        scaleInPlace(scale: number): Vector4;
+        /**
+         * Returns a new Vector4 set with the current Vector4 coordinates multiplied by scale (float).
+         */
+        scale(scale: number): Vector4;
+        /**
+         * Sets the passed vector "result" with the current Vector4 coordinates multiplied by scale (float).
+         * Returns the current Vector4.
+         */
+        scaleToRef(scale: number, result: Vector4): Vector4;
+        /**
+         * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
+         */
+        equals(otherVector: Vector4): boolean;
+        /**
+         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the passed vector ones.
+         */
+        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
+        /**
+         * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
+         */
+        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
+        /**
+         * Multiplies in place the current Vector4 by the passed one.
+         * Returns the updated Vector4.
+         */
+        multiplyInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the passed one.
+         */
+        multiply(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the multiplication result of the current Vector4 and the passed one.
+         * Returns the current Vector4.
+         */
+        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the multiplication result of the passed floats and the current Vector4 coordinates.
+         */
+        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Returns a new Vector4 set with the division result of the current Vector4 by the passed one.
+         */
+        divide(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the division result of the current Vector4 by the passed one.
+         * Returns the current Vector4.
+         */
+        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones.
+         */
+        MinimizeInPlace(other: Vector4): Vector4;
+        /**
+         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones.
+         */
+        MaximizeInPlace(other: Vector4): Vector4;
+        /**
+         * Returns the Vector4 length (float).
+         */
+        length(): number;
+        /**
+         * Returns the Vector4 squared length (float).
+         */
+        lengthSquared(): number;
+        /**
+         * Normalizes in place the Vector4.
+         * Returns the updated Vector4.
+         */
+        normalize(): Vector4;
+        /**
+         * Returns a new Vector3 from the Vector4 (x, y, z) coordinates.
+         */
+        toVector3(): Vector3;
+        /**
+         * Returns a new Vector4 copied from the current one.
+         */
+        clone(): Vector4;
+        /**
+         * Updates the current Vector4 with the passed one coordinates.
+         * Returns the updated Vector4.
+         */
+        copyFrom(source: Vector4): Vector4;
+        /**
+         * Updates the current Vector4 coordinates with the passed floats.
+         * Returns the updated Vector4.
+         */
+        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Updates the current Vector4 coordinates with the passed floats.
+         * Returns the updated Vector4.
+         */
+        set(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Returns a new Vector4 set from the starting index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
+        /**
+         * Updates the passed vector "result" from the starting index of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
+        /**
+         * Updates the passed vector "result" from the starting index of the passed Float32Array.
+         */
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
+        /**
+         * Updates the passed vector "result" coordinates from the passed floats.
+         */
+        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        /**
+         * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
+         */
+        static Zero(): Vector4;
+        /**
+         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         */
+        static One(): Vector4;
+        /**
+         * Returns a new normalized Vector4 from the passed one.
+         */
+        static Normalize(vector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" from the normalization of the passed one.
+         */
+        static NormalizeToRef(vector: Vector4, result: Vector4): void;
+        static Minimize(left: Vector4, right: Vector4): Vector4;
+        static Maximize(left: Vector4, right: Vector4): Vector4;
+        /**
+         * Returns the distance (float) between the vectors "value1" and "value2".
+         */
+        static Distance(value1: Vector4, value2: Vector4): number;
+        /**
+         * Returns the squared distance (float) between the vectors "value1" and "value2".
+         */
+        static DistanceSquared(value1: Vector4, value2: Vector4): number;
+        /**
+         * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
+         */
+        static Center(value1: Vector4, value2: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormal(vector: Vector4, transformation: Matrix): Vector4;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void;
+    }
+    interface ISize {
+        width: number;
+        height: number;
+    }
+    class Size implements ISize {
+        width: number;
+        height: number;
+        /**
+         * Creates a Size object from the passed width and height (floats).
+         */
+        constructor(width: number, height: number);
+        toString(): string;
+        /**
+         * Returns the string "Size"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Size hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Updates the current size from the passed one.
+         * Returns the updated Size.
+         */
+        copyFrom(src: Size): void;
+        /**
+         * Updates in place the current Size from the passed floats.
+         * Returns the updated Size.
+         */
+        copyFromFloats(width: number, height: number): Size;
+        /**
+         * Updates in place the current Size from the passed floats.
+         * Returns the updated Size.
+         */
+        set(width: number, height: number): Size;
+        /**
+         * Returns a new Size set with the multiplication result of the current Size and the passed floats.
+         */
+        multiplyByFloats(w: number, h: number): Size;
+        /**
+         * Returns a new Size copied from the passed one.
+         */
+        clone(): Size;
+        /**
+         * Boolean : True if the current Size and the passed one width and height are strictly equal.
+         */
+        equals(other: Size): boolean;
+        /**
+         * Returns the surface of the Size : width * height (float).
+         */
+        readonly surface: number;
+        /**
+         * Returns a new Size set to (0.0, 0.0)
+         */
+        static Zero(): Size;
+        /**
+         * Returns a new Size set as the addition result of the current Size and the passed one.
+         */
+        add(otherSize: Size): Size;
+        /**
+         * Returns a new Size set as the subtraction result of  the passed one from the current Size.
+         */
+        subtract(otherSize: Size): Size;
+        /**
+         * Returns a new Size set at the linear interpolation "amount" between "start" and "end".
+         */
+        static Lerp(start: Size, end: Size, amount: number): Size;
+    }
+    class Quaternion {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        /**
+         * Creates a new Quaternion from the passed floats.
+         */
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        /**
+         * Returns a string with the Quaternion coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Quaternion".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Quaternion hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Returns a new array populated with 4 elements : the Quaternion coordinates.
+         */
+        asArray(): number[];
+        /**
+         * Boolean : True if the current Quaterion and the passed one coordinates are strictly equal.
+         */
+        equals(otherQuaternion: Quaternion): boolean;
+        /**
+         * Returns a new Quaternion copied from the current one.
+         */
+        clone(): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed one coordinates.
+         * Returns the updated Quaterion.
+         */
+        copyFrom(other: Quaternion): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed float coordinates.
+         * Returns the updated Quaterion.
+         */
+        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed float coordinates.
+         * Returns the updated Quaterion.
+         */
+        set(x: number, y: number, z: number, w: number): Quaternion;
+        /**
+         * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.
+         */
+        add(other: Quaternion): Quaternion;
+        /**
+         * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.
+         */
+        subtract(other: Quaternion): Quaternion;
+        /**
+         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".
+         */
+        scale(value: number): Quaternion;
+        /**
+         * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
+         */
+        multiply(q1: Quaternion): Quaternion;
+        /**
+         * Sets the passed "result" as the quaternion mulplication result of the current one with the passed one "q1".
+         * Returns the current Quaternion.
+         */
+        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
+        /**
+         * Updates the current Quaternion with the quaternion mulplication result of itself with the passed one "q1".
+         * Returns the updated Quaternion.
+         */
+        multiplyInPlace(q1: Quaternion): Quaternion;
+        /**
+         * Sets the passed "ref" with the conjugation of the current Quaternion.
+         * Returns the current Quaternion.
+         */
+        conjugateToRef(ref: Quaternion): Quaternion;
+        /**
+         * Conjugates in place the current Quaternion.
+         * Returns the updated Quaternion.
+         */
+        conjugateInPlace(): Quaternion;
+        /**
+         * Returns a new Quaternion as the conjugate of the current Quaternion.
+         */
+        conjugate(): Quaternion;
+        /**
+         * Returns the Quaternion length (float).
+         */
+        length(): number;
+        /**
+         * Normalize in place the current Quaternion.
+         * Returns the updated Quaternion.
+         */
+        normalize(): Quaternion;
+        /**
+         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion.
+         */
+        toEulerAngles(order?: string): Vector3;
+        /**
+         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion.
+         * Returns the current Quaternion.
+         */
+        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
+        /**
+         * Updates the passed rotation matrix with the current Quaternion values.
+         * Returns the current Quaternion.
+         */
+        toRotationMatrix(result: Matrix): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed rotation matrix values.
+         * Returns the updated Quaternion.
+         */
+        fromRotationMatrix(matrix: Matrix): Quaternion;
+        /**
+         * Returns a new Quaternion set from the passed rotation matrix values.
+         */
+        static FromRotationMatrix(matrix: Matrix): Quaternion;
+        /**
+         * Updates the passed quaternion "result" with the passed rotation matrix values.
+         */
+        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion set to (0.0, 0.0, 0.0).
+         */
+        static Zero(): Quaternion;
+        /**
+         * Returns a new Quaternion as the inverted current Quaternion.
+         */
+        static Inverse(q: Quaternion): Quaternion;
+        /**
+         * Returns the identity Quaternion.
+         */
+        static Identity(): Quaternion;
+        static IsIdentity(quaternion: Quaternion): boolean;
+        /**
+         * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float).
+         */
+        static RotationAxis(axis: Vector3, angle: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed axis (Vector3) and angle in radians (float).
+         */
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
+        /**
+         * Retuns a new Quaternion set from the starting index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
+        /**
+         * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
+         */
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).
+         */
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion from the passed float Euler angles expressed in z-x-z orientation
+         */
+        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed float Euler angles expressed in z-x-z orientation
+         */
+        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
+         * cf to Vector3.RotationFromAxis() documentation.
+         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         */
+        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion;
+        /**
+         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
+         * cf to Vector3.RotationFromAxis() documentation.
+         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         */
+        static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void;
+        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
+        static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
+        static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion;
+    }
+    class Matrix {
+        private static _tempQuaternion;
+        private static _xAxis;
+        private static _yAxis;
+        private static _zAxis;
+        private static _updateFlagSeed;
+        updateFlag: number;
+        m: Float32Array;
+        _markAsUpdated(): void;
+        constructor();
+        /**
+         * Boolean : True is the matrix is the identity matrix
+         */
+        isIdentity(): boolean;
+        /**
+         * Returns the matrix determinant (float).
+         */
+        determinant(): number;
+        /**
+         * Returns the matrix underlying array.
+         */
+        toArray(): Float32Array;
+        /**
+        * Returns the matrix underlying array.
+        */
+        asArray(): Float32Array;
+        /**
+         * Inverts in place the Matrix.
+         * Returns the Matrix inverted.
+         */
+        invert(): Matrix;
+        /**
+         * Sets all the matrix elements to zero.
+         * Returns the Matrix.
+         */
+        reset(): Matrix;
+        /**
+         * Returns a new Matrix as the addition result of the current Matrix and the passed one.
+         */
+        add(other: Matrix): Matrix;
+        /**
+         * Sets the passed matrix "result" with the ddition result of the current Matrix and the passed one.
+         * Returns the Matrix.
+         */
+        addToRef(other: Matrix, result: Matrix): Matrix;
+        /**
+         * Adds in place the passed matrix to the current Matrix.
+         * Returns the updated Matrix.
+         */
+        addToSelf(other: Matrix): Matrix;
+        /**
+         * Sets the passed matrix with the current inverted Matrix.
+         * Returns the unmodified current Matrix.
+         */
+        invertToRef(other: Matrix): Matrix;
+        /**
+         * Inserts the translation vector (using 3 x floats) in the current Matrix.
+         * Returns the updated Matrix.
+         */
+        setTranslationFromFloats(x: number, y: number, z: number): Matrix;
+        /**
+ * Inserts the translation vector in the current Matrix.
+ * Returns the updated Matrix.
+ */
+        setTranslation(vector3: Vector3): Matrix;
+        /**
+         * Returns a new Vector3 as the extracted translation from the Matrix.
+         */
+        getTranslation(): Vector3;
+        /**
+         * Fill a Vector3 with the extracted translation from the Matrix.
+         */
+        getTranslationToRef(result: Vector3): Matrix;
+        /**
+         * Remove rotation and scaling part from the Matrix.
+         * Returns the updated Matrix.
+         */
+        removeRotationAndScaling(): Matrix;
+        /**
+         * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.
+         */
+        multiply(other: Matrix): Matrix;
+        /**
+         * Updates the current Matrix from the passed one values.
+         * Returns the updated Matrix.
+         */
+        copyFrom(other: Matrix): Matrix;
+        /**
+         * Populates the passed array from the starting index with the Matrix values.
+         * Returns the Matrix.
+         */
+        copyToArray(array: Float32Array, offset?: number): Matrix;
+        /**
+         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one.
+         */
+        multiplyToRef(other: Matrix, result: Matrix): Matrix;
+        /**
+         * Sets the Float32Array "result" from the passed index "offset" with the multiplication result of the current Matrix and the passed one.
+         */
+        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
+        /**
+         * Boolean : True is the current Matrix and the passed one values are strictly equal.
+         */
+        equals(value: Matrix): boolean;
+        /**
+         * Returns a new Matrix from the current Matrix.
+         */
+        clone(): Matrix;
+        /**
+         * Returns the string "Matrix"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Matrix hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Decomposes the current Matrix into :
+         * - a scale vector3 passed as a reference to update,
+         * - a rotation quaternion passed as a reference to update,
+         * - a translation vector3 passed as a reference to update.
+         * Returns the boolean `true`.
+         */
+        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
+        /**
+         * Returns a new Matrix as the extracted rotation matrix from the current one.
+         */
+        getRotationMatrix(): Matrix;
+        /**
+         * Extracts the rotation matrix from the current one and sets it as the passed "result".
+         * Returns the current Matrix.
+         */
+        getRotationMatrixToRef(result: Matrix): Matrix;
+        /**
+         * Returns a new Matrix set from the starting index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
+        /**
+         * Sets the passed "result" matrix from the starting index of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix): void;
+        /**
+         * Sets the passed "result" matrix from the starting index of the passed Float32Array by multiplying each element by the float "scale".
+         */
+        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
+        /**
+         * Sets the passed matrix "result" with the 16 passed floats.
+         */
+        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
+        /**
+         * Returns the index-th row of the current matrix as a new Vector4.
+         */
+        getRow(index: number): Vector4;
+        /**
+         * Sets the index-th row of the current matrix with the passed Vector4 values.
+         * Returns the updated Matrix.
+         */
+        setRow(index: number, row: Vector4): Matrix;
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values.
+         * Returns the updated Matrix.
+         */
+        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
+        /**
+         * Returns a new Matrix set from the 16 passed floats.
+         */
+        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
+        /**
+         * Returns a new Matrix composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).
+         */
+        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
+        /**
+       * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).
+       */
+        static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void;
+        /**
+         * Returns a new indentity Matrix.
+         */
+        static Identity(): Matrix;
+        /**
+         * Sets the passed "result" as an identity matrix.
+         */
+        static IdentityToRef(result: Matrix): void;
+        /**
+         * Returns a new zero Matrix.
+         */
+        static Zero(): Matrix;
+        /**
+         * Returns a new rotation matrix for "angle" radians around the X axis.
+         */
+        static RotationX(angle: number): Matrix;
+        /**
+         * Returns a new Matrix as the passed inverted one.
+         */
+        static Invert(source: Matrix): Matrix;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the X axis.
+         */
+        static RotationXToRef(angle: number, result: Matrix): void;
+        /**
+         * Returns a new rotation matrix for "angle" radians around the Y axis.
+         */
+        static RotationY(angle: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Y axis.
+         */
+        static RotationYToRef(angle: number, result: Matrix): void;
+        /**
+         * Returns a new rotation matrix for "angle" radians around the Z axis.
+         */
+        static RotationZ(angle: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Z axis.
+         */
+        static RotationZToRef(angle: number, result: Matrix): void;
+        /**
+         * Returns a new rotation matrix for "angle" radians around the passed axis.
+         */
+        static RotationAxis(axis: Vector3, angle: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the passed axis.
+         */
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a rotation matrix from the Euler angles (y, x, z).
+         */
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix from the Euler angles (y, x, z).
+         */
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a scaling matrix from the passed floats (x, y, z).
+         */
+        static Scaling(x: number, y: number, z: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a scaling matrix from the passed floats (x, y, z).
+         */
+        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a translation matrix from the passed floats (x, y, z).
+         */
+        static Translation(x: number, y: number, z: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a translation matrix from the passed floats (x, y, z).
+         */
+        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix whose values are the interpolated values for "gradien" (float) between the ones of the matrices "startValue" and "endValue".
+         */
+        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        /**
+         * Returns a new Matrix whose values are computed by :
+         * - decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices,
+         * - interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end,
+         * - recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices.
+         */
+        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        /**
+         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
+         * This methods works for a Left-Handed system.
+         */
+        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        /**
+         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
+         * This methods works for a Left-Handed system.
+         */
+        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        /**
+         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
+         * This methods works for a Right-Handed system.
+         */
+        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        /**
+         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
+         * This methods works for a Left-Handed system.
+         */
+        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
+        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
+        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
+        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
+        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
+        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
+         */
+        static OrthoOffCenterRHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
+         */
+        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        /**
+         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        /**
+         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
+         */
+        static PerspectiveFovWebVRToRef(fov: any, znear: number, zfar: number, result: Matrix, rightHanded?: boolean): void;
+        /**
+         * Returns the final transformation matrix : world * view * projection * viewport
+         */
+        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
+        /**
+         * Returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed Matrix.
+         */
+        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
+        /**
+         * Returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed Matrix.
+         */
+        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
+        /**
+         * Compute the transpose of the passed Matrix.
+         * Returns a new Matrix.
+         */
+        static Transpose(matrix: Matrix): Matrix;
+        /**
+         * Returns a new Matrix as the reflection  matrix across the passed plane.
+         */
+        static Reflection(plane: Plane): Matrix;
+        /**
+         * Sets the passed matrix "result" as the reflection matrix across the passed plane.
+         */
+        static ReflectionToRef(plane: Plane, result: Matrix): void;
+        /**
+         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.
+         */
+        static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix): void;
+        /**
+         * Sets the passed matrix "result" as a rotation matrix according to the passed quaternion.
+         */
+        static FromQuaternionToRef(quat: Quaternion, result: Matrix): void;
+    }
+    class Plane {
+        normal: Vector3;
+        d: number;
+        /**
+         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         */
+        constructor(a: number, b: number, c: number, d: number);
+        /**
+         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].
+         */
+        asArray(): number[];
+        /**
+         * Returns a new plane copied from the current Plane.
+         */
+        clone(): Plane;
+        /**
+         * Returns the string "Plane".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Plane hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Normalize the current Plane in place.
+         * Returns the updated Plane.
+         */
+        normalize(): Plane;
+        /**
+         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.
+         */
+        transform(transformation: Matrix): Plane;
+        /**
+         * Returns the dot product (float) of the point coordinates and the plane normal.
+         */
+        dotCoordinate(point: any): number;
+        /**
+         * Updates the current Plane from the plane defined by the three passed points.
+         * Returns the updated Plane.
+         */
+        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
+        /**
+         * Boolean : True is the vector "direction"  is the same side than the plane normal.
+         */
+        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
+        /**
+         * Returns the signed distance (float) from the passed point to the Plane.
+         */
+        signedDistanceTo(point: Vector3): number;
+        /**
+         * Returns a new Plane from the passed array.
+         */
+        static FromArray(array: ArrayLike<number>): Plane;
+        /**
+         * Returns a new Plane defined by the three passed points.
+         */
+        static FromPoints(point1: any, point2: any, point3: any): Plane;
+        /**
+         * Returns a new Plane the normal vector to this plane at the passed origin point.
+         * Note : the vector "normal" is updated because normalized.
+         */
+        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
+        /**
+         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.
+         */
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
+    }
+    class Viewport {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        /**
+         * Creates a Viewport object located at (x, y) and sized (width, height).
+         */
+        constructor(x: number, y: number, width: number, height: number);
+        toGlobal(renderWidth: number, renderHeight: number): Viewport;
+        /**
+         * Returns a new Viewport copied from the current one.
+         */
+        clone(): Viewport;
+    }
+    class Frustum {
+        /**
+         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.
+         */
+        static GetPlanes(transform: Matrix): Plane[];
+        /**
+         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
+         */
+        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
+    }
+    enum Space {
+        LOCAL = 0,
+        WORLD = 1,
+        BONE = 2,
+    }
+    class Axis {
+        static X: Vector3;
+        static Y: Vector3;
+        static Z: Vector3;
+    }
+    class BezierCurve {
+        /**
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.
+         */
+        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    enum Orientation {
+        CW = 0,
+        CCW = 1,
+    }
+    class Angle {
+        private _radians;
+        /**
+         * Creates an Angle object of "radians" radians (float).
+         */
+        constructor(radians: number);
+        /**
+         * Returns the Angle value in degrees (float).
+         */
+        degrees: () => number;
+        /**
+         * Returns the Angle value in radians (float).
+         */
+        radians: () => number;
+        /**
+         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.
+         */
+        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
+        /**
+         * Returns a new Angle object from the passed float in radians.
+         */
+        static FromRadians(radians: number): Angle;
+        /**
+         * Returns a new Angle object from the passed float in degrees.
+         */
+        static FromDegrees(degrees: number): Angle;
+    }
+    class Arc2 {
+        startPoint: Vector2;
+        midPoint: Vector2;
+        endPoint: Vector2;
+        centerPoint: Vector2;
+        radius: number;
+        angle: Angle;
+        startAngle: Angle;
+        orientation: Orientation;
+        /**
+         * Creates an Arc object from the three passed points : start, middle and end.
+         */
+        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
+    }
+    class Path2 {
+        private _points;
+        private _length;
+        closed: boolean;
+        /**
+         * Creates a Path2 object from the starting 2D coordinates x and y.
+         */
+        constructor(x: number, y: number);
+        /**
+         * Adds a new segment until the passed coordinates (x, y) to the current Path2.
+         * Returns the updated Path2.
+         */
+        addLineTo(x: number, y: number): Path2;
+        /**
+         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
+         * Returns the updated Path2.
+         */
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        /**
+         * Closes the Path2.
+         * Returns the Path2.
+         */
+        close(): Path2;
+        /**
+         * Returns the Path2 total length (float).
+         */
+        length(): number;
+        /**
+         * Returns the Path2 internal array of points.
+         */
+        getPoints(): Vector2[];
+        /**
+         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.
+         */
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        /**
+         * Returns a new Path2 starting at the coordinates (x, y).
+         */
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class Path3D {
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        constructor(path: Vector3[], firstNormal?: Vector3, raw?: boolean);
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getCurve(): Vector3[];
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
+        getTangents(): Vector3[];
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
+        getNormals(): Vector3[];
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
+        getBinormals(): Vector3[];
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
+        getDistances(): number[];
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
+        update(path: Vector3[], firstNormal?: Vector3): Path3D;
+        private _compute(firstNormal);
+        private _getFirstNonNullVector(index);
+        private _getLastNonNullVector(index);
+        private _normalVector(v0, vt, va);
+    }
+    class Curve3 {
+        private _points;
+        private _length;
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a CatmullRom Spline curve :
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.
+         * @param nbPoints (integer) the wanted number of points between each curve control points.
+         */
+        static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3;
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
+        constructor(points: Vector3[]);
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
+        getPoints(): Vector3[];
+        /**
+         * Returns the computed length (float) of the curve.
+         */
+        length(): number;
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
+        continue(curve: Curve3): Curve3;
+        private _computeLength(path);
+    }
+    class SphericalHarmonics {
+        L00: Vector3;
+        L1_1: Vector3;
+        L10: Vector3;
+        L11: Vector3;
+        L2_2: Vector3;
+        L2_1: Vector3;
+        L20: Vector3;
+        L21: Vector3;
+        L22: Vector3;
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        scale(scale: number): void;
+    }
+    class SphericalPolynomial {
+        x: Vector3;
+        y: Vector3;
+        z: Vector3;
+        xx: Vector3;
+        yy: Vector3;
+        zz: Vector3;
+        xy: Vector3;
+        yz: Vector3;
+        zx: Vector3;
+        addAmbient(color: Color3): void;
+        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
+    }
+    class PositionNormalVertex {
+        position: Vector3;
+        normal: Vector3;
+        constructor(position?: Vector3, normal?: Vector3);
+        clone(): PositionNormalVertex;
+    }
+    class PositionNormalTextureVertex {
+        position: Vector3;
+        normal: Vector3;
+        uv: Vector2;
+        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
+        clone(): PositionNormalTextureVertex;
+    }
+    class Tmp {
+        static Color3: Color3[];
+        static Vector2: Vector2[];
+        static Vector3: Vector3[];
+        static Vector4: Vector4[];
+        static Quaternion: Quaternion[];
+        static Matrix: Matrix[];
+    }
+}
+
+declare module BABYLON {
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
@@ -5536,8 +7659,12 @@ declare module BABYLON {
          * Sets wether the color grading texture contains BGR values.
          */
         colorGradingBGR: boolean;
+        _exposure: number;
         /**
-         * Exposure used in the effect.
+         * Gets the Exposure used in the effect.
+         */
+        /**
+         * Sets the Exposure used in the effect.
          */
         exposure: number;
         private _toneMappingEnabled;
@@ -5679,6 +7806,7 @@ declare module BABYLON {
         _areTexturesDirty: boolean;
         _areFresnelDirty: boolean;
         _areMiscDirty: boolean;
+        _areImageProcessingDirty: boolean;
         _normals: boolean;
         _uvs: boolean;
         _needNormals: boolean;
@@ -5687,6 +7815,7 @@ declare module BABYLON {
         markAsProcessed(): void;
         markAsUnprocessed(): void;
         markAllAsDirty(): void;
+        markAsImageProcessingDirty(): void;
         markAsLightDirty(): void;
         markAsAttributesDirty(): void;
         markAsTexturesDirty(): void;
@@ -5806,6 +7935,7 @@ declare module BABYLON {
         }): void;
         markAsDirty(flag: number): void;
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void): void;
+        protected _markAllSubMeshesAsImageProcessingDirty(): void;
         protected _markAllSubMeshesAsTexturesDirty(): void;
         protected _markAllSubMeshesAsFresnelDirty(): void;
         protected _markAllSubMeshesAsLightsDirty(): void;
@@ -6448,83 +8578,6 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPlugin {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -9951,2050 +12004,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class SIMDHelper {
-        private static _isEnabled;
-        static readonly IsEnabled: boolean;
-        static DisableSIMD(): void;
-        static EnableSIMD(): void;
-    }
-}
-
-declare module BABYLON {
-    const ToGammaSpace: number;
-    const ToLinearSpace = 2.2;
-    const Epsilon = 0.001;
-    class MathTools {
-        /**
-         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
-         */
-        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
-        /**
-         * Returns a string : the upper case translation of the number i to hexadecimal.
-         */
-        static ToHex(i: number): string;
-        /**
-         * Returns -1 if value is negative and +1 is value is positive.
-         * Returns the value itself if it's equal to zero.
-         */
-        static Sign(value: number): number;
-        /**
-         * Returns the value itself if it's between min and max.
-         * Returns min if the value is lower than min.
-         * Returns max if the value is greater than max.
-         */
-        static Clamp(value: number, min?: number, max?: number): number;
-    }
-    class Scalar {
-        /**
-         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
-         */
-        static Lerp(start: number, end: number, amount: number): number;
-        /**
-         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
-         */
-        static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
-    }
-    class Color3 {
-        r: number;
-        g: number;
-        b: number;
-        /**
-         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
-         */
-        constructor(r?: number, g?: number, b?: number);
-        /**
-         * Returns a string with the Color3 current values.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color3".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Color3 hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.
-         * Returns the Color3.
-         */
-        toArray(array: number[] | Float32Array, index?: number): Color3;
-        /**
-         * Returns a new Color4 object from the current Color3 and the passed alpha.
-         */
-        toColor4(alpha?: number): Color4;
-        /**
-         * Returns a new array populated with 3 numeric elements : red, green and blue values.
-         */
-        asArray(): number[];
-        /**
-         * Returns the luminance value (float).
-         */
-        toLuminance(): number;
-        /**
-         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.
-         * Returns this new object.
-         */
-        multiply(otherColor: Color3): Color3;
-        /**
-         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".
-         * Returns the current Color3.
-         */
-        multiplyToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Boolean : True if the rgb values are equal to the passed ones.
-         */
-        equals(otherColor: Color3): boolean;
-        /**
-         * Boolean : True if the rgb values are equal to the passed ones.
-         */
-        equalsFloats(r: number, g: number, b: number): boolean;
-        /**
-         * Multiplies in place each rgb value by scale.
-         * Returns the updated Color3.
-         */
-        scale(scale: number): Color3;
-        /**
-         * Multiplies the rgb values by scale and stores the result into "result".
-         * Returns the unmodified current Color3.
-         */
-        scaleToRef(scale: number, result: Color3): Color3;
-        /**
-         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.
-         */
-        add(otherColor: Color3): Color3;
-        /**
-         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".
-         * Returns the unmodified current Color3.
-         */
-        addToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .
-         */
-        subtract(otherColor: Color3): Color3;
-        /**
-         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".
-         * Returns the unmodified current Color3.
-         */
-        subtractToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Returns a new Color3 copied the current one.
-         */
-        clone(): Color3;
-        /**
-         * Copies the rgb values from the source in the current Color3.
-         * Returns the updated Color3.
-         */
-        copyFrom(source: Color3): Color3;
-        /**
-         * Updates the Color3 rgb values from the passed floats.
-         * Returns the Color3.
-         */
-        copyFromFloats(r: number, g: number, b: number): Color3;
-        /**
-         * Updates the Color3 rgb values from the passed floats.
-         * Returns the Color3.
-         */
-        set(r: number, g: number, b: number): Color3;
-        /**
-         * Returns the Color3 hexadecimal code as a string.
-         */
-        toHexString(): string;
-        /**
-         * Returns a new Color3 converted to linear space.
-         */
-        toLinearSpace(): Color3;
-        /**
-         * Converts the Color3 values to linear space and stores the result in "convertedColor".
-         * Returns the unmodified Color3.
-         */
-        toLinearSpaceToRef(convertedColor: Color3): Color3;
-        /**
-         * Returns a new Color3 converted to gamma space.
-         */
-        toGammaSpace(): Color3;
-        /**
-         * Converts the Color3 values to gamma space and stores the result in "convertedColor".
-         * Returns the unmodified Color3.
-         */
-        toGammaSpaceToRef(convertedColor: Color3): Color3;
-        /**
-         * Creates a new Color3 from the string containing valid hexadecimal values.
-         */
-        static FromHexString(hex: string): Color3;
-        /**
-         * Creates a new Vector3 from the startind index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Color3;
-        /**
-         * Creates a new Color3 from integer values ( < 256).
-         */
-        static FromInts(r: number, g: number, b: number): Color3;
-        /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.
-         */
-        static Lerp(start: Color3, end: Color3, amount: number): Color3;
-        static Red(): Color3;
-        static Green(): Color3;
-        static Blue(): Color3;
-        static Black(): Color3;
-        static White(): Color3;
-        static Purple(): Color3;
-        static Magenta(): Color3;
-        static Yellow(): Color3;
-        static Gray(): Color3;
-        static Random(): Color3;
-    }
-    class Color4 {
-        r: number;
-        g: number;
-        b: number;
-        a: number;
-        /**
-         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.
-         */
-        constructor(r: number, g: number, b: number, a: number);
-        /**
-         * Adds in place the passed Color4 values to the current Color4.
-         * Returns the updated Color4.
-         */
-        addInPlace(right: any): Color4;
-        /**
-         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.
-         */
-        asArray(): number[];
-        /**
-         * Stores from the starting index in the passed array the Color4 successive values.
-         * Returns the Color4.
-         */
-        toArray(array: number[], index?: number): Color4;
-        /**
-         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.
-         */
-        add(right: Color4): Color4;
-        /**
-         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.
-         */
-        subtract(right: Color4): Color4;
-        /**
-         * Subtracts the passed ones from the current Color4 values and stores the results in "result".
-         * Returns the Color4.
-         */
-        subtractToRef(right: Color4, result: Color4): Color4;
-        /**
-         * Creates a new Color4 with the current Color4 values multiplied by scale.
-         */
-        scale(scale: number): Color4;
-        /**
-         * Multiplies the current Color4 values by scale and stores the result in "result".
-         * Returns the Color4.
-         */
-        scaleToRef(scale: number, result: Color4): Color4;
-        /**
-          * Multipy an RGBA Color4 value by another and return a new Color4 object
-          * @param color The Color4 (RGBA) value to multiply by
-          * @returns A new Color4.
-          */
-        multiply(color: Color4): Color4;
-        /**
-         * Multipy an RGBA Color4 value by another and push the result in a reference value
-         * @param color The Color4 (RGBA) value to multiply by
-         * @param result The Color4 (RGBA) to fill the result in
-         * @returns the result Color4.
-         */
-        multiplyToRef(color: Color4, result: Color4): Color4;
-        /**
-         * Returns a string with the Color4 values.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color4"
-         */
-        getClassName(): string;
-        /**
-         * Return the Color4 hash code as a number.
-         */
-        getHashCode(): number;
-        /**
-         * Creates a new Color4 copied from the current one.
-         */
-        clone(): Color4;
-        /**
-         * Copies the passed Color4 values into the current one.
-         * Returns the updated Color4.
-         */
-        copyFrom(source: Color4): Color4;
-        /**
-         * Copies the passed float values into the current one.
-         * Returns the updated Color4.
-         */
-        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Copies the passed float values into the current one.
-         * Returns the updated Color4.
-         */
-        set(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Returns a string containing the hexadecimal Color4 code.
-         */
-        toHexString(): string;
-        /**
-         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.
-         */
-        static FromHexString(hex: string): Color4;
-        /**
-         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
-         */
-        static Lerp(left: Color4, right: Color4, amount: number): Color4;
-        /**
-         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
-         */
-        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
-        /**
-         * Creates a new Color4 from the starting index element of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Color4;
-        /**
-         * Creates a new Color4 from the passed integers ( < 256 ).
-         */
-        static FromInts(r: number, g: number, b: number, a: number): Color4;
-        static CheckColors4(colors: number[], count: number): number[];
-    }
-    class Vector2 {
-        x: number;
-        y: number;
-        /**
-         * Creates a new Vector2 from the passed x and y coordinates.
-         */
-        constructor(x: number, y: number);
-        /**
-         * Returns a string with the Vector2 coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Vector2"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Vector2 hash code as a number.
-         */
-        getHashCode(): number;
-        /**
-         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.
-         * Returns the Vector2.
-         */
-        toArray(array: number[] | Float32Array, index?: number): Vector2;
-        /**
-         * Returns a new array with 2 elements : the Vector2 coordinates.
-         */
-        asArray(): number[];
-        /**
-         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.
-         * Returns the updated Vector2.
-         */
-        copyFrom(source: Vector2): Vector2;
-        /**
-         * Sets the Vector2 coordinates with the passed floats.
-         * Returns the updated Vector2.
-         */
-        copyFromFloats(x: number, y: number): Vector2;
-        /**
-         * Sets the Vector2 coordinates with the passed floats.
-         * Returns the updated Vector2.
-         */
-        set(x: number, y: number): Vector2;
-        /**
-         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.
-         */
-        add(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates.
-         * Returns the Vector2.
-         */
-        addToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.
-         * Returns the updated Vector2.
-         */
-        addInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.
-         */
-        addVector3(otherVector: Vector3): Vector2;
-        /**
-         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.
-         */
-        subtract(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.
-         * Returns the Vector2.
-         */
-        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.
-         * Returns the updated Vector2.
-         */
-        subtractInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Multiplies in place the current Vector2 coordinates by the passed ones.
-         * Returns the updated Vector2.
-         */
-        multiplyInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.
-         */
-        multiply(otherVector: Vector2): Vector2;
-        /**
-         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.
-         * Returns the Vector2.
-         */
-        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.
-         */
-        multiplyByFloats(x: number, y: number): Vector2;
-        /**
-         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.
-         */
-        divide(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.
-         * Returns the Vector2.
-         */
-        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 with current Vector2 negated coordinates.
-         */
-        negate(): Vector2;
-        /**
-         * Multiply the Vector2 coordinates by scale.
-         * Returns the updated Vector2.
-         */
-        scaleInPlace(scale: number): Vector2;
-        /**
-         * Returns a new Vector2 scaled by "scale" from the current Vector2.
-         */
-        scale(scale: number): Vector2;
-        /**
-         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
-         */
-        equals(otherVector: Vector2): boolean;
-        /**
-         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.
-         */
-        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
-        /**
-         * Returns the vector length (float).
-         */
-        length(): number;
-        /**
-         * Returns the vector squared length (float);
-         */
-        lengthSquared(): number;
-        /**
-         * Normalize the vector.
-         * Returns the updated Vector2.
-         */
-        normalize(): Vector2;
-        /**
-         * Returns a new Vector2 copied from the Vector2.
-         */
-        clone(): Vector2;
-        /**
-         * Returns a new Vector2(0, 0)
-         */
-        static Zero(): Vector2;
-        /**
-         * Returns a new Vector2(1, 1)
-         */
-        static One(): Vector2;
-        /**
-         * Returns a new Vector2 set from the passed index element of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
-        /**
-         * Sets "result" from the passed index element of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
-        /**
-         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
-         */
-        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
-        /**
-         * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
-         * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
-         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate.
-         */
-        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
-         */
-        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
-        /**
-         * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
-         */
-        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
-        /**
-         * Returns the dot product (float) of the vector "left" and the vector "right".
-         */
-        static Dot(left: Vector2, right: Vector2): number;
-        /**
-         * Returns a new Vector2 equal to the normalized passed vector.
-         */
-        static Normalize(vector: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the minimal coordinate values from the "left" and "right" vectors.
-         */
-        static Minimize(left: Vector2, right: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors.
-         */
-        static Maximize(left: Vector2, right: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the transformed coordinates of the passed vector by the passed transformation matrix.
-         */
-        static Transform(vector: Vector2, transformation: Matrix): Vector2;
-        /**
-         * Transforms the passed vector coordinates by the passed transformation matrix and stores the result in the vector "result" coordinates.
-         */
-        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
-        /**
-         * Boolean : True if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
-         */
-        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
-        /**
-         * Returns the distance (float) between the vectors "value1" and "value2".
-         */
-        static Distance(value1: Vector2, value2: Vector2): number;
-        /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".
-         */
-        static DistanceSquared(value1: Vector2, value2: Vector2): number;
-        /**
-         * Returns a new Vecto2 located at the center of the vectors "value1" and "value2".
-         */
-        static Center(value1: Vector2, value2: Vector2): Vector2;
-        /**
-         * Returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
-         */
-        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
-    }
-    class Vector3 {
-        x: number;
-        y: number;
-        z: number;
-        /**
-         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
-         * A Vector3 is the main object used in 3D geometry.
-         * It can represent etiher the coordinates of a point the space, either a direction.
-         */
-        constructor(x: number, y: number, z: number);
-        /**
-         * Returns a string with the Vector3 coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Vector3"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Vector hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Returns a new array with three elements : the coordinates the Vector3.
-         */
-        asArray(): number[];
-        /**
-         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.
-         * Returns the Vector3.
-         */
-        toArray(array: number[] | Float32Array, index?: number): Vector3;
-        /**
-         * Returns a new Quaternion object, computed from the Vector3 coordinates.
-         */
-        toQuaternion(): Quaternion;
-        /**
-         * Adds the passed vector to the current Vector3.
-         * Returns the updated Vector3.
-         */
-        addInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Returns a new Vector3, result of the addition the current Vector3 and the passed vector.
-         */
-        add(otherVector: Vector3): Vector3;
-        /**
-         * Adds the current Vector3 to the passed one and stores the result in the vector "result".
-         * Returns the current Vector3.
-         */
-        addToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Subtract the passed vector from the current Vector3.
-         * Returns the updated Vector3.
-         */
-        subtractInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3.
-         */
-        subtract(otherVector: Vector3): Vector3;
-        /**
-         * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".
-         * Returns the current Vector3.
-         */
-        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates.
-         */
-        subtractFromFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result.
-         * Returns the current Vector3.
-         */
-        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 set with the current Vector3 negated coordinates.
-         */
-        negate(): Vector3;
-        /**
-         * Multiplies the Vector3 coordinates by the float "scale".
-         * Returns the updated Vector3.
-         */
-        scaleInPlace(scale: number): Vector3;
-        /**
-         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale".
-         */
-        scale(scale: number): Vector3;
-        /**
-         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates.
-         * Returns the current Vector3.
-         */
-        scaleToRef(scale: number, result: Vector3): Vector3;
-        /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are strictly equal.
-         */
-        equals(otherVector: Vector3): boolean;
-        /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are distant less than epsilon.
-         */
-        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
-        /**
-         * Boolean : True if the current Vector3 coordinate equal the passed floats.
-         */
-        equalsToFloats(x: number, y: number, z: number): boolean;
-        /**
-         * Muliplies the current Vector3 coordinates by the passed ones.
-         * Returns the updated Vector3.
-         */
-        multiplyInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector.
-         */
-        multiply(otherVector: Vector3): Vector3;
-        /**
-         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result".
-         * Returns the current Vector3.
-         */
-        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 set witth the result of the mulliplication of the current Vector3 coordinates by the passed floats.
-         */
-        multiplyByFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Returns a new Vector3 set witth the result of the division of the current Vector3 coordinates by the passed ones.
-         */
-        divide(otherVector: Vector3): Vector3;
-        /**
-         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result".
-         * Returns the current Vector3.
-         */
-        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.
-         * Returns the updated Vector3.
-         */
-        MinimizeInPlace(other: Vector3): Vector3;
-        /**
-         * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.
-         * Returns the updated Vector3.
-         */
-        MaximizeInPlace(other: Vector3): Vector3;
-        /**
-         * Returns the length of the Vector3 (float).
-         */
-        length(): number;
-        /**
-         * Returns the squared length of the Vector3 (float).
-         */
-        lengthSquared(): number;
-        /**
-         * Normalize the current Vector3.
-         * Returns the updated Vector3.
-         */
-        normalize(): Vector3;
-        /**
-         * Returns a new Vector3 copied from the current Vector3.
-         */
-        clone(): Vector3;
-        /**
-         * Copies the passed vector coordinates to the current Vector3 ones.
-         * Returns the updated Vector3.
-         */
-        copyFrom(source: Vector3): Vector3;
-        /**
-         * Copies the passed floats to the current Vector3 coordinates.
-         * Returns the updated Vector3.
-         */
-        copyFromFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Copies the passed floats to the current Vector3 coordinates.
-         * Returns the updated Vector3.
-         */
-        set(x: number, y: number, z: number): Vector3;
-        /**
-         *
-         */
-        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
-        /**
-         * Returns a new Vector3 set from the index "offset" of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
-        /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
-         * This function is deprecated.  Use FromArray instead.
-         */
-        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
-        /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
-         * This function is deprecated.  Use FromArrayToRef instead.
-         */
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the passed floats.
-         */
-        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
-        /**
-         * Returns a new Vector3 set to (0.0, 0.0, 0.0).
-         */
-        static Zero(): Vector3;
-        /**
-         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
-         */
-        static One(): Vector3;
-        /**
-         * Returns a new Vector3 set to (0.0, 1.0, 0.0)
-         */
-        static Up(): Vector3;
-        /**
-         * Returns a new Vector3 set to (0.0, 0.0, 1.0)
-         */
-        static Forward(): Vector3;
-        /**
-         * Returns a new Vector3 set to (1.0, 0.0, 0.0)
-         */
-        static Right(): Vector3;
-        /**
-         * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
-         */
-        static Left(): Vector3;
-        /**
-         * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.
-         * This method computes tranformed coordinates only, not transformed direction vectors.
-         */
-        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
-        /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector.
-         * This method computes tranformed coordinates only, not transformed direction vectors.
-         */
-        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z).
-         * This method computes tranformed coordinates only, not transformed direction vectors.
-         */
-        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        /**
-         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z).
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        /**
-         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4".
-         */
-        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
-        /**
-         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max".
-         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one.
-         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one.
-         */
-        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
-         */
-        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
-        /**
-         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end".
-         */
-        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
-        /**
-         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end".
-         */
-        static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void;
-        /**
-         * Returns the dot product (float) between the vectors "left" and "right".
-         */
-        static Dot(left: Vector3, right: Vector3): number;
-        /**
-         * Returns a new Vector3 as the cross product of the vectors "left" and "right".
-         * The cross product is then orthogonal to both "left" and "right".
-         */
-        static Cross(left: Vector3, right: Vector3): Vector3;
-        /**
-         * Sets the passed vector "result" with the cross product of "left" and "right".
-         * The cross product is then orthogonal to both "left" and "right".
-         */
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
-        /**
-         * Returns a new Vector3 as the normalization of the passed vector.
-         */
-        static Normalize(vector: Vector3): Vector3;
-        /**
-         * Sets the passed vector "result" with the normalization of the passed first vector.
-         */
-        static NormalizeToRef(vector: Vector3, result: Vector3): void;
-        private static _viewportMatrixCache;
-        private static _matrixCache;
-        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
-        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
-        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
-        static Minimize(left: Vector3, right: Vector3): Vector3;
-        static Maximize(left: Vector3, right: Vector3): Vector3;
-        /**
-         * Returns the distance (float) between the vectors "value1" and "value2".
-         */
-        static Distance(value1: Vector3, value2: Vector3): number;
-        /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".
-         */
-        static DistanceSquared(value1: Vector3, value2: Vector3): number;
-        /**
-         * Returns a new Vector3 located at the center between "value1" and "value2".
-         */
-        static Center(value1: Vector3, value2: Vector3): Vector3;
-        /**
-         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
-         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
-         * Returns a new Vector3.
-         */
-        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
-        /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.
-         */
-        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
-    }
-    class Vector4 {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        /**
-         * Creates a Vector4 object from the passed floats.
-         */
-        constructor(x: number, y: number, z: number, w: number);
-        /**
-         * Returns the string with the Vector4 coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Vector4".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Vector4 hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Returns a new array populated with 4 elements : the Vector4 coordinates.
-         */
-        asArray(): number[];
-        /**
-         * Populates the passed array from the passed index with the Vector4 coordinates.
-         * Returns the Vector4.
-         */
-        toArray(array: number[] | Float32Array, index?: number): Vector4;
-        /**
-         * Adds the passed vector to the current Vector4.
-         * Returns the updated Vector4.
-         */
-        addInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 as the result of the addition of the current Vector4 and the passed one.
-         */
-        add(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the result of the addition of the current Vector4 and the passed one.
-         * Returns the current Vector4.
-         */
-        addToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Subtract in place the passed vector from the current Vector4.
-         * Returns the updated Vector4.
-         */
-        subtractInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 with the result of the subtraction of the passed vector from the current Vector4.
-         */
-        subtract(otherVector: Vector4): Vector4;
-        /**
-         * Sets the passed vector "result" with the result of the subtraction of the passed vector from the current Vector4.
-         * Returns the current Vector4.
-         */
-        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
-         */
-        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Sets the passed vector "result" set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
-         * Returns the current Vector4.
-         */
-        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the current Vector4 negated coordinates.
-         */
-        negate(): Vector4;
-        /**
-         * Multiplies the current Vector4 coordinates by scale (float).
-         * Returns the updated Vector4.
-         */
-        scaleInPlace(scale: number): Vector4;
-        /**
-         * Returns a new Vector4 set with the current Vector4 coordinates multiplied by scale (float).
-         */
-        scale(scale: number): Vector4;
-        /**
-         * Sets the passed vector "result" with the current Vector4 coordinates multiplied by scale (float).
-         * Returns the current Vector4.
-         */
-        scaleToRef(scale: number, result: Vector4): Vector4;
-        /**
-         * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
-         */
-        equals(otherVector: Vector4): boolean;
-        /**
-         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the passed vector ones.
-         */
-        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
-        /**
-         * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
-         */
-        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
-        /**
-         * Multiplies in place the current Vector4 by the passed one.
-         * Returns the updated Vector4.
-         */
-        multiplyInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the passed one.
-         */
-        multiply(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the multiplication result of the current Vector4 and the passed one.
-         * Returns the current Vector4.
-         */
-        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the multiplication result of the passed floats and the current Vector4 coordinates.
-         */
-        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Returns a new Vector4 set with the division result of the current Vector4 by the passed one.
-         */
-        divide(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the division result of the current Vector4 by the passed one.
-         * Returns the current Vector4.
-         */
-        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones.
-         */
-        MinimizeInPlace(other: Vector4): Vector4;
-        /**
-         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones.
-         */
-        MaximizeInPlace(other: Vector4): Vector4;
-        /**
-         * Returns the Vector4 length (float).
-         */
-        length(): number;
-        /**
-         * Returns the Vector4 squared length (float).
-         */
-        lengthSquared(): number;
-        /**
-         * Normalizes in place the Vector4.
-         * Returns the updated Vector4.
-         */
-        normalize(): Vector4;
-        /**
-         * Returns a new Vector3 from the Vector4 (x, y, z) coordinates.
-         */
-        toVector3(): Vector3;
-        /**
-         * Returns a new Vector4 copied from the current one.
-         */
-        clone(): Vector4;
-        /**
-         * Updates the current Vector4 with the passed one coordinates.
-         * Returns the updated Vector4.
-         */
-        copyFrom(source: Vector4): Vector4;
-        /**
-         * Updates the current Vector4 coordinates with the passed floats.
-         * Returns the updated Vector4.
-         */
-        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Updates the current Vector4 coordinates with the passed floats.
-         * Returns the updated Vector4.
-         */
-        set(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Returns a new Vector4 set from the starting index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
-        /**
-         * Updates the passed vector "result" from the starting index of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
-        /**
-         * Updates the passed vector "result" from the starting index of the passed Float32Array.
-         */
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
-        /**
-         * Updates the passed vector "result" coordinates from the passed floats.
-         */
-        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
-        /**
-         * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
-         */
-        static Zero(): Vector4;
-        /**
-         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
-         */
-        static One(): Vector4;
-        /**
-         * Returns a new normalized Vector4 from the passed one.
-         */
-        static Normalize(vector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" from the normalization of the passed one.
-         */
-        static NormalizeToRef(vector: Vector4, result: Vector4): void;
-        static Minimize(left: Vector4, right: Vector4): Vector4;
-        static Maximize(left: Vector4, right: Vector4): Vector4;
-        /**
-         * Returns the distance (float) between the vectors "value1" and "value2".
-         */
-        static Distance(value1: Vector4, value2: Vector4): number;
-        /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".
-         */
-        static DistanceSquared(value1: Vector4, value2: Vector4): number;
-        /**
-         * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
-         */
-        static Center(value1: Vector4, value2: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormal(vector: Vector4, transformation: Matrix): Vector4;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void;
-    }
-    interface ISize {
-        width: number;
-        height: number;
-    }
-    class Size implements ISize {
-        width: number;
-        height: number;
-        /**
-         * Creates a Size object from the passed width and height (floats).
-         */
-        constructor(width: number, height: number);
-        toString(): string;
-        /**
-         * Returns the string "Size"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Size hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Updates the current size from the passed one.
-         * Returns the updated Size.
-         */
-        copyFrom(src: Size): void;
-        /**
-         * Updates in place the current Size from the passed floats.
-         * Returns the updated Size.
-         */
-        copyFromFloats(width: number, height: number): Size;
-        /**
-         * Updates in place the current Size from the passed floats.
-         * Returns the updated Size.
-         */
-        set(width: number, height: number): Size;
-        /**
-         * Returns a new Size set with the multiplication result of the current Size and the passed floats.
-         */
-        multiplyByFloats(w: number, h: number): Size;
-        /**
-         * Returns a new Size copied from the passed one.
-         */
-        clone(): Size;
-        /**
-         * Boolean : True if the current Size and the passed one width and height are strictly equal.
-         */
-        equals(other: Size): boolean;
-        /**
-         * Returns the surface of the Size : width * height (float).
-         */
-        readonly surface: number;
-        /**
-         * Returns a new Size set to (0.0, 0.0)
-         */
-        static Zero(): Size;
-        /**
-         * Returns a new Size set as the addition result of the current Size and the passed one.
-         */
-        add(otherSize: Size): Size;
-        /**
-         * Returns a new Size set as the subtraction result of  the passed one from the current Size.
-         */
-        subtract(otherSize: Size): Size;
-        /**
-         * Returns a new Size set at the linear interpolation "amount" between "start" and "end".
-         */
-        static Lerp(start: Size, end: Size, amount: number): Size;
-    }
-    class Quaternion {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        /**
-         * Creates a new Quaternion from the passed floats.
-         */
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        /**
-         * Returns a string with the Quaternion coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Quaternion".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Quaternion hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Returns a new array populated with 4 elements : the Quaternion coordinates.
-         */
-        asArray(): number[];
-        /**
-         * Boolean : True if the current Quaterion and the passed one coordinates are strictly equal.
-         */
-        equals(otherQuaternion: Quaternion): boolean;
-        /**
-         * Returns a new Quaternion copied from the current one.
-         */
-        clone(): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed one coordinates.
-         * Returns the updated Quaterion.
-         */
-        copyFrom(other: Quaternion): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
-         */
-        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
-         */
-        set(x: number, y: number, z: number, w: number): Quaternion;
-        /**
-         * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.
-         */
-        add(other: Quaternion): Quaternion;
-        /**
-         * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.
-         */
-        subtract(other: Quaternion): Quaternion;
-        /**
-         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".
-         */
-        scale(value: number): Quaternion;
-        /**
-         * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
-         */
-        multiply(q1: Quaternion): Quaternion;
-        /**
-         * Sets the passed "result" as the quaternion mulplication result of the current one with the passed one "q1".
-         * Returns the current Quaternion.
-         */
-        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
-        /**
-         * Updates the current Quaternion with the quaternion mulplication result of itself with the passed one "q1".
-         * Returns the updated Quaternion.
-         */
-        multiplyInPlace(q1: Quaternion): Quaternion;
-        /**
-         * Sets the passed "ref" with the conjugation of the current Quaternion.
-         * Returns the current Quaternion.
-         */
-        conjugateToRef(ref: Quaternion): Quaternion;
-        /**
-         * Conjugates in place the current Quaternion.
-         * Returns the updated Quaternion.
-         */
-        conjugateInPlace(): Quaternion;
-        /**
-         * Returns a new Quaternion as the conjugate of the current Quaternion.
-         */
-        conjugate(): Quaternion;
-        /**
-         * Returns the Quaternion length (float).
-         */
-        length(): number;
-        /**
-         * Normalize in place the current Quaternion.
-         * Returns the updated Quaternion.
-         */
-        normalize(): Quaternion;
-        /**
-         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion.
-         */
-        toEulerAngles(order?: string): Vector3;
-        /**
-         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion.
-         * Returns the current Quaternion.
-         */
-        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
-        /**
-         * Updates the passed rotation matrix with the current Quaternion values.
-         * Returns the current Quaternion.
-         */
-        toRotationMatrix(result: Matrix): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed rotation matrix values.
-         * Returns the updated Quaternion.
-         */
-        fromRotationMatrix(matrix: Matrix): Quaternion;
-        /**
-         * Returns a new Quaternion set from the passed rotation matrix values.
-         */
-        static FromRotationMatrix(matrix: Matrix): Quaternion;
-        /**
-         * Updates the passed quaternion "result" with the passed rotation matrix values.
-         */
-        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion set to (0.0, 0.0, 0.0).
-         */
-        static Zero(): Quaternion;
-        /**
-         * Returns a new Quaternion as the inverted current Quaternion.
-         */
-        static Inverse(q: Quaternion): Quaternion;
-        /**
-         * Returns the identity Quaternion.
-         */
-        static Identity(): Quaternion;
-        static IsIdentity(quaternion: Quaternion): boolean;
-        /**
-         * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float).
-         */
-        static RotationAxis(axis: Vector3, angle: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed axis (Vector3) and angle in radians (float).
-         */
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
-        /**
-         * Retuns a new Quaternion set from the starting index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
-        /**
-         * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
-         */
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).
-         */
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion from the passed float Euler angles expressed in z-x-z orientation
-         */
-        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed float Euler angles expressed in z-x-z orientation
-         */
-        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
-         */
-        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion;
-        /**
-         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
-         */
-        static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void;
-        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
-        static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
-         */
-        static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion;
-    }
-    class Matrix {
-        private static _tempQuaternion;
-        private static _xAxis;
-        private static _yAxis;
-        private static _zAxis;
-        private static _updateFlagSeed;
-        updateFlag: number;
-        m: Float32Array;
-        _markAsUpdated(): void;
-        constructor();
-        /**
-         * Boolean : True is the matrix is the identity matrix
-         */
-        isIdentity(): boolean;
-        /**
-         * Returns the matrix determinant (float).
-         */
-        determinant(): number;
-        /**
-         * Returns the matrix underlying array.
-         */
-        toArray(): Float32Array;
-        /**
-        * Returns the matrix underlying array.
-        */
-        asArray(): Float32Array;
-        /**
-         * Inverts in place the Matrix.
-         * Returns the Matrix inverted.
-         */
-        invert(): Matrix;
-        /**
-         * Sets all the matrix elements to zero.
-         * Returns the Matrix.
-         */
-        reset(): Matrix;
-        /**
-         * Returns a new Matrix as the addition result of the current Matrix and the passed one.
-         */
-        add(other: Matrix): Matrix;
-        /**
-         * Sets the passed matrix "result" with the ddition result of the current Matrix and the passed one.
-         * Returns the Matrix.
-         */
-        addToRef(other: Matrix, result: Matrix): Matrix;
-        /**
-         * Adds in place the passed matrix to the current Matrix.
-         * Returns the updated Matrix.
-         */
-        addToSelf(other: Matrix): Matrix;
-        /**
-         * Sets the passed matrix with the current inverted Matrix.
-         * Returns the unmodified current Matrix.
-         */
-        invertToRef(other: Matrix): Matrix;
-        /**
-         * Inserts the translation vector (using 3 x floats) in the current Matrix.
-         * Returns the updated Matrix.
-         */
-        setTranslationFromFloats(x: number, y: number, z: number): Matrix;
-        /**
- * Inserts the translation vector in the current Matrix.
- * Returns the updated Matrix.
- */
-        setTranslation(vector3: Vector3): Matrix;
-        /**
-         * Returns a new Vector3 as the extracted translation from the Matrix.
-         */
-        getTranslation(): Vector3;
-        /**
-         * Fill a Vector3 with the extracted translation from the Matrix.
-         */
-        getTranslationToRef(result: Vector3): Matrix;
-        /**
-         * Remove rotation and scaling part from the Matrix.
-         * Returns the updated Matrix.
-         */
-        removeRotationAndScaling(): Matrix;
-        /**
-         * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.
-         */
-        multiply(other: Matrix): Matrix;
-        /**
-         * Updates the current Matrix from the passed one values.
-         * Returns the updated Matrix.
-         */
-        copyFrom(other: Matrix): Matrix;
-        /**
-         * Populates the passed array from the starting index with the Matrix values.
-         * Returns the Matrix.
-         */
-        copyToArray(array: Float32Array, offset?: number): Matrix;
-        /**
-         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one.
-         */
-        multiplyToRef(other: Matrix, result: Matrix): Matrix;
-        /**
-         * Sets the Float32Array "result" from the passed index "offset" with the multiplication result of the current Matrix and the passed one.
-         */
-        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
-        /**
-         * Boolean : True is the current Matrix and the passed one values are strictly equal.
-         */
-        equals(value: Matrix): boolean;
-        /**
-         * Returns a new Matrix from the current Matrix.
-         */
-        clone(): Matrix;
-        /**
-         * Returns the string "Matrix"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Matrix hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Decomposes the current Matrix into :
-         * - a scale vector3 passed as a reference to update,
-         * - a rotation quaternion passed as a reference to update,
-         * - a translation vector3 passed as a reference to update.
-         * Returns the boolean `true`.
-         */
-        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
-        /**
-         * Returns a new Matrix as the extracted rotation matrix from the current one.
-         */
-        getRotationMatrix(): Matrix;
-        /**
-         * Extracts the rotation matrix from the current one and sets it as the passed "result".
-         * Returns the current Matrix.
-         */
-        getRotationMatrixToRef(result: Matrix): Matrix;
-        /**
-         * Returns a new Matrix set from the starting index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
-        /**
-         * Sets the passed "result" matrix from the starting index of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix): void;
-        /**
-         * Sets the passed "result" matrix from the starting index of the passed Float32Array by multiplying each element by the float "scale".
-         */
-        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
-        /**
-         * Sets the passed matrix "result" with the 16 passed floats.
-         */
-        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
-        /**
-         * Returns the index-th row of the current matrix as a new Vector4.
-         */
-        getRow(index: number): Vector4;
-        /**
-         * Sets the index-th row of the current matrix with the passed Vector4 values.
-         * Returns the updated Matrix.
-         */
-        setRow(index: number, row: Vector4): Matrix;
-        /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values.
-         * Returns the updated Matrix.
-         */
-        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
-        /**
-         * Returns a new Matrix set from the 16 passed floats.
-         */
-        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
-        /**
-         * Returns a new Matrix composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).
-         */
-        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
-        /**
-       * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).
-       */
-        static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void;
-        /**
-         * Returns a new indentity Matrix.
-         */
-        static Identity(): Matrix;
-        /**
-         * Sets the passed "result" as an identity matrix.
-         */
-        static IdentityToRef(result: Matrix): void;
-        /**
-         * Returns a new zero Matrix.
-         */
-        static Zero(): Matrix;
-        /**
-         * Returns a new rotation matrix for "angle" radians around the X axis.
-         */
-        static RotationX(angle: number): Matrix;
-        /**
-         * Returns a new Matrix as the passed inverted one.
-         */
-        static Invert(source: Matrix): Matrix;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the X axis.
-         */
-        static RotationXToRef(angle: number, result: Matrix): void;
-        /**
-         * Returns a new rotation matrix for "angle" radians around the Y axis.
-         */
-        static RotationY(angle: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Y axis.
-         */
-        static RotationYToRef(angle: number, result: Matrix): void;
-        /**
-         * Returns a new rotation matrix for "angle" radians around the Z axis.
-         */
-        static RotationZ(angle: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Z axis.
-         */
-        static RotationZToRef(angle: number, result: Matrix): void;
-        /**
-         * Returns a new rotation matrix for "angle" radians around the passed axis.
-         */
-        static RotationAxis(axis: Vector3, angle: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the passed axis.
-         */
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a rotation matrix from the Euler angles (y, x, z).
-         */
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix from the Euler angles (y, x, z).
-         */
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a scaling matrix from the passed floats (x, y, z).
-         */
-        static Scaling(x: number, y: number, z: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a scaling matrix from the passed floats (x, y, z).
-         */
-        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a translation matrix from the passed floats (x, y, z).
-         */
-        static Translation(x: number, y: number, z: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a translation matrix from the passed floats (x, y, z).
-         */
-        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix whose values are the interpolated values for "gradien" (float) between the ones of the matrices "startValue" and "endValue".
-         */
-        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        /**
-         * Returns a new Matrix whose values are computed by :
-         * - decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices,
-         * - interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end,
-         * - recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices.
-         */
-        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        /**
-         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
-         * This methods works for a Left-Handed system.
-         */
-        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        /**
-         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
-         * This methods works for a Left-Handed system.
-         */
-        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        /**
-         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
-         * This methods works for a Right-Handed system.
-         */
-        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        /**
-         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".
-         * This methods works for a Left-Handed system.
-         */
-        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
-         */
-        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
-         */
-        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
-         */
-        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
-         */
-        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
-         */
-        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
-         */
-        static OrthoOffCenterRHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.
-         */
-        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        /**
-         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
-         */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
-         */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        /**
-         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
-         */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        /**
-         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
-         */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        /**
-         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
-         */
-        static PerspectiveFovWebVRToRef(fov: any, znear: number, zfar: number, result: Matrix, rightHanded?: boolean): void;
-        /**
-         * Returns the final transformation matrix : world * view * projection * viewport
-         */
-        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
-        /**
-         * Returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed Matrix.
-         */
-        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
-        /**
-         * Returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed Matrix.
-         */
-        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
-        /**
-         * Compute the transpose of the passed Matrix.
-         * Returns a new Matrix.
-         */
-        static Transpose(matrix: Matrix): Matrix;
-        /**
-         * Returns a new Matrix as the reflection  matrix across the passed plane.
-         */
-        static Reflection(plane: Plane): Matrix;
-        /**
-         * Sets the passed matrix "result" as the reflection matrix across the passed plane.
-         */
-        static ReflectionToRef(plane: Plane, result: Matrix): void;
-        /**
-         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.
-         */
-        static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix): void;
-        /**
-         * Sets the passed matrix "result" as a rotation matrix according to the passed quaternion.
-         */
-        static FromQuaternionToRef(quat: Quaternion, result: Matrix): void;
-    }
-    class Plane {
-        normal: Vector3;
-        d: number;
-        /**
-         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
-         */
-        constructor(a: number, b: number, c: number, d: number);
-        /**
-         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].
-         */
-        asArray(): number[];
-        /**
-         * Returns a new plane copied from the current Plane.
-         */
-        clone(): Plane;
-        /**
-         * Returns the string "Plane".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Plane hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Normalize the current Plane in place.
-         * Returns the updated Plane.
-         */
-        normalize(): Plane;
-        /**
-         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.
-         */
-        transform(transformation: Matrix): Plane;
-        /**
-         * Returns the dot product (float) of the point coordinates and the plane normal.
-         */
-        dotCoordinate(point: any): number;
-        /**
-         * Updates the current Plane from the plane defined by the three passed points.
-         * Returns the updated Plane.
-         */
-        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
-        /**
-         * Boolean : True is the vector "direction"  is the same side than the plane normal.
-         */
-        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
-        /**
-         * Returns the signed distance (float) from the passed point to the Plane.
-         */
-        signedDistanceTo(point: Vector3): number;
-        /**
-         * Returns a new Plane from the passed array.
-         */
-        static FromArray(array: ArrayLike<number>): Plane;
-        /**
-         * Returns a new Plane defined by the three passed points.
-         */
-        static FromPoints(point1: any, point2: any, point3: any): Plane;
-        /**
-         * Returns a new Plane the normal vector to this plane at the passed origin point.
-         * Note : the vector "normal" is updated because normalized.
-         */
-        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
-        /**
-         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.
-         */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
-    }
-    class Viewport {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        /**
-         * Creates a Viewport object located at (x, y) and sized (width, height).
-         */
-        constructor(x: number, y: number, width: number, height: number);
-        toGlobal(renderWidth: number, renderHeight: number): Viewport;
-        /**
-         * Returns a new Viewport copied from the current one.
-         */
-        clone(): Viewport;
-    }
-    class Frustum {
-        /**
-         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.
-         */
-        static GetPlanes(transform: Matrix): Plane[];
-        /**
-         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
-         */
-        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
-    }
-    enum Space {
-        LOCAL = 0,
-        WORLD = 1,
-        BONE = 2,
-    }
-    class Axis {
-        static X: Vector3;
-        static Y: Vector3;
-        static Z: Vector3;
-    }
-    class BezierCurve {
-        /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.
-         */
-        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    enum Orientation {
-        CW = 0,
-        CCW = 1,
-    }
-    class Angle {
-        private _radians;
-        /**
-         * Creates an Angle object of "radians" radians (float).
-         */
-        constructor(radians: number);
-        /**
-         * Returns the Angle value in degrees (float).
-         */
-        degrees: () => number;
-        /**
-         * Returns the Angle value in radians (float).
-         */
-        radians: () => number;
-        /**
-         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.
-         */
-        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
-        /**
-         * Returns a new Angle object from the passed float in radians.
-         */
-        static FromRadians(radians: number): Angle;
-        /**
-         * Returns a new Angle object from the passed float in degrees.
-         */
-        static FromDegrees(degrees: number): Angle;
-    }
-    class Arc2 {
-        startPoint: Vector2;
-        midPoint: Vector2;
-        endPoint: Vector2;
-        centerPoint: Vector2;
-        radius: number;
-        angle: Angle;
-        startAngle: Angle;
-        orientation: Orientation;
-        /**
-         * Creates an Arc object from the three passed points : start, middle and end.
-         */
-        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
-    }
-    class Path2 {
-        private _points;
-        private _length;
-        closed: boolean;
-        /**
-         * Creates a Path2 object from the starting 2D coordinates x and y.
-         */
-        constructor(x: number, y: number);
-        /**
-         * Adds a new segment until the passed coordinates (x, y) to the current Path2.
-         * Returns the updated Path2.
-         */
-        addLineTo(x: number, y: number): Path2;
-        /**
-         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
-         * Returns the updated Path2.
-         */
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        /**
-         * Closes the Path2.
-         * Returns the Path2.
-         */
-        close(): Path2;
-        /**
-         * Returns the Path2 total length (float).
-         */
-        length(): number;
-        /**
-         * Returns the Path2 internal array of points.
-         */
-        getPoints(): Vector2[];
-        /**
-         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.
-         */
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        /**
-         * Returns a new Path2 starting at the coordinates (x, y).
-         */
-        static StartingAt(x: number, y: number): Path2;
-    }
-    class Path3D {
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        private _raw;
-        /**
-        * new Path3D(path, normal, raw)
-        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
-        * path : an array of Vector3, the curve axis of the Path3D
-        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-        */
-        constructor(path: Vector3[], firstNormal?: Vector3, raw?: boolean);
-        /**
-         * Returns the Path3D array of successive Vector3 designing its curve.
-         */
-        getCurve(): Vector3[];
-        /**
-         * Returns an array populated with tangent vectors on each Path3D curve point.
-         */
-        getTangents(): Vector3[];
-        /**
-         * Returns an array populated with normal vectors on each Path3D curve point.
-         */
-        getNormals(): Vector3[];
-        /**
-         * Returns an array populated with binormal vectors on each Path3D curve point.
-         */
-        getBinormals(): Vector3[];
-        /**
-         * Returns an array populated with distances (float) of the i-th point from the first curve point.
-         */
-        getDistances(): number[];
-        /**
-         * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * Returns the same object updated.
-         */
-        update(path: Vector3[], firstNormal?: Vector3): Path3D;
-        private _compute(firstNormal);
-        private _getFirstNonNullVector(index);
-        private _getLastNonNullVector(index);
-        private _normalVector(v0, vt, va);
-    }
-    class Curve3 {
-        private _points;
-        private _length;
-        /**
-         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Quadratic Bezier
-         * @param v1 (Vector3) the control point
-         * @param v2 (Vector3) the end point of the Quadratic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Cubic Bezier
-         * @param v1 (Vector3) the first control point
-         * @param v2 (Vector3) the second control point
-         * @param v3 (Vector3) the end point of the Cubic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
-         * @param p1 (Vector3) the origin point of the Hermite Spline
-         * @param t1 (Vector3) the tangent vector at the origin point
-         * @param p2 (Vector3) the end point of the Hermite Spline
-         * @param t2 (Vector3) the tangent vector at the end point
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a CatmullRom Spline curve :
-         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.
-         * @param nbPoints (integer) the wanted number of points between each curve control points.
-         */
-        static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3;
-        /**
-         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-         * A Curve3 is designed from a series of successive Vector3.
-         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
-         */
-        constructor(points: Vector3[]);
-        /**
-         * Returns the Curve3 stored array of successive Vector3
-         */
-        getPoints(): Vector3[];
-        /**
-         * Returns the computed length (float) of the curve.
-         */
-        length(): number;
-        /**
-         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
-         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
-         * curveA and curveB keep unchanged.
-         */
-        continue(curve: Curve3): Curve3;
-        private _computeLength(path);
-    }
-    class SphericalHarmonics {
-        L00: Vector3;
-        L1_1: Vector3;
-        L10: Vector3;
-        L11: Vector3;
-        L2_2: Vector3;
-        L2_1: Vector3;
-        L20: Vector3;
-        L21: Vector3;
-        L22: Vector3;
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        scale(scale: number): void;
-    }
-    class SphericalPolynomial {
-        x: Vector3;
-        y: Vector3;
-        z: Vector3;
-        xx: Vector3;
-        yy: Vector3;
-        zz: Vector3;
-        xy: Vector3;
-        yz: Vector3;
-        zx: Vector3;
-        addAmbient(color: Color3): void;
-        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
-    }
-    class PositionNormalVertex {
-        position: Vector3;
-        normal: Vector3;
-        constructor(position?: Vector3, normal?: Vector3);
-        clone(): PositionNormalVertex;
-    }
-    class PositionNormalTextureVertex {
-        position: Vector3;
-        normal: Vector3;
-        uv: Vector2;
-        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
-        clone(): PositionNormalTextureVertex;
-    }
-    class Tmp {
-        static Color3: Color3[];
-        static Vector2: Vector2[];
-        static Vector3: Vector3[];
-        static Vector4: Vector4[];
-        static Quaternion: Quaternion[];
-        static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
     class Particle {
         position: Vector3;
         direction: Vector3;
@@ -13963,13 +13972,22 @@ declare module BABYLON.Internals {
         isRGB: boolean;
         isLuminance: boolean;
         isCube: boolean;
+        isCompressed: boolean;
+        dxgiFormat: number;
+        textureType: number;
     }
     class DDSTools {
+        static StoreLODInAlphaChannel: boolean;
         static GetDDSInfo(arrayBuffer: any): DDSInfo;
+        private static _FloatView;
+        private static _Int32View;
+        private static _ToHalfFloat(value);
+        private static GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, lod);
+        private static GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, lod);
         private static GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
         private static GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
         private static GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-        static UploadDDSLevels(gl: WebGLRenderingContext, ext: any, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void;
+        static UploadDDSLevels(engine: Engine, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void;
     }
 }
 
@@ -15131,6 +15149,139 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        readonly aspectRatio: number;
+        readonly aspectRatioFov: number;
+        readonly leftHMatrix: Matrix;
+        readonly rightHMatrix: Matrix;
+        readonly leftPreViewMatrix: Matrix;
+        readonly rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+    interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: DevicePose;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose): any;
+    }
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+        controllerMeshes?: boolean;
+        defaultLightningOnControllers?: boolean;
+    }
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        _vrDevice: any;
+        rawPose: DevicePose;
+        private _vrEnabled;
+        private _specsVersion;
+        private _attached;
+        private _oldSize;
+        private _oldHardwareScaleFactor;
+        private _frameData;
+        private _quaternionCache;
+        private _positionOffset;
+        protected _descendants: Array<Node>;
+        devicePosition: Vector3;
+        deviceRotationQuaternion: any;
+        deviceScaleFactor: number;
+        controllers: Array<WebVRController>;
+        nonVRControllers: Array<Gamepad>;
+        private _onControllersAttached;
+        private _onNonVRControllerAttached;
+        rigParenting: boolean;
+        private _lightOnControllers;
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        onControllersAttached: (controllers: Array<WebVRController>) => void;
+        onNonVRControllerAttached: (controller: Gamepad) => void;
+        getControllerByName(name: string): WebVRController;
+        private _leftController;
+        readonly leftController: WebVRController;
+        private _rightController;
+        readonly rightController: WebVRController;
+        getForwardRay(length?: number): Ray;
+        _checkInputs(): void;
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param {HTMLElement} element
+         * @param {boolean} [noPreventDefault]
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getClassName(): string;
+        resetToCurrentRotation(): void;
+        _updateRigCameras(): void;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        protected _getWebVRProjectionMatrix(): Matrix;
+        initControllers(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -15339,139 +15490,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        readonly aspectRatio: number;
-        readonly aspectRatioFov: number;
-        readonly leftHMatrix: Matrix;
-        readonly rightHMatrix: Matrix;
-        readonly leftPreViewMatrix: Matrix;
-        readonly rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose.
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        readonly position?: Float32Array;
-        readonly linearVelocity?: Float32Array;
-        readonly linearAcceleration?: Float32Array;
-        readonly orientation?: Float32Array;
-        readonly angularVelocity?: Float32Array;
-        readonly angularAcceleration?: Float32Array;
-    }
-    interface PoseControlled {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        devicePosition?: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        rawPose: DevicePose;
-        deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose): any;
-    }
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-        controllerMeshes?: boolean;
-        defaultLightningOnControllers?: boolean;
-    }
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        _vrDevice: any;
-        rawPose: DevicePose;
-        private _vrEnabled;
-        private _specsVersion;
-        private _attached;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _frameData;
-        private _quaternionCache;
-        private _positionOffset;
-        protected _descendants: Array<Node>;
-        devicePosition: Vector3;
-        deviceRotationQuaternion: any;
-        deviceScaleFactor: number;
-        controllers: Array<WebVRController>;
-        nonVRControllers: Array<Gamepad>;
-        private _onControllersAttached;
-        private _onNonVRControllerAttached;
-        rigParenting: boolean;
-        private _lightOnControllers;
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        onControllersAttached: (controllers: Array<WebVRController>) => void;
-        onNonVRControllerAttached: (controller: Gamepad) => void;
-        getControllerByName(name: string): WebVRController;
-        private _leftController;
-        readonly leftController: WebVRController;
-        private _rightController;
-        readonly rightController: WebVRController;
-        getForwardRay(length?: number): Ray;
-        _checkInputs(): void;
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param {HTMLElement} element
-         * @param {boolean} [noPreventDefault]
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getClassName(): string;
-        resetToCurrentRotation(): void;
-        _updateRigCameras(): void;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
-        initControllers(): void;
-    }
-}
-
-declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -15516,6 +15534,9 @@ declare module BABYLON {
         intersectsRay(ray: Ray, selection: SmartArray<T>): void;
         createInnerBlocks(): void;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
@@ -16358,6 +16379,7 @@ declare module BABYLON {
          * Return the active textures of the material.
          */
         getActiveTextures(): BaseTexture[];
+        clone(name: string): PBRMetallicRoughnessMaterial;
         /**
          * Serialize the material to a parsable JSON object.
          */
@@ -16413,6 +16435,7 @@ declare module BABYLON {
          * Return the active textures of the material.
          */
         getActiveTextures(): BaseTexture[];
+        clone(name: string): PBRSpecularGlossinessMaterial;
         /**
          * Serialize the material to a parsable JSON object.
          */
@@ -16471,7 +16494,8 @@ declare module BABYLON {
         _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
         delayLoad(): void;
         clone(): BaseTexture;
-        readPixels(faceIndex?: number): Uint8Array;
+        readonly textureType: number;
+        readPixels(faceIndex?: number, lodIndex?: number): ArrayBufferView;
         releaseInternalTexture(): void;
         dispose(): void;
         serialize(): any;
@@ -17017,9 +17041,6 @@ declare module BABYLON {
             deviceId: string;
         }): void;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

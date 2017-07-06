@@ -291,6 +291,30 @@
                     return;
                 }
 
+                var showInspector = false;
+                var showDebugLayer = false;
+                var initialTabIndex = 0;
+
+                if(document.getElementsByClassName('insp-wrapper').length > 0){                  
+                    for(let i = 0; i < engine.scenes.length; i++){
+                        if(engine.scenes[i]._debugLayer){
+                            //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
+                            //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
+                            var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
+                            for(var j = 0; j < tabs.length; j++){
+                                if(tabs[j].isActive()){
+                                    initialTabIndex = j;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    showInspector = true;
+                }else if(document.getElementById('DebugLayer')){
+                    showDebugLayer = true;
+                }
+
                 if (engine) {
                     engine.dispose();
                     engine = null;
@@ -317,6 +341,7 @@
                         scene.render();
                     }
 
+                    fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 });
 
@@ -370,6 +395,17 @@
                 engine.scenes[0].executeWhenReady(function () {
                     document.getElementById("statusBar").innerHTML = "";
                 });
+
+                if(scene){
+                    if(showInspector){
+                        scene.debugLayer.show({initialTab:initialTabIndex});
+                        scene.executeWhenReady(function(){
+                            scene.debugLayer._inspector.refresh();
+                        })
+                    }else if(showDebugLayer){
+                        scene.debugLayer.show();
+                    }
+                }
 
             } catch (e) {
                 showError(e.message, e);

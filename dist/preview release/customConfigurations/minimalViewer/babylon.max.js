@@ -7343,6 +7343,10 @@ var BABYLON;
             if (!this._glRenderer) {
                 this._glRenderer = "Unknown renderer";
             }
+            // Constants
+            this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
+            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.            
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
             this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc');
@@ -7365,7 +7369,7 @@ var BABYLON;
             this._caps.textureHalfFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float');
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'));
             if (this._webGLVersion > 1) {
-                Engine.HALF_FLOAT_OES = 0x140B;
+                this._gl.HALF_FLOAT_OES = 0x140B;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
@@ -7801,7 +7805,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.0-beta";
+                return "3.0-rc";
             },
             enumerable: true,
             configurable: true
@@ -9182,7 +9186,7 @@ var BABYLON;
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
-                            BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
+                            BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 1);
                         }, samplingMode);
                     };
                 }
@@ -9705,6 +9709,7 @@ var BABYLON;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
             var isKTX = false;
+            var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = rootUrl.substring(lastDot).toLowerCase();
             if (this._textureFormatInUse) {
@@ -9712,9 +9717,8 @@ var BABYLON;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            if (isDDS) {
-                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
+            else {
+                isDDS = (extension === ".dds");
             }
             if (isKTX) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
@@ -9739,8 +9743,10 @@ var BABYLON;
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-                    BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 6);
+                    if (info.isCompressed) {
+                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+                    }
+                    BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 6);
                     if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
@@ -9753,6 +9759,7 @@ var BABYLON;
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
+                    texture.type = info.textureType;
                 }, null, null, true, onError);
             }
             else {
@@ -9882,7 +9889,7 @@ var BABYLON;
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             }
-            else if (textureType === Engine.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             }
@@ -10402,21 +10409,22 @@ var BABYLON;
                 this.fps = 1000.0 / (sum / (length - 1));
             }
         };
-        Engine.prototype._readTexturePixels = function (texture, width, height, faceIndex) {
+        Engine.prototype._readTexturePixels = function (texture, width, height, faceIndex, lodIndex) {
             if (faceIndex === void 0) { faceIndex = -1; }
+            if (lodIndex === void 0) { lodIndex = 0; }
             var gl = this._gl;
             if (!this._dummyFramebuffer) {
                 this._dummyFramebuffer = gl.createFramebuffer();
             }
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
             if (faceIndex > -1) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, lodIndex);
             }
             else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
             var readFormat = gl.RGBA;
-            var readType = gl.UNSIGNED_BYTE;
+            var readType = (texture.type !== undefined) ? texture.type : gl.UNSIGNED_BYTE;
             var buffer = new Uint8Array(4 * width * height);
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -10480,7 +10488,7 @@ var BABYLON;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
                 // Add Half Float Constant.
-                return Engine.HALF_FLOAT_OES;
+                return this._gl.HALF_FLOAT_OES;
             }
             return this._gl.UNSIGNED_BYTE;
         };
@@ -10490,10 +10498,10 @@ var BABYLON;
                 return this._gl.RGBA;
             }
             if (type === Engine.TEXTURETYPE_FLOAT) {
-                return Engine.RGBA32F;
+                return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                return Engine.RGBA16F;
+                return this._gl.RGBA16F;
             }
             return this._gl.RGBA;
         };
@@ -10549,9 +10557,6 @@ var BABYLON;
     Engine._GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
     Engine._GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
     Engine._NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
-    Engine.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-    Engine.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-    Engine.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
     // Stencil Actions Constants.
     Engine._KEEP = 0x1E00;
     Engine._REPLACE = 0x1E01;
@@ -19113,17 +19118,28 @@ var BABYLON;
         BaseTexture.prototype.clone = function () {
             return null;
         };
-        BaseTexture.prototype.readPixels = function (faceIndex) {
+        Object.defineProperty(BaseTexture.prototype, "textureType", {
+            get: function () {
+                if (!this._texture) {
+                    return BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                }
+                return (this._texture.type !== undefined) ? this._texture.type : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BaseTexture.prototype.readPixels = function (faceIndex, lodIndex) {
             if (faceIndex === void 0) { faceIndex = 0; }
+            if (lodIndex === void 0) { lodIndex = 0; }
             if (!this._texture) {
                 return null;
             }
             var size = this.getSize();
             var engine = this.getScene().getEngine();
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex, lodIndex);
             }
-            return engine._readTexturePixels(this._texture, size.width, size.height);
+            return engine._readTexturePixels(this._texture, size.width, size.height, -1, lodIndex);
         };
         BaseTexture.prototype.releaseInternalTexture = function () {
             if (this._texture) {
@@ -23838,6 +23854,7 @@ var BABYLON;
             this._areTexturesDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
             this._normals = false;
             this._uvs = false;
             this._needNormals = false;
@@ -23857,6 +23874,7 @@ var BABYLON;
             this._areFresnelDirty = false;
             this._areLightsDirty = false;
             this._areMiscDirty = false;
+            this._areImageProcessingDirty = false;
         };
         MaterialDefines.prototype.markAsUnprocessed = function () {
             this._isDirty = true;
@@ -23867,6 +23885,11 @@ var BABYLON;
             this._areLightsDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
+            this._isDirty = true;
+        };
+        MaterialDefines.prototype.markAsImageProcessingDirty = function () {
+            this._areImageProcessingDirty = true;
             this._isDirty = true;
         };
         MaterialDefines.prototype.markAsLightDirty = function () {
@@ -24322,6 +24345,9 @@ var BABYLON;
                     func(subMesh._materialDefines);
                 }
             }
+        };
+        Material.prototype._markAllSubMeshesAsImageProcessingDirty = function () {
+            this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsImageProcessingDirty(); });
         };
         Material.prototype._markAllSubMeshesAsTexturesDirty = function () {
             this._markAllSubMeshesAsDirty(function (defines) { return defines.markAsTexturesDirty(); });
@@ -32626,6 +32652,10 @@ var BABYLON;
         var FOURCC_DXT1 = FourCCToInt32("DXT1");
         var FOURCC_DXT3 = FourCCToInt32("DXT3");
         var FOURCC_DXT5 = FourCCToInt32("DXT5");
+        var FOURCC_DX10 = FourCCToInt32("DX10");
+        var FOURCC_D3DFMT_R16G16B16A16F = 113;
+        var FOURCC_D3DFMT_R32G32B32A32F = 116;
+        var DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
         var headerLengthInt = 31; // The header length in 32 bit ints
         // Offsets into the header array
         var off_magic = 0;
@@ -32643,15 +32673,35 @@ var BABYLON;
         var off_AMask = 26;
         var off_caps1 = 27;
         var off_caps2 = 28;
+        var off_caps3 = 29;
+        var off_caps4 = 30;
+        var off_dxgiFormat = 32;
         ;
         var DDSTools = (function () {
             function DDSTools() {
             }
             DDSTools.GetDDSInfo = function (arrayBuffer) {
                 var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
+                var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
                 var mipmapCount = 1;
                 if (header[off_flags] & DDSD_MIPMAPCOUNT) {
                     mipmapCount = Math.max(1, header[off_mipmapCount]);
+                }
+                var fourCC = header[off_pfFourCC];
+                var dxgiFormat = (fourCC === FOURCC_DX10) ? extendedHeader[off_dxgiFormat] : 0;
+                var textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                switch (fourCC) {
+                    case FOURCC_D3DFMT_R16G16B16A16F:
+                        textureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                        break;
+                    case FOURCC_D3DFMT_R32G32B32A32F:
+                        textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                        break;
+                    case FOURCC_DX10:
+                        if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
+                            textureType = BABYLON.Engine.TEXTURETYPE_HALF_FLOAT;
+                            break;
+                        }
                 }
                 return {
                     width: header[off_width],
@@ -32660,19 +32710,28 @@ var BABYLON;
                     isFourCC: (header[off_pfFlags] & DDPF_FOURCC) === DDPF_FOURCC,
                     isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
                     isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
-                    isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP
+                    isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP,
+                    isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || FOURCC_DXT1 === FOURCC_DXT5),
+                    dxgiFormat: dxgiFormat,
+                    textureType: textureType
                 };
+            };
+            DDSTools.GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+                return new Uint16Array(arrayBuffer, dataOffset, dataLength);
+            };
+            DDSTools.GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+                return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
             DDSTools.GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer);
                 var index = 0;
-                for (var y = height - 1; y >= 0; y--) {
+                for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
                         var srcPos = dataOffset + (x + y * width) * 4;
-                        byteArray[index + 2] = srcData[srcPos];
-                        byteArray[index + 1] = srcData[srcPos + 1];
                         byteArray[index] = srcData[srcPos + 2];
+                        byteArray[index + 1] = srcData[srcPos + 1];
+                        byteArray[index + 2] = srcData[srcPos];
                         byteArray[index + 3] = srcData[srcPos + 3];
                         index += 4;
                     }
@@ -32683,12 +32742,12 @@ var BABYLON;
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer);
                 var index = 0;
-                for (var y = height - 1; y >= 0; y--) {
+                for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
                         var srcPos = dataOffset + (x + y * width) * 3;
-                        byteArray[index + 2] = srcData[srcPos];
-                        byteArray[index + 1] = srcData[srcPos + 1];
                         byteArray[index] = srcData[srcPos + 2];
+                        byteArray[index + 1] = srcData[srcPos + 1];
+                        byteArray[index + 2] = srcData[srcPos];
                         index += 3;
                     }
                 }
@@ -32698,7 +32757,7 @@ var BABYLON;
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer);
                 var index = 0;
-                for (var y = height - 1; y >= 0; y--) {
+                for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
                         var srcPos = dataOffset + (x + y * width);
                         byteArray[index] = srcData[srcPos];
@@ -32707,8 +32766,10 @@ var BABYLON;
                 }
                 return byteArray;
             };
-            DDSTools.UploadDDSLevels = function (gl, ext, arrayBuffer, info, loadMipmaps, faces) {
-                var header = new Int32Array(arrayBuffer, 0, headerLengthInt), fourCC, blockBytes, internalFormat, width, height, dataLength, dataOffset, byteArray, mipmapCount, i;
+            DDSTools.UploadDDSLevels = function (engine, arrayBuffer, info, loadMipmaps, faces) {
+                var gl = engine._gl;
+                var ext = engine.getCaps().s3tc;
+                var header = new Int32Array(arrayBuffer, 0, headerLengthInt), fourCC, blockBytes, internalFormat, format, width, height, dataLength, dataOffset, byteArray, mipmapCount, i;
                 if (header[off_magic] != DDS_MAGIC) {
                     BABYLON.Tools.Error("Invalid magic number in DDS header");
                     return;
@@ -32717,6 +32778,13 @@ var BABYLON;
                     BABYLON.Tools.Error("Unsupported format, must contain a FourCC, RGB or LUMINANCE code");
                     return;
                 }
+                if (info.isCompressed && !ext) {
+                    BABYLON.Tools.Error("Compressed textures are not supported on this platform.");
+                    return;
+                }
+                var bpp = header[off_RGBbpp];
+                dataOffset = header[off_size] + 4;
+                var computeFormats = false;
                 if (info.isFourCC) {
                     fourCC = header[off_pfFourCC];
                     switch (fourCC) {
@@ -32732,23 +32800,49 @@ var BABYLON;
                             blockBytes = 16;
                             internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT5_EXT;
                             break;
+                        case FOURCC_D3DFMT_R16G16B16A16F:
+                            computeFormats = true;
+                            break;
+                        case FOURCC_D3DFMT_R32G32B32A32F:
+                            computeFormats = true;
+                            break;
+                        case FOURCC_DX10:
+                            // There is an additionnal header so dataOffset need to be changed
+                            dataOffset += 5 * 4; // 5 uints
+                            if (info.dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
+                                computeFormats = true;
+                                break;
+                            }
                         default:
                             console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
                             return;
                     }
                 }
+                if (computeFormats) {
+                    format = engine._getWebGLTextureType(info.textureType);
+                    internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
+                }
                 mipmapCount = 1;
                 if (header[off_flags] & DDSD_MIPMAPCOUNT && loadMipmaps !== false) {
                     mipmapCount = Math.max(1, header[off_mipmapCount]);
                 }
-                var bpp = header[off_RGBbpp];
                 for (var face = 0; face < faces; face++) {
                     var sampler = faces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
                     width = header[off_width];
                     height = header[off_height];
-                    dataOffset = header[off_size] + 4;
                     for (i = 0; i < mipmapCount; ++i) {
-                        if (info.isRGB) {
+                        if (!info.isCompressed && info.isFourCC) {
+                            dataLength = width * height * 4;
+                            var floatArray;
+                            if (bpp === 128) {
+                                floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            }
+                            else {
+                                floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            }
+                            gl.texImage2D(sampler, i, internalFormat, width, height, 0, gl.RGBA, format, floatArray);
+                        }
+                        else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
                                 byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
@@ -32773,7 +32867,7 @@ var BABYLON;
                             byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
                             gl.compressedTexImage2D(sampler, i, internalFormat, width, height, 0, byteArray);
                         }
-                        dataOffset += dataLength;
+                        dataOffset += width * height * (bpp / 8);
                         width *= 0.5;
                         height *= 0.5;
                         width = Math.max(1.0, width);
@@ -35084,7 +35178,7 @@ var BABYLON;
             }
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(function (conf) {
-                _this._markAllSubMeshesAsTexturesDirty();
+                _this._markAllSubMeshesAsImageProcessingDirty();
             });
         };
         Object.defineProperty(PBRBaseMaterial.prototype, "useLogarithmicDepth", {
@@ -35327,6 +35421,8 @@ var BABYLON;
                 defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
+            }
+            if (defines._areImageProcessingDirty) {
                 if (!this._imageProcessingConfiguration.isReady()) {
                     return false;
                 }
@@ -36639,6 +36735,10 @@ var BABYLON;
             }
             return activeTextures;
         };
+        PBRMetallicRoughnessMaterial.prototype.clone = function (name) {
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+        };
         /**
          * Serialize the material to a parsable JSON object.
          */
@@ -36725,6 +36825,10 @@ var BABYLON;
                 activeTextures.push(this.specularGlossinessTexture);
             }
             return activeTextures;
+        };
+        PBRSpecularGlossinessMaterial.prototype.clone = function (name) {
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -40618,10 +40722,7 @@ var BABYLON;
             this._colorGradingEnabled = false;
             this._colorGradingWithGreenDepth = false;
             this._colorGradingBGR = false;
-            /**
-             * Exposure used in the effect.
-             */
-            this.exposure = 1.0;
+            this._exposure = 1.0;
             this._toneMappingEnabled = false;
             this._contrast = 1.0;
             /**
@@ -40733,6 +40834,26 @@ var BABYLON;
                     return;
                 }
                 this._colorGradingBGR = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "exposure", {
+            /**
+             * Gets the Exposure used in the effect.
+             */
+            get: function () {
+                return this._exposure;
+            },
+            /**
+             * Sets the Exposure used in the effect.
+             */
+            set: function (value) {
+                if (this._exposure === value) {
+                    return;
+                }
+                this._exposure = value;
                 this._updateParameters();
             },
             enumerable: true,
@@ -41009,7 +41130,7 @@ var BABYLON;
     ], ImageProcessingConfiguration.prototype, "_colorGradingBGR", void 0);
     __decorate([
         BABYLON.serialize()
-    ], ImageProcessingConfiguration.prototype, "exposure", void 0);
+    ], ImageProcessingConfiguration.prototype, "_exposure", void 0);
     __decorate([
         BABYLON.serialize()
     ], ImageProcessingConfiguration.prototype, "_toneMappingEnabled", void 0);
@@ -41882,7 +42003,7 @@ var BABYLON;
             }
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(function (conf) {
-                _this._markAllSubMeshesAsTexturesDirty();
+                _this._markAllSubMeshesAsImageProcessingDirty();
             });
         };
         Object.defineProperty(StandardMaterial.prototype, "cameraColorCurvesEnabled", {
@@ -42204,14 +42325,16 @@ var BABYLON;
                     defines.BUMP = false;
                     defines.REFRACTION = false;
                 }
-                if (!this.imageProcessingConfiguration.isReady()) {
-                    return false;
-                }
-                this.imageProcessingConfiguration.prepareDefines(defines);
                 defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+            }
+            if (defines._areImageProcessingDirty) {
+                if (!this._imageProcessingConfiguration.isReady()) {
+                    return false;
+                }
+                this._imageProcessingConfiguration.prepareDefines(defines);
             }
             if (defines._areFresnelDirty) {
                 if (StandardMaterial.FresnelEnabled) {

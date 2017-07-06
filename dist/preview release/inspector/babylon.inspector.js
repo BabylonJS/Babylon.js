@@ -320,6 +320,9 @@ var INSPECTOR;
                 });
             }
         };
+        Inspector.prototype.getActiveTabIndex = function () {
+            return this._tabbar.getActiveTabIndex();
+        };
         return Inspector;
     }());
     INSPECTOR.Inspector = Inspector;
@@ -1002,6 +1005,73 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    var PhysicsImpostorAdapter = (function (_super) {
+        __extends(PhysicsImpostorAdapter, _super);
+        function PhysicsImpostorAdapter(obj, viewer) {
+            var _this = _super.call(this, obj) || this;
+            _this._isVisible = false;
+            _this._viewer = viewer;
+            return _this;
+        }
+        /** Returns the name displayed in the tree */
+        PhysicsImpostorAdapter.prototype.id = function () {
+            var str = '';
+            var physicsImposter = this._obj;
+            if (physicsImposter && physicsImposter.object) {
+                str = physicsImposter.object.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        PhysicsImpostorAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        PhysicsImpostorAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        PhysicsImpostorAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        PhysicsImpostorAdapter.prototype.setVisible = function (b) {
+            this._isVisible = b;
+            if (b) {
+                this._viewer.showImpostor(this._obj);
+            }
+            else {
+                this._viewer.hideImpostor(this._obj);
+            }
+        };
+        PhysicsImpostorAdapter.prototype.isVisible = function () {
+            return this._isVisible;
+        };
+        return PhysicsImpostorAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.PhysicsImpostorAdapter = PhysicsImpostorAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=PhysicsImpostorAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
     var GUIAdapter = (function (_super) {
         __extends(GUIAdapter, _super);
         function GUIAdapter(obj) {
@@ -1482,9 +1552,9 @@ var INSPECTOR;
             this._obj.computeWorldMatrix();
             var m = this._obj.getWorldMatrix();
             // Axis
-            var x = new BABYLON.Vector3(8, 0, 0);
-            var y = new BABYLON.Vector3(0, 8, 0);
-            var z = new BABYLON.Vector3(0, 0, 8);
+            var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
+            var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
+            var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
             // Draw an axis of the given color
             var _drawAxis = function (color, start, end) {
                 var axis = BABYLON.Mesh.CreateLines("###axis###", [
@@ -1514,73 +1584,6 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=MeshAdapter.js.map
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var INSPECTOR;
-(function (INSPECTOR) {
-    var PhysicsImpostorAdapter = (function (_super) {
-        __extends(PhysicsImpostorAdapter, _super);
-        function PhysicsImpostorAdapter(obj, viewer) {
-            var _this = _super.call(this, obj) || this;
-            _this._isVisible = false;
-            _this._viewer = viewer;
-            return _this;
-        }
-        /** Returns the name displayed in the tree */
-        PhysicsImpostorAdapter.prototype.id = function () {
-            var str = '';
-            var physicsImposter = this._obj;
-            if (physicsImposter && physicsImposter.object) {
-                str = physicsImposter.object.name;
-            } // otherwise nothing displayed        
-            return str;
-        };
-        /** Returns the type of this object - displayed in the tree */
-        PhysicsImpostorAdapter.prototype.type = function () {
-            return INSPECTOR.Helpers.GET_TYPE(this._obj);
-        };
-        /** Returns the list of properties to be displayed for this adapter */
-        PhysicsImpostorAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
-        };
-        PhysicsImpostorAdapter.prototype.getTools = function () {
-            var tools = [];
-            tools.push(new INSPECTOR.Checkbox(this));
-            return tools;
-        };
-        PhysicsImpostorAdapter.prototype.setVisible = function (b) {
-            this._isVisible = b;
-            if (b) {
-                this._viewer.showImpostor(this._obj);
-            }
-            else {
-                this._viewer.hideImpostor(this._obj);
-            }
-        };
-        PhysicsImpostorAdapter.prototype.isVisible = function () {
-            return this._isVisible;
-        };
-        return PhysicsImpostorAdapter;
-    }(INSPECTOR.Adapter));
-    INSPECTOR.PhysicsImpostorAdapter = PhysicsImpostorAdapter;
-})(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=PhysicsImpostorAdapter.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -4171,6 +4174,14 @@ var INSPECTOR;
                 }
             }
         };
+        TabBar.prototype.getActiveTabIndex = function () {
+            for (var i = 0; i < this._tabs.length; i++) {
+                if (this._tabs[i].isActive()) {
+                    return i;
+                }
+            }
+            return 0;
+        };
         Object.defineProperty(TabBar.prototype, "inspector", {
             get: function () {
                 return this._inspector;
@@ -4439,40 +4450,26 @@ var INSPECTOR;
             var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
             /** True if label are displayed, false otherwise */
             _this._isDisplayed = false;
-            _this._canvas = null;
+            _this._advancedTexture = null;
             _this._labelInitialized = false;
             _this._scene = null;
-            _this._canvas2DLoaded = false;
-            _this._newMeshObserver = null;
-            _this._removedMeshObserver = null;
-            _this._newLightObserver = null;
-            _this._removedLightObserver = null;
-            _this._newCameraObserver = null;
-            _this._removedCameraObserver = null;
+            _this._guiLoaded = false;
             _this._scene = inspector.scene;
             return _this;
         }
         LabelTool.prototype.dispose = function () {
-            if (this._newMeshObserver) {
-                this._scene.onNewMeshAddedObservable.remove(this._newMeshObserver);
-                this._scene.onMeshRemovedObservable.remove(this._removedMeshObserver);
-                this._scene.onNewLightAddedObservable.remove(this._newLightObserver);
-                this._scene.onLightRemovedObservable.remove(this._removedLightObserver);
-                this._scene.onNewCameraAddedObservable.remove(this._newCameraObserver);
-                this._scene.onCameraRemovedObservable.remove(this._removedCameraObserver);
-                this._newMeshObserver = this._newLightObserver = this._newCameraObserver = this._removedMeshObserver = this._removedLightObserver = this._removedCameraObserver = null;
+            if (this._advancedTexture) {
+                this._advancedTexture.dispose();
             }
-            this._canvas.dispose();
-            this._canvas = null;
         };
-        LabelTool.prototype._checkC2DLoaded = function () {
-            if (this._canvas2DLoaded === true) {
+        LabelTool.prototype._checkGUILoaded = function () {
+            if (this._guiLoaded === true) {
                 return true;
             }
-            if (BABYLON.Canvas2D) {
-                this._canvas2DLoaded = true;
+            if (BABYLON.GUI) {
+                this._guiLoaded = true;
             }
-            return this._canvas2DLoaded;
+            return this._guiLoaded;
         };
         LabelTool.prototype._initializeLabels = function () {
             var _this = this;
@@ -4480,74 +4477,52 @@ var INSPECTOR;
             if (this._labelInitialized) {
                 return;
             }
-            // Can't initialize them if the Canvas2D lib is not loaded yet
-            if (!this._checkC2DLoaded()) {
+            // Can't initialize them if the GUI lib is not loaded yet
+            if (!this._checkGUILoaded()) {
                 return;
             }
             // Create the canvas that will be used to display the labels
-            this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "###Label Canvas###" /*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/ });
+            this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
             // Create label for all the Meshes, Lights and Cameras
             // Those that will be created/removed after this method is called will be taken care by the event handlers added below
             for (var _i = 0, _a = this._scene.meshes; _i < _a.length; _i++) {
                 var m = _a[_i];
                 this._createLabel(m);
             }
-            for (var _b = 0, _c = this._scene.lights; _b < _c.length; _b++) {
-                var l = _c[_b];
-                this._createLabel(l);
-            }
-            for (var _d = 0, _e = this._scene.cameras; _d < _e.length; _d++) {
-                var c = _e[_d];
-                this._createLabel(c);
-            }
-            // Add handlers for new/removed meshes, camera and lights
-            this._newMeshObserver = this._scene.onNewMeshAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
+            this._scene.onNewMeshAddedObservable.add(function (m, s) {
+                _this._createLabel(m);
             });
-            this._removedMeshObserver = this._scene.onMeshRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
-            });
-            this._newLightObserver = this._scene.onNewLightAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
-            });
-            this._removedLightObserver = this._scene.onLightRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
-            });
-            this._newCameraObserver = this._scene.onNewCameraAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
-            });
-            this._removedCameraObserver = this._scene.onCameraRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
+            this._scene.onMeshRemovedObservable.add(function (m, s) {
+                _this._removeLabel(m);
             });
             this._labelInitialized = true;
         };
-        LabelTool.prototype._createLabel = function (node) {
+        LabelTool.prototype._createLabel = function (mesh) {
             // Don't create label for "system nodes" (starting and ending with ###)
-            var name = node.name;
+            var name = mesh.name;
             if (INSPECTOR.Helpers.IsSystemName(name)) {
                 return;
             }
-            var labelGroup = new BABYLON.Group2D({ parent: this._canvas, id: "Label of " + node.name, trackNode: node, origin: BABYLON.Vector2.Zero(),
-                children: [
-                    new BABYLON.Rectangle2D({ id: "LabelRect", x: 0, y: 0, width: 100, height: 30, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080B0", children: [
-                            new BABYLON.Text2D(node.name, { x: 10, y: 4, fontName: "bold 16px Arial", fontSignedDistanceField: true })
-                        ]
-                    })
-                ] });
-            var r = labelGroup.children[0];
-            var t = r.children[0];
-            var ts = t.textSize.width;
-            r.width = ts + 20;
-            r.height = t.textSize.height + 12;
-            labelGroup.addExternalData("owner", node);
-            return labelGroup;
+            if (mesh) {
+                var rect1 = new BABYLON.GUI.Rectangle();
+                rect1.width = 4 + 10 * name.length + "px";
+                rect1.height = "22px";
+                rect1.background = "rgba(0,0,0,0.6)";
+                rect1.color = "black";
+                this._advancedTexture.addControl(rect1);
+                var label = new BABYLON.GUI.TextBlock();
+                label.text = name;
+                label.fontSize = 12;
+                rect1.addControl(label);
+                rect1.linkWithMesh(mesh);
+            }
         };
-        LabelTool.prototype._removeLabel = function (node) {
-            for (var _i = 0, _a = this._canvas.children; _i < _a.length; _i++) {
+        LabelTool.prototype._removeLabel = function (mesh) {
+            for (var _i = 0, _a = this._advancedTexture._rootContainer.children; _i < _a.length; _i++) {
                 var g = _a[_i];
-                var ed = g.getExternalData("owner");
-                if (ed === node) {
-                    g.dispose();
+                var ed = g._linkedMesh;
+                if (ed === mesh) {
+                    this._advancedTexture.removeControl(g);
                     break;
                 }
             }
@@ -4555,7 +4530,7 @@ var INSPECTOR;
         // Action : Display/hide mesh names on the canvas
         LabelTool.prototype.action = function () {
             // Don't toggle if the script is not loaded
-            if (!this._checkC2DLoaded()) {
+            if (!this._checkGUILoaded()) {
                 return;
             }
             // Toggle the label display state
@@ -4563,10 +4538,10 @@ var INSPECTOR;
             // Check if we have to display the labels
             if (this._isDisplayed) {
                 this._initializeLabels();
-                this._canvas.levelVisible = true;
+                this._advancedTexture._rootContainer.isVisible = true;
             }
             else {
-                this._canvas.levelVisible = false;
+                this._advancedTexture._rootContainer.isVisible = false;
             }
         };
         return LabelTool;

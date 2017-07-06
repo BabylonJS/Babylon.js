@@ -61,6 +61,7 @@ declare module INSPECTOR {
          * Set 'firstTime' to true if there is no inspector created beforehands
          */
         openPopup(firstTime?: boolean): void;
+        getActiveTabIndex(): number;
     }
 }
 
@@ -337,6 +338,23 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
+        private _viewer;
+        private _isVisible;
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        /** Returns the name displayed in the tree */
+        id(): string;
+        /** Returns the type of this object - displayed in the tree */
+        type(): string;
+        /** Returns the list of properties to be displayed for this adapter */
+        getProperties(): Array<PropertyLine>;
+        getTools(): Array<AbstractTreeTool>;
+        setVisible(b: boolean): void;
+        isVisible(): boolean;
+    }
+}
+
+declare module INSPECTOR {
     class GUIAdapter extends Adapter implements IToolVisible {
         constructor(obj: BABYLON.GUI.Control);
         /** Returns the name displayed in the tree */
@@ -440,23 +458,6 @@ declare module INSPECTOR {
          * Should be called only one time as it will fill this._axis
          */
         private _drawAxis();
-    }
-}
-
-declare module INSPECTOR {
-    class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
-        private _viewer;
-        private _isVisible;
-        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
-        /** Returns the name displayed in the tree */
-        id(): string;
-        /** Returns the type of this object - displayed in the tree */
-        type(): string;
-        /** Returns the list of properties to be displayed for this adapter */
-        getProperties(): Array<PropertyLine>;
-        getTools(): Array<AbstractTreeTool>;
-        setVisible(b: boolean): void;
-        isVisible(): boolean;
     }
 }
 
@@ -1031,6 +1032,7 @@ declare module INSPECTOR {
         switchMeshTab(mesh?: BABYLON.AbstractMesh): void;
         /** Returns the active tab */
         getActiveTab(): Tab;
+        getActiveTabIndex(): number;
         readonly inspector: Inspector;
         /**
          * Returns the total width in pixel of the tabbar,
@@ -1102,22 +1104,16 @@ declare module INSPECTOR {
     class LabelTool extends AbstractTool {
         /** True if label are displayed, false otherwise */
         private _isDisplayed;
-        private _canvas;
+        private _advancedTexture;
         private _labelInitialized;
         private _scene;
-        private _canvas2DLoaded;
-        private _newMeshObserver;
-        private _removedMeshObserver;
-        private _newLightObserver;
-        private _removedLightObserver;
-        private _newCameraObserver;
-        private _removedCameraObserver;
+        private _guiLoaded;
         constructor(parent: HTMLElement, inspector: Inspector);
         dispose(): void;
-        private _checkC2DLoaded();
+        private _checkGUILoaded();
         private _initializeLabels();
-        private _createLabel(node);
-        private _removeLabel(node);
+        private _createLabel(mesh);
+        private _removeLabel(mesh);
         action(): void;
     }
 }
