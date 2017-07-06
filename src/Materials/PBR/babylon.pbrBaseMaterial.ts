@@ -72,6 +72,7 @@
         public METALLNESSSTOREINMETALMAPBLUE = false;
         public AOSTOREINMETALMAPRED = false;
         public MICROSURFACEMAP = false;
+        public ENVIRONMENTBRDF = false;
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
@@ -362,6 +363,13 @@
          * And/Or occlude the blended part.
          */
         protected _useAlphaFresnel = false;
+
+        /**
+         * Specifies the environment BRDF texture used to comput the scale and offset roughness values
+         * from cos thetav and roughness: 
+         * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+         */
+        protected _environmentBRDFTexture: BaseTexture = null;
 
         /**
          * Default configuration related to image processing available in the PBR Material.
@@ -700,6 +708,14 @@
                         }
                     }
 
+                    if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        // This is blocking.
+                        if (!this._environmentBRDFTexture.isReady()) {
+                            return false;
+                        }
+                        defines.ENVIRONMENTBRDF = true;
+                    }
+
                     if (this._shouldUseAlphaFromAlbedoTexture()) {
                         defines.ALPHAFROMALBEDO = true;
                     }
@@ -762,6 +778,10 @@
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();
+                if (defines.ENVIRONMENTBRDF) {
+                    fallbacks.addFallback(0, "ENVIRONMENTBRDF");
+                }
+
                 if (defines.REFLECTION) {
                     fallbacks.addFallback(0, "REFLECTION");
                 }
@@ -856,7 +876,7 @@
                     "bumpSampler", "lightmapSampler", "opacitySampler",
                     "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
                     "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
-                    "microSurfaceSampler", "brdfSampler"];
+                    "microSurfaceSampler", "environmentBrdfSampler"];
                 var uniformBuffers = ["Material", "Scene"];
 
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1134,6 +1154,10 @@
                         }
                     }
 
+                    if (defines.ENVIRONMENTBRDF) {
+                        this._uniformBuffer.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
+                    }
+
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                         if (defines.LODBASEDMICROSFURACE) {
                             this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
@@ -1299,6 +1323,10 @@
 
                 if (this._reflectionTexture) {
                     this._reflectionTexture.dispose();
+                }
+
+                if (this._environmentBRDFTexture) {
+                    this._environmentBRDFTexture.dispose();
                 }
 
                 if (this._emissiveTexture) {

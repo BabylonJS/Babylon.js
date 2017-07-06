@@ -127,3 +127,16 @@ float getLodFromAlphaG(float cubeMapDimensionPixels, float alphaG, float NdotV) 
     float lod = log2(microsurfaceAverageSlopeTexels);
     return lod;
 }
+
+float environmentRadianceOcclusion(float ambientOcclusion, float NdotVUnclamped) {
+    // Best balanced (implementation time vs result vs perf) analytical environment specular occlusion found.
+    // http://research.tri-ace.com/Data/cedec2011_RealtimePBR_Implementation_e.pptx
+    float temp = NdotVUnclamped + ambientOcclusion;
+    return clamp(square(temp) - 1.0 + ambientOcclusion, 0.0, 1.0);
+}
+
+float environmentHorizonOcclusion(vec3 reflection, vec3 normal) {
+	// http://marmosetco.tumblr.com/post/81245981087
+    float temp = clamp( 1.0 + 0.3 * dot(reflection, normal), 0.0, 1.0);
+    return square(temp);
+}

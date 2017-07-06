@@ -135,6 +135,10 @@ uniform sampler2D microSurfaceSampler;
 	#include<reflectionFunction>
 #endif
 
+#ifdef ENVIRONMENTBRDF
+	uniform sampler2D environmentBrdfSampler;
+#endif
+
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
 	#define FROMLINEARSPACE;
@@ -172,10 +176,18 @@ void main(void) {
 	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW)));
 #endif
 
+#ifdef BUMP
+	vec3 originalNormalW = normalW;
+#endif
+
 #include<bumpFragment>
 
 #if defined(TWOSIDEDLIGHTING) && defined(NORMAL) 
 	normalW = gl_FrontFacing ? normalW : -normalW;
+
+	#ifdef BUMP
+		vec3 originalNormalW = gl_FrontFacing ? originalNormalW : -originalNormalW;;
+	#endif
 #endif
 
 // _____________________________ Albedo Information ______________________________
@@ -343,7 +355,8 @@ void main(void) {
 
 // _____________________________ Compute LODs Fetch ____________________________________
 	// Compute N dot V.
-	float NdotV = clamp(dot(normalW, viewDirectionW),0., 1.) + 0.00001;
+	float NdotVUnclamped = dot(normalW, viewDirectionW);
+	float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
 	float alphaG = convertRoughnessToAverageSlope(roughness);
 
 // _____________________________ Refraction Info _______________________________________
@@ -503,9 +516,6 @@ void main(void) {
 	vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
 	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
-	// Environment Reflectance
-	vec3 specularEnvironmentReflectance = fresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
-
 // _____________________________ Direct Lighting Info __________________________________
 	vec3 diffuseBase = vec3(0., 0., 0.);
 #ifdef SPECULARTERM
@@ -521,6 +531,34 @@ void main(void) {
 	float NdotL = -1.;
 
 #include<lightFragment>[0..maxSimultaneousLights]
+
+// _________________________ Specular Environment Oclusion __________________________
+#ifdef ENVIRONMENTBRDF
+	// Indexed on cos(theta) and roughness
+	vec2 brdfSamplerUV = vec2(NdotV, roughness);
+	// We can find the scale and offset to apply to the specular value.
+	vec2 environmentBrdf = texture2D(environmentBrdfSampler, brdfSamplerUV).xy;
+	vec3 specularEnvironmentReflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
+
+	#ifdef AMBIENTINGRAYSCALE
+		float ambientMonochrome = ambientOcclusionColor.r;
+	#else
+		float ambientMonochrome = getLuminance(ambientOcclusionColor);
+	#endif
+
+	vec3 seo = environmentRadianceOcclusion(ambientMonochrome, NdotVUnclamped);
+	specularEnvironmentReflectance *= seo;
+
+	#ifdef BUMP
+		#ifdef REFLECTIONMAP_3D
+			vec3 hoo = environmentHorizonOcclusion(reflectionCoords, normalW);
+			specularEnvironmentReflectance *= hoo;
+		#endif
+	#endif
+#else
+	// Jones implementation of a well balanced fast analytical solution.
+	vec3 specularEnvironmentReflectance = fresnelSchlickEnvironmentGGX(NdotV, specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+#endif
 
 // _____________________________ Refractance+Tint ________________________________
 #ifdef REFRACTION
