@@ -71,8 +71,8 @@ module BABYLON {
             imgBack.style.position = "absolute";
             imgBack.style.left = "50%";
             imgBack.style.top = "50%";
-            imgBack.style.marginLeft = "-50px";
-            imgBack.style.marginTop = "-50px";
+            imgBack.style.marginLeft = "-60px";
+            imgBack.style.marginTop = "-60px";
             imgBack.style.animation = "spin1 2s infinite ease-in-out";
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";

@@ -2419,7 +2419,7 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
-            
+           
             if (onLoad) {
                 texture.onLoadedCallbacks.push(onLoad);
             }
@@ -2463,21 +2463,20 @@
                     callback = (data) => {
                         var info = Internals.DDSTools.GetDDSInfo(data);
 
-                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                        prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-
-                            Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
-                        }, samplingMode);
+                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
+                         prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
+                        //     Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
+                         }, samplingMode);
                     };
                 }
 
-            if (!buffer) {
-                Tools.LoadFile(url, data => {
-                    callback(data);
-                }, null, scene.database, true, onerror);
-            } else {
-                callback(buffer);
-            }
+                if (!buffer) {
+                    Tools.LoadFile(url, data => {
+                        callback(data);
+                    }, null, scene.database, true, onerror);
+                } else {
+                    callback(buffer);
+                }
             // image format processing
             } else {
                 var onload = (img) => {
@@ -2511,7 +2510,6 @@
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
                     }, samplingMode);
                 };
-
 
                 if (!fromData || isBase64)
                     Tools.LoadImage(url, onload, onerror, scene.database);
@@ -3171,9 +3169,7 @@
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    if (info.isCompressed) {
-                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-                    }
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
                     Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 6);
 
@@ -3962,7 +3958,7 @@
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
 
-            let readFormat = gl.RGBA;
+            let readFormat = (texture.type !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.type) : gl.RGBA;
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             let buffer: ArrayBufferView;
 
