@@ -184,8 +184,44 @@
             bits += m & 1;
             return bits;
         }
+
+        private static _FromHalfFloat(value: number): number {
+            var s = (value & 0x8000) >> 15;
+            var e = (value & 0x7C00) >> 10;
+            var f = value & 0x03FF;
+
+            if(e === 0) {
+                return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
+            } else if (e == 0x1F) {
+                return f ? NaN : ((s ? -1 : 1) * Infinity);
+            }
+
+            return (s ? -1 : 1) * Math.pow(2, e-15) * (1 + (f / Math.pow(2, 10)));
+        }
+
+        private static _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {   
+            var destArray = new Float32Array(dataLength);
+            var srcData = new Uint16Array(arrayBuffer, dataOffset);
+            var index = 0;
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
+                    var srcPos = (x + y * width) * 4;
+                    destArray[index] = DDSTools._FromHalfFloat(srcData[srcPos]);
+                    destArray[index + 1] = DDSTools._FromHalfFloat(srcData[srcPos + 1]);
+                    destArray[index + 2] = DDSTools._FromHalfFloat(srcData[srcPos + 2]);
+                    if (DDSTools.StoreLODInAlphaChannel) {
+                        destArray[index + 3] = lod;
+                    } else {
+                        destArray[index + 3] = DDSTools._FromHalfFloat(srcData[srcPos + 3]);
+                    }
+                    index += 4;
+                }
+            }
+
+            return destArray;
+        } 
     
-        private static GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {   
+        private static _GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {   
             if (DDSTools.StoreLODInAlphaChannel) {
                 var destArray = new Uint16Array(dataLength);
                 var srcData = new Uint16Array(arrayBuffer, dataOffset);
@@ -207,7 +243,7 @@
             return new Uint16Array(arrayBuffer, dataOffset, dataLength);
         }           
 
-        private static GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
+        private static _GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
             if (DDSTools.StoreLODInAlphaChannel) {
                 var destArray = new Float32Array(dataLength);
                 var srcData = new Float32Array(arrayBuffer, dataOffset);
@@ -228,7 +264,7 @@
             return new Float32Array(arrayBuffer, dataOffset, dataLength);
         }        
 
-        private static GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+        private static _GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -246,7 +282,7 @@
             return byteArray;
         }
 
-        private static GetRGBArrayBuffer(width: number, height: number, dataOffset:number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {            
+        private static _GetRGBArrayBuffer(width: number, height: number, dataOffset:number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {            
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -263,7 +299,7 @@
             return byteArray;
         }
 
-        private static GetLuminanceArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+        private static _GetLuminanceArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -363,20 +399,26 @@
                         dataLength = width * height * 4;
                         var floatArray: ArrayBufferView;
                         if (bpp === 128) {
-                            floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                        } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) { // Let's fallback to full float
+                            floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+
+                            info.textureType = Engine.TEXTURETYPE_FLOAT;
+                            format = engine._getWebGLTextureType(info.textureType);    
+                            internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
                         } else { // 64
-                            floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                         }
 
                         engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                     } else if (info.isRGB) {
                         if (bpp === 24) {
                             dataLength = width * height * 3;
-                            byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                             engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                         } else { // 32
                             dataLength = width * height * 4;
-                            byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                             engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                         }
                     } else if (info.isLuminance) {
@@ -385,7 +427,7 @@
                         var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
-                        byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                        byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                         engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                     } else {
                         dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
