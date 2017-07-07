@@ -4,10 +4,6 @@ uniform vec4 vAlbedoColor;
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 
-#if defined(REFLECTION) || defined(REFRACTION)
-uniform vec2 vMicrosurfaceTextureLods;
-#endif
-
 uniform vec4 vReflectivityColor;
 uniform vec3 vEmissiveColor;
 
@@ -51,23 +47,14 @@ uniform mat4 view;
 
 // Refraction
 #ifdef REFRACTION
-uniform vec4 vRefractionInfos;
-
-#ifdef REFRACTIONMAP_3D
-#else
-uniform mat4 refractionMatrix;
-#endif
+    uniform vec4 vRefractionInfos;
+    uniform mat4 refractionMatrix;
+    uniform vec3 vRefractionMicrosurfaceInfos;
 #endif
 
 // Reflection
 #ifdef REFLECTION
-uniform vec2 vReflectionInfos;
-
-#ifdef REFLECTIONMAP_SKYBOX
-#else
-
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
-#endif
+    uniform vec2 vReflectionInfos;
+    uniform mat4 reflectionMatrix;
+    uniform vec3 vReflectionMicrosurfaceInfos;
 #endif

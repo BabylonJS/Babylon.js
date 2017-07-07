@@ -27,7 +27,9 @@ uniform Material
 	uniform vec4 vAlbedoColor;
 	uniform vec4 vLightingIntensity;
 
-	uniform vec2 vMicrosurfaceTextureLods;
+    uniform vec3 vRefractionMicrosurfaceInfos;
+    uniform vec3 vReflectionMicrosurfaceInfos;
+
 	uniform vec4 vReflectivityColor;
 	uniform vec3 vEmissiveColor;
 
