@@ -3137,8 +3137,8 @@
                     //compute LOD from even spacing in smoothness (matching shader calculation)
                     let smoothness = i / (mipSlices - 1);
                     let roughness = 1 - smoothness;
-                    const kMinimumVariance = 0.0005;
-                    let alphaG = roughness * roughness + kMinimumVariance;
+                    const minimumVariance = 0.0005;
+                    let alphaG = roughness * roughness + minimumVariance;
                     let microsurfaceAverageSlopeTexels = alphaG * width;
 
                     let environmentSpecularLOD = scale * (MathTools.Log2(microsurfaceAverageSlopeTexels)) + offset;
@@ -3161,6 +3161,9 @@
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
                         Internals.DDSTools.UploadDDSLevels(this, data, info, true, 6, mipmapIndex);
+                    }
+                    else {
+                        Tools.Warn("DDS is the only prefiltered cube map support so far.")
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
@@ -3579,7 +3582,7 @@
                 this._loadedTexturesCache.splice(index, 1);
             }
 
-            // Intergated fixed lod samplers.
+            // Integrated fixed lod samplers.
             if (texture._lodTextureHigh) {
                 texture._lodTextureHigh.dispose();
             }
@@ -4044,7 +4047,6 @@
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             }
 
-            let readFormat = (texture.format !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.format) : gl.RGBA;
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             let buffer: ArrayBufferView;
 

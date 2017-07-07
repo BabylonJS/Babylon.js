@@ -270,21 +270,21 @@
             }
         }
 
-        public get lodTextureHigh(): BaseTexture {
+        public get _lodTextureHigh(): BaseTexture {
             if (this._texture) {
                 return this._texture._lodTextureHigh;
             }
             return null;
         }
 
-        public get lodTextureMid(): BaseTexture {
+        public get _lodTextureMid(): BaseTexture {
             if (this._texture) {
                 return this._texture._lodTextureMid;
             }
             return null;
         }
 
-        public get lodTextureLow(): BaseTexture {
+        public get _lodTextureLow(): BaseTexture {
             if (this._texture) {
                 return this._texture._lodTextureLow;
             }

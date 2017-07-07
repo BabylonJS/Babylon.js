@@ -8,7 +8,7 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _format: number;
-        private _prefiletered: boolean;
+        private _prefiltered: boolean;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
             return new CubeTexture("", scene, null, noMipmap, files);
@@ -26,7 +26,7 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
             this._format = format;
-            this._prefiletered = prefiltered;
+            this._prefiltered = prefiltered;
 
             if (!rootUrl && !files) {
                 return;
@@ -85,7 +85,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                if (this._prefiletered) {
+                if (this._prefiltered) {
                     this._texture = this.getScene().getEngine().createPrefilteredCubeTexture(this.url, this.getScene(), this.lodGenerationScale, this.lodGenerationOffset, undefined, undefined, this._format);
                 }
                 else {
