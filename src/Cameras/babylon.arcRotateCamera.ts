@@ -13,8 +13,8 @@ module BABYLON {
         public radius: number;
 
         @serializeAsVector3("target")
-        private _target: Vector3;
-        private _targetHost: AbstractMesh;
+        protected _target: Vector3;
+        protected _targetHost: AbstractMesh;
 
         public get target(): Vector3 {
             return this._target;
@@ -191,24 +191,24 @@ module BABYLON {
 
         // Panning
         public panningAxis: Vector3 = new Vector3(1, 1, 0);
-        private _localDirection: Vector3;
-        private _transformedDirection: Vector3;
+        protected _localDirection: Vector3;
+        protected _transformedDirection: Vector3;
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
         public collisionRadius = new Vector3(0.5, 0.5, 0.5);
-        private _collider: Collider;
-        private _previousPosition = Vector3.Zero();
-        private _collisionVelocity = Vector3.Zero();
-        private _newPosition = Vector3.Zero();
-        private _previousAlpha: number;
-        private _previousBeta: number;
-        private _previousRadius: number;
+        protected _collider: Collider;
+        protected _previousPosition = Vector3.Zero();
+        protected _collisionVelocity = Vector3.Zero();
+        protected _newPosition = Vector3.Zero();
+        protected _previousAlpha: number;
+        protected _previousBeta: number;
+        protected _previousRadius: number;
         //due to async collision inspection
-        private _collisionTriggered: boolean;
+        protected _collisionTriggered: boolean;
 
-        private _targetBoundingCenter: Vector3;
+        protected _targetBoundingCenter: Vector3;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -249,7 +249,7 @@ module BABYLON {
             this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         }
 
-        private _getTargetPosition(): Vector3 {
+        protected _getTargetPosition(): Vector3 {
             if (this._targetHost && this._targetHost.getAbsolutePosition) {
                 var pos : Vector3 = this._targetHost.getAbsolutePosition();
                 if (this._targetBoundingCenter) {
@@ -367,7 +367,7 @@ module BABYLON {
             super._checkInputs();
         }
 
-        private _checkLimits() {
+        protected _checkLimits() {
             if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
                 if (this.allowUpsideDown && this.beta > Math.PI) {
                     this.beta = this.beta - (2 * Math.PI);
@@ -494,7 +494,7 @@ module BABYLON {
             return this._viewMatrix;
         }
 
-        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+        protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
 
             if (this.getScene().workerCollisions && this.checkCollisions) {
                 newPosition.multiplyInPlace(this._collider.radius);
