@@ -3138,7 +3138,7 @@
                     let smoothness = i / (mipSlices - 1);
                     let roughness = 1 - smoothness;
 
-                    let minLODIndex = 0 + offset; // roughness = 0
+                    let minLODIndex = offset; // roughness = 0
                     let maxLODIndex = MathTools.Log2(width) * scale + offset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
