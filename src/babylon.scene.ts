@@ -190,6 +190,8 @@
         public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
+        public _environmentBRDFTexture: BaseTexture;
+
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.

@@ -442,6 +442,8 @@
 
                 return this._renderTargets;
             }
+
+            this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
         public abstract getClassName(): string;

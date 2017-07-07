@@ -512,6 +512,8 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+
+            this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
         public getClassName(): string {
