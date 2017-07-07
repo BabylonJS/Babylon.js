@@ -655,7 +655,7 @@ void main(void) {
 // _____________________________ Highlights on Alpha _____________________________
 #ifdef ALPHABLEND
 	float luminanceOverAlpha = 0.0;
-	#ifdef RADIANCEOVERALPHA
+	#if	defined(REFLECTION) && defined(RADIANCEOVERALPHA)
 		luminanceOverAlpha += getLuminance(environmentRadiance);
 	#endif
 
