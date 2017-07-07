@@ -482,6 +482,14 @@ module BABYLON {
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
 
+        public getBoxSizeToRef(result:Vector3){
+            this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
+        }
+
+        public getRadius():number{
+            return this._physicsEngine.getPhysicsPlugin().getRadius(this);
+        }
+
         //Impostor types
         public static NoImpostor = 0;
         public static SphereImpostor = 1;
