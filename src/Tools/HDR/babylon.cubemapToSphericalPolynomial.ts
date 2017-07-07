@@ -43,12 +43,20 @@ module BABYLON.Internals {
             }
 
             var size = texture.getSize().width;
-            var right = <Float32Array>texture.readPixels(0);
-            var left = <Float32Array>texture.readPixels(1);
-            var up = <Float32Array>texture.readPixels(2);
-            var down = <Float32Array>texture.readPixels(3);
-            var front = <Float32Array>texture.readPixels(4);
-            var back = <Float32Array>texture.readPixels(5);
+            var right = texture.readPixels(0);
+            var left = texture.readPixels(1);
+            var up = texture.readPixels(2);
+            var down = texture.readPixels(3);
+            var front = texture.readPixels(4);
+            var back = texture.readPixels(5);
+
+            var gammaSpace = texture.gammaSpace;
+            // Always read as RGBA.
+            var format = Engine.TEXTUREFORMAT_RGBA;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            if (texture.textureType && texture.textureType !== Engine.TEXTURETYPE_UNSIGNED_INT) {
+                type = Engine.TEXTURETYPE_FLOAT;
+            }
 
             var cubeInfo: CubeMapInfo = {
                 size,
@@ -58,6 +66,9 @@ module BABYLON.Internals {
                 down,
                 front,
                 back,
+                format,
+                type,
+                gammaSpace,
             };
 
             return this.ConvertCubeMapToSphericalPolynomial(cubeInfo);
@@ -89,7 +100,7 @@ module BABYLON.Internals {
                 // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).
                 // This is possible because during the summation we do not need the SH-specific properties, e.g. orthogonality.
                 // Because SP is still linear, so summation is fine in that basis.
-
+                const stride = cubeInfo.format === Engine.TEXTUREFORMAT_RGBA ? 4 : 3;
                 for (var y = 0; y < cubeInfo.size; y++) {
                     var u = minUV;
 
@@ -103,54 +114,27 @@ module BABYLON.Internals {
 
                         var deltaSolidAngle = Math.pow(1.0 + u * u + v * v, -3.0 / 2.0);
 
-                        if (1) {
-                            var r = dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0];
-                            var g = dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1];
-                            var b = dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2];
+                        var r = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 0];
+                        var g = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 1];
+                        var b = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 2];
 
-                            var color = new Color3(r, g, b);
-
-                            sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
+                        // Handle Integer types.
+                        if (cubeInfo.type === Engine.TEXTURETYPE_UNSIGNED_INT) {
+                            r /= 255;
+                            g /= 255;
+                            b /= 255;
                         }
-                        else {
 
-                            if (faceIndex == 0) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 0;
-                            }
-                            else if (faceIndex == 1) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 0;
-                            }
-                            else if (faceIndex == 2) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 1;
-                            }
-                            else if (faceIndex == 3) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 0;
-                            }
-                            else if (faceIndex == 4) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 1;
-                            }
-                            else if (faceIndex == 5) {
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0] = 0;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1] = 1;
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2] = 1;
-                            }
-
-                            var color = new Color3(dataArray[(y * cubeInfo.size * 3) + (x * 3) + 0],
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 1],
-                                dataArray[(y * cubeInfo.size * 3) + (x * 3) + 2]);
-
-                            sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
+                        // Handle Gamma space textures.
+                        if (cubeInfo.gammaSpace) {
+                            r = Math.pow(r, ToLinearSpace);
+                            g = Math.pow(g, ToLinearSpace);
+                            b = Math.pow(b, ToLinearSpace);
                         }
+
+                        var color = new Color3(r, g, b);
+
+                        sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
 
                         totalSolidAngle += deltaSolidAngle;
 
