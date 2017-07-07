@@ -4006,7 +4006,12 @@ var __extends = (this && this.__extends) || (function () {
             this.width = width;
             this.height = height;
         }
-        Viewport.prototype.toGlobal = function (renderWidth, renderHeight) {
+        Viewport.prototype.toGlobal = function (renderWidthOrEngine, renderHeight) {
+            if (renderWidthOrEngine._gl) {
+                var engine = renderWidthOrEngine;
+                return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            }
+            var renderWidth = renderWidthOrEngine;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         /**
@@ -9186,7 +9191,7 @@ var BABYLON;
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
-                            BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 1);
+                            //     Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
                         }, samplingMode);
                     };
                 }
@@ -9749,9 +9754,7 @@ var BABYLON;
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    if (info.isCompressed) {
-                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-                    }
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
                     BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 6);
                     if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -10429,9 +10432,20 @@ var BABYLON;
             else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
-            var readFormat = gl.RGBA;
+            var readFormat = (texture.type !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.type) : gl.RGBA;
             var readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-            var buffer = new Uint8Array(4 * width * height);
+            var buffer;
+            switch (readType) {
+                case gl.UNSIGNED_BYTE:
+                    buffer = new Uint8Array(4 * width * height);
+                    break;
+                case gl.FLOAT:
+                    buffer = new Float32Array(4 * width * height);
+                    break;
+                case gl.HALF_FLOAT_OES:
+                    buffer = new Uint16Array(4 * width * height);
+                    break;
+            }
             gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             return buffer;
@@ -18477,8 +18491,9 @@ var BABYLON;
                 this.activeCamera = camera;
             }
         };
-        Scene.prototype.createDefaultSkybox = function (environmentTexture, pbr) {
+        Scene.prototype.createDefaultSkybox = function (environmentTexture, pbr, scale) {
             if (pbr === void 0) { pbr = false; }
+            if (scale === void 0) { scale = 1000; }
             if (environmentTexture) {
                 this.environmentTexture = environmentTexture;
             }
@@ -18486,12 +18501,8 @@ var BABYLON;
                 BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
                 return;
             }
-            if (!this.environmentTexture) {
-                BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
-                return;
-            }
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
                 var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
@@ -18507,8 +18518,6 @@ var BABYLON;
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;
@@ -32779,7 +32788,40 @@ var BABYLON;
                 bits += m & 1;
                 return bits;
             };
-            DDSTools.GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+            DDSTools._FromHalfFloat = function (value) {
+                var s = (value & 0x8000) >> 15;
+                var e = (value & 0x7C00) >> 10;
+                var f = value & 0x03FF;
+                if (e === 0) {
+                    return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
+                }
+                else if (e == 0x1F) {
+                    return f ? NaN : ((s ? -1 : 1) * Infinity);
+                }
+                return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
+            };
+            DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Float32Array(dataLength);
+                var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = DDSTools._FromHalfFloat(srcData[srcPos]);
+                        destArray[index + 1] = DDSTools._FromHalfFloat(srcData[srcPos + 1]);
+                        destArray[index + 2] = DDSTools._FromHalfFloat(srcData[srcPos + 2]);
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = DDSTools._FromHalfFloat(srcData[srcPos + 3]);
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
+            DDSTools._GetHalfFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
                 if (DDSTools.StoreLODInAlphaChannel) {
                     var destArray = new Uint16Array(dataLength);
                     var srcData = new Uint16Array(arrayBuffer, dataOffset);
@@ -32798,7 +32840,7 @@ var BABYLON;
                 }
                 return new Uint16Array(arrayBuffer, dataOffset, dataLength);
             };
-            DDSTools.GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+            DDSTools._GetFloatRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
                 if (DDSTools.StoreLODInAlphaChannel) {
                     var destArray = new Float32Array(dataLength);
                     var srcData = new Float32Array(arrayBuffer, dataOffset);
@@ -32817,7 +32859,7 @@ var BABYLON;
                 }
                 return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
-            DDSTools.GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -32833,7 +32875,7 @@ var BABYLON;
                 }
                 return byteArray;
             };
-            DDSTools.GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -32848,7 +32890,7 @@ var BABYLON;
                 }
                 return byteArray;
             };
-            DDSTools.GetLuminanceArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+            DDSTools._GetLuminanceArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
                 var index = 0;
@@ -32930,22 +32972,28 @@ var BABYLON;
                             dataLength = width * height * 4;
                             var floatArray;
                             if (bpp === 128) {
-                                floatArray = DDSTools.GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            }
+                            else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                format = engine._getWebGLTextureType(info.textureType);
+                                internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                             }
                             else {
-                                floatArray = DDSTools.GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                             }
                             engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                         }
                         else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
-                                byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                                 engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                             }
                             else {
                                 dataLength = width * height * 4;
-                                byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                                 engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         }
@@ -32954,7 +33002,7 @@ var BABYLON;
                             var unpaddedRowSize = width;
                             var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                             dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
-                            byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                             engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                         }
                         else {
@@ -47718,7 +47766,8 @@ var BABYLON;
             // Resize
             this._resizeLoadingUI = function () {
                 var canvasRect = _this._renderingCanvas.getBoundingClientRect();
-                _this._loadingDiv.style.position = "absolute";
+                var canvasPositioning = window.getComputedStyle(_this._renderingCanvas).position;
+                _this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
                 _this._loadingDiv.style.left = canvasRect.left + "px";
                 _this._loadingDiv.style.top = canvasRect.top + "px";
                 _this._loadingDiv.style.width = canvasRect.width + "px";
@@ -47762,8 +47811,8 @@ var BABYLON;
             imgBack.style.position = "absolute";
             imgBack.style.left = "50%";
             imgBack.style.top = "50%";
-            imgBack.style.marginLeft = "-50px";
-            imgBack.style.marginTop = "-50px";
+            imgBack.style.marginLeft = "-60px";
+            imgBack.style.marginTop = "-60px";
             imgBack.style.animation = "spin1 2s infinite ease-in-out";
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";
