@@ -10432,7 +10432,7 @@ var BABYLON;
             else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
-            var readFormat = gl.RGBA;
+            var readFormat = (texture.type !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.type) : gl.RGBA;
             var readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             var buffer;
             switch (readType) {
@@ -18491,8 +18491,9 @@ var BABYLON;
                 this.activeCamera = camera;
             }
         };
-        Scene.prototype.createDefaultSkybox = function (environmentTexture, pbr) {
+        Scene.prototype.createDefaultSkybox = function (environmentTexture, pbr, scale) {
             if (pbr === void 0) { pbr = false; }
+            if (scale === void 0) { scale = 1000; }
             if (environmentTexture) {
                 this.environmentTexture = environmentTexture;
             }
@@ -18500,12 +18501,8 @@ var BABYLON;
                 BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
                 return;
             }
-            if (!this.environmentTexture) {
-                BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
-                return;
-            }
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
                 var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
@@ -18521,8 +18518,6 @@ var BABYLON;
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;

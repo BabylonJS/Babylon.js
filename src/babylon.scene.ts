@@ -3716,7 +3716,7 @@
             }
         }
 
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false): Mesh {
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000): Mesh {
             if (environmentTexture) {
                 this.environmentTexture = environmentTexture;
             }
@@ -3726,13 +3726,8 @@
                 return;
             }
 
-            if (!this.environmentTexture) {
-                Tools.Warn("Can not create default skybox without environment texture.");
-                return;
-            }
-
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
                 let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
@@ -3748,8 +3743,6 @@
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;
