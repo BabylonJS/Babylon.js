@@ -3137,14 +3137,12 @@
                     //compute LOD from even spacing in smoothness (matching shader calculation)
                     let smoothness = i / (mipSlices - 1);
                     let roughness = 1 - smoothness;
-                    const minimumVariance = 0.0005;
-                    let alphaG = roughness * roughness + minimumVariance;
-                    let microsurfaceAverageSlopeTexels = alphaG * width;
 
-                    let environmentSpecularLOD = scale * (MathTools.Log2(microsurfaceAverageSlopeTexels)) + offset;
+                    let minLODIndex = offset; // roughness = 0
+                    let maxLODIndex = MathTools.Log2(width) * scale + offset; // roughness = 1
 
-                    let maxLODIndex = MathTools.Log2(width);
-                    let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
+                    let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
+                    let mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
 
                     var glTextureFromLod = gl.createTexture();
                     glTextureFromLod.isCube = true;
