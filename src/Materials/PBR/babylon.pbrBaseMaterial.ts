@@ -1081,10 +1081,10 @@
 
                         var refractionTexture = this._getRefractionTexture();
                         if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                            this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
+
                             var depth = 1.0;
                             if (!refractionTexture.isCube) {
-                                this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
-
                                 if ((<any>refractionTexture).depth) {
                                     depth = (<any>refractionTexture).depth;
                                 }
