@@ -2465,7 +2465,7 @@
 
                          var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                          prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                        //     Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
+                             Internals.DDSTools.UploadDDSLevels(this, data, info, loadMipmap, 1);
                          }, samplingMode);
                     };
                 }
@@ -3953,27 +3953,26 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
             if (faceIndex > -1) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, lodIndex);            
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, lodIndex);
             } else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
             }
 
-            let readFormat = (texture.type !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.type) : gl.RGBA;
+            let readFormat = (texture.format !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.format) : gl.RGBA;
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
             let buffer: ArrayBufferView;
 
             switch (readType) {
                 case gl.UNSIGNED_BYTE:
                     buffer = new Uint8Array(4 * width * height);
+                    readType = gl.UNSIGNED_BYTE;
                     break;
-                case gl.FLOAT:
+                default:
                     buffer = new Float32Array(4 * width * height);
-                    break;            
-                case gl.HALF_FLOAT_OES:
-                    buffer = new Uint16Array(4 * width * height);
-                    break;                          
+                    readType = gl.FLOAT;
+                    break;
             }
-            gl.readPixels(0, 0, width, height, readFormat, readType, buffer);
+            gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
             
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

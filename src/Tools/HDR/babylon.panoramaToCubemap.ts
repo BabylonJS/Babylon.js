@@ -5,39 +5,39 @@ module BABYLON.Internals {
     export interface CubeMapInfo {
         /**
          * The pixel array for the front face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        front: Float32Array;
+        front: ArrayBufferView;
         
         /**
          * The pixel array for the back face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        back: Float32Array;
+        back: ArrayBufferView;
         
         /**
          * The pixel array for the left face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        left: Float32Array;
+        left: ArrayBufferView;
         
         /**
          * The pixel array for the right face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        right: Float32Array;
+        right: ArrayBufferView;
         
         /**
          * The pixel array for the up face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        up: Float32Array;
+        up: ArrayBufferView;
         
         /**
          * The pixel array for the down face.
-         * This is stored in RGB, left to right, up to down format.
+         * This is stored in format, left to right, up to down format.
          */
-        down: Float32Array;
+        down: ArrayBufferView;
         
         /**
          * The size of the cubemap stored.
@@ -45,6 +45,25 @@ module BABYLON.Internals {
          * Each faces will be size * size pixels.
          */
         size: number;
+
+        /**
+         * The format of the texture.
+         * 
+         * RGBA, RGB.
+         */
+        format: number;
+
+        /**
+         * The type of the texture data.
+         * 
+         * UNSIGNED_INT, FLOAT.
+         */
+        type: number;
+
+        /**
+         * Specifies whether the texture is in gamma space.
+         */
+        gammaSpace: boolean;
     }
 
     /**
@@ -121,7 +140,10 @@ module BABYLON.Internals {
                 right: textureRight,
                 up: textureUp,
                 down: textureDown,
-                size: size
+                size: size,
+                type: Engine.TEXTURETYPE_FLOAT,
+                format: Engine.TEXTUREFORMAT_RGB,
+                gammaSpace: false,
             };
         }
 
