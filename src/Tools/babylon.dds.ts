@@ -315,14 +315,14 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(engine: Engine, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void {
+        public static UploadDDSLevels(engine: Engine, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1): void {
             var gl = engine._gl;
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
                 fourCC, blockBytes, internalFormat, format,
                 width, height, dataLength, dataOffset,
-                byteArray, mipmapCount, i;
+                byteArray, mipmapCount, mip;
 
             if (header[off_magic] != DDS_MAGIC) {
                 Tools.Error("Invalid magic number in DDS header");
@@ -408,45 +408,50 @@
                 width = header[off_width];
                 height = header[off_height];
 
-                for (i = 0; i < mipmapCount; ++i) {
-                    if (!info.isCompressed && info.isFourCC) {
-                        dataLength = width * height * 4;
-                        var floatArray: ArrayBufferView;
-                        if (bpp === 128) {
-                            floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                        } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) { // Let's fallback to full float
-                            floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                for (mip = 0; mip < mipmapCount; ++mip) {
+                    if (lodIndex === -1 || lodIndex === mip) {
+                        // In case of fixed LOD, if the lod has just been uploaded, early exit.
+                        const i = (lodIndex === -1) ? mip : 0;
 
-                            info.textureType = Engine.TEXTURETYPE_FLOAT;
-                            format = engine._getWebGLTextureType(info.textureType);    
-                            internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
-                        } else { // 64
-                            floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                        }
-
-                        engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
-                    } else if (info.isRGB) {
-                        if (bpp === 24) {
-                            dataLength = width * height * 3;
-                            byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
-                        } else { // 32
+                        if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
-                        }
-                    } else if (info.isLuminance) {
-                        var unpackAlignment = gl.getParameter(gl.UNPACK_ALIGNMENT);
-                        var unpaddedRowSize = width;
-                        var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
-                        dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
+                            var floatArray: ArrayBufferView;
+                            if (bpp === 128) {
+                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) { // Let's fallback to full float
+                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
-                        byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                        engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
-                    } else {
-                        dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
-                        byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
-                        engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
+                                info.textureType = Engine.TEXTURETYPE_FLOAT;
+                                format = engine._getWebGLTextureType(info.textureType);    
+                                internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
+                            } else { // 64
+                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                            }
+
+                            engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                        } else if (info.isRGB) {
+                            if (bpp === 24) {
+                                dataLength = width * height * 3;
+                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
+                            } else { // 32
+                                dataLength = width * height * 4;
+                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
+                            }
+                        } else if (info.isLuminance) {
+                            var unpackAlignment = gl.getParameter(gl.UNPACK_ALIGNMENT);
+                            var unpaddedRowSize = width;
+                            var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
+                            dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
+
+                            byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            engine._uploadDataToTexture(sampler, i, gl.LUMINANCE, width, height, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
+                        } else {
+                            dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
+                            byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
+                            engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
+                        }
                     }
                     dataOffset += width * height * (bpp / 8);
                     width *= 0.5;
