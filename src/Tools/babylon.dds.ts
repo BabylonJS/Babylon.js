@@ -57,6 +57,7 @@
     var FOURCC_D3DFMT_R32G32B32A32F = 116;
 
     var DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
+    var DXGI_FORMAT_B8G8R8X8_UNORM = 88;
 
     var headerLengthInt = 31; // The header length in 32 bit ints
 
@@ -368,8 +369,21 @@
                     // There is an additionnal header so dataOffset need to be changed
                     dataOffset += 5 * 4; // 5 uints
 
-                    if (info.dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
-                        computeFormats = true;
+                    let supported = false;
+                    switch (info.dxgiFormat) {
+                        case DXGI_FORMAT_R16G16B16A16_FLOAT:
+                            computeFormats = true;
+                            supported = true;
+                            break;
+                        case DXGI_FORMAT_B8G8R8X8_UNORM:
+                            info.isRGB = true;
+                            info.isFourCC = false;
+                            bpp = 32;
+                            supported = true;
+                            break;                        
+                    }
+
+                    if (supported) {
                         break;
                     }
                 default:
