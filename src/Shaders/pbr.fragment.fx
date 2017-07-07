@@ -452,7 +452,11 @@ void main(void) {
 		reflectionCoords.y = 1.0 - reflectionCoords.y;
 	#endif
 	
-	float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotV);
+	#ifdef REFLECTIONMAP_SKYBOX
+		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, 1.);
+	#else
+		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotV);
+	#endif
 
 	#ifdef LODBASEDMICROSFURACE
 		// Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
