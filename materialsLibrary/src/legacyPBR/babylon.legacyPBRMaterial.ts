@@ -1331,7 +1331,7 @@ module BABYLON {
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
 
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                                var polynomials = this.reflectionTexture.getSphericalPolynomial();
+                                var polynomials = this.reflectionTexture.sphericalPolynomial;
                                 this._effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
                                 this._effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
                                 this._effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
