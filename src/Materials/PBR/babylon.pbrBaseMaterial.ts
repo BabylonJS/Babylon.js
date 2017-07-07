@@ -597,8 +597,7 @@
                         }
 
                         if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
-                            var polynomials = reflectionTexture.getSphericalPolynomial();
-                            if (polynomials) {
+                            if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
                             }
                         }
@@ -1025,7 +1024,7 @@
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
                             if (defines.USESPHERICALFROMREFLECTIONMAP) {
-                                var polynomials = reflectionTexture.getSphericalPolynomial();
+                                var polynomials = reflectionTexture.sphericalPolynomial;
                                 this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
                                 this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
                                 this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
@@ -1144,13 +1143,9 @@
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
                         else {
-                            if (!reflectionTexture._lodTextureMid) {
-                                reflectionTexture._generateFixedLodSamplers();
-                            }
-
-                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture.lodTextureMid || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture.lodTextureLow || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture.lodTextureHigh || reflectionTexture);
                         }
                     }
 
@@ -1163,13 +1158,9 @@
                             this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
                         }
                         else {
-                            if (!refractionTexture._lodTextureMid) {
-                                refractionTexture._generateFixedLodSamplers();
-                            }
-
-                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture._lodTextureMid || refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture._lodTextureLow || refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture._lodTextureHigh || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture.lodTextureMid || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture.lodTextureLow || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture.lodTextureHigh || refractionTexture);
                         }
                     }
 

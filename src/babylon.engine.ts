@@ -741,7 +741,7 @@
             this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
 
             // Checks if some of the format renders first to allow the use of webgl inspector.
-            this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float')
+            this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
 
             this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
             this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear');
@@ -2401,9 +2401,6 @@
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            if (isDDS) {
-                BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
-            }
             var isTGA = (extension === ".tga");
             
             // determine if a ktx file should be substituted
@@ -3117,7 +3114,79 @@
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null, format?: number): WebGLTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: () => void, onError: () => void = null, format?: number): WebGLTexture {
+            var callback = (loadData) => {
+                if (this._caps.textureLOD || !loadData) {
+                    // Do not add extra process if texture lod is supported.
+                    if (onLoad) {
+                        onLoad();
+                    }
+                    return;
+                }
+
+                const mipSlices = 3;
+                
+                var gl = this._gl;
+                const width = loadData.width;
+                if (!width) {
+                    return;
+                }
+
+                const textures: BaseTexture[] = [];
+                for (let i = 0; i < mipSlices; i++) {
+                    //compute LOD from even spacing in smoothness (matching shader calculation)
+                    let smoothness = i / (mipSlices - 1);
+                    let roughness = 1 - smoothness;
+                    const kMinimumVariance = 0.0005;
+                    let alphaG = roughness * roughness + kMinimumVariance;
+                    let microsurfaceAverageSlopeTexels = alphaG * width;
+
+                    let environmentSpecularLOD = scale * (MathTools.Log2(microsurfaceAverageSlopeTexels)) + offset;
+
+                    let maxLODIndex = MathTools.Log2(width);
+                    let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
+
+                    var glTextureFromLod = gl.createTexture();
+                    glTextureFromLod.isCube = true;
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
+
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    if (loadData.isDDS) {
+                        var info: Internals.DDSInfo = loadData.info;
+                        var data: any = loadData.data;
+                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+
+                        Internals.DDSTools.UploadDDSLevels(this, data, info, true, 6, mipmapIndex);
+                    }
+
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+                    // Wrap in a base texture for easy binding.
+                    const lodTexture = new BaseTexture(scene);
+                    lodTexture.isCube = true;
+                    lodTexture._texture = glTextureFromLod;
+                    
+                    glTextureFromLod.isReady = true;
+                    textures.push(lodTexture);
+                }
+
+                (loadData.texture as WebGLTexture)._lodTextureHigh = textures[2];
+                (loadData.texture as WebGLTexture)._lodTextureMid = textures[1];
+                (loadData.texture as WebGLTexture)._lodTextureLow = textures[0];
+
+                if (onLoad) {
+                    onLoad();
+                }
+            };
+
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format);
+        }
+
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: () => void = null, format?: number): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -3190,6 +3259,10 @@
                     texture._height = info.height;
                     texture.isReady = true;
                     texture.type = info.textureType;
+
+                    if (onLoad) {
+                        onLoad({ isDDS: true, width: info.width, info, data, texture });
+                    }
                 }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
@@ -3303,6 +3376,8 @@
             texture.isCube = true;
             texture.references = 1;
             texture.noMipmap = !generateMipMaps;
+            texture.format = format;
+            texture.type = type;
 
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
@@ -3502,6 +3577,17 @@
             var index = this._loadedTexturesCache.indexOf(texture);
             if (index !== -1) {
                 this._loadedTexturesCache.splice(index, 1);
+            }
+
+            // Intergated fixed lod samplers.
+            if (texture._lodTextureHigh) {
+                texture._lodTextureHigh.dispose();
+            }
+            if (texture._lodTextureMid) {
+                texture._lodTextureMid.dispose();
+            }
+            if (texture._lodTextureLow) {
+                texture._lodTextureLow.dispose();
             }
         }
 
@@ -3945,7 +4031,7 @@
             }
         }
 
-        public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1, lodIndex = 0): ArrayBufferView {
+        public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 this._dummyFramebuffer = gl.createFramebuffer();
@@ -3953,9 +4039,9 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
             if (faceIndex > -1) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, lodIndex);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, lodIndex);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             }
 
             let readFormat = (texture.format !== undefined) ? this._getRGBABufferInternalSizedFormat(texture.format) : gl.RGBA;
@@ -3972,46 +4058,11 @@
                     readType = gl.FLOAT;
                     break;
             }
+
             gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
-            
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
             return buffer;
-        }
-
-        public _createCubeTextureFromLOD(texture: BaseTexture, name: string, lodIndex: number): BaseTexture {
-            if (!texture.isCube) {
-                return null;
-            }
-
-            const gl = this._gl;
-            const maxSize = texture.getSize().width;
-            const numLod = MathTools.Log2(maxSize);
-            const targetSize = Math.pow(2, numLod - lodIndex);
-
-            var data: ArrayBufferView[] = [];
-            for (var i = 0; i < 6; i++) {
-                data.push(texture.readPixels(i, lodIndex));
-            }
-
-            const glTextureFromLod = this.createRawCubeTexture(data, targetSize, texture.textureFormat, texture.textureType, false, false, texture._texture.samplingMode);
-
-            // Wrap in a base texture for easy binding.
-            var lodTexture = new BaseTexture(texture.getScene());
-            lodTexture.isCube = true;
-            lodTexture.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
-            lodTexture.coordinatesIndex = texture.coordinatesIndex;
-            lodTexture.coordinatesMode = texture.coordinatesMode;
-            lodTexture.gammaSpace = texture.gammaSpace;
-            lodTexture.getAlphaFromRGB = texture.getAlphaFromRGB;
-            lodTexture.hasAlpha = texture.hasAlpha;
-            lodTexture.invertZ = texture.invertZ;
-            lodTexture.level = texture.level;
-            lodTexture.name = name;
-            lodTexture.wrapU = texture.wrapU;
-            lodTexture.wrapV = texture.wrapV;
-
-            return lodTexture;
         }
 
         private _canRenderToFloatFramebuffer(): boolean {
