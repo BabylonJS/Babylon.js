@@ -691,7 +691,7 @@
                         defines.USERIGHTHANDEDSYSTEM = scene.useRightHandedSystem;
                     }
 
-                    var refractionTexture = this._getReractionTexture();
+                    var refractionTexture = this._getRefractionTexture();
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                         if (!refractionTexture.isReadyOrNotBlocking()) {
                             return false;
@@ -1079,7 +1079,7 @@
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                         }
 
-                        var refractionTexture = this._getReractionTexture();
+                        var refractionTexture = this._getRefractionTexture();
                         if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                             var depth = 1.0;
                             if (!refractionTexture.isCube) {
@@ -1145,9 +1145,9 @@
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture.lodTextureMid || reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture.lodTextureLow || reflectionTexture);
-                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture.lodTextureHigh || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
                         }
                     }
 
@@ -1160,9 +1160,9 @@
                             this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture.lodTextureMid || refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture.lodTextureLow || refractionTexture);
-                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture.lodTextureHigh || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture._lodTextureMid || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture._lodTextureLow || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture._lodTextureHigh || refractionTexture);
                         }
                     }
 
@@ -1288,7 +1288,7 @@
             return this.getScene().environmentTexture;
         }
 
-        private _getReractionTexture(): BaseTexture {
+        private _getRefractionTexture(): BaseTexture {
             if (this._refractionTexture) {
                 return this._refractionTexture;
             }

@@ -109,8 +109,8 @@ float fresnelGrazingReflectance(float reflectance0) {
 }
 
 // To enable 8 bit textures to be used we need to pack and unpack the LOD
-// Inverse alpha is used to work around low-alpha bugs in Edge and Firefox
-#define UNPACK_LOD(x) (x)
+//inverse alpha is used to work around low-alpha bugs in Edge and Firefox
+#define UNPACK_LOD(x) (1.0 - x) * 255.0
 
 float getLodFromAlphaG(float cubeMapDimensionPixels, float alphaG, float NdotV) {
     float microsurfaceAverageSlope = alphaG;
