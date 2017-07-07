@@ -62,7 +62,7 @@
         public lodLevelInAlpha = false;
 
         @serialize()
-        public lodGenerationOffset = 1.0;
+        public lodGenerationOffset = 0.0;
 
         @serialize()
         public lodGenerationScale = 0.8;

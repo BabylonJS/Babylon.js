@@ -735,6 +735,7 @@
         "hdr" : 
         {
             "files": [
+                "../../src/Math/babylon.sphericalPolynomial.js",
                 "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js",
                 "../../src/Tools/HDR/babylon.panoramaToCubemap.js",
                 "../../src/Tools/HDR/babylon.hdr.js",
