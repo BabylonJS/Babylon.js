@@ -379,8 +379,9 @@ void main(void) {
 		refractionCoords.y = 1.0 - refractionCoords.y;
 	#endif
 
+	float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotV);
+	
 	#ifdef LODBASEDMICROSFURACE
-		float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotV);
 		// Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
 		refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
 
@@ -403,19 +404,21 @@ void main(void) {
 
 		environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD).rgb;
 	#else
-		float u = microSurface * 2.0;
-		vec3 environmentSpecularMid = sampleRefraction(refractionSampler, reflectionCoords).rgb;
-		if(u < 1.0){
+		float lodRefractionNormalized = clamp(refractionLOD / log2(vRefractionMicrosurfaceInfos.x), 0., 1.);
+		float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
+
+		vec3 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords).rgb;
+		if(lodRefractionNormalizedDoubled < 1.0){
 			environmentRefraction = mix(
-				sampleRefraction(refractionSamplerLow, reflectionCoords).rgb,
-				environmentSpecularMid,
-				u
+				sampleRefraction(refractionSamplerHigh, refractionCoords).rgb,
+				environmentRefractionMid,
+				lodRefractionNormalizedDoubled
 			);
 		}else{
 			environmentRefraction = mix(
-				environmentSpecularMid,
-				sampleRefraction(refractionSamplerHigh, reflectionCoords).rgb,
-				u - 1.0
+				environmentRefractionMid,
+				sampleRefraction(refractionSamplerLow, refractionCoords).rgb,
+				lodRefractionNormalizedDoubled - 1.0
 			);
 		}
 	#endif
@@ -449,8 +452,9 @@ void main(void) {
 		reflectionCoords.y = 1.0 - reflectionCoords.y;
 	#endif
 	
+	float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotV);
+
 	#ifdef LODBASEDMICROSFURACE
-		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotV);
 		// Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
 		reflectionLOD = reflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
 
@@ -473,19 +477,21 @@ void main(void) {
 
 		environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, requestedReflectionLOD).rgb;
 	#else
-		float u = microSurface * 2.0;
+		float lodReflectionNormalized = clamp(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+		float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
+
 		vec3 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
-		if(u < 1.0){
+		if(lodReflectionNormalizedDoubled < 1.0){
 			environmentRadiance = mix(
-				sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
+				sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
 				environmentSpecularMid,
-				u
+				lodReflectionNormalizedDoubled
 			);
 		}else{
 			environmentRadiance = mix(
 				environmentSpecularMid,
-				sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
-				u - 1.0
+				sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
+				lodReflectionNormalizedDoubled - 1.0
 			);
 		}
 	#endif
