@@ -166,7 +166,7 @@ module BABYLON {
                 sphericalPolynomial.xy.copyFromFloats(floatArrayView[20], floatArrayView[21], floatArrayView[22]);
                 sphericalPolynomial.yz.copyFromFloats(floatArrayView[23], floatArrayView[24], floatArrayView[25]);
                 sphericalPolynomial.zx.copyFromFloats(floatArrayView[26], floatArrayView[27], floatArrayView[28]);
-                this.setSphericalPolynomial(sphericalPolynomial);
+                this.sphericalPolynomial = sphericalPolynomial;
 
                 // Fill pixel data.
                 mipLevels = intArrayView[29]; // Number of mip levels.
@@ -262,7 +262,7 @@ module BABYLON {
                 // Generate harmonics if needed.
                 if (this._generateHarmonics) {
                     var sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
-                    this.setSphericalPolynomial(sphericalPolynomial);
+                    this.sphericalPolynomial = sphericalPolynomial;
                 }
 
                 var results = [];

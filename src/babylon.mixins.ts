@@ -127,6 +127,12 @@ interface WebGLTexture {
     _generateStencilBuffer: boolean;
     _generateDepthBuffer: boolean;
     _sphericalPolynomial: BABYLON.SphericalPolynomial;
+    // The following three fields helps sharing generated fixed LODs for texture filtering
+    // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
+    // They are at the level of the gl texture to benefit from the cache.
+    _lodTextureHigh: BABYLON.BaseTexture;
+    _lodTextureMid: BABYLON.BaseTexture;
+    _lodTextureLow: BABYLON.BaseTexture;
 }
 
 interface WebGLBuffer {
