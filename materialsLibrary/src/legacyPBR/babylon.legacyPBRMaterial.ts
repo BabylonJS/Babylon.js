@@ -1331,33 +1331,20 @@ module BABYLON {
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
 
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                                this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.z);
-                                this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.z);
-                                this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.z);
-                                this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.z);
-                                this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.z);
-                                this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.z);
-                                this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.z);
-                                this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.z);
+                                var polynomials = this.reflectionTexture.getSphericalPolynomial();
+                                this._effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                this._effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                this._effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                this._effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                    polynomials.xx.y - polynomials.zz.y,
+                                    polynomials.xx.z - polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                    polynomials.yy.y - polynomials.zz.y,
+                                    polynomials.yy.z - polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                this._effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                this._effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                             }
                         }
 

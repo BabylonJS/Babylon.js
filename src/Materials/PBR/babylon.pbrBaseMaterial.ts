@@ -33,6 +33,7 @@
         public MICROSURFACEAUTOMATIC = false;
         public LIGHTMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
+        public LOGARITHMICDEPTH = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
@@ -44,17 +45,19 @@
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
         public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
-        public LOGARITHMICDEPTH = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
+        public REFLECTIONMAP_OPPOSITEZ = false;
+        public LODINREFLECTIONALPHA = false;
+        public GAMMAREFLECTION = false;
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
+        public REFRACTIONMAP_OPPOSITEZ = false;
+        public LODINREFRACTIONALPHA = false;
+        public GAMMAREFRACTION = false;
         public LINKREFRACTIONTOTRANSPARENCY = false;
-        public REFRACTIONMAPINLINEARSPACE = false;
         public LODBASEDMICROSFURACE = false;
         public USEPHYSICALLIGHTFALLOFF = false;
         public RADIANCEOVERALPHA = false;
-        public USEPMREMREFLECTION = false;
-        public USEPMREMREFRACTION = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
@@ -69,6 +72,7 @@
         public METALLNESSSTOREINMETALMAPBLUE = false;
         public AOSTOREINMETALMAPRED = false;
         public MICROSURFACEMAP = false;
+        public ENVIRONMENTBRDF = false;
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
@@ -163,7 +167,7 @@
 
         protected _reflectionTexture: BaseTexture;
 
-        private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
+        protected _refractionTexture: BaseTexture;
 
         protected _emissiveTexture: BaseTexture;
         
@@ -199,8 +203,6 @@
 
         protected _lightmapTexture: BaseTexture;
 
-        protected _refractionTexture: BaseTexture;
-
         protected _ambientColor = new Color3(0, 0, 0);
 
         /**
@@ -213,7 +215,7 @@
          */
         protected _reflectivityColor = new Color3(1, 1, 1);
 
-        protected _reflectionColor = new Color3(0.0, 0.0, 0.0);
+        protected _reflectionColor = new Color3(1, 1, 1);
 
         protected _emissiveColor = new Color3(0, 0, 0);
         
@@ -363,6 +365,13 @@
         protected _useAlphaFresnel = false;
 
         /**
+         * Specifies the environment BRDF texture used to comput the scale and offset roughness values
+         * from cos thetav and roughness: 
+         * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+         */
+        protected _environmentBRDFTexture: BaseTexture = null;
+
+        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         @serializeAsImageProcessingConfiguration()
@@ -433,6 +442,8 @@
 
                 return this._renderTargets;
             }
+
+            this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
         public abstract getClassName(): string;
@@ -539,13 +550,16 @@
                         }
                     }
 
-                    var reflectionTexture = this._reflectionTexture || scene.environmentTexture;
+                    var reflectionTexture = this._getReflectionTexture();
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                         
                         defines.REFLECTION = true;
+                        defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
+                        defines.REFLECTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
+                        defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;
@@ -581,14 +595,12 @@
                                 break;
                             case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
-                                break;                                
+                                break;
                         }
 
-                        if (reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>reflectionTexture)) {
-                            defines.USESPHERICALFROMREFLECTIONMAP = true;
-
-                            if ((<HDRCubeTexture>reflectionTexture).isPMREM) {
-                                defines.USEPMREMREFLECTION = true;
+                        if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
+                            if (reflectionTexture.sphericalPolynomial) {
+                                defines.USESPHERICALFROMREFLECTIONMAP = true;
                             }
                         }
                     }
@@ -679,31 +691,35 @@
                         defines.USERIGHTHANDEDSYSTEM = scene.useRightHandedSystem;
                     }
 
-                    if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (!this._refractionTexture.isReadyOrNotBlocking()) {
+                    var refractionTexture = this._getRefractionTexture();
+                    if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        if (!refractionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                         
                         defines._needUVs = true;
                         defines.REFRACTION = true;
-                        defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
+                        defines.REFRACTIONMAP_3D = refractionTexture.isCube;
+                        defines.GAMMAREFRACTION = refractionTexture.gammaSpace;
+                        defines.REFRACTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
+                        defines.LODINREFRACTIONALPHA = reflectionTexture.lodLevelInAlpha;
 
                         if (this._linkRefractionWithTransparency) {
                             defines.LINKREFRACTIONTOTRANSPARENCY = true;
                         }
-                        if (this._refractionTexture instanceof HDRCubeTexture) {
-                            defines.REFRACTIONMAPINLINEARSPACE = true;
+                    }
 
-                            if ((<HDRCubeTexture>this._refractionTexture).isPMREM) {
-                                defines.USEPMREMREFRACTION = true;
-                            }
+                    if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        // This is blocking.
+                        if (!this._environmentBRDFTexture.isReady()) {
+                            return false;
                         }
+                        defines.ENVIRONMENTBRDF = true;
                     }
 
                     if (this._shouldUseAlphaFromAlbedoTexture()) {
                         defines.ALPHAFROMALBEDO = true;
                     }
-
                 }
 
                 if (this._useSpecularOverAlpha) {
@@ -763,6 +779,10 @@
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();
+                if (defines.ENVIRONMENTBRDF) {
+                    fallbacks.addFallback(0, "ENVIRONMENTBRDF");
+                }
+
                 if (defines.REFLECTION) {
                     fallbacks.addFallback(0, "REFLECTION");
                 }
@@ -850,10 +870,14 @@
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                        "vMicrosurfaceTextureLods"
+                        "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos"
                 ];
 
-                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler", 
+                    "bumpSampler", "lightmapSampler", "opacitySampler",
+                    "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
+                    "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
+                    "microSurfaceSampler", "environmentBrdfSampler"];
                 var uniformBuffers = ["Material", "Scene"];
 
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -929,7 +953,8 @@
             this._uniformBuffer.addUniform("vAlbedoColor", 4);
             this._uniformBuffer.addUniform("vLightingIntensity", 4);
 
-            this._uniformBuffer.addUniform("vMicrosurfaceTextureLods", 2);
+            this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+            this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
             this._uniformBuffer.addUniform("vReflectivityColor", 4);
             this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
@@ -940,11 +965,11 @@
 
         public unbind(): void {
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._uniformBuffer.setTexture("reflection2DSampler", null);
+                this._uniformBuffer.setTexture("reflectionSampler", null);
             }
 
             if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                this._uniformBuffer.setTexture("refraction2DSampler", null);
+                this._uniformBuffer.setTexture("refractionSampler", null);
             }
 
             super.unbind();
@@ -965,7 +990,7 @@
             var effect = subMesh.effect;
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
 
             // Bones
@@ -978,7 +1003,7 @@
 
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
-                    // Texture uniforms      
+                    // Texture uniforms
                     if (scene.texturesEnabled) {
                         if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
@@ -995,41 +1020,32 @@
                             this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
                         }
 
-                        var reflectionTexture = this._reflectionTexture || scene.environmentTexture;;
+                        var reflectionTexture = this._getReflectionTexture();
                         if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                            this._microsurfaceTextureLods.x = Math.round(Math.log(reflectionTexture.getSize().width) * Math.LOG2E);
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
                             if (defines.USESPHERICALFROMREFLECTIONMAP) {
-                                this._activeEffect.setFloat3("vSphericalX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.x.z);
-                                this._activeEffect.setFloat3("vSphericalY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.y.z);
-                                this._activeEffect.setFloat3("vSphericalZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.z.z);
-                                this._activeEffect.setFloat3("vSphericalXX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xx.z);
-                                this._activeEffect.setFloat3("vSphericalYY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yy.z);
-                                this._activeEffect.setFloat3("vSphericalZZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zz.z);
-                                this._activeEffect.setFloat3("vSphericalXY", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.xy.z);
-                                this._activeEffect.setFloat3("vSphericalYZ", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.yz.z);
-                                this._activeEffect.setFloat3("vSphericalZX", (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.x,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.y,
-                                    (<HDRCubeTexture>reflectionTexture).sphericalPolynomial.zx.z);
+                                var polynomials = reflectionTexture.sphericalPolynomial;
+                                this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                this._activeEffect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                    polynomials.xx.y - polynomials.zz.y,
+                                    polynomials.xx.z - polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                    polynomials.yy.y - polynomials.zz.y,
+                                    polynomials.yy.z - polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                this._activeEffect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                             }
+
+                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos", 
+                                reflectionTexture.getSize().width, 
+                                reflectionTexture.lodGenerationScale,
+                                reflectionTexture.lodGenerationOffset);
                         }
 
                         if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -1063,22 +1079,21 @@
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                         }
 
-                        if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                            this._microsurfaceTextureLods.y = Math.round(Math.log(this._refractionTexture.getSize().width) * Math.LOG2E);
-
+                        var refractionTexture = this._getRefractionTexture();
+                        if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                             var depth = 1.0;
-                            if (!this._refractionTexture.isCube) {
-                                this._uniformBuffer.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
+                            if (!refractionTexture.isCube) {
+                                this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
 
-                                if ((<any>this._refractionTexture).depth) {
-                                    depth = (<any>this._refractionTexture).depth;
+                                if ((<any>refractionTexture).depth) {
+                                    depth = (<any>refractionTexture).depth;
                                 }
                             }
-                            this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
-                        }
-
-                        if ((reflectionTexture || this._refractionTexture)) {
-                            this._uniformBuffer.updateFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
+                            this._uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
+                            this._uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos", 
+                                refractionTexture.getSize().width, 
+                                refractionTexture.lodGenerationScale,
+                                refractionTexture.lodGenerationOffset);
                         }
                     }
 
@@ -1111,7 +1126,7 @@
                     this._uniformBuffer.updateVector4("vLightingIntensity", this._lightingInfos);
                 }
 
-                // Textures        
+                // Textures
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                         this._uniformBuffer.setTexture("albedoSampler", this._albedoTexture);
@@ -1126,10 +1141,28 @@
                     }
 
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (reflectionTexture.isCube) {
-                            this._uniformBuffer.setTexture("reflectionCubeSampler", reflectionTexture);
-                        } else {
-                            this._uniformBuffer.setTexture("reflection2DSampler", reflectionTexture);
+                        if (defines.LODBASEDMICROSFURACE) {
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
+                        }
+                        else {
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                        }
+                    }
+
+                    if (defines.ENVIRONMENTBRDF) {
+                        this._uniformBuffer.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
+                    }
+
+                    if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        if (defines.LODBASEDMICROSFURACE) {
+                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
+                        }
+                        else {
+                            this._uniformBuffer.setTexture("refractionSampler", refractionTexture._lodTextureMid || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerLow", refractionTexture._lodTextureLow || refractionTexture);
+                            this._uniformBuffer.setTexture("refractionSamplerHigh", refractionTexture._lodTextureHigh || refractionTexture);
                         }
                     }
 
@@ -1156,14 +1189,6 @@
 
                     if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
                         this._uniformBuffer.setTexture("bumpSampler", this._bumpTexture);
-                    }
-
-                    if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (this._refractionTexture.isCube) {
-                            this._uniformBuffer.setTexture("refractionCubeSampler", this._refractionTexture);
-                        } else {
-                            this._uniformBuffer.setTexture("refraction2DSampler", this._refractionTexture);
-                        }
                     }
                 }
 
@@ -1255,6 +1280,26 @@
             return results;
         }
 
+        private _getReflectionTexture(): BaseTexture {
+            if (this._reflectionTexture) {
+                return this._reflectionTexture;
+            }
+
+            return this.getScene().environmentTexture;
+        }
+
+        private _getRefractionTexture(): BaseTexture {
+            if (this._refractionTexture) {
+                return this._refractionTexture;
+            }
+
+            if (this._linkRefractionWithTransparency) {
+                return this.getScene().environmentTexture;
+            }
+
+            return null;
+        }
+
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             if (forceDisposeTextures) {
                 if (this._albedoTexture) {
@@ -1271,6 +1316,10 @@
 
                 if (this._reflectionTexture) {
                     this._reflectionTexture.dispose();
+                }
+
+                if (this._environmentBRDFTexture) {
+                    this._environmentBRDFTexture.dispose();
                 }
 
                 if (this._emissiveTexture) {

@@ -182,7 +182,7 @@
 
         @serializeAsColor3("reflection")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionColor = new Color3(0.0, 0.0, 0.0);
+        public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
         @serializeAsColor3("emissive")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -376,6 +376,14 @@
         public useAlphaFresnel = false;
 
         /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part.
+         */
+        @serializeAsTexture()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public environmentBRDFTexture: BaseTexture = null;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {
@@ -504,6 +512,8 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+
+            this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
         public getClassName(): string {
