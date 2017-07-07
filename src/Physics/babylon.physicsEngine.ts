@@ -188,7 +188,8 @@
         updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
-        getDebugMesh(impostor:PhysicsImpostor, scene:Scene);
+        getRadius(impostor: PhysicsImpostor):number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3);
         syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor);
         dispose();
     }
