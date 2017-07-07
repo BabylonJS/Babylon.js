@@ -9,11 +9,7 @@
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html
         private _currentCollisionGroup = 2;
-
-        private _debugBoxMesh:Mesh;
-        private _debugSphereMesh:Mesh;
-        private _debugMaterial:StandardMaterial;
-
+        
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (!this.isSupported()) {
                 Tools.Error("CannonJS is not available. Please make sure you included the js file.");
@@ -493,59 +489,6 @@
             joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
         }
 
-        private _getDebugMaterial(scene:Scene):Material{
-            if(!this._debugMaterial){
-                this._debugMaterial = new StandardMaterial('', scene);
-                this._debugMaterial.wireframe = true;
-            }
-            
-            return this._debugMaterial;
-        }
-
-        private _getDebugBoxMesh(scene:Scene):AbstractMesh{
-            if(!this._debugBoxMesh){
-                this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene); 
-                this._debugBoxMesh.renderingGroupId = 1;
-                this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
-                this._debugBoxMesh.material = this._getDebugMaterial(scene);
-                scene.removeMesh(this._debugBoxMesh);             
-            }
-
-            return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
-        }
-
-        private _getDebugSphereMesh(scene:Scene):AbstractMesh{
-            if(!this._debugSphereMesh){
-                this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene); 
-                this._debugSphereMesh.renderingGroupId = 1;
-                this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
-                this._debugSphereMesh.material = this._getDebugMaterial(scene);
-                scene.removeMesh(this._debugSphereMesh);
-            }
-
-            return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
-        }
-
-        public getDebugMesh(impostor:PhysicsImpostor, scene:Scene):AbstractMesh{
-            var body = impostor.physicsBody;
-            var shape = body.shapes[0];
-            var mesh:AbstractMesh;
-            
-            if (shape.halfExtents) {
-                mesh = this._getDebugBoxMesh(scene);
-                mesh.scaling.x = shape.halfExtents.x * 2;
-                mesh.scaling.y = shape.halfExtents.y * 2;
-                mesh.scaling.z = shape.halfExtents.z * 2;
-            } else if(shape.boundingSphereRadius){	
-                mesh = this._getDebugSphereMesh(scene);            
-                mesh.scaling.x = shape.boundingSphereRadius * 2;
-                mesh.scaling.y = shape.boundingSphereRadius * 2;
-                mesh.scaling.z = shape.boundingSphereRadius * 2;	
-            }
-
-            return mesh;
-        }
-
         public syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor){
             var body = impostor.physicsBody;
 
@@ -559,16 +502,20 @@
             mesh.rotationQuaternion.w = body.quaternion.w;
         }
 
+        public getRadius(impostor: PhysicsImpostor):number{
+            var shape = impostor.physicsBody.shapes[0];
+            return shape.boundingSphereRadius;
+        }
+
+        public getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3):void{
+            var shape = impostor.physicsBody.shapes[0];
+            result.x = shape.halfExtents.x * 2;
+            result.y = shape.halfExtents.y * 2;
+            result.z = shape.halfExtents.z * 2;
+        }
+
         public dispose() {
-            if(this._debugBoxMesh){
-                this._debugBoxMesh.dispose();
-            }
-            if(this._debugSphereMesh){
-                this._debugSphereMesh.dispose();
-            }
-            if(this._debugMaterial){
-                this._debugMaterial.dispose();
-            }
+            
         }
     }
 }
