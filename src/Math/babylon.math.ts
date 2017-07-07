@@ -4403,7 +4403,12 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(renderWidth: number, renderHeight: number): Viewport {
+        public toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport {
+            if ((<Engine>renderWidthOrEngine)._gl) {
+                var engine = (<Engine>renderWidthOrEngine);
+                return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            }
+            let renderWidth = <number>renderWidthOrEngine;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
         /**
