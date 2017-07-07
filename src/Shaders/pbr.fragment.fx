@@ -534,11 +534,13 @@ void main(void) {
 #include<lightFragment>[0..maxSimultaneousLights]
 
 // _________________________ Specular Environment Oclusion __________________________
-#ifdef ENVIRONMENTBRDF
+#if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
 	// Indexed on cos(theta) and roughness
 	vec2 brdfSamplerUV = vec2(NdotV, roughness);
+	
 	// We can find the scale and offset to apply to the specular value.
-	vec2 environmentBrdf = texture2D(environmentBrdfSampler, brdfSamplerUV).xy;
+	vec4 environmentBrdf = texture2D(environmentBrdfSampler, brdfSamplerUV);
+
 	vec3 specularEnvironmentReflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
 
 	#ifdef AMBIENTINGRAYSCALE
