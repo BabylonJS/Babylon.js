@@ -186,7 +186,7 @@ void main(void) {
 	normalW = gl_FrontFacing ? normalW : -normalW;
 
 	#ifdef BUMP
-		vec3 originalNormalW = gl_FrontFacing ? originalNormalW : -originalNormalW;;
+		originalNormalW = gl_FrontFacing ? originalNormalW : -originalNormalW;;
 	#endif
 #endif
 
