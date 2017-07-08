@@ -127,9 +127,9 @@ module BABYLON.Internals {
 
                         // Handle Gamma space textures.
                         if (cubeInfo.gammaSpace) {
-                            r = Math.pow(r, ToLinearSpace);
-                            g = Math.pow(g, ToLinearSpace);
-                            b = Math.pow(b, ToLinearSpace);
+                            r = Math.pow(MathTools.Clamp(r), ToLinearSpace);
+                            g = Math.pow(MathTools.Clamp(g), ToLinearSpace);
+                            b = Math.pow(MathTools.Clamp(b), ToLinearSpace);
                         }
 
                         var color = new Color3(r, g, b);
