@@ -46,6 +46,9 @@ module BABYLON {
 
         private _isDisposed = false;
 
+        private static _tmpVec: Vector3 = Vector3.Zero();
+        private static _tmpQuat: Quaternion = Quaternion.Identity();
+
         get isDisposed():boolean{
             return this._isDisposed;
         }
@@ -488,6 +491,49 @@ module BABYLON {
 
         public getRadius():number{
             return this._physicsEngine.getPhysicsPlugin().getRadius(this);
+        }
+
+        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, adjustRotation:Quaternion){
+
+            var tempVec = PhysicsImpostor._tmpVec;
+            var mesh = <AbstractMesh>this.object;
+
+            if(adjustRotation){
+                var tempQuat = PhysicsImpostor._tmpQuat;
+                mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
+                bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
+            }else{
+                bone.setRotationQuaternion(mesh.rotationQuaternion, Space.WORLD, boneMesh);
+            }
+
+            tempVec.x = 0;
+            tempVec.y = 0;
+            tempVec.z = 0;
+
+            if(jointPivot){
+                tempVec.x = jointPivot.x;
+                tempVec.y = jointPivot.y;
+                tempVec.z = jointPivot.z;
+
+                bone.getDirectionToRef(tempVec, boneMesh, tempVec);
+
+                var halfBoneLen = mesh.getBoundingInfo().maximum.y;
+                
+                tempVec.x *= halfBoneLen;
+                tempVec.y *= halfBoneLen;
+                tempVec.z *= halfBoneLen;
+            }
+
+            if(bone.getParent()){
+                tempVec.addInPlace(mesh.getAbsolutePosition());
+                bone.setAbsolutePosition(tempVec, boneMesh);  
+            }else{
+                boneMesh.setAbsolutePosition(mesh.getAbsolutePosition());               
+                boneMesh.position.x -= tempVec.x;
+                boneMesh.position.y -= tempVec.y;
+                boneMesh.position.z -= tempVec.z;
+            }
+
         }
 
         //Impostor types
