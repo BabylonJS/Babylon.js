@@ -2779,30 +2779,44 @@ var BABYLON;
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
                 this._lines = [];
+                var _lines = this.text.split("\n");
                 if (this._textWrapping) {
-                    var words = this.text.split(' ');
-                    var line = '';
-                    var width = this._currentMeasure.width;
-                    var lineWidth = 0;
-                    for (var n = 0; n < words.length; n++) {
-                        var testLine = n > 0 ? line + " " + words[n] : words[0];
-                        var metrics = context.measureText(testLine);
-                        var testWidth = metrics.width;
-                        if (testWidth > width && n > 0) {
-                            this._lines.push({ text: line, width: lineWidth });
-                            line = words[n];
-                            lineWidth = context.measureText(line).width;
-                        }
-                        else {
-                            lineWidth = testWidth;
-                            line = testLine;
-                        }
+                    for (var _i = 0, _lines_1 = _lines; _i < _lines_1.length; _i++) {
+                        var _line = _lines_1[_i];
+                        this._lines.push(this._parseLineWithTextWrapping(_line, context));
                     }
-                    this._lines.push({ text: line, width: lineWidth });
                 }
                 else {
-                    this._lines.push({ text: this.text, width: context.measureText(this.text).width });
+                    for (var _a = 0, _lines_2 = _lines; _a < _lines_2.length; _a++) {
+                        var _line = _lines_2[_a];
+                        this._lines.push(this._parseLine(_line, context));
+                    }
                 }
+            };
+            TextBlock.prototype._parseLine = function (line, context) {
+                if (line === void 0) { line = ''; }
+                return { text: line, width: context.measureText(line).width };
+            };
+            TextBlock.prototype._parseLineWithTextWrapping = function (line, context) {
+                if (line === void 0) { line = ''; }
+                var words = line.split(' ');
+                var width = this._currentMeasure.width;
+                var lineWidth = 0;
+                for (var n = 0; n < words.length; n++) {
+                    var testLine = n > 0 ? line + " " + words[n] : words[0];
+                    var metrics = context.measureText(testLine);
+                    var testWidth = metrics.width;
+                    if (testWidth > width && n > 0) {
+                        this._lines.push({ text: line, width: lineWidth });
+                        line = words[n];
+                        lineWidth = context.measureText(line).width;
+                    }
+                    else {
+                        lineWidth = testWidth;
+                        line = testLine;
+                    }
+                }
+                return { text: line, width: lineWidth };
             };
             TextBlock.prototype._renderLines = function (context) {
                 var width = this._currentMeasure.width;

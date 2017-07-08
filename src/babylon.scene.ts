@@ -190,6 +190,8 @@
         public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
+        public _environmentBRDFTexture: BaseTexture;
+
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.
@@ -3684,7 +3686,21 @@
         }
 
         // Misc.
-        public createDefaultCameraOrLight(createArcRotateCamera = false) {
+        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
+            // Dispose existing camera or light in replace mode.
+            if (replace) {
+                if (this.activeCamera) {
+                    this.activeCamera.dispose();
+                    this.activeCamera = null;
+                }
+
+                if (this.lights) {
+                    for (var i = 0; i < this.lights.length; i++) {
+                        this.lights[i].dispose();
+                    }
+                }
+            }
+
             // Light
             if (this.lights.length === 0) {
                 new HemisphericLight("default light", Vector3.Up(), this);
@@ -3713,10 +3729,14 @@
                 camera.maxZ = radius * 100;
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
+
+                if (attachCameraControls) {
+                    camera.attachControl(this.getEngine().getRenderingCanvas());
+                }
             }
         }
 
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false): Mesh {
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Mesh {
             if (environmentTexture) {
                 this.environmentTexture = environmentTexture;
             }
@@ -3726,20 +3746,16 @@
                 return;
             }
 
-            if (!this.environmentTexture) {
-                Tools.Warn("Can not create default skybox without environment texture.");
-                return;
-            }
-
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
                 let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
                 hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
                 hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                hdrSkyboxMaterial.microSurface = 1.0;
+                hdrSkyboxMaterial.microSurface = 1.0 - blur;
                 hdrSkyboxMaterial.disableLighting = true;
+                hdrSkyboxMaterial.twoSidedLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = hdrSkyboxMaterial;
             }
@@ -3748,8 +3764,6 @@
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;

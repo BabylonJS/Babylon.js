@@ -735,10 +735,10 @@
         "hdr" : 
         {
             "files": [
+                "../../src/Math/babylon.sphericalPolynomial.js",
                 "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js",
                 "../../src/Tools/HDR/babylon.panoramaToCubemap.js",
                 "../../src/Tools/HDR/babylon.hdr.js",
-                "../../src/Tools/HDR/babylon.pmremgenerator.js",
                 "../../src/Materials/Textures/babylon.hdrCubeTexture.js"
             ],
             "dependUpon" : [
@@ -1437,6 +1437,7 @@
                     "../../inspector/src/gui/BasicElement.ts",
                     "../../inspector/src/adapters/Adapter.ts",
                     "../../inspector/src/adapters/CameraAdapter.ts",
+                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
                     "../../inspector/src/adapters/GUIAdapter.ts",
                     "../../inspector/src/adapters/SoundAdapter.ts",
                     "../../inspector/src/adapters/TextureAdapter.ts",

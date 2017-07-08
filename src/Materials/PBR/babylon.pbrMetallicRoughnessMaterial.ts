@@ -85,6 +85,10 @@
             return activeTextures;
         }
 
+        public clone(name: string): PBRMetallicRoughnessMaterial {
+            return SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+        }
+
         /**
          * Serialize the material to a parsable JSON object.
          */

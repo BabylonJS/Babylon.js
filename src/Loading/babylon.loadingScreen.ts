@@ -71,8 +71,8 @@ module BABYLON {
             imgBack.style.position = "absolute";
             imgBack.style.left = "50%";
             imgBack.style.top = "50%";
-            imgBack.style.marginLeft = "-50px";
-            imgBack.style.marginTop = "-50px";
+            imgBack.style.marginLeft = "-60px";
+            imgBack.style.marginTop = "-60px";
             imgBack.style.animation = "spin1 2s infinite ease-in-out";
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";
@@ -134,7 +134,9 @@ module BABYLON {
         // Resize
         private _resizeLoadingUI = () => {
             var canvasRect = this._renderingCanvas.getBoundingClientRect();
-            this._loadingDiv.style.position = "absolute";
+            var canvasPositioning = window.getComputedStyle(this._renderingCanvas).position;
+
+            this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
             this._loadingDiv.style.left = canvasRect.left + "px";
             this._loadingDiv.style.top = canvasRect.top + "px";
             this._loadingDiv.style.width = canvasRect.width + "px";

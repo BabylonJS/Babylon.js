@@ -50,6 +50,10 @@ interface WebGLRenderingContext {
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
 
+    HALF_FLOAT_OES: number;
+    RGBA16F: number;
+    RGBA32F: number;
+    
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
@@ -103,6 +107,7 @@ interface WebGLTexture {
     generateMipMaps: boolean;
     samples: number;
     type: number;
+    format: number;
     onLoadedCallbacks: Array<Function>;
     _size: number;
     _baseWidth: number;
@@ -121,6 +126,13 @@ interface WebGLTexture {
     _isDisabled: boolean;
     _generateStencilBuffer: boolean;
     _generateDepthBuffer: boolean;
+    _sphericalPolynomial: BABYLON.SphericalPolynomial;
+    // The following three fields helps sharing generated fixed LODs for texture filtering
+    // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
+    // They are at the level of the gl texture to benefit from the cache.
+    _lodTextureHigh: BABYLON.BaseTexture;
+    _lodTextureMid: BABYLON.BaseTexture;
+    _lodTextureLow: BABYLON.BaseTexture;
 }
 
 interface WebGLBuffer {
