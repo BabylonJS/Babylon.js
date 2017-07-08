@@ -10,7 +10,7 @@
         /**
          * Specifies the diffuse Color of the material.
          */
-        @serializeAsColor3()
+        @serializeAsColor3("diffuse")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public diffuseColor: Color3;
         
@@ -25,7 +25,7 @@
         /**
          * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
          */
-        @serializeAsColor3()
+        @serializeAsColor3("specular")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityColor")
         public specularColor: Color3;
 
