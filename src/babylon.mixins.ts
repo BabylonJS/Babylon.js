@@ -53,6 +53,8 @@ interface WebGLRenderingContext {
     HALF_FLOAT_OES: number;
     RGBA16F: number;
     RGBA32F: number;
+
+    DEPTH24_STENCIL8: number;
     
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
