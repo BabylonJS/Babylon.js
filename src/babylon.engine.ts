@@ -721,7 +721,8 @@
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
             this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.            
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.         
+            this._gl.DEPTH24_STENCIL8 = 35056;
 
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
@@ -1365,6 +1366,9 @@
         }
 
         public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            }            
             this._currentRenderTarget = texture;
             this.bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
             var gl = this._gl;
@@ -1429,8 +1433,11 @@
         }
 
         public restoreDefaultFramebuffer(): void {
-            this._currentRenderTarget = null;
-            this.bindUnboundFramebuffer(null);
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            } else {
+                this.bindUnboundFramebuffer(null);
+            }
             if (this._cachedViewport) {
                 this.setViewport(this._cachedViewport);
             }
@@ -2964,7 +2971,7 @@
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
 
                 if (samples > 1) {
-                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_STENCIL, width, height);
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
                 } else {
                     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
                 }
