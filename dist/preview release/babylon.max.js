@@ -32073,7 +32073,7 @@ var BABYLON;
         return PBRSpecularGlossinessMaterial;
     }(BABYLON.Internals.PBRBaseSimpleMaterial));
     __decorate([
-        BABYLON.serializeAsColor3(),
+        BABYLON.serializeAsColor3("diffuse"),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
     ], PBRSpecularGlossinessMaterial.prototype, "diffuseColor", void 0);
     __decorate([
@@ -32081,7 +32081,7 @@ var BABYLON;
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
     ], PBRSpecularGlossinessMaterial.prototype, "diffuseTexture", void 0);
     __decorate([
-        BABYLON.serializeAsColor3(),
+        BABYLON.serializeAsColor3("specular"),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityColor")
     ], PBRSpecularGlossinessMaterial.prototype, "specularColor", void 0);
     __decorate([
