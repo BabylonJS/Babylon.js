@@ -13,7 +13,7 @@
          * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color 
          * of the material.
          */
-        @serializeAsTexture()
+        @serializeAsColor3()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public baseColor: Color3;
         
