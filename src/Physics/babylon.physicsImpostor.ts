@@ -493,7 +493,15 @@ module BABYLON {
             return this._physicsEngine.getPhysicsPlugin().getRadius(this);
         }
 
-        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, adjustRotation:Quaternion){
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param distToJoint Optional distance to the impostor to the joint.
+         */
+        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, adjustRotation?:Quaternion, distToJoint?:number){
 
             var tempVec = PhysicsImpostor._tmpVec;
             var mesh = <AbstractMesh>this.object;
@@ -517,11 +525,13 @@ module BABYLON {
 
                 bone.getDirectionToRef(tempVec, boneMesh, tempVec);
 
-                var halfBoneLen = mesh.getBoundingInfo().maximum.y;
+                if(distToJoint === undefined || distToJoint === null){
+                    distToJoint = jointPivot.length();
+                }
                 
-                tempVec.x *= halfBoneLen;
-                tempVec.y *= halfBoneLen;
-                tempVec.z *= halfBoneLen;
+                tempVec.x *= distToJoint;
+                tempVec.y *= distToJoint;
+                tempVec.z *= distToJoint;
             }
 
             if(bone.getParent()){
