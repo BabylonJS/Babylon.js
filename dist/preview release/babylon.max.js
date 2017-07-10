@@ -60294,7 +60294,7 @@ var BABYLON;
                                 if (bpp === 128) {
                                     floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
-                                else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                else if (bpp === 64) {
                                     floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
                                     format = engine._getWebGLTextureType(info.textureType);
