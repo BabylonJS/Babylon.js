@@ -31934,7 +31934,7 @@ var BABYLON;
     /**
      * The PBR material of BJS following the metal roughness convention.
      *
-     * This fits to the define PBR convention in the GLTF definition:
+     * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
     var PBRMetallicRoughnessMaterial = (function (_super) {
@@ -31947,6 +31947,7 @@ var BABYLON;
          */
         function PBRMetallicRoughnessMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
+            _this._useRoughnessFromMetallicTextureAlpha = false;
             _this._useRoughnessFromMetallicTextureGreen = true;
             _this._useMetallnessFromMetallicTextureBlue = true;
             return _this;
@@ -32026,7 +32027,7 @@ var BABYLON;
     /**
      * The PBR material of BJS following the specular glossiness convention.
      *
-     * This fits to the define PBR convention in the GLTF definition:
+     * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
     var PBRSpecularGlossinessMaterial = (function (_super) {

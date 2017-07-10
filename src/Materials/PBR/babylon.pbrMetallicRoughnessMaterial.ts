@@ -2,7 +2,7 @@
     /**
      * The PBR material of BJS following the metal roughness convention.
      * 
-     * This fits to the define PBR convention in the GLTF definition: 
+     * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
     export class PBRMetallicRoughnessMaterial extends Internals.PBRBaseSimpleMaterial {
@@ -57,6 +57,7 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+            this._useRoughnessFromMetallicTextureAlpha = false;
             this._useRoughnessFromMetallicTextureGreen = true;
             this._useMetallnessFromMetallicTextureBlue = true;
         }
