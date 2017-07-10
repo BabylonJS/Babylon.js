@@ -38,7 +38,6 @@ module INSPECTOR {
             let pi = this._inspector.scene.pick(pos.x, pos.y, (mesh:BABYLON.AbstractMesh) => {return true});
             
             if (pi.pickedMesh) {
-                console.log(pi.pickedMesh.name);
                 this._inspector.displayObjectDetails(pi.pickedMesh);
             }
             this._deactivate();
