@@ -296,7 +296,7 @@
                 var initialTabIndex = 0;
 
                 if(document.getElementsByClassName('insp-wrapper').length > 0){                  
-                    for(let i = 0; i < engine.scenes.length; i++){
+                    for(var i = 0; i < engine.scenes.length; i++){
                         if(engine.scenes[i]._debugLayer){
                             //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
                             //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
@@ -668,7 +668,7 @@
                 vsTheme = 'vs'
             }
 
-            let oldCode = jsEditor.getValue();
+            var oldCode = jsEditor.getValue();
             jsEditor.dispose();
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
                 value: "",
@@ -692,7 +692,7 @@
 
             for (var index = 0; index < elementToTheme.length; index++) {
                 var obj = elementToTheme[index];
-                let domObjArr = document.querySelectorAll(obj);
+                var domObjArr = document.querySelectorAll(obj);
                 for (var domObjIndex = 0; domObjIndex < domObjArr.length; domObjIndex++) {
                     var domObj = domObjArr[domObjIndex];
                     domObj.classList.remove('light');
