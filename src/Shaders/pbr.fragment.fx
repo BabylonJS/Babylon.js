@@ -379,7 +379,11 @@ void main(void) {
 		refractionCoords.y = 1.0 - refractionCoords.y;
 	#endif
 
-	float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotV);
+	#ifdef LODINREFRACTIONALPHA
+		float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+	#else
+		float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, 1.0);
+	#endif
 	
 	#ifdef LODBASEDMICROSFURACE
 		// Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
@@ -452,10 +456,10 @@ void main(void) {
 		reflectionCoords.y = 1.0 - reflectionCoords.y;
 	#endif
 	
-	#ifdef REFLECTIONMAP_SKYBOX
-		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, 1.);
+	#if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
 	#else
-		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotV);
+		float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, 1.);
 	#endif
 
 	#ifdef LODBASEDMICROSFURACE
