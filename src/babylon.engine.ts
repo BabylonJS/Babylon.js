@@ -503,6 +503,9 @@
         private _webGLVersion = 1.0;
 
         private _badOS = false;
+        public get badOS(): boolean {
+            return this._badOS;
+        }
 
         public static audioEngine: AudioEngine;
 
