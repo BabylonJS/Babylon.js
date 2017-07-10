@@ -73,6 +73,10 @@
             this.isCube = true;
 
             this._textureMatrix = Matrix.Identity();
+
+            if (prefiltered) {
+                this.gammaSpace = false;
+            }
         }
 
         // Methods
