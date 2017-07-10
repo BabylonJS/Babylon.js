@@ -57,6 +57,7 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+            this._useRoughnessFromMetallicTextureAlpha = false;
             this._useRoughnessFromMetallicTextureGreen = true;
             this._useMetallnessFromMetallicTextureBlue = true;
         }
