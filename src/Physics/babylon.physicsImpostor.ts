@@ -46,7 +46,7 @@ module BABYLON {
 
         private _isDisposed = false;
 
-        private static _tmpVec: Vector3 = Vector3.Zero();
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat: Quaternion = Quaternion.Identity();
 
         get isDisposed():boolean{
@@ -498,12 +498,12 @@ module BABYLON {
          * @param bone The bone to sync to the impostor.
          * @param boneMesh The mesh that the bone is influencing.
          * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
          * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param distToJoint Optional distance to the impostor to the joint.
          */
-        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, adjustRotation?:Quaternion, distToJoint?:number){
+        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion){
 
-            var tempVec = PhysicsImpostor._tmpVec;
+            var tempVec = PhysicsImpostor._tmpVecs[0];
             var mesh = <AbstractMesh>this.object;
 
             if(adjustRotation){
@@ -544,6 +544,54 @@ module BABYLON {
                 boneMesh.position.z -= tempVec.z;
             }
 
+        }
+
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        public syncImpostorWithBone(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion, boneAxis?:Vector3){
+
+            var mesh = <AbstractMesh>this.object;
+
+            if(adjustRotation){
+                var tempQuat = PhysicsImpostor._tmpQuat;
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
+                tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+            }else{
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
+            }
+
+            var pos = PhysicsImpostor._tmpVecs[0];
+            var boneDir = PhysicsImpostor._tmpVecs[1];
+            
+            if(!boneAxis){
+                boneAxis = PhysicsImpostor._tmpVecs[2];
+                boneAxis.x = 0; 
+                boneAxis.y = 1; 
+                boneAxis.z = 0;
+            }
+
+            bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+            bone.getAbsolutePositionToRef(boneMesh, pos);
+
+            if((distToJoint === undefined || distToJoint === null) && jointPivot){
+                distToJoint = jointPivot.length();
+            }
+
+            if(distToJoint !== undefined && distToJoint !== null){
+                pos.x += boneDir.x * distToJoint;
+                pos.y += boneDir.y * distToJoint;
+                pos.z += boneDir.z * distToJoint;
+            }
+
+            mesh.setAbsolutePosition(pos);
+            
         }
 
         //Impostor types
