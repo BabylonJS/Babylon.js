@@ -31349,6 +31349,9 @@ var BABYLON;
             }
             _this.isCube = true;
             _this._textureMatrix = BABYLON.Matrix.Identity();
+            if (prefiltered) {
+                _this.gammaSpace = false;
+            }
             return _this;
         }
         CubeTexture.CreateFromImages = function (files, scene, noMipmap) {
