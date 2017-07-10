@@ -236,6 +236,18 @@ var Test = (function () {
             sphere7.position.x = 40;
         });
 
+        var sphere_1 = BABYLON.Mesh.CreateSphere("_sphere_1", 16, 2, scene);
+
+        var assets_mesh = new BABYLON.AbstractMesh("assets_mesh", scene);
+        var sphere_2 = BABYLON.Mesh.CreateSphere("sphere_2", 3, 2, scene);
+        var sphere_3 = BABYLON.Mesh.CreateSphere("sphere_3", 2, 2, scene);
+        var scene_mesh = new BABYLON.AbstractMesh;
+        scene_mesh.name="scene_mesh";
+    
+        sphere_1.parent = assets_mesh;
+        sphere_2.parent = assets_mesh;
+        sphere_3.parent = assets_mesh;
+
 
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
