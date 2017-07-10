@@ -3177,7 +3177,7 @@
                     const lodTexture = new BaseTexture(scene);
                     lodTexture.isCube = true;
                     lodTexture._texture = glTextureFromLod;
-                    
+
                     glTextureFromLod.isReady = true;
                     textures.push(lodTexture);
                 }
@@ -3202,6 +3202,7 @@
             texture.url = rootUrl;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
+            texture.noMipmap = noMipmap;
 
             var isKTX = false;
             var isDDS = false;
