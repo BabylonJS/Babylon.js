@@ -7747,6 +7747,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine.prototype, "badOS", {
+            get: function () {
+                return this._badOS;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine.prototype, "texturesSupported", {
             get: function () {
                 return this._texturesSupported;
@@ -58675,11 +58682,11 @@ var BABYLON;
          * @param bone The bone to sync to the impostor.
          * @param boneMesh The mesh that the bone is influencing.
          * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
          * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param distToJoint Optional distance to the impostor to the joint.
          */
-        PhysicsImpostor.prototype.syncBoneWithImpostor = function (bone, boneMesh, jointPivot, adjustRotation, distToJoint) {
-            var tempVec = PhysicsImpostor._tmpVec;
+        PhysicsImpostor.prototype.syncBoneWithImpostor = function (bone, boneMesh, jointPivot, distToJoint, adjustRotation) {
+            var tempVec = PhysicsImpostor._tmpVecs[0];
             var mesh = this.object;
             if (adjustRotation) {
                 var tempQuat = PhysicsImpostor._tmpQuat;
@@ -58715,11 +58722,50 @@ var BABYLON;
                 boneMesh.position.z -= tempVec.z;
             }
         };
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        PhysicsImpostor.prototype.syncImpostorWithBone = function (bone, boneMesh, jointPivot, distToJoint, adjustRotation, boneAxis) {
+            var mesh = this.object;
+            if (adjustRotation) {
+                var tempQuat = PhysicsImpostor._tmpQuat;
+                bone.getRotationQuaternionToRef(BABYLON.Space.WORLD, boneMesh, tempQuat);
+                tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+            }
+            else {
+                bone.getRotationQuaternionToRef(BABYLON.Space.WORLD, boneMesh, mesh.rotationQuaternion);
+            }
+            var pos = PhysicsImpostor._tmpVecs[0];
+            var boneDir = PhysicsImpostor._tmpVecs[1];
+            if (!boneAxis) {
+                boneAxis = PhysicsImpostor._tmpVecs[2];
+                boneAxis.x = 0;
+                boneAxis.y = 1;
+                boneAxis.z = 0;
+            }
+            bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+            bone.getAbsolutePositionToRef(boneMesh, pos);
+            if ((distToJoint === undefined || distToJoint === null) && jointPivot) {
+                distToJoint = jointPivot.length();
+            }
+            if (distToJoint !== undefined && distToJoint !== null) {
+                pos.x += boneDir.x * distToJoint;
+                pos.y += boneDir.y * distToJoint;
+                pos.z += boneDir.z * distToJoint;
+            }
+            mesh.setAbsolutePosition(pos);
+        };
         return PhysicsImpostor;
     }());
     PhysicsImpostor.DEFAULT_OBJECT_SIZE = new BABYLON.Vector3(1, 1, 1);
     PhysicsImpostor.IDENTITY_QUATERNION = BABYLON.Quaternion.Identity();
-    PhysicsImpostor._tmpVec = BABYLON.Vector3.Zero();
+    PhysicsImpostor._tmpVecs = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
     PhysicsImpostor._tmpQuat = BABYLON.Quaternion.Identity();
     //Impostor types
     PhysicsImpostor.NoImpostor = 0;
@@ -60163,6 +60209,48 @@ var BABYLON;
                 }
                 return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
+            DDSTools._GetFloatAsUIntRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Uint8Array(dataLength);
+                var srcData = new Float32Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = BABYLON.MathTools.Clamp(srcData[srcPos]) * 255;
+                        destArray[index + 1] = BABYLON.MathTools.Clamp(srcData[srcPos + 1]) * 255;
+                        destArray[index + 2] = BABYLON.MathTools.Clamp(srcData[srcPos + 2]) * 255;
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = BABYLON.MathTools.Clamp(srcData[srcPos + 3]) * 255;
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
+            DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Uint8Array(dataLength);
+                var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
+                        destArray[index + 1] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
+                        destArray[index + 2] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
             DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
@@ -60291,17 +60379,30 @@ var BABYLON;
                             if (!info.isCompressed && info.isFourCC) {
                                 dataLength = width * height * 4;
                                 var floatArray;
-                                if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                                }
-                                else if (bpp === 64) {
-                                    floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                                    info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                if (engine.badOS) {
+                                    if (bpp === 128) {
+                                        floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    else if (bpp === 64) {
+                                        floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    info.textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
                                     format = engine._getWebGLTextureType(info.textureType);
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                                 }
                                 else {
-                                    floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (bpp === 128) {
+                                        floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                        floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                        info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                        format = engine._getWebGLTextureType(info.textureType);
+                                        internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
+                                    }
+                                    else {
+                                        floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
                                 }
                                 engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                             }
