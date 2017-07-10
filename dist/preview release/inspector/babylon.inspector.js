@@ -2858,10 +2858,31 @@ var INSPECTOR;
         /** Returns the treeitem corersponding to the given obj, null if not found */
         PropertyTab.prototype.getItemFor = function (_obj) {
             var obj = _obj;
+            // Search recursively
+            var searchObjectInTree = function (object, treeItem) {
+                if (treeItem.correspondsTo(object)) {
+                    return treeItem;
+                }
+                else {
+                    if (treeItem.children.length > 0) {
+                        for (var _i = 0, _a = treeItem.children; _i < _a.length; _i++) {
+                            var item = _a[_i];
+                            var it = searchObjectInTree(obj, item);
+                            if (it) {
+                                return it;
+                            }
+                        }
+                    }
+                    else {
+                        return null;
+                    }
+                }
+            };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
-                if (item.correspondsTo(obj)) {
-                    return item;
+                var it = searchObjectInTree(obj, item);
+                if (it) {
+                    return it;
                 }
             }
             return null;
@@ -3275,9 +3296,8 @@ var INSPECTOR;
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);
+                var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
                 if (descendants.length > 0) {
-                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
-                    alreadyIn.push(obj);
                     for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                         var child = descendants_1[_i];
                         if (child instanceof BABYLON.AbstractMesh) {
@@ -3288,12 +3308,23 @@ var INSPECTOR;
                         }
                     }
                     node.update();
-                    return node;
                 }
-                else {
-                    alreadyIn.push(obj);
-                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
+                // Retrieve the root node if the mesh is actually child of another mesh
+                // This can hapen if the child mesh has been created before the parent mesh
+                if (obj.parent != null && alreadyIn.indexOf(obj) != -1) {
+                    var i = 0;
+                    var notFound = true;
+                    // Find and delete the root node standing for this mesh
+                    while (i < arr.length && notFound) {
+                        if (obj.name === arr[i].id) {
+                            arr.splice(i, 1);
+                            notFound = false;
+                        }
+                        i++;
+                    }
                 }
+                alreadyIn.push(obj);
+                return node;
             };
             // get all meshes from the first scene
             var instances = this._inspector.scene;
@@ -4363,7 +4394,6 @@ var INSPECTOR;
             var pos = this._updatePointerPosition(evt);
             var pi = this._inspector.scene.pick(pos.x, pos.y, function (mesh) { return true; });
             if (pi.pickedMesh) {
-                console.log(pi.pickedMesh.name);
                 this._inspector.displayObjectDetails(pi.pickedMesh);
             }
             this._deactivate();
