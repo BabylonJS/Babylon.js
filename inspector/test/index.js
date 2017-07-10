@@ -215,7 +215,7 @@ var Test = (function () {
 
         scene.getMeshByName("Box #6").scaling.x = 2;
 
-        //Other meshes
+        //Other meshes, to contrôl mesh hierarchy
         var box1 = BABYLON.MeshBuilder.CreateBox("box1", {size: 1}, scene);
 
         var box2 = BABYLON.MeshBuilder.CreateBox("box2", {size: 1}, scene);
@@ -235,6 +235,29 @@ var Test = (function () {
             var sphere7 = BABYLON.Mesh.CreateSphere("Sphere7", 10.0, 9.0, scene);
             sphere7.position.x = 40;
         });
+
+        var sphere_1 = BABYLON.Mesh.CreateSphere("_sphere_1", 16, 2, scene);
+
+        var assets_mesh = new BABYLON.AbstractMesh("assets_mesh", scene);
+        var sphere_2 = BABYLON.Mesh.CreateSphere("_sphere_2", 3, 2, scene);
+        var sphere_3 = BABYLON.Mesh.CreateSphere("_sphere_3", 2, 2, scene);
+        var scene_mesh = new BABYLON.AbstractMesh;
+        scene_mesh.name="scene_mesh";
+    
+        sphere_1.parent = assets_mesh;
+        sphere_2.parent = assets_mesh;
+        sphere_3.parent = assets_mesh;
+
+        for (var i=0; i<10 ; i++){
+            var inst = sphere_1.clone("C_" + i + "clone");
+            inst.isVisible = true;
+            inst.setEnabled = true;
+            inst.parent = scene_mesh;
+            inst.position.x = i*2;
+            inst.refreshBoundingInfo();
+            inst.computeWorldMatrix();
+        }
+
 
 
         // gui
