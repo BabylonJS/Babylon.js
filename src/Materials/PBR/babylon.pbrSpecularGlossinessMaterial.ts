@@ -2,7 +2,7 @@
     /**
      * The PBR material of BJS following the specular glossiness convention.
      * 
-     * This fits to the define PBR convention in the GLTF definition: 
+     * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
     export class PBRSpecularGlossinessMaterial extends Internals.PBRBaseSimpleMaterial {
