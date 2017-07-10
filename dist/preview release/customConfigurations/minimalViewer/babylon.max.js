@@ -7747,6 +7747,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine.prototype, "badOS", {
+            get: function () {
+                return this._badOS;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine.prototype, "texturesSupported", {
             get: function () {
                 return this._texturesSupported;
@@ -32966,6 +32973,48 @@ var BABYLON;
                 }
                 return new Float32Array(arrayBuffer, dataOffset, dataLength);
             };
+            DDSTools._GetFloatAsUIntRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Uint8Array(dataLength);
+                var srcData = new Float32Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = BABYLON.MathTools.Clamp(srcData[srcPos]) * 255;
+                        destArray[index + 1] = BABYLON.MathTools.Clamp(srcData[srcPos + 1]) * 255;
+                        destArray[index + 2] = BABYLON.MathTools.Clamp(srcData[srcPos + 2]) * 255;
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = BABYLON.MathTools.Clamp(srcData[srcPos + 3]) * 255;
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
+            DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, lod) {
+                var destArray = new Uint8Array(dataLength);
+                var srcData = new Uint16Array(arrayBuffer, dataOffset);
+                var index = 0;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var srcPos = (x + y * width) * 4;
+                        destArray[index] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
+                        destArray[index + 1] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
+                        destArray[index + 2] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
+                        if (DDSTools.StoreLODInAlphaChannel) {
+                            destArray[index + 3] = lod;
+                        }
+                        else {
+                            destArray[index + 3] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
+                        }
+                        index += 4;
+                    }
+                }
+                return destArray;
+            };
             DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
                 var byteArray = new Uint8Array(dataLength);
                 var srcData = new Uint8Array(arrayBuffer, dataOffset);
@@ -33094,17 +33143,30 @@ var BABYLON;
                             if (!info.isCompressed && info.isFourCC) {
                                 dataLength = width * height * 4;
                                 var floatArray;
-                                if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                                }
-                                else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                    floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                                    info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                if (engine.badOS) {
+                                    if (bpp === 128) {
+                                        floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    else if (bpp === 64) {
+                                        floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    info.textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
                                     format = engine._getWebGLTextureType(info.textureType);
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                                 }
                                 else {
-                                    floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (bpp === 128) {
+                                        floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
+                                    else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                        floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                        info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+                                        format = engine._getWebGLTextureType(info.textureType);
+                                        internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
+                                    }
+                                    else {
+                                        floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    }
                                 }
                                 engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                             }
