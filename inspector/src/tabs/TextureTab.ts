@@ -20,7 +20,7 @@ module INSPECTOR {
             // Build the treepanel
             this._treePanel = Helpers.CreateDiv('insp-tree', this._panel);
 
-            this._imagePanel = Helpers.CreateDiv('image-panel', this._panel) as HTMLDivElement;
+            this._imagePanel = Helpers.CreateDiv('insp-details', this._panel) as HTMLDivElement;
 
             Split([this._treePanel, this._imagePanel], {
                 blockDrag: this._inspector.popupMode,
