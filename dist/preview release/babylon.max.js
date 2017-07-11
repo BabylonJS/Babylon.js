@@ -2730,25 +2730,36 @@ var __extends = (this && this.__extends) || (function () {
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {
+            this._isIdentity = false;
+            this._isIdentityDirty = true;
             this.m = new Float32Array(16);
             this._markAsUpdated();
         }
         Matrix.prototype._markAsUpdated = function () {
             this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = true;
         };
         // Properties
         /**
          * Boolean : True is the matrix is the identity matrix
          */
         Matrix.prototype.isIdentity = function () {
-            if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
-                return false;
-            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
-                this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
-                return false;
-            return true;
+            if (this._isIdentityDirty) {
+                this._isIdentityDirty = false;
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0) {
+                    this._isIdentity = false;
+                }
+                else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
+                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                    this._isIdentity = false;
+                }
+                else {
+                    this._isIdentity = true;
+                }
+            }
+            return this._isIdentity;
         };
         /**
          * Returns the matrix determinant (float).
