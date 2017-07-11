@@ -93,6 +93,7 @@ declare module BABYLON {
         private _createRenderTargets(scene, renderTargetSize);
         getAnimatables(): IAnimatable[];
         getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;

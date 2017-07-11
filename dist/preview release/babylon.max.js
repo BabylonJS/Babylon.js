@@ -19509,6 +19509,7 @@ var BABYLON;
             t.z += 0.5;
         };
         Texture.prototype.getTextureMatrix = function () {
+            var _this = this;
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
@@ -19548,9 +19549,13 @@ var BABYLON;
             this._cachedTextureMatrix.m[8] = this._t0.x;
             this._cachedTextureMatrix.m[9] = this._t0.y;
             this._cachedTextureMatrix.m[10] = this._t0.z;
+            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+                return (mat.getActiveTextures().indexOf(_this) !== -1);
+            });
             return this._cachedTextureMatrix;
         };
         Texture.prototype.getReflectionTextureMatrix = function () {
+            var _this = this;
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
@@ -19586,6 +19591,9 @@ var BABYLON;
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
+            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+                return (mat.getActiveTextures().indexOf(_this) !== -1);
+            });
             return this._cachedTextureMatrix;
         };
         Texture.prototype.clone = function () {
@@ -24423,6 +24431,9 @@ var BABYLON;
         };
         Material.prototype.getActiveTextures = function () {
             return [];
+        };
+        Material.prototype.hasTexture = function (texture) {
+            return false;
         };
         Material.prototype.clone = function (name) {
             return null;
@@ -29632,6 +29643,39 @@ var BABYLON;
             }
             return activeTextures;
         };
+        StandardMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._diffuseTexture === texture) {
+                return true;
+            }
+            if (this._ambientTexture === texture) {
+                return true;
+            }
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+            if (this._reflectionTexture === texture) {
+                return true;
+            }
+            if (this._emissiveTexture === texture) {
+                return true;
+            }
+            if (this._specularTexture === texture) {
+                return true;
+            }
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+            if (this._lightmapTexture === texture) {
+                return true;
+            }
+            if (this._refractionTexture === texture) {
+                return true;
+            }
+            return false;
+        };
         StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
             if (forceDisposeTextures) {
                 if (this._diffuseTexture) {
@@ -31725,6 +31769,39 @@ var BABYLON;
             }
             return activeTextures;
         };
+        PBRMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._albedoTexture === texture) {
+                return true;
+            }
+            if (this._ambientTexture === texture) {
+                return true;
+            }
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+            if (this._reflectionTexture === texture) {
+                return true;
+            }
+            if (this._metallicTexture === texture) {
+                return true;
+            }
+            if (this._microSurfaceTexture === texture) {
+                return true;
+            }
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+            if (this._lightmapTexture === texture) {
+                return true;
+            }
+            if (this._refractionTexture === texture) {
+                return true;
+            }
+            return false;
+        };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
             return BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
@@ -32001,6 +32078,18 @@ var BABYLON;
             }
             return activeTextures;
         };
+        PBRMetallicRoughnessMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this.baseTexture === texture) {
+                return true;
+            }
+            if (this.metallicRoughnessTexture === texture) {
+                return true;
+            }
+            return false;
+        };
         PBRMetallicRoughnessMaterial.prototype.clone = function (name) {
             var _this = this;
             return BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
@@ -32091,6 +32180,18 @@ var BABYLON;
                 activeTextures.push(this.specularGlossinessTexture);
             }
             return activeTextures;
+        };
+        PBRSpecularGlossinessMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this.diffuseTexture === texture) {
+                return true;
+            }
+            if (this.specularGlossinessTexture === texture) {
+                return true;
+            }
+            return false;
         };
         PBRSpecularGlossinessMaterial.prototype.clone = function (name) {
             var _this = this;
@@ -41119,6 +41220,25 @@ var BABYLON;
                 }
             }
             return activeTextures;
+        };
+        ShaderMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            for (var name in this._textures) {
+                if (this._textures[name] === texture) {
+                    return true;
+                }
+            }
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    if (array[index] === texture) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         };
         ShaderMaterial.prototype.clone = function (name) {
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);

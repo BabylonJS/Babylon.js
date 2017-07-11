@@ -494,6 +494,10 @@
             return [];
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            return false;
+        }
+
         public clone(name: string): Material {
             return null;
         }

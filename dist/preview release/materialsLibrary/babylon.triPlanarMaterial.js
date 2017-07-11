@@ -273,6 +273,30 @@ var BABYLON;
             }
             return activeTextures;
         };
+        TriPlanarMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._diffuseTextureX === texture) {
+                return true;
+            }
+            if (this._diffuseTextureY === texture) {
+                return true;
+            }
+            if (this._diffuseTextureZ === texture) {
+                return true;
+            }
+            if (this._normalTextureX === texture) {
+                return true;
+            }
+            if (this._normalTextureY === texture) {
+                return true;
+            }
+            if (this._normalTextureZ === texture) {
+                return true;
+            }
+            return false;
+        };
         TriPlanarMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.mixTexture) {
                 this.mixTexture.dispose();

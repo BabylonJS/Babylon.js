@@ -451,6 +451,15 @@ var BABYLON;
             }
             return activeTextures;
         };
+        WaterMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+            return false;
+        };
         WaterMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
