@@ -30,6 +30,7 @@
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
 ### Updates
+- Added `syncBoneWithImpostor()` and `syncImpostorWithBone()` to PhysicsImpostor to help with creating ragdoll effects. [Demo](http://playground.babylonjs.com/#PM5MFS#5) ([abow](https://github.com/abow))
 - New automatic creation mode for skybox. [Doc here](http://doc.babylonjs.com/tutorials/environment#automatic-creation) ([deltakosh](https://github.com/deltakosh))
 - New way to force compilation of materials. [Doc here](http://doc.babylonjs.com/tutorials/How_materials_work) ([deltakosh](https://github.com/deltakosh))
 - Added a Physics tab to the inspector ([abow](https://github.com/abow))
@@ -48,10 +49,10 @@
 - Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
 - Engine now uses range based fog ([deltakosh](https://github.com/deltakosh))
 - `VertexBuffer.updatable` is now serialized ([deltakosh](https://github.com/deltakosh))
-- Added intersectsMeshes to Ray ([abow](https://github.com/abow))
-- New RayHelper class for easily viewing and attaching a ray to a mesh.  [Demo](http://www.babylonjs-playground.com/#ZHDBJ#34) [abow](https://github.com/abow))
+- Added `intersectsMeshes()` to Ray ([abow](https://github.com/abow))
+- New RayHelper class for easily viewing and attaching a ray to a mesh.  [Demo](http://www.babylonjs-playground.com/#ZHDBJ#35) [abow](https://github.com/abow))
 - `Mesh.applyDisplacementMap` now accepts uvScale and uvOffset parameter ([deltakosh](https://github.com/deltakosh))
-- Added addChild, removeChild, setParent to AbstractMesh ([abow](https://github.com/abow))
+- Added `addChild()`, `removeChild()`, `setParent()` to AbstractMesh ([abow](https://github.com/abow))
 - `Effect.getVertexShaderSource()` and `Effect.getFragmentShaderSource()` now returns the effective shader code (including evaluation of #define) ([deltakosh](https://github.com/deltakosh))
 - GroundMesh : `getHeightAtCoordinates()`, `getNormalAtCoordinates()` and `getNormalAtCoordinatesToRef()` can now work with rotated grounds ([jerome](https://github.com/jbousquie))  
 - `GroundMesh`, `facetData` and `SolidParticleSystem` improvement in normal computations ([jerome](https://github.com/jbousquie))   
