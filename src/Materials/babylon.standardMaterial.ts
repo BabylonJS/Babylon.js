@@ -1,6 +1,9 @@
 module BABYLON {
    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        public MAINUV1 = false;
+        public MAINUV2 = false;
         public DIFFUSE = false;
+        public DIFFUSEDIRECTUV = 0;
         public AMBIENT = false;
         public OPACITY = false;
         public OPACITYRGB = false;
@@ -511,6 +514,8 @@ module BABYLON {
             // Textures
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
+                defines.MAINUV1 = false;
+                defines.MAINUV2 = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         if (!this._diffuseTexture.isReadyOrNotBlocking()) {
@@ -518,6 +523,16 @@ module BABYLON {
                         } else {
                             defines._needUVs = true;
                             defines.DIFFUSE = true;
+                            if (this._diffuseTexture.getTextureMatrix().isIdentity(true)) {
+                                defines.DIFFUSEDIRECTUV = this._diffuseTexture.coordinatesIndex + 1;
+                                if (this._diffuseTexture.coordinatesIndex === 0) {
+                                    defines.MAINUV1 = true;
+                                } else {
+                                    defines.MAINUV2 = true;
+                                }
+                            } else {
+                                defines.DIFFUSEDIRECTUV = 0;
+                            }
                         }
                     } else {
                         defines.DIFFUSE = false;
@@ -984,7 +999,11 @@ module BABYLON {
                     if (scene.texturesEnabled) {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                            this._uniformBuffer.updateMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
+                            var matrix = this._diffuseTexture.getTextureMatrix();
+
+                            if (!matrix.isIdentity(true)) {
+                                this._uniformBuffer.updateMatrix("diffuseMatrix", matrix);
+                            }
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
