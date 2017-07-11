@@ -2003,11 +2003,11 @@
             context.attachShader(shaderProgram, fragmentShader);
 
             context.linkProgram(shaderProgram);
-            context.validateProgram(shaderProgram);
 
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
+                context.validateProgram(shaderProgram);
                 var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);
