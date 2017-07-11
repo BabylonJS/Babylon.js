@@ -2923,11 +2923,14 @@
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
 
-        public updateFlag: number;
+        private _isIdentity = false;
+        private _isIdentityDirty = true;
+        public updateFlag: number;        
         public m: Float32Array = new Float32Array(16);
 
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = true;
         }
 
         public constructor() {
@@ -2938,17 +2941,26 @@
         /**
          * Boolean : True is the matrix is the identity matrix
          */
-        public isIdentity(): boolean {
-            if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
-                return false;
+        public isIdentity(considerAsTextureMatrix = false): boolean {
+            if (this._isIdentityDirty) {
+                this._isIdentityDirty = false;
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                    this._isIdentity = false;
+                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
+                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                    this._isIdentity = false;
+                } else {
+                    this._isIdentity = true;
+                }
 
-            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
-                this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
-                return false;
+                if (!considerAsTextureMatrix && this.m[10] !== 1.0) {
+                    this._isIdentity = false;
+                }
+            }
 
-            return true;
+            return this._isIdentity;
         }
         /**
          * Returns the matrix determinant (float).  

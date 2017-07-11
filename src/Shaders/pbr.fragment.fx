@@ -21,9 +21,17 @@ uniform vec4 vCameraInfos;
 // Input
 varying vec3 vPositionW;
 
+#ifdef MAINUV1
+	varying vec2 vMainUV1;
+#endif 
+
+#ifdef MAINUV2 
+	varying vec2 vMainUV2; 
+#endif 
+
 #ifdef NORMAL
 	varying vec3 vNormalW;
-	#ifdef USESPHERICALFROMREFLECTIONMAP
+	#if defined(USESPHERICALFROMREFLECTIONMAP) && !defined(USESPHERICALINFRAGMENT)
 		varying vec3 vEnvironmentIrradiance;
 	#endif
 #endif
@@ -37,38 +45,80 @@ varying vec4 vColor;
 
 // Samplers
 #ifdef ALBEDO
-varying vec2 vAlbedoUV;
-uniform sampler2D albedoSampler;
+	#if ALBEDODIRECTUV == 1
+		#define vAlbedoUV vMainUV1
+	#elif ALBEDODIRECTUV == 2
+		#define vAlbedoUV vMainUV2
+	#else
+		varying vec2 vAlbedoUV;
+	#endif
+	uniform sampler2D albedoSampler;
 #endif
 
 #ifdef AMBIENT
-varying vec2 vAmbientUV;
-uniform sampler2D ambientSampler;
+	#if AMBIENTDIRECTUV == 1
+		#define vAmbientUV vMainUV1
+	#elif AMBIENTDIRECTUV == 2
+		#define vAmbientUV vMainUV2
+	#else
+		varying vec2 vAmbientUV;
+	#endif
+	uniform sampler2D ambientSampler;
 #endif
 
-#ifdef OPACITY	
-varying vec2 vOpacityUV;
-uniform sampler2D opacitySampler;
+#ifdef OPACITY
+	#if OPACITYDIRECTUV == 1
+		#define vOpacityUV vMainUV1
+	#elif OPACITYDIRECTUV == 2
+		#define vOpacityUV vMainUV2
+	#else
+		varying vec2 vOpacityUV;
+	#endif
+	uniform sampler2D opacitySampler;
 #endif
 
 #ifdef EMISSIVE
-varying vec2 vEmissiveUV;
-uniform sampler2D emissiveSampler;
+	#if EMISSIVEDIRECTUV == 1
+		#define vEmissiveUV vMainUV1
+	#elif EMISSIVEDIRECTUV == 2
+		#define vEmissiveUV vMainUV2
+	#else
+		varying vec2 vEmissiveUV;
+	#endif
+	uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
-varying vec2 vLightmapUV;
-uniform sampler2D lightmapSampler;
+	#if LIGHTMAPDIRECTUV == 1
+		#define vLightmapUV vMainUV1
+	#elif LIGHTMAPDIRECTUV == 2
+		#define vLightmapUV vMainUV2
+	#else
+		varying vec2 vLightmapUV;
+	#endif
+	uniform sampler2D lightmapSampler;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
-varying vec2 vReflectivityUV;
-uniform sampler2D reflectivitySampler;
+#ifdef REFLECTIVITY
+	#if REFLECTIVITYDIRECTUV == 1
+		#define vReflectivityUV vMainUV1
+	#elif REFLECTIVITYDIRECTUV == 2
+		#define vReflectivityUV vMainUV2
+	#else
+		varying vec2 vReflectivityUV;
+	#endif
+	uniform sampler2D reflectivitySampler;
 #endif
 
 #ifdef MICROSURFACEMAP
-varying vec2 vMicroSurfaceSamplerUV;
-uniform sampler2D microSurfaceSampler;
+	#if MICROSURFACEMAPDIRECTUV == 1
+		#define vMicroSurfaceSamplerUV vMainUV1
+	#elif MICROSURFACEMAPDIRECTUV == 2
+		#define vMicroSurfaceSamplerUV vMainUV2
+	#else
+		varying vec2 vMicroSurfaceSamplerUV;
+	#endif
+	uniform sampler2D microSurfaceSampler;
 #endif
 
 // Refraction
@@ -83,7 +133,7 @@ uniform sampler2D microSurfaceSampler;
 		#else
 			uniform samplerCube refractionSamplerLow;
 			uniform samplerCube refractionSamplerHigh;
-		#endif		
+		#endif
 	#else
 		#define sampleRefraction(s, c) texture2D(s, c)
 		
@@ -258,7 +308,7 @@ void main(void) {
 #ifdef METALLICWORKFLOW
 	vec2 metallicRoughness = surfaceReflectivityColor.rg;
 
-	#ifdef METALLICMAP
+	#ifdef REFLECTIVITY
 		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 
 		#ifdef AOSTOREINMETALMAPRED
@@ -510,7 +560,7 @@ void main(void) {
 
 	// _____________________________ Irradiance ________________________________
 	#ifdef USESPHERICALFROMREFLECTIONMAP
-		#ifdef NORMAL
+		#if defined(NORMAL) && !defined(USESPHERICALINFRAGMENT)
 			environmentIrradiance = vEnvironmentIrradiance;
 		#else
 			environmentIrradiance = environmentIrradianceJones(reflectionVector);

@@ -570,6 +570,50 @@
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._albedoTexture === texture) {
+                return true;
+            }
+
+            if (this._ambientTexture === texture) {
+                return true;
+            }       
+
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+
+            if (this._reflectionTexture === texture) {
+                return true;
+            }     
+
+            if (this._metallicTexture === texture) {
+                return true;
+            }      
+
+            if (this._microSurfaceTexture === texture) {
+                return true;
+            }      
+
+            if (this._bumpTexture === texture) {
+                return true;
+            }                                               
+
+            if (this._lightmapTexture === texture) {
+                return true;
+            }                                               
+
+            if (this._refractionTexture === texture) {
+                return true;
+            }                                               
+
+            return false;    
+        }         
+
         public clone(name: string): PBRMaterial {
             return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
         }

@@ -32,7 +32,7 @@ uniform vec2 vEmissiveInfos;
 uniform vec2 vLightmapInfos;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#ifdef REFLECTIVITY
 uniform vec3 vReflectivityInfos;
 #endif
 

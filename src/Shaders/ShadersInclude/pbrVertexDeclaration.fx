@@ -26,7 +26,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#ifdef REFLECTIVITY 
 uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif

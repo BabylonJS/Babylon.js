@@ -275,6 +275,33 @@ var BABYLON;
             }
             return activeTextures;
         };
+        TerrainMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._mixTexture === texture) {
+                return true;
+            }
+            if (this._diffuseTexture1 === texture) {
+                return true;
+            }
+            if (this._diffuseTexture2 === texture) {
+                return true;
+            }
+            if (this._diffuseTexture3 === texture) {
+                return true;
+            }
+            if (this._bumpTexture1 === texture) {
+                return true;
+            }
+            if (this._bumpTexture2 === texture) {
+                return true;
+            }
+            if (this._bumpTexture3 === texture) {
+                return true;
+            }
+            return false;
+        };
         TerrainMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this.mixTexture) {
                 this.mixTexture.dispose();

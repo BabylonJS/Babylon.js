@@ -2003,6 +2003,7 @@
             context.attachShader(shaderProgram, fragmentShader);
 
             context.linkProgram(shaderProgram);
+            context.validateProgram(shaderProgram);
 
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 

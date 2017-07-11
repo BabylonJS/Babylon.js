@@ -221,6 +221,15 @@ var BABYLON;
             }
             return activeTextures;
         };
+        SimpleMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this.diffuseTexture === texture) {
+                return true;
+            }
+            return false;
+        };
         SimpleMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();
