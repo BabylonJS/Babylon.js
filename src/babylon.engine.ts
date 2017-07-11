@@ -507,6 +507,11 @@
             return this._badOS;
         }
 
+        private _badDesktopOS = false;
+        public get badDesktopOS(): boolean {
+            return this._badDesktopOS;
+        }
+
         public static audioEngine: AudioEngine;
 
         private _onCanvasBlur: () => void;
@@ -866,9 +871,14 @@
             }
 
             //Detect if we are running on a faulty buggy OS.
-            var regexp = /AppleWebKit.*10.[\d] Mobile/
+            var regexpBadOs = /AppleWebKit.*10.[\d] Mobile/
             //ua sniffing is the tool of the devil.
-            this._badOS = regexp.test(navigator.userAgent);
+            this._badOS = regexpBadOs.test(navigator.userAgent);
+
+            //Detect if we are running on a faulty buggy OS.
+            var regexpBadDesktopOS = /AppleWebKit.*10.[\d] /
+            //ua sniffing is the tool of the devil.
+            this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
