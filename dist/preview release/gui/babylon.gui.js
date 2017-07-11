@@ -1067,6 +1067,7 @@ var BABYLON;
                     return;
                 }
                 if (this._host._linkedControls.indexOf(this) !== -1) {
+                    this._linkedMesh = mesh;
                     return;
                 }
                 this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
