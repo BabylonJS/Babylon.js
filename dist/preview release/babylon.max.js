@@ -59131,7 +59131,8 @@ var BABYLON;
             this._fixedTimeStep = timeStep;
         };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+            // Delta is in seconds, should be provided in milliseconds
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
