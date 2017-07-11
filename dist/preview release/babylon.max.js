@@ -7150,6 +7150,7 @@ var BABYLON;
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
+            this._badDesktopOS = false;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -7413,9 +7414,13 @@ var BABYLON;
                 this.initWebVR();
             }
             //Detect if we are running on a faulty buggy OS.
-            var regexp = /AppleWebKit.*10.[\d] Mobile/;
+            var regexpBadOs = /AppleWebKit.*10.[\d] Mobile/;
             //ua sniffing is the tool of the devil.
-            this._badOS = regexp.test(navigator.userAgent);
+            this._badOS = regexpBadOs.test(navigator.userAgent);
+            //Detect if we are running on a faulty buggy OS.
+            var regexpBadDesktopOS = /AppleWebKit.*10.[\d] /;
+            //ua sniffing is the tool of the devil.
+            this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "LastCreatedEngine", {
@@ -7750,6 +7755,13 @@ var BABYLON;
         Object.defineProperty(Engine.prototype, "badOS", {
             get: function () {
                 return this._badOS;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "badDesktopOS", {
+            get: function () {
+                return this._badDesktopOS;
             },
             enumerable: true,
             configurable: true
@@ -60394,7 +60406,7 @@ var BABYLON;
                                     if (bpp === 128) {
                                         floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     }
-                                    else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
+                                    else if (bpp === 64 && (!engine.getCaps().textureHalfFloat || engine.badDesktopOS)) {
                                         floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                         info.textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
                                         format = engine._getWebGLTextureType(info.textureType);
