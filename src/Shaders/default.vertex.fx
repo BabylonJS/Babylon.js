@@ -22,6 +22,14 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
+#ifdef MAINUV1
+	varying vec2 vMainUV1;
+#endif
+
+#ifdef MAINUV2
+	varying vec2 vMainUV2;
+#endif
+
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
 #endif
@@ -119,7 +127,15 @@ void main(void) {
 	vec2 uv2 = vec2(0., 0.);
 #endif
 
-#ifdef DIFFUSE
+#ifdef MAINUV1
+	vMainUV1 = uv;
+#endif
+
+#ifdef MAINUV2
+	vMainUV2 = uv;
+#endif
+
+#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
 	if (vDiffuseInfos.x == 0.)
 	{
 		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));

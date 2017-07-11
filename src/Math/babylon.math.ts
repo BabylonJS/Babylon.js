@@ -2941,10 +2941,10 @@
         /**
          * Boolean : True is the matrix is the identity matrix
          */
-        public isIdentity(): boolean {
+        public isIdentity(considerAs3x3 = false): boolean {
             if (this._isIdentityDirty) {
                 this._isIdentityDirty = false;
-                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0) {
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
                     this._isIdentity = false;
                 } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
                     this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
@@ -2953,6 +2953,10 @@
                     this._isIdentity = false;
                 } else {
                     this._isIdentity = true;
+                }
+
+                if (!considerAs3x3 && this.m[10] !== 1.0) {
+                    this._isIdentity = false;
                 }
             }
 

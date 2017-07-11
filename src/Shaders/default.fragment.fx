@@ -25,6 +25,14 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+#ifdef MAINUV1
+	varying vec2 vMainUV1;
+#endif
+
+#ifdef MAINUV2
+	varying vec2 vMainUV2;
+#endif
+
 // Helper functions
 #include<helperFunctions>
 
@@ -36,8 +44,16 @@ varying vec4 vColor;
 
 // Samplers
 #ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform sampler2D diffuseSampler;
+	#if DIFFUSEDIRECTUV == 1
+		#define vDiffuseUV vMainUV1
+	#else 
+		#if DIFFUSEDIRECTUV == 2
+			#define vDiffuseUV vMainUV2
+		#else
+			varying vec2 vDiffuseUV;
+		#endif
+	#endif
+	uniform sampler2D diffuseSampler;
 #endif
 
 #ifdef AMBIENT
