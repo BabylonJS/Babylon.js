@@ -347,6 +347,7 @@ declare module BABYLON.GLTF2 {
         * @param uri: the uri to decode
         */
         static DecodeBase64(uri: string): ArrayBuffer;
+        static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void;
         /**
         * Returns the wrap mode of the texture
         * @param mode: the mode value

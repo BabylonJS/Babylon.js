@@ -33143,7 +33143,7 @@ var BABYLON;
                             if (!info.isCompressed && info.isFourCC) {
                                 dataLength = width * height * 4;
                                 var floatArray;
-                                if (engine.badOS) {
+                                if (engine.badOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) {
                                     if (bpp === 128) {
                                         floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     }

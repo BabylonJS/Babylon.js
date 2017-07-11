@@ -2840,11 +2840,11 @@ var BABYLON;
                             var values = data;
                             switch (semantic) {
                                 case "NORMAL":
-                                    values.forEach(function (v, i) { return values[i] += vertexData.normals[i]; });
+                                    GLTF2.GLTFUtils.ForEach(values, function (v, i) { return values[i] += vertexData.normals[i]; });
                                     babylonMorphTarget.setNormals(values);
                                     break;
                                 case "POSITION":
-                                    values.forEach(function (v, i) { return values[i] += vertexData.positions[i]; });
+                                    GLTF2.GLTFUtils.ForEach(values, function (v, i) { return values[i] += vertexData.positions[i]; });
                                     babylonMorphTarget.setPositions(values);
                                     break;
                                 case "TANGENT":
@@ -3343,6 +3343,11 @@ var BABYLON;
                     bufferView[i] = decodedString.charCodeAt(i);
                 }
                 return bufferView.buffer;
+            };
+            GLTFUtils.ForEach = function (view, func) {
+                for (var index = 0; index < view.length; index++) {
+                    func(view[index], index);
+                }
             };
             /**
             * Returns the wrap mode of the texture
