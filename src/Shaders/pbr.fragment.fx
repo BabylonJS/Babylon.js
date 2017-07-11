@@ -31,7 +31,7 @@ varying vec3 vPositionW;
 
 #ifdef NORMAL
 	varying vec3 vNormalW;
-	#ifdef USESPHERICALFROMREFLECTIONMAP
+	#if defined(USESPHERICALFROMREFLECTIONMAP) && !defined(USESPHERICALINFRAGMENT)
 		varying vec3 vEnvironmentIrradiance;
 	#endif
 #endif
@@ -560,7 +560,7 @@ void main(void) {
 
 	// _____________________________ Irradiance ________________________________
 	#ifdef USESPHERICALFROMREFLECTIONMAP
-		#ifdef NORMAL
+		#if defined(NORMAL) && !defined(USESPHERICALINFRAGMENT)
 			environmentIrradiance = vEnvironmentIrradiance;
 		#else
 			environmentIrradiance = environmentIrradianceJones(reflectionVector);
