@@ -258,7 +258,11 @@ var Test = (function () {
             inst.computeWorldMatrix();
         }
 
-
+        // to test reflection prob texture handling
+        var probe = new BABYLON.ReflectionProbe("probe", 512, scene);
+        for(let mesh of scene.meshes){
+            probe.renderList.push(mesh);
+        }
 
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");

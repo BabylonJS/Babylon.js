@@ -80,6 +80,11 @@ module INSPECTOR {
             let texture = item.adapter.object;
 
             let img = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            let img1 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            let img2 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            let img3 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            let img4 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            let img5 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
 
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
@@ -90,8 +95,58 @@ module INSPECTOR {
             }
             else if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
-                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, (data) => img.src = data);
+                if(texture.activeCamera){
+                    BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, (data) => img.src = data);
+                }
+                else{
+                    let scene = this._inspector.scene;
+                    let engine = scene.getEngine();
+                    let size = texture.getSize();
+                    
+                    // Clone the texture
+                    let screenShotTexture = texture.clone();
+                    screenShotTexture.activeCamera = texture.activeCamera;
+                    screenShotTexture.onBeforeRender = texture.onBeforeRender;
+                    screenShotTexture.onAfterRender = texture.onAfterRender;
+                    screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
+                    screenShotTexture.onAfterUnbindObservable = texture.onAfterUnbindObservable;
 
+                    // To display the texture after rendering
+                    screenShotTexture.onAfterRenderObservable.add((faceIndex: number) => {
+                        let targetImg: HTMLImageElement;
+                        switch(faceIndex){
+                            case 0:
+                                targetImg = img;
+                                break;
+                            case 1:
+                                targetImg = img1;
+                                break;
+                            case 2:
+                                targetImg = img2;
+                                break;
+                            case 3:
+                                targetImg = img3;
+                                break;
+                            case 4:
+                                targetImg = img4;
+                                break;
+                            case 5:
+                                targetImg = img5;
+                                break;
+                            default:
+                                targetImg = img;
+                                break;
+
+                        }
+                        BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,  (data) => targetImg.src = data, "image/png");
+                    });
+
+                    // Render the texture
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                    screenShotTexture.render(true);
+                    screenShotTexture.dispose();
+                }
             } else if (texture.url) {
                 // If an url is present, the texture is an image
                 img.src = texture.url;
