@@ -17,16 +17,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var GRIDMaterialDefines = (function (_super) {
-        __extends(GRIDMaterialDefines, _super);
-        function GRIDMaterialDefines() {
+    var GridMaterialDefines = (function (_super) {
+        __extends(GridMaterialDefines, _super);
+        function GridMaterialDefines() {
             var _this = _super.call(this) || this;
             _this.TRANSPARENT = false;
             _this.FOG = false;
-            _this._keys = Object.keys(_this);
+            _this.USERIGHTHANDEDSYSTEM = false;
+            _this.rebuild();
             return _this;
         }
-        return GRIDMaterialDefines;
+        return GridMaterialDefines;
     }(BABYLON.MaterialDefines));
     /**
      * The grid materials allows you to wrap any shape with a grid.
@@ -66,8 +67,6 @@ var BABYLON;
              */
             _this.opacity = 1.0;
             _this._gridControl = new BABYLON.Vector4(_this.gridRatio, _this.majorUnitFrequency, _this.minorUnitVisibility, _this.opacity);
-            _this._defines = new GRIDMaterialDefines();
-            _this._cachedDefines = new GRIDMaterialDefines();
             return _this;
         }
         /**
@@ -76,85 +75,72 @@ var BABYLON;
         GridMaterial.prototype.needAlphaBlending = function () {
             return this.opacity < 1.0;
         };
-        GridMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
-            if (!mesh) {
-                return true;
-            }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-            return false;
-        };
-        GridMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        GridMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new GridMaterialDefines();
+            }
+            var defines = subMesh._materialDefines;
             var scene = this.getScene();
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
             var engine = scene.getEngine();
-            var needNormals = true;
-            this._defines.reset();
-            if (this.opacity < 1.0) {
-                this._defines.TRANSPARENT = true;
+            if (this.opacity < 1.0 && !defines.TRANSPARENT) {
+                defines.TRANSPARENT = true;
+                defines.markAsUnprocessed();
             }
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
             // Get correct effect      
-            if (!this._effect || !this._defines.isEqual(this._cachedDefines)) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
                 // Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
                 // Effect
                 var shaderName = scene.getEngine().getCaps().standardDerivatives ? "grid" : "legacygrid";
                 // Defines
-                var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, ["worldViewProjection", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"], [], join, null, this.onCompiled, this.onError);
+                var join = defines.toString();
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["worldViewProjection", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"], [], join, null, this.onCompiled, this.onError), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
             return true;
         };
-        GridMaterial.prototype.bindOnlyWorldMatrix = function (world) {
+        GridMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
-            this._effect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
-            this._effect.setMatrix("world", world);
-            this._effect.setMatrix("view", scene.getViewMatrix());
-        };
-        GridMaterial.prototype.bind = function (world, mesh) {
-            var scene = this.getScene();
+            var defines = subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
+            this._activeEffect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            this._activeEffect.setMatrix("view", scene.getViewMatrix());
             // Uniforms
-            if (scene.getCachedMaterial() !== this) {
-                this._effect.setColor3("mainColor", this.mainColor);
-                this._effect.setColor3("lineColor", this.lineColor);
+            if (this._mustRebind(scene, effect)) {
+                this._activeEffect.setColor3("mainColor", this.mainColor);
+                this._activeEffect.setColor3("lineColor", this.lineColor);
                 this._gridControl.x = this.gridRatio;
                 this._gridControl.y = Math.round(this.majorUnitFrequency);
                 this._gridControl.z = this.minorUnitVisibility;
                 this._gridControl.w = this.opacity;
-                this._effect.setVector4("gridControl", this._gridControl);
-            }
-            // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setVector4("gridControl", this._gridControl);
             }
             // Fog
-            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            _super.prototype.bind.call(this, world, mesh);
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+            this._afterBind(mesh, this._activeEffect);
         };
         GridMaterial.prototype.dispose = function (forceDisposeEffect) {
             _super.prototype.dispose.call(this, forceDisposeEffect);
@@ -172,7 +158,7 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         return GridMaterial;
-    }(BABYLON.Material));
+    }(BABYLON.PushMaterial));
     __decorate([
         BABYLON.serializeAsColor3()
     ], GridMaterial.prototype, "mainColor", void 0);

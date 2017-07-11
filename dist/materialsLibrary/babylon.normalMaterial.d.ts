@@ -1,23 +1,25 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
-    class NormalMaterial extends Material {
+    class NormalMaterial extends PushMaterial {
+        private _diffuseTexture;
         diffuseTexture: BaseTexture;
         diffuseColor: Color3;
+        private _disableLighting;
         disableLighting: boolean;
+        private _maxSimultaneousLights;
+        maxSimultaneousLights: number;
         private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
-        private _defines;
-        private _cachedDefines;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BaseTexture;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): NormalMaterial;
         serialize(): any;
