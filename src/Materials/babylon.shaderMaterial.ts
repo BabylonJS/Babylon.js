@@ -378,6 +378,29 @@
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            for (var name in this._textures) {
+                if (this._textures[name] === texture) {
+                    return true;
+                }
+            }       
+
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    if (array[index] === texture) {
+                        return true;
+                    }
+                }
+            }             
+
+            return false;    
+        }
+
         public clone(name: string): ShaderMaterial {
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
 

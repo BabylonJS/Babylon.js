@@ -78,6 +78,22 @@
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.diffuseTexture === texture) {
+                return true;
+            }
+
+            if (this.specularGlossinessTexture === texture) {
+                return true;
+            }        
+
+            return false;    
+        }
+
         public clone(name: string): PBRSpecularGlossinessMaterial {
             return SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
         }

@@ -86,6 +86,22 @@
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.baseTexture === texture) {
+                return true;
+            }
+
+            if (this.metallicRoughnessTexture === texture) {
+                return true;
+            }        
+
+            return false;    
+        }        
+
         public clone(name: string): PBRMetallicRoughnessMaterial {
             return SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
         }

@@ -269,6 +269,18 @@ module BABYLON {
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.diffuseTexture === texture) {
+                return true;
+            } 
+
+            return false;    
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();

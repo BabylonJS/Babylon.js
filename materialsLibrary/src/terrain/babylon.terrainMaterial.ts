@@ -366,6 +366,42 @@ module BABYLON {
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._mixTexture === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture1 === texture) {
+                return true;
+            }    
+
+            if (this._diffuseTexture2 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture3 === texture) {
+                return true;
+            }        
+
+            if (this._bumpTexture1 === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture2 === texture) {
+                return true;
+            }        
+
+            if (this._bumpTexture3 === texture) {
+                return true;
+            }      
+
+            return false;    
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.mixTexture) {
                 this.mixTexture.dispose();
