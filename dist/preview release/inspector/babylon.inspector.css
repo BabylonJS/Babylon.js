@@ -277,7 +277,7 @@
   .insp-wrapper .insp-details {
     background-color: #242424;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     color: #ccc;
     font-family: "Inconsolata", sans-serif; }
     .insp-wrapper .insp-details .base-row, .insp-wrapper .insp-details .row, .insp-wrapper .insp-details .header-row {

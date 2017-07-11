@@ -3095,7 +3095,7 @@ var INSPECTOR;
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             // Build the treepanel
             _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
-            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('image-panel', _this._panel);
+            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('insp-details', _this._panel);
             Split([_this._treePanel, _this._imagePanel], {
                 blockDrag: _this._inspector.popupMode,
                 direction: 'vertical'
@@ -3148,6 +3148,11 @@ var INSPECTOR;
             // Get the texture object
             var texture = item.adapter.object;
             var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            var img1 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            var img2 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            var img3 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            var img4 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            var img5 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
                 texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
@@ -3156,7 +3161,54 @@ var INSPECTOR;
             }
             else if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
-                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
+                if (texture.activeCamera) {
+                    BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
+                }
+                else {
+                    var scene = this._inspector.scene;
+                    var engine_1 = scene.getEngine();
+                    var size_1 = texture.getSize();
+                    // Clone the texture
+                    var screenShotTexture = texture.clone();
+                    screenShotTexture.activeCamera = texture.activeCamera;
+                    screenShotTexture.onBeforeRender = texture.onBeforeRender;
+                    screenShotTexture.onAfterRender = texture.onAfterRender;
+                    screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
+                    screenShotTexture.onAfterUnbindObservable = texture.onAfterUnbindObservable;
+                    // To display the texture after rendering
+                    screenShotTexture.onAfterRenderObservable.add(function (faceIndex) {
+                        var targetImg;
+                        switch (faceIndex) {
+                            case 0:
+                                targetImg = img;
+                                break;
+                            case 1:
+                                targetImg = img1;
+                                break;
+                            case 2:
+                                targetImg = img2;
+                                break;
+                            case 3:
+                                targetImg = img3;
+                                break;
+                            case 4:
+                                targetImg = img4;
+                                break;
+                            case 5:
+                                targetImg = img5;
+                                break;
+                            default:
+                                targetImg = img;
+                                break;
+                        }
+                        BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return targetImg.src = data; }, "image/png");
+                    });
+                    // Render the texture
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                    screenShotTexture.render(true);
+                    screenShotTexture.dispose();
+                }
             }
             else if (texture.url) {
                 // If an url is present, the texture is an image
