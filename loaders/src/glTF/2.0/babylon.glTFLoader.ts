@@ -482,11 +482,11 @@ module BABYLON.GLTF2 {
                         var values = <Float32Array>data;
                         switch (semantic) {
                             case "NORMAL":
-                                values.forEach((v, i) => values[i] += vertexData.normals[i]);
+                                GLTFUtils.ForEach(values, (v, i) => values[i] += vertexData.normals[i]);
                                 babylonMorphTarget.setNormals(values);
                                 break;
                             case "POSITION":
-                                values.forEach((v, i) => values[i] += vertexData.positions[i]);
+                                GLTFUtils.ForEach(values, (v, i) => values[i] += vertexData.positions[i]);
                                 babylonMorphTarget.setPositions(values);
                                 break;
                             case "TANGENT":
