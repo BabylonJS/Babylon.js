@@ -1,5 +1,11 @@
 ﻿#ifdef BUMP
-	varying vec2 vBumpUV;
+	#if BUMPDIRECTUV == 1
+		#define vBumpUV vMainUV1
+	#elif BUMPDIRECTUV == 2
+		#define vBumpUV vMainUV2
+	#else
+		varying vec2 vBumpUV;
+	#endif
 	uniform sampler2D bumpSampler;
 #if defined(TANGENT) && defined(NORMAL) 
 	varying mat3 vTBN;

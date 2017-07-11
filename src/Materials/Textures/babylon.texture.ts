@@ -233,6 +233,10 @@
             this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
 
+            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+
             return this._cachedTextureMatrix;
         }
 
@@ -278,6 +282,11 @@
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
+            
+            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+                return (mat.getActiveTextures().indexOf(this) !== -1);
+            });
+
             return this._cachedTextureMatrix;
         }
 
