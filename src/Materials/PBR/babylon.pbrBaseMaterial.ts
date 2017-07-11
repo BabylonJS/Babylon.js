@@ -75,6 +75,7 @@
         public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
+        public USESPHERICALINFRAGMENT = false;
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
@@ -617,6 +618,9 @@
                         if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
+                                if (scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                                    defines.USESPHERICALINFRAGMENT = true;
+                                }
                             }
                         }
                     }
