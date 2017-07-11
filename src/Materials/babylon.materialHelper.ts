@@ -1,6 +1,29 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
+        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: MaterialDefines, key: string): void {
+            defines._needUVs = true;
+            defines[key] = true;
+            if (texture.getTextureMatrix().isIdentity(true)) {
+                defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
+                if (texture.coordinatesIndex === 0) {
+                    defines["MAINUV1"] = true;
+                } else {
+                    defines["MAINUV2"] = true;
+                }
+            } else {
+                defines[key + "DIRECTUV"] = 0;
+            }
+        }
+
+        public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
+            var matrix = texture.getTextureMatrix();
+
+            if (!matrix.isIdentity(true)) {
+                uniformBuffer.updateMatrix(key + "Matrix", matrix);
+            }
+        }
+
         public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
             if (defines._areMiscDirty) {
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;

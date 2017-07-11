@@ -46,34 +46,56 @@ varying vec4 vColor;
 #ifdef DIFFUSE
 	#if DIFFUSEDIRECTUV == 1
 		#define vDiffuseUV vMainUV1
-	#else 
-		#if DIFFUSEDIRECTUV == 2
-			#define vDiffuseUV vMainUV2
-		#else
-			varying vec2 vDiffuseUV;
-		#endif
+	#elif DIFFUSEDIRECTUV == 2
+		#define vDiffuseUV vMainUV2
+	#else
+		varying vec2 vDiffuseUV;
 	#endif
 	uniform sampler2D diffuseSampler;
 #endif
 
 #ifdef AMBIENT
-varying vec2 vAmbientUV;
-uniform sampler2D ambientSampler;
+	#if AMBIENTDIRECTUV == 1
+		#define vAmbientUV vMainUV1
+	#elif AMBIENTDIRECTUV == 2
+		#define vAmbientUV vMainUV2
+	#else
+		varying vec2 vAmbientUV;
+	#endif
+	uniform sampler2D ambientSampler;
 #endif
 
 #ifdef OPACITY	
-varying vec2 vOpacityUV;
-uniform sampler2D opacitySampler;
+	#if OPACITYDIRECTUV == 1
+		#define vOpacityUV vMainUV1
+	#elif OPACITYDIRECTUV == 2
+		#define vOpacityUV vMainUV2
+	#else
+		varying vec2 vOpacityUV;
+	#endif
+	uniform sampler2D opacitySampler;
 #endif
 
 #ifdef EMISSIVE
-varying vec2 vEmissiveUV;
-uniform sampler2D emissiveSampler;
+	#if EMISSIVEDIRECTUV == 1
+		#define vEmissiveUV vMainUV1
+	#elif EMISSIVEDIRECTUV == 2
+		#define vEmissiveUV vMainUV2
+	#else
+		varying vec2 vEmissiveUV;
+	#endif
+	uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
-varying vec2 vLightmapUV;
-uniform sampler2D lightmapSampler;
+	#if LIGHTMAPDIRECTUV == 1
+		#define vLightmapUV vMainUV1
+	#elif LIGHTMAPDIRECTUV == 2
+		#define vLightmapUV vMainUV2
+	#else
+		varying vec2 vLightmapUV;
+	#endif
+	uniform sampler2D lightmapSampler;
 #endif
 
 #ifdef REFRACTION
@@ -87,8 +109,14 @@ uniform sampler2D refraction2DSampler;
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
-varying vec2 vSpecularUV;
-uniform sampler2D specularSampler;
+	#if SPECULARDIRECTUV == 1
+		#define vSpecularUV vMainUV1
+	#elif SPECULARDIRECTUV == 2
+		#define vSpecularUV vMainUV2
+	#else
+		varying vec2 vSpecularUV;
+	#endif
+	uniform sampler2D specularSampler;
 #endif
 
 // Fresnel
