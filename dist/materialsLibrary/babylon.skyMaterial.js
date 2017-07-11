@@ -26,7 +26,8 @@ var BABYLON;
             _this.FOG = false;
             _this.VERTEXCOLOR = false;
             _this.VERTEXALPHA = false;
-            _this._keys = Object.keys(_this);
+            _this.USERIGHTHANDEDSYSTEM = false;
+            _this.rebuild();
             return _this;
         }
         return SkyMaterialDefines;
@@ -48,8 +49,6 @@ var BABYLON;
             _this.useSunPosition = false;
             // Private members
             _this._cameraPosition = BABYLON.Vector3.Zero();
-            _this._defines = new SkyMaterialDefines();
-            _this._cachedDefines = new SkyMaterialDefines();
             return _this;
         }
         SkyMaterial.prototype.needAlphaBlending = function () {
@@ -62,113 +61,83 @@ var BABYLON;
             return null;
         };
         // Methods   
-        SkyMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
-            if (!mesh) {
-                return true;
-            }
-            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
-                return true;
-            }
-            return false;
-        };
-        SkyMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
-                if (this._wasPreviouslyReady) {
+        SkyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+            if (this.isFrozen) {
+                if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
             }
+            if (!subMesh._materialDefines) {
+                subMesh._materialDefines = new SkyMaterialDefines();
+            }
+            var defines = subMesh._materialDefines;
             var scene = this.getScene();
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && subMesh.effect) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
-                        return true;
-                    }
+                    return true;
                 }
             }
             var engine = scene.getEngine();
-            this._defines.reset();
-            // Effect
-            if (scene.clipPlane) {
-                this._defines.CLIPPLANE = true;
-            }
-            // Point size
-            if (this.pointsCloud || scene.forcePointsCloud) {
-                this._defines.POINTSIZE = true;
-            }
-            // Fog
-            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
-                this._defines.FOG = true;
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
-            if (mesh) {
-                if (mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                    this._defines.VERTEXCOLOR = true;
-                    if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true;
-                    }
-                }
-            }
+            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines) || !this._effect) {
-                this._defines.cloneTo(this._cachedDefines);
+            if (defines.isDirty) {
+                defines.markAsProcessed();
                 scene.resetCachedMaterial();
                 // Fallbacks
                 var fallbacks = new BABYLON.EffectFallbacks();
-                if (this._defines.FOG) {
+                if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
-                if (this._defines.VERTEXCOLOR) {
+                if (defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                // Legacy browser patch
                 var shaderName = "sky";
-                var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "viewProjection", "view",
+                var join = defines.toString();
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["world", "viewProjection", "view",
                     "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
                     "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                     "cameraPosition"
-                ], [], join, fallbacks, this.onCompiled, this.onError);
+                ], [], join, fallbacks, this.onCompiled, this.onError), defines);
             }
-            if (!this._effect.isReady()) {
+            if (!subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-            if (mesh) {
-                if (!mesh._materialDefines) {
-                    mesh._materialDefines = new SkyMaterialDefines();
-                }
-                this._defines.cloneTo(mesh._materialDefines);
-            }
             return true;
         };
-        SkyMaterial.prototype.bindOnlyWorldMatrix = function (world) {
-            this._effect.setMatrix("world", world);
-        };
-        SkyMaterial.prototype.bind = function (world, mesh) {
+        SkyMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
             var scene = this.getScene();
+            var defines = subMesh._materialDefines;
+            if (!defines) {
+                return;
+            }
+            var effect = subMesh.effect;
+            this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-            if (scene.getCachedMaterial() !== this) {
+            this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+            if (this._mustRebind(scene, effect)) {
                 // Clip plane
                 if (scene.clipPlane) {
                     var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+                    this._activeEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
                 }
                 // Point size
                 if (this.pointsCloud) {
-                    this._effect.setFloat("pointSize", this.pointSize);
+                    this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
             }
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
             // Sky
             var camera = scene.activeCamera;
             if (camera) {
@@ -176,15 +145,15 @@ var BABYLON;
                 this._cameraPosition.x = cameraWorldMatrix.m[12];
                 this._cameraPosition.y = cameraWorldMatrix.m[13];
                 this._cameraPosition.z = cameraWorldMatrix.m[14];
-                this._effect.setVector3("cameraPosition", this._cameraPosition);
+                this._activeEffect.setVector3("cameraPosition", this._cameraPosition);
             }
             if (this.luminance > 0) {
-                this._effect.setFloat("luminance", this.luminance);
+                this._activeEffect.setFloat("luminance", this.luminance);
             }
-            this._effect.setFloat("turbidity", this.turbidity);
-            this._effect.setFloat("rayleigh", this.rayleigh);
-            this._effect.setFloat("mieCoefficient", this.mieCoefficient);
-            this._effect.setFloat("mieDirectionalG", this.mieDirectionalG);
+            this._activeEffect.setFloat("turbidity", this.turbidity);
+            this._activeEffect.setFloat("rayleigh", this.rayleigh);
+            this._activeEffect.setFloat("mieCoefficient", this.mieCoefficient);
+            this._activeEffect.setFloat("mieDirectionalG", this.mieDirectionalG);
             if (!this.useSunPosition) {
                 var theta = Math.PI * (this.inclination - 0.5);
                 var phi = 2 * Math.PI * (this.azimuth - 0.5);
@@ -192,8 +161,8 @@ var BABYLON;
                 this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
                 this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             }
-            this._effect.setVector3("sunPosition", this.sunPosition);
-            _super.prototype.bind.call(this, world, mesh);
+            this._activeEffect.setVector3("sunPosition", this.sunPosition);
+            this._afterBind(mesh, this._activeEffect);
         };
         SkyMaterial.prototype.getAnimatables = function () {
             return [];
@@ -215,7 +184,7 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new SkyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         return SkyMaterial;
-    }(BABYLON.Material));
+    }(BABYLON.PushMaterial));
     __decorate([
         BABYLON.serialize()
     ], SkyMaterial.prototype, "luminance", void 0);

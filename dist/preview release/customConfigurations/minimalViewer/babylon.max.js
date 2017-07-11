@@ -7762,7 +7762,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.0-rc";
+                return "3.0";
             },
             enumerable: true,
             configurable: true

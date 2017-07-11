@@ -1,10 +1,10 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     /**
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    class GridMaterial extends BABYLON.Material {
+    class GridMaterial extends BABYLON.PushMaterial {
         /**
          * Main color of the grid (e.g. between lines)
          */
@@ -31,8 +31,6 @@ declare module BABYLON {
         opacity: number;
         private _gridControl;
         private _renderId;
-        private _defines;
-        private _cachedDefines;
         /**
          * constructor
          * @param name The name given to the material in order to identify it afterwards.
@@ -43,10 +41,8 @@ declare module BABYLON {
          * Returns wehter or not the grid requires alpha blending.
          */
         needAlphaBlending(): boolean;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): GridMaterial;
         serialize(): any;
