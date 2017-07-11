@@ -2941,7 +2941,7 @@
         /**
          * Boolean : True is the matrix is the identity matrix
          */
-        public isIdentity(considerAs3x3 = false): boolean {
+        public isIdentity(considerAsTextureMatrix = false): boolean {
             if (this._isIdentityDirty) {
                 this._isIdentityDirty = false;
                 if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
@@ -2955,7 +2955,7 @@
                     this._isIdentity = true;
                 }
 
-                if (!considerAs3x3 && this.m[10] !== 1.0) {
+                if (!considerAsTextureMatrix && this.m[10] !== 1.0) {
                     this._isIdentity = false;
                 }
             }

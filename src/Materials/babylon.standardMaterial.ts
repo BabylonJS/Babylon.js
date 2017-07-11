@@ -5,12 +5,17 @@ module BABYLON {
         public DIFFUSE = false;
         public DIFFUSEDIRECTUV = 0;
         public AMBIENT = false;
+        public AMBIENTDIRECTUV = 0;
         public OPACITY = false;
+        public OPACITYDIRECTUV = 0;
         public OPACITYRGB = false;
         public REFLECTION = false;
         public EMISSIVE = false;
+        public EMISSIVEDIRECTUV = 0;
         public SPECULAR = false;
+        public SPECULARDIRECTUV = 0;
         public BUMP = false;
+        public BUMPDIRECTUV = 0;
         public PARALLAX = false;
         public PARALLAXOCCLUSION = false;
         public SPECULAROVERALPHA = false;
@@ -40,6 +45,7 @@ module BABYLON {
         public LINKEMISSIVEWITHDIFFUSE = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
+        public LIGHTMAPDIRECTUV = 0;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
@@ -521,18 +527,7 @@ module BABYLON {
                         if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.DIFFUSE = true;
-                            if (this._diffuseTexture.getTextureMatrix().isIdentity(true)) {
-                                defines.DIFFUSEDIRECTUV = this._diffuseTexture.coordinatesIndex + 1;
-                                if (this._diffuseTexture.coordinatesIndex === 0) {
-                                    defines.MAINUV1 = true;
-                                } else {
-                                    defines.MAINUV2 = true;
-                                }
-                            } else {
-                                defines.DIFFUSEDIRECTUV = 0;
-                            }
+                            MaterialHelper.PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
                         }
                     } else {
                         defines.DIFFUSE = false;
@@ -542,8 +537,7 @@ module BABYLON {
                         if (!this._ambientTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.AMBIENT = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                         }
                     } else {
                         defines.AMBIENT = false;
@@ -553,8 +547,7 @@ module BABYLON {
                         if (!this._opacityTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.OPACITY = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                             defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                         }
                     } else {
@@ -612,8 +605,7 @@ module BABYLON {
                         if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.EMISSIVE = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
                         }
                     } else {
                         defines.EMISSIVE = false;
@@ -623,8 +615,7 @@ module BABYLON {
                         if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.LIGHTMAP = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                             defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                         }
                     } else {
@@ -635,8 +626,7 @@ module BABYLON {
                         if (!this._specularTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.SPECULAR = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._specularTexture, defines, "SPECULAR");
                             defines.GLOSSINESS = this._useGlossinessFromSpecularMapAlpha;
                         }
                     } else {
@@ -648,8 +638,7 @@ module BABYLON {
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.BUMP = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                             defines.INVERTNORMALMAPX = this.invertNormalMapX;
                             defines.INVERTNORMALMAPY = this.invertNormalMapY;
@@ -999,21 +988,17 @@ module BABYLON {
                     if (scene.texturesEnabled) {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                            var matrix = this._diffuseTexture.getTextureMatrix();
-
-                            if (!matrix.isIdentity(true)) {
-                                this._uniformBuffer.updateMatrix("diffuseMatrix", matrix);
-                            }
+                            MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                            this._uniformBuffer.updateMatrix("ambientMatrix", this._ambientTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
                         }
 
                         if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                            this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
 
                         if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1023,22 +1008,22 @@ module BABYLON {
 
                         if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                            this._uniformBuffer.updateMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._emissiveTexture, this._uniformBuffer, "emissive");
                         }
 
                         if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                            this._uniformBuffer.updateMatrix("lightmapMatrix", this._lightmapTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._lightmapTexture, this._uniformBuffer, "lightmap");
                         }
 
                         if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                            this._uniformBuffer.updateMatrix("specularMatrix", this._specularTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._specularTexture, this._uniformBuffer, "specular");
                         }
 
                         if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                            this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
                         }
 
                         if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
