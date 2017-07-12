@@ -103,7 +103,6 @@ interface WebGLTexture {
     isReady: boolean;
     isCube: boolean;
     url: string;
-    noMipmap: boolean;
     samplingMode: number;
     references: number;
     generateMipMaps: boolean;

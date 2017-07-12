@@ -260,9 +260,7 @@ var Test = (function () {
 
         // to test reflection prob texture handling
         var probe = new BABYLON.ReflectionProbe("probe", 512, scene);
-        for(let mesh of scene.meshes){
-            probe.renderList.push(mesh);
-        }
+        probe.renderList.push(sphere1);
 
         // gui
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");

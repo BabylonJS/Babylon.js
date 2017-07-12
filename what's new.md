@@ -1,8 +1,4 @@
-# 3.0.0:
-
-## Core engine
-
-### Major updates
+# Major updates
  - WebGL2 context support. WebGL2 is now used instead of WebGL 1 when available. [More info here](http://doc.babylonjs.com/overviews/webgl2) ([deltakosh](https://github.com/deltakosh))
  - Complete WebVR 1.1 support including controllers for HTC Vive and Occulus. [More info here](http://doc.babylonjs.com/overviews/webvr_camera) ([raanan](https://github.com/raananw) & [davrous](https://github.com/davrous))
  - Complete rewrite of PBRMaterial. Introduced two new helper materials: `pbrMetallicRoughnessMaterial` and `pbrSpecularGlossinessMaterial`. [Demo](http://www.babylonjs.com/demos/pbrglossy/) - [More info here](http://doc.babylonjs.com/overviews/physically_based_rendering) ([Sebastien Vandenberghe](https://github.com/sebavan))
@@ -29,7 +25,7 @@
  - Spector.js New WebGL debugger: [more info here](http://spector.babylonjs.com) ([Sebastien Vandenberghe](https://github.com/sebavan))
  - New blur mode for mirrors. [Demo](https://www.babylonjs-playground.com/#9I6NX1) ([deltakosh](https://github.com/deltakosh)) 
 
-### Updates
+# Updates
 - Added `syncBoneWithImpostor()` and `syncImpostorWithBone()` to PhysicsImpostor to help with creating ragdoll effects. [Demo](http://playground.babylonjs.com/#PM5MFS#5) ([abow](https://github.com/abow))
 - New automatic creation mode for skybox. [Doc here](http://doc.babylonjs.com/tutorials/environment#automatic-creation) ([deltakosh](https://github.com/deltakosh))
 - New way to force compilation of materials. [Doc here](http://doc.babylonjs.com/tutorials/How_materials_work) ([deltakosh](https://github.com/deltakosh))
@@ -77,7 +73,7 @@
 - Allow the BlackAndWhite post process to adjust the degree in subsequent frames, for `Welcome to Wonderland`	types of animation ([jcpalmer](https://github.com/Palmer-JC))
 - New `BABYLON.TextureTools.CreateResizedCopy` function to create a copy of a texture and chage its size ([deltakosh](https://github.com/deltakosh)) 
  
-### Bug fixes
+# Bug fixes
 - Fixed issue with FPS not decreasing when reflections are disabled ([abow](https://github.com/abow)) 
 - Fixed disappearing BoneAxesViewer ([abow](https://github.com/abow)) 
 - Fixed disappearing SkeletonViewer ([abow](https://github.com/abow)) 
@@ -90,7 +86,7 @@
 - Fixed SPS particle access `start` index when used with `setParticles(start, end)` ([jerome](https://github.com/jbousquie))  
 - Fixed SPS billboard mode when used with a parented camera ([jerome](https://github.com/jbousquie)) 
 
-### API Documentation 
+# API Documentation 
 - File `abstractMesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `mesh.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `groundMesh.ts` documented ([jerome](https://github.com/jbousquie))  
@@ -107,7 +103,7 @@
 - File `spotLight.ts` documented ([jerome](https://github.com/jbousquie))  
 - File `shadowGenerator.ts` documented ([jerome](https://github.com/jbousquie))  
 
-### Breaking changes
+# Breaking changes
 - WebVRCamera:
   - `requestVRFullscreen` has been removed. Call `attachControl()` inside a user-interaction callback to start sending frames to the VR display
   - `setPositionOffset` has been used to change the position offset. it is now done using `camera.position`
