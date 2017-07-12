@@ -876,7 +876,7 @@
             this._badOS = regexpBadOs.test(navigator.userAgent);
 
             //Detect if we are running on a faulty buggy OS.
-            var regexpBadDesktopOS = /AppleWebKit.*10.[\d] /
+            var regexpBadDesktopOS = /AppleWebKit.*10.[\d]/
             //ua sniffing is the tool of the devil.
             this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
 
