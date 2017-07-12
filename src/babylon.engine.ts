@@ -875,7 +875,7 @@
             //ua sniffing is the tool of the devil.
             this._badOS = regexpBadOs.test(navigator.userAgent);
 
-            //Detect if we are running on a faulty buggy OS.
+            //Detect if we are running on a faulty buggy desktop OS.
             var regexpBadDesktopOS = /AppleWebKit.*10.[\d]/
             //ua sniffing is the tool of the devil.
             this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
@@ -1415,7 +1415,7 @@
                     gl.COLOR_BUFFER_BIT, gl.NEAREST);
             }
 
-            if (texture.generateMipMaps && !disableGenerateMipMaps) {
+            if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
