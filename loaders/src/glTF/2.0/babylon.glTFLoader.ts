@@ -11,7 +11,11 @@ module BABYLON.GLTF2 {
         private _onSuccess: () => void;
         private _onError: () => void;
 
+        private _succeeded: boolean;
         private _renderReady: boolean;
+
+        // Observable with boolean indicating success or error.
+        private _renderReadyObservable = new Observable<boolean>();
 
         // Count of pending work that needs to complete before the asset is rendered.
         private _renderPendingCount: number;
@@ -39,6 +43,15 @@ module BABYLON.GLTF2 {
 
         public get babylonScene(): Scene {
             return this._babylonScene;
+        }
+
+        public executeWhenRenderReady(func: (succeeded: boolean) => void) {
+            if (this._renderReady) {
+                func(this._succeeded);
+            }
+            else {
+                this._renderReadyObservable.add(func);
+            }
         }
 
         public constructor(parent: GLTFFileLoader) {
@@ -94,10 +107,10 @@ module BABYLON.GLTF2 {
         }
 
         private _onRenderReady(): void {
-            this._showMeshes();
-            this._startAnimations();
-
-            if (this._errors.length === 0) {
+            this._succeeded = (this._errors.length === 0);
+            if (this._succeeded) {
+                this._showMeshes();
+                this._startAnimations();
                 this._onSuccess();
             }
             else {
@@ -105,6 +118,8 @@ module BABYLON.GLTF2 {
                 this._errors = [];
                 this._onError();
             }
+
+            this._renderReadyObservable.notifyObservers(this._succeeded);
         }
 
         private _onLoaderComplete(): void {
@@ -182,7 +197,9 @@ module BABYLON.GLTF2 {
             this._defaultMaterial = undefined;
             this._onSuccess = undefined;
             this._onError = undefined;
+            this._succeeded = false;
             this._renderReady = false;
+            this._renderReadyObservable.clear();
             this._renderPendingCount = 0;
             this._loaderPendingCount = 0;
         }
