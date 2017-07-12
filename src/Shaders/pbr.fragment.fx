@@ -688,12 +688,18 @@ void main(void) {
 	vec3 finalSpecular = specularBase;
 	finalSpecular *= surfaceReflectivityColor;
 	finalSpecular = max(finalSpecular, 0.0);
+
+	// Full value needed for alpha.
+	vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
 #endif
 
 // _____________________________ Radiance_________________________________________
 #ifdef REFLECTION
 	vec3 finalRadiance = environmentRadiance;
 	finalRadiance *= specularEnvironmentReflectance;
+
+	// Full value needed for alpha. 
+	vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
 #endif
 
 // _____________________________ Refraction ______________________________________
@@ -714,15 +720,15 @@ void main(void) {
 #ifdef ALPHABLEND
 	float luminanceOverAlpha = 0.0;
 	#if	defined(REFLECTION) && defined(RADIANCEOVERALPHA)
-		luminanceOverAlpha += getLuminance(environmentRadiance);
+		luminanceOverAlpha += getLuminance(finalRadianceScaled);
 	#endif
 
 	#if defined(SPECULARTERM) && defined(SPECULAROVERALPHA)
-		luminanceOverAlpha += getLuminance(finalSpecular);
+		luminanceOverAlpha += getLuminance(finalSpecularScaled);
 	#endif
 
 	#if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
-		alpha = clamp(alpha + luminanceOverAlpha * alpha, 0., 1.);
+		alpha = clamp(alpha + luminanceOverAlpha * luminanceOverAlpha, 0., 1.);
 	#endif
 #endif
 
@@ -734,10 +740,14 @@ void main(void) {
 						finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
 #endif
 #ifdef SPECULARTERM
-						finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
+// Comupted in the previous step to help with alpha luminance.
+//						finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
+						finalSpecularScaled +
 #endif
 #ifdef REFLECTION
-						finalRadiance			* vLightingIntensity.z +
+// Comupted in the previous step to help with alpha luminance.
+//						finalRadiance			* vLightingIntensity.z +
+						finalRadianceScaled +
 #endif
 #ifdef REFRACTION
 						finalRefraction			* vLightingIntensity.z +
