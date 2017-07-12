@@ -172,11 +172,18 @@
       "referenceImage": "displacementMap.png",
       "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
     },
-    {
+     {
       "title": "PBR glossy",
       "scriptToRun": "/Demos/PBRGlossy/index.js",
       "functionToCall": "CreatePBRGlossyScene",
       "referenceImage": "pbrglossy.png"
+    },
+    {
+      "title": "PBR rough",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/PBRRough/index.js",
+      "functionToCall": "CreatePBRRoughScene",
+      "referenceImage": "PBRRough.png"
     },
     {
       "title": "Water material (only visual check)",
