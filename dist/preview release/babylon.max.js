@@ -9118,7 +9118,7 @@ var BABYLON;
             }
             scene._addPendingData(texture);
             texture.url = url;
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
@@ -9749,7 +9749,7 @@ var BABYLON;
             texture.url = rootUrl;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
@@ -9897,7 +9897,7 @@ var BABYLON;
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.references = 1;
-            texture.noMipmap = !generateMipMaps;
+            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
             var textureType = this._getWebGLTextureType(type);
@@ -9917,7 +9917,6 @@ var BABYLON;
             if (!isPot) {
                 generateMipMaps = false;
             }
-            texture.generateMipMaps = generateMipMaps;
             // Upload data if needed. The texture won t be ready until then.
             if (data) {
                 this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
@@ -19156,7 +19155,7 @@ var BABYLON;
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
-                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                     texturesCache.splice(index, 1);
                     return;
                 }
@@ -19166,7 +19165,7 @@ var BABYLON;
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
-                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                     if (!sampling || sampling === texturesCacheEntry.samplingMode) {
                         texturesCacheEntry.references++;
                         return texturesCacheEntry;

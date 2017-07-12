@@ -193,7 +193,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public microSurface = 0.9;
+        public microSurface = 1.0;
 
         /**
          * source material index of refraction (IOR)' / 'destination material IOR.

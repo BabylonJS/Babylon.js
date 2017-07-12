@@ -461,7 +461,7 @@
                             dataLength = width * height * 4;
                             var floatArray: ArrayBufferView;
 
-                            if (engine.badOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
+                            if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
                                     floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
                                 }
@@ -476,7 +476,7 @@
                             else {
                                 if (bpp === 128) {
                                     floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
-                                } else if (bpp === 64 && (!engine.getCaps().textureHalfFloat || engine.badDesktopOS)) { // Let's fallback to full float if not half float or false report of it...
+                                } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
                                     floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
