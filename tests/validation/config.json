@@ -1,7 +1,7 @@
 ﻿{
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [   
- {
+    {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
       "sceneFilename": "Sponza.babylon",
@@ -186,6 +186,12 @@
       "referenceImage": "PBRRough.png"
     },
     {
+      "title": "Reflection probes",
+      "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
+      "functionToCall": "CreateReflectionProbeTestScene ",
+      "referenceImage": "refprobe.png"
+    },    
+    {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",
@@ -222,3 +228,4 @@
     }
   ]
 }
+
