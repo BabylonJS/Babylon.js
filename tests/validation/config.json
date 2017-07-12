@@ -173,6 +173,12 @@
       "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
     },
     {
+      "title": "PBR glossy",
+      "scriptToRun": "/Demos/PBRGlossy/index.js",
+      "functionToCall": "CreatePBRGlossyScene",
+      "referenceImage": "pbrglossy.png"
+    },
+    {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",

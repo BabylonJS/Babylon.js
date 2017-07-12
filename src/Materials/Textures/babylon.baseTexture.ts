@@ -183,7 +183,7 @@
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
 
-                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                     texturesCache.splice(index, 1);
                     return;
                 }
@@ -195,7 +195,7 @@
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
 
-                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                     if (!sampling || sampling === texturesCacheEntry.samplingMode) {
                         texturesCacheEntry.references++;
                         return texturesCacheEntry;
