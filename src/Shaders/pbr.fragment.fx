@@ -773,7 +773,7 @@ void main(void) {
 
 #ifdef PREMULTIPLYALPHA
 	// Convert to associative (premultiplied) format if needed.
-	finalColor.rgb *= result.a;
+	finalColor.rgb *= finalColor.a;
 #endif
 
 	gl_FragColor = finalColor;
