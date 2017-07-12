@@ -7429,13 +7429,9 @@ var BABYLON;
                 this.initWebVR();
             }
             //Detect if we are running on a faulty buggy OS.
-            var regexpBadOs = /AppleWebKit.*10.[\d] Mobile/;
-            //ua sniffing is the tool of the devil.
-            this._badOS = regexpBadOs.test(navigator.userAgent);
+            this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
             //Detect if we are running on a faulty buggy desktop OS.
-            var regexpBadDesktopOS = /AppleWebKit.*10.[\d]/;
-            //ua sniffing is the tool of the devil.
-            this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
+            this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "LastCreatedEngine", {

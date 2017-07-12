@@ -286,6 +286,8 @@ var BABYLON;
     (function (GLTF2) {
         var GLTFLoader = (function () {
             function GLTFLoader(parent) {
+                // Observable with boolean indicating success or error.
+                this._renderReadyObservable = new BABYLON.Observable();
                 this._parent = parent;
             }
             GLTFLoader.RegisterExtension = function (extension) {
@@ -311,6 +313,14 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            GLTFLoader.prototype.executeWhenRenderReady = function (func) {
+                if (this._renderReady) {
+                    func(this._succeeded);
+                }
+                else {
+                    this._renderReadyObservable.add(func);
+                }
+            };
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onError) {
                 var _this = this;
                 this._loadAsync(meshesNames, scene, data, rootUrl, function () {
@@ -352,9 +362,10 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onRenderReady = function () {
-                this._showMeshes();
-                this._startAnimations();
-                if (this._errors.length === 0) {
+                this._succeeded = (this._errors.length === 0);
+                if (this._succeeded) {
+                    this._showMeshes();
+                    this._startAnimations();
                     this._onSuccess();
                 }
                 else {
@@ -362,6 +373,7 @@ var BABYLON;
                     this._errors = [];
                     this._onError();
                 }
+                this._renderReadyObservable.notifyObservers(this._succeeded);
             };
             GLTFLoader.prototype._onLoaderComplete = function () {
                 this._errors.forEach(function (error) { return BABYLON.Tools.Error(error); });
@@ -428,7 +440,9 @@ var BABYLON;
                 this._defaultMaterial = undefined;
                 this._onSuccess = undefined;
                 this._onError = undefined;
+                this._succeeded = false;
                 this._renderReady = false;
+                this._renderReadyObservable.clear();
                 this._renderPendingCount = 0;
                 this._loaderPendingCount = 0;
             };
@@ -1346,16 +1360,21 @@ var BABYLON;
                 MSFTLOD.prototype.loadMaterialLOD = function (loader, material, materialLODs, lod, assign) {
                     var _this = this;
                     loader.loadMaterial(materialLODs[lod], function (babylonMaterial) {
-                        babylonMaterial.name += ".LOD" + lod;
                         assign(babylonMaterial);
                         // Loading is complete if this is the highest quality LOD.
                         if (lod === 0) {
                             loader.removeLoaderPendingData(material);
                             return;
                         }
-                        // Load the next LOD when all of the textures are loaded.
-                        BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
-                            _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                        // Load the next LOD once the loader has succeeded.
+                        loader.executeWhenRenderReady(function (succeeded) {
+                            if (!succeeded) {
+                                return;
+                            }
+                            // Load the next LOD when all of the textures are loaded.
+                            BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
+                                _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                            });
                         });
                     });
                 };

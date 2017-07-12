@@ -190,7 +190,28 @@
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
       "functionToCall": "CreateReflectionProbeTestScene ",
       "referenceImage": "refprobe.png"
-    },    
+    },
+    {
+      "title": "PBRMetallicRoughnessMaterial",
+      "playgroundId": "#2FDQT5#13",
+      "referenceImage": "PBRMetallicRoughnessMaterial.png"
+    },   
+    {
+      "title": "PBRSpecularGlossinessMaterial",
+      "playgroundId": "#Z1VL3V#4",
+      "referenceImage": "PBRSpecularGlossinessMaterial.png"
+    },   
+    {
+      "title": "PBRSpecularGlossinessMaterial",
+      "playgroundId": "#Z1VL3V#4",
+      "referenceImage": "PBRSpecularGlossinessMaterial.png"
+    },   
+    {
+      "title": "MultiSample render targets",
+      "renderCount": 10,
+      "playgroundId": "#12MKMN",
+      "referenceImage": "MultiSample render targets.png"
+    },            
     {
       "title": "Water material (only visual check)",
       "renderCount": 10,

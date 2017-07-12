@@ -775,7 +775,9 @@ declare module BABYLON.GLTF2 {
         private _defaultMaterial;
         private _onSuccess;
         private _onError;
+        private _succeeded;
         private _renderReady;
+        private _renderReadyObservable;
         private _renderPendingCount;
         private _loaderPendingCount;
         static Extensions: {
@@ -784,6 +786,7 @@ declare module BABYLON.GLTF2 {
         static RegisterExtension(extension: GLTFLoaderExtension): void;
         readonly gltf: IGLTF;
         readonly babylonScene: Scene;
+        executeWhenRenderReady(func: (succeeded: boolean) => void): void;
         constructor(parent: GLTFFileLoader);
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void;
