@@ -546,7 +546,9 @@
                             return false;
                         }
 
-                        MaterialHelper.PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO"); 
+                        MaterialHelper.PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
+                    } else {
+                        defines.ALBEDO = false;
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -556,6 +558,8 @@
 
                         MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT"); 
                         defines.AMBIENTINGRAYSCALE = this._useAmbientInGrayScale;
+                    } else {
+                        defines.AMBIENT = false;
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
@@ -565,6 +569,8 @@
 
                         MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY"); 
                         defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
+                    } else {
+                        defines.OPACITY = false;
                     }
 
                     var reflectionTexture = this._getReflectionTexture();
@@ -623,6 +629,24 @@
                                 }
                             }
                         }
+                    } else {
+                        defines.REFLECTION = false;
+                        defines.REFLECTIONMAP_3D = false;
+                        defines.REFLECTIONMAP_SPHERICAL = false;
+                        defines.REFLECTIONMAP_PLANAR = false;
+                        defines.REFLECTIONMAP_CUBIC = false;
+                        defines.REFLECTIONMAP_PROJECTION = false;
+                        defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_EXPLICIT = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+                        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+                        defines.INVERTCUBICMAP = false;
+                        defines.USESPHERICALFROMREFLECTIONMAP = false;
+                        defines.USESPHERICALINFRAGMENT = false;
+                        defines.REFLECTIONMAP_OPPOSITEZ = false;
+                        defines.LODINREFLECTIONALPHA = false;
+                        defines.GAMMAREFLECTION = false;
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
@@ -632,6 +656,8 @@
 
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP"); 
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                    } else {
+                        defines.LIGHTMAP = false;
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -640,6 +666,8 @@
                         }
 
                         MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
+                    } else {
+                        defines.EMISSIVE = false;
                     }
 
                     if (StandardMaterial.SpecularTextureEnabled) {
@@ -663,6 +691,8 @@
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
+                        } else {
+                            defines.REFLECTIVITY = false;
                         }
 
                         if (this._microSurfaceTexture) {
@@ -671,9 +701,14 @@
                             }
 
                             MaterialHelper.PrepareDefinesForMergedUV(this._microSurfaceTexture, defines, "MICROSURFACEMAP");
+                        } else {
+                            defines.MICROSURFACEMAP = false;
                         }
+                    } else {
+                        defines.REFLECTIVITY = false;
+                        defines.MICROSURFACEMAP = false;
                     }
-
+	
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
                         // Bump texure can not be none blocking.
                         if (!this._bumpTexture.isReady()) {
@@ -703,6 +738,8 @@
                         }
 
                         defines.USERIGHTHANDEDSYSTEM = scene.useRightHandedSystem;
+                    } else {
+                        defines.BUMP = false;
                     }
 
                     var refractionTexture = this._getRefractionTexture();
@@ -720,6 +757,8 @@
                         if (this._linkRefractionWithTransparency) {
                             defines.LINKREFRACTIONTOTRANSPARENCY = true;
                         }
+                    } else {
+                        defines.REFRACTION = false;
                     }
 
                     if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
