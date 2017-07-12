@@ -3751,7 +3751,7 @@
             if (pbr) {
                 let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
                 hdrSkyboxMaterial.microSurface = 1.0 - blur;
                 hdrSkyboxMaterial.disableLighting = true;
@@ -3762,7 +3762,7 @@
             else {
                 let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = environmentTexture.clone();
+                skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
