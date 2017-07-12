@@ -875,8 +875,8 @@
             //ua sniffing is the tool of the devil.
             this._badOS = regexpBadOs.test(navigator.userAgent);
 
-            //Detect if we are running on a faulty buggy OS.
-            var regexpBadDesktopOS = /AppleWebKit.*10.[\d] /
+            //Detect if we are running on a faulty buggy desktop OS.
+            var regexpBadDesktopOS = /AppleWebKit.*10.[\d]/
             //ua sniffing is the tool of the devil.
             this._badDesktopOS = regexpBadDesktopOS.test(navigator.userAgent);
 
@@ -1415,7 +1415,7 @@
                     gl.COLOR_BUFFER_BIT, gl.NEAREST);
             }
 
-            if (texture.generateMipMaps && !disableGenerateMipMaps) {
+            if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
                 this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
@@ -2433,7 +2433,7 @@
 
             scene._addPendingData(texture);
             texture.url = url;
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
@@ -3216,7 +3216,7 @@
             texture.url = rootUrl;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
 
             var isKTX = false;
             var isDDS = false;
@@ -3398,7 +3398,7 @@
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.references = 1;
-            texture.noMipmap = !generateMipMaps;
+            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
 
@@ -3423,7 +3423,6 @@
             if (!isPot) {
                 generateMipMaps = false;
             }
-            texture.generateMipMaps = generateMipMaps;
 
             // Upload data if needed. The texture won t be ready until then.
             if (data) {
