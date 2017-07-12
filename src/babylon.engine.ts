@@ -2433,7 +2433,7 @@
 
             scene._addPendingData(texture);
             texture.url = url;
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
@@ -3216,7 +3216,7 @@
             texture.url = rootUrl;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
-            texture.noMipmap = noMipmap;
+            texture.generateMipMaps = !noMipmap;
 
             var isKTX = false;
             var isDDS = false;
@@ -3398,7 +3398,7 @@
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.references = 1;
-            texture.noMipmap = !generateMipMaps;
+            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
 
@@ -3423,7 +3423,6 @@
             if (!isPot) {
                 generateMipMaps = false;
             }
-            texture.generateMipMaps = generateMipMaps;
 
             // Upload data if needed. The texture won t be ready until then.
             if (data) {
