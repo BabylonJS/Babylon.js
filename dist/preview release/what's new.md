@@ -1,9 +1,8 @@
 # 3.1.0:
 
-## Core engine
+## Major updates
+ 
+## Updates
+- Normals are generated automatically if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
 
-### Major updates
- 
-### Updates
- 
-### Bug fixes
+## Bug fixes
