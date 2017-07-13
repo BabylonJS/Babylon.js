@@ -1,6 +1,6 @@
 ﻿#include<__decl__defaultFragment>
 
-#ifdef BUMP
+#if defined(BUMP) || !defined(NORMAL)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -168,7 +168,7 @@ void main(void) {
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
+	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW)));
 #endif
 
 #include<bumpFragment>

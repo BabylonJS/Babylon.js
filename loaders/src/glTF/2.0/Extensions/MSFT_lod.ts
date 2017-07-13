@@ -35,7 +35,6 @@ module BABYLON.GLTF2.Extensions {
 
         private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (material: Material) => void): void {
             loader.loadMaterial(materialLODs[lod], babylonMaterial => {
-                babylonMaterial.name += ".LOD" + lod;
                 assign(babylonMaterial);
 
                 // Loading is complete if this is the highest quality LOD.
@@ -44,9 +43,16 @@ module BABYLON.GLTF2.Extensions {
                     return;
                 }
 
-                // Load the next LOD when all of the textures are loaded.
-                BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
-                    this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                // Load the next LOD once the loader has succeeded.
+                loader.executeWhenRenderReady(succeeded => {
+                    if (!succeeded) {
+                        return;
+                    }
+
+                    // Load the next LOD when all of the textures are loaded.
+                    BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
+                        this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                    });
                 });
             });
 

@@ -142,9 +142,9 @@
                                 a.href = "#";
                                 a.innerHTML = (index + 1) + " - " + scripts[index];
                                 a.scriptLinkIndex = index + 1;
-                                a.onclick = onScriptClick;
-                                // option.scriptLinkIndex = index + 1;
-                                // option.onclick = onScriptClick;
+                                //a.onclick = onScriptClick;
+                                option.scriptLinkIndex = index + 1;
+                                option.onclick = onScriptClick;
 
                                 option.appendChild(a);
 
