@@ -199,6 +199,10 @@ module BABYLON.GUI {
                 var globalViewport = this._getGlobalViewport(scene);
 
                 for (var control of this._linkedControls) {
+                    if (!control.isVisible) {
+                        continue;
+                    }
+
                     var mesh = control._linkedMesh;
                     
                     var position = mesh.getBoundingInfo().boundingSphere.center;
