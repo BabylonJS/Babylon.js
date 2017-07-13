@@ -563,7 +563,11 @@ void main(void) {
 		#if defined(NORMAL) && !defined(USESPHERICALINFRAGMENT)
 			environmentIrradiance = vEnvironmentIrradiance;
 		#else
-			environmentIrradiance = environmentIrradianceJones(reflectionVector);
+			vec3 irradianceVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+			#ifdef REFLECTIONMAP_OPPOSITEZ
+				irradianceVector.z *= -1.0;
+			#endif
+			environmentIrradiance = environmentIrradianceJones(irradianceVector);
 		#endif
 	#endif
 
