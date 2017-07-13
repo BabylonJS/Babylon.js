@@ -188,6 +188,9 @@ var BABYLON;
                     var globalViewport = this._getGlobalViewport(scene);
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
+                        if (!control.isVisible) {
+                            continue;
+                        }
                         var mesh = control._linkedMesh;
                         var position = mesh.getBoundingInfo().boundingSphere.center;
                         var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
