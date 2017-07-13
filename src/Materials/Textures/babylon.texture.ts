@@ -303,6 +303,16 @@
             return this._onLoadObservable;
         }
 
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            
+            if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
+                serializationObject.base64String = this._buffer;
+            }
+
+            return serializationObject;
+        }
+
         // Statics
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
