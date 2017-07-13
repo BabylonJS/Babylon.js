@@ -168,7 +168,7 @@ void main(void) {
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
-	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW)));
+	vec3 normalW = normalize(-cross(dFdx(vPositionW), dFdy(vPositionW)));
 #endif
 
 #include<bumpFragment>
