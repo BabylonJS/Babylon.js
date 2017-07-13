@@ -19612,6 +19612,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Texture.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
+                serializationObject.base64String = this._buffer;
+                serializationObject.name = serializationObject.name.replace("data:", "");
+            }
+            return serializationObject;
+        };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError, format) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
@@ -46262,7 +46270,7 @@ var BABYLON;
         };
         TextureTools.GetEnvironmentBRDFTexture = function (scene) {
             if (!scene._environmentBRDFTexture) {
-                var texture = new BABYLON.Texture(this._environmentBRDFBase64Texture, scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+                var texture = BABYLON.Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                 texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
                 scene._environmentBRDFTexture = texture;
