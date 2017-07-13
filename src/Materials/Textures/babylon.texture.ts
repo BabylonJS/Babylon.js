@@ -308,6 +308,7 @@
             
             if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
+                serializationObject.name = serializationObject.name.replace("data:", "");
             }
 
             return serializationObject;
