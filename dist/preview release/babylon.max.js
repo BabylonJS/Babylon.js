@@ -45040,7 +45040,7 @@ var BABYLON;
                 camera = camera || this._camera;
                 var scene = camera.getScene();
                 var engine = scene.getEngine();
-                var maxSize = camera.getEngine().getCaps().maxTextureSize;
+                var maxSize = engine.getCaps().maxTextureSize;
                 var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._options) | 0;
                 var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._options) | 0;
                 var desiredWidth = this._options.width || requiredWidth;
