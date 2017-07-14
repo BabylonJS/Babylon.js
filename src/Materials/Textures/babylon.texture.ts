@@ -255,6 +255,10 @@
                 this._projectionModeMatrix = Matrix.Zero();
             }
 
+            this._cachedUOffset = this.uOffset;
+            this._cachedVOffset = this.vOffset;
+            this._cachedUScale = this.uScale;
+            this._cachedVScale = this.vScale;
             this._cachedCoordinatesMode = this.coordinatesMode;
 
             switch (this.coordinatesMode) {
