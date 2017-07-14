@@ -49,8 +49,9 @@
         if (!engine) {
             return;
         }
-        var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
+
+        var potWidth = engine.needPOTTextures ? Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize) : width;
+        var potHeight = engine.needPOTTextures ? Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize) : height;
 
         engine._bindTextureDirectly(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -463,6 +464,7 @@
         public static ShadersRepository = "src/Shaders/";
 
         // Public members
+        public forcePOTTextures = false;
         public isFullscreen = false;
         public isPointerLock = false;
         public cullBackFaces = true;
@@ -501,6 +503,10 @@
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
+
+        public get needPOTTextures(): boolean {
+            return this._webGLVersion < 2 || this.forcePOTTextures;
+        }
 
         private _badOS = false;
         public get badOS(): boolean {
@@ -2618,8 +2624,8 @@
             texture._baseHeight = height;
 
             if (generateMipMaps) {
-                width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
-                height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
+                width = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
+                height = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
             }
 
             this.resetTextureCache();
@@ -3285,7 +3291,7 @@
                 }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
-                    var width = Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
+                    var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
                     this._prepareWorkingCanvas();
@@ -3379,7 +3385,7 @@
                 }
             }
 
-            var isPot = (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
+            var isPot = !this.needPOTTextures || (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
             if (isPot && texture.generateMipMaps && level === 0) {
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
@@ -3415,7 +3421,7 @@
             texture._height = height;
 
             // Double check on POT to generate Mips.
-            var isPot = (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
+            var isPot = !this.needPOTTextures || (Tools.IsExponentOfTwo(texture._width) && Tools.IsExponentOfTwo(texture._height));
             if (!isPot) {
                 generateMipMaps = false;
             }
