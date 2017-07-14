@@ -202,9 +202,9 @@
       "referenceImage": "PBRSpecularGlossinessMaterial.png"
     },   
     {
-      "title": "PBRSpecularGlossinessMaterial",
-      "playgroundId": "#Z1VL3V#4",
-      "referenceImage": "PBRSpecularGlossinessMaterial.png"
+      "title": "PBR",
+      "playgroundId": "#LCA0Q4",
+      "referenceImage": "pbr.png"
     },   
     {
       "title": "MultiSample render targets",
