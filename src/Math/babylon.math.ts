@@ -384,7 +384,7 @@
         /**
          * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
          */
-        constructor(public r: number, public g: number, public b: number, public a: number) {
+        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 0) {
         }
 
         // Operators
@@ -558,6 +558,48 @@
             var intA = (this.a * 255) | 0;
             return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         }
+
+        /**
+         * Returns a new Color4 converted to linear space.  
+         */
+        public toLinearSpace(): Color4 {
+            var convertedColor = new Color4();
+            this.toLinearSpaceToRef(convertedColor);
+            return convertedColor;
+        }
+
+        /**
+         * Converts the Color4 values to linear space and stores the result in "convertedColor".  
+         * Returns the unmodified Color4.  
+         */
+        public toLinearSpaceToRef(convertedColor: Color4): Color4 {
+            convertedColor.r = Math.pow(this.r, ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, ToLinearSpace);
+            convertedColor.a = this.a;
+            return this;
+        }
+
+        /**
+         * Returns a new Color4 converted to gamma space.  
+         */
+        public toGammaSpace(): Color4 {
+            var convertedColor = new Color4();
+            this.toGammaSpaceToRef(convertedColor);
+            return convertedColor;
+        }
+
+        /**
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor".  
+         * Returns the unmodified Color4.  
+         */
+        public toGammaSpaceToRef(convertedColor: Color4): Color4 {
+            convertedColor.r = Math.pow(this.r, ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, ToGammaSpace);
+            convertedColor.a = this.a;
+            return this;
+        }        
 
         // Statics
         /**
