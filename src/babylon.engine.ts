@@ -626,76 +626,88 @@
 
         /**
          * @constructor
-         * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
+         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
-            this._renderingCanvas = canvas;
-
+        constructor(canvasOrContext: HTMLCanvasElement | WebGLRenderingContext, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
+            var canvas: HTMLCanvasElement;
             Engine.Instances.push(this);            
-
             options = options || {};
 
-            if (antialias != null) {
-                options.antialias = antialias;
-            }
+            if ((<HTMLCanvasElement>canvasOrContext).getContext) {
+                canvas = <HTMLCanvasElement>canvasOrContext;
+                this._renderingCanvas = canvas;
 
-            if (options.preserveDrawingBuffer === undefined) {
-                options.preserveDrawingBuffer = false;
-            }
+                if (antialias != null) {
+                    options.antialias = antialias;
+                }
 
-            if (options.audioEngine === undefined) {
-                options.audioEngine = true;
-            }
+                if (options.preserveDrawingBuffer === undefined) {
+                    options.preserveDrawingBuffer = false;
+                }
 
-            if (options.stencil === undefined) {
-                options.stencil = true;
-            }
+                if (options.audioEngine === undefined) {
+                    options.audioEngine = true;
+                }
 
-            // GL
-            if (!options.disableWebGL2Support) {
-                try {
-                    this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                    if (this._gl) {
-                        this._webGLVersion = 2.0;
+                if (options.stencil === undefined) {
+                    options.stencil = true;
+                }
+
+                // GL
+                if (!options.disableWebGL2Support) {
+                    try {
+                        this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                        if (this._gl) {
+                            this._webGLVersion = 2.0;
+                        }
+                    } catch (e) {
+                        // Do nothing
                     }
-                } catch (e) {
-                    // Do nothing
                 }
-            }
 
-            if (!this._gl) {
-                if (!canvas) {
-                    throw new Error("The provided canvas is null or undefined.");
+                if (!this._gl) {
+                    if (!canvas) {
+                        throw new Error("The provided canvas is null or undefined.");
+                    }
+                    try {
+                        this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                    } catch (e) {
+                        throw new Error("WebGL not supported");
+                    }
                 }
-                try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-                } catch (e) {
+
+                if (!this._gl) {
                     throw new Error("WebGL not supported");
                 }
+
+                this._onBlur = () => {
+                    this._windowIsBackground = true;
+                };
+
+                this._onFocus = () => {
+                    this._windowIsBackground = false;
+                };
+
+                this._onCanvasBlur = () => {
+                    this.onCanvasBlurObservable.notifyObservers(this);
+                };
+
+                window.addEventListener("blur", this._onBlur);
+                window.addEventListener("focus", this._onFocus);
+
+                canvas.addEventListener("pointerout", this._onCanvasBlur);
+            } else {
+                this._gl = <WebGLRenderingContext>canvasOrContext;
+                this._renderingCanvas = this._gl.canvas
+
+                if (this._gl.renderbufferStorageMultisample) {
+                    this._webGLVersion = 2.0;
+                }
+
+                options.stencil = this._gl.getContextAttributes().stencil;
             }
-
-            if (!this._gl) {
-                throw new Error("WebGL not supported");
-            }
-
-            this._onBlur = () => {
-                this._windowIsBackground = true;
-            };
-
-            this._onFocus = () => {
-                this._windowIsBackground = false;
-            };
-
-            this._onCanvasBlur = () => {
-                this.onCanvasBlurObservable.notifyObservers(this);
-            };
-
-            window.addEventListener("blur", this._onBlur);
-            window.addEventListener("focus", this._onFocus);
-
-            canvas.addEventListener("pointerout", this._onCanvasBlur);
 
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
@@ -823,49 +835,51 @@
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
 
-            // Fullscreen
-            this._onFullscreenChange = () => {
-                if (document.fullscreen !== undefined) {
-                    this.isFullscreen = document.fullscreen;
-                } else if (document.mozFullScreen !== undefined) {
-                    this.isFullscreen = document.mozFullScreen;
-                } else if (document.webkitIsFullScreen !== undefined) {
-                    this.isFullscreen = document.webkitIsFullScreen;
-                } else if (document.msIsFullScreen !== undefined) {
-                    this.isFullscreen = document.msIsFullScreen;
-                }
+            if (canvas) {
+                // Fullscreen
+                this._onFullscreenChange = () => {
+                    if (document.fullscreen !== undefined) {
+                        this.isFullscreen = document.fullscreen;
+                    } else if (document.mozFullScreen !== undefined) {
+                        this.isFullscreen = document.mozFullScreen;
+                    } else if (document.webkitIsFullScreen !== undefined) {
+                        this.isFullscreen = document.webkitIsFullScreen;
+                    } else if (document.msIsFullScreen !== undefined) {
+                        this.isFullscreen = document.msIsFullScreen;
+                    }
+
+                    // Pointer lock
+                    if (this.isFullscreen && this._pointerLockRequested) {
+                        canvas.requestPointerLock = canvas.requestPointerLock ||
+                            canvas.msRequestPointerLock ||
+                            canvas.mozRequestPointerLock ||
+                            canvas.webkitRequestPointerLock;
+
+                        if (canvas.requestPointerLock) {
+                            canvas.requestPointerLock();
+                        }
+                    }
+                };
+
+                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
 
                 // Pointer lock
-                if (this.isFullscreen && this._pointerLockRequested) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
+                this._onPointerLockChange = () => {
+                    this.isPointerLock = (document.mozPointerLockElement === canvas ||
+                        document.webkitPointerLockElement === canvas ||
+                        document.msPointerLockElement === canvas ||
+                        document.pointerLockElement === canvas
+                    );
+                };
 
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
-                    }
-                }
-            };
-
-            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-
-            // Pointer lock
-            this._onPointerLockChange = () => {
-                this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                    document.webkitPointerLockElement === canvas ||
-                    document.msPointerLockElement === canvas ||
-                    document.pointerLockElement === canvas
-                );
-            };
-
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+            }
 
             if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
@@ -929,7 +943,7 @@
                 return this._currentRenderTarget._width;
             }
 
-            return this._renderingCanvas.width;
+            return this._gl.drawingBufferWidth;
         }
 
         public getRenderHeight(useScreen = false): number {
@@ -937,7 +951,7 @@
                 return this._currentRenderTarget._height;
             }
 
-            return this._renderingCanvas.height;
+            return this._gl.drawingBufferHeight;
         }
 
         public getRenderingCanvas(): HTMLCanvasElement {
