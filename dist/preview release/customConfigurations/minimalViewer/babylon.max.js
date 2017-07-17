@@ -7137,11 +7137,11 @@ var BABYLON;
     var Engine = (function () {
         /**
          * @constructor
-         * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
+         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        function Engine(canvas, antialias, options, adaptToDeviceRatio) {
+        function Engine(canvasOrContext, antialias, options, adaptToDeviceRatio) {
             if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
             var _this = this;
             // Public members
@@ -7214,59 +7214,71 @@ var BABYLON;
                     _this._vrDisplayEnabled = undefined;
                 }
             };
-            this._renderingCanvas = canvas;
+            var canvas;
             Engine.Instances.push(this);
             options = options || {};
-            if (antialias != null) {
-                options.antialias = antialias;
-            }
-            if (options.preserveDrawingBuffer === undefined) {
-                options.preserveDrawingBuffer = false;
-            }
-            if (options.audioEngine === undefined) {
-                options.audioEngine = true;
-            }
-            if (options.stencil === undefined) {
-                options.stencil = true;
-            }
-            // GL
-            if (!options.disableWebGL2Support) {
-                try {
-                    this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                    if (this._gl) {
-                        this._webGLVersion = 2.0;
+            if (canvasOrContext.getContext) {
+                canvas = canvasOrContext;
+                this._renderingCanvas = canvas;
+                if (antialias != null) {
+                    options.antialias = antialias;
+                }
+                if (options.preserveDrawingBuffer === undefined) {
+                    options.preserveDrawingBuffer = false;
+                }
+                if (options.audioEngine === undefined) {
+                    options.audioEngine = true;
+                }
+                if (options.stencil === undefined) {
+                    options.stencil = true;
+                }
+                // GL
+                if (!options.disableWebGL2Support) {
+                    try {
+                        this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                        if (this._gl) {
+                            this._webGLVersion = 2.0;
+                        }
+                    }
+                    catch (e) {
+                        // Do nothing
                     }
                 }
-                catch (e) {
-                    // Do nothing
+                if (!this._gl) {
+                    if (!canvas) {
+                        throw new Error("The provided canvas is null or undefined.");
+                    }
+                    try {
+                        this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                    }
+                    catch (e) {
+                        throw new Error("WebGL not supported");
+                    }
                 }
-            }
-            if (!this._gl) {
-                if (!canvas) {
-                    throw new Error("The provided canvas is null or undefined.");
-                }
-                try {
-                    this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-                }
-                catch (e) {
+                if (!this._gl) {
                     throw new Error("WebGL not supported");
                 }
+                this._onBlur = function () {
+                    _this._windowIsBackground = true;
+                };
+                this._onFocus = function () {
+                    _this._windowIsBackground = false;
+                };
+                this._onCanvasBlur = function () {
+                    _this.onCanvasBlurObservable.notifyObservers(_this);
+                };
+                window.addEventListener("blur", this._onBlur);
+                window.addEventListener("focus", this._onFocus);
+                canvas.addEventListener("pointerout", this._onCanvasBlur);
             }
-            if (!this._gl) {
-                throw new Error("WebGL not supported");
+            else {
+                this._gl = canvasOrContext;
+                this._renderingCanvas = this._gl.canvas;
+                if (this._gl.renderbufferStorageMultisample) {
+                    this._webGLVersion = 2.0;
+                }
+                options.stencil = this._gl.getContextAttributes().stencil;
             }
-            this._onBlur = function () {
-                _this._windowIsBackground = true;
-            };
-            this._onFocus = function () {
-                _this._windowIsBackground = false;
-            };
-            this._onCanvasBlur = function () {
-                _this.onCanvasBlurObservable.notifyObservers(_this);
-            };
-            window.addEventListener("blur", this._onBlur);
-            window.addEventListener("focus", this._onFocus);
-            canvas.addEventListener("pointerout", this._onCanvasBlur);
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
@@ -7382,46 +7394,48 @@ var BABYLON;
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
-            // Fullscreen
-            this._onFullscreenChange = function () {
-                if (document.fullscreen !== undefined) {
-                    _this.isFullscreen = document.fullscreen;
-                }
-                else if (document.mozFullScreen !== undefined) {
-                    _this.isFullscreen = document.mozFullScreen;
-                }
-                else if (document.webkitIsFullScreen !== undefined) {
-                    _this.isFullscreen = document.webkitIsFullScreen;
-                }
-                else if (document.msIsFullScreen !== undefined) {
-                    _this.isFullscreen = document.msIsFullScreen;
-                }
-                // Pointer lock
-                if (_this.isFullscreen && _this._pointerLockRequested) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
+            if (canvas) {
+                // Fullscreen
+                this._onFullscreenChange = function () {
+                    if (document.fullscreen !== undefined) {
+                        _this.isFullscreen = document.fullscreen;
                     }
-                }
-            };
-            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-            // Pointer lock
-            this._onPointerLockChange = function () {
-                _this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                    document.webkitPointerLockElement === canvas ||
-                    document.msPointerLockElement === canvas ||
-                    document.pointerLockElement === canvas);
-            };
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+                    else if (document.mozFullScreen !== undefined) {
+                        _this.isFullscreen = document.mozFullScreen;
+                    }
+                    else if (document.webkitIsFullScreen !== undefined) {
+                        _this.isFullscreen = document.webkitIsFullScreen;
+                    }
+                    else if (document.msIsFullScreen !== undefined) {
+                        _this.isFullscreen = document.msIsFullScreen;
+                    }
+                    // Pointer lock
+                    if (_this.isFullscreen && _this._pointerLockRequested) {
+                        canvas.requestPointerLock = canvas.requestPointerLock ||
+                            canvas.msRequestPointerLock ||
+                            canvas.mozRequestPointerLock ||
+                            canvas.webkitRequestPointerLock;
+                        if (canvas.requestPointerLock) {
+                            canvas.requestPointerLock();
+                        }
+                    }
+                };
+                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
+                // Pointer lock
+                this._onPointerLockChange = function () {
+                    _this.isPointerLock = (document.mozPointerLockElement === canvas ||
+                        document.webkitPointerLockElement === canvas ||
+                        document.msPointerLockElement === canvas ||
+                        document.pointerLockElement === canvas);
+                };
+                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+            }
             if (options.audioEngine && BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
             }
@@ -7868,14 +7882,14 @@ var BABYLON;
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._width;
             }
-            return this._renderingCanvas.width;
+            return this._gl.drawingBufferWidth;
         };
         Engine.prototype.getRenderHeight = function (useScreen) {
             if (useScreen === void 0) { useScreen = false; }
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._height;
             }
-            return this._renderingCanvas.height;
+            return this._gl.drawingBufferHeight;
         };
         Engine.prototype.getRenderingCanvas = function () {
             return this._renderingCanvas;
@@ -19575,6 +19589,10 @@ var BABYLON;
                 this._cachedTextureMatrix = BABYLON.Matrix.Zero();
                 this._projectionModeMatrix = BABYLON.Matrix.Zero();
             }
+            this._cachedUOffset = this.uOffset;
+            this._cachedVOffset = this.vOffset;
+            this._cachedUScale = this.uScale;
+            this._cachedVScale = this.vScale;
             this._cachedCoordinatesMode = this.coordinatesMode;
             switch (this.coordinatesMode) {
                 case Texture.PLANAR_MODE:
@@ -36505,6 +36523,25 @@ var BABYLON;
                 }
                 return this._shouldUseAlphaFromAlbedoTexture() &&
                     this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
+            };
+            /**
+             * Return the active textures of the material.
+             */
+            PBRBaseSimpleMaterial.prototype.getActiveTextures = function () {
+                var activeTextures = _super.prototype.getActiveTextures.call(this);
+                if (this.environmentTexture) {
+                    activeTextures.push(this.environmentTexture);
+                }
+                if (this.normalTexture) {
+                    activeTextures.push(this.normalTexture);
+                }
+                if (this.emissiveTexture) {
+                    activeTextures.push(this.emissiveTexture);
+                }
+                if (this.occlusionTexture) {
+                    activeTextures.push(this.occlusionTexture);
+                }
+                return activeTextures;
             };
             return PBRBaseSimpleMaterial;
         }(BABYLON.PBRBaseMaterial));
