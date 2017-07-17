@@ -11320,6 +11320,11 @@ var BABYLON;
             * @type {BABYLON.Observable}
             */
             _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when material is changed
+            * @type {BABYLON.Observable}
+            */
+            _this.onMaterialChangedObservable = new BABYLON.Observable();
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
@@ -11511,6 +11516,9 @@ var BABYLON;
                     return;
                 }
                 this._material = value;
+                if (this.onMaterialChangedObservable.hasObservers) {
+                    this.onMaterialChangedObservable.notifyObservers(this);
+                }
                 if (!this.subMeshes) {
                     return;
                 }

@@ -112,6 +112,12 @@
         */
         public onAfterWorldMatrixUpdateObservable = new Observable<AbstractMesh>();
 
+        /**
+        * An event triggered when material is changed
+        * @type {BABYLON.Observable}
+        */
+        public onMaterialChangedObservable = new Observable<AbstractMesh>();
+
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
@@ -138,6 +144,11 @@
             }
 
             this._material = value;
+
+            if (this.onMaterialChangedObservable.hasObservers) {
+                this.onMaterialChangedObservable.notifyObservers(this);
+            }
+
             if (!this.subMeshes) {
                 return;
             }
