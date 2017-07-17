@@ -251,6 +251,12 @@
             return this._shadowMap;
         }
 
+        /**
+		 * Controls the extent to which the shadows fade out at the edge of the frustum
+         * Used only by directionals and spots
+		 */
+        public frustumEdgeFalloff = 0;        
+
         private _light: IShadowLight;
         /**
          * Returns the associated light object.  
@@ -620,7 +626,7 @@
                 effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
             } 
             effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-            light._uniformBuffer.updateFloat3("shadowsInfo", this.getDarkness(), this.blurScale / this.getShadowMap().getSize().width, this.depthScale, lightIndex);
+            light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / this.getShadowMap().getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
             light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera), lightIndex);
         }
 
