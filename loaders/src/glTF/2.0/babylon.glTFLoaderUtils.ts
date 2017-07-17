@@ -29,13 +29,16 @@ module BABYLON.GLTF2 {
             return bufferView.buffer;
         }
 
-        public static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void) : void {
+        public static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void {
             for (var index = 0; index < view.length; index++) {
                 func(view[index], index);
             }
         }
 
         public static GetTextureWrapMode(mode: ETextureWrapMode): number {
+            // Set defaults if undefined
+            mode = mode === undefined ? ETextureWrapMode.REPEAT : mode;
+
             switch (mode) {
                 case ETextureWrapMode.CLAMP_TO_EDGE: Texture.CLAMP_ADDRESSMODE;
                 case ETextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
@@ -66,6 +69,10 @@ module BABYLON.GLTF2 {
         }
 
         public static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number {
+            // Set defaults if undefined
+            magFilter = magFilter === undefined ? ETextureMagFilter.LINEAR : magFilter;
+            minFilter = minFilter === undefined ? ETextureMinFilter.LINEAR_MIPMAP_NEAREST : minFilter;
+
             if (magFilter === ETextureMagFilter.LINEAR) {
                 switch (minFilter) {
                     case ETextureMinFilter.NEAREST: return Texture.LINEAR_NEAREST;
