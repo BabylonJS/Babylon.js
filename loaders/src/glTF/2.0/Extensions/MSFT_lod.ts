@@ -43,13 +43,9 @@ module BABYLON.GLTF2.Extensions {
                     return;
                 }
 
-                // Load the next LOD once the loader has succeeded.
-                loader.executeWhenRenderReady(succeeded => {
-                    if (!succeeded) {
-                        return;
-                    }
-
-                    // Load the next LOD when all of the textures are loaded.
+                // Load the next LOD when the loader is ready to render and
+                // all active material textures of the current LOD are loaded.
+                loader.executeWhenRenderReady(() => {
                     BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
                         this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
                     });
