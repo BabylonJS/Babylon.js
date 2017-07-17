@@ -1,8 +1,20 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
+    var GLTFLoaderCoordinateSystemMode;
+    (function (GLTFLoaderCoordinateSystemMode) {
+        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
+        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["AUTO"] = 0] = "AUTO";
+        // The glTF right-handed data is not transformed in any form and is loaded directly.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["PASS_THROUGH"] = 1] = "PASS_THROUGH";
+        // Sets the useRightHandedSystem flag on the scene.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
+    })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
     var GLTFFileLoader = (function () {
         function GLTFFileLoader() {
+            // V2 options
+            this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
             this.extensions = {
                 ".gltf": { isBinary: false },
                 ".glb": { isBinary: true }
