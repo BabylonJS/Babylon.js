@@ -7029,32 +7029,95 @@ var BABYLON;
     var getSamplingParameters = function (samplingMode, generateMipMaps, gl) {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
-        if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
-            magFilter = gl.LINEAR;
-            if (generateMipMaps) {
-                minFilter = gl.LINEAR_MIPMAP_NEAREST;
-            }
-            else {
+        switch (samplingMode) {
+            case BABYLON.Texture.BILINEAR_SAMPLINGMODE:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                }
+                else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case BABYLON.Texture.TRILINEAR_SAMPLINGMODE:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                }
+                else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case BABYLON.Texture.NEAREST_SAMPLINGMODE:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                }
+                else {
+                    minFilter = gl.NEAREST;
+                }
+                break;
+            case BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                }
+                else {
+                    minFilter = gl.NEAREST;
+                }
+                break;
+            case BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                }
+                else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                }
+                else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case BABYLON.Texture.NEAREST_LINEAR:
+                magFilter = gl.NEAREST;
                 minFilter = gl.LINEAR;
-            }
-        }
-        else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
-            magFilter = gl.LINEAR;
-            if (generateMipMaps) {
-                minFilter = gl.LINEAR_MIPMAP_LINEAR;
-            }
-            else {
-                minFilter = gl.LINEAR;
-            }
-        }
-        else if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-            magFilter = gl.NEAREST;
-            if (generateMipMaps) {
-                minFilter = gl.NEAREST_MIPMAP_LINEAR;
-            }
-            else {
+                break;
+            case BABYLON.Texture.NEAREST_NEAREST:
+                magFilter = gl.NEAREST;
                 minFilter = gl.NEAREST;
-            }
+                break;
+            case BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                }
+                else {
+                    minFilter = gl.NEAREST;
+                }
+                break;
+            case BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                }
+                else {
+                    minFilter = gl.NEAREST;
+                }
+                break;
+            case BABYLON.Texture.LINEAR_LINEAR:
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR;
+                break;
+            case BABYLON.Texture.LINEAR_NEAREST:
+                magFilter = gl.LINEAR;
+                minFilter = gl.NEAREST;
+                break;
         }
         return {
             min: minFilter,
@@ -19493,6 +19556,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Texture.prototype, "samplingMode", {
+            get: function () {
+                return this._samplingMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Texture.prototype.updateURL = function (url) {
             this.url = url;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
@@ -19736,8 +19806,20 @@ var BABYLON;
     }(BABYLON.BaseTexture));
     // Constants
     Texture.NEAREST_SAMPLINGMODE = 1;
+    Texture.NEAREST_NEAREST_MIPLINEAR = 1; // nearest is mag = nearest and min = nearest and mip = linear
     Texture.BILINEAR_SAMPLINGMODE = 2;
+    Texture.LINEAR_LINEAR_MIPNEAREST = 2; // Bilinear is mag = linear and min = linear and mip = nearest
     Texture.TRILINEAR_SAMPLINGMODE = 3;
+    Texture.LINEAR_LINEAR_MIPLINEAR = 3; // Trilinear is mag = linear and min = linear and mip = linear
+    Texture.NEAREST_NEAREST_MIPNEAREST = 4;
+    Texture.NEAREST_LINEAR_MIPNEAREST = 5;
+    Texture.NEAREST_LINEAR_MIPLINEAR = 6;
+    Texture.NEAREST_LINEAR = 7;
+    Texture.NEAREST_NEAREST = 8;
+    Texture.LINEAR_NEAREST_MIPNEAREST = 9;
+    Texture.LINEAR_NEAREST_MIPLINEAR = 10;
+    Texture.LINEAR_LINEAR = 11;
+    Texture.LINEAR_NEAREST = 12;
     Texture.EXPLICIT_MODE = 0;
     Texture.SPHERICAL_MODE = 1;
     Texture.PLANAR_MODE = 2;
