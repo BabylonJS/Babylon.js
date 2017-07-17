@@ -1,6 +1,18 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
+    export enum GLTFLoaderCoordinateSystemMode {
+        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
+        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        AUTO,
+
+        // The glTF right-handed data is not transformed in any form and is loaded directly.
+        PASS_THROUGH,
+
+        // Sets the useRightHandedSystem flag on the scene.
+        FORCE_RIGHT_HANDED,
+    }
+
     export interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
@@ -20,6 +32,7 @@ module BABYLON {
         public static IncrementalLoading: boolean = true;
 
         // V2 options
+        public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
         public onTextureLoaded: (texture: BaseTexture) => void;
         public onMaterialLoaded: (material: Material) => void;
         public onComplete: () => void;
