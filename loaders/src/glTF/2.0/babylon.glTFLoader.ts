@@ -89,8 +89,6 @@ module BABYLON.GLTF2 {
         }
 
         private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void {
-            scene.useRightHandedSystem = true;
-
             this._clear();
 
             this._loadData(data);
@@ -107,6 +105,23 @@ module BABYLON.GLTF2 {
         }
 
         private _onRenderReady(): void {
+            switch (this._parent.coordinateSystemMode) {
+                case GLTFLoaderCoordinateSystemMode.AUTO:
+                    if (!this._babylonScene.useRightHandedSystem) {
+                        this._addRightHandToLeftHandRootTransform();
+                    }
+                    break;
+                case GLTFLoaderCoordinateSystemMode.PASS_THROUGH:
+                    // do nothing
+                    break;
+                case GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED:
+                    this._babylonScene.useRightHandedSystem = true;
+                    break;
+                default:
+                    Tools.Error("Invalid coordinate system mode (" + this._parent.coordinateSystemMode + ")");
+                    break;
+            }
+
             this._succeeded = (this._errors.length === 0);
             if (this._succeeded) {
                 this._showMeshes();
@@ -152,6 +167,20 @@ module BABYLON.GLTF2 {
                 }
 
                 binaryBuffer.loadedData = data.bin;
+            }
+        }
+
+        private _addRightHandToLeftHandRootTransform(): void {
+            var rootMesh = new Mesh("root", this._babylonScene);
+            rootMesh.scaling = new Vector3(1, 1, -1);
+            rootMesh.rotationQuaternion = new Quaternion(0, 1, 0, 0);
+
+            var nodes = this._gltf.nodes;
+            for (var i = 0; i < nodes.length; i++) {
+                var mesh = nodes[i].babylonMesh;
+                if (mesh && !mesh.parent) {
+                    mesh.parent = rootMesh;
+                }
             }
         }
 
@@ -997,7 +1026,7 @@ module BABYLON.GLTF2 {
 
             var sampler = (texture.sampler === undefined ? <IGLTFSampler>{} : this._gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
-            var samplingMode = GLTFUtils.GetTextureFilterMode(sampler.minFilter);
+            var samplingMode = GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
 
             this.addPendingData(texture);
             var babylonTexture = new Texture(url, this._babylonScene, noMipMaps, false, samplingMode, () => {
@@ -1008,8 +1037,8 @@ module BABYLON.GLTF2 {
             });
 
             babylonTexture.coordinatesIndex = texCoord;
-            babylonTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            babylonTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
+            babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
             babylonTexture.name = texture.name || "texture" + textureInfo.index;
 
             // Cache the texture
