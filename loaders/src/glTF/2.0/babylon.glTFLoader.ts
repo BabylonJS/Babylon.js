@@ -997,7 +997,7 @@ module BABYLON.GLTF2 {
 
             var sampler = (texture.sampler === undefined ? <IGLTFSampler>{} : this._gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
-            var samplingMode = GLTFUtils.GetTextureFilterMode(sampler.minFilter);
+            var samplingMode = GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
 
             this.addPendingData(texture);
             var babylonTexture = new Texture(url, this._babylonScene, noMipMaps, false, samplingMode, () => {
@@ -1008,8 +1008,8 @@ module BABYLON.GLTF2 {
             });
 
             babylonTexture.coordinatesIndex = texCoord;
-            babylonTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            babylonTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
+            babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
             babylonTexture.name = texture.name || "texture" + textureInfo.index;
 
             // Cache the texture
