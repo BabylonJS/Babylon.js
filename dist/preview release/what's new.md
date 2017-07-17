@@ -6,6 +6,7 @@
 
 ## Updates
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
+- Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))

@@ -1,8 +1,20 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
+    var GLTFLoaderCoordinateSystemMode;
+    (function (GLTFLoaderCoordinateSystemMode) {
+        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
+        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["AUTO"] = 0] = "AUTO";
+        // The glTF right-handed data is not transformed in any form and is loaded directly.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["PASS_THROUGH"] = 1] = "PASS_THROUGH";
+        // Sets the useRightHandedSystem flag on the scene.
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
+    })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
     var GLTFFileLoader = (function () {
         function GLTFFileLoader() {
+            // V2 options
+            this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
             this.extensions = {
                 ".gltf": { isBinary: false },
                 ".glb": { isBinary: true }
@@ -2502,7 +2514,6 @@ var BABYLON;
                 this._loadAsync(null, scene, data, rootUrl, onSuccess, onError);
             };
             GLTFLoader.prototype._loadAsync = function (nodeNames, scene, data, rootUrl, onSuccess, onError) {
-                scene.useRightHandedSystem = true;
                 this._clear();
                 this._loadData(data);
                 this._babylonScene = scene;
@@ -2515,6 +2526,22 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onRenderReady = function () {
+                switch (this._parent.coordinateSystemMode) {
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO:
+                        if (!this._babylonScene.useRightHandedSystem) {
+                            this._addRightHandToLeftHandRootTransform();
+                        }
+                        break;
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.PASS_THROUGH:
+                        // do nothing
+                        break;
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED:
+                        this._babylonScene.useRightHandedSystem = true;
+                        break;
+                    default:
+                        BABYLON.Tools.Error("Invalid coordinate system mode (" + this._parent.coordinateSystemMode + ")");
+                        break;
+                }
                 this._succeeded = (this._errors.length === 0);
                 if (this._succeeded) {
                     this._showMeshes();
@@ -2553,6 +2580,18 @@ var BABYLON;
                         BABYLON.Tools.Warn("Unexpected BIN chunk");
                     }
                     binaryBuffer.loadedData = data.bin;
+                }
+            };
+            GLTFLoader.prototype._addRightHandToLeftHandRootTransform = function () {
+                var rootMesh = new BABYLON.Mesh("root", this._babylonScene);
+                rootMesh.scaling = new BABYLON.Vector3(1, 1, -1);
+                rootMesh.rotationQuaternion = new BABYLON.Quaternion(0, 1, 0, 0);
+                var nodes = this._gltf.nodes;
+                for (var i = 0; i < nodes.length; i++) {
+                    var mesh = nodes[i].babylonMesh;
+                    if (mesh && !mesh.parent) {
+                        mesh.parent = rootMesh;
+                    }
                 }
             };
             GLTFLoader.prototype._showMeshes = function () {
@@ -3297,7 +3336,7 @@ var BABYLON;
                 }
                 var sampler = (texture.sampler === undefined ? {} : this._gltf.samplers[texture.sampler]);
                 var noMipMaps = (sampler.minFilter === GLTF2.ETextureMinFilter.NEAREST || sampler.minFilter === GLTF2.ETextureMinFilter.LINEAR);
-                var samplingMode = GLTF2.GLTFUtils.GetTextureFilterMode(sampler.minFilter);
+                var samplingMode = GLTF2.GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
                 this.addPendingData(texture);
                 var babylonTexture = new BABYLON.Texture(url, this._babylonScene, noMipMaps, false, samplingMode, function () {
                     _this.removePendingData(texture);
@@ -3306,8 +3345,8 @@ var BABYLON;
                     _this.removePendingData(texture);
                 });
                 babylonTexture.coordinatesIndex = texCoord;
-                babylonTexture.wrapU = GLTF2.GLTFUtils.GetWrapMode(sampler.wrapS);
-                babylonTexture.wrapV = GLTF2.GLTFUtils.GetWrapMode(sampler.wrapT);
+                babylonTexture.wrapU = GLTF2.GLTFUtils.GetTextureWrapMode(sampler.wrapS);
+                babylonTexture.wrapV = GLTF2.GLTFUtils.GetTextureWrapMode(sampler.wrapT);
                 babylonTexture.name = texture.name || "texture" + textureInfo.index;
                 // Cache the texture
                 texture.babylonTextures = texture.babylonTextures || [];
@@ -3363,16 +3402,14 @@ var BABYLON;
                     func(view[index], index);
                 }
             };
-            /**
-            * Returns the wrap mode of the texture
-            * @param mode: the mode value
-            */
-            GLTFUtils.GetWrapMode = function (mode) {
+            GLTFUtils.GetTextureWrapMode = function (mode) {
                 switch (mode) {
-                    case GLTF2.ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    case GLTF2.ETextureWrapMode.CLAMP_TO_EDGE: BABYLON.Texture.CLAMP_ADDRESSMODE;
                     case GLTF2.ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
                     case GLTF2.ETextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
-                    default: return BABYLON.Texture.WRAP_ADDRESSMODE;
+                    default:
+                        BABYLON.Tools.Warn("Invalid texture wrap mode (" + mode + ")");
+                        return BABYLON.Texture.WRAP_ADDRESSMODE;
                 }
             };
             /**
@@ -3392,18 +3429,35 @@ var BABYLON;
                     default: return 1;
                 }
             };
-            /**
-             * Returns the texture filter mode giving a mode value
-             * @param mode: the filter mode value
-             */
-            GLTFUtils.GetTextureFilterMode = function (mode) {
-                switch (mode) {
-                    case GLTF2.ETextureMinFilter.LINEAR:
-                    case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST:
-                    case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
-                    case GLTF2.ETextureMinFilter.NEAREST:
-                    case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_SAMPLINGMODE;
-                    default: return BABYLON.Texture.BILINEAR_SAMPLINGMODE;
+            GLTFUtils.GetTextureSamplingMode = function (magFilter, minFilter) {
+                if (magFilter === GLTF2.ETextureMagFilter.LINEAR) {
+                    switch (minFilter) {
+                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.LINEAR_LINEAR;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
+                        default:
+                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                            return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
+                    }
+                }
+                else {
+                    if (magFilter !== GLTF2.ETextureMagFilter.NEAREST) {
+                        BABYLON.Tools.Warn("Invalid texture magnification filter (" + magFilter + ")");
+                    }
+                    switch (minFilter) {
+                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.NEAREST_NEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.NEAREST_LINEAR;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR;
+                        default:
+                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                            return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
+                    }
                 }
             };
             /**

@@ -1,5 +1,10 @@
 
 declare module BABYLON {
+    enum GLTFLoaderCoordinateSystemMode {
+        AUTO = 0,
+        PASS_THROUGH = 1,
+        FORCE_RIGHT_HANDED = 2,
+    }
     interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
@@ -13,6 +18,7 @@ declare module BABYLON {
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
         onComplete: () => void;

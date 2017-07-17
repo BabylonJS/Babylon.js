@@ -1,9 +1,24 @@
 ﻿module BABYLON {
     export class Texture extends BaseTexture {
         // Constants
-        public static NEAREST_SAMPLINGMODE = 1;
+        public static NEAREST_SAMPLINGMODE = 1;        
+        public static NEAREST_NEAREST_MIPLINEAR = 1; // nearest is mag = nearest and min = nearest and mip = linear
+        
         public static BILINEAR_SAMPLINGMODE = 2;
+        public static LINEAR_LINEAR_MIPNEAREST = 2; // Bilinear is mag = linear and min = linear and mip = nearest
+        
         public static TRILINEAR_SAMPLINGMODE = 3;
+        public static LINEAR_LINEAR_MIPLINEAR = 3; // Trilinear is mag = linear and min = linear and mip = linear
+
+        public static NEAREST_NEAREST_MIPNEAREST = 4;
+        public static NEAREST_LINEAR_MIPNEAREST = 5;
+        public static NEAREST_LINEAR_MIPLINEAR = 6;
+        public static NEAREST_LINEAR = 7;
+        public static NEAREST_NEAREST = 8;
+        public static LINEAR_NEAREST_MIPNEAREST = 9;
+        public static LINEAR_NEAREST_MIPLINEAR = 10;
+        public static LINEAR_LINEAR = 11;
+        public static LINEAR_NEAREST = 12;
 
         public static EXPLICIT_MODE = 0;
         public static SPHERICAL_MODE = 1;
@@ -81,6 +96,10 @@
         @serialize()
         public get isBlocking(): boolean {
             return this._isBlocking;
+        }
+
+        public get samplingMode(): number {
+            return this._samplingMode;
         }
 
         constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {

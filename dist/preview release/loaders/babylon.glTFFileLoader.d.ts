@@ -1,5 +1,10 @@
 
 declare module BABYLON {
+    enum GLTFLoaderCoordinateSystemMode {
+        AUTO = 0,
+        PASS_THROUGH = 1,
+        FORCE_RIGHT_HANDED = 2,
+    }
     interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
@@ -13,6 +18,7 @@ declare module BABYLON {
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
         onComplete: () => void;
@@ -794,6 +800,7 @@ declare module BABYLON.GLTF2 {
         private _onRenderReady();
         private _onLoaderComplete();
         private _loadData(data);
+        private _addRightHandToLeftHandRootTransform();
         private _showMeshes();
         private _startAnimations();
         private _clear();
@@ -846,21 +853,13 @@ declare module BABYLON.GLTF2 {
         */
         static DecodeBase64(uri: string): ArrayBuffer;
         static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void;
-        /**
-        * Returns the wrap mode of the texture
-        * @param mode: the mode value
-        */
-        static GetWrapMode(mode: number): number;
+        static GetTextureWrapMode(mode: ETextureWrapMode): number;
         /**
          * Returns the byte stride giving an accessor
          * @param accessor: the GLTF accessor objet
          */
         static GetByteStrideFromType(accessor: IGLTFAccessor): number;
-        /**
-         * Returns the texture filter mode giving a mode value
-         * @param mode: the filter mode value
-         */
-        static GetTextureFilterMode(mode: number): ETextureMinFilter;
+        static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number;
         /**
          * Decodes a buffer view into a string
          * @param view: the buffer view
