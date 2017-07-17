@@ -14,27 +14,88 @@
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
-        if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
-            magFilter = gl.LINEAR;
-            if (generateMipMaps) {
-                minFilter = gl.LINEAR_MIPMAP_NEAREST;
-            } else {
+
+        switch(samplingMode) {
+            case Texture.BILINEAR_SAMPLINGMODE:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                } else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case Texture.TRILINEAR_SAMPLINGMODE:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                } else {
+                    minFilter = gl.LINEAR;
+                }
+                break;
+            case Texture.NEAREST_SAMPLINGMODE:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                } else {
+                    minFilter = gl.NEAREST;
+                }            
+                break;
+            case Texture.NEAREST_NEAREST_MIPNEAREST:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                } else {
+                    minFilter = gl.NEAREST;
+                }            
+                break;                
+            case Texture.NEAREST_LINEAR_MIPNEAREST:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                } else {
+                    minFilter = gl.LINEAR;
+                }            
+                break;      
+            case Texture.NEAREST_LINEAR_MIPLINEAR:
+                magFilter = gl.NEAREST;
+                if (generateMipMaps) {
+                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                } else {
+                    minFilter = gl.LINEAR;
+                }            
+                break;        
+            case Texture.NEAREST_LINEAR:
+                magFilter = gl.NEAREST;
                 minFilter = gl.LINEAR;
-            }
-        } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
-            magFilter = gl.LINEAR;
-            if (generateMipMaps) {
-                minFilter = gl.LINEAR_MIPMAP_LINEAR;
-            } else {
-                minFilter = gl.LINEAR;
-            }
-        } else if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-            magFilter = gl.NEAREST;
-            if (generateMipMaps) {
-                minFilter = gl.NEAREST_MIPMAP_LINEAR;
-            } else {
+                break;                                       
+            case Texture.NEAREST_NEAREST:
+                magFilter = gl.NEAREST;
                 minFilter = gl.NEAREST;
-            }
+                break;                                       
+            case Texture.LINEAR_NEAREST_MIPNEAREST:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                } else {
+                    minFilter = gl.NEAREST;
+                }     
+                break;                                       
+            case Texture.LINEAR_NEAREST_MIPLINEAR:
+                magFilter = gl.LINEAR;
+                if (generateMipMaps) {
+                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                } else {
+                    minFilter = gl.NEAREST;
+                }     
+                break;   
+            case Texture.LINEAR_LINEAR:
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR;
+                break;                                       
+            case Texture.LINEAR_NEAREST:
+                magFilter = gl.LINEAR;
+                minFilter = gl.NEAREST;
+                break;                          
         }
 
         return {
