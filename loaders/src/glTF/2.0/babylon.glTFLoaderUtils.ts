@@ -46,25 +46,6 @@ module BABYLON.GLTF2 {
             }
         }
 
-        /**
-         * Returns the byte stride giving an accessor
-         * @param accessor: the GLTF accessor objet
-         */
-        public static GetByteStrideFromType(accessor: IGLTFAccessor): number {
-            // Needs this function since "byteStride" isn't requiered in glTF format
-            var type = accessor.type;
-
-            switch (type) {
-                case "VEC2": return 2;
-                case "VEC3": return 3;
-                case "VEC4": return 4;
-                case "MAT2": return 4;
-                case "MAT3": return 9;
-                case "MAT4": return 16;
-                default: return 1;
-            }
-        }
-
         public static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number {
             if (magFilter === ETextureMagFilter.LINEAR) {
                 switch (minFilter) {
