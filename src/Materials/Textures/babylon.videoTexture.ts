@@ -34,7 +34,7 @@
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
 
-            if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
+            if (!this.getScene().getEngine().needPOTTextures ||(Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
