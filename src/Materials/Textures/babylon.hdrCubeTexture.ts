@@ -484,7 +484,7 @@ module BABYLON {
             }
 
             // Check Power of two size.
-            if (!Tools.IsExponentOfTwo(size)) {
+            if (!Tools.IsExponentOfTwo(size)) { // Need to check engine.needPOTTextures 
                 return null;
             }
 

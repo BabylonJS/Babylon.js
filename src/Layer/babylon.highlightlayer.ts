@@ -314,8 +314,8 @@ module BABYLON {
         private createTextureAndPostProcesses(): void {
             var blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
             var blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-            blurTextureWidth = Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize);
-            blurTextureHeight = Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize);
+            blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+            blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
             this._mainTexture = new RenderTargetTexture("HighlightLayerMainRTT",
                 {
@@ -774,8 +774,8 @@ module BABYLON {
                 this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
                 this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
 
-                this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
-                this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+                this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
+                this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
             }
         }
 
