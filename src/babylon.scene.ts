@@ -595,7 +595,7 @@
 
         // Particles
         public particlesEnabled = true;
-        public particleSystems = new Array<ParticleSystem>();
+        public particleSystems = new Array<IParticleSystem>();
 
         // Sprites
         public spritesEnabled = true;
@@ -728,7 +728,7 @@
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
-        public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
+        public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
 
@@ -2117,9 +2117,9 @@
         /**
          * get a particle system by id
          * @param id {number} the particle system id
-         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         * @return {BABYLON.IParticleSystem|null} the corresponding system or null if none found.
          */
-        public getParticleSystemByID(id: string): ParticleSystem {
+        public getParticleSystemByID(id: string): IParticleSystem {
             for (var index = 0; index < this.particleSystems.length; index++) {
                 if (this.particleSystems[index].id === id) {
                     return this.particleSystems[index];
@@ -2569,11 +2569,12 @@
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
-                    if (!particleSystem.isStarted()) {
+                    if (!particleSystem.isStarted() || !particleSystem.emitter) {
                         continue;
                     }
 
-                    if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
+                    let emitter = <any>particleSystem.emitter;
+                    if (!emitter.position || emitter.isEnabled()) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
                         this._renderingManager.dispatchParticles(particleSystem);

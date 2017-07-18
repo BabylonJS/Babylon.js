@@ -42,6 +42,10 @@ module BABYLON.GUI {
                 return false;
             }
 
+            if (!super.contains(x, y)) {
+                return false;
+            }
+
             this._processObservables(type, x, y);
 
             return true;

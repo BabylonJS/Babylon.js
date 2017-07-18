@@ -26,7 +26,7 @@
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
-        "minimalViewer": [
+        "minimalGLTFViewer": [
                 "animations", "arcRotateCamera", "additionalTextures", "textureFormats",
                 "shadows", "pointLight", "directionalLight", "spotLight",
                 "multiMaterial", "pbrMaterial",
@@ -34,9 +34,11 @@
                 "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", 
                 "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline", "imageProcessing",
                 "debug", "textureTools", "hdr",
-                "loader"
+                "loader",
+                "materialsLibrary/babylon.gridMaterial.js",
+                "loaders/babylon.glTFFileLoader.js"
         ],
-        "distributed": ["minimalViewer"]
+        "distributed": ["minimalGLTFViewer"]
     },
     "workloads" :
     {

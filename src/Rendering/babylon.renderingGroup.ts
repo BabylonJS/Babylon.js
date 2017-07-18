@@ -4,7 +4,7 @@
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
         private _transparentSubMeshes = new SmartArray<SubMesh>(256);
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
-        private _particleSystems = new SmartArray<ParticleSystem>(256);
+        private _particleSystems = new SmartArray<IParticleSystem>(256);
         private _spriteManagers = new SmartArray<SpriteManager>(256);        
         private _activeVertices: number;
 
@@ -301,7 +301,7 @@
             this._spriteManagers.push(spriteManager);
         }
 
-        public dispatchParticles(particleSystem: ParticleSystem) {
+        public dispatchParticles(particleSystem: IParticleSystem) {
             this._particleSystems.push(particleSystem);
         }
 
@@ -319,7 +319,9 @@
                 if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
-                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
+
+                let emitter: any = particleSystem.emitter;
+                if (!emitter.position || !activeMeshes || activeMeshes.indexOf(emitter) !== -1) {
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
