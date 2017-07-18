@@ -89,7 +89,12 @@ function determineFilesToProcess(kind) {
     for (var index = 0; index < buildConfiguration.length; index++) {
         var dependencyName = buildConfiguration[index];
         var dependency = config.workloads[dependencyName];
-        processDependency(kind, dependency, filesToLoad);
+
+        if (dependency) {
+            processDependency(kind, dependency, filesToLoad);
+        } else if (kind === "files") { // direct file link
+            filesToLoad.push("../../dist/preview release/" + dependencyName);
+        }
     }
 
     if (kind === "shaderIncludes") {
