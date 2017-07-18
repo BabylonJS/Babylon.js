@@ -3153,6 +3153,9 @@ var BABYLON;
                 if (!this.isHitTestVisible || !this.isVisible) {
                     return false;
                 }
+                if (!_super.prototype.contains.call(this, x, y)) {
+                    return false;
+                }
                 this._processObservables(type, x, y);
                 return true;
             };
