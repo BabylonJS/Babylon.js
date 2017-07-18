@@ -7,12 +7,6 @@
 		}
 	#endif
 
-	float computeFallOff(float shadow, vec2 clipSpace, float frustumEdgeFalloff)
-	{
-		float mask = smoothstep(1.0, 1.0 - frustumEdgeFalloff, dot(clipSpace, clipSpace));
-		return mix(1.0, shadow, mask);
-	}
-
 	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
