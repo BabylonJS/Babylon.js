@@ -3150,7 +3150,7 @@ var BABYLON;
             };
             // While being a container, the button behaves like a control.
             Button.prototype._processPicking = function (x, y, type) {
-                if (!this.contains(x, y)) {
+                if (!this.isHitTestVisible || !this.isVisible) {
                     return false;
                 }
                 this._processObservables(type, x, y);
