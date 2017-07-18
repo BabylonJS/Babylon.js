@@ -14,9 +14,9 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 
 For preview release you can use the following ones:
 
-- http://preview.babylonjs.com/babylon.js
-- http://preview.babylonjs.com/babylon.max.js
-- http://preview.babylonjs.com/babylon.worker.js
+- https://preview.babylonjs.com/babylon.js
+- https://preview.babylonjs.com/babylon.max.js
+- https://preview.babylonjs.com/babylon.worker.js
 
 ## Preview release
 
