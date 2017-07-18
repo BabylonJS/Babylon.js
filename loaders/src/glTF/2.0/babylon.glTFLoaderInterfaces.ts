@@ -247,7 +247,6 @@ module BABYLON.GLTF2 {
 
         // Runtime values (one per coordinate index)
         babylonTextures?: Texture[];
-        blobURL?: string;
     }
 
     export interface IGLTFTextureInfo {

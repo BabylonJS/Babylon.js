@@ -61,7 +61,7 @@ module BABYLON.GLTF1 {
             super("KHR_materials_common");
         }
 
-        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): boolean {
+        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
             if (!gltfRuntime.extensions) return false;
 
             var extension = gltfRuntime.extensions[this.name];
@@ -105,7 +105,7 @@ module BABYLON.GLTF1 {
             return false;
         }
 
-        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean {
+        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
             if (!material || !material.extensions) return false;
 
@@ -158,7 +158,7 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: () => void): void {
+        private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: (message: string) => void): void {
             // Create buffer from texture url
             GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
                 // Create texture from buffer
