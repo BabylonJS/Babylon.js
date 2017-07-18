@@ -1215,8 +1215,8 @@
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter. 
          */
-        public getEmittedParticleSystems(): ParticleSystem[] {
-            var results = new Array<ParticleSystem>();
+        public getEmittedParticleSystems(): IParticleSystem[] {
+            var results = new Array<IParticleSystem>();
             for (var index = 0; index < this.getScene().particleSystems.length; index++) {
                 var particleSystem = this.getScene().particleSystems[index];
                 if (particleSystem.emitter === this) {
@@ -1229,14 +1229,16 @@
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh or its children are the emitter.
          */
-        public getHierarchyEmittedParticleSystems(): ParticleSystem[] {
-            var results = new Array<ParticleSystem>();
+        public getHierarchyEmittedParticleSystems(): IParticleSystem[] {
+            var results = new Array<IParticleSystem>();
             var descendants = this.getDescendants();
             descendants.push(this);
 
             for (var index = 0; index < this.getScene().particleSystems.length; index++) {
                 var particleSystem = this.getScene().particleSystems[index];
-                if (descendants.indexOf(particleSystem.emitter) !== -1) {
+                let emitter: any = particleSystem.emitter;
+
+                if (emitter.position && descendants.indexOf(emitter) !== -1) {
                     results.push(particleSystem);
                 }
             }

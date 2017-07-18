@@ -374,7 +374,7 @@ var __extends = (this && this.__extends) || (function () {
             if (r === void 0) { r = 0; }
             if (g === void 0) { g = 0; }
             if (b === void 0) { b = 0; }
-            if (a === void 0) { a = 0; }
+            if (a === void 0) { a = 1; }
             this.r = r;
             this.g = g;
             this.b = b;
@@ -15400,7 +15400,8 @@ var BABYLON;
                 if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
-                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
+                var emitter = particleSystem.emitter;
+                if (!emitter.position || !activeMeshes || activeMeshes.indexOf(emitter) !== -1) {
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
@@ -17316,7 +17317,7 @@ var BABYLON;
         /**
          * get a particle system by id
          * @param id {number} the particle system id
-         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         * @return {BABYLON.IParticleSystem|null} the corresponding system or null if none found.
          */
         Scene.prototype.getParticleSystemByID = function (id) {
             for (var index = 0; index < this.particleSystems.length; index++) {
@@ -17690,10 +17691,11 @@ var BABYLON;
                 BABYLON.Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
-                    if (!particleSystem.isStarted()) {
+                    if (!particleSystem.isStarted() || !particleSystem.emitter) {
                         continue;
                     }
-                    if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
+                    var emitter = particleSystem.emitter;
+                    if (!emitter.position || emitter.isEnabled()) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
                         this._renderingManager.dispatchParticles(particleSystem);
@@ -21036,7 +21038,8 @@ var BABYLON;
             descendants.push(this);
             for (var index = 0; index < this.getScene().particleSystems.length; index++) {
                 var particleSystem = this.getScene().particleSystems[index];
-                if (descendants.indexOf(particleSystem.emitter) !== -1) {
+                var emitter = particleSystem.emitter;
+                if (emitter.position && descendants.indexOf(emitter) !== -1) {
                     results.push(particleSystem);
                 }
             }
@@ -39145,10 +39148,12 @@ var BABYLON;
             // Add new ones
             var worldMatrix;
             if (this.emitter.position) {
-                worldMatrix = this.emitter.getWorldMatrix();
+                var emitterMesh = this.emitter;
+                worldMatrix = emitterMesh.getWorldMatrix();
             }
             else {
-                worldMatrix = BABYLON.Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
+                var emitterPosition = this.emitter;
+                worldMatrix = BABYLON.Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
             }
             var particle;
             for (var index = 0; index < newParticles; index++) {
@@ -39301,7 +39306,9 @@ var BABYLON;
             }
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
-            this._scene.particleSystems.splice(index, 1);
+            if (index > -1) {
+                this._scene.particleSystems.splice(index, 1);
+            }
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
@@ -39336,10 +39343,12 @@ var BABYLON;
             serializationObject.id = this.id;
             // Emitter
             if (this.emitter.position) {
-                serializationObject.emitterId = this.emitter.id;
+                var emitterMesh = this.emitter;
+                serializationObject.emitterId = emitterMesh.id;
             }
             else {
-                serializationObject.emitter = this.emitter.asArray();
+                var emitterPosition = this.emitter;
+                serializationObject.emitter = emitterPosition.asArray();
             }
             serializationObject.capacity = this.getCapacity();
             if (this.particleTexture) {
@@ -44265,10 +44274,11 @@ var BABYLON;
             }
             for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
                 var particleSystem = scene.particleSystems[particleIndex];
-                if (!particleSystem.isStarted() || !particleSystem.emitter || !particleSystem.emitter.position || !particleSystem.emitter.isEnabled()) {
+                var emitter = particleSystem.emitter;
+                if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
                     continue;
                 }
-                if (currentRenderList.indexOf(particleSystem.emitter) >= 0) {
+                if (currentRenderList.indexOf(emitter) >= 0) {
                     this._renderingManager.dispatchParticles(particleSystem);
                 }
             }
@@ -46367,6 +46377,47 @@ var BABYLON;
             }
             return null;
         };
+        SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
+            var plugin = registeredPlugin.plugin;
+            var useArrayBuffer = registeredPlugin.isBinary;
+            var database;
+            var dataCallback = function (data) {
+                if (scene.isDisposed) {
+                    onError("Scene has been disposed");
+                    return;
+                }
+                scene.database = database;
+                try {
+                    onSuccess(plugin, data);
+                }
+                catch (e) {
+                    onError(null, e);
+                }
+            };
+            var manifestChecked = function (success) {
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, function (request) {
+                    onError(request.status + " " + request.statusText);
+                });
+            };
+            if (directLoad) {
+                dataCallback(directLoad);
+                return;
+            }
+            if (rootUrl.indexOf("file:") === -1) {
+                if (scene.getEngine().enableOfflineSupport) {
+                    // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                    database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+                }
+                else {
+                    manifestChecked(true);
+                }
+            }
+            else {
+                BABYLON.Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+            }
+        };
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {
             return SceneLoader._getPluginForExtension(extension).plugin;
@@ -46389,180 +46440,130 @@ var BABYLON;
                 });
             }
         };
-        SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        SceneLoader.ImportMesh = function (meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
-            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
-                BABYLON.Tools.Error("Wrong sceneFilename parameter");
-                return;
-            }
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var loadingToken = {};
             scene._addPendingData(loadingToken);
-            var manifestChecked = function (success) {
-                scene.database = database;
-                var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(directLoad) : SceneLoader._getPluginForFilename(sceneFilename);
-                var plugin = registeredPlugin.plugin;
-                var useArrayBuffer = registeredPlugin.isBinary;
-                var importMeshFromData = function (data) {
+            var errorHandler = function (message, exception) {
+                if (onError) {
+                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                }
+                scene._removePendingData(loadingToken);
+            };
+            var progressHandler = function (event) {
+                if (onProgress) {
+                    onProgress(event);
+                }
+            };
+            SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
+                if (plugin.importMesh) {
+                    var syncedPlugin = plugin;
                     var meshes = [];
                     var particleSystems = [];
                     var skeletons = [];
-                    if (scene.isDisposed) {
-                        if (onerror) {
-                            onerror(scene, 'Scene was disposed before being able to load ' + rootUrl + sceneFilename);
-                        }
+                    if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
-                    try {
-                        if (plugin.importMesh) {
-                            var syncedPlugin = plugin;
-                            if (!syncedPlugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
-                                if (onerror) {
-                                    onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename);
-                                }
-                                scene._removePendingData(loadingToken);
-                                return;
-                            }
-                            if (onsuccess) {
-                                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                                onsuccess(meshes, particleSystems, skeletons);
-                                scene._removePendingData(loadingToken);
-                            }
-                        }
-                        else {
-                            var asyncedPlugin = plugin;
-                            asyncedPlugin.importMeshAsync(meshesNames, scene, data, rootUrl, function (meshes, particleSystems, skeletons) {
-                                if (onsuccess) {
-                                    scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                                    onsuccess(meshes, particleSystems, skeletons);
-                                    scene._removePendingData(loadingToken);
-                                }
-                            }, function () {
-                                if (onerror) {
-                                    onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename);
-                                }
-                                scene._removePendingData(loadingToken);
-                            });
-                        }
-                    }
-                    catch (e) {
-                        if (onerror) {
-                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename, e);
-                        }
+                    if (onSuccess) {
+                        scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                        onSuccess(meshes, particleSystems, skeletons);
                         scene._removePendingData(loadingToken);
                     }
-                };
-                if (directLoad) {
-                    importMeshFromData(directLoad);
-                    return;
                 }
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
-                    importMeshFromData(data);
-                }, progressCallBack, database, useArrayBuffer, function () {
-                    if (onerror) {
-                        onerror(scene, 'Unable to load file ' + rootUrl + sceneFilename);
-                    }
-                });
-            };
-            if (scene.getEngine().enableOfflineSupport && !directLoad) {
-                // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
-            }
-            else {
-                // If the scene is a data stream or offline support is not enabled, it's a direct load
-                manifestChecked(true);
-            }
+                else {
+                    var asyncedPlugin = plugin;
+                    asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, function (meshes, particleSystems, skeletons) {
+                        if (onSuccess) {
+                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                            onSuccess(meshes, particleSystems, skeletons);
+                            scene._removePendingData(loadingToken);
+                        }
+                    }, progressHandler, errorHandler);
+                }
+            }, progressHandler, errorHandler);
         };
         /**
         * Load a scene
         * @param rootUrl a string that defines the root url for scene and resources
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
+        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onSuccess, onProgress, onError) {
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError);
         };
         /**
         * Append a scene
         * @param rootUrl a string that defines the root url for scene and resources
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
-            var plugin = registeredPlugin.plugin;
-            var useArrayBuffer = registeredPlugin.isBinary;
-            var database;
-            var loadingToken = {};
-            scene._addPendingData(loadingToken);
             if (SceneLoader.ShowLoadingScreen) {
                 scene.getEngine().displayLoadingUI();
             }
-            var loadSceneFromData = function (data) {
-                scene.database = database;
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
+            var errorHandler = function (message, exception) {
+                if (onError) {
+                    onError(scene, "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                }
+                scene._removePendingData(loadingToken);
+                scene.getEngine().hideLoadingUI();
+            };
+            var progressHandler = function (event) {
+                if (onProgress) {
+                    onProgress(event);
+                }
+            };
+            SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
                 if (plugin.load) {
                     var syncedPlugin = plugin;
-                    if (!syncedPlugin.load(scene, data, rootUrl)) {
-                        if (onerror) {
-                            onerror(scene);
-                        }
-                        scene._removePendingData(loadingToken);
-                        scene.getEngine().hideLoadingUI();
+                    if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
                         return;
                     }
-                    if (onsuccess) {
-                        onsuccess(scene);
+                    if (onSuccess) {
+                        onSuccess(scene);
                     }
                     scene._removePendingData(loadingToken);
                 }
                 else {
                     var asyncedPlugin = plugin;
                     asyncedPlugin.loadAsync(scene, data, rootUrl, function () {
-                        if (onsuccess) {
-                            onsuccess(scene);
+                        if (onSuccess) {
+                            onSuccess(scene);
                         }
                         scene._removePendingData(loadingToken);
-                    }, function () {
-                        if (onerror) {
-                            onerror(scene);
-                        }
-                        scene._removePendingData(loadingToken);
-                        scene.getEngine().hideLoadingUI();
-                    });
+                    }, progressHandler, errorHandler);
                 }
                 if (SceneLoader.ShowLoadingScreen) {
                     scene.executeWhenReady(function () {
                         scene.getEngine().hideLoadingUI();
                     });
                 }
-            };
-            var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database, useArrayBuffer);
-            };
-            if (directLoad) {
-                loadSceneFromData(directLoad);
-                return;
-            }
-            if (rootUrl.indexOf("file:") === -1) {
-                if (scene.getEngine().enableOfflineSupport) {
-                    // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                    database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
-                }
-                else {
-                    manifestChecked(true);
-                }
-            }
-            else {
-                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack, useArrayBuffer);
-            }
+            }, progressHandler, errorHandler);
         };
         return SceneLoader;
     }());

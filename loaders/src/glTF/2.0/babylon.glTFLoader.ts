@@ -1,27 +1,27 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    export class GLTFLoader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader, IDisposable {
         private _parent: GLTFFileLoader;
         private _gltf: IGLTF;
-        private _errors: string[];
         private _babylonScene: Scene;
         private _rootUrl: string;
         private _defaultMaterial: PBRMaterial;
-        private _onSuccess: () => void;
-        private _onError: () => void;
-
-        private _succeeded: boolean;
-        private _renderReady: boolean;
+        private _successCallback: () => void;
+        private _progressCallback: (event: ProgressEvent) => void;
+        private _errorCallback: (message: string) => void;
+        private _renderReady: boolean = false;
+        private _disposed: boolean = false;
+        private _objectURLs: string[] = new Array<string>();
 
         // Observable with boolean indicating success or error.
-        private _renderReadyObservable = new Observable<boolean>();
+        private _renderReadyObservable = new Observable<GLTFLoader>();
 
         // Count of pending work that needs to complete before the asset is rendered.
-        private _renderPendingCount: number;
+        private _renderPendingCount: number = 0;
 
         // Count of pending work that needs to complete before the loader is cleared.
-        private _loaderPendingCount: number;
+        private _loaderPendingCount: number = 0;
 
         public static Extensions: { [name: string]: GLTFLoaderExtension } = {};
 
@@ -45,9 +45,9 @@ module BABYLON.GLTF2 {
             return this._babylonScene;
         }
 
-        public executeWhenRenderReady(func: (succeeded: boolean) => void) {
+        public executeWhenRenderReady(func: () => void) {
             if (this._renderReady) {
-                func(this._succeeded);
+                func();
             }
             else {
                 this._renderReadyObservable.add(func);
@@ -58,7 +58,30 @@ module BABYLON.GLTF2 {
             this._parent = parent;
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
+        public dispose(): void {
+            if (this._disposed) {
+                return;
+            }
+
+            this._disposed = true;
+
+            // Revoke object urls created during load
+            this._objectURLs.forEach(url => URL.revokeObjectURL(url));
+            this._objectURLs.length = 0;
+
+            this._gltf = undefined;
+            this._babylonScene = undefined;
+            this._rootUrl = undefined;
+            this._defaultMaterial = undefined;
+            this._successCallback = undefined;
+            this._errorCallback = undefined;
+            this._renderReady = false;
+            this._renderReadyObservable.clear();
+            this._renderPendingCount = 0;
+            this._loaderPendingCount = 0;
+        }
+
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
                 var meshes = [];
                 if (this._gltf.nodes) {
@@ -81,27 +104,35 @@ module BABYLON.GLTF2 {
                 }
 
                 onSuccess(meshes, null, skeletons);
-            }, onError);
+            }, onProgress, onError);
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void {
-            this._loadAsync(null, scene, data, rootUrl, onSuccess, onError);
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+            this._loadAsync(null, scene, data, rootUrl, onSuccess, onProgress, onError);
         }
 
-        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void {
-            this._clear();
-
+        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
             this._loadData(data);
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
 
-            this._onSuccess = onSuccess;
-            this._onError = onError;
+            this._successCallback = onSuccess;
+            this._progressCallback = onProgress;
+            this._errorCallback = onError;
 
             this.addPendingData(this);
             this._loadScene(nodeNames);
             this._loadAnimations();
             this.removePendingData(this);
+        }
+
+        private _onError(message: string): void {
+            this.dispose();
+            this._errorCallback(message);
+        }
+
+        private _onProgress(event: ProgressEvent): void {
+            this._progressCallback(event);
         }
 
         private _onRenderReady(): void {
@@ -122,25 +153,14 @@ module BABYLON.GLTF2 {
                     break;
             }
 
-            this._succeeded = (this._errors.length === 0);
-            if (this._succeeded) {
-                this._showMeshes();
-                this._startAnimations();
-                this._onSuccess();
-            }
-            else {
-                this._errors.forEach(error => Tools.Error(error));
-                this._errors = [];
-                this._onError();
-            }
-
-            this._renderReadyObservable.notifyObservers(this._succeeded);
+            this._showMeshes();
+            this._startAnimations();
+            this._successCallback();
+            this._renderReadyObservable.notifyObservers(this);
         }
 
         private _onLoaderComplete(): void {
-            this._errors.forEach(error => Tools.Error(error));
-            this._errors = [];
-            this._clear();
+            this.dispose();
 
             if (this._parent.onComplete) {
                 this._parent.onComplete();
@@ -206,31 +226,6 @@ module BABYLON.GLTF2 {
                     this._babylonScene.beginAnimation(animation.targets[j], 0, Number.MAX_VALUE, true);
                 }
             }
-        }
-
-        private _clear(): void {
-            // Revoke object urls created during load
-            if (this._gltf && this._gltf.textures) {
-                for (var i = 0; i < this._gltf.textures.length; i++) {
-                    var texture = this._gltf.textures[i];
-                    if (texture.blobURL) {
-                        URL.revokeObjectURL(texture.blobURL);
-                    }
-                }
-            }
-
-            this._gltf = undefined;
-            this._errors = [];
-            this._babylonScene = undefined;
-            this._rootUrl = undefined;
-            this._defaultMaterial = undefined;
-            this._onSuccess = undefined;
-            this._onError = undefined;
-            this._succeeded = false;
-            this._renderReady = false;
-            this._renderReadyObservable.clear();
-            this._renderPendingCount = 0;
-            this._loaderPendingCount = 0;
         }
 
         private _loadScene(nodeNames: any): void {
@@ -432,7 +427,7 @@ module BABYLON.GLTF2 {
         private _loadVertexDataAsync(primitive: IGLTFMeshPrimitive, onSuccess: (vertexData: VertexData) => void): void {
             var attributes = primitive.attributes;
             if (!attributes) {
-                this._errors.push("Primitive has no attributes");
+                this._onError("Primitive has no attributes");
                 return;
             }
 
@@ -773,9 +768,15 @@ module BABYLON.GLTF2 {
                     buffer.loadedData = new Uint8Array(data);
                     buffer.loadedObservable.notifyObservers(buffer);
                     buffer.loadedObservable = null;
-                }, null, null, true, request => {
-                    this._errors.push("Failed to load file '" + buffer.uri + "': " + request.statusText + "(" + request.status + ")");
-                    this.removePendingData(buffer);
+                }, event => {
+                    if (!this._disposed) {
+                        this._onProgress(event);
+                    }
+                }, this._babylonScene.database, true, request => {
+                    if (!this._disposed) {
+                        this._onError("Failed to load file '" + buffer.uri + "': " + request.status + " " + request.statusText);
+                        this.removePendingData(buffer);
+                    }
                 });
             }
         }
@@ -785,7 +786,7 @@ module BABYLON.GLTF2 {
 
             this._loadBufferAsync(bufferView.buffer, bufferData => {
                 if (byteOffset + byteLength > bufferData.byteLength) {
-                    this._errors.push("Buffer access is out of range");
+                    this._onError("Buffer access is out of range");
                     return;
                 }
 
@@ -813,7 +814,7 @@ module BABYLON.GLTF2 {
                         bufferViewData = new Float32Array(buffer, byteOffset, byteLength);
                         break;
                     default:
-                        this._errors.push("Invalid component type (" + componentType + ")");
+                        this._onError("Invalid component type (" + componentType + ")");
                         return;
                 }
 
@@ -824,8 +825,23 @@ module BABYLON.GLTF2 {
         private _loadAccessorAsync(accessor: IGLTFAccessor, onSuccess: (data: ArrayBufferView) => void): void {
             var bufferView = this._gltf.bufferViews[accessor.bufferView];
             var byteOffset = accessor.byteOffset || 0;
-            var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+            var byteLength = accessor.count * this._getByteStrideFromType(accessor);
             this._loadBufferViewAsync(bufferView, byteOffset, byteLength, accessor.componentType, onSuccess);
+        }
+
+        private _getByteStrideFromType(accessor: IGLTFAccessor): number {
+            switch (accessor.type) {
+                case "SCALAR": return 1;
+                case "VEC2": return 2;
+                case "VEC3": return 3;
+                case "VEC4": return 4;
+                case "MAT2": return 4;
+                case "MAT3": return 9;
+                case "MAT4": return 16;
+                default:
+                    this._onError("Invalid accessor type (" + accessor.type + ")");
+                    return 0;
+            }
         }
 
         public addPendingData(data: any) {
@@ -1006,35 +1022,44 @@ module BABYLON.GLTF2 {
             }
 
             var source = this._gltf.images[texture.source];
-            var url: string;
-
-            if (!source.uri) {
-                var bufferView = this._gltf.bufferViews[source.bufferView];
-                this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE, data => {
-                    texture.blobURL = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
-                    texture.babylonTextures[texCoord].updateURL(texture.blobURL);
-                });
-            }
-            else if (GLTFUtils.IsBase64(source.uri)) {
-                var data = new Uint8Array(GLTFUtils.DecodeBase64(source.uri));
-                texture.blobURL = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
-                url = texture.blobURL;
-            }
-            else {
-                url = this._rootUrl + source.uri;
-            }
-
             var sampler = (texture.sampler === undefined ? <IGLTFSampler>{} : this._gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
             var samplingMode = GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
 
             this.addPendingData(texture);
-            var babylonTexture = new Texture(url, this._babylonScene, noMipMaps, false, samplingMode, () => {
-                this.removePendingData(texture);
+            babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
+                if (!this._disposed) {
+                    this.removePendingData(texture);
+                }
             }, () => {
-                this._errors.push("Failed to load texture '" + source.uri + "'");
-                this.removePendingData(texture);
+                if (!this._disposed) {
+                    this._onError("Failed to load texture '" + source.uri + "'");
+                    this.removePendingData(texture);
+                }
             });
+
+            var setTextureData = data => {
+                var url = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
+                this._objectURLs.push(url);
+                babylonTexture.updateURL(url);
+            };
+
+            if (!source.uri) {
+                var bufferView = this._gltf.bufferViews[source.bufferView];
+                this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE, setTextureData);
+            }
+            else if (GLTFUtils.IsBase64(source.uri)) {
+                setTextureData(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+            }
+            else {
+                Tools.LoadFile(this._rootUrl + source.uri, setTextureData, event => {
+                    if (!this._disposed) {
+                        this._onProgress(event);
+                    }
+                }, this._babylonScene.database, true, request => {
+                    this._onError("Failed to load file '" + source.uri + "': " + request.status + " " + request.statusText);
+                });
+            }
 
             babylonTexture.coordinatesIndex = texCoord;
             babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
