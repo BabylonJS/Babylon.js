@@ -384,7 +384,7 @@
         /**
          * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
          */
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 0) {
+        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 1) {
         }
 
         // Operators
