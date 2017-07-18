@@ -9,7 +9,21 @@
         return ((random * (max - min)) + min);
     }
 
-    export class ParticleSystem implements IDisposable, IAnimatable {
+    export interface IParticleSystem {
+        id: string;
+        name: string;
+        emitter: AbstractMesh | Vector3;        
+        renderingGroupId: number;
+        layerMask: number;
+        isStarted(): boolean;  
+        animate(): void;   
+        render();  
+        dispose(): void; 
+        clone(name: string, newEmitter: any): IParticleSystem;
+        serialize(): any;
+    }
+
+    export class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
@@ -19,7 +33,7 @@
 
         public id: string;
         public renderingGroupId = 0;
-        public emitter = null;
+        public emitter: AbstractMesh | Vector3 = null;
         public emitRate = 10;
         public manualEmitCount = -1;
         public updateSpeed = 0.01;
@@ -239,10 +253,12 @@
             // Add new ones
             var worldMatrix;
 
-            if (this.emitter.position) {
-                worldMatrix = this.emitter.getWorldMatrix();
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                worldMatrix = emitterMesh.getWorldMatrix();
             } else {
-                worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
+                var emitterPosition = (<Vector3>this.emitter);
+                worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
             }
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
@@ -441,7 +457,9 @@
 
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
-            this._scene.particleSystems.splice(index, 1);
+            if (index > -1) {
+                this._scene.particleSystems.splice(index, 1);
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);
@@ -485,11 +503,13 @@
             serializationObject.id = this.id;
 
             // Emitter
-            if (this.emitter.position) {
-                serializationObject.emitterId = this.emitter.id;
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                serializationObject.emitterId = emitterMesh.id;
             } else {
-                serializationObject.emitter = this.emitter.asArray();
-            }
+                var emitterPosition = (<Vector3>this.emitter);
+                serializationObject.emitter = emitterPosition.asArray();
+            }       
 
             serializationObject.capacity = this.getCapacity();
 
