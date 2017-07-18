@@ -70,19 +70,11 @@
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        var currentVersionElement = document.getElementById("currentVersion1600");
-
-        if (currentVersionElement) {
-            switch (BABYLON.Engine.Version) {
-                case "2.5":
-                    setToMultipleID("currentVersion", "innerHTML", "Version: " + BABYLON.Engine.Version);
-                    break;
-                default:
-                    setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
-                    break;
-            }
+        if (location.href.indexOf("Stable") !== -1) {
+            setToMultipleID("currentVersion", "innerHTML", "Version: Stable");
+        } else {
+            setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
         }
-
 
         var loadScript = function (scriptURL, title) {
             var xhr = new XMLHttpRequest();
@@ -584,8 +576,8 @@
         // Versions
         setVersion = function (version) {
             switch (version) {
-                case "2.5":
-                    location.href = "index2_5.html" + location.hash;
+                case "stable":
+                    location.href = "indexStable.html" + location.hash;
                     break;
                 default:
                     location.href = "index.html" + location.hash;
