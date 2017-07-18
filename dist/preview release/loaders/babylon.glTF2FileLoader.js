@@ -1250,6 +1250,8 @@ var BABYLON;
                 }
             };
             GLTFUtils.GetTextureWrapMode = function (mode) {
+                // Set defaults if undefined
+                mode = mode === undefined ? GLTF2.ETextureWrapMode.REPEAT : mode;
                 switch (mode) {
                     case GLTF2.ETextureWrapMode.CLAMP_TO_EDGE: BABYLON.Texture.CLAMP_ADDRESSMODE;
                     case GLTF2.ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
@@ -1277,6 +1279,9 @@ var BABYLON;
                 }
             };
             GLTFUtils.GetTextureSamplingMode = function (magFilter, minFilter) {
+                // Set defaults if undefined
+                magFilter = magFilter === undefined ? GLTF2.ETextureMagFilter.LINEAR : magFilter;
+                minFilter = minFilter === undefined ? GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST : minFilter;
                 if (magFilter === GLTF2.ETextureMagFilter.LINEAR) {
                     switch (minFilter) {
                         case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;

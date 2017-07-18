@@ -371,6 +371,10 @@ var __extends = (this && this.__extends) || (function () {
          * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.
          */
         function Color4(r, g, b, a) {
+            if (r === void 0) { r = 0; }
+            if (g === void 0) { g = 0; }
+            if (b === void 0) { b = 0; }
+            if (a === void 0) { a = 0; }
             this.r = r;
             this.g = g;
             this.b = b;
@@ -537,6 +541,44 @@ var __extends = (this && this.__extends) || (function () {
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
             return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
+        };
+        /**
+         * Returns a new Color4 converted to linear space.
+         */
+        Color4.prototype.toLinearSpace = function () {
+            var convertedColor = new Color4();
+            this.toLinearSpaceToRef(convertedColor);
+            return convertedColor;
+        };
+        /**
+         * Converts the Color4 values to linear space and stores the result in "convertedColor".
+         * Returns the unmodified Color4.
+         */
+        Color4.prototype.toLinearSpaceToRef = function (convertedColor) {
+            convertedColor.r = Math.pow(this.r, BABYLON.ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToLinearSpace);
+            convertedColor.a = this.a;
+            return this;
+        };
+        /**
+         * Returns a new Color4 converted to gamma space.
+         */
+        Color4.prototype.toGammaSpace = function () {
+            var convertedColor = new Color4();
+            this.toGammaSpaceToRef(convertedColor);
+            return convertedColor;
+        };
+        /**
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor".
+         * Returns the unmodified Color4.
+         */
+        Color4.prototype.toGammaSpaceToRef = function (convertedColor) {
+            convertedColor.r = Math.pow(this.r, BABYLON.ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToGammaSpace);
+            convertedColor.a = this.a;
+            return this;
         };
         // Statics
         /**
