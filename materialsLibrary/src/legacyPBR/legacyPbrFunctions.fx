@@ -12,11 +12,6 @@ float Square(float value)
     return value * value;
 }
 
-float getLuminance(vec3 color)
-{
-    return clamp(dot(color, vec3(0.2126, 0.7152, 0.0722)), 0., 1.);
-}
-
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
@@ -138,16 +133,6 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
     microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
 
     return microSurface;
-}
-
-vec3 toLinearSpace(vec3 color)
-{
-    return vec3(pow(color.r, 2.2), pow(color.g, 2.2), pow(color.b, 2.2));
-}
-
-vec3 toGammaSpace(vec3 color)
-{
-    return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
 }
 
 #ifdef CAMERATONEMAP
