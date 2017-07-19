@@ -3715,15 +3715,14 @@
 
                 var camera: TargetCamera;
                 var radius = worldSize.length() * 1.5;
-                var sign = this.useRightHandedSystem ? -1 : 1;
                 if (createArcRotateCamera) {
-                    var arcRotateCamera = new ArcRotateCamera("default camera", -sign * (Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
+                    var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
                     arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                     arcRotateCamera.wheelPrecision = 100 / radius;
                     camera = arcRotateCamera;
                 }
                 else {
-                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, radius * sign), this);
+                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
                     freeCamera.setTarget(worldCenter);
                     camera = freeCamera;
                 }

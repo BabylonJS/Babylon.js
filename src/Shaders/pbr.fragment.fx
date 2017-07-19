@@ -690,7 +690,6 @@ void main(void) {
 // _____________________________ Specular ________________________________________
 #ifdef SPECULARTERM
 	vec3 finalSpecular = specularBase;
-	finalSpecular *= surfaceReflectivityColor;
 	finalSpecular = max(finalSpecular, 0.0);
 
 	// Full value needed for alpha.
@@ -744,7 +743,7 @@ void main(void) {
 						finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
 #endif
 #ifdef SPECULARTERM
-// Comupted in the previous step to help with alpha luminance.
+// Computed in the previous step to help with alpha luminance.
 //						finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
 						finalSpecularScaled +
 #endif
@@ -814,11 +813,11 @@ void main(void) {
 	// gl_FragColor = vec4(finalSpecular.rgb, 1.0);
 
 	// Irradiance
-	//gl_FragColor = vec4(environmentIrradiance.rgb, 1.0);
+	//gl_FragColor = vec4(specularEnvironmentReflectance.rgb, 1.0);
 	//gl_FragColor = vec4(environmentIrradiance.rgb / 3.0, 1.0);
 
 	// Specular color.
-	// gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
+	//gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
 
 	// MicroSurface color.
 	// gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);
