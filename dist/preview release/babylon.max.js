@@ -18643,14 +18643,15 @@ var BABYLON;
                 var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
                 var camera;
                 var radius = worldSize.length() * 1.5;
+                var sign = this.useRightHandedSystem ? -1 : 1;
                 if (createArcRotateCamera) {
-                    var arcRotateCamera = new BABYLON.ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    var arcRotateCamera = new BABYLON.ArcRotateCamera("default camera", -Math.PI / 2, Math.PI / 2, radius, worldCenter, this);
                     arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                     arcRotateCamera.wheelPrecision = 100 / radius;
                     camera = arcRotateCamera;
                 }
                 else {
-                    var freeCamera = new BABYLON.FreeCamera("default camera", new BABYLON.Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    var freeCamera = new BABYLON.FreeCamera("default camera", new BABYLON.Vector3(worldCenter.x, worldCenter.y, radius * sign), this);
                     freeCamera.setTarget(worldCenter);
                     camera = freeCamera;
                 }
@@ -30741,7 +30742,7 @@ var BABYLON;
                         }
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                        defines.REFLECTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                         if (reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;
