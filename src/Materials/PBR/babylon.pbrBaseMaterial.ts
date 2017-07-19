@@ -581,7 +581,7 @@
                         
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                        defines.REFLECTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
