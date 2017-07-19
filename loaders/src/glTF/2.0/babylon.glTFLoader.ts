@@ -193,6 +193,7 @@ module BABYLON.GLTF2 {
         private _addRightHandToLeftHandRootTransform(): void {
             var rootMesh = new Mesh("root", this._babylonScene);
             rootMesh.scaling = new Vector3(1, 1, -1);
+            rootMesh.rotation.y = Math.PI;
 
             var nodes = this._gltf.nodes;
             for (var i = 0; i < nodes.length; i++) {
