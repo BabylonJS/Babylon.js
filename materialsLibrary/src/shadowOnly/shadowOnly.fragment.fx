@@ -10,6 +10,9 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
