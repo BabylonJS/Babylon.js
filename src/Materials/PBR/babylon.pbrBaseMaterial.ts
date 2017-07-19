@@ -395,6 +395,11 @@
         protected _environmentBRDFTexture: BaseTexture = null;
 
         /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        protected _forceIrradianceInFragment = false;
+
+        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         @serializeAsImageProcessingConfiguration()
@@ -624,7 +629,7 @@
                         if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
-                                if (scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                                if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                                     defines.USESPHERICALINFRAGMENT = true;
                                 }
                             }

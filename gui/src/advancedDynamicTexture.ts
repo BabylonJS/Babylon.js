@@ -204,6 +204,14 @@ module BABYLON.GUI {
                     }
 
                     var mesh = control._linkedMesh;
+
+                    if (mesh.isDisposed()) {
+                        Tools.SetImmediate(()=>{
+                            control.linkWithMesh(null);
+                        });
+                        
+                        continue;
+                    }
                     
                     var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
