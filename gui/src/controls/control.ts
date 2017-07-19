@@ -441,8 +441,12 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (this._host._linkedControls.indexOf(this) !== -1) {
+            var index = this._host._linkedControls.indexOf(this);
+            if (index !== -1) {
                 this._linkedMesh = mesh;
+                if (!mesh) {
+                    this._host._linkedControls.splice(index, 1);
+                }
                 return;
             }
 

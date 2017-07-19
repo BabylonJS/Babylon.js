@@ -332,6 +332,13 @@
         public disableLighting = false;
 
         /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceIrradianceInFragment = false;        
+
+        /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
