@@ -3,10 +3,8 @@
 module BABYLON {
     class GridMaterialDefines extends MaterialDefines {
         public TRANSPARENT = false;
-
         public FOG = false;
-
-        public USERIGHTHANDEDSYSTEM = false;
+        public PREMULTIPLYALPHA = false;
 
         constructor() {
             super();
@@ -24,13 +22,13 @@ module BABYLON {
          * Main color of the grid (e.g. between lines)
          */
         @serializeAsColor3()
-        public mainColor = Color3.White();
+        public mainColor = Color3.Black();
 
         /**
          * Color of the grid lines.
          */
         @serializeAsColor3()
-        public lineColor = Color3.Black();
+        public lineColor = Color3.Teal();
 
         /**
          * The scale of the grid compared to unit.
@@ -55,6 +53,12 @@ module BABYLON {
          */
         @serialize()
         public opacity = 1.0;
+
+        /**
+         * Determine RBG output is premultiplied by alpha value.
+         */
+        @serialize()
+        public preMultiplyAlpha = false;        
 
         private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 
@@ -98,8 +102,13 @@ module BABYLON {
 
             var engine = scene.getEngine();
 
-            if (this.opacity < 1.0 && !defines.TRANSPARENT) {
-                defines.TRANSPARENT = true;
+            if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
+                defines.TRANSPARENT = !defines.TRANSPARENT;
+                defines.markAsUnprocessed();
+            }
+
+            if (defines.PREMULTIPLYALPHA != this.preMultiplyAlpha) {
+                defines.PREMULTIPLYALPHA = !defines.PREMULTIPLYALPHA;
                 defines.markAsUnprocessed();
             }
 
@@ -113,14 +122,11 @@ module BABYLON {
                 // Attributes
                 var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
-                // Effect
-                var shaderName = scene.getEngine().getCaps().standardDerivatives ? "grid" : "legacygrid";
-
                 // Defines
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect("grid",
                     attribs,
-                    ["worldViewProjection", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
+                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
                     [],
                     join,
                     null,
@@ -151,8 +157,9 @@ module BABYLON {
 
             // Matrices
             this.bindOnlyWorldMatrix(world);
-            this._activeEffect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            this._activeEffect.setMatrix("worldView", world.multiply(scene.getViewMatrix()));
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
+            this._activeEffect.setMatrix("projection", scene.getProjectionMatrix());
 
             // Uniforms
             if (this._mustRebind(scene, effect)) {

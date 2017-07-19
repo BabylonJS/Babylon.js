@@ -372,7 +372,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public premultiplyAlpha = false;
+        public preMultiplyAlpha = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.

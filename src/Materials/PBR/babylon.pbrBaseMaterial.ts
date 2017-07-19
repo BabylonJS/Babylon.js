@@ -379,7 +379,7 @@
          * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
          * in your scene composition.
          */
-        protected _premultiplyAlpha = false;
+        protected _preMultiplyAlpha = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -800,7 +800,7 @@
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
-                defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
+                defines.PREMULTIPLYALPHA = this._preMultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }

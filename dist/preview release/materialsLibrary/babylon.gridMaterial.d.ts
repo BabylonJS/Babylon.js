@@ -29,6 +29,10 @@ declare module BABYLON {
          * The grid opacity outside of the lines.
          */
         opacity: number;
+        /**
+         * Determine RBG output is premultiplied by alpha value.
+         */
+        preMultiplyAlpha: boolean;
         private _gridControl;
         private _renderId;
         /**
