@@ -472,7 +472,7 @@ var BABYLON;
             GLTFLoader.prototype._addRightHandToLeftHandRootTransform = function () {
                 var rootMesh = new BABYLON.Mesh("root", this._babylonScene);
                 rootMesh.scaling = new BABYLON.Vector3(1, 1, -1);
-                rootMesh.rotationQuaternion = new BABYLON.Quaternion(0, 1, 0, 0);
+                rootMesh.rotation.y = Math.PI;
                 var nodes = this._gltf.nodes;
                 for (var i = 0; i < nodes.length; i++) {
                     var mesh = nodes[i].babylonMesh;
