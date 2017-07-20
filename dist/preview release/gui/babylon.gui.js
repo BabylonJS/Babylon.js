@@ -247,8 +247,8 @@ var BABYLON;
                 }
                 if (!this._rootContainer._processPicking(x, y, type)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                        if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                            this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                        if (this._lastControlOver) {
+                            this._lastControlOver._onPointerOut();
                         }
                         this._lastControlOver = null;
                     }
@@ -269,11 +269,14 @@ var BABYLON;
                 });
                 this._attachToOnBlur(scene);
             };
-            AdvancedDynamicTexture.prototype.attachToMesh = function (mesh) {
+            AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
+                if (supportPointerMove === void 0) { supportPointerMove = true; }
                 var scene = this.getScene();
                 this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
-                    if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
                     if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
@@ -287,14 +290,21 @@ var BABYLON;
                         }
                         _this._lastControlDown = null;
                     }
+                    else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                        if (_this._lastControlOver) {
+                            _this._lastControlOver._onPointerOut();
+                        }
+                        _this._lastControlOver = null;
+                    }
                 });
+                mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnBlur(scene);
             };
             AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
                 var _this = this;
                 this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
-                    if (_this._lastControlOver && _this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                        _this._lastControlOver.onPointerOutObservable.notifyObservers(_this._lastControlOver);
+                    if (_this._lastControlOver) {
+                        _this._lastControlOver._onPointerOut();
                     }
                     _this._lastControlOver = null;
                     if (_this._lastControlDown) {

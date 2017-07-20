@@ -5,6 +5,7 @@
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
+- GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
 

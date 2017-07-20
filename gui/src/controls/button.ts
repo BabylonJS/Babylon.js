@@ -63,7 +63,7 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerOut(): void {
+        public _onPointerOut(): void {
             if (this.pointerOutAnimation) {
                 this.pointerOutAnimation();
             }

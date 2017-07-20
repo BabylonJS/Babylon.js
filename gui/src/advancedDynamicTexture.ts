@@ -273,8 +273,8 @@ module BABYLON.GUI {
             if (!this._rootContainer._processPicking(x, y, type)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                        this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                    if (this._lastControlOver) {
+                        this._lastControlOver._onPointerOut();
                     }
                     
                     this._lastControlOver = null;
@@ -300,10 +300,12 @@ module BABYLON.GUI {
             this._attachToOnBlur(scene);
         }
 
-        public attachToMesh(mesh: AbstractMesh): void {
+        public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
             var scene = this.getScene();
             this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
                 }
 
@@ -316,17 +318,23 @@ module BABYLON.GUI {
                         this._lastControlDown.forcePointerUp();
                     }
                     this._lastControlDown = null;  
+                } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    if (this._lastControlOver) {
+                        this._lastControlOver._onPointerOut();
+                    }              
+                    this._lastControlOver = null;
                 }
             });
 
+            mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnBlur(scene);
         }
 
         private _attachToOnBlur(scene: Scene): void {
             this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
-                if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                    this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
-                }                
+                if (this._lastControlOver) {
+                    this._lastControlOver._onPointerOut();
+                }            
                 this._lastControlOver = null;
 
                 if (this._lastControlDown) {

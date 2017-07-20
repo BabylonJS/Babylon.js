@@ -37,7 +37,7 @@ declare module BABYLON.GUI {
         private _render();
         private _doPicking(x, y, type);
         attach(): void;
-        attachToMesh(mesh: AbstractMesh): void;
+        attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
         private _attachToOnBlur(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
@@ -239,7 +239,7 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerEnter(): boolean;
-        protected _onPointerOut(): void;
+        _onPointerOut(): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         forcePointerUp(): void;
@@ -529,7 +529,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): boolean;
-        protected _onPointerOut(): void;
+        _onPointerOut(): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;

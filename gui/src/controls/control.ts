@@ -768,7 +768,7 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerOut(): void {
+        public _onPointerOut(): void {
             this._enterCount = 0;
             if (this.onPointerOutObservable.hasObservers()) {
                 this.onPointerOutObservable.notifyObservers(this);

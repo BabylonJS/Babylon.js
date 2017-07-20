@@ -11445,6 +11445,7 @@ var BABYLON;
             _this.showBoundingBox = false;
             _this.showSubMeshesBoundingBox = false;
             _this.isBlocker = false;
+            _this.enablePointerMoveEvents = false;
             _this.renderingGroupId = 0;
             _this._receiveShadows = false;
             _this.renderOutline = false;
@@ -16520,7 +16521,7 @@ var BABYLON;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
                 if (!_this.pointerMovePredicate) {
-                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (_this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || _this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
                 }
                 // Meshes
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
