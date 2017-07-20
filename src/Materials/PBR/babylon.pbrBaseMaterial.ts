@@ -724,18 +724,14 @@
 
                         if (this._useParallax && this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                             defines.PARALLAX = true;
-                            if (this._useParallaxOcclusion) {
-                                defines.PARALLAXOCCLUSION = true;
-                            }
+                            defines.PARALLAXOCCLUSION = !!this._useParallaxOcclusion;
+                        }
+                        else {
+                            defines.PARALLAX = false;
                         }
 
-                        if (this._invertNormalMapX) {
-                            defines.INVERTNORMALMAPX = true;
-                        }
-
-                        if (this._invertNormalMapY) {
-                            defines.INVERTNORMALMAPY = true;
-                        }
+                        defines.INVERTNORMALMAPX = !!this._invertNormalMapX;
+                        defines.INVERTNORMALMAPY = !!this._invertNormalMapY;
 
                         if (scene._mirroredCameraPosition) {
                             defines.INVERTNORMALMAPX = !defines.INVERTNORMALMAPX;
