@@ -903,6 +903,7 @@ module BABYLON.GLTF2 {
             }
 
             babylonMaterial.albedoColor = properties.baseColorFactor ? Color3.FromArray(properties.baseColorFactor) : new Color3(1, 1, 1);
+            babylonMaterial.alpha = properties.baseColorFactor ? properties.baseColorFactor[3] : 1.0;
             babylonMaterial.metallic = properties.metallicFactor === undefined ? 1 : properties.metallicFactor;
             babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
 
