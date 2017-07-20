@@ -380,25 +380,27 @@ void main(void) {
 
 // _____________________________ Alpha Fresnel ___________________________________
 #ifdef ALPHAFRESNEL
-	// Convert approximate perceptual opacity (gamma-encoded opacity) to linear opacity (absorptance, or inverse transmission)
-	// for use with the linear HDR render target. The final composition will be converted back to gamma encoded values for eventual display.
-	// Uses power 2.0 rather than 2.2 for simplicity/efficiency, and because the mapping does not need to map the gamma applied to RGB.
-	float opacityPerceptual = alpha;
-	float opacity0 = opacityPerceptual * opacityPerceptual;
-	float opacity90 = fresnelGrazingReflectance(opacity0);
+	#if defined(ALPHATEST) || defined(ALPHABLEND)
+		// Convert approximate perceptual opacity (gamma-encoded opacity) to linear opacity (absorptance, or inverse transmission)
+		// for use with the linear HDR render target. The final composition will be converted back to gamma encoded values for eventual display.
+		// Uses power 2.0 rather than 2.2 for simplicity/efficiency, and because the mapping does not need to map the gamma applied to RGB.
+		float opacityPerceptual = alpha;
+		float opacity0 = opacityPerceptual * opacityPerceptual;
+		float opacity90 = fresnelGrazingReflectance(opacity0);
 
-	vec3 normalForward = faceforward(normalW, -viewDirectionW, normalW);
+		vec3 normalForward = faceforward(normalW, -viewDirectionW, normalW);
 
-	// Calculate the appropriate linear opacity for the current viewing angle (formally, this quantity is the "directional absorptance").
-	alpha = fresnelSchlickEnvironmentGGX(clamp(dot(V, normalForward), 0.0, 1.0), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
-	
-	#ifdef ALPHATEST
-		if (alpha <= ALPHATESTVALUE)
-			discard;
+		// Calculate the appropriate linear opacity for the current viewing angle (formally, this quantity is the "directional absorptance").
+		alpha = fresnelSchlickEnvironmentGGX(clamp(dot(viewDirectionW, normalForward), 0.0, 1.0), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
+		
+		#ifdef ALPHATEST
+			if (alpha <= ALPHATESTVALUE)
+				discard;
 
-		#ifndef ALPHABLEND
-			// Prevent to blend with the canvas.
-			alpha = 1.0;
+			#ifndef ALPHABLEND
+				// Prevent to blend with the canvas.
+				alpha = 1.0;
+			#endif
 		#endif
 	#endif
 #endif
@@ -563,7 +565,7 @@ void main(void) {
 		#if defined(NORMAL) && !defined(USESPHERICALINFRAGMENT)
 			environmentIrradiance = vEnvironmentIrradiance;
 		#else
-			vec3 irradianceVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+			vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
 			#ifdef REFLECTIONMAP_OPPOSITEZ
 				irradianceVector.z *= -1.0;
 			#endif
@@ -690,7 +692,6 @@ void main(void) {
 // _____________________________ Specular ________________________________________
 #ifdef SPECULARTERM
 	vec3 finalSpecular = specularBase;
-	finalSpecular *= surfaceReflectivityColor;
 	finalSpecular = max(finalSpecular, 0.0);
 
 	// Full value needed for alpha.
@@ -744,7 +745,7 @@ void main(void) {
 						finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
 #endif
 #ifdef SPECULARTERM
-// Comupted in the previous step to help with alpha luminance.
+// Computed in the previous step to help with alpha luminance.
 //						finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
 						finalSpecularScaled +
 #endif
@@ -814,11 +815,11 @@ void main(void) {
 	// gl_FragColor = vec4(finalSpecular.rgb, 1.0);
 
 	// Irradiance
-	//gl_FragColor = vec4(environmentIrradiance.rgb, 1.0);
+	//gl_FragColor = vec4(specularEnvironmentReflectance.rgb, 1.0);
 	//gl_FragColor = vec4(environmentIrradiance.rgb / 3.0, 1.0);
 
 	// Specular color.
-	// gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
+	//gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
 
 	// MicroSurface color.
 	// gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);

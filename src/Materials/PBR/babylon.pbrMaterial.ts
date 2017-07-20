@@ -332,6 +332,13 @@
         public disableLighting = false;
 
         /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceIrradianceInFragment = false;        
+
+        /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
@@ -365,7 +372,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public premultiplyAlpha = false;
+        public preMultiplyAlpha = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.

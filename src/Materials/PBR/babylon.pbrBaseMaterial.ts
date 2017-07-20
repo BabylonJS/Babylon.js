@@ -379,7 +379,7 @@
          * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
          * in your scene composition.
          */
-        protected _premultiplyAlpha = false;
+        protected _preMultiplyAlpha = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -393,6 +393,11 @@
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
          */
         protected _environmentBRDFTexture: BaseTexture = null;
+
+        /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        protected _forceIrradianceInFragment = false;
 
         /**
          * Default configuration related to image processing available in the PBR Material.
@@ -624,7 +629,7 @@
                         if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
-                                if (scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                                if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                                     defines.USESPHERICALINFRAGMENT = true;
                                 }
                             }
@@ -719,18 +724,14 @@
 
                         if (this._useParallax && this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                             defines.PARALLAX = true;
-                            if (this._useParallaxOcclusion) {
-                                defines.PARALLAXOCCLUSION = true;
-                            }
+                            defines.PARALLAXOCCLUSION = !!this._useParallaxOcclusion;
+                        }
+                        else {
+                            defines.PARALLAX = false;
                         }
 
-                        if (this._invertNormalMapX) {
-                            defines.INVERTNORMALMAPX = true;
-                        }
-
-                        if (this._invertNormalMapY) {
-                            defines.INVERTNORMALMAPY = true;
-                        }
+                        defines.INVERTNORMALMAPX = !!this._invertNormalMapX;
+                        defines.INVERTNORMALMAPY = !!this._invertNormalMapY;
 
                         if (scene._mirroredCameraPosition) {
                             defines.INVERTNORMALMAPX = !defines.INVERTNORMALMAPX;
@@ -795,7 +796,7 @@
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
-                defines.PREMULTIPLYALPHA = this._premultiplyAlpha;
+                defines.PREMULTIPLYALPHA = this._preMultiplyAlpha;
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }
