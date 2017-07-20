@@ -133,6 +133,7 @@
         public showBoundingBox = false;
         public showSubMeshesBoundingBox = false;
         public isBlocker = false;
+        public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
         private _material: Material
         public get material(): Material {
