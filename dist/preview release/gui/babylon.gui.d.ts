@@ -39,7 +39,7 @@ declare module BABYLON.GUI {
         attach(): void;
         attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
         private _attachToOnBlur(scene);
-        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
     }
 }

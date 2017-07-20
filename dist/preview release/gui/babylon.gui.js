@@ -314,9 +314,10 @@ var BABYLON;
                 });
             };
             // Statics
-            AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height) {
+            AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove) {
                 if (width === void 0) { width = 1024; }
                 if (height === void 0) { height = 1024; }
+                if (supportPointerMove === void 0) { supportPointerMove = true; }
                 var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
                 var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
                 material.backFaceCulling = false;
@@ -325,7 +326,7 @@ var BABYLON;
                 material.emissiveTexture = result;
                 material.opacityTexture = result;
                 mesh.material = material;
-                result.attachToMesh(mesh);
+                result.attachToMesh(mesh, supportPointerMove);
                 return result;
             };
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
