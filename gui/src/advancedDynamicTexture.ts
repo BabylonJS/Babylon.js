@@ -345,7 +345,7 @@ module BABYLON.GUI {
         }
 
         // Statics
-        public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024): AdvancedDynamicTexture {
+        public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
 
             var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
@@ -357,7 +357,7 @@ module BABYLON.GUI {
 
             mesh.material = material;
 
-            result.attachToMesh(mesh);
+            result.attachToMesh(mesh, supportPointerMove);
 
             return result;
         }
