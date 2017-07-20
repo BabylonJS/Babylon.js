@@ -43857,6 +43857,11 @@ var BABYLON;
             _this.hasAlpha = false;
             _this._format = format;
             _this._prefiltered = prefiltered;
+            _this.isCube = true;
+            _this._textureMatrix = BABYLON.Matrix.Identity();
+            if (prefiltered) {
+                _this.gammaSpace = false;
+            }
             if (!rootUrl && !files) {
                 return _this;
             }
@@ -43892,11 +43897,6 @@ var BABYLON;
                 else {
                     _this._texture.onLoadedCallbacks.push(onLoad);
                 }
-            }
-            _this.isCube = true;
-            _this._textureMatrix = BABYLON.Matrix.Identity();
-            if (prefiltered) {
-                _this.gammaSpace = false;
             }
             return _this;
         }

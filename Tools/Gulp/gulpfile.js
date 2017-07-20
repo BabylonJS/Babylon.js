@@ -90,10 +90,11 @@ function determineFilesToProcess(kind) {
         var dependencyName = buildConfiguration[index];
         var dependency = config.workloads[dependencyName];
 
-        if (dependency) {
-            processDependency(kind, dependency, filesToLoad);
-        } else if (kind === "files") { // direct file link
+        if (kind === "directFiles" && !dependency) {
             filesToLoad.push("../../dist/preview release/" + dependencyName);
+        }
+        else if (dependency) {
+            processDependency(kind, dependency, filesToLoad);
         }
     }
 
@@ -186,11 +187,13 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
 
 gulp.task("build", ["shaders"], function () {
     var filesToProcess = determineFilesToProcess("files");
+    var directFilesToProcess = determineFilesToProcess("directFiles");
     return merge2(
         gulp.src(filesToProcess).
             pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
-        includeShadersStream
+        includeShadersStream,
+        gulp.src(directFilesToProcess)
     )
         .pipe(concat(config.build.filename))
         .pipe(cleants())
