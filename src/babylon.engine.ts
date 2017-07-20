@@ -3259,7 +3259,7 @@
                         Internals.DDSTools.UploadDDSLevels(this, data, info, true, 6, mipmapIndex);
                     }
                     else {
-                        Tools.Warn("DDS is the only prefiltered cube map support so far.")
+                        Tools.Warn("DDS is the only prefiltered cube map supported so far.")
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);

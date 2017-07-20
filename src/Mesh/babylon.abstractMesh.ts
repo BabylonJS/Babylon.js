@@ -369,6 +369,13 @@
         }
 
         /**
+         * Boolean : true if the mesh has been disposed.  
+         */
+        public isDisposed(): boolean {
+            return this._isDisposed;
+        }
+
+        /**
          * Returns the string "AbstractMesh"
          */
         public getClassName(): string {

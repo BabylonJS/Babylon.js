@@ -45,8 +45,18 @@ module BABYLON.Internals {
             var size = texture.getSize().width;
             var right = texture.readPixels(0);
             var left = texture.readPixels(1);
-            var up = texture.readPixels(2);
-            var down = texture.readPixels(3);
+
+            var up: ArrayBufferView;
+            var down: ArrayBufferView;
+            if (texture.isRenderTarget) {
+                up = texture.readPixels(3);
+                down = texture.readPixels(2);
+            }
+            else {
+                up = texture.readPixels(2);
+                down = texture.readPixels(3);
+            }
+
             var front = texture.readPixels(4);
             var back = texture.readPixels(5);
 

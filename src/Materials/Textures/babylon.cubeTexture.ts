@@ -27,6 +27,11 @@
             this.hasAlpha = false;
             this._format = format;
             this._prefiltered = prefiltered;
+            this.isCube = true;
+            this._textureMatrix = Matrix.Identity();
+            if (prefiltered) {
+                this.gammaSpace = false;
+            }
 
             if (!rootUrl && !files) {
                 return;
@@ -68,14 +73,6 @@
                 } else {
                     this._texture.onLoadedCallbacks.push(onLoad);
                 }
-            }
-
-            this.isCube = true;
-
-            this._textureMatrix = Matrix.Identity();
-
-            if (prefiltered) {
-                this.gammaSpace = false;
             }
         }
 

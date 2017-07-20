@@ -192,6 +192,12 @@ var BABYLON;
                             continue;
                         }
                         var mesh = control._linkedMesh;
+                        if (mesh.isDisposed()) {
+                            BABYLON.Tools.SetImmediate(function () {
+                                control.linkWithMesh(null);
+                            });
+                            continue;
+                        }
                         var position = mesh.getBoundingInfo().boundingSphere.center;
                         var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                         if (projectedPosition.z < 0 || projectedPosition.z > 1) {
@@ -1069,8 +1075,12 @@ var BABYLON;
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                     return;
                 }
-                if (this._host._linkedControls.indexOf(this) !== -1) {
+                var index = this._host._linkedControls.indexOf(this);
+                if (index !== -1) {
                     this._linkedMesh = mesh;
+                    if (!mesh) {
+                        this._host._linkedControls.splice(index, 1);
+                    }
                     return;
                 }
                 this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;

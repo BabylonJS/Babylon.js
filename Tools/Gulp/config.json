@@ -1149,9 +1149,7 @@
                 ],
                 "shaderFiles": [
                     "../../materialsLibrary/src/grid/grid.vertex.fx",
-                    "../../materialsLibrary/src/grid/grid.fragment.fx",
-                    "../../materialsLibrary/src/grid/legacygrid.vertex.fx",
-                    "../../materialsLibrary/src/grid/legacygrid.fragment.fx"
+                    "../../materialsLibrary/src/grid/grid.fragment.fx"
                 ],
                 "output": "babylon.gridMaterial.js"
             },

@@ -529,13 +529,6 @@
             return super.isReady();
         }
 
-        /**
-         * Boolean : true if the mesh has been disposed.  
-         */
-        public isDisposed(): boolean {
-            return this._isDisposed;
-        }
-
         public get sideOrientation(): number {
             return this._sideOrientation;
         }
