@@ -57,7 +57,7 @@
             var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
             hdrTexture.gammaSpace = false;
                         
-            currentScene.createDefaultSkybox(hdrTexture, true, 100, 0.3);
+            currentScene.createDefaultSkybox(hdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
