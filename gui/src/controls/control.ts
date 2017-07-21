@@ -524,8 +524,8 @@ module BABYLON.GUI {
 
         protected _applyStates(context: CanvasRenderingContext2D): void {
             if (this._fontSet) {
-                this._fontSet = false;
                 this._prepareFont();
+                this._fontSet = false;
             }
 
             if (this._font) {
@@ -835,7 +835,7 @@ module BABYLON.GUI {
         }
 
         private _prepareFont() {
-            if (!this._fontFamily) {
+            if (!this._font && !this._fontSet) {
                 return;
             }
 
