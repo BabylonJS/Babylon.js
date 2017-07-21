@@ -21,6 +21,14 @@ module BABYLON.GUI {
             return this._value;
         }
 
+        public getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number {
+            if (this.isPixel) {
+                return this.getValue(host);
+            }
+
+            return this.getValue(host) * refValue;
+        }
+
         public getValue(host: AdvancedDynamicTexture): number {
             if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
 
