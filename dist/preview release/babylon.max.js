@@ -46795,6 +46795,7 @@ var BABYLON;
                     if (onSuccess) {
                         onSuccess(scene);
                     }
+                    scene.loadingPluginName = plugin.name;
                     scene._removePendingData(loadingToken);
                 }
                 else {
@@ -46803,6 +46804,7 @@ var BABYLON;
                         if (onSuccess) {
                             onSuccess(scene);
                         }
+                        scene.loadingPluginName = plugin.name;
                         scene._removePendingData(loadingToken);
                     }, progressHandler, errorHandler);
                 }
@@ -46858,6 +46860,7 @@ var BABYLON;
             return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
         };
         BABYLON.SceneLoader.RegisterPlugin({
+            name: "babylon.js",
             extensions: ".babylon",
             canDirectLoad: function (data) {
                 if (data.indexOf("babylon") !== -1) {

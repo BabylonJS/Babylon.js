@@ -6,6 +6,7 @@
     }
 
     export interface ISceneLoaderPlugin {
+        name: string;
         extensions: string | ISceneLoaderPluginExtensions;
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError: (message: string) => void) => boolean;
         load: (scene: Scene, data: string, rootUrl: string, onError: (message: string) => void) => boolean;
@@ -13,6 +14,7 @@
     }
 
     export interface ISceneLoaderPluginAsync {
+        name: string;
         extensions: string | ISceneLoaderPluginExtensions;
         importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
@@ -318,6 +320,8 @@
                     if (onSuccess) {
                         onSuccess(scene);
                     }
+
+                    scene.loadingPluginName = plugin.name;
                     scene._removePendingData(loadingToken);
                 } else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
@@ -325,7 +329,8 @@
                         if (onSuccess) {
                             onSuccess(scene);
                         }
-
+                        
+                        scene.loadingPluginName = plugin.name;
                         scene._removePendingData(loadingToken);
                     }, progressHandler, errorHandler);
                 }

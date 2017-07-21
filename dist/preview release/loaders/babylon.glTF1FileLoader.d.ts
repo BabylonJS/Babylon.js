@@ -22,6 +22,7 @@ declare module BABYLON {
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
         onComplete: () => void;
+        name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
