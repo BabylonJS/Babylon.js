@@ -197,6 +197,7 @@ var BABYLON;
     BABYLON.MTLFileLoader = MTLFileLoader;
     var OBJFileLoader = (function () {
         function OBJFileLoader() {
+            this.name = "obj";
             this.extensions = ".obj";
             this.obj = /^o/;
             this.group = /^g/;

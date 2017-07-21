@@ -191,7 +191,7 @@ module BABYLON {
     export class OBJFileLoader implements ISceneLoaderPlugin {
 
         public static OPTIMIZE_WITH_UV = false;
-
+        public name = "obj";
         public extensions = ".obj";
         public obj = /^o/;
         public group = /^g/;

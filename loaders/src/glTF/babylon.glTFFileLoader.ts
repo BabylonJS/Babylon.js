@@ -37,6 +37,8 @@ module BABYLON {
         public onMaterialLoaded: (material: Material) => void;
         public onComplete: () => void;
 
+        public name = "gltf";
+
         public extensions: ISceneLoaderPluginExtensions = {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }

@@ -5,6 +5,7 @@ declare module BABYLON {
         facetsPattern: RegExp;
         normalPattern: RegExp;
         vertexPattern: RegExp;
+        name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean;
         load(scene: Scene, data: any, rootUrl: string): boolean;
