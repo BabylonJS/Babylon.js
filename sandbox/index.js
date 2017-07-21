@@ -1,6 +1,4 @@
-﻿/// <reference path="../../babylon.js" />
-
-if (BABYLON.Engine.isSupported()) {
+﻿if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true);
     var divFps = document.getElementById("fps");
@@ -53,6 +51,14 @@ if (BABYLON.Engine.isSupported()) {
             currentScene.createDefaultCameraOrLight(true);
         }
         currentScene.activeCamera.attachControl(canvas);
+
+        // Environment
+        if (currentScene.loadingPluginName === "gltf") {
+            var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
+            hdrTexture.gammaSpace = false;
+                        
+            currentScene.createDefaultSkybox(hdrTexture, true, 100, 0.3);
+        }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (currentScene.meshes.length === 0 && currentScene.clearColor.r === 1 && currentScene.clearColor.g === 0 && currentScene.clearColor.b === 0) {
