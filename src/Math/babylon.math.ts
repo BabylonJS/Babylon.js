@@ -56,6 +56,18 @@
         public static Log2(value: number): number {
             return Math.log(value) * Math.LOG2E;
         }
+
+        /**
+         * Loops the value, so that it is never larger than length and never smaller than 0.
+         * 
+         * This is similar to the modulo operator but it works with floating point numbers. 
+         * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
+         * With t = 5 and length = 2.5, the result would be 0.0. 
+         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+         */
+        public static Repeat(value:number, length:number): number {
+			return value - Math.floor(value / length) * length;
+        }
     }
 
 
