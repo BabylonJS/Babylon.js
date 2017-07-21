@@ -66389,14 +66389,14 @@ var BABYLON;
             }
             // Adapt options
             this._options = options || {
-                mainTextureRatio: 0.25,
+                mainTextureRatio: 0.5,
                 blurTextureSizeRatio: 0.5,
-                blurHorizontalSize: 1,
-                blurVerticalSize: 1,
+                blurHorizontalSize: 1.0,
+                blurVerticalSize: 1.0,
                 alphaBlendingMode: BABYLON.Engine.ALPHA_COMBINE
             };
-            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.25;
-            this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 0.5;
+            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.5;
+            this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 1.0;
             this._options.blurHorizontalSize = this._options.blurHorizontalSize || 1;
             this._options.blurVerticalSize = this._options.blurVerticalSize || 1;
             this._options.alphaBlendingMode = this._options.alphaBlendingMode || BABYLON.Engine.ALPHA_COMBINE;
