@@ -78,9 +78,10 @@
                 "../../src/Materials/babylon.pushMaterial.js",
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
-                "../../src/PostProcess/babylon.postProcessManager.js"                
+                "../../src/PostProcess/babylon.postProcessManager.js",
+                "../../src/Tools/babylon.performanceMonitor.js" 
             ]
-        },
+        },         
         "particles" : 
         {
             "files": [

@@ -184,6 +184,17 @@
         }
     };
 
+    class BufferPointer {
+        public active: boolean;
+        public index: number;
+        public size: number;
+        public type: number;
+        public normalized: boolean;
+        public stride: number;
+        public offset: number;
+        public buffer: WebGLBuffer;
+    }
+
     export class InstancingAttributeInfo {
         /**
          * Index/offset of the attribute in the vertex shader
@@ -607,10 +618,9 @@
         private _activeRenderLoops = [];
 
         // FPS
-        private fpsRange = 60;
-        private previousFramesDuration = [];
-        private fps = 60;
-        private deltaTime = 0;
+        private _performanceMonitor = new PerformanceMonitor();
+        private _fps = 60;
+        private _deltaTime = 0;
 
         // States
         private _depthCullingState = new Internals._DepthCullingState();
@@ -636,7 +646,7 @@
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<WebGLBuffer>();
         private _currentFramebuffer: WebGLFramebuffer;
-        private _currentBufferPointers: Array<{ indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number, buffer: WebGLBuffer }> = [];
+        private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
         private _textureUnits: Int32Array;
@@ -744,10 +754,12 @@
                 }
 
                 this._onBlur = () => {
+                    this._performanceMonitor.disable();
                     this._windowIsBackground = true;
                 };
 
                 this._onFocus = () => {
+                    this._performanceMonitor.enable();
                     this._windowIsBackground = false;
                 };
 
@@ -944,6 +956,11 @@
 
             if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
+            }
+
+            // Prepare buffer pointers
+            for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+                this._currentBufferPointers[i] = new BufferPointer();
             }
 
             //Load WebVR Devices
@@ -1740,9 +1757,16 @@
             var pointer = this._currentBufferPointers[indx];
 
             var changed = false;
-            if (!pointer) {
+            if (!pointer.active) {
                 changed = true;
-                this._currentBufferPointers[indx] = { indx, size, type, normalized, stride, offset, buffer: buffer };
+                pointer.active = true;
+                pointer.index = indx;
+                pointer.size = size;
+                pointer.type = type;
+                pointer.normalized = normalized;
+                pointer.stride = stride;
+                pointer.offset = offset;
+                pointer.buffer = buffer;
             } else {
                 if (pointer.buffer !== buffer) { pointer.buffer = buffer; changed = true; }
                 if (pointer.size !== size) { pointer.size = size; changed = true; }
@@ -3954,7 +3978,7 @@
                 for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                     this._gl.disableVertexAttribArray(i);
                     this._vertexAttribArraysEnabled[i] = false;
-                    this._currentBufferPointers[i] = null;
+                    this._currentBufferPointers[i].active = false;
                 }
                 return;
             }
@@ -3966,7 +3990,7 @@
 
                 this._gl.disableVertexAttribArray(i);
                 this._vertexAttribArraysEnabled[i] = false;
-                this._currentBufferPointers[i] = null;
+                this._currentBufferPointers[i].active = false;
             }
         }
 
@@ -4099,35 +4123,17 @@
 
         // FPS
         public getFps(): number {
-            return this.fps;
+            return this._fps;
         }
 
         public getDeltaTime(): number {
-            return this.deltaTime;
+            return this._deltaTime;
         }
 
         private _measureFps(): void {
-            this.previousFramesDuration.push(Tools.Now);
-            var length = this.previousFramesDuration.length;
-
-            if (length >= 2) {
-                this.deltaTime = this.previousFramesDuration[length - 1] - this.previousFramesDuration[length - 2];
-            }
-
-            if (length >= this.fpsRange) {
-
-                if (length > this.fpsRange) {
-                    this.previousFramesDuration.splice(0, 1);
-                    length = this.previousFramesDuration.length;
-                }
-
-                var sum = 0;
-                for (var id = 0; id < length - 1; id++) {
-                    sum += this.previousFramesDuration[id + 1] - this.previousFramesDuration[id];
-                }
-
-                this.fps = 1000.0 / (sum / (length - 1));
-            }
+            this._performanceMonitor.sampleFrame();
+            this._fps = this._performanceMonitor.averageFPS;
+            this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
         }
 
         public _readTexturePixels(texture: WebGLTexture, width: number, height: number, faceIndex = -1): ArrayBufferView {

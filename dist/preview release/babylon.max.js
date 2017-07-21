@@ -66,6 +66,17 @@ var __extends = (this && this.__extends) || (function () {
         MathTools.Log2 = function (value) {
             return Math.log(value) * Math.LOG2E;
         };
+        /**
+         * Loops the value, so that it is never larger than length and never smaller than 0.
+         *
+         * This is similar to the modulo operator but it works with floating point numbers.
+         * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
+         * With t = 5 and length = 2.5, the result would be 0.0.
+         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+         */
+        MathTools.Repeat = function (value, length) {
+            return value - Math.floor(value / length) * length;
+        };
         return MathTools;
     }());
     BABYLON.MathTools = MathTools;
@@ -1639,13 +1650,13 @@ var __extends = (this && this.__extends) || (function () {
             var cy = viewport.y;
             var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
             Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 0.5, 0, cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.multiplyToRef(viewportMatrix, matrix);
             return Vector3.TransformCoordinates(vector, matrix);
         };
         Vector3.UnprojectFromTransform = function (source, viewportWidth, viewportHeight, world, transform) {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
@@ -1658,7 +1669,7 @@ var __extends = (this && this.__extends) || (function () {
             return vector;
         };
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
@@ -7225,6 +7236,11 @@ var BABYLON;
             partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
         }
     };
+    var BufferPointer = (function () {
+        function BufferPointer() {
+        }
+        return BufferPointer;
+    }());
     var InstancingAttributeInfo = (function () {
         function InstancingAttributeInfo() {
         }
@@ -7277,10 +7293,9 @@ var BABYLON;
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
             // FPS
-            this.fpsRange = 60;
-            this.previousFramesDuration = [];
-            this.fps = 60;
-            this.deltaTime = 0;
+            this._performanceMonitor = new BABYLON.PerformanceMonitor();
+            this._fps = 60;
+            this._deltaTime = 0;
             // States
             this._depthCullingState = new BABYLON.Internals._DepthCullingState();
             this._stencilState = new BABYLON.Internals._StencilState();
@@ -7294,7 +7309,7 @@ var BABYLON;
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
             this._currentBoundBuffer = new Array();
-            this._currentBufferPointers = [];
+            this._currentBufferPointers = new Array();
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
             this._vaoRecordInProgress = false;
@@ -7365,9 +7380,11 @@ var BABYLON;
                     throw new Error("WebGL not supported");
                 }
                 this._onBlur = function () {
+                    _this._performanceMonitor.disable();
                     _this._windowIsBackground = true;
                 };
                 this._onFocus = function () {
+                    _this._performanceMonitor.enable();
                     _this._windowIsBackground = false;
                 };
                 this._onCanvasBlur = function () {
@@ -7544,6 +7561,10 @@ var BABYLON;
             }
             if (options.audioEngine && BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
+            }
+            // Prepare buffer pointers
+            for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+                this._currentBufferPointers[i] = new BufferPointer();
             }
             //Load WebVR Devices
             if (options.autoEnableWebVR) {
@@ -8601,9 +8622,16 @@ var BABYLON;
         Engine.prototype.vertexAttribPointer = function (buffer, indx, size, type, normalized, stride, offset) {
             var pointer = this._currentBufferPointers[indx];
             var changed = false;
-            if (!pointer) {
+            if (!pointer.active) {
                 changed = true;
-                this._currentBufferPointers[indx] = { indx: indx, size: size, type: type, normalized: normalized, stride: stride, offset: offset, buffer: buffer };
+                pointer.active = true;
+                pointer.index = indx;
+                pointer.size = size;
+                pointer.type = type;
+                pointer.normalized = normalized;
+                pointer.stride = stride;
+                pointer.offset = offset;
+                pointer.buffer = buffer;
             }
             else {
                 if (pointer.buffer !== buffer) {
@@ -10418,7 +10446,7 @@ var BABYLON;
                 for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                     this._gl.disableVertexAttribArray(i);
                     this._vertexAttribArraysEnabled[i] = false;
-                    this._currentBufferPointers[i] = null;
+                    this._currentBufferPointers[i].active = false;
                 }
                 return;
             }
@@ -10428,7 +10456,7 @@ var BABYLON;
                 }
                 this._gl.disableVertexAttribArray(i);
                 this._vertexAttribArraysEnabled[i] = false;
-                this._currentBufferPointers[i] = null;
+                this._currentBufferPointers[i].active = false;
             }
         };
         Engine.prototype.releaseEffects = function () {
@@ -10544,28 +10572,15 @@ var BABYLON;
         };
         // FPS
         Engine.prototype.getFps = function () {
-            return this.fps;
+            return this._fps;
         };
         Engine.prototype.getDeltaTime = function () {
-            return this.deltaTime;
+            return this._deltaTime;
         };
         Engine.prototype._measureFps = function () {
-            this.previousFramesDuration.push(BABYLON.Tools.Now);
-            var length = this.previousFramesDuration.length;
-            if (length >= 2) {
-                this.deltaTime = this.previousFramesDuration[length - 1] - this.previousFramesDuration[length - 2];
-            }
-            if (length >= this.fpsRange) {
-                if (length > this.fpsRange) {
-                    this.previousFramesDuration.splice(0, 1);
-                    length = this.previousFramesDuration.length;
-                }
-                var sum = 0;
-                for (var id = 0; id < length - 1; id++) {
-                    sum += this.previousFramesDuration[id + 1] - this.previousFramesDuration[id];
-                }
-                this.fps = 1000.0 / (sum / (length - 1));
-            }
+            this._performanceMonitor.sampleFrame();
+            this._fps = this._performanceMonitor.averageFPS;
+            this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
         };
         Engine.prototype._readTexturePixels = function (texture, width, height, faceIndex) {
             if (faceIndex === void 0) { faceIndex = -1; }
@@ -28885,6 +28900,228 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.postProcessManager.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    var PerformanceMonitor = (function () {
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        function PerformanceMonitor(frameSampleSize) {
+            if (frameSampleSize === void 0) { frameSampleSize = 30; }
+            this._enabled = true;
+            this._rollingFrameTime = new RollingAverage(frameSampleSize);
+        }
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        PerformanceMonitor.prototype.sampleFrame = function (timeMs) {
+            if (timeMs === void 0) { timeMs = BABYLON.Tools.Now; }
+            if (!this._enabled)
+                return;
+            if (this._lastFrameTimeMs != null) {
+                var dt = timeMs - this._lastFrameTimeMs;
+                this._rollingFrameTime.add(dt);
+            }
+            this._lastFrameTimeMs = timeMs;
+        };
+        Object.defineProperty(PerformanceMonitor.prototype, "averageFrameTime", {
+            /**
+             * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+             * @return Average frame time in milliseconds
+             */
+            get: function () {
+                return this._rollingFrameTime.average;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerformanceMonitor.prototype, "averageFrameTimeVariance", {
+            /**
+             * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+             * @return Frame time variance in milliseconds squared
+             */
+            get: function () {
+                return this._rollingFrameTime.variance;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerformanceMonitor.prototype, "instantaneousFrameTime", {
+            /**
+             * Returns the frame time of the most recent frame
+             * @return Frame time in milliseconds
+             */
+            get: function () {
+                return this._rollingFrameTime.history(0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerformanceMonitor.prototype, "averageFPS", {
+            /**
+             * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+             * @return Framerate in frames per second
+             */
+            get: function () {
+                return 1000.0 / this._rollingFrameTime.average;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerformanceMonitor.prototype, "instantaneousFPS", {
+            /**
+             * Returns the average framerate in frames per second using the most recent frame time
+             * @return Framerate in frames per second
+             */
+            get: function () {
+                return 1000.0 / this._rollingFrameTime.history(0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerformanceMonitor.prototype, "isSaturated", {
+            /**
+             * Returns true if enough samples have been taken to completely fill the sliding window
+             * @return true if saturated
+             */
+            get: function () {
+                return this._rollingFrameTime.isSaturated();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        PerformanceMonitor.prototype.enable = function () {
+            this._enabled = true;
+        };
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        PerformanceMonitor.prototype.disable = function () {
+            this._enabled = false;
+            //clear last sample to avoid interpolating over the disabled period when next enabled
+            this._lastFrameTimeMs = null;
+            this._lastChangeTimeMs = null;
+        };
+        Object.defineProperty(PerformanceMonitor.prototype, "isEnabled", {
+            /**
+             * Returns true if sampling is enabled
+             * @return true if enabled
+             */
+            get: function () {
+                return this._enabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Resets performance monitor
+         */
+        PerformanceMonitor.prototype.reset = function () {
+            //clear last sample to avoid interpolating over the disabled period when next enabled
+            this._lastFrameTimeMs = null;
+            this._lastChangeTimeMs = null;
+            //wipe record
+            this._rollingFrameTime.reset();
+        };
+        return PerformanceMonitor;
+    }());
+    BABYLON.PerformanceMonitor = PerformanceMonitor;
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    var RollingAverage = (function () {
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        function RollingAverage(length) {
+            this._samples = new Array(length);
+            this.reset();
+        }
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        RollingAverage.prototype.add = function (v) {
+            //http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+            var delta;
+            //we need to check if we've already wrapped round
+            if (this.isSaturated()) {
+                //remove bottom of stack from mean
+                var bottomValue = this._samples[this._pos];
+                delta = bottomValue - this.average;
+                this.average -= delta / (this._sampleCount - 1);
+                this._m2 -= delta * (bottomValue - this.average);
+            }
+            else {
+                this._sampleCount++;
+            }
+            //add new value to mean
+            delta = v - this.average;
+            this.average += delta / (this._sampleCount);
+            this._m2 += delta * (v - this.average);
+            //set the new variance
+            this.variance = this._m2 / (this._sampleCount - 1);
+            this._samples[this._pos] = v;
+            this._pos++;
+            this._pos %= this._samples.length; //positive wrap around
+        };
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        RollingAverage.prototype.history = function (i) {
+            if ((i >= this._sampleCount) || (i >= this._samples.length)) {
+                return null;
+            }
+            var i0 = this._wrapPosition(this._pos - 1.0);
+            return this._samples[this._wrapPosition(i0 - i)];
+        };
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        RollingAverage.prototype.isSaturated = function () {
+            return this._sampleCount >= this._samples.length;
+        };
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        RollingAverage.prototype.reset = function () {
+            this.average = 0;
+            this.variance = 0;
+            this._sampleCount = 0;
+            this._pos = 0;
+            this._m2 = 0;
+        };
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        RollingAverage.prototype._wrapPosition = function (i) {
+            var max = this._samples.length;
+            return ((i % max) + max) % max;
+        };
+        return RollingAverage;
+    }());
+    BABYLON.RollingAverage = RollingAverage;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.performanceMonitor.js.map
 
 
 
@@ -62077,6 +62314,7 @@ var BABYLON;
             this._supportsTangents = false;
             this._vertexCount = 0;
             this._uniqueId = 0;
+            this._tempInfluences = new Array();
             if (!scene) {
                 scene = BABYLON.Engine.LastCreatedScene;
             }
@@ -62180,15 +62418,15 @@ var BABYLON;
             this._syncActiveTargets(needUpdate);
         };
         MorphTargetManager.prototype._syncActiveTargets = function (needUpdate) {
+            var influenceCount = 0;
             this._activeTargets.reset();
-            var tempInfluences = [];
             this._supportsNormals = true;
             this._supportsTangents = true;
             for (var _i = 0, _a = this._targets; _i < _a.length; _i++) {
                 var target = _a[_i];
                 if (target.influence > 0) {
                     this._activeTargets.push(target);
-                    tempInfluences.push(target.influence);
+                    this._tempInfluences[influenceCount++] = target.influence;
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
                     if (this._vertexCount === 0) {
@@ -62196,7 +62434,12 @@ var BABYLON;
                     }
                 }
             }
-            this._influences = new Float32Array(tempInfluences);
+            if (!this._influences || this._influences.length !== influenceCount) {
+                this._influences = new Float32Array(influenceCount);
+            }
+            for (var index = 0; index < influenceCount; index++) {
+                this._influences[index] = this._tempInfluences[index];
+            }
             if (needUpdate) {
                 // Flag meshes as dirty to resync with the active targets
                 for (var _b = 0, _c = this._scene.meshes; _b < _c.length; _b++) {

@@ -118,6 +118,7 @@ var BABYLON;
             _this._mesh = null;
             _this._reflectionTransform = BABYLON.Matrix.Zero();
             _this._lastTime = 0;
+            _this._lastDeltaTime = 0;
             // Create render targets
             _this._createRenderTargets(scene, renderTargetSize);
             return _this;
@@ -355,7 +356,12 @@ var BABYLON;
                 this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
             }
             var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
-            this._lastTime += scene.getEngine().getDeltaTime();
+            // Add delta time. Prevent adding delta time if it hasn't changed.
+            var deltaTime = scene.getEngine().getDeltaTime();
+            if (deltaTime !== this._lastDeltaTime) {
+                this._lastDeltaTime = deltaTime;
+                this._lastTime += this._lastDeltaTime;
+            }
             this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
             this._activeEffect.setVector2("windDirection", this.windDirection);
             this._activeEffect.setFloat("waveLength", this.waveLength);

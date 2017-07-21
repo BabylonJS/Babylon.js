@@ -1763,7 +1763,6 @@
         }
 
         private static _viewportMatrixCache: Matrix;
-        private static _matrixCache: Matrix;
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
@@ -1778,7 +1777,7 @@
                 0, 0, 0.5, 0,
                 cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
 
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.multiplyToRef(viewportMatrix, matrix);
 
@@ -1786,7 +1785,7 @@
         }
 
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
@@ -1802,7 +1801,7 @@
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix)
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();

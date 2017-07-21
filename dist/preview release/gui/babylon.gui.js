@@ -1151,8 +1151,8 @@ var BABYLON;
             };
             Control.prototype._applyStates = function (context) {
                 if (this._fontSet) {
-                    this._fontSet = false;
                     this._prepareFont();
+                    this._fontSet = false;
                 }
                 if (this._font) {
                     context.font = this._font;
@@ -1406,7 +1406,7 @@ var BABYLON;
                 return false;
             };
             Control.prototype._prepareFont = function () {
-                if (!this._fontFamily) {
+                if (!this._font && !this._fontSet) {
                     return;
                 }
                 this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
