@@ -12,7 +12,7 @@
 }
 
     #DebugLayerLogs > div:first-child {
-        background-color: #988DB5 !important;
+        background-color: #3B789A !important;
     }
 
 #DebugLayerStats {
@@ -24,7 +24,7 @@
 }
 
     #DebugLayerStats > div:first-child {
-        background-color: #988DB5 !important;
+        background-color: #3B789A !important;
     }
 
 #DebugLayerOptions {
@@ -32,11 +32,11 @@
 }
 
 #DebugLayerOptions > div:first-child {
-    background-color: #988DB5 !important;
+    background-color: #3B789A !important;
 }
 
 #DebugLayerTree > div:first-child {
-    background-color: #988DB5 !important;
+    background-color: #3B789A !important;
 }
 
 a {
@@ -64,7 +64,7 @@ a {
 .help {
     display: none;
     position: absolute;
-    background-color: #988DB5;
+    background-color: #3B789A;
     right: 0;
     bottom: 70px;
     color: white;
@@ -87,7 +87,7 @@ a {
  .help2 {
     display: none;
     position: absolute;
-    background-color: #988DB5;
+    background-color: #3B789A;
     right: 0;
     bottom: 70px;
     color: white;
@@ -137,7 +137,7 @@ a {
     width: 100%;
     height: 60px;
     bottom: 0px;
-    background-color: #988DB5;
+    background-color: #3B789A;
     padding-top: 5px;
     padding-left: 15px;
         transition: all 0.5s ease;
@@ -245,7 +245,7 @@ li {
     -webkit-transition: -webkit-transform 0.25s ease-in-out;
     z-index: 3;
     cursor: default;
-    background-color: #988DB5;
+    background-color: #3B789A;
 }
 
 .loadingText {
