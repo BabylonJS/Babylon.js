@@ -246,6 +246,7 @@
 
         // Metadata
         public metadata: any = null;
+        public loadingPluginName: string;
 
         // Events
 
