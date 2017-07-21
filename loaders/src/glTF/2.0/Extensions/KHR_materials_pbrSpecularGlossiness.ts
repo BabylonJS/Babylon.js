@@ -47,6 +47,8 @@ module BABYLON.GLTF2.Extensions {
                 babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
+
+            loader.loadMaterialAlphaProperties(material, properties.diffuseFactor);
         }
     }
 
