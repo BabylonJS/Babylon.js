@@ -3263,7 +3263,6 @@ var BABYLON;
                 babylonMaterial.roughness = properties.roughnessFactor === undefined ? 1 : properties.roughnessFactor;
                 if (properties.baseColorTexture) {
                     babylonMaterial.albedoTexture = this.loadTexture(properties.baseColorTexture);
-                    this.loadMaterialAlphaProperties(material);
                 }
                 if (properties.metallicRoughnessTexture) {
                     babylonMaterial.metallicTexture = this.loadTexture(properties.metallicRoughnessTexture);
@@ -3271,6 +3270,7 @@ var BABYLON;
                     babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
                     babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
                 }
+                this.loadMaterialAlphaProperties(material, properties.baseColorFactor);
             };
             GLTFLoader.prototype.loadMaterial = function (index, assign) {
                 var material = this._gltf.materials[index];
@@ -3318,7 +3318,7 @@ var BABYLON;
                     babylonMaterial.emissiveTexture = this.loadTexture(material.emissiveTexture);
                 }
             };
-            GLTFLoader.prototype.loadMaterialAlphaProperties = function (material) {
+            GLTFLoader.prototype.loadMaterialAlphaProperties = function (material, colorFactor) {
                 var babylonMaterial = material.babylonMaterial;
                 var alphaMode = material.alphaMode || "OPAQUE";
                 switch (alphaMode) {
@@ -3326,12 +3326,14 @@ var BABYLON;
                         // default is opaque
                         break;
                     case "MASK":
-                        babylonMaterial.albedoTexture.hasAlpha = true;
-                        babylonMaterial.useAlphaFromAlbedoTexture = false;
-                        break;
                     case "BLEND":
-                        babylonMaterial.albedoTexture.hasAlpha = true;
-                        babylonMaterial.useAlphaFromAlbedoTexture = true;
+                        if (colorFactor) {
+                            babylonMaterial.alpha = colorFactor[3];
+                        }
+                        if (babylonMaterial.albedoTexture) {
+                            babylonMaterial.albedoTexture.hasAlpha = true;
+                            babylonMaterial.useAlphaFromAlbedoTexture = (alphaMode === "BLEND");
+                        }
                         break;
                     default:
                         BABYLON.Tools.Warn("Invalid alpha mode '" + material.alphaMode + "'");
@@ -3689,6 +3691,7 @@ var BABYLON;
                         babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
                         babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
                     }
+                    loader.loadMaterialAlphaProperties(material, properties.diffuseFactor);
                 };
                 return KHRMaterialsPbrSpecularGlossiness;
             }(GLTF2.GLTFLoaderExtension));

@@ -212,10 +212,9 @@ declare module BABYLON {
         private _videoTextureSupported;
         private _renderingQueueLaunched;
         private _activeRenderLoops;
-        private fpsRange;
-        private previousFramesDuration;
-        private fps;
-        private deltaTime;
+        private _performanceMonitor;
+        private _fps;
+        private _deltaTime;
         private _depthCullingState;
         private _stencilState;
         private _alphaState;
@@ -4163,6 +4162,134 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class PhysicsViewer {
+        protected _impostors: Array<PhysicsImpostor>;
+        protected _meshes: Array<AbstractMesh>;
+        protected _scene: Scene;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: PhysicsImpostor): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Ray;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
 declare module BABYLON {
     /**
      * Highlight layer options. This helps customizing the behaviour
@@ -4461,134 +4588,6 @@ declare module BABYLON {
         dispose(): void;
         static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
         serialize(): any;
-    }
-}
-
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class PhysicsViewer {
-        protected _impostors: Array<PhysicsImpostor>;
-        protected _meshes: Array<AbstractMesh>;
-        protected _scene: Scene;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: PhysicsImpostor): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Ray;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
     }
 }
 
@@ -6624,6 +6623,15 @@ declare module BABYLON {
          * Returns the log2 of value.
          */
         static Log2(value: number): number;
+        /**
+         * Loops the value, so that it is never larger than length and never smaller than 0.
+         *
+         * This is similar to the modulo operator but it works with floating point numbers.
+         * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
+         * With t = 5 and length = 2.5, the result would be 0.0.
+         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+         */
+        static Repeat(value: number, length: number): number;
     }
     class Scalar {
         /**
@@ -7435,7 +7443,6 @@ declare module BABYLON {
          */
         static NormalizeToRef(vector: Vector3, result: Vector3): void;
         private static _viewportMatrixCache;
-        private static _matrixCache;
         static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
         static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
         static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
@@ -12068,6 +12075,7 @@ declare module BABYLON {
         private _supportsTangents;
         private _vertexCount;
         private _uniqueId;
+        private _tempInfluences;
         constructor(scene?: Scene);
         readonly uniqueId: number;
         readonly vertexCount: number;
@@ -12981,36 +12989,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -13528,6 +13506,36 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -14640,6 +14648,126 @@ declare module BABYLON {
          * @return {boolean} whether or not one observer registered with the given mask is handeled
         **/
         hasSpecificMask(mask?: number): boolean;
+    }
+}
+
+declare namespace BABYLON {
+    /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        private _lastChangeTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         * @return Average frame time in milliseconds
+         */
+        readonly averageFrameTime: number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         * @return Frame time variance in milliseconds squared
+         */
+        readonly averageFrameTimeVariance: number;
+        /**
+         * Returns the frame time of the most recent frame
+         * @return Frame time in milliseconds
+         */
+        readonly instantaneousFrameTime: number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         * @return Framerate in frames per second
+         */
+        readonly averageFPS: number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         * @return Framerate in frames per second
+         */
+        readonly instantaneousFPS: number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if saturated
+         */
+        readonly isSaturated: boolean;
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        enable(): void;
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        disable(): void;
+        /**
+         * Returns true if sampling is enabled
+         * @return true if enabled
+         */
+        readonly isEnabled: boolean;
+        /**
+         * Resets performance monitor
+         */
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    class RollingAverage {
+        /**
+         * Current average
+         */
+        average: number;
+        /**
+         * Current variance
+         */
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        constructor(length: number);
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
     }
 }
 

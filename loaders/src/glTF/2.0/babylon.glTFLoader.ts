@@ -908,7 +908,6 @@ module BABYLON.GLTF2 {
 
             if (properties.baseColorTexture) {
                 babylonMaterial.albedoTexture = this.loadTexture(properties.baseColorTexture);
-                this.loadMaterialAlphaProperties(material);
             }
 
             if (properties.metallicRoughnessTexture) {
@@ -917,6 +916,8 @@ module BABYLON.GLTF2 {
                 babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
                 babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
             }
+
+            this.loadMaterialAlphaProperties(material, properties.baseColorFactor);
         }
 
         public loadMaterial(index: number, assign: (material: Material) => void): void {
@@ -975,7 +976,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public loadMaterialAlphaProperties(material: IGLTFMaterial): void {
+        public loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void {
             var babylonMaterial = material.babylonMaterial as PBRMaterial;
 
             var alphaMode = material.alphaMode || "OPAQUE";
@@ -984,12 +985,15 @@ module BABYLON.GLTF2 {
                     // default is opaque
                     break;
                 case "MASK":
-                    babylonMaterial.albedoTexture.hasAlpha = true;
-                    babylonMaterial.useAlphaFromAlbedoTexture = false;
-                    break;
                 case "BLEND":
-                    babylonMaterial.albedoTexture.hasAlpha = true;
-                    babylonMaterial.useAlphaFromAlbedoTexture = true;
+                    if (colorFactor) {
+                        babylonMaterial.alpha = colorFactor[3];
+                    }
+
+                    if (babylonMaterial.albedoTexture) {
+                        babylonMaterial.albedoTexture.hasAlpha = true;
+                        babylonMaterial.useAlphaFromAlbedoTexture = (alphaMode === "BLEND");
+                    }
                     break;
                 default:
                     Tools.Warn("Invalid alpha mode '" + material.alphaMode + "'");

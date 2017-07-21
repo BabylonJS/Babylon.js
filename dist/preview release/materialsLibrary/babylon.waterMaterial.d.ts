@@ -72,6 +72,7 @@ declare module BABYLON {
         private _material;
         private _reflectionTransform;
         private _lastTime;
+        private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
         /**

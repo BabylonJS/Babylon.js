@@ -339,7 +339,7 @@ declare module BABYLON.GLTF2 {
         loadMaterial(index: number, assign: (material: Material) => void): void;
         createPbrMaterial(material: IGLTFMaterial): void;
         loadMaterialBaseProperties(material: IGLTFMaterial): void;
-        loadMaterialAlphaProperties(material: IGLTFMaterial): void;
+        loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void;
         loadTexture(textureInfo: IGLTFTextureInfo): Texture;
     }
 }
