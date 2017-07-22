@@ -68,6 +68,20 @@
         public static Repeat(value:number, length:number): number {
 			return value - Math.floor(value / length) * length;
         }
+
+        /**
+         * Normalize the value between 0.0 and 1.0 using min and max values
+         */
+        public static Normalize(value:number, min:number, max:number): number {
+            return (value - min) / (max - min);
+        }
+
+        /**
+         * Denormalize the value from 0.0 and 1.0 using min and max values
+         */
+        public static Denormalize(normalized:number, min:number, max:number): number {
+            return (normalized * (max - min) + min);
+        }
     }
 
 
