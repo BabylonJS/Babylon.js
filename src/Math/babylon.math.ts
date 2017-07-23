@@ -58,28 +58,28 @@
         }
 
         /**
-         * Loops the value, so that it is never larger than length and never smaller than 0.
-         * 
-         * This is similar to the modulo operator but it works with floating point numbers. 
-         * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
-         * With t = 5 and length = 2.5, the result would be 0.0. 
-         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
-         */
-        public static Repeat(value:number, length:number): number {
-			return value - Math.floor(value / length) * length;
+        * Loops the value, so that it is never larger than length and never smaller than 0.
+        * 
+        * This is similar to the modulo operator but it works with floating point numbers. 
+        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
+        * With t = 5 and length = 2.5, the result would be 0.0. 
+        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+        */
+        public static Repeat(value: number, length: number): number {
+            return value - Math.floor(value / length) * length;
         }
 
         /**
-         * Normalize the value between 0.0 and 1.0 using min and max values
-         */
-        public static Normalize(value:number, min:number, max:number): number {
+        * Normalize the value between 0.0 and 1.0 using min and max values
+        */
+        public static Normalize(value: number, min: number, max: number): number {
             return (value - min) / (max - min);
         }
 
         /**
-         * Denormalize the value from 0.0 and 1.0 using min and max values
-         */
-        public static Denormalize(normalized:number, min:number, max:number): number {
+        * Denormalize the value from 0.0 and 1.0 using min and max values
+        */
+        public static Denormalize(normalized: number, min: number, max: number): number {
             return (normalized * (max - min) + min);
         }
 
@@ -142,7 +142,7 @@
             if (Math.abs(target - current) <= maxDelta) {
                 result = target;
             } else {
-                result = current + BABYLON.MathTools.Sign(target - current) * maxDelta;
+                result = current + MathTools.Sign(target - current) * maxDelta;
             }
             return result;
         }
