@@ -1137,7 +1137,7 @@
          * @param object the object to get the class name from
          * @return the name of the class, will be "object" for a custom data type not using the @className decorator
          */
-        public static getClassName(object, isType: boolean = false): string {
+        public static GetClassName(object, isType: boolean = false): string {
             let name = null;
 
             if (!isType && object.getClassName) {

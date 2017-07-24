@@ -272,13 +272,13 @@
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 4;
-                    destArray[index] = MathTools.Clamp(srcData[srcPos]) * 255;
-                    destArray[index + 1] = MathTools.Clamp(srcData[srcPos + 1]) * 255;
-                    destArray[index + 2] = MathTools.Clamp(srcData[srcPos + 2]) * 255;
+                    destArray[index] = Scalar.Clamp(srcData[srcPos]) * 255;
+                    destArray[index + 1] = Scalar.Clamp(srcData[srcPos + 1]) * 255;
+                    destArray[index + 2] = Scalar.Clamp(srcData[srcPos + 2]) * 255;
                     if (DDSTools.StoreLODInAlphaChannel) {
                         destArray[index + 3] = lod;
                     } else {
-                        destArray[index + 3] = MathTools.Clamp(srcData[srcPos + 3]) * 255;
+                        destArray[index + 3] = Scalar.Clamp(srcData[srcPos + 3]) * 255;
                     }
                     index += 4;
                 }
@@ -294,13 +294,13 @@
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 4;
-                    destArray[index] = MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
-                    destArray[index + 1] = MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
-                    destArray[index + 2] = MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
+                    destArray[index] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
+                    destArray[index + 1] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
+                    destArray[index + 2] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
                     if (DDSTools.StoreLODInAlphaChannel) {
                         destArray[index + 3] = lod;
                     } else {
-                        destArray[index + 3] = MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
+                        destArray[index + 3] = Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
                     }
                     index += 4;
                 }

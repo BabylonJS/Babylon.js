@@ -41,7 +41,7 @@ module BABYLON {
             }
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "ArcRotateCameraMouseWheelInput";
         }
 
