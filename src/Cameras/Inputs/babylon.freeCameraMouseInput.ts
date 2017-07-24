@@ -15,7 +15,7 @@ module BABYLON {
         private previousPosition: { x: number, y: number };
 
         constructor(public touchEnabled = true) {
-        }
+        }           
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
@@ -129,13 +129,13 @@ module BABYLON {
             }
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "FreeCameraMouseInput";
         }
 
         getSimpleName() {
             return "mouse";
-        }
+        }      
     }
 
     CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;

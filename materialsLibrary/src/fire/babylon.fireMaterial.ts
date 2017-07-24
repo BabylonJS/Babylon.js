@@ -296,6 +296,10 @@ module BABYLON {
             return false;    
         }         
 
+        public getClassName(): string {
+            return "FireMaterial";
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();

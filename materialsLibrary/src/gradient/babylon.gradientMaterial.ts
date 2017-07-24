@@ -296,6 +296,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "GradientMaterial";
+        }              
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): GradientMaterial {
             return SerializationHelper.Parse(() => new GradientMaterial(source.name, scene), source, scene, rootUrl);
