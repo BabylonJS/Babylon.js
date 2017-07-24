@@ -98,6 +98,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: Scene): Mesh;
     }

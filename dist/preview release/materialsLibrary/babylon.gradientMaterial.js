@@ -244,6 +244,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.GradientMaterial";
             return serializationObject;
         };
+        GradientMaterial.prototype.getClassName = function () {
+            return "GradientMaterial";
+        };
         // Statics
         GradientMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GradientMaterial(source.name, scene); }, source, scene, rootUrl);

@@ -305,6 +305,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.LavaMaterial";
             return serializationObject;
         };
+        LavaMaterial.prototype.getClassName = function () {
+            return "LavaMaterial";
+        };
         // Statics
         LavaMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new LavaMaterial(source.name, scene); }, source, scene, rootUrl);

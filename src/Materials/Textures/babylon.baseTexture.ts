@@ -81,6 +81,10 @@
             return this.name;
         }
 
+        public getClassName(): string {
+            return "BaseTexture";
+        }             
+
         public animations = new Array<Animation>();
 
         /**

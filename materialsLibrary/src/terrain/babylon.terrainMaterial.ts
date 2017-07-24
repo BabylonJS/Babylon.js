@@ -420,6 +420,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "TerrainMaterial";
+        }
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): TerrainMaterial {
             return SerializationHelper.Parse(() => new TerrainMaterial(source.name, scene), source, scene, rootUrl);

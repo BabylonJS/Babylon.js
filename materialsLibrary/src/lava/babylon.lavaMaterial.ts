@@ -382,6 +382,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "LavaMaterial";
+        }
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
             return SerializationHelper.Parse(() => new LavaMaterial(source.name, scene), source, scene, rootUrl);

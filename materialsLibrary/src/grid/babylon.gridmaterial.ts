@@ -192,6 +192,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "GridMaterial";
+        }             
+
         public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
             return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
         }

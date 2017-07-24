@@ -245,6 +245,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.SimpleMaterial";
             return serializationObject;
         };
+        SimpleMaterial.prototype.getClassName = function () {
+            return "SimpleMaterial";
+        };
         // Statics
         SimpleMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new SimpleMaterial(source.name, scene); }, source, scene, rootUrl);
