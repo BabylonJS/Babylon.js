@@ -217,10 +217,10 @@ module BABYLON.GUI {
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
                     if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                        control.isVisible = false;
+                        control.notRenderable = true;
                         continue;
                     }
-                    control.isVisible = true;
+                    control.notRenderable = false;
                     control._moveToProjectedPosition(projectedPosition);
                 }
             }
