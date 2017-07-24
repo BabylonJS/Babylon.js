@@ -19,207 +19,6 @@ var __extends = (this && this.__extends) || (function () {
     BABYLON.ToGammaSpace = 1 / 2.2;
     BABYLON.ToLinearSpace = 2.2;
     BABYLON.Epsilon = 0.001;
-    var MathTools = (function () {
-        function MathTools() {
-        }
-        /**
-         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
-         */
-        MathTools.WithinEpsilon = function (a, b, epsilon) {
-            if (epsilon === void 0) { epsilon = 1.401298E-45; }
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
-        };
-        /**
-         * Returns a string : the upper case translation of the number i to hexadecimal.
-         */
-        MathTools.ToHex = function (i) {
-            var str = i.toString(16);
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-            return str.toUpperCase();
-        };
-        /**
-         * Returns -1 if value is negative and +1 is value is positive.
-         * Returns the value itself if it's equal to zero.
-         */
-        MathTools.Sign = function (value) {
-            value = +value; // convert to a number
-            if (value === 0 || isNaN(value))
-                return value;
-            return value > 0 ? 1 : -1;
-        };
-        /**
-         * Returns the value itself if it's between min and max.
-         * Returns min if the value is lower than min.
-         * Returns max if the value is greater than max.
-         */
-        MathTools.Clamp = function (value, min, max) {
-            if (min === void 0) { min = 0; }
-            if (max === void 0) { max = 1; }
-            return Math.min(max, Math.max(min, value));
-        };
-        /**
-         * Returns the log2 of value.
-         */
-        MathTools.Log2 = function (value) {
-            return Math.log(value) * Math.LOG2E;
-        };
-        /**
-        * Loops the value, so that it is never larger than length and never smaller than 0.
-        *
-        * This is similar to the modulo operator but it works with floating point numbers.
-        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
-        * With t = 5 and length = 2.5, the result would be 0.0.
-        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
-        */
-        MathTools.Repeat = function (value, length) {
-            return value - Math.floor(value / length) * length;
-        };
-        /**
-        * Normalize the value between 0.0 and 1.0 using min and max values
-        */
-        MathTools.Normalize = function (value, min, max) {
-            return (value - min) / (max - min);
-        };
-        /**
-        * Denormalize the value from 0.0 and 1.0 using min and max values
-        */
-        MathTools.Denormalize = function (normalized, min, max) {
-            return (normalized * (max - min) + min);
-        };
-        /**
-        * Clamps value between 0 and 1 and returns value.
-        */
-        MathTools.ClampValue = function (value) {
-            var result = 0;
-            if (value < 0.0) {
-                result = 0.0;
-            }
-            else if (value > 1.0) {
-                result = 1.0;
-            }
-            else {
-                result = value;
-            }
-            return result;
-        };
-        /**
-        * Calculates the shortest difference between two given angles given in degrees.
-        */
-        MathTools.DeltaAngle = function (current, target) {
-            var num = MathTools.Repeat(target - current, 360.0);
-            if (num > 180.0) {
-                num -= 360.0;
-            }
-            return num;
-        };
-        /**
-        * PingPongs the value t, so that it is never larger than length and never smaller than 0.
-        *
-        * The returned value will move back and forth between 0 and length
-        */
-        MathTools.PingPong = function (tx, length) {
-            var t = MathTools.Repeat(tx, length * 2.0);
-            return length - Math.abs(t - length);
-        };
-        /**
-        * Interpolates between min and max with smoothing at the limits.
-        *
-        * This function interpolates between min and max in a similar way to Lerp. However, the interpolation will gradually speed up
-        * from the start and slow down toward the end. This is useful for creating natural-looking animation, fading and other transitions.
-        */
-        MathTools.SmoothStep = function (from, to, tx) {
-            var t = MathTools.ClampValue(tx);
-            t = -2.0 * t * t * t + 3.0 * t * t;
-            return to * t + from * (1.0 - t);
-        };
-        /**
-        * Moves a value current towards target.
-        *
-        * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
-        * Negative values of maxDelta pushes the value away from target.
-        */
-        MathTools.MoveTowards = function (current, target, maxDelta) {
-            var result = 0;
-            if (Math.abs(target - current) <= maxDelta) {
-                result = target;
-            }
-            else {
-                result = current + MathTools.Sign(target - current) * maxDelta;
-            }
-            return result;
-        };
-        /**
-        * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
-        *
-        * Variables current and target are assumed to be in degrees. For optimization reasons, negative values of maxDelta
-        *  are not supported and may cause oscillation. To push current away from a target angle, add 180 to that angle instead.
-        */
-        MathTools.MoveTowardsAngle = function (current, target, maxDelta) {
-            var num = MathTools.DeltaAngle(current, target);
-            var result = 0;
-            if (-maxDelta < num && num < maxDelta) {
-                result = target;
-            }
-            else {
-                target = current + num;
-                result = MathTools.MoveTowards(current, target, maxDelta);
-            }
-            return result;
-        };
-        return MathTools;
-    }());
-    BABYLON.MathTools = MathTools;
-    var Scalar = (function () {
-        function Scalar() {
-        }
-        /**
-         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
-         */
-        Scalar.Lerp = function (start, end, amount) {
-            return start + ((end - start) * amount);
-        };
-        /**
-        * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
-        * The parameter t is clamped to the range [0, 1]. Variables a and b are assumed to be in degrees.
-        */
-        Scalar.LerpAngle = function (start, end, amount) {
-            var num = MathTools.Repeat(end - start, 360.0);
-            if (num > 180.0) {
-                num -= 360.0;
-            }
-            return start + num * MathTools.ClampValue(amount);
-        };
-        /**
-        * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
-        */
-        Scalar.InverseLerp = function (a, b, value) {
-            var result = 0;
-            if (a != b) {
-                result = MathTools.ClampValue((value - a) / (b - a));
-            }
-            else {
-                result = 0.0;
-            }
-            return result;
-        };
-        /**
-         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
-         */
-        Scalar.Hermite = function (value1, tangent1, value2, tangent2, amount) {
-            var squared = amount * amount;
-            var cubed = amount * squared;
-            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-            var part2 = (-2.0 * cubed) + (3.0 * squared);
-            var part3 = (cubed - (2.0 * squared)) + amount;
-            var part4 = cubed - squared;
-            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
-        };
-        return Scalar;
-    }());
-    BABYLON.Scalar = Scalar;
     var Color3 = (function () {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
@@ -406,7 +205,7 @@ var __extends = (this && this.__extends) || (function () {
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
-            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
+            return "#" + BABYLON.Scalar.ToHex(intR) + BABYLON.Scalar.ToHex(intG) + BABYLON.Scalar.ToHex(intB);
         };
         /**
          * Returns a new Color3 converted to linear space.
@@ -668,7 +467,7 @@ var __extends = (this && this.__extends) || (function () {
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
-            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
+            return "#" + BABYLON.Scalar.ToHex(intR) + BABYLON.Scalar.ToHex(intG) + BABYLON.Scalar.ToHex(intB) + BABYLON.Scalar.ToHex(intA);
         };
         /**
          * Returns a new Color4 converted to linear space.
@@ -974,7 +773,7 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector2.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
             if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
-            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
+            return otherVector && BABYLON.Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
         };
         // Properties
         /**
@@ -1361,7 +1160,7 @@ var __extends = (this && this.__extends) || (function () {
          */
         Vector3.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
             if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
-            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon) && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon);
+            return otherVector && BABYLON.Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && BABYLON.Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         };
         /**
          * Boolean : True if the current Vector3 coordinate equal the passed floats.
@@ -1779,7 +1578,7 @@ var __extends = (this && this.__extends) || (function () {
             source.y = -(source.y / viewportHeight * 2 - 1);
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
-            if (MathTools.WithinEpsilon(num, 1.0)) {
+            if (BABYLON.Scalar.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
             return vector;
@@ -1792,7 +1591,7 @@ var __extends = (this && this.__extends) || (function () {
             var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), 2 * source.z - 1.0);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
-            if (MathTools.WithinEpsilon(num, 1.0)) {
+            if (BABYLON.Scalar.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
             return vector;
@@ -2028,10 +1827,10 @@ var __extends = (this && this.__extends) || (function () {
         Vector4.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
             if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
             return otherVector
-                && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon)
-                && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon)
-                && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon)
-                && MathTools.WithinEpsilon(this.w, otherVector.w, epsilon);
+                && BABYLON.Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && BABYLON.Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && BABYLON.Scalar.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && BABYLON.Scalar.WithinEpsilon(this.w, otherVector.w, epsilon);
         };
         /**
          * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
@@ -4658,13 +4457,13 @@ var __extends = (this && this.__extends) || (function () {
             }
             if (va === undefined || va === null) {
                 var point;
-                if (!MathTools.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, BABYLON.Epsilon)) {
+                if (!BABYLON.Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, BABYLON.Epsilon)) {
                     point = new Vector3(0.0, -1.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, BABYLON.Epsilon)) {
+                else if (!BABYLON.Scalar.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, BABYLON.Epsilon)) {
                     point = new Vector3(1.0, 0.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, BABYLON.Epsilon)) {
+                else if (!BABYLON.Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, BABYLON.Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -4866,6 +4665,191 @@ var __extends = (this && this.__extends) || (function () {
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.math.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var Scalar = (function () {
+        function Scalar() {
+        }
+        /**
+         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
+         */
+        Scalar.WithinEpsilon = function (a, b, epsilon) {
+            if (epsilon === void 0) { epsilon = 1.401298E-45; }
+            var num = a - b;
+            return -epsilon <= num && num <= epsilon;
+        };
+        /**
+         * Returns a string : the upper case translation of the number i to hexadecimal.
+         */
+        Scalar.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
+        /**
+         * Returns -1 if value is negative and +1 is value is positive.
+         * Returns the value itself if it's equal to zero.
+         */
+        Scalar.Sign = function (value) {
+            value = +value; // convert to a number
+            if (value === 0 || isNaN(value))
+                return value;
+            return value > 0 ? 1 : -1;
+        };
+        /**
+         * Returns the value itself if it's between min and max.
+         * Returns min if the value is lower than min.
+         * Returns max if the value is greater than max.
+         */
+        Scalar.Clamp = function (value, min, max) {
+            if (min === void 0) { min = 0; }
+            if (max === void 0) { max = 1; }
+            return Math.min(max, Math.max(min, value));
+        };
+        /**
+         * Returns the log2 of value.
+         */
+        Scalar.Log2 = function (value) {
+            return Math.log(value) * Math.LOG2E;
+        };
+        /**
+        * Loops the value, so that it is never larger than length and never smaller than 0.
+        *
+        * This is similar to the modulo operator but it works with floating point numbers.
+        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
+        * With t = 5 and length = 2.5, the result would be 0.0.
+        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+        */
+        Scalar.Repeat = function (value, length) {
+            return value - Math.floor(value / length) * length;
+        };
+        /**
+        * Normalize the value between 0.0 and 1.0 using min and max values
+        */
+        Scalar.Normalize = function (value, min, max) {
+            return (value - min) / (max - min);
+        };
+        /**
+        * Denormalize the value from 0.0 and 1.0 using min and max values
+        */
+        Scalar.Denormalize = function (normalized, min, max) {
+            return (normalized * (max - min) + min);
+        };
+        /**
+        * Calculates the shortest difference between two given angles given in degrees.
+        */
+        Scalar.DeltaAngle = function (current, target) {
+            var num = Scalar.Repeat(target - current, 360.0);
+            if (num > 180.0) {
+                num -= 360.0;
+            }
+            return num;
+        };
+        /**
+        * PingPongs the value t, so that it is never larger than length and never smaller than 0.
+        *
+        * The returned value will move back and forth between 0 and length
+        */
+        Scalar.PingPong = function (tx, length) {
+            var t = Scalar.Repeat(tx, length * 2.0);
+            return length - Math.abs(t - length);
+        };
+        /**
+        * Interpolates between min and max with smoothing at the limits.
+        *
+        * This function interpolates between min and max in a similar way to Lerp. However, the interpolation will gradually speed up
+        * from the start and slow down toward the end. This is useful for creating natural-looking animation, fading and other transitions.
+        */
+        Scalar.SmoothStep = function (from, to, tx) {
+            var t = Scalar.Clamp(tx);
+            t = -2.0 * t * t * t + 3.0 * t * t;
+            return to * t + from * (1.0 - t);
+        };
+        /**
+        * Moves a value current towards target.
+        *
+        * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+        * Negative values of maxDelta pushes the value away from target.
+        */
+        Scalar.MoveTowards = function (current, target, maxDelta) {
+            var result = 0;
+            if (Math.abs(target - current) <= maxDelta) {
+                result = target;
+            }
+            else {
+                result = current + Scalar.Sign(target - current) * maxDelta;
+            }
+            return result;
+        };
+        /**
+        * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        *
+        * Variables current and target are assumed to be in degrees. For optimization reasons, negative values of maxDelta
+        *  are not supported and may cause oscillation. To push current away from a target angle, add 180 to that angle instead.
+        */
+        Scalar.MoveTowardsAngle = function (current, target, maxDelta) {
+            var num = Scalar.DeltaAngle(current, target);
+            var result = 0;
+            if (-maxDelta < num && num < maxDelta) {
+                result = target;
+            }
+            else {
+                target = current + num;
+                result = Scalar.MoveTowards(current, target, maxDelta);
+            }
+            return result;
+        };
+        /**
+            * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+            */
+        Scalar.Lerp = function (start, end, amount) {
+            return start + ((end - start) * amount);
+        };
+        /**
+        * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        * The parameter t is clamped to the range [0, 1]. Variables a and b are assumed to be in degrees.
+        */
+        Scalar.LerpAngle = function (start, end, amount) {
+            var num = Scalar.Repeat(end - start, 360.0);
+            if (num > 180.0) {
+                num -= 360.0;
+            }
+            return start + num * Scalar.Clamp(amount);
+        };
+        /**
+        * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
+        */
+        Scalar.InverseLerp = function (a, b, value) {
+            var result = 0;
+            if (a != b) {
+                result = Scalar.Clamp((value - a) / (b - a));
+            }
+            else {
+                result = 0.0;
+            }
+            return result;
+        };
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        Scalar.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+            var squared = amount * amount;
+            var cubed = amount * squared;
+            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+            var part2 = (-2.0 * cubed) + (3.0 * squared);
+            var part3 = (cubed - (2.0 * squared)) + amount;
+            var part4 = cubed - squared;
+            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+        };
+        return Scalar;
+    }());
+    BABYLON.Scalar = Scalar;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.math.scalar.js.map
 
 
 
@@ -9971,7 +9955,7 @@ var BABYLON;
                     var smoothness = i / (mipSlices - 1);
                     var roughness = 1 - smoothness;
                     var minLODIndex = offset; // roughness = 0
-                    var maxLODIndex = BABYLON.MathTools.Log2(width) * scale + offset; // roughness = 1
+                    var maxLODIndex = BABYLON.Scalar.Log2(width) * scale + offset; // roughness = 1
                     var lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     var mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
                     var glTextureFromLod = gl.createTexture();
@@ -52397,7 +52381,7 @@ var BABYLON;
                         outputLiminance = _this._hdrCurrentLuminance;
                     }
                 }
-                outputLiminance = BABYLON.MathTools.Clamp(outputLiminance, _this.hdrMinimumLuminance, 1e20);
+                outputLiminance = BABYLON.Scalar.Clamp(outputLiminance, _this.hdrMinimumLuminance, 1e20);
                 effect.setFloat("averageLuminance", outputLiminance);
                 lastTime = time;
                 _this._currentDepthOfFieldSource = _this.hdrFinalPostProcess;
@@ -56479,9 +56463,9 @@ var BABYLON;
                             }
                             // Handle Gamma space textures.
                             if (cubeInfo.gammaSpace) {
-                                r = Math.pow(BABYLON.MathTools.Clamp(r), BABYLON.ToLinearSpace);
-                                g = Math.pow(BABYLON.MathTools.Clamp(g), BABYLON.ToLinearSpace);
-                                b = Math.pow(BABYLON.MathTools.Clamp(b), BABYLON.ToLinearSpace);
+                                r = Math.pow(BABYLON.Scalar.Clamp(r), BABYLON.ToLinearSpace);
+                                g = Math.pow(BABYLON.Scalar.Clamp(g), BABYLON.ToLinearSpace);
+                                b = Math.pow(BABYLON.Scalar.Clamp(b), BABYLON.ToLinearSpace);
                             }
                             var color = new BABYLON.Color3(r, g, b);
                             sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
@@ -61009,14 +60993,14 @@ var BABYLON;
                 for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
                         var srcPos = (x + y * width) * 4;
-                        destArray[index] = BABYLON.MathTools.Clamp(srcData[srcPos]) * 255;
-                        destArray[index + 1] = BABYLON.MathTools.Clamp(srcData[srcPos + 1]) * 255;
-                        destArray[index + 2] = BABYLON.MathTools.Clamp(srcData[srcPos + 2]) * 255;
+                        destArray[index] = BABYLON.Scalar.Clamp(srcData[srcPos]) * 255;
+                        destArray[index + 1] = BABYLON.Scalar.Clamp(srcData[srcPos + 1]) * 255;
+                        destArray[index + 2] = BABYLON.Scalar.Clamp(srcData[srcPos + 2]) * 255;
                         if (DDSTools.StoreLODInAlphaChannel) {
                             destArray[index + 3] = lod;
                         }
                         else {
-                            destArray[index + 3] = BABYLON.MathTools.Clamp(srcData[srcPos + 3]) * 255;
+                            destArray[index + 3] = BABYLON.Scalar.Clamp(srcData[srcPos + 3]) * 255;
                         }
                         index += 4;
                     }
@@ -61030,14 +61014,14 @@ var BABYLON;
                 for (var y = 0; y < height; y++) {
                     for (var x = 0; x < width; x++) {
                         var srcPos = (x + y * width) * 4;
-                        destArray[index] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
-                        destArray[index + 1] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
-                        destArray[index + 2] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
+                        destArray[index] = BABYLON.Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos])) * 255;
+                        destArray[index + 1] = BABYLON.Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 1])) * 255;
+                        destArray[index + 2] = BABYLON.Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 2])) * 255;
                         if (DDSTools.StoreLODInAlphaChannel) {
                             destArray[index + 3] = lod;
                         }
                         else {
-                            destArray[index + 3] = BABYLON.MathTools.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
+                            destArray[index + 3] = BABYLON.Scalar.Clamp(DDSTools._FromHalfFloat(srcData[srcPos + 3])) * 255;
                         }
                         index += 4;
                     }
