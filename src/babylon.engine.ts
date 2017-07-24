@@ -3261,7 +3261,7 @@
                     let roughness = 1 - smoothness;
 
                     let minLODIndex = offset; // roughness = 0
-                    let maxLODIndex = MathTools.Log2(width) * scale + offset; // roughness = 1
+                    let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
