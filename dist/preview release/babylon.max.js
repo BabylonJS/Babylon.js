@@ -20661,7 +20661,7 @@ var BABYLON;
             this._updateBoundingInfo();
             return this;
         };
-        Mesh.prototype._createGlobalSubMesh = function () {
+        Mesh.prototype._createGlobalSubMesh = function (force) {
             var totalVertices = this.getTotalVertices();
             if (!totalVertices || !this.getIndices()) {
                 return null;
@@ -20670,15 +20670,20 @@ var BABYLON;
             if (this.subMeshes && this.subMeshes.length > 0) {
                 var totalIndices = this.getIndices().length;
                 var needToRecreate = false;
-                for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
-                    var submesh = _a[_i];
-                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
-                        needToRecreate = true;
-                        break;
-                    }
-                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
-                        needToRecreate = true;
-                        break;
+                if (force) {
+                    needToRecreate = true;
+                }
+                else {
+                    for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                        var submesh = _a[_i];
+                        if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                            needToRecreate = true;
+                            break;
+                        }
+                        if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                            needToRecreate = true;
+                            break;
+                        }
                     }
                 }
                 if (!needToRecreate) {
@@ -26876,15 +26881,15 @@ var BABYLON;
             var face = 0;
             for (var index = 0; index < normals.length; index += 3) {
                 //Edge Face  no. 1
-                if (Math.abs(normals[index + 1]) == 0) {
+                if (Math.abs(normals[index + 1]) < 0.001) {
                     face = 1;
                 }
                 //Top Face  no. 0
-                if (normals[index + 1] == 1) {
+                if (Math.abs(normals[index + 1] - 1) < 0.001) {
                     face = 0;
                 }
                 //Bottom Face  no. 2
-                if (normals[index + 1] == -1) {
+                if (Math.abs(normals[index + 1] + 1) < 0.001) {
                     face = 2;
                 }
                 idx = index / 3;
@@ -27776,7 +27781,7 @@ var BABYLON;
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
                     mesh.computeWorldMatrix(true);
                 }
             }
@@ -27915,7 +27920,7 @@ var BABYLON;
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
             for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._createGlobalSubMesh();
+                meshes[index]._createGlobalSubMesh(true);
             }
             this.notifyUpdate();
         };
@@ -28011,7 +28016,7 @@ var BABYLON;
                         this.updateExtend(this._vertexBuffers[kind].getData());
                     }
                     mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
                     //bounding info was just created again, world matrix should be applied again.
                     mesh._updateBoundingInfo();
                 }

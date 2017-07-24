@@ -38,7 +38,7 @@ module BABYLON.GUI {
 
         // While being a container, the button behaves like a control.
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this.isHitTestVisible || !this.isVisible) {
+            if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                 return false;
             }
 
