@@ -58,15 +58,111 @@
         }
 
         /**
-         * Loops the value, so that it is never larger than length and never smaller than 0.
-         * 
-         * This is similar to the modulo operator but it works with floating point numbers. 
-         * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
-         * With t = 5 and length = 2.5, the result would be 0.0. 
-         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
-         */
-        public static Repeat(value:number, length:number): number {
-			return value - Math.floor(value / length) * length;
+        * Loops the value, so that it is never larger than length and never smaller than 0.
+        * 
+        * This is similar to the modulo operator but it works with floating point numbers. 
+        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
+        * With t = 5 and length = 2.5, the result would be 0.0. 
+        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+        */
+        public static Repeat(value: number, length: number): number {
+            return value - Math.floor(value / length) * length;
+        }
+
+        /**
+        * Normalize the value between 0.0 and 1.0 using min and max values
+        */
+        public static Normalize(value: number, min: number, max: number): number {
+            return (value - min) / (max - min);
+        }
+
+        /**
+        * Denormalize the value from 0.0 and 1.0 using min and max values
+        */
+        public static Denormalize(normalized: number, min: number, max: number): number {
+            return (normalized * (max - min) + min);
+        }
+
+        /**
+        * Clamps value between 0 and 1 and returns value.
+        */
+        public static ClampValue(value: number): number {
+            var result: number = 0;
+            if (value < 0.0) {
+                result = 0.0;
+            } else if (value > 1.0) {
+                result = 1.0;
+            } else {
+                result = value;
+            }
+            return result;
+        }
+
+        /**
+        * Calculates the shortest difference between two given angles given in degrees.
+        */
+        public static DeltaAngle(current: number, target: number): number {
+            var num: number = MathTools.Repeat(target - current, 360.0);
+            if (num > 180.0) {
+                num -= 360.0;
+            }
+            return num;
+        }
+
+        /**
+        * PingPongs the value t, so that it is never larger than length and never smaller than 0.
+        * 
+        * The returned value will move back and forth between 0 and length
+        */
+        public static PingPong(tx: number, length: number): number {
+            var t: number = MathTools.Repeat(tx, length * 2.0);
+            return length - Math.abs(t - length);
+        }
+
+        /**
+        * Interpolates between min and max with smoothing at the limits.
+        *
+        * This function interpolates between min and max in a similar way to Lerp. However, the interpolation will gradually speed up
+        * from the start and slow down toward the end. This is useful for creating natural-looking animation, fading and other transitions.
+        */
+        public static SmoothStep(from: number, to: number, tx: number): number {
+            var t: number = MathTools.ClampValue(tx);
+            t = -2.0 * t * t * t + 3.0 * t * t;
+            return to * t + from * (1.0 - t);
+        }
+
+        /**
+        * Moves a value current towards target.
+        * 
+        * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+        * Negative values of maxDelta pushes the value away from target.
+        */
+        public static MoveTowards(current: number, target: number, maxDelta: number): number {
+            var result: number = 0;
+            if (Math.abs(target - current) <= maxDelta) {
+                result = target;
+            } else {
+                result = current + MathTools.Sign(target - current) * maxDelta;
+            }
+            return result;
+        }
+
+        /**
+        * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        *
+        * Variables current and target are assumed to be in degrees. For optimization reasons, negative values of maxDelta
+        *  are not supported and may cause oscillation. To push current away from a target angle, add 180 to that angle instead.
+        */
+        public static MoveTowardsAngle(current: number, target: number, maxDelta: number): number {
+            var num: number = MathTools.DeltaAngle(current, target);
+            var result: number = 0;
+            if (-maxDelta < num && num < maxDelta) {
+                result = target;
+            } else {
+                target = current + num;
+                result = MathTools.MoveTowards(current, target, maxDelta);
+            }
+            return result;
         }
     }
 
@@ -77,6 +173,31 @@
          */
         public static Lerp(start: number, end: number, amount: number): number {
             return start + ((end - start) * amount);
+        }
+
+        /**
+        * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        * The parameter t is clamped to the range [0, 1]. Variables a and b are assumed to be in degrees.
+        */
+        public static LerpAngle(start: number, end: number, amount: number): number {
+            var num: number = MathTools.Repeat(end - start, 360.0);
+            if (num > 180.0) {
+                num -= 360.0;
+            }
+            return start + num * MathTools.ClampValue(amount);
+        }
+
+        /**
+        * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
+        */
+        public static InverseLerp(a: number, b: number, value: number): number {
+            var result: number = 0;
+            if (a != b) {
+                result = MathTools.ClampValue((value - a) / (b - a));
+            } else {
+                result = 0.0;
+            }
+            return result;
         }
 
         /**
