@@ -296,6 +296,10 @@ module BABYLON {
             super.dispose(forceDisposeEffect);
         }
 
+        public getClassName(): string {
+            return "CellMaterial";
+        }
+
         public clone(name: string): CellMaterial {
             return SerializationHelper.Clone<CellMaterial>(() => new CellMaterial(name, this.getScene()), this);
         }

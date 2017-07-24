@@ -312,6 +312,10 @@
             };
         }
 
+        public getClassName(): string {
+            return "ImageProcessingPostProcess";
+        }           
+
         protected _updateParameters(): void {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
             this.imageProcessingConfiguration.prepareDefines(this._defines);

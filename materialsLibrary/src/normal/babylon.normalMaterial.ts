@@ -333,6 +333,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "NormalMaterial";
+        }        
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): NormalMaterial {
             return SerializationHelper.Parse(() => new NormalMaterial(source.name, scene), source, scene, rootUrl);

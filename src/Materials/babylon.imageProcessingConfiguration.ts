@@ -287,6 +287,10 @@ module BABYLON {
             this.onUpdateParameters.notifyObservers(this);
         }
 
+        public getClassName(): string {
+            return "ImageProcessingConfiguration";
+        }                 
+
         /**
          * Prepare the list of uniforms associated with the Image Processing effects.
          * @param uniformsList The list of uniforms used in the effect

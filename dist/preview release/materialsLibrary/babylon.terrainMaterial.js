@@ -317,6 +317,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.TerrainMaterial";
             return serializationObject;
         };
+        TerrainMaterial.prototype.getClassName = function () {
+            return "TerrainMaterial";
+        };
         // Statics
         TerrainMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new TerrainMaterial(source.name, scene); }, source, scene, rootUrl);

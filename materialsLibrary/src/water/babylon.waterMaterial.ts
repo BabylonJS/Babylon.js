@@ -614,6 +614,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "WaterMaterial";
+        }        
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
             return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);

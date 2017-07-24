@@ -2479,7 +2479,7 @@ var INSPECTOR;
          */
         Helpers.GET_TYPE = function (obj) {
             if (obj != null && obj != undefined) {
-                var classname = BABYLON.Tools.getClassName(obj);
+                var classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
                     classname = obj.constructor.name;
                     // classname is undefined in IE11

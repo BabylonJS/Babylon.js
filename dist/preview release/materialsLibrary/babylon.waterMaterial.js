@@ -498,6 +498,9 @@ var BABYLON;
             serializationObject.refractionTexture.isRenderTarget = true;
             return serializationObject;
         };
+        WaterMaterial.prototype.getClassName = function () {
+            return "WaterMaterial";
+        };
         // Statics
         WaterMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);

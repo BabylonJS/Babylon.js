@@ -38,6 +38,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): FurMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial;
         static GenerateTexture(name: string, scene: Scene): DynamicTexture;
         static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[];

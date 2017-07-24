@@ -24,6 +24,10 @@ module BABYLON {
             this._cameras = [];
         }
 
+        public getClassName(): string {
+            return "PostProcessRenderPipeline";
+        }        
+
         public get isSupported(): boolean {
             for (var renderEffectName in this._renderEffects) {
                 if (!this._renderEffects[renderEffectName].isSupported) {

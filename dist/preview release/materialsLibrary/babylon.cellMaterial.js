@@ -239,6 +239,9 @@ var BABYLON;
             }
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
+        CellMaterial.prototype.getClassName = function () {
+            return "CellMaterial";
+        };
         CellMaterial.prototype.clone = function (name) {
             var _this = this;
             return BABYLON.SerializationHelper.Clone(function () { return new CellMaterial(name, _this.getScene()); }, this);

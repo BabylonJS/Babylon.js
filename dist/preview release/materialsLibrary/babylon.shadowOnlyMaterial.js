@@ -172,6 +172,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
             return serializationObject;
         };
+        ShadowOnlyMaterial.prototype.getClassName = function () {
+            return "ShadowOnlyMaterial";
+        };
         // Statics
         ShadowOnlyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new ShadowOnlyMaterial(source.name, scene); }, source, scene, rootUrl);
