@@ -474,7 +474,9 @@
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
-        public abstract getClassName(): string;
+        public getClassName(): string {
+            return "PBRBaseMaterial";
+        }  
 
         @serialize()
         public get useLogarithmicDepth(): boolean {

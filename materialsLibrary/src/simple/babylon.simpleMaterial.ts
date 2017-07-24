@@ -299,6 +299,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "SimpleMaterial";
+        }               
+        
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
             return SerializationHelper.Parse(() => new SimpleMaterial(source.name, scene), source, scene, rootUrl);

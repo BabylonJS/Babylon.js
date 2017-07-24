@@ -48,7 +48,7 @@ module BABYLON {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "ArcRotateCameraVRDeviceOrientationInput";
         }
 

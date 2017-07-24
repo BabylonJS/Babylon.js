@@ -198,6 +198,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "ShadowOnlyMaterial";
+        }               
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial {
             return SerializationHelper.Parse(() => new ShadowOnlyMaterial(source.name, scene), source, scene, rootUrl);
