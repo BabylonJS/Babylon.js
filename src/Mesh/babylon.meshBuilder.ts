@@ -817,6 +817,8 @@
 			var polygon = polygonTriangulation.build(options.updatable, depth);
             polygon.sideOrientation = options.sideOrientation;
 			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
+            polygon.dispose();
+            var polygon = new Mesh(name, scene);
             vertexData.applyToMesh(polygon, options.updatable);			
 			
             return polygon;

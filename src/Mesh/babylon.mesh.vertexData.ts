@@ -1646,15 +1646,15 @@
             var face: number = 0;
             for (var index = 0; index < normals.length; index += 3) { 
                 //Edge Face  no. 1
-                if(Math.abs(normals[index + 1]) == 0) {
+                if(Math.abs(normals[index + 1]) < 0.001) {
                    face = 1; 
                 }
                 //Top Face  no. 0
-                if(normals[index + 1] == 1) {
+                if(Math.abs(normals[index + 1] - 1) < 0.001 ) {
                    face = 0; 
                 }
                 //Bottom Face  no. 2
-                if(normals[index + 1] == -1) {
+                if(Math.abs(normals[index + 1] + 1) < 0.001 ) {
                    face = 2; 
                 }
                 idx = index / 3;
