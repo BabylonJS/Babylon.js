@@ -8075,6 +8075,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine.prototype, "performanceMonitor", {
+            get: function () {
+                return this._performanceMonitor;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine.prototype, "texturesSupported", {
             get: function () {
                 return this._texturesSupported;
