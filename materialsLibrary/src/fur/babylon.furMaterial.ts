@@ -430,6 +430,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "FurMaterial";
+        }          
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
             var material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);

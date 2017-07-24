@@ -36,6 +36,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): TerrainMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): TerrainMaterial;
     }
 }

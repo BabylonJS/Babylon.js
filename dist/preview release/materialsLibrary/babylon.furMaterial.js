@@ -332,6 +332,9 @@ var BABYLON;
             }
             return serializationObject;
         };
+        FurMaterial.prototype.getClassName = function () {
+            return "FurMaterial";
+        };
         // Statics
         FurMaterial.Parse = function (source, scene, rootUrl) {
             var material = BABYLON.SerializationHelper.Parse(function () { return new FurMaterial(source.name, scene); }, source, scene, rootUrl);

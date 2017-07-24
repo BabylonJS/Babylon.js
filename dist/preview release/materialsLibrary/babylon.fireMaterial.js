@@ -237,6 +237,9 @@ var BABYLON;
             }
             return false;
         };
+        FireMaterial.prototype.getClassName = function () {
+            return "FireMaterial";
+        };
         FireMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();

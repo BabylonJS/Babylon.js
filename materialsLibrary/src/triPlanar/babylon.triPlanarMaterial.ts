@@ -411,6 +411,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "TriPlanarMaterial";
+        }
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): TriPlanarMaterial {
             return SerializationHelper.Parse(() => new TriPlanarMaterial(source.name, scene), source, scene, rootUrl);

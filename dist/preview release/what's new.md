@@ -5,6 +5,7 @@
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
+- Better serialization support ([deltakosh](https://github.com/deltakosh))
 - Introduced `performanceMonitor` class to get better FPS analysis ([deltakosh](https://github.com/deltakosh))
 - GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))

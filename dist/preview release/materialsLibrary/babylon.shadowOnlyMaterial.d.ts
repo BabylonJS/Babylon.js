@@ -12,6 +12,7 @@ declare module BABYLON {
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial;
     }
 }

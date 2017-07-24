@@ -312,6 +312,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.TriPlanarMaterial";
             return serializationObject;
         };
+        TriPlanarMaterial.prototype.getClassName = function () {
+            return "TriPlanarMaterial";
+        };
         // Statics
         TriPlanarMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new TriPlanarMaterial(source.name, scene); }, source, scene, rootUrl);

@@ -4857,13 +4857,59 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var __decoratorInitialStore = {};
+    var __mergedStore = {};
+    function getDirectStore(target) {
+        var classKey = target.getClassName();
+        if (!__decoratorInitialStore[classKey]) {
+            __decoratorInitialStore[classKey] = {};
+        }
+        return __decoratorInitialStore[classKey];
+    }
+    /**
+     * Return the list of properties flagged as serializable
+     * @param target: host object
+     */
+    function getMergedStore(target) {
+        var classKey = target.getClassName();
+        if (__mergedStore[classKey]) {
+            return __mergedStore[classKey];
+        }
+        __mergedStore[classKey] = {};
+        var store = __mergedStore[classKey];
+        var currentTarget = target;
+        var currentKey = classKey;
+        while (currentKey) {
+            var initialStore = __decoratorInitialStore[currentKey];
+            for (var property in initialStore) {
+                store[property] = initialStore[property];
+            }
+            var parent_1 = void 0;
+            var done = false;
+            do {
+                parent_1 = Object.getPrototypeOf(currentTarget);
+                if (!parent_1.getClassName) {
+                    done = true;
+                    break;
+                }
+                if (parent_1.getClassName() !== currentKey) {
+                    break;
+                }
+                currentTarget = parent_1;
+            } while (parent_1);
+            if (done) {
+                break;
+            }
+            currentKey = parent_1.getClassName();
+            currentTarget = parent_1;
+        }
+        return store;
+    }
     function generateSerializableMember(type, sourceName) {
         return function (target, propertyKey) {
-            if (!target.__serializableMembers) {
-                target.__serializableMembers = {};
-            }
-            if (!target.__serializableMembers[propertyKey]) {
-                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            var classStore = getDirectStore(target);
+            if (!classStore[propertyKey]) {
+                classStore[propertyKey] = { type: type, sourceName: sourceName };
             }
         };
     }
@@ -4941,9 +4987,10 @@ var BABYLON;
             if (BABYLON.Tags) {
                 serializationObject.tags = BABYLON.Tags.GetTags(entity);
             }
+            var serializedProperties = getMergedStore(entity);
             // Properties
-            for (var property in entity.__serializableMembers) {
-                var propertyDescriptor = entity.__serializableMembers[property];
+            for (var property in serializedProperties) {
+                var propertyDescriptor = serializedProperties[property];
                 var targetPropertyName = propertyDescriptor.sourceName || property;
                 var propertyType = propertyDescriptor.type;
                 var sourceProperty = entity[property];
@@ -4990,9 +5037,10 @@ var BABYLON;
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(destination, source.tags);
             }
+            var classStore = getMergedStore(destination);
             // Properties
-            for (var property in destination.__serializableMembers) {
-                var propertyDescriptor = destination.__serializableMembers[property];
+            for (var property in classStore) {
+                var propertyDescriptor = classStore[property];
                 var sourceProperty = source[propertyDescriptor.sourceName || property];
                 var propertyType = propertyDescriptor.type;
                 if (sourceProperty !== undefined && sourceProperty !== null) {
@@ -5038,9 +5086,10 @@ var BABYLON;
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(destination, source.tags);
             }
+            var classStore = getMergedStore(destination);
             // Properties
-            for (var property in destination.__serializableMembers) {
-                var propertyDescriptor = destination.__serializableMembers[property];
+            for (var property in classStore) {
+                var propertyDescriptor = classStore[property];
                 var sourceProperty = source[property];
                 var propertyType = propertyDescriptor.type;
                 if (sourceProperty !== undefined && sourceProperty !== null) {
@@ -6309,7 +6358,7 @@ var BABYLON;
          * @param object the object to get the class name from
          * @return the name of the class, will be "object" for a custom data type not using the @className decorator
          */
-        Tools.getClassName = function (object, isType) {
+        Tools.GetClassName = function (object, isType) {
             if (isType === void 0) { isType = false; }
             var name = null;
             if (!isType && object.getClassName) {
@@ -19339,6 +19388,9 @@ var BABYLON;
         BaseTexture.prototype.toString = function () {
             return this.name;
         };
+        BaseTexture.prototype.getClassName = function () {
+            return "BaseTexture";
+        };
         Object.defineProperty(BaseTexture.prototype, "onDispose", {
             set: function (callback) {
                 if (this._onDisposeObserver) {
@@ -19890,6 +19942,9 @@ var BABYLON;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             }
             return serializationObject;
+        };
+        Texture.prototype.getClassName = function () {
+            return "Texture";
         };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError, format) {
@@ -30995,6 +31050,9 @@ var BABYLON;
                 _this._markAllSubMeshesAsImageProcessingDirty();
             });
         };
+        PBRBaseMaterial.prototype.getClassName = function () {
+            return "PBRBaseMaterial";
+        };
         Object.defineProperty(PBRBaseMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;
@@ -31912,6 +31970,9 @@ var BABYLON;
                     activeTextures.push(this.occlusionTexture);
                 }
                 return activeTextures;
+            };
+            PBRBaseSimpleMaterial.prototype.getClassName = function () {
+                return "PBRBaseSimpleMaterial";
             };
             return PBRBaseSimpleMaterial;
         }(BABYLON.PBRBaseMaterial));
@@ -32895,7 +32956,7 @@ var BABYLON;
         CameraInputsManager.prototype.removeByType = function (inputType) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getTypeName() === inputType) {
+                if (input.getClassName() === inputType) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                     this.rebuildInputCheck();
@@ -32956,7 +33017,7 @@ var BABYLON;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 var res = BABYLON.SerializationHelper.Serialize(input);
-                inputs[input.getTypeName()] = res;
+                inputs[input.getClassName()] = res;
             }
             serializedCamera.inputsmgr = inputs;
         };
@@ -32976,7 +33037,7 @@ var BABYLON;
             else {
                 //2016-03-08 this part is for managing backward compatibility
                 for (var n in this.attached) {
-                    var construct = BABYLON.CameraInputTypes[this.attached[n].getTypeName()];
+                    var construct = BABYLON.CameraInputTypes[this.attached[n].getClassName()];
                     if (construct) {
                         var input = BABYLON.SerializationHelper.Parse(function () { return new construct(); }, parsedCamera, null);
                         this.remove(this.attached[n]);
@@ -33095,7 +33156,7 @@ var BABYLON;
                 this.previousPosition = null;
             }
         };
-        FreeCameraMouseInput.prototype.getTypeName = function () {
+        FreeCameraMouseInput.prototype.getClassName = function () {
             return "FreeCameraMouseInput";
         };
         FreeCameraMouseInput.prototype.getSimpleName = function () {
@@ -33205,7 +33266,7 @@ var BABYLON;
                 }
             }
         };
-        FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
+        FreeCameraKeyboardMoveInput.prototype.getClassName = function () {
             return "FreeCameraKeyboardMoveInput";
         };
         FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
@@ -33852,7 +33913,7 @@ var BABYLON;
                 }
             }
         };
-        ArcRotateCameraKeyboardMoveInput.prototype.getTypeName = function () {
+        ArcRotateCameraKeyboardMoveInput.prototype.getClassName = function () {
             return "ArcRotateCameraKeyboardMoveInput";
         };
         ArcRotateCameraKeyboardMoveInput.prototype.getSimpleName = function () {
@@ -33916,7 +33977,7 @@ var BABYLON;
                 this._wheel = null;
             }
         };
-        ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {
+        ArcRotateCameraMouseWheelInput.prototype.getClassName = function () {
             return "ArcRotateCameraMouseWheelInput";
         };
         ArcRotateCameraMouseWheelInput.prototype.getSimpleName = function () {
@@ -34117,7 +34178,7 @@ var BABYLON;
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
-        ArcRotateCameraPointersInput.prototype.getTypeName = function () {
+        ArcRotateCameraPointersInput.prototype.getClassName = function () {
             return "ArcRotateCameraPointersInput";
         };
         ArcRotateCameraPointersInput.prototype.getSimpleName = function () {
@@ -48734,7 +48795,7 @@ var BABYLON;
                 }
             }
         };
-        FreeCameraTouchInput.prototype.getTypeName = function () {
+        FreeCameraTouchInput.prototype.getClassName = function () {
             return "FreeCameraTouchInput";
         };
         FreeCameraTouchInput.prototype.getSimpleName = function () {
@@ -49288,7 +49349,7 @@ var BABYLON;
                 }
             }
         };
-        FreeCameraGamepadInput.prototype.getTypeName = function () {
+        FreeCameraGamepadInput.prototype.getClassName = function () {
             return "FreeCameraGamepadInput";
         };
         FreeCameraGamepadInput.prototype.getSimpleName = function () {
@@ -49361,7 +49422,7 @@ var BABYLON;
                 }
             }
         };
-        ArcRotateCameraGamepadInput.prototype.getTypeName = function () {
+        ArcRotateCameraGamepadInput.prototype.getClassName = function () {
             return "ArcRotateCameraGamepadInput";
         };
         ArcRotateCameraGamepadInput.prototype.getSimpleName = function () {
@@ -50850,6 +50911,9 @@ var BABYLON;
             this._renderEffectsForIsolatedPass = new Array();
             this._cameras = [];
         }
+        PostProcessRenderPipeline.prototype.getClassName = function () {
+            return "PostProcessRenderPipeline";
+        };
         Object.defineProperty(PostProcessRenderPipeline.prototype, "isSupported", {
             get: function () {
                 for (var renderEffectName in this._renderEffects) {
@@ -53375,6 +53439,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        VolumetricLightScatteringPostProcess.prototype.getClassName = function () {
+            return "VolumetricLightScatteringPostProcess";
+        };
         VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
             // Render this.mesh as default
@@ -54107,6 +54174,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        ImageProcessingPostProcess.prototype.getClassName = function () {
+            return "ImageProcessingPostProcess";
+        };
         ImageProcessingPostProcess.prototype._updateParameters = function () {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
             this.imageProcessingConfiguration.prepareDefines(this._defines);
@@ -63091,6 +63161,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        ColorCurves.prototype.getClassName = function () {
+            return "ColorCurves";
+        };
         /**
          * Binds the color curves to the shader.
          * @param colorCurves The color curve to bind
@@ -63910,7 +63983,7 @@ var BABYLON;
             this._camera.rotationQuaternion.z *= -1;
             this._camera.rotationQuaternion.w *= -1;
         };
-        FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
+        FreeCameraDeviceOrientationInput.prototype.getClassName = function () {
             return "FreeCameraDeviceOrientationInput";
         };
         FreeCameraDeviceOrientationInput.prototype.getSimpleName = function () {
@@ -63961,7 +64034,7 @@ var BABYLON;
         ArcRotateCameraVRDeviceOrientationInput.prototype.detachControl = function (element) {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
-        ArcRotateCameraVRDeviceOrientationInput.prototype.getTypeName = function () {
+        ArcRotateCameraVRDeviceOrientationInput.prototype.getClassName = function () {
             return "ArcRotateCameraVRDeviceOrientationInput";
         };
         ArcRotateCameraVRDeviceOrientationInput.prototype.getSimpleName = function () {
@@ -65012,7 +65085,7 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
             this._rightjoystick.releaseCanvas();
         };
-        FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
+        FreeCameraVirtualJoystickInput.prototype.getClassName = function () {
             return "FreeCameraVirtualJoystickInput";
         };
         FreeCameraVirtualJoystickInput.prototype.getSimpleName = function () {
@@ -67975,6 +68048,9 @@ var BABYLON;
          */
         ImageProcessingConfiguration.prototype._updateParameters = function () {
             this.onUpdateParameters.notifyObservers(this);
+        };
+        ImageProcessingConfiguration.prototype.getClassName = function () {
+            return "ImageProcessingConfiguration";
         };
         /**
          * Prepare the list of uniforms associated with the Image Processing effects.
