@@ -594,7 +594,7 @@
                     }
                 }
 
-                outputLiminance = MathTools.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
+                outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
 
                 effect.setFloat("averageLuminance", outputLiminance);
 
