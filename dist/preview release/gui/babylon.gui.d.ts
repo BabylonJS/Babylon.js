@@ -94,6 +94,7 @@ declare module BABYLON.GUI {
         readonly isPercentage: boolean;
         readonly isPixel: boolean;
         readonly internalValue: number;
+        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         getValue(host: AdvancedDynamicTexture): number;
         toString(host: AdvancedDynamicTexture): string;
         fromString(source: string | number): boolean;
@@ -575,5 +576,27 @@ declare module BABYLON.GUI {
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerUp(coordinates: Vector2): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class InputText extends Control {
+        name: string;
+        private _text;
+        private _background;
+        private _thickness;
+        private _margin;
+        private _autoStretchWidth;
+        private _maxWidth;
+        maxWidth: string | number;
+        margin: string;
+        autoStretchWidth: boolean;
+        thickness: number;
+        background: string;
+        text: string;
+        constructor(name?: string, text?: string);
+        protected _getTypeName(): string;
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }

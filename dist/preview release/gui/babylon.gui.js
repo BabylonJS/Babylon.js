@@ -551,6 +551,12 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            ValueAndUnit.prototype.getValueInPixel = function (host, refValue) {
+                if (this.isPixel) {
+                    return this.getValue(host);
+                }
+                return this.getValue(host) * refValue;
+            };
             ValueAndUnit.prototype.getValue = function (host) {
                 if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
                     if (host.idealWidth) {
@@ -3606,5 +3612,161 @@ var BABYLON;
             return ColorPicker;
         }(GUI.Control));
         GUI.ColorPicker = ColorPicker;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var InputText = (function (_super) {
+            __extends(InputText, _super);
+            function InputText(name, text) {
+                if (text === void 0) { text = ""; }
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._text = "";
+                _this._background = "black";
+                _this._thickness = 1;
+                _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
+                _this._autoStretchWidth = true;
+                _this._maxWidth = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                _this.text = text;
+                return _this;
+            }
+            Object.defineProperty(InputText.prototype, "maxWidth", {
+                get: function () {
+                    return this._maxWidth.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._maxWidth.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._maxWidth.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "margin", {
+                get: function () {
+                    return this._margin.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._margin.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._margin.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "autoStretchWidth", {
+                get: function () {
+                    return this._autoStretchWidth;
+                },
+                set: function (value) {
+                    if (this._autoStretchWidth === value) {
+                        return;
+                    }
+                    this._autoStretchWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "thickness", {
+                get: function () {
+                    return this._thickness;
+                },
+                set: function (value) {
+                    if (this._thickness === value) {
+                        return;
+                    }
+                    this._thickness = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "background", {
+                get: function () {
+                    return this._background;
+                },
+                set: function (value) {
+                    if (this._background === value) {
+                        return;
+                    }
+                    this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "text", {
+                get: function () {
+                    return this._text;
+                },
+                set: function (value) {
+                    if (this._text === value) {
+                        return;
+                    }
+                    this._text = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            InputText.prototype._getTypeName = function () {
+                return "InputText";
+            };
+            InputText.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    // Background
+                    if (this._background) {
+                        context.fillStyle = this._background;
+                        context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    }
+                    // Text
+                    if (this._text) {
+                        if (this.color) {
+                            context.fillStyle = this.color;
+                        }
+                        var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+                        context.fillText(this._text, this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width), this._currentMeasure.top + rootY);
+                        if (this._autoStretchWidth) {
+                            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), context.measureText(this._text).width + this._margin.getValueInPixel(this._host, parentMeasure.width) * 2) + "px";
+                        }
+                    }
+                    // Border
+                    if (this._thickness) {
+                        if (this.color) {
+                            context.strokeStyle = this.color;
+                        }
+                        context.lineWidth = this._thickness;
+                        context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+                    }
+                }
+                context.restore();
+            };
+            return InputText;
+        }(GUI.Control));
+        GUI.InputText = InputText;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
