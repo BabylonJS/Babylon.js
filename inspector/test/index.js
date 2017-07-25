@@ -249,7 +249,7 @@ var Test = (function () {
         sphere_3.parent = assets_mesh;
 
         for (var i=0; i<10 ; i++){
-            var inst = sphere_1.clone("C_" + i + "clone");
+            var inst = sphere_1.createInstance("C_" + i + "clone");
             inst.isVisible = true;
             inst.setEnabled = true;
             inst.parent = scene_mesh;
@@ -317,7 +317,9 @@ var Test = (function () {
         advancedTexture.addControl(checkbox);    
         advancedTexture.addControl(slider);    
         advancedTexture.addControl(line);    
-        advancedTexture.addControl(checkbox);    
+        advancedTexture.addControl(checkbox);  
+        
+        window.addEventListener('click', function() {console.log('coucou');});
 
 
         this.scene = scene;
