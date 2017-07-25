@@ -66,6 +66,17 @@ var Test = (function () {
             }
         });
 
+        // Skybox
+        var skybox = BABYLON.Mesh.CreateBox("skyBox", 500.0, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/textures/skybox/TropicalSunnyDay", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
+
         var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
         var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
         var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 10.0, 9.0, scene);
@@ -249,7 +260,7 @@ var Test = (function () {
         sphere_3.parent = assets_mesh;
 
         for (var i=0; i<10 ; i++){
-            var inst = sphere_1.clone("C_" + i + "clone");
+            var inst = sphere_1.createInstance("C_" + i + "clone");
             inst.isVisible = true;
             inst.setEnabled = true;
             inst.parent = scene_mesh;
@@ -317,9 +328,8 @@ var Test = (function () {
         advancedTexture.addControl(checkbox);    
         advancedTexture.addControl(slider);    
         advancedTexture.addControl(line);    
-        advancedTexture.addControl(checkbox);    
-
-
+        advancedTexture.addControl(checkbox);  
+        
         this.scene = scene;
     };
     return Test;
