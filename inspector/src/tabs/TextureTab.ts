@@ -79,12 +79,14 @@ module INSPECTOR {
             // Get the texture object
             let texture = item.adapter.object;
 
+            let imgs: HTMLImageElement[] = [];
             let img = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
-            let img1 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
-            let img2 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
-            let img3 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
-            let img4 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
-            let img5 = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            imgs.push(img);
+            
+            //Create five other images elements
+            for(let i = 0; i<5; i++){
+                imgs.push(Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement);
+            }
 
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
@@ -108,31 +110,8 @@ module INSPECTOR {
                 
                 // To display the texture after rendering
                 screenShotTexture.onAfterRenderObservable.add((faceIndex: number) => {
-                    let targetImg: HTMLImageElement;
-                    switch(faceIndex){
-                        case 0:
-                            targetImg = img;
-                            break;
-                        case 1:
-                            targetImg = img1;
-                            break;
-                        case 2:
-                            targetImg = img2;
-                            break;
-                        case 3:
-                            targetImg = img3;
-                            break;
-                        case 4:
-                            targetImg = img4;
-                            break;
-                        case 5:
-                            targetImg = img5;
-                            break;
-                        default:
-                            targetImg = img;
-                            break;
-                    }
-                    BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,  (data) => targetImg.src = data, "image/png");
+                    BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,  
+                        (data) => imgs[faceIndex].src = data, "image/png");
                 });
 
                 // Render the texture
@@ -140,7 +119,15 @@ module INSPECTOR {
                 scene.resetCachedMaterial();
                 screenShotTexture.render();
                 screenShotTexture.dispose();
-            } else if (texture.url) {
+            }else if(texture instanceof BABYLON.CubeTexture){
+                // Display all textures of the CubeTexture
+                let i: number = 0;
+                for(let filename of (texture as BABYLON.CubeTexture)['_files']){
+                    imgs[i].src = filename;
+                    i++;
+                }
+            }
+             else if (texture.url) {
                 // If an url is present, the texture is an image
                 img.src = texture.url;
 
@@ -148,9 +135,7 @@ module INSPECTOR {
                 // Dynamic texture
                 let base64Image = texture['_canvas'].toDataURL("image/png");
                 img.src = base64Image;
-
-            }
-
+            } 
 
         }
 
