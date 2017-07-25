@@ -45,6 +45,7 @@ module BABYLON.GLTF2.Extensions {
 
             if (properties.specularGlossinessTexture) {
                 babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
+                babylonMaterial.reflectivityTexture.hasAlpha = true;
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
