@@ -66,6 +66,17 @@ var Test = (function () {
             }
         });
 
+        // Skybox
+        var skybox = BABYLON.Mesh.CreateBox("skyBox", 500.0, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/textures/skybox/TropicalSunnyDay", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
+
         var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
         var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
         var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 10.0, 9.0, scene);
@@ -319,9 +330,6 @@ var Test = (function () {
         advancedTexture.addControl(line);    
         advancedTexture.addControl(checkbox);  
         
-        window.addEventListener('click', function() {console.log('coucou');});
-
-
         this.scene = scene;
     };
     return Test;
