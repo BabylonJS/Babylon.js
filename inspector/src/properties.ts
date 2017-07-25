@@ -71,6 +71,12 @@ module INSPECTOR {
         'BaseTexture': {
             type: BABYLON.BaseTexture
         },
+        'CubeTexture': {
+            type: BABYLON.CubeTexture
+        },
+        'HDRCubeTexture': {
+            type: BABYLON.HDRCubeTexture
+        },
         'FontTexture': {
             type: BABYLON.FontTexture
         },
