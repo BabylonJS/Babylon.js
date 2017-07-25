@@ -395,11 +395,11 @@ module BABYLON.GLTF2 {
                         this.loadMaterial(primitive.material, (babylonSubMaterial: Material) => {
                             if (this._renderReady) {
                                 babylonSubMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
-                                    this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
+                                    babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
                                 });
                             }
                             else {
-                                this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
+                                babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
                             }
                         });
                     }
@@ -413,14 +413,6 @@ module BABYLON.GLTF2 {
                         subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));
                     }
                 });
-            }
-        }
-
-        private _assignMaterial(multiMaterial: MultiMaterial, index: number, subMaterial: Material): void {
-            multiMaterial.subMaterials[index] = subMaterial;
-
-            if (this._parent.onMaterialLoaded) {
-                this._parent.onMaterialLoaded(subMaterial);
             }
         }
 
@@ -936,6 +928,11 @@ module BABYLON.GLTF2 {
             this.createPbrMaterial(material);
             this.loadMaterialBaseProperties(material);
             this._loadMaterialMetallicRoughnessProperties(material);
+
+            if (this._parent.onMaterialLoaded) {
+                this._parent.onMaterialLoaded(material.babylonMaterial);
+            }
+
             assign(material.babylonMaterial);
         }
 
