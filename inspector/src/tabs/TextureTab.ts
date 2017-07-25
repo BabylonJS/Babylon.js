@@ -120,6 +120,7 @@ module INSPECTOR {
                 screenShotTexture.render();
                 screenShotTexture.dispose();
             }else if(texture instanceof BABYLON.CubeTexture){
+                // Display all textures of the CubeTexture
                 let i: number = 0;
                 for(let filename of (texture as BABYLON.CubeTexture)['_files']){
                     imgs[i].src = filename;
