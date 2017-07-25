@@ -37267,6 +37267,14 @@ var BABYLON;
              */
             _this.useAlphaFromAlbedoTexture = false;
             /**
+             * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+             */
+            _this.forceAlphaTest = false;
+            /**
+             * Defines the alpha limits in alpha test mode.
+             */
+            _this.alphaCutOff = 0.4;
+            /**
              * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
              * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
              */
@@ -37764,6 +37772,14 @@ var BABYLON;
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
     ], PBRMaterial.prototype, "useAlphaFromAlbedoTexture", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "forceAlphaTest", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "alphaCutOff", void 0);
     __decorate([
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
