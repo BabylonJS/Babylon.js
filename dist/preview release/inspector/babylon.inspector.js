@@ -403,6 +403,12 @@ var INSPECTOR;
         'BaseTexture': {
             type: BABYLON.BaseTexture
         },
+        'CubeTexture': {
+            type: BABYLON.CubeTexture
+        },
+        'HDRCubeTexture': {
+            type: BABYLON.HDRCubeTexture
+        },
         'FontTexture': {
             type: BABYLON.FontTexture
         },
@@ -3147,12 +3153,13 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._imagePanel);
             // Get the texture object
             var texture = item.adapter.object;
+            var imgs = [];
             var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
-            var img1 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
-            var img2 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
-            var img3 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
-            var img4 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
-            var img5 = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            imgs.push(img);
+            //Create five other images elements
+            for (var i = 0; i < 5; i++) {
+                imgs.push(INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel));
+            }
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
                 texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
@@ -3172,37 +3179,22 @@ var INSPECTOR;
                 screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
                 // To display the texture after rendering
                 screenShotTexture.onAfterRenderObservable.add(function (faceIndex) {
-                    var targetImg;
-                    switch (faceIndex) {
-                        case 0:
-                            targetImg = img;
-                            break;
-                        case 1:
-                            targetImg = img1;
-                            break;
-                        case 2:
-                            targetImg = img2;
-                            break;
-                        case 3:
-                            targetImg = img3;
-                            break;
-                        case 4:
-                            targetImg = img4;
-                            break;
-                        case 5:
-                            targetImg = img5;
-                            break;
-                        default:
-                            targetImg = img;
-                            break;
-                    }
-                    BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return targetImg.src = data; }, "image/png");
+                    BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return imgs[faceIndex].src = data; }, "image/png");
                 });
                 // Render the texture
                 scene.incrementRenderId();
                 scene.resetCachedMaterial();
                 screenShotTexture.render();
                 screenShotTexture.dispose();
+            }
+            else if (texture instanceof BABYLON.CubeTexture) {
+                // Display all textures of the CubeTexture
+                var i = 0;
+                for (var _i = 0, _a = texture['_files']; _i < _a.length; _i++) {
+                    var filename = _a[_i];
+                    imgs[i].src = filename;
+                    i++;
+                }
             }
             else if (texture.url) {
                 // If an url is present, the texture is an image
@@ -3745,13 +3737,6 @@ var INSPECTOR;
             // Contents
             _this._consolePanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', consolePanel);
             _this._bjsPanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', bjsPanel);
-            // save old console.log
-            _this._oldConsoleLog = console.log;
-            _this._oldConsoleWarn = console.warn;
-            _this._oldConsoleError = console.error;
-            console.log = _this._addConsoleLog.bind(_this);
-            console.warn = _this._addConsoleWarn.bind(_this);
-            console.error = _this._addConsoleError.bind(_this);
             // Bjs logs
             _this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = function (entry) {
@@ -3774,6 +3759,18 @@ var INSPECTOR;
             console.log = this._oldConsoleLog;
             console.warn = this._oldConsoleWarn;
             console.error = this._oldConsoleError;
+        };
+        ConsoleTab.prototype.active = function (b) {
+            _super.prototype.active.call(this, b);
+            if (b) {
+                // save old console.log
+                this._oldConsoleLog = console.log;
+                this._oldConsoleWarn = console.warn;
+                this._oldConsoleError = console.error;
+                console.log = this._addConsoleLog.bind(this);
+                console.warn = this._addConsoleWarn.bind(this);
+                console.error = this._addConsoleError.bind(this);
+            }
         };
         ConsoleTab.prototype._message = function (type, message, caller) {
             var callerLine = INSPECTOR.Helpers.CreateDiv('caller', this._consolePanelContent);
@@ -4089,8 +4086,6 @@ var INSPECTOR;
                     updateFct: function () { return "WebGL v" + _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
                 });
             }
-            // Register the update loop
-            _this._scene.registerAfterRender(_this._updateLoopHandler);
             return _this;
         }
         StatsTab.prototype._createStatLabel = function (content, parent) {
@@ -4107,6 +4102,12 @@ var INSPECTOR;
         };
         StatsTab.prototype.dispose = function () {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+        };
+        StatsTab.prototype.active = function (b) {
+            _super.prototype.active.call(this, b);
+            if (b) {
+                this._scene.registerAfterRender(this._updateLoopHandler);
+            }
         };
         return StatsTab;
     }(INSPECTOR.Tab));
@@ -4160,7 +4161,6 @@ var INSPECTOR;
             //Check initialTab is defined and between tabs bounds
             if (!initialTab || initialTab < 0 || initialTab >= _this._tabs.length) {
                 initialTab = 0;
-                console.warn('');
             }
             _this._tabs[initialTab].active(true);
             // set all tab as visible

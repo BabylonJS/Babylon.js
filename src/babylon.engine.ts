@@ -622,6 +622,10 @@
         private _fps = 60;
         private _deltaTime = 0;
 
+        public get performanceMonitor(): PerformanceMonitor {
+            return this._performanceMonitor;
+        }
+
         // States
         private _depthCullingState = new Internals._DepthCullingState();
         private _stencilState = new Internals._StencilState();
