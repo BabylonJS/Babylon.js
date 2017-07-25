@@ -4844,6 +4844,31 @@ var BABYLON;
             var part4 = cubed - squared;
             return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
         };
+        /**
+        * Returns a random float number between and min and max values
+        */
+        Scalar.RandomRange = function (min, max) {
+            if (min === max)
+                return min;
+            return ((Math.random() * (max - min)) + min);
+        };
+        /**
+        * This function returns percentage of a number in a given range.
+        *
+        * RangeToPercent(40,20,60) will return 0.5 (50%)
+        * RangeToPercent(34,0,100) will return 0.34 (34%)
+        */
+        Scalar.RangeToPercent = function (number, min, max) {
+            return ((number - min) / (max - min));
+        };
+        /**
+        * This function returns number that corresponds to the percentage in a given range.
+        *
+        * PercentToRange(0.34,0,100) will return 34.
+        */
+        Scalar.PercentToRange = function (percent, min, max) {
+            return ((max - min) * percent + min);
+        };
         return Scalar;
     }());
     BABYLON.Scalar = Scalar;
