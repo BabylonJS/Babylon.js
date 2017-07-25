@@ -73,6 +73,7 @@
         }
 
         public updateFunction: (particles: Particle[]) => void;
+        public onAnimationEnd: () => void = null;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
@@ -390,6 +391,11 @@
             }
 
             this._vertexBuffer.update(this._vertexData);
+
+            // Animation End
+            if (this.onAnimationEnd != null) {
+                this.onAnimationEnd();
+            }
         }
 
         public render(): number {
