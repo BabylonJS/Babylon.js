@@ -8770,7 +8770,7 @@ var BABYLON;
         };
         Engine.prototype.bindArrayBuffer = function (buffer) {
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         };
@@ -8787,7 +8787,7 @@ var BABYLON;
         ;
         Engine.prototype.bindIndexBuffer = function (buffer) {
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         };
@@ -8858,7 +8858,7 @@ var BABYLON;
         Engine.prototype._bindVertexBuffersAttributes = function (vertexBuffers, effect) {
             var attributes = effect.getAttributesNames();
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
             this.unbindAllAttributes();
             for (var index = 0; index < attributes.length; index++) {
@@ -8910,7 +8910,7 @@ var BABYLON;
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
                 var attributesCount = effect.getAttributesCount();
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
                 this.unbindAllAttributes();
                 var offset = 0;
                 for (var index = 0; index < attributesCount; index++) {
@@ -8927,7 +8927,7 @@ var BABYLON;
             }
             this._bindIndexBufferWithCache(indexBuffer);
         };
-        Engine.prototype._unBindVertexArrayObject = function () {
+        Engine.prototype._unbindVertexArrayObject = function () {
             if (!this._cachedVertexArrayObject) {
                 return;
             }
@@ -9362,6 +9362,7 @@ var BABYLON;
             }
             this.resetTextureCache();
             this._currentEffect = null;
+            this._currentProgram = null;
             // 6/8/2017: deltakosh: Should not be required anymore. 
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
@@ -9373,7 +9374,7 @@ var BABYLON;
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
-            this._unBindVertexArrayObject();
+            this._unbindVertexArrayObject();
             this.bindIndexBuffer(null);
             this.bindArrayBuffer(null);
         };
@@ -10013,9 +10014,10 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createPrefilteredCubeTexture = function (rootUrl, scene, scale, offset, onLoad, onError, format) {
+        Engine.prototype.createPrefilteredCubeTexture = function (rootUrl, scene, scale, offset, onLoad, onError, format, forcedExtension) {
             var _this = this;
             if (onError === void 0) { onError = null; }
+            if (forcedExtension === void 0) { forcedExtension = null; }
             var callback = function (loadData) {
                 if (_this._caps.textureLOD || !loadData) {
                     // Do not add extra process if texture lod is supported.
@@ -10070,12 +10072,13 @@ var BABYLON;
                     onLoad();
                 }
             };
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
         };
-        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap, onLoad, onError, format) {
+        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap, onLoad, onError, format, forcedExtension) {
             var _this = this;
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
+            if (forcedExtension === void 0) { forcedExtension = null; }
             var gl = this._gl;
             var texture = gl.createTexture();
             texture.isCube = true;
@@ -10086,7 +10089,7 @@ var BABYLON;
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
-            var extension = rootUrl.substring(lastDot).toLowerCase();
+            var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
             if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
@@ -44303,11 +44306,12 @@ var BABYLON;
 (function (BABYLON) {
     var CubeTexture = (function (_super) {
         __extends(CubeTexture, _super);
-        function CubeTexture(rootUrl, scene, extensions, noMipmap, files, onLoad, onError, format, prefiltered) {
+        function CubeTexture(rootUrl, scene, extensions, noMipmap, files, onLoad, onError, format, prefiltered, forcedExtension) {
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             if (prefiltered === void 0) { prefiltered = false; }
+            if (forcedExtension === void 0) { forcedExtension = null; }
             var _this = _super.call(this, scene) || this;
             _this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
             _this.name = rootUrl;
@@ -44339,10 +44343,10 @@ var BABYLON;
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     if (prefiltered) {
-                        _this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, _this.lodGenerationScale, _this.lodGenerationOffset, onLoad, onError, format);
+                        _this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, _this.lodGenerationScale, _this.lodGenerationOffset, onLoad, onError, format, forcedExtension);
                     }
                     else {
-                        _this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, _this._format);
+                        _this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, _this._format, forcedExtension);
                     }
                 }
                 else {
@@ -44362,8 +44366,9 @@ var BABYLON;
         CubeTexture.CreateFromImages = function (files, scene, noMipmap) {
             return new CubeTexture("", scene, null, noMipmap, files);
         };
-        CubeTexture.CreateFromPrefilteredData = function (url, scene) {
-            return new CubeTexture(url, scene, null, false, null, null, null, undefined, true);
+        CubeTexture.CreateFromPrefilteredData = function (url, scene, forcedExtension) {
+            if (forcedExtension === void 0) { forcedExtension = null; }
+            return new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension);
         };
         // Methods
         CubeTexture.prototype.delayLoad = function () {
