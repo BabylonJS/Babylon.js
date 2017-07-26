@@ -127,8 +127,8 @@ module BABYLON.GLTF2 {
         }
 
         private _onError(message: string): void {
-            this.dispose();
             this._errorCallback(message);
+            this.dispose();
         }
 
         private _onProgress(event: ProgressEvent): void {
@@ -392,14 +392,18 @@ module BABYLON.GLTF2 {
                         babylonMultiMaterial.subMaterials[i] = this._getDefaultMaterial();
                     }
                     else {
-                        this.loadMaterial(primitive.material, (babylonSubMaterial: Material) => {
+                        this.loadMaterial(primitive.material, (babylonMaterial, isNew) => {
+                            if (isNew && this._parent.onMaterialLoaded) {
+                                this._parent.onMaterialLoaded(babylonMaterial);
+                            }
+
                             if (this._renderReady) {
-                                babylonSubMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
+                                babylonMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
                                     babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
                                 });
                             }
                             else {
-                                babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
+                                babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                             }
                         });
                     }
@@ -912,12 +916,12 @@ module BABYLON.GLTF2 {
             this.loadMaterialAlphaProperties(material, properties.baseColorFactor);
         }
 
-        public loadMaterial(index: number, assign: (material: Material) => void): void {
+        public loadMaterial(index: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
             var material = this._gltf.materials[index];
             material.index = index;
 
             if (material.babylonMaterial) {
-                assign(material.babylonMaterial);
+                assign(material.babylonMaterial, false);
                 return;
             }
 
@@ -928,12 +932,7 @@ module BABYLON.GLTF2 {
             this.createPbrMaterial(material);
             this.loadMaterialBaseProperties(material);
             this._loadMaterialMetallicRoughnessProperties(material);
-
-            if (this._parent.onMaterialLoaded) {
-                this._parent.onMaterialLoaded(material.babylonMaterial);
-            }
-
-            assign(material.babylonMaterial);
+            assign(material.babylonMaterial, true);
         }
 
         public createPbrMaterial(material: IGLTFMaterial): void {
