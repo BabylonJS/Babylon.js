@@ -878,6 +878,15 @@
             return this;
         }
 
+        public setColor3Arrays(uniformName: string, colors: Color3[]): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setArray3(this.getUniform(uniformName), colors.reduce((arr, color) => {
+                color.toArray(arr, arr.length);
+                return arr;
+            }, []));
+            return this;
+        }
+
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
             if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
