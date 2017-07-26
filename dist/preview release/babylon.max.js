@@ -19633,27 +19633,31 @@ var BABYLON;
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
-        BaseTexture.WhenAllReady = function (textures, onLoad) {
-            var numReady = 0;
+        BaseTexture.WhenAllReady = function (textures, callback) {
+            var numRemaining = textures.length;
+            if (numRemaining === 0) {
+                callback();
+                return;
+            }
             var _loop_1 = function () {
                 texture = textures[i];
                 if (texture.isReady()) {
-                    if (++numReady === textures.length) {
-                        onLoad();
+                    if (--numRemaining === 0) {
+                        callback();
                     }
                 }
                 else {
-                    observable = texture.onLoadObservable;
-                    var callback_1 = function () {
-                        observable.removeCallback(callback_1);
-                        if (++numReady === textures.length) {
-                            onLoad();
+                    onLoadObservable = texture.onLoadObservable;
+                    var onLoadCallback_1 = function () {
+                        onLoadObservable.removeCallback(onLoadCallback_1);
+                        if (--numRemaining === 0) {
+                            callback();
                         }
                     };
-                    observable.add(callback_1);
+                    onLoadObservable.add(onLoadCallback_1);
                 }
             };
-            var texture, observable;
+            var texture, onLoadObservable;
             for (var i = 0; i < textures.length; i++) {
                 _loop_1();
             }
@@ -32151,6 +32155,14 @@ var BABYLON;
              */
             _this.useAlphaFromAlbedoTexture = false;
             /**
+             * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+             */
+            _this.forceAlphaTest = false;
+            /**
+             * Defines the alpha limits in alpha test mode.
+             */
+            _this.alphaCutOff = 0.4;
+            /**
              * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
              * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
              */
@@ -32648,6 +32660,14 @@ var BABYLON;
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
     ], PBRMaterial.prototype, "useAlphaFromAlbedoTexture", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "forceAlphaTest", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "alphaCutOff", void 0);
     __decorate([
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
