@@ -14,7 +14,7 @@ module BABYLON.GLTF2.Extensions {
             return "KHR_materials_pbrSpecularGlossiness";
         }
 
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean {
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
             if (!material.extensions) {
                 return false;
             }
@@ -27,7 +27,7 @@ module BABYLON.GLTF2.Extensions {
             loader.createPbrMaterial(material);
             loader.loadMaterialBaseProperties(material);
             this._loadSpecularGlossinessProperties(loader, material, properties);
-            assign(material.babylonMaterial);
+            assign(material.babylonMaterial, true);
             return true;
         }
 
