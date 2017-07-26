@@ -10,7 +10,7 @@ module BABYLON.GLTF2.Extensions {
             return "MSFT_lod";
         }
 
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean {
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
             if (!material.extensions) {
                 return false;
             }
@@ -33,9 +33,9 @@ module BABYLON.GLTF2.Extensions {
             return true;
         }
 
-        private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (material: Material) => void): void {
-            loader.loadMaterial(materialLODs[lod], babylonMaterial => {
-                assign(babylonMaterial);
+        private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (material: Material, isNew: boolean) => void): void {
+            loader.loadMaterial(materialLODs[lod], (babylonMaterial, isNew) => {
+                assign(babylonMaterial, isNew);
 
                 // Loading is complete if this is the highest quality LOD.
                 if (lod === 0) {

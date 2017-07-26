@@ -19633,27 +19633,31 @@ var BABYLON;
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
-        BaseTexture.WhenAllReady = function (textures, onLoad) {
-            var numReady = 0;
+        BaseTexture.WhenAllReady = function (textures, callback) {
+            var numRemaining = textures.length;
+            if (numRemaining === 0) {
+                callback();
+                return;
+            }
             var _loop_1 = function () {
                 texture = textures[i];
                 if (texture.isReady()) {
-                    if (++numReady === textures.length) {
-                        onLoad();
+                    if (--numRemaining === 0) {
+                        callback();
                     }
                 }
                 else {
-                    observable = texture.onLoadObservable;
-                    var callback_1 = function () {
-                        observable.removeCallback(callback_1);
-                        if (++numReady === textures.length) {
-                            onLoad();
+                    onLoadObservable = texture.onLoadObservable;
+                    var onLoadCallback_1 = function () {
+                        onLoadObservable.removeCallback(onLoadCallback_1);
+                        if (--numRemaining === 0) {
+                            callback();
                         }
                     };
-                    observable.add(callback_1);
+                    onLoadObservable.add(onLoadCallback_1);
                 }
             };
-            var texture, observable;
+            var texture, onLoadObservable;
             for (var i = 0; i < textures.length; i++) {
                 _loop_1();
             }
@@ -37267,6 +37271,14 @@ var BABYLON;
              */
             _this.useAlphaFromAlbedoTexture = false;
             /**
+             * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+             */
+            _this.forceAlphaTest = false;
+            /**
+             * Defines the alpha limits in alpha test mode.
+             */
+            _this.alphaCutOff = 0.4;
+            /**
              * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
              * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
              */
@@ -37764,6 +37776,14 @@ var BABYLON;
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
     ], PBRMaterial.prototype, "useAlphaFromAlbedoTexture", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "forceAlphaTest", void 0);
+    __decorate([
+        BABYLON.serialize(),
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], PBRMaterial.prototype, "alphaCutOff", void 0);
     __decorate([
         BABYLON.serialize(),
         BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -51818,8 +51838,8 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onError = function (message) {
-                this.dispose();
                 this._errorCallback(message);
+                this.dispose();
             };
             GLTFLoader.prototype._onProgress = function (event) {
                 this._progressCallback(event);
@@ -52033,14 +52053,17 @@ var BABYLON;
                             babylonMultiMaterial.subMaterials[i] = _this._getDefaultMaterial();
                         }
                         else {
-                            _this.loadMaterial(primitive.material, function (babylonSubMaterial) {
+                            _this.loadMaterial(primitive.material, function (babylonMaterial, isNew) {
+                                if (isNew && _this._parent.onMaterialLoaded) {
+                                    _this._parent.onMaterialLoaded(babylonMaterial);
+                                }
                                 if (_this._renderReady) {
-                                    babylonSubMaterial.forceCompilation(babylonMesh, function (babylonSubMaterial) {
-                                        _this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
+                                    babylonMaterial.forceCompilation(babylonMesh, function (babylonSubMaterial) {
+                                        babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
                                     });
                                 }
                                 else {
-                                    _this._assignMaterial(babylonMultiMaterial, i, babylonSubMaterial);
+                                    babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                 }
                             });
                         }
@@ -52056,12 +52079,6 @@ var BABYLON;
                 var this_1 = this;
                 for (var i = 0; i < totalPrimitives; i++) {
                     _loop_1(i);
-                }
-            };
-            GLTFLoader.prototype._assignMaterial = function (multiMaterial, index, subMaterial) {
-                multiMaterial.subMaterials[index] = subMaterial;
-                if (this._parent.onMaterialLoaded) {
-                    this._parent.onMaterialLoaded(subMaterial);
                 }
             };
             GLTFLoader.prototype._loadVertexDataAsync = function (primitive, onSuccess) {
@@ -52520,7 +52537,7 @@ var BABYLON;
                 var material = this._gltf.materials[index];
                 material.index = index;
                 if (material.babylonMaterial) {
-                    assign(material.babylonMaterial);
+                    assign(material.babylonMaterial, false);
                     return;
                 }
                 if (GLTF2.GLTFLoaderExtension.LoadMaterial(this, material, assign)) {
@@ -52529,7 +52546,7 @@ var BABYLON;
                 this.createPbrMaterial(material);
                 this.loadMaterialBaseProperties(material);
                 this._loadMaterialMetallicRoughnessProperties(material);
-                assign(material.babylonMaterial);
+                assign(material.babylonMaterial, true);
             };
             GLTFLoader.prototype.createPbrMaterial = function (material) {
                 var babylonMaterial = new BABYLON.PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
@@ -52844,8 +52861,8 @@ var BABYLON;
                 };
                 MSFTLOD.prototype.loadMaterialLOD = function (loader, material, materialLODs, lod, assign) {
                     var _this = this;
-                    loader.loadMaterial(materialLODs[lod], function (babylonMaterial) {
-                        assign(babylonMaterial);
+                    loader.loadMaterial(materialLODs[lod], function (babylonMaterial, isNew) {
+                        assign(babylonMaterial, isNew);
                         // Loading is complete if this is the highest quality LOD.
                         if (lod === 0) {
                             loader.removeLoaderPendingData(material);
@@ -52901,7 +52918,7 @@ var BABYLON;
                     loader.createPbrMaterial(material);
                     loader.loadMaterialBaseProperties(material);
                     this._loadSpecularGlossinessProperties(loader, material, properties);
-                    assign(material.babylonMaterial);
+                    assign(material.babylonMaterial, true);
                     return true;
                 };
                 KHRMaterialsPbrSpecularGlossiness.prototype._loadSpecularGlossinessProperties = function (loader, material, properties) {
@@ -52915,6 +52932,7 @@ var BABYLON;
                     }
                     if (properties.specularGlossinessTexture) {
                         babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
+                        babylonMaterial.reflectivityTexture.hasAlpha = true;
                         babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
                     }
                     loader.loadMaterialAlphaProperties(material, properties.diffuseFactor);
