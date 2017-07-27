@@ -297,6 +297,10 @@
             this._shadowsExposure = value;
             this._dirty = true;
         }
+
+        public getClassName(): string {
+            return "ColorCurves";
+        }          
         
         /**
          * Binds the color curves to the shader.

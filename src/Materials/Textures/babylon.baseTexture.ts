@@ -81,6 +81,10 @@
             return this.name;
         }
 
+        public getClassName(): string {
+            return "BaseTexture";
+        }             
+
         public animations = new Array<Animation>();
 
         /**
@@ -328,28 +332,32 @@
             return serializationObject;
         }
 
-        public static WhenAllReady(textures: BaseTexture[], onLoad: () => void): void {
-            var numReady = 0;
+        public static WhenAllReady(textures: BaseTexture[], callback: () => void): void {
+            let numRemaining = textures.length;
+            if (numRemaining === 0) {
+                callback();
+                return;
+            }
 
             for (var i = 0; i < textures.length; i++) {
                 var texture = textures[i];
 
                 if (texture.isReady()) {
-                    if (++numReady === textures.length) {
-                        onLoad();
+                    if (--numRemaining === 0) {
+                        callback();
                     }
                 }
                 else {
-                    var observable = (texture as any).onLoadObservable as Observable<Texture>;
+                    var onLoadObservable = (texture as any).onLoadObservable as Observable<Texture>;
 
-                    let callback = () => {
-                        observable.removeCallback(callback);
-                        if (++numReady === textures.length) {
-                            onLoad();
+                    let onLoadCallback = () => {
+                        onLoadObservable.removeCallback(onLoadCallback);
+                        if (--numRemaining === 0) {
+                            callback();
                         }
                     };
 
-                    observable.add(callback);
+                    onLoadObservable.add(onLoadCallback);
                 }
             }
         }

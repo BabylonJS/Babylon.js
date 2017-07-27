@@ -8,7 +8,7 @@ module INSPECTOR {
          */
         public static GET_TYPE(obj: any): string {
             if (obj != null && obj != undefined) {
-                let classname = BABYLON.Tools.getClassName(obj);
+                let classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
                     classname = obj.constructor.name;
                     // classname is undefined in IE11

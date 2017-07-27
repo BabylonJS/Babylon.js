@@ -145,7 +145,7 @@
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
                     mesh.computeWorldMatrix(true);
                 }
             }
@@ -315,7 +315,7 @@
             var numOfMeshes = meshes.length;
 
             for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._createGlobalSubMesh();
+                meshes[index]._createGlobalSubMesh(true);
             }
             this.notifyUpdate();
         }
@@ -432,7 +432,7 @@
                     }
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
 
                     //bounding info was just created again, world matrix should be applied again.
                     mesh._updateBoundingInfo();

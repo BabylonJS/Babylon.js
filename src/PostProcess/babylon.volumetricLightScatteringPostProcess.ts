@@ -131,6 +131,10 @@
             });
         }
 
+        public getClassName(): string {
+            return "VolumetricLightScatteringPostProcess";
+        }          
+
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
 

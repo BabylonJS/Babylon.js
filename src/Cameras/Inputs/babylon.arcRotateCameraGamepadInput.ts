@@ -63,13 +63,13 @@ module BABYLON {
             }
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "ArcRotateCameraGamepadInput";
         }
 
         getSimpleName() {
             return "gamepad";
-        }
+        }        
     }
 
     CameraInputTypes["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;

@@ -226,6 +226,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "SkyMaterial";
+        }            
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {
             return SerializationHelper.Parse(() => new SkyMaterial(source.name, scene), source, scene, rootUrl);
