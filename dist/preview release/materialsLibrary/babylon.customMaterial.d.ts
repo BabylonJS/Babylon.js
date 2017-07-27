@@ -54,8 +54,6 @@ declare module BABYLON {
         REFRACTION: boolean;
         REFRACTIONMAP_3D: boolean;
         REFLECTIONOVERALPHA: boolean;
-        INVERTNORMALMAPX: boolean;
-        INVERTNORMALMAPY: boolean;
         TWOSIDEDLIGHTING: boolean;
         SHADOWFLOAT: boolean;
         MORPHTARGETS: boolean;
