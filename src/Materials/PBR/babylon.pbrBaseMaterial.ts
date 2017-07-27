@@ -54,8 +54,6 @@
         public BUMPDIRECTUV = 0;
         public PARALLAX = false;
         public PARALLAXOCCLUSION = false;
-        public INVERTNORMALMAPX = false;
-        public INVERTNORMALMAPY = false;
         public NORMALXYSCALE = true;
 
         public LIGHTMAP = false;
@@ -351,12 +349,12 @@
         protected _maxSimultaneousLights = 4;  
 
         /**
-         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+         * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
          */
         protected _invertNormalMapX = false;
 
         /**
-         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+         * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
          */
         protected _invertNormalMapY = false;
 
@@ -730,14 +728,6 @@
                             defines.PARALLAX = false;
                         }
 
-                        defines.INVERTNORMALMAPX = !!this._invertNormalMapX;
-                        defines.INVERTNORMALMAPY = !!this._invertNormalMapY;
-
-                        if (scene._mirroredCameraPosition) {
-                            defines.INVERTNORMALMAPX = !defines.INVERTNORMALMAPX;
-                            defines.INVERTNORMALMAPY = !defines.INVERTNORMALMAPY;
-                        }
-
                         defines.USERIGHTHANDEDSYSTEM = scene.useRightHandedSystem;
                     } else {
                         defines.BUMP = false;
@@ -923,7 +913,8 @@
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                        "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos"
+                        "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
+                        "vNormalReoderParams"
                 ];
 
                 var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler", 
@@ -999,6 +990,7 @@
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1130,6 +1122,12 @@
                         if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
+
+                            if (scene._mirroredCameraPosition) {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 0 : 1.0, this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 0 : 1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                            } else {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
+                            }                                                         
                         }
 
                         var refractionTexture = this._getRefractionTexture();

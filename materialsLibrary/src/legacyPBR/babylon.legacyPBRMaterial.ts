@@ -66,8 +66,6 @@ module BABYLON {
         public RADIANCEOVERALPHA = false;
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
-        public INVERTNORMALMAPX = false;
-        public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
 
@@ -851,20 +849,7 @@ module BABYLON {
                         if (this.useParallaxOcclusion) {
                             this._defines.PARALLAXOCCLUSION = true;
                         }
-                    }
-
-                    if (this.invertNormalMapX) {
-                        this._defines.INVERTNORMALMAPX = true;
-                    }
-
-                    if (this.invertNormalMapY) {
-                        this._defines.INVERTNORMALMAPY = true;
-                    }
-
-                    if (scene._mirroredCameraPosition) {
-                        this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
-                        this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
-                    }                        
+                    }                     
                 }
 
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1154,7 +1139,7 @@ module BABYLON {
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vMicrosurfaceTextureLods",
-                        "vCameraInfos"
+                        "vCameraInfos", "vNormalReoderParams"
                 ];
 
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
@@ -1233,6 +1218,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1377,6 +1363,13 @@ module BABYLON {
                         if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+
+
+                            if (this._myScene._mirroredCameraPosition) {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                            } else {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
+                            }                              
                         }
 
                         if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
