@@ -49,7 +49,7 @@ module BABYLON {
             this._rightjoystick.releaseCanvas();
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "FreeCameraVirtualJoystickInput";
         }
         

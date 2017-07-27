@@ -29,6 +29,10 @@ declare module BABYLON {
          * The grid opacity outside of the lines.
          */
         opacity: number;
+        /**
+         * Determine RBG output is premultiplied by alpha value.
+         */
+        preMultiplyAlpha: boolean;
         private _gridControl;
         private _renderId;
         /**
@@ -46,6 +50,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): GridMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial;
     }
 }

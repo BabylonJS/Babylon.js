@@ -190,6 +190,8 @@
         public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
+        public _environmentBRDFTexture: BaseTexture;
+
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.
@@ -207,6 +209,19 @@
         public set environmentTexture(value: BaseTexture) {
             this._environmentTexture = value;
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Default image processing configuration used either in the rendering
+         * Forward main pass or through the imageProcessingPostProcess if present.
+         * As in the majority of the scene they are the same (exception for multi camera),
+         * this is easier to reference from here than from all the materials and post process.
+         * 
+         * No setter as we it is a shared configuration, you can set the values instead.
+         */
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+            return this._imageProcessingConfiguration;
         }
 
         public forceWireframe = false;
@@ -231,6 +246,7 @@
 
         // Metadata
         public metadata: any = null;
+        public loadingPluginName: string;
 
         // Events
 
@@ -580,7 +596,7 @@
 
         // Particles
         public particlesEnabled = true;
-        public particleSystems = new Array<ParticleSystem>();
+        public particleSystems = new Array<IParticleSystem>();
 
         // Sprites
         public spritesEnabled = true;
@@ -713,7 +729,7 @@
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
-        public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
+        public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
 
@@ -792,6 +808,9 @@
 
             // Uniform Buffer
             this._createUbo();
+
+            // Default Image processing definition.
+            this._imageProcessingConfiguration = new ImageProcessingConfiguration();
         }
 
         // Properties
@@ -1163,7 +1182,7 @@
                 var canvas = this._engine.getRenderingCanvas();
 
                 if (!this.pointerMovePredicate) {
-                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
                 }
 
                 // Meshes
@@ -2099,9 +2118,9 @@
         /**
          * get a particle system by id
          * @param id {number} the particle system id
-         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         * @return {BABYLON.IParticleSystem|null} the corresponding system or null if none found.
          */
-        public getParticleSystemByID(id: string): ParticleSystem {
+        public getParticleSystemByID(id: string): IParticleSystem {
             for (var index = 0; index < this.particleSystems.length; index++) {
                 if (this.particleSystems[index].id === id) {
                     return this.particleSystems[index];
@@ -2551,11 +2570,12 @@
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
-                    if (!particleSystem.isStarted()) {
+                    if (!particleSystem.isStarted() || !particleSystem.emitter) {
                         continue;
                     }
 
-                    if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
+                    let emitter = <any>particleSystem.emitter;
+                    if (!emitter.position || emitter.isEnabled()) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
                         this._renderingManager.dispatchParticles(particleSystem);
@@ -3059,6 +3079,10 @@
 
             if (listeningCamera && audioEngine.canUseWebAudio) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                // for VR cameras
+                if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
+                    listeningCamera = listeningCamera.rigCameras[0];
+                }
                 var mat = Matrix.Invert(listeningCamera.getViewMatrix());
                 var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
@@ -3664,7 +3688,21 @@
         }
 
         // Misc.
-        public createDefaultCameraOrLight(createArcRotateCamera = false) {
+        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
+            // Dispose existing camera or light in replace mode.
+            if (replace) {
+                if (this.activeCamera) {
+                    this.activeCamera.dispose();
+                    this.activeCamera = null;
+                }
+
+                if (this.lights) {
+                    for (var i = 0; i < this.lights.length; i++) {
+                        this.lights[i].dispose();
+                    }
+                }
+            }
+
             // Light
             if (this.lights.length === 0) {
                 new HemisphericLight("default light", Vector3.Up(), this);
@@ -3679,13 +3717,13 @@
                 var camera: TargetCamera;
                 var radius = worldSize.length() * 1.5;
                 if (createArcRotateCamera) {
-                    var arcRotateCamera = new ArcRotateCamera("default camera", 4.712, 1.571, radius, worldCenter, this);
+                    var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
                     arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                     arcRotateCamera.wheelPrecision = 100 / radius;
                     camera = arcRotateCamera;
                 }
                 else {
-                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, this.useRightHandedSystem ? -radius : radius), this);
+                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
                     freeCamera.setTarget(worldCenter);
                     camera = freeCamera;
                 }
@@ -3693,10 +3731,14 @@
                 camera.maxZ = radius * 100;
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
+
+                if (attachCameraControls) {
+                    camera.attachControl(this.getEngine().getRenderingCanvas());
+                }
             }
         }
 
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false): Mesh {
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Mesh {
             if (environmentTexture) {
                 this.environmentTexture = environmentTexture;
             }
@@ -3706,30 +3748,24 @@
                 return;
             }
 
-            if (!this.environmentTexture) {
-                Tools.Warn("Can not create default skybox without environment texture.");
-                return;
-            }
-
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, this);
+            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
                 let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                hdrSkyboxMaterial.microSurface = 1.0;
+                hdrSkyboxMaterial.microSurface = 1.0 - blur;
                 hdrSkyboxMaterial.disableLighting = true;
+                hdrSkyboxMaterial.twoSidedLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = hdrSkyboxMaterial;
             }
             else {
                 let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = environmentTexture.clone();
+                skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-                skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;

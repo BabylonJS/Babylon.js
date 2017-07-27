@@ -108,16 +108,11 @@ module BABYLON.GLTF2 {
         targets?: any[];
     }
 
-    export interface IGLTFAssetProfile extends IGLTFProperty {
-        api?: string;
-        version?: string;
-    }
-
     export interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
         generator?: string;
-        profile?: IGLTFAssetProfile;
         version: string;
+        minVersion?: string;
     }
 
     export interface IGLTFBuffer extends IGLTFChildRootProperty {
@@ -189,7 +184,8 @@ module BABYLON.GLTF2 {
         doubleSided?: boolean;
 
         // Runtime values
-        babylonMaterial?: PBRMaterial;
+        index?: number;
+        babylonMaterial?: Material;
     }
 
     export interface IGLTFMeshPrimitive extends IGLTFProperty {
@@ -218,6 +214,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index?: number;
+        parent?: IGLTFNode;
         babylonMesh?: Mesh;
         babylonSkinToBones?: { [skin: number]: Bone };
         babylonAnimationTargets?: Node[];
@@ -250,7 +247,6 @@ module BABYLON.GLTF2 {
 
         // Runtime values (one per coordinate index)
         babylonTextures?: Texture[];
-        blobURL?: string;
     }
 
     export interface IGLTFTextureInfo {

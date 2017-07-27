@@ -9,6 +9,7 @@
         public _areTexturesDirty = true;
         public _areFresnelDirty = true;
         public _areMiscDirty = true;    
+        public _areImageProcessingDirty = true;  
 
         public _normals = false;
         public _uvs = false;
@@ -27,6 +28,7 @@
             this._areFresnelDirty = false;
             this._areLightsDirty = false;
             this._areMiscDirty = false;
+            this._areImageProcessingDirty = false;
         }
 
         public markAsUnprocessed() {
@@ -39,8 +41,14 @@
             this._areLightsDirty = true;
             this._areFresnelDirty = true;
             this._areMiscDirty = true;
+            this._areImageProcessingDirty = true;
             this._isDirty = true;
         }
+
+        public markAsImageProcessingDirty() {
+            this._areImageProcessingDirty = true;
+            this._isDirty = true;
+        }        
 
         public markAsLightDirty() {
             this._areLightsDirty = true;
@@ -482,6 +490,14 @@
             }
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            return [];
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            return false;
+        }
+
         public clone(name: string): Material {
             return null;
         }
@@ -501,15 +517,19 @@
         }
 
         // Force shader compilation including textures ready check
-        public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void): void {
+        public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest: boolean }): void {
             var subMesh = new BaseSubMesh();
             var scene = this.getScene();
+            var engine = scene.getEngine();
 
             var beforeRenderCallback = () => {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
-
+                
+                var alphaTestState = engine.getAlphaTesting();
+                engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
+                
                 if (this.isReadyForSubMesh(mesh, subMesh)) {
                     scene.unregisterBeforeRender(beforeRenderCallback);
 
@@ -517,6 +537,8 @@
                         onCompiled(this);
                     }
                 }
+
+                engine.setAlphaTesting(alphaTestState);
             };
 
             scene.registerBeforeRender(beforeRenderCallback);
@@ -564,6 +586,10 @@
                 }
             }
         }
+
+        protected _markAllSubMeshesAsImageProcessingDirty() {
+            this._markAllSubMeshesAsDirty(defines => defines.markAsImageProcessingDirty());
+        }        
 
         protected _markAllSubMeshesAsTexturesDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());

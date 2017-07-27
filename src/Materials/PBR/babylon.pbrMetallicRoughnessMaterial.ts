@@ -2,7 +2,7 @@
     /**
      * The PBR material of BJS following the metal roughness convention.
      * 
-     * This fits to the define PBR convention in the GLTF definition: 
+     * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
     export class PBRMetallicRoughnessMaterial extends Internals.PBRBaseSimpleMaterial {
@@ -13,7 +13,7 @@
          * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color 
          * of the material.
          */
-        @serializeAsTexture()
+        @serializeAsColor3()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public baseColor: Color3;
         
@@ -57,6 +57,7 @@
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
+            this._useRoughnessFromMetallicTextureAlpha = false;
             this._useRoughnessFromMetallicTextureGreen = true;
             this._useMetallnessFromMetallicTextureBlue = true;
         }
@@ -66,6 +67,43 @@
          */
         public getClassName(): string {
             return "PBRMetallicRoughnessMaterial";
+        }
+
+        /**
+         * Return the active textures of the material.
+         */
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this.baseTexture) {
+                activeTextures.push(this.baseTexture);
+            }
+
+            if (this.metallicRoughnessTexture) {
+                activeTextures.push(this.metallicRoughnessTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.baseTexture === texture) {
+                return true;
+            }
+
+            if (this.metallicRoughnessTexture === texture) {
+                return true;
+            }        
+
+            return false;    
+        }        
+
+        public clone(name: string): PBRMetallicRoughnessMaterial {
+            return SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
         }
 
         /**

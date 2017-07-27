@@ -40,6 +40,20 @@ module INSPECTOR {
             colorBot?: string
         }) {
 
+            // Load GUI library if not already done
+            if(!BABYLON.GUI){
+            	BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => { 
+                    //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                    loadGUIProperties();
+                }, () => {
+                    console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file")
+                });
+            }
+            else{
+                //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                loadGUIProperties();
+            }
+
             //get Tabbar initialTab
             this._initialTab = initialTab;
 
@@ -305,6 +319,9 @@ module INSPECTOR {
          */
         public dispose() {
             if (!this._popupMode) {
+                     
+                this._tabbar.getActiveTab().dispose();
+
                 // Get canvas
                 let canvas = this._scene.getEngine().getRenderingCanvas();
 
@@ -372,6 +389,10 @@ module INSPECTOR {
                     }
                 });
             }
+        }
+
+        public getActiveTabIndex():number {
+           return this._tabbar.getActiveTabIndex();
         }
     }
 }

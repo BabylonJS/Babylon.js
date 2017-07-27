@@ -62,7 +62,7 @@ module BABYLON {
             this._camera.rotationQuaternion.w *= -1;
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "FreeCameraDeviceOrientationInput";
         }
 

@@ -259,6 +259,28 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.diffuseTexture === texture) {
+                return true;
+            } 
+
+            return false;    
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();
@@ -277,6 +299,10 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "SimpleMaterial";
+        }               
+        
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
             return SerializationHelper.Parse(() => new SimpleMaterial(source.name, scene), source, scene, rootUrl);

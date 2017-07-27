@@ -10,7 +10,7 @@
 		#ifdef HEMILIGHT{X}
 			vec3 vLightGround;
 		#endif
-		vec3 shadowsInfo;
+		vec4 shadowsInfo;
 		vec2 depthValues;
 	} light{X};
 

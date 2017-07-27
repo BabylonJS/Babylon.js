@@ -37,9 +37,9 @@ declare module BABYLON.GUI {
         private _render();
         private _doPicking(x, y, type);
         attach(): void;
-        attachToMesh(mesh: AbstractMesh): void;
+        attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
         private _attachToOnBlur(scene);
-        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
     }
 }
@@ -94,6 +94,7 @@ declare module BABYLON.GUI {
         readonly isPercentage: boolean;
         readonly isPixel: boolean;
         readonly internalValue: number;
+        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         getValue(host: AdvancedDynamicTexture): number;
         toString(host: AdvancedDynamicTexture): string;
         fromString(source: string | number): boolean;
@@ -154,6 +155,7 @@ declare module BABYLON.GUI {
         private _dummyVector2;
         private _downCount;
         private _enterCount;
+        private _doNotRender;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         protected _linkOffsetX: ValueAndUnit;
@@ -203,6 +205,7 @@ declare module BABYLON.GUI {
         fontSize: string | number;
         color: string;
         zIndex: number;
+        notRenderable: boolean;
         isVisible: boolean;
         readonly isDirty: boolean;
         paddingLeft: string | number;
@@ -239,7 +242,7 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerEnter(): boolean;
-        protected _onPointerOut(): void;
+        _onPointerOut(): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         forcePointerUp(): void;
@@ -471,6 +474,8 @@ declare module BABYLON.GUI {
         private _drawText(text, textWidth, y, context);
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _parseLine(line: string, context: CanvasRenderingContext2D): object;
+        protected _parseLineWithTextWrapping(line: string, context: CanvasRenderingContext2D): object;
         protected _renderLines(context: CanvasRenderingContext2D): void;
     }
 }
@@ -527,7 +532,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         _processPicking(x: number, y: number, type: number): boolean;
         protected _onPointerEnter(): boolean;
-        protected _onPointerOut(): void;
+        _onPointerOut(): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
@@ -573,5 +578,27 @@ declare module BABYLON.GUI {
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerMove(coordinates: Vector2): void;
         protected _onPointerUp(coordinates: Vector2): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class InputText extends Control {
+        name: string;
+        private _text;
+        private _background;
+        private _thickness;
+        private _margin;
+        private _autoStretchWidth;
+        private _maxWidth;
+        maxWidth: string | number;
+        margin: string;
+        autoStretchWidth: boolean;
+        thickness: number;
+        background: string;
+        text: string;
+        constructor(name?: string, text?: string);
+        protected _getTypeName(): string;
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }

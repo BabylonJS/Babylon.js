@@ -369,6 +369,36 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+
+            if (this._heightTexture) {
+                activeTextures.push(this._heightTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.diffuseTexture === texture) {
+                return true;
+            }
+
+            if (this._heightTexture === texture) {
+                return true;
+            }        
+
+            return false;    
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
@@ -399,6 +429,10 @@ module BABYLON {
             
             return serializationObject;
         }
+
+        public getClassName(): string {
+            return "FurMaterial";
+        }          
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {

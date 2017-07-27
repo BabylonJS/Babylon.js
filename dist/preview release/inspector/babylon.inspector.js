@@ -9,6 +9,19 @@ var INSPECTOR;
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
+            // Load GUI library if not already done
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", function () {
+                    //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                    INSPECTOR.loadGUIProperties();
+                }, function () {
+                    console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file");
+                });
+            }
+            else {
+                //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
+                INSPECTOR.loadGUIProperties();
+            }
             //get Tabbar initialTab
             this._initialTab = initialTab;
             //get parentElement of our Inspector
@@ -241,6 +254,7 @@ var INSPECTOR;
          */
         Inspector.prototype.dispose = function () {
             if (!this._popupMode) {
+                this._tabbar.getActiveTab().dispose();
                 // Get canvas
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 // restore canvas style
@@ -305,6 +319,9 @@ var INSPECTOR;
                     }
                 });
             }
+        };
+        Inspector.prototype.getActiveTabIndex = function () {
+            return this._tabbar.getActiveTabIndex();
         };
         return Inspector;
     }());
@@ -385,6 +402,12 @@ var INSPECTOR;
         },
         'BaseTexture': {
             type: BABYLON.BaseTexture
+        },
+        'CubeTexture': {
+            type: BABYLON.CubeTexture
+        },
+        'HDRCubeTexture': {
+            type: BABYLON.HDRCubeTexture
         },
         'FontTexture': {
             type: BABYLON.FontTexture
@@ -701,11 +724,138 @@ var INSPECTOR;
         },
         'WorldSpaceCanvas2DNode': {
             type: BABYLON.WorldSpaceCanvas2DNode
-        }
+        },
+        'PhysicsImpostor': {
+            type: BABYLON.PhysicsImpostor,
+            properties: [
+                'friction',
+                'mass',
+                'restitution',
+            ]
+        },
     };
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=properties.js.map
+
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     * Function that add gui objects properties to the variable PROPERTIES
+     */
+    function loadGUIProperties() {
+        var PROPERTIES_GUI = {
+            'ValueAndUnit': {
+                type: BABYLON.GUI.ValueAndUnit,
+                properties: ['_value', 'unit'],
+                format: function (valueAndUnit) { return valueAndUnit; }
+            },
+            'Control': {
+                type: BABYLON.GUI.Control,
+                properties: [
+                    '_alpha',
+                    '_fontFamily',
+                    '_color',
+                    '_scaleX',
+                    '_scaleY',
+                    '_rotation',
+                    '_currentMeasure',
+                    '_width',
+                    '_height',
+                    '_left',
+                    '_top',
+                    '_linkedMesh',
+                    'isHitTestVisible',
+                    'isPointerBlocker',
+                ],
+                format: function (control) { return control.name; }
+            },
+            'Button': {
+                type: BABYLON.GUI.Button,
+                properties: [],
+                format: function (button) { return button.name; }
+            },
+            'ColorPicker': {
+                type: BABYLON.GUI.ColorPicker,
+                properties: ['_value'],
+                format: function (colorPicker) { return colorPicker.name; }
+            },
+            'Checkbox': {
+                type: BABYLON.GUI.Checkbox,
+                properties: ['_isChecked', '_background'],
+                format: function (checkbox) { return checkbox.name; }
+            },
+            'Ellipse': {
+                type: BABYLON.GUI.Ellipse,
+                properties: ['_thickness'],
+                format: function (ellipse) { return ellipse.name; }
+            },
+            'Image': {
+                type: BABYLON.GUI.Image,
+                properties: [
+                    '_imageWidth',
+                    '_imageHeight',
+                    '_loaded',
+                    '_source',
+                ],
+                format: function (image) { return image.name; }
+            },
+            'Line': {
+                type: BABYLON.GUI.Line,
+                properties: ['_lineWidth',
+                    '_background',
+                    '_x1',
+                    '_y1',
+                    '_x2',
+                    '_y2',
+                ],
+                format: function (line) { return line.name; }
+            },
+            'RadioButton': {
+                type: BABYLON.GUI.RadioButton,
+                properties: ['_isChecked', '_background'],
+                format: function (radioButton) { return radioButton.name; }
+            },
+            'Rectangle': {
+                type: BABYLON.GUI.Rectangle,
+                properties: ['_thickness', '_cornerRadius'],
+                format: function (rectangle) { return rectangle.name; }
+            },
+            'Slider': {
+                type: BABYLON.GUI.Slider,
+                properties: [
+                    '_minimum',
+                    '_maximum',
+                    '_value',
+                    '_background',
+                    '_borderColor',
+                ],
+                format: function (slider) { return slider.name; }
+            },
+            'StackPanel': {
+                type: BABYLON.GUI.StackPanel,
+                properties: ['_isVertical'],
+                format: function (stackPanel) { return stackPanel.name; }
+            },
+            'TextBlock': {
+                type: BABYLON.GUI.TextBlock,
+                properties: ['_text', '_textWrapping'],
+                format: function (textBlock) { return textBlock.name; }
+            },
+            'Container': {
+                type: BABYLON.GUI.Container,
+                properties: ['_background'],
+                format: function (container) { return container.name; }
+            },
+        };
+        for (var prop in PROPERTIES_GUI) {
+            INSPECTOR.PROPERTIES[prop] = PROPERTIES_GUI[prop];
+        }
+    }
+    INSPECTOR.loadGUIProperties = loadGUIProperties;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=properties_gui.js.map
 
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -848,6 +998,214 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 //# sourceMappingURL=CameraAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var PhysicsImpostorAdapter = (function (_super) {
+        __extends(PhysicsImpostorAdapter, _super);
+        function PhysicsImpostorAdapter(obj, viewer) {
+            var _this = _super.call(this, obj) || this;
+            _this._isVisible = false;
+            _this._viewer = viewer;
+            return _this;
+        }
+        /** Returns the name displayed in the tree */
+        PhysicsImpostorAdapter.prototype.id = function () {
+            var str = '';
+            var physicsImposter = this._obj;
+            if (physicsImposter && physicsImposter.object) {
+                str = physicsImposter.object.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        PhysicsImpostorAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        PhysicsImpostorAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            return propertiesLines;
+        };
+        PhysicsImpostorAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        PhysicsImpostorAdapter.prototype.setVisible = function (b) {
+            this._isVisible = b;
+            if (b) {
+                this._viewer.showImpostor(this._obj);
+            }
+            else {
+                this._viewer.hideImpostor(this._obj);
+            }
+        };
+        PhysicsImpostorAdapter.prototype.isVisible = function () {
+            return this._isVisible;
+        };
+        return PhysicsImpostorAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.PhysicsImpostorAdapter = PhysicsImpostorAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=PhysicsImpostorAdapter.js.map
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var GUIAdapter = (function (_super) {
+        __extends(GUIAdapter, _super);
+        function GUIAdapter(obj) {
+            return _super.call(this, obj) || this;
+        }
+        /** Returns the name displayed in the tree */
+        GUIAdapter.prototype.id = function () {
+            var str = '';
+            if (this._obj.name) {
+                str = this._obj.name;
+            } // otherwise nothing displayed        
+            return str;
+        };
+        /** Returns the type of this object - displayed in the tree */
+        GUIAdapter.prototype.type = function () {
+            return INSPECTOR.Helpers.GET_TYPE(this._obj);
+        };
+        /** Returns the list of properties to be displayed for this adapter */
+        GUIAdapter.prototype.getProperties = function () {
+            var propertiesLines = [];
+            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Control'].properties; _i < _a.length; _i++) {
+                var dirty = _a[_i];
+                var infos = new INSPECTOR.Property(dirty, this._obj);
+                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+            }
+            if (this._obj instanceof BABYLON.GUI.Button) {
+                for (var _b = 0, _c = INSPECTOR.PROPERTIES['Button'].properties; _b < _c.length; _b++) {
+                    var dirty = _c[_b];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.ColorPicker) {
+                for (var _d = 0, _e = INSPECTOR.PROPERTIES['ColorPicker'].properties; _d < _e.length; _d++) {
+                    var dirty = _e[_d];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Checkbox) {
+                for (var _f = 0, _g = INSPECTOR.PROPERTIES['Checkbox'].properties; _f < _g.length; _f++) {
+                    var dirty = _g[_f];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Ellipse) {
+                for (var _h = 0, _j = INSPECTOR.PROPERTIES['Ellipse'].properties; _h < _j.length; _h++) {
+                    var dirty = _j[_h];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Image) {
+                for (var _k = 0, _l = INSPECTOR.PROPERTIES['Image'].properties; _k < _l.length; _k++) {
+                    var dirty = _l[_k];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Line) {
+                for (var _m = 0, _o = INSPECTOR.PROPERTIES['Line'].properties; _m < _o.length; _m++) {
+                    var dirty = _o[_m];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.RadioButton) {
+                for (var _p = 0, _q = INSPECTOR.PROPERTIES['RadioButton'].properties; _p < _q.length; _p++) {
+                    var dirty = _q[_p];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Rectangle) {
+                for (var _r = 0, _s = INSPECTOR.PROPERTIES['Rectangle'].properties; _r < _s.length; _r++) {
+                    var dirty = _s[_r];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Slider) {
+                for (var _t = 0, _u = INSPECTOR.PROPERTIES['Slider'].properties; _t < _u.length; _t++) {
+                    var dirty = _u[_t];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.StackPanel) {
+                for (var _v = 0, _w = INSPECTOR.PROPERTIES['StackPanel'].properties; _v < _w.length; _v++) {
+                    var dirty = _w[_v];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.TextBlock) {
+                for (var _x = 0, _y = INSPECTOR.PROPERTIES['TextBlock'].properties; _x < _y.length; _x++) {
+                    var dirty = _y[_x];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            if (this._obj instanceof BABYLON.GUI.Container) {
+                for (var _z = 0, _0 = INSPECTOR.PROPERTIES['Container'].properties; _z < _0.length; _z++) {
+                    var dirty = _0[_z];
+                    var infos = new INSPECTOR.Property(dirty, this._obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            return propertiesLines;
+        };
+        GUIAdapter.prototype.getTools = function () {
+            var tools = [];
+            tools.push(new INSPECTOR.Checkbox(this));
+            return tools;
+        };
+        GUIAdapter.prototype.setVisible = function (b) {
+            this._obj.isVisible = b;
+        };
+        GUIAdapter.prototype.isVisible = function () {
+            return this._obj.isVisible;
+        };
+        return GUIAdapter;
+    }(INSPECTOR.Adapter));
+    INSPECTOR.GUIAdapter = GUIAdapter;
+})(INSPECTOR || (INSPECTOR = {}));
+
+//# sourceMappingURL=GUIAdapter.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1200,9 +1558,9 @@ var INSPECTOR;
             this._obj.computeWorldMatrix();
             var m = this._obj.getWorldMatrix();
             // Axis
-            var x = new BABYLON.Vector3(8, 0, 0);
-            var y = new BABYLON.Vector3(0, 8, 0);
-            var z = new BABYLON.Vector3(0, 0, 8);
+            var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
+            var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
+            var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
             // Draw an axis of the given color
             var _drawAxis = function (color, start, end) {
                 var axis = BABYLON.Mesh.CreateLines("###axis###", [
@@ -1554,7 +1912,12 @@ var INSPECTOR;
                 // Enter : validate the new value
                 var newValue = this._input.value;
                 this.updateObject();
-                this._property.value = newValue;
+                if (typeof this._property.value === 'number') {
+                    this._property.value = parseFloat(newValue);
+                }
+                else {
+                    this._property.value = newValue;
+                }
                 // Remove input
                 this.update();
                 // resume scheduler
@@ -1833,8 +2196,6 @@ var INSPECTOR;
     INSPECTOR.ColorElement = ColorElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=ColorElement.js.map
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1952,8 +2313,6 @@ var INSPECTOR;
     INSPECTOR.CubeTextureElement = CubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
-//# sourceMappingURL=CubeTextureElement.js.map
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1997,8 +2356,6 @@ var INSPECTOR;
     }(INSPECTOR.CubeTextureElement));
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
-
-//# sourceMappingURL=HDRCubeTextureElement.js.map
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2128,7 +2485,7 @@ var INSPECTOR;
          */
         Helpers.GET_TYPE = function (obj) {
             if (obj != null && obj != undefined) {
-                var classname = BABYLON.Tools.getClassName(obj);
+                var classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
                     classname = obj.constructor.name;
                     // classname is undefined in IE11
@@ -2507,10 +2864,31 @@ var INSPECTOR;
         /** Returns the treeitem corersponding to the given obj, null if not found */
         PropertyTab.prototype.getItemFor = function (_obj) {
             var obj = _obj;
+            // Search recursively
+            var searchObjectInTree = function (object, treeItem) {
+                if (treeItem.correspondsTo(object)) {
+                    return treeItem;
+                }
+                else {
+                    if (treeItem.children.length > 0) {
+                        for (var _i = 0, _a = treeItem.children; _i < _a.length; _i++) {
+                            var item = _a[_i];
+                            var it = searchObjectInTree(obj, item);
+                            if (it) {
+                                return it;
+                            }
+                        }
+                    }
+                    else {
+                        return null;
+                    }
+                }
+            };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
-                if (item.correspondsTo(obj)) {
-                    return item;
+                var it = searchObjectInTree(obj, item);
+                if (it) {
+                    return it;
                 }
             }
             return null;
@@ -2581,6 +2959,101 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    var GUITab = (function (_super) {
+        __extends(GUITab, _super);
+        function GUITab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'GUI', inspector) || this;
+        }
+        /* Overrides super */
+        GUITab.prototype._getTree = function () {
+            var _this = this;
+            var arr = [];
+            // Recursive method building the tree panel
+            var createNode = function (obj) {
+                var descendants = obj.children;
+                if (descendants && descendants.length > 0) {
+                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.GUIAdapter(obj));
+                    for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                        var child = descendants_1[_i];
+                        var n = createNode(child);
+                        node.add(n);
+                    }
+                    node.update();
+                    return node;
+                }
+                else {
+                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.GUIAdapter(obj));
+                }
+            };
+            // get all textures from the first scene
+            var instances = this._inspector.scene;
+            for (var _i = 0, _a = instances.textures; _i < _a.length; _i++) {
+                var tex = _a[_i];
+                //only get GUI's textures
+                if (tex instanceof BABYLON.GUI.AdvancedDynamicTexture) {
+                    var node = createNode(tex._rootContainer);
+                    arr.push(node);
+                }
+            }
+            return arr;
+        };
+        return GUITab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.GUITab = GUITab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var PhysicsTab = (function (_super) {
+        __extends(PhysicsTab, _super);
+        function PhysicsTab(tabbar, inspector) {
+            return _super.call(this, tabbar, 'Physics', inspector) || this;
+        }
+        /* Overrides super */
+        PhysicsTab.prototype._getTree = function () {
+            var arr = [];
+            var scene = this._inspector.scene;
+            if (!scene.isPhysicsEnabled()) {
+                return arr;
+            }
+            if (!this.viewer) {
+                this.viewer = new BABYLON.Debug.PhysicsViewer(scene);
+            }
+            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (mesh.physicsImpostor) {
+                    arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.PhysicsImpostorAdapter(mesh.physicsImpostor, this.viewer)));
+                }
+            }
+            return arr;
+        };
+        return PhysicsTab;
+    }(INSPECTOR.PropertyTab));
+    INSPECTOR.PhysicsTab = PhysicsTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
     var SoundTab = (function (_super) {
         __extends(SoundTab, _super);
         function SoundTab(tabbar, inspector) {
@@ -2628,7 +3101,7 @@ var INSPECTOR;
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             // Build the treepanel
             _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
-            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('image-panel', _this._panel);
+            _this._imagePanel = INSPECTOR.Helpers.CreateDiv('insp-details', _this._panel);
             Split([_this._treePanel, _this._imagePanel], {
                 blockDrag: _this._inspector.popupMode,
                 direction: 'vertical'
@@ -2680,7 +3153,13 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._imagePanel);
             // Get the texture object
             var texture = item.adapter.object;
+            var imgs = [];
             var img = INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel);
+            imgs.push(img);
+            //Create five other images elements
+            for (var i = 0; i < 5; i++) {
+                imgs.push(INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel));
+            }
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
                 texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
@@ -2689,7 +3168,33 @@ var INSPECTOR;
             }
             else if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
-                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, function (data) { return img.src = data; });
+                var scene = this._inspector.scene;
+                var engine_1 = scene.getEngine();
+                var size_1 = texture.getSize();
+                // Clone the texture
+                var screenShotTexture = texture.clone();
+                screenShotTexture.activeCamera = texture.activeCamera;
+                screenShotTexture.onBeforeRender = texture.onBeforeRender;
+                screenShotTexture.onAfterRender = texture.onAfterRender;
+                screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
+                // To display the texture after rendering
+                screenShotTexture.onAfterRenderObservable.add(function (faceIndex) {
+                    BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return imgs[faceIndex].src = data; }, "image/png");
+                });
+                // Render the texture
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+                screenShotTexture.render();
+                screenShotTexture.dispose();
+            }
+            else if (texture instanceof BABYLON.CubeTexture) {
+                // Display all textures of the CubeTexture
+                var i = 0;
+                for (var _i = 0, _a = texture['_files']; _i < _a.length; _i++) {
+                    var filename = _a[_i];
+                    imgs[i].src = filename;
+                    i++;
+                }
             }
             else if (texture.url) {
                 // If an url is present, the texture is an image
@@ -2829,9 +3334,8 @@ var INSPECTOR;
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);
+                var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
                 if (descendants.length > 0) {
-                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
-                    alreadyIn.push(node);
                     for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                         var child = descendants_1[_i];
                         if (child instanceof BABYLON.AbstractMesh) {
@@ -2842,12 +3346,23 @@ var INSPECTOR;
                         }
                     }
                     node.update();
-                    return node;
                 }
-                else {
-                    alreadyIn.push(obj);
-                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
+                // Retrieve the root node if the mesh is actually child of another mesh
+                // This can hapen if the child mesh has been created before the parent mesh
+                if (obj.parent != null && alreadyIn.indexOf(obj) != -1) {
+                    var i = 0;
+                    var notFound = true;
+                    // Find and delete the root node standing for this mesh
+                    while (i < arr.length && notFound) {
+                        if (obj.name === arr[i].id) {
+                            arr.splice(i, 1);
+                            notFound = false;
+                        }
+                        i++;
+                    }
                 }
+                alreadyIn.push(obj);
+                return node;
             };
             // get all meshes from the first scene
             var instances = this._inspector.scene;
@@ -3222,13 +3737,6 @@ var INSPECTOR;
             // Contents
             _this._consolePanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', consolePanel);
             _this._bjsPanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', bjsPanel);
-            // save old console.log
-            _this._oldConsoleLog = console.log;
-            _this._oldConsoleWarn = console.warn;
-            _this._oldConsoleError = console.error;
-            console.log = _this._addConsoleLog.bind(_this);
-            console.warn = _this._addConsoleWarn.bind(_this);
-            console.error = _this._addConsoleError.bind(_this);
             // Bjs logs
             _this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = function (entry) {
@@ -3251,6 +3759,18 @@ var INSPECTOR;
             console.log = this._oldConsoleLog;
             console.warn = this._oldConsoleWarn;
             console.error = this._oldConsoleError;
+        };
+        ConsoleTab.prototype.active = function (b) {
+            _super.prototype.active.call(this, b);
+            if (b) {
+                // save old console.log
+                this._oldConsoleLog = console.log;
+                this._oldConsoleWarn = console.warn;
+                this._oldConsoleError = console.error;
+                console.log = this._addConsoleLog.bind(this);
+                console.warn = this._addConsoleWarn.bind(this);
+                console.error = this._addConsoleError.bind(this);
+            }
         };
         ConsoleTab.prototype._message = function (type, message, caller) {
             var callerLine = INSPECTOR.Helpers.CreateDiv('caller', this._consolePanelContent);
@@ -3566,8 +4086,6 @@ var INSPECTOR;
                     updateFct: function () { return "WebGL v" + _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
                 });
             }
-            // Register the update loop
-            _this._scene.registerAfterRender(_this._updateLoopHandler);
             return _this;
         }
         StatsTab.prototype._createStatLabel = function (content, parent) {
@@ -3584,6 +4102,12 @@ var INSPECTOR;
         };
         StatsTab.prototype.dispose = function () {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+        };
+        StatsTab.prototype.active = function (b) {
+            _super.prototype.active.call(this, b);
+            if (b) {
+                this._scene.registerAfterRender(this._updateLoopHandler);
+            }
         };
         return StatsTab;
     }(INSPECTOR.Tab));
@@ -3626,6 +4150,10 @@ var INSPECTOR;
             _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            if (BABYLON.GUI) {
+                _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
+            }
+            _this._tabs.push(new INSPECTOR.PhysicsTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.CameraTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.SoundTab(_this, _this._inspector));
             _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
@@ -3633,7 +4161,6 @@ var INSPECTOR;
             //Check initialTab is defined and between tabs bounds
             if (!initialTab || initialTab < 0 || initialTab >= _this._tabs.length) {
                 initialTab = 0;
-                console.warn('');
             }
             _this._tabs[initialTab].active(true);
             // set all tab as visible
@@ -3723,6 +4250,14 @@ var INSPECTOR;
                     return tab;
                 }
             }
+        };
+        TabBar.prototype.getActiveTabIndex = function () {
+            for (var i = 0; i < this._tabs.length; i++) {
+                if (this._tabs[i].isActive()) {
+                    return i;
+                }
+            }
+            return 0;
         };
         Object.defineProperty(TabBar.prototype, "inspector", {
             get: function () {
@@ -3905,7 +4440,6 @@ var INSPECTOR;
             var pos = this._updatePointerPosition(evt);
             var pi = this._inspector.scene.pick(pos.x, pos.y, function (mesh) { return true; });
             if (pi.pickedMesh) {
-                console.log(pi.pickedMesh.name);
                 this._inspector.displayObjectDetails(pi.pickedMesh);
             }
             this._deactivate();
@@ -3992,40 +4526,26 @@ var INSPECTOR;
             var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
             /** True if label are displayed, false otherwise */
             _this._isDisplayed = false;
-            _this._canvas = null;
+            _this._advancedTexture = null;
             _this._labelInitialized = false;
             _this._scene = null;
-            _this._canvas2DLoaded = false;
-            _this._newMeshObserver = null;
-            _this._removedMeshObserver = null;
-            _this._newLightObserver = null;
-            _this._removedLightObserver = null;
-            _this._newCameraObserver = null;
-            _this._removedCameraObserver = null;
+            _this._guiLoaded = false;
             _this._scene = inspector.scene;
             return _this;
         }
         LabelTool.prototype.dispose = function () {
-            if (this._newMeshObserver) {
-                this._scene.onNewMeshAddedObservable.remove(this._newMeshObserver);
-                this._scene.onMeshRemovedObservable.remove(this._removedMeshObserver);
-                this._scene.onNewLightAddedObservable.remove(this._newLightObserver);
-                this._scene.onLightRemovedObservable.remove(this._removedLightObserver);
-                this._scene.onNewCameraAddedObservable.remove(this._newCameraObserver);
-                this._scene.onCameraRemovedObservable.remove(this._removedCameraObserver);
-                this._newMeshObserver = this._newLightObserver = this._newCameraObserver = this._removedMeshObserver = this._removedLightObserver = this._removedCameraObserver = null;
+            if (this._advancedTexture) {
+                this._advancedTexture.dispose();
             }
-            this._canvas.dispose();
-            this._canvas = null;
         };
-        LabelTool.prototype._checkC2DLoaded = function () {
-            if (this._canvas2DLoaded === true) {
+        LabelTool.prototype._checkGUILoaded = function () {
+            if (this._guiLoaded === true) {
                 return true;
             }
-            if (BABYLON.Canvas2D) {
-                this._canvas2DLoaded = true;
+            if (BABYLON.GUI) {
+                this._guiLoaded = true;
             }
-            return this._canvas2DLoaded;
+            return this._guiLoaded;
         };
         LabelTool.prototype._initializeLabels = function () {
             var _this = this;
@@ -4033,74 +4553,52 @@ var INSPECTOR;
             if (this._labelInitialized) {
                 return;
             }
-            // Can't initialize them if the Canvas2D lib is not loaded yet
-            if (!this._checkC2DLoaded()) {
+            // Can't initialize them if the GUI lib is not loaded yet
+            if (!this._checkGUILoaded()) {
                 return;
             }
             // Create the canvas that will be used to display the labels
-            this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "###Label Canvas###" /*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/ });
+            this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
             // Create label for all the Meshes, Lights and Cameras
             // Those that will be created/removed after this method is called will be taken care by the event handlers added below
             for (var _i = 0, _a = this._scene.meshes; _i < _a.length; _i++) {
                 var m = _a[_i];
                 this._createLabel(m);
             }
-            for (var _b = 0, _c = this._scene.lights; _b < _c.length; _b++) {
-                var l = _c[_b];
-                this._createLabel(l);
-            }
-            for (var _d = 0, _e = this._scene.cameras; _d < _e.length; _d++) {
-                var c = _e[_d];
-                this._createLabel(c);
-            }
-            // Add handlers for new/removed meshes, camera and lights
-            this._newMeshObserver = this._scene.onNewMeshAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
+            this._scene.onNewMeshAddedObservable.add(function (m, s) {
+                _this._createLabel(m);
             });
-            this._removedMeshObserver = this._scene.onMeshRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
-            });
-            this._newLightObserver = this._scene.onNewLightAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
-            });
-            this._removedLightObserver = this._scene.onLightRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
-            });
-            this._newCameraObserver = this._scene.onNewCameraAddedObservable.add(function (e, s) {
-                _this._createLabel(e);
-            });
-            this._removedCameraObserver = this._scene.onCameraRemovedObservable.add(function (e, s) {
-                _this._removeLabel(e);
+            this._scene.onMeshRemovedObservable.add(function (m, s) {
+                _this._removeLabel(m);
             });
             this._labelInitialized = true;
         };
-        LabelTool.prototype._createLabel = function (node) {
+        LabelTool.prototype._createLabel = function (mesh) {
             // Don't create label for "system nodes" (starting and ending with ###)
-            var name = node.name;
+            var name = mesh.name;
             if (INSPECTOR.Helpers.IsSystemName(name)) {
                 return;
             }
-            var labelGroup = new BABYLON.Group2D({ parent: this._canvas, id: "Label of " + node.name, trackNode: node, origin: BABYLON.Vector2.Zero(),
-                children: [
-                    new BABYLON.Rectangle2D({ id: "LabelRect", x: 0, y: 0, width: 100, height: 30, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080B0", children: [
-                            new BABYLON.Text2D(node.name, { x: 10, y: 4, fontName: "bold 16px Arial", fontSignedDistanceField: true })
-                        ]
-                    })
-                ] });
-            var r = labelGroup.children[0];
-            var t = r.children[0];
-            var ts = t.textSize.width;
-            r.width = ts + 20;
-            r.height = t.textSize.height + 12;
-            labelGroup.addExternalData("owner", node);
-            return labelGroup;
+            if (mesh) {
+                var rect1 = new BABYLON.GUI.Rectangle();
+                rect1.width = 4 + 10 * name.length + "px";
+                rect1.height = "22px";
+                rect1.background = "rgba(0,0,0,0.6)";
+                rect1.color = "black";
+                this._advancedTexture.addControl(rect1);
+                var label = new BABYLON.GUI.TextBlock();
+                label.text = name;
+                label.fontSize = 12;
+                rect1.addControl(label);
+                rect1.linkWithMesh(mesh);
+            }
         };
-        LabelTool.prototype._removeLabel = function (node) {
-            for (var _i = 0, _a = this._canvas.children; _i < _a.length; _i++) {
+        LabelTool.prototype._removeLabel = function (mesh) {
+            for (var _i = 0, _a = this._advancedTexture._rootContainer.children; _i < _a.length; _i++) {
                 var g = _a[_i];
-                var ed = g.getExternalData("owner");
-                if (ed === node) {
-                    g.dispose();
+                var ed = g._linkedMesh;
+                if (ed === mesh) {
+                    this._advancedTexture.removeControl(g);
                     break;
                 }
             }
@@ -4108,7 +4606,7 @@ var INSPECTOR;
         // Action : Display/hide mesh names on the canvas
         LabelTool.prototype.action = function () {
             // Don't toggle if the script is not loaded
-            if (!this._checkC2DLoaded()) {
+            if (!this._checkGUILoaded()) {
                 return;
             }
             // Toggle the label display state
@@ -4116,10 +4614,10 @@ var INSPECTOR;
             // Check if we have to display the labels
             if (this._isDisplayed) {
                 this._initializeLabels();
-                this._canvas.levelVisible = true;
+                this._advancedTexture._rootContainer.isVisible = true;
             }
             else {
-                this._canvas.levelVisible = false;
+                this._advancedTexture._rootContainer.isVisible = false;
             }
         };
         return LabelTool;

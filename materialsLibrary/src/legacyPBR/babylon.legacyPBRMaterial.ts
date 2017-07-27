@@ -66,8 +66,6 @@ module BABYLON {
         public RADIANCEOVERALPHA = false;
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
-        public INVERTNORMALMAPX = false;
-        public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
 
@@ -851,20 +849,7 @@ module BABYLON {
                         if (this.useParallaxOcclusion) {
                             this._defines.PARALLAXOCCLUSION = true;
                         }
-                    }
-
-                    if (this.invertNormalMapX) {
-                        this._defines.INVERTNORMALMAPX = true;
-                    }
-
-                    if (this.invertNormalMapY) {
-                        this._defines.INVERTNORMALMAPY = true;
-                    }
-
-                    if (scene._mirroredCameraPosition) {
-                        this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
-                        this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
-                    }                        
+                    }                     
                 }
 
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1154,7 +1139,7 @@ module BABYLON {
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vMicrosurfaceTextureLods",
-                        "vCameraInfos"
+                        "vCameraInfos", "vNormalReoderParams"
                 ];
 
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
@@ -1164,7 +1149,14 @@ module BABYLON {
                     ColorCurves.PrepareUniforms(uniforms);
                 }
                 if (this._defines.CAMERACOLORGRADING) {
-                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                    uniforms.push(
+                        "vCameraColorGradingInfos", 
+                        "vCameraColorGradingScaleOffset"
+                    );
+
+                    samplers.push(
+                        "cameraColorGrading2DSampler"
+                    );
                 }
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -1226,6 +1218,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1324,33 +1317,20 @@ module BABYLON {
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
 
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
-                                this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.z);
-                                this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.z);
-                                this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.z);
-                                this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.z);
-                                this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.z);
-                                this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.z);
-                                this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.z);
-                                this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.x,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.y,
-                                    (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.z);
+                                var polynomials = this.reflectionTexture.sphericalPolynomial;
+                                this._effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                this._effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                this._effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                this._effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                    polynomials.xx.y - polynomials.zz.y,
+                                    polynomials.xx.z - polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                    polynomials.yy.y - polynomials.zz.y,
+                                    polynomials.yy.z - polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                this._effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                this._effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                this._effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                             }
                         }
 
@@ -1383,6 +1363,13 @@ module BABYLON {
                         if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+
+
+                            if (this._myScene._mirroredCameraPosition) {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                            } else {
+                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
+                            }                              
                         }
 
                         if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1527,7 +1514,24 @@ module BABYLON {
                     }
 
                     if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
+                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+
+                        let x = this.cameraColorGradingTexture.level;                 // Texture Level
+                        let y = this.cameraColorGradingTexture.getSize().height;      // Texture Size example with 8
+                        let z = y - 1.0;                    // SizeMinusOne 8 - 1
+                        let w = 1 / y;                      // Space of 1 slice 1 / 8
+                        
+                        this._effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
+                        
+                        let slicePixelSizeU = w / y;    // Space of 1 pixel in U direction, e.g. 1/64
+                        let slicePixelSizeV = w;		// Space of 1 pixel in V direction, e.g. 1/8					    // Space of 1 pixel in V direction, e.g. 1/8
+                        
+                        let x2 = z * slicePixelSizeU;   // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
+                        let y2 = z / y;	                // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
+                        let z2 = 0.5 * slicePixelSizeU;	// Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
+                        let w2 = 0.5 * slicePixelSizeV;	// Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
+                        
+                        this._effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
                     }
                 }
 
@@ -1545,7 +1549,7 @@ module BABYLON {
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
+                    LegacyPBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
 
                 // View

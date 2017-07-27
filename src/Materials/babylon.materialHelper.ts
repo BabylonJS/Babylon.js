@@ -1,6 +1,29 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
+        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: MaterialDefines, key: string): void {
+            defines._needUVs = true;
+            defines[key] = true;
+            if (texture.getTextureMatrix().isIdentity(true)) {
+                defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
+                if (texture.coordinatesIndex === 0) {
+                    defines["MAINUV1"] = true;
+                } else {
+                    defines["MAINUV2"] = true;
+                }
+            } else {
+                defines[key + "DIRECTUV"] = 0;
+            }
+        }
+
+        public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
+            var matrix = texture.getTextureMatrix();
+
+            if (!matrix.isIdentity(true)) {
+                uniformBuffer.updateMatrix(key + "Matrix", matrix);
+            }
+        }
+
         public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
             if (defines._areMiscDirty) {
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -169,6 +192,11 @@
             for (var index = lightIndex; index < maxSimultaneousLights; index++) {
                 if (defines["LIGHT" + index] !== undefined) {
                     defines["LIGHT" + index] = false;
+                    defines["HEMILIGHT" + lightIndex] = false;
+                    defines["POINTLIGHT" + lightIndex] = false;
+                    defines["DIRLIGHT" + lightIndex] = false;                    
+                    defines["SPOTLIGHT" + lightIndex] = false;
+                    defines["SHADOW" + lightIndex] = false;
                 }
             }
 
@@ -322,17 +350,18 @@
             light.transferToEffect(effect, lightIndex + "");
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
             var lightIndex = 0;
             for (var light of mesh._lightSources) {
+                let scaledIntensity = light.getScaledIntensity();
                 light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
-                light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], light.range, lightIndex + "");
+                light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
                 if (defines["SPECULARTERM"]) {
-                    light.specular.scaleToRef(light.intensity, Tmp.Color3[1]);
+                    light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
                     light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
                 }
 

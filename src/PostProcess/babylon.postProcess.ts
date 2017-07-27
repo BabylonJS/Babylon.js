@@ -212,7 +212,8 @@
                 camera = camera || this._camera;
 
                 var scene = camera.getScene();
-                var maxSize = camera.getEngine().getCaps().maxTextureSize;
+                var engine = scene.getEngine();
+                var maxSize = engine.getCaps().maxTextureSize;
 
                 var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
                 var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
@@ -222,11 +223,11 @@
 
                 if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!(<PostProcessOptions>this._options).width) {
-                        desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode);
+                        desiredWidth = engine.needPOTTextures ? Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                     }
 
                     if (!(<PostProcessOptions>this._options).height) {
-                        desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode);
+                        desiredHeight = engine.needPOTTextures ? Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
                     }
                 }
 

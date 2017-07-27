@@ -1,6 +1,6 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
-    class SkyMaterial extends Material {
+    class SkyMaterial extends PushMaterial {
         luminance: number;
         turbidity: number;
         rayleigh: number;
@@ -13,16 +13,12 @@ declare module BABYLON {
         useSunPosition: boolean;
         private _cameraPosition;
         private _renderId;
-        private _defines;
-        private _cachedDefines;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BaseTexture;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): SkyMaterial;

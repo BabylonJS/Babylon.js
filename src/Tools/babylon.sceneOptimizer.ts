@@ -20,7 +20,7 @@
             for (var index = 0; index < scene.textures.length; index++) {
                 var texture = scene.textures[index];
 
-                if (!texture.canRescale) {
+                if (!texture.canRescale || (<any>texture).getContext) {
                     continue;
                 }
 

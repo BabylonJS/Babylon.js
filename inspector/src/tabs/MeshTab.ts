@@ -16,9 +16,9 @@ module INSPECTOR{
             let createNode = (obj : BABYLON.AbstractMesh) => {
                 let descendants = obj.getDescendants(true);
 
+                let node = new TreeItem(this, new MeshAdapter(obj));
+
                 if (descendants.length > 0) {
-                    let node = new TreeItem(this, new MeshAdapter(obj));
-                    alreadyIn.push(node);
                     for (let child of descendants) {     
                         if (child instanceof BABYLON.AbstractMesh) {
                             if (!Helpers.IsSystemName(child.name)) {  
@@ -28,11 +28,25 @@ module INSPECTOR{
                         }
                     }
                     node.update();
-                    return node;
-                } else {
-                    alreadyIn.push(obj);
-                    return new TreeItem(this, new MeshAdapter(obj));
+                } 
+
+                // Retrieve the root node if the mesh is actually child of another mesh
+                // This can hapen if the child mesh has been created before the parent mesh
+                if(obj.parent != null && alreadyIn.indexOf(obj) != -1){
+                    let i: number = 0;
+                    let notFound: boolean = true;
+                    // Find and delete the root node standing for this mesh
+                    while(i < arr.length && notFound){
+                        if(obj.name === arr[i].id){
+                             arr.splice(i, 1);
+                             notFound = false;
+                        }
+                        i++;
+                    }
                 }
+
+                alreadyIn.push(obj);                
+                return node;
             };
             
             // get all meshes from the first scene

@@ -9,6 +9,9 @@ module BABYLON {
         public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
         public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
 
+
+        public name = "stl";
+
         // force data to come in as an ArrayBuffer
         // we'll convert to string if it looks like it's an ASCII .stl
         public extensions: ISceneLoaderPluginExtensions = {
@@ -191,5 +194,7 @@ module BABYLON {
         }
     }
 
-    BABYLON.SceneLoader.RegisterPlugin(new STLFileLoader());
+    if (BABYLON.SceneLoader) {
+        BABYLON.SceneLoader.RegisterPlugin(new STLFileLoader());
+    }
 }

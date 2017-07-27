@@ -8,20 +8,23 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN
-- http://cdn.babylonjs.com/2-5/babylon.js
-- http://cdn.babylonjs.com/2-5/babylon.max.js
-- http://cdn.babylonjs.com/2-5/babylon.noworker.js
-- http://cdn.babylonjs.com/2-5/babylon.core.js
+- https://cdn.babylonjs.com/babylon.js
+- https://cdn.babylonjs.com/babylon.max.js
+- https://cdn.babylonjs.com/babylon.worker.js
+
+Additional references can be found on https://cdn.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist folder like https://cdn.babylonjs.com/gui/babylon.gui.min.js
 
 For preview release you can use the following ones:
 
-- http://preview.babylonjs.com/babylon.js
-- http://preview.babylonjs.com/babylon.max.js
-- http://preview.babylonjs.com/babylon.worker.js
+- https://preview.babylonjs.com/babylon.js
+- https://preview.babylonjs.com/babylon.max.js
+- https://preview.babylonjs.com/babylon.worker.js
+
+Additional references can be found on https://preview.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist/preview release folder like https://preview.babylonjs.com/gui/babylon.gui.min.js
 
 ## Preview release
 
-**3.0-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
+**3.1-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
 If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation

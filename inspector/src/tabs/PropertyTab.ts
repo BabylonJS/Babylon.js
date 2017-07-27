@@ -121,9 +121,31 @@ module INSPECTOR{
         /** Returns the treeitem corersponding to the given obj, null if not found */
         public getItemFor(_obj:any) : TreeItem{
             let obj = _obj as BABYLON.AbstractMesh;
+            
+            // Search recursively
+            let searchObjectInTree = (object: any, treeItem: TreeItem): TreeItem =>  {
+                if(treeItem.correspondsTo(object)) {
+                    return treeItem;
+                }
+                else{
+                    if(treeItem.children.length > 0){
+                        for (let item of treeItem.children) {
+                            let it = searchObjectInTree(obj, item);
+                            if (it) {
+                                return it;
+                            }
+                        }
+                    }
+                    else{
+                        return null;
+                    }
+                } 
+            }
+
             for (let item of this._treeItems) {
-                if (item.correspondsTo(obj)) {
-                    return item;
+                let it = searchObjectInTree(obj, item);
+                if (it) {
+                    return it;
                 }
             }
             return null;

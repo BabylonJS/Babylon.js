@@ -1,104 +1,137 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
+    export enum GLTFLoaderCoordinateSystemMode {
+        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
+        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        AUTO,
+
+        // The glTF right-handed data is not transformed in any form and is loaded directly.
+        PASS_THROUGH,
+
+        // Sets the useRightHandedSystem flag on the scene.
+        FORCE_RIGHT_HANDED,
+    }
+
     export interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
     }
 
     export interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
 
     export class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        public static GLTFLoaderV1: IGLTFLoader = null;
-        public static GLTFLoaderV2: IGLTFLoader = null;
+        public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+        public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
+        // V1 options
         public static HomogeneousCoordinates: boolean = false;
         public static IncrementalLoading: boolean = true;
+
+        // V2 options
+        public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+        public onTextureLoaded: (texture: BaseTexture) => void;
+        public onMaterialLoaded: (material: Material) => void;
+        public onComplete: () => void;
+
+        public name = "gltf";
 
         public extensions: ISceneLoaderPluginExtensions = {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
         };
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void {
-            var loaderData = GLTFFileLoader._parse(data);
-            var loader = this._getLoader(loaderData);
-            if (!loader) {
-                onError();
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+            var loaderData = GLTFFileLoader._parse(data, onError);
+            if (!loaderData) {
                 return;
             }
 
-            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onError);
+            var loader = this._getLoader(loaderData, onError);
+            if (!loader) {
+                return;
+            }
+
+            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         }
 
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void {
-            var loaderData = GLTFFileLoader._parse(data);
-            var loader = this._getLoader(loaderData);
-            if (!loader) {
-                onError();
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+            var loaderData = GLTFFileLoader._parse(data, onError);
+            if (!loaderData) {
                 return;
             }
 
-            return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onError);
+            var loader = this._getLoader(loaderData, onError);
+            if (!loader) {
+                return;
+            }
+
+            return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         }
 
         public canDirectLoad(data: string): boolean {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         }
 
-        private static _parse(data: string | ArrayBuffer): IGLTFLoaderData {
+        private static _parse(data: string | ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
             if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data);
+                return GLTFFileLoader._parseBinary(data, onError);
             }
 
-            return {
-                json: JSON.parse(data),
-                bin: null
-            };
+            try {
+                return {
+                    json: JSON.parse(data),
+                    bin: null
+                };
+            }
+            catch (e) {
+                onError(e.message);
+                return null;
+            }
         }
 
-        private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
+        private _getLoader(loaderData: IGLTFLoaderData, onError: (message: string) => void): IGLTFLoader {
             const loaderVersion = { major: 2, minor: 0 };
 
             var asset = (<any>loaderData.json).asset || {};
 
             var version = GLTFFileLoader._parseVersion(asset.version);
             if (!version) {
-                Tools.Error("Invalid version");
+                onError("Invalid version: " + asset.version);
                 return null;
             }
 
-            var minVersion = GLTFFileLoader._parseVersion(asset.minVersion);
-            if (minVersion) {
+            if (asset.minVersion !== undefined) {
+                var minVersion = GLTFFileLoader._parseVersion(asset.minVersion);
+                if (!minVersion) {
+                    onError("Invalid minimum version: " + asset.minVersion);
+                    return null;
+                }
+
                 if (GLTFFileLoader._compareVersion(minVersion, loaderVersion) > 0) {
-                    Tools.Error("Incompatible version");
+                    onError("Incompatible minimum version: " + asset.minVersion);
                     return null;
                 }
             }
 
-            var loaders = {
-                1: GLTFFileLoader.GLTFLoaderV1,
-                2: GLTFFileLoader.GLTFLoaderV2
+            var createLoaders = {
+                1: GLTFFileLoader.CreateGLTFLoaderV1,
+                2: GLTFFileLoader.CreateGLTFLoaderV2
             };
 
-            var loader = loaders[version.major];
-            if (loader === undefined) {
-                Tools.Error("Unsupported version");
+            var createLoader = createLoaders[version.major];
+            if (!createLoader) {
+                onError("Unsupported version: " + asset.version);
                 return null;
             }
 
-            if (loader === null) {
-                Tools.Error("v" + version.major + " loader is not available");
-                return null;
-            }
-
-            return loader;
+            return createLoader(this);
         }
 
-        private static _parseBinary(data: ArrayBuffer): IGLTFLoaderData {
+        private static _parseBinary(data: ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
             const Binary = {
                 Magic: 0x46546C67
             };
@@ -107,28 +140,28 @@ module BABYLON {
 
             var magic = binaryReader.readUint32();
             if (magic !== Binary.Magic) {
-                Tools.Error("Unexpected magic: " + magic);
+                onError("Unexpected magic: " + magic);
                 return null;
             }
 
             var version = binaryReader.readUint32();
             switch (version) {
-                case 1: return GLTFFileLoader._parseV1(binaryReader);
-                case 2: return GLTFFileLoader._parseV2(binaryReader);
+                case 1: return GLTFFileLoader._parseV1(binaryReader, onError);
+                case 2: return GLTFFileLoader._parseV2(binaryReader, onError);
             }
 
-            Tools.Error("Unsupported version: " + version);
+            onError("Unsupported version: " + version);
             return null;
         }
 
-        private static _parseV1(binaryReader: BinaryReader): IGLTFLoaderData {
+        private static _parseV1(binaryReader: BinaryReader, onError: (message: string) => void): IGLTFLoaderData {
             const ContentFormat = {
                 JSON: 0
             };
             
             var length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
-                Tools.Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
+                onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
                 return null;
             }
 
@@ -141,7 +174,7 @@ module BABYLON {
                     content = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength)));
                     break;
                 default:
-                    Tools.Error("Unexpected content format: " + contentFormat);
+                    onError("Unexpected content format: " + contentFormat);
                     return null;
             }
 
@@ -154,7 +187,7 @@ module BABYLON {
             };
         }
 
-        private static _parseV2(binaryReader: BinaryReader): IGLTFLoaderData {
+        private static _parseV2(binaryReader: BinaryReader, onError: (message: string) => void): IGLTFLoaderData {
             const ChunkFormat = {
                 JSON: 0x4E4F534A,
                 BIN: 0x004E4942
@@ -162,7 +195,7 @@ module BABYLON {
 
             var length = binaryReader.readUint32();
             if (length !== binaryReader.getLength()) {
-                Tools.Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
+                onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
                 return null;
             }
 
@@ -170,7 +203,7 @@ module BABYLON {
             var chunkLength = binaryReader.readUint32();
             var chunkFormat = binaryReader.readUint32();
             if (chunkFormat !== ChunkFormat.JSON) {
-                Tools.Error("First chunk format is not JSON");
+                onError("First chunk format is not JSON");
                 return null;
             }
             var json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
@@ -182,7 +215,7 @@ module BABYLON {
                 chunkFormat = binaryReader.readUint32();
                 switch (chunkFormat) {
                     case ChunkFormat.JSON:
-                        Tools.Error("Unexpected JSON chunk");
+                        onError("Unexpected JSON chunk");
                         return null;
                     case ChunkFormat.BIN:
                         bin = binaryReader.readUint8Array(chunkLength);
@@ -206,20 +239,23 @@ module BABYLON {
             }
 
             var parts = version.split(".");
-            if (parts.length === 0) {
+            if (parts.length != 2) {
                 return null;
             }
 
-            var major = parseInt(parts[0]);
-            if (major > 1 && parts.length != 2) {
+            var major = +parts[0];
+            if (isNaN(major)) {
                 return null;
             }
 
-            var minor = parseInt(parts[1]);
+            var minor = +parts[1];
+            if (isNaN(minor)) {
+                return null;
+            }
 
             return {
                 major: major,
-                minor: parseInt(parts[0])
+                minor: minor
             };
         }
 
@@ -279,5 +315,7 @@ module BABYLON {
         }
     }
 
-    BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    if (BABYLON.SceneLoader) {
+        BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
+    }
 }

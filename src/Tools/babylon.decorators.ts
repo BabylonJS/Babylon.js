@@ -1,12 +1,74 @@
 ﻿module BABYLON {
-    function generateSerializableMember(type: number, sourceName?: string) {
-        return (target: any, propertyKey: string | symbol) => {
-            if (!target.__serializableMembers) {
-                target.__serializableMembers = {};
+    var __decoratorInitialStore = {};
+    var __mergedStore = {};
+
+    function getDirectStore(target: any): any {
+        var classKey = target.getClassName();
+
+        if (!__decoratorInitialStore[classKey]) {
+            __decoratorInitialStore[classKey] = {};
+        }
+
+        return __decoratorInitialStore[classKey];
+    }
+
+    /**
+     * Return the list of properties flagged as serializable
+     * @param target: host object
+     */
+    function getMergedStore(target: any): any {
+        let classKey = target.getClassName();
+
+        if (__mergedStore[classKey]) {
+            return __mergedStore[classKey];
+        }
+
+        __mergedStore[classKey] = {};
+
+        let store = __mergedStore[classKey];
+        let currentTarget = target;
+        let currentKey = classKey;
+        while (currentKey) {
+            let initialStore = __decoratorInitialStore[currentKey];
+            for (var property in initialStore) {
+                store[property] = initialStore[property];                
             }
 
-            if (!target.__serializableMembers[propertyKey]) {
-                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            let parent: any;
+            let done = false;
+
+            do {
+                parent = Object.getPrototypeOf(currentTarget);
+                if (!parent.getClassName) {
+                    done = true;
+                    break;
+                }
+
+                if (parent.getClassName() !== currentKey) {
+                    break;
+                }
+
+                currentTarget = parent;
+            }
+            while (parent);
+
+            if (done) {
+                break;
+            }
+            
+            currentKey = parent.getClassName();
+            currentTarget = parent;
+        }
+
+        return store;
+    }
+
+    function generateSerializableMember(type: number, sourceName?: string) {
+        return (target: any, propertyKey: string | symbol) => {
+            var classStore = getDirectStore(target);
+
+            if (!classStore[propertyKey]) {
+                classStore[propertyKey] = { type: type, sourceName: sourceName };
             }
         }
     }
@@ -68,6 +130,15 @@
         return generateSerializableMember(7, sourceName); // color curves
     }
 
+    export function serializeAsColor4(sourceName?: string) {
+        return generateSerializableMember(8, sourceName); // color 4
+    }
+
+    export function serializeAsImageProcessingConfiguration(sourceName?: string) {
+        return generateSerializableMember(9, sourceName); // image processing
+    }
+
+
     export class SerializationHelper {
 
         public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -80,9 +151,11 @@
                 serializationObject.tags = Tags.GetTags(entity);
             }
 
+            var serializedProperties = getMergedStore(entity);
+
             // Properties
-            for (var property in (<any>entity).__serializableMembers) {
-                var propertyDescriptor = (<any>entity).__serializableMembers[property];
+            for (var property in serializedProperties) {
+                var propertyDescriptor = serializedProperties[property];
                 var targetPropertyName = propertyDescriptor.sourceName || property;
                 var propertyType = propertyDescriptor.type;
                 var sourceProperty = entity[property];
@@ -113,6 +186,12 @@
                         case 7:     // Color Curves
                             serializationObject[targetPropertyName] = sourceProperty.serialize();
                             break;
+                        case 8:     // Color 4
+                            serializationObject[targetPropertyName] = (<Color4>sourceProperty).asArray();
+                            break;
+                        case 9:     // Image Processing
+                            serializationObject[targetPropertyName] = (<ImageProcessingConfiguration>sourceProperty).serialize();
+                            break;
                     }
                 }
             }
@@ -128,9 +207,11 @@
                 Tags.AddTagsTo(destination, source.tags);
             }
 
+            var classStore = getMergedStore(destination);
+
             // Properties
-            for (var property in (<any>destination).__serializableMembers) {
-                var propertyDescriptor = (<any>destination).__serializableMembers[property];
+            for (var property in classStore) {
+                var propertyDescriptor = classStore[property];
                 var sourceProperty = source[propertyDescriptor.sourceName || property];
                 var propertyType = propertyDescriptor.type;
 
@@ -160,6 +241,12 @@
                         case 7:     // Color Curves
                             destination[property] = ColorCurves.Parse(sourceProperty);
                             break;
+                        case 8:     // Color 4
+                            destination[property] = Color4.FromArray(sourceProperty);
+                            break;
+                        case 9:     // Image Processing
+                            destination[property] = ImageProcessingConfiguration.Parse(sourceProperty);
+                            break;
                     }
                 }
             }
@@ -174,10 +261,12 @@
             if (Tags) {
                 Tags.AddTagsTo(destination, (<any>source).tags);
             }
+            
+            var classStore = getMergedStore(destination);
 
             // Properties
-            for (var property in (<any>destination).__serializableMembers) {
-                var propertyDescriptor = (<any>destination).__serializableMembers[property];
+            for (var property in classStore) {
+                var propertyDescriptor = classStore[property];
                 var sourceProperty = source[property];
                 var propertyType = propertyDescriptor.type;
 

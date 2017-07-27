@@ -29,50 +29,60 @@ module BABYLON.GLTF2 {
             return bufferView.buffer;
         }
 
-        /**
-        * Returns the wrap mode of the texture
-        * @param mode: the mode value
-        */
-        public static GetWrapMode(mode: number): number {
+        public static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void {
+            for (var index = 0; index < view.length; index++) {
+                func(view[index], index);
+            }
+        }
+
+        public static GetTextureWrapMode(mode: ETextureWrapMode): number {
+            // Set defaults if undefined
+            mode = mode === undefined ? ETextureWrapMode.REPEAT : mode;
+
             switch (mode) {
-                case ETextureWrapMode.CLAMP_TO_EDGE: return Texture.CLAMP_ADDRESSMODE;
+                case ETextureWrapMode.CLAMP_TO_EDGE: Texture.CLAMP_ADDRESSMODE;
                 case ETextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
                 case ETextureWrapMode.REPEAT: return Texture.WRAP_ADDRESSMODE;
-                default: return Texture.WRAP_ADDRESSMODE;
+                default:
+                    Tools.Warn("Invalid texture wrap mode (" + mode + ")");
+                    return Texture.WRAP_ADDRESSMODE;
             }
         }
 
-        /**
-         * Returns the byte stride giving an accessor
-         * @param accessor: the GLTF accessor objet
-         */
-        public static GetByteStrideFromType(accessor: IGLTFAccessor): number {
-            // Needs this function since "byteStride" isn't requiered in glTF format
-            var type = accessor.type;
+        public static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number {
+            // Set defaults if undefined
+            magFilter = magFilter === undefined ? ETextureMagFilter.LINEAR : magFilter;
+            minFilter = minFilter === undefined ? ETextureMinFilter.LINEAR_MIPMAP_NEAREST : minFilter;
 
-            switch (type) {
-                case "VEC2": return 2;
-                case "VEC3": return 3;
-                case "VEC4": return 4;
-                case "MAT2": return 4;
-                case "MAT3": return 9;
-                case "MAT4": return 16;
-                default: return 1;
+            if (magFilter === ETextureMagFilter.LINEAR) {
+                switch (minFilter) {
+                    case ETextureMinFilter.NEAREST: return Texture.LINEAR_NEAREST;
+                    case ETextureMinFilter.LINEAR: return Texture.LINEAR_LINEAR;
+                    case ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return Texture.LINEAR_NEAREST_MIPNEAREST;
+                    case ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return Texture.LINEAR_LINEAR_MIPNEAREST;
+                    case ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.LINEAR_NEAREST_MIPLINEAR;
+                    case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.LINEAR_LINEAR_MIPLINEAR;
+                    default:
+                        Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                        return Texture.LINEAR_LINEAR_MIPLINEAR;
+                }
             }
-        }
+            else {
+                if (magFilter !== ETextureMagFilter.NEAREST) {
+                    Tools.Warn("Invalid texture magnification filter (" + magFilter + ")");
+                }
 
-        /**
-         * Returns the texture filter mode giving a mode value
-         * @param mode: the filter mode value
-         */
-        public static GetTextureFilterMode(mode: number): ETextureMinFilter {
-            switch (mode) {
-                case ETextureMinFilter.LINEAR:
-                case ETextureMinFilter.LINEAR_MIPMAP_NEAREST:
-                case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.TRILINEAR_SAMPLINGMODE;
-                case ETextureMinFilter.NEAREST:
-                case ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return Texture.NEAREST_SAMPLINGMODE;
-                default: return Texture.BILINEAR_SAMPLINGMODE;
+                switch (minFilter) {
+                    case ETextureMinFilter.NEAREST: return Texture.NEAREST_NEAREST;
+                    case ETextureMinFilter.LINEAR: return Texture.NEAREST_LINEAR;
+                    case ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return Texture.NEAREST_NEAREST_MIPNEAREST;
+                    case ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return Texture.NEAREST_LINEAR_MIPNEAREST;
+                    case ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.NEAREST_NEAREST_MIPLINEAR;
+                    case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.NEAREST_LINEAR_MIPLINEAR;
+                    default:
+                        Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                        return Texture.NEAREST_NEAREST_MIPNEAREST;
+                }
             }
         }
 

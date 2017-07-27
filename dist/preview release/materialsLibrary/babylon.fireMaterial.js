@@ -209,6 +209,37 @@ var BABYLON;
             }
             return results;
         };
+        FireMaterial.prototype.getActiveTextures = function () {
+            var activeTextures = _super.prototype.getActiveTextures.call(this);
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+            if (this._distortionTexture) {
+                activeTextures.push(this._distortionTexture);
+            }
+            if (this._opacityTexture) {
+                activeTextures.push(this._opacityTexture);
+            }
+            return activeTextures;
+        };
+        FireMaterial.prototype.hasTexture = function (texture) {
+            if (_super.prototype.hasTexture.call(this, texture)) {
+                return true;
+            }
+            if (this._diffuseTexture === texture) {
+                return true;
+            }
+            if (this._distortionTexture === texture) {
+                return true;
+            }
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+            return false;
+        };
+        FireMaterial.prototype.getClassName = function () {
+            return "FireMaterial";
+        };
         FireMaterial.prototype.dispose = function (forceDisposeEffect) {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();

@@ -357,6 +357,26 @@ module BABYLON {
             impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
         }
 
+        public getBodyMass(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.density;
+        }
+
+        public getBodyFriction(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.friction;
+        }
+
+        public setBodyFriction(impostor: PhysicsImpostor, friction:number) {
+            impostor.physicsBody.shapes.friction = friction;
+        }
+
+        public getBodyRestitution(impostor: PhysicsImpostor):number {
+            return impostor.physicsBody.shapes.restitution;
+        }
+
+        public setBodyRestitution(impostor: PhysicsImpostor, restitution:number) {
+            impostor.physicsBody.shapes.restitution = restitution;
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }
@@ -386,6 +406,30 @@ module BABYLON {
             if (motor) {
                 motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
+        }
+
+        public syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor){
+            var body = impostor.physicsBody;
+
+            mesh.position.x = body.position.x;
+            mesh.position.y = body.position.y;
+            mesh.position.z = body.position.z;
+            
+            mesh.rotationQuaternion.x = body.orientation.x;
+            mesh.rotationQuaternion.y = body.orientation.y;
+            mesh.rotationQuaternion.z = body.orientation.z;
+            mesh.rotationQuaternion.w = body.orientation.s;
+        }
+
+        public getRadius(impostor: PhysicsImpostor):number{
+            return impostor.physicsBody.shapes.radius;
+        }
+
+        public getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3):void{
+            var shape = impostor.physicsBody.shapes;
+            result.x = shape.halfWidth * 2;
+            result.y = shape.halfHeight * 2;
+            result.z = shape.halfDepth * 2;
         }
 
         public dispose() {

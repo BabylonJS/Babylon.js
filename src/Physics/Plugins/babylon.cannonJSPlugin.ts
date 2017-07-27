@@ -29,7 +29,8 @@
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+            // Delta is in seconds, should be provided in milliseconds
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -430,6 +431,26 @@
             impostor.physicsBody.updateMassProperties();
         }
 
+        public getBodyMass(impostor: PhysicsImpostor): number {
+            return impostor.physicsBody.mass;
+        }
+
+        public getBodyFriction(impostor: PhysicsImpostor): number {
+            return impostor.physicsBody.material.friction;
+        }
+
+        public setBodyFriction(impostor: PhysicsImpostor, friction: number) {
+            impostor.physicsBody.material.friction = friction;
+        }
+
+        public getBodyRestitution(impostor: PhysicsImpostor): number {
+            return impostor.physicsBody.material.restitution;
+        }
+
+        public setBodyRestitution(impostor: PhysicsImpostor, restitution: number) {
+            impostor.physicsBody.material.restitution = restitution;
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }
@@ -469,8 +490,33 @@
             joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
         }
 
+        public syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor) {
+            var body = impostor.physicsBody;
+
+            mesh.position.x = body.position.x;
+            mesh.position.y = body.position.y;
+            mesh.position.z = body.position.z;
+
+            mesh.rotationQuaternion.x = body.quaternion.x;
+            mesh.rotationQuaternion.y = body.quaternion.y;
+            mesh.rotationQuaternion.z = body.quaternion.z;
+            mesh.rotationQuaternion.w = body.quaternion.w;
+        }
+
+        public getRadius(impostor: PhysicsImpostor): number {
+            var shape = impostor.physicsBody.shapes[0];
+            return shape.boundingSphereRadius;
+        }
+
+        public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
+            var shape = impostor.physicsBody.shapes[0];
+            result.x = shape.halfExtents.x * 2;
+            result.y = shape.halfExtents.y * 2;
+            result.z = shape.halfExtents.z * 2;
+        }
+
         public dispose() {
-            //nothing to do, actually.
+
         }
     }
 }

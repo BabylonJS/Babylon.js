@@ -33,9 +33,12 @@ declare module BABYLON {
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): FurMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial;
         static GenerateTexture(name: string, scene: Scene): DynamicTexture;
         static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[];

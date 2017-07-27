@@ -9,6 +9,7 @@ module BABYLON {
         private _supportsTangents = false;
         private _vertexCount = 0;
         private _uniqueId = 0;
+        private _tempInfluences = new Array<number>();
 
         public constructor(scene?: Scene) {
             if (!scene) {
@@ -106,14 +107,14 @@ module BABYLON {
         }
 
         private _syncActiveTargets(needUpdate: boolean): void {
-            this._activeTargets.reset();
-            var tempInfluences = [];
+            let influenceCount = 0;
+            this._activeTargets.reset();            
             this._supportsNormals = true;
             this._supportsTangents = true;
             for (var target of this._targets) {
                 if (target.influence > 0) {
                     this._activeTargets.push(target);
-                    tempInfluences.push(target.influence);
+                    this._tempInfluences[influenceCount++] = target.influence;
 
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
@@ -124,8 +125,14 @@ module BABYLON {
                 }
             }
 
-            this._influences = new Float32Array(tempInfluences);
+            if (!this._influences || this._influences.length !== influenceCount) {
+                this._influences = new Float32Array(influenceCount);
+            }
 
+            for (var index = 0; index < influenceCount; index++) {
+                this._influences[index] = this._tempInfluences[index];
+            }
+            
             if (needUpdate) {
                 // Flag meshes as dirty to resync with the active targets
                 for (var mesh of this._scene.meshes) {

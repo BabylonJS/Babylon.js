@@ -199,16 +199,28 @@ module BABYLON.GUI {
                 var globalViewport = this._getGlobalViewport(scene);
 
                 for (var control of this._linkedControls) {
+                    if (!control.isVisible) {
+                        continue;
+                    }
+
                     var mesh = control._linkedMesh;
+
+                    if (mesh.isDisposed()) {
+                        Tools.SetImmediate(()=>{
+                            control.linkWithMesh(null);
+                        });
+                        
+                        continue;
+                    }
                     
                     var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
                     if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                        control.isVisible = false;
+                        control.notRenderable = true;
                         continue;
                     }
-                    control.isVisible = true;
+                    control.notRenderable = false;
                     control._moveToProjectedPosition(projectedPosition);
                 }
             }
@@ -261,8 +273,8 @@ module BABYLON.GUI {
             if (!this._rootContainer._processPicking(x, y, type)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                        this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
+                    if (this._lastControlOver) {
+                        this._lastControlOver._onPointerOut();
                     }
                     
                     this._lastControlOver = null;
@@ -288,10 +300,12 @@ module BABYLON.GUI {
             this._attachToOnBlur(scene);
         }
 
-        public attachToMesh(mesh: AbstractMesh): void {
+        public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
             var scene = this.getScene();
             this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERUP && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
                 }
 
@@ -304,17 +318,23 @@ module BABYLON.GUI {
                         this._lastControlDown.forcePointerUp();
                     }
                     this._lastControlDown = null;  
+                } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    if (this._lastControlOver) {
+                        this._lastControlOver._onPointerOut();
+                    }              
+                    this._lastControlOver = null;
                 }
             });
 
+            mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnBlur(scene);
         }
 
         private _attachToOnBlur(scene: Scene): void {
             this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
-                if (this._lastControlOver && this._lastControlOver.onPointerOutObservable.hasObservers()) {
-                    this._lastControlOver.onPointerOutObservable.notifyObservers(this._lastControlOver);
-                }                
+                if (this._lastControlOver) {
+                    this._lastControlOver._onPointerOut();
+                }            
                 this._lastControlOver = null;
 
                 if (this._lastControlDown) {
@@ -325,7 +345,7 @@ module BABYLON.GUI {
         }
 
         // Statics
-        public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024): AdvancedDynamicTexture {
+        public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
 
             var material = new BABYLON.StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
@@ -337,7 +357,7 @@ module BABYLON.GUI {
 
             mesh.material = material;
 
-            result.attachToMesh(mesh);
+            result.attachToMesh(mesh, supportPointerMove);
 
             return result;
         }

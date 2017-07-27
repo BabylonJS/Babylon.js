@@ -163,6 +163,31 @@
         }
 
         /**
+         * Return the active textures of the material.
+         */
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this.environmentTexture) {
+                activeTextures.push(this.environmentTexture);
+            }
+
+            if (this.normalTexture) {
+                activeTextures.push(this.normalTexture);
+            }
+
+            if (this.emissiveTexture) {
+                activeTextures.push(this.emissiveTexture);
+            }
+
+            if (this.occlusionTexture) {
+                activeTextures.push(this.occlusionTexture);
+            }
+
+            return activeTextures;
+        }
+
+        /**
          * Instantiates a new PBRMaterial instance.
          * 
          * @param name The material name
@@ -171,9 +196,11 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            this._useEmissiveAsIllumination = true;
             this._useAmbientInGrayScale = true;
-            this._useScalarInLinearSpace = true;
         }
+
+        public getClassName(): string {
+            return "PBRBaseSimpleMaterial";
+        }        
     }
 }

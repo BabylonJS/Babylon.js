@@ -72,6 +72,7 @@ declare module BABYLON {
         private _material;
         private _reflectionTransform;
         private _lastTime;
+        private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
         /**
@@ -92,9 +93,12 @@ declare module BABYLON {
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: Scene): Mesh;
     }

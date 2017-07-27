@@ -9,6 +9,7 @@ module BABYLON {
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
+           
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -262,14 +263,14 @@ module BABYLON {
 
             // Adapt options
             this._options = options || {
-                mainTextureRatio: 0.25,
+                mainTextureRatio: 0.5,
                 blurTextureSizeRatio: 0.5,
-                blurHorizontalSize: 1,
-                blurVerticalSize: 1,
+                blurHorizontalSize: 1.0,
+                blurVerticalSize: 1.0,
                 alphaBlendingMode: Engine.ALPHA_COMBINE
             };
-            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.25;
-            this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 0.5;
+            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.5;
+            this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 1.0;
             this._options.blurHorizontalSize = this._options.blurHorizontalSize || 1;
             this._options.blurVerticalSize = this._options.blurVerticalSize || 1;
             this._options.alphaBlendingMode = this._options.alphaBlendingMode || Engine.ALPHA_COMBINE;
@@ -314,8 +315,8 @@ module BABYLON {
         private createTextureAndPostProcesses(): void {
             var blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
             var blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-            blurTextureWidth = Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize);
-            blurTextureHeight = Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize);
+            blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+            blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
             this._mainTexture = new RenderTargetTexture("HighlightLayerMainRTT",
                 {
@@ -774,8 +775,8 @@ module BABYLON {
                 this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
                 this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
 
-                this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
-                this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+                this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
+                this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
             }
         }
 

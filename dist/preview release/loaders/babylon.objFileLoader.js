@@ -197,6 +197,7 @@ var BABYLON;
     BABYLON.MTLFileLoader = MTLFileLoader;
     var OBJFileLoader = (function () {
         function OBJFileLoader() {
+            this.name = "obj";
             this.extensions = ".obj";
             this.obj = /^o/;
             this.group = /^g/;
@@ -769,8 +770,10 @@ var BABYLON;
     }());
     OBJFileLoader.OPTIMIZE_WITH_UV = false;
     BABYLON.OBJFileLoader = OBJFileLoader;
-    //Add this loader into the register plugin
-    BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
+    if (BABYLON.SceneLoader) {
+        //Add this loader into the register plugin
+        BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
+    }
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.objFileLoader.js.map

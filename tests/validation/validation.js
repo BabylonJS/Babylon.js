@@ -4,6 +4,7 @@ var engine;
 var canvas;
 var currentScene;
 var config;
+var justOnce;
 
 var threshold = 25;
 var errorRatio = 5;
@@ -94,7 +95,9 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
 
     currentScene.dispose();
 
-    runTest(index + 1);
+    if (!justOnce) {
+        runTest(index + 1);
+    }
 }
 
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing) {
@@ -114,7 +117,10 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     });
 }
 
-function runTest(index) {
+function 
+
+
+runTest(index) {
     if (index >= config.tests.length) {
         return;
     }
@@ -171,6 +177,27 @@ function runTest(index) {
             currentScene = newScene;
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
         });
+    }
+    else if (test.playgroundId) {
+        var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+        var pgRoot = "/playground"
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState === 4) {
+                if (xmlHttp.status === 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText)[0];
+                    var code = JSON.parse(snippet.jsonPayload).code.toString();
+                    code = code.replace(/\/textures\//g, pgRoot + "/textures/");
+                    code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
+
+                    currentScene = eval(code + "\r\ncreateScene(engine)");
+                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+                }
+            }
+        }
+
+        xmlHttp.open("GET", snippetUrl + "/" + test.playgroundId.replace("#", "/"));
+        xmlHttp.send();
     } else {
         // Fix references
         if (test.specificRoot) {
@@ -238,7 +265,17 @@ xhr.addEventListener("load",function() {
         config = JSON.parse(xhr.responseText);
 
         // Run tests
-        runTest(0, engine);
+        var index = 0;
+        if (window.location.search) {
+            justOnce = true;
+            var title = window.location.search.replace("?", "").replace(/%20/g, " ");
+            for (var index = 0; index < config.tests.length; index++) {
+                if (config.tests[index].title === title) {
+                    break;
+                }
+            }
+        }
+        runTest(index);
 
     }
 }, false);

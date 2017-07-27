@@ -1,27 +1,37 @@
 
 declare module BABYLON {
+    enum GLTFLoaderCoordinateSystemMode {
+        AUTO = 0,
+        PASS_THROUGH = 1,
+        FORCE_RIGHT_HANDED = 2,
+    }
     interface IGLTFLoaderData {
         json: Object;
         bin: ArrayBufferView;
     }
     interface IGLTFLoader {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror: () => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onsuccess: () => void, onerror: () => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
     class GLTFFileLoader implements ISceneLoaderPluginAsync {
-        static GLTFLoaderV1: IGLTFLoader;
-        static GLTFLoaderV2: IGLTFLoader;
+        static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+        static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        onTextureLoaded: (texture: BaseTexture) => void;
+        onMaterialLoaded: (material: Material) => void;
+        onComplete: () => void;
+        name: string;
         extensions: ISceneLoaderPluginExtensions;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         canDirectLoad(data: string): boolean;
-        private static _parse(data);
-        private _getLoader(loaderData);
-        private static _parseBinary(data);
-        private static _parseV1(binaryReader);
-        private static _parseV2(binaryReader);
+        private static _parse(data, onError);
+        private _getLoader(loaderData, onError);
+        private static _parseBinary(data, onError);
+        private static _parseV1(binaryReader, onError);
+        private static _parseV2(binaryReader, onError);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
         private static _decodeBufferToText(view);
@@ -120,15 +130,11 @@ declare module BABYLON.GLTF2 {
         samplers: IGLTFAnimationSampler[];
         targets?: any[];
     }
-    interface IGLTFAssetProfile extends IGLTFProperty {
-        api?: string;
-        version?: string;
-    }
     interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
         generator?: string;
-        profile?: IGLTFAssetProfile;
         version: string;
+        minVersion?: string;
     }
     interface IGLTFBuffer extends IGLTFChildRootProperty {
         uri?: string;
@@ -186,7 +192,8 @@ declare module BABYLON.GLTF2 {
         alphaMode?: string;
         alphaCutoff: number;
         doubleSided?: boolean;
-        babylonMaterial?: PBRMaterial;
+        index?: number;
+        babylonMaterial?: Material;
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
         attributes: {
@@ -214,6 +221,7 @@ declare module BABYLON.GLTF2 {
         translation?: number[];
         weights?: number[];
         index?: number;
+        parent?: IGLTFNode;
         babylonMesh?: Mesh;
         babylonSkinToBones?: {
             [skin: number]: Bone;
@@ -240,7 +248,6 @@ declare module BABYLON.GLTF2 {
         sampler?: number;
         source: number;
         babylonTextures?: Texture[];
-        blobURL?: string;
     }
     interface IGLTFTextureInfo {
         index: number;
@@ -270,55 +277,70 @@ declare module BABYLON.GLTF2 {
 
 
 declare module BABYLON.GLTF2 {
-    class GLTFLoader implements IGLTFLoader {
+    class GLTFLoader implements IGLTFLoader, IDisposable {
+        private _parent;
         private _gltf;
-        private _pendingCount;
-        private _onLoaded;
-        private _errors;
         private _babylonScene;
         private _rootUrl;
         private _defaultMaterial;
+        private _successCallback;
+        private _progressCallback;
+        private _errorCallback;
+        private _renderReady;
+        private _disposed;
+        private _objectURLs;
+        private _renderReadyObservable;
+        private _renderPendingCount;
+        private _loaderPendingCount;
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        static LoadMaterial(index: number): IGLTFMaterial;
-        static LoadCoreMaterial(index: number): Material;
-        static LoadCommonMaterialProperties(material: IGLTFMaterial): void;
-        static LoadAlphaProperties(material: IGLTFMaterial): void;
-        static LoadTexture(textureInfo: IGLTFTextureInfo): Texture;
-        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError: () => void): void;
-        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onError: () => void): void;
-        private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onError);
+        readonly gltf: IGLTF;
+        readonly babylonScene: Scene;
+        executeWhenRenderReady(func: () => void): void;
+        constructor(parent: GLTFFileLoader);
+        dispose(): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onProgress, onError);
+        private _onError(message);
+        private _onProgress(event);
+        private _onRenderReady();
+        private _onLoaderComplete();
         private _loadData(data);
+        private _addRightHandToLeftHandRootTransform();
         private _showMeshes();
         private _startAnimations();
-        private _clear();
         private _loadScene(nodeNames);
         private _loadSkin(node);
         private _updateBone(node, parentNode, skin, inverseBindMatrixData);
         private _createBone(node, skin);
-        private _loadMesh(node, parentNode);
+        private _loadMesh(node);
         private _loadMeshData(node, mesh, babylonMesh);
         private _loadVertexDataAsync(primitive, onSuccess);
         private _createMorphTargets(node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsData(mesh, primitive, vertexData, babylonMesh);
         private _loadTransform(node, babylonMesh);
-        private _traverseScene(nodeNames, scene, action);
-        private _traverseNode(nodeNames, index, action, parentNode?);
+        private _traverseNodes(indices, action, parentNode?);
+        private _traverseNode(index, action, parentNode?);
         private _loadAnimations();
         private _loadAnimationChannel(animation, animationIndex, channelIndex);
         private _loadBufferAsync(index, onSuccess);
         private _loadBufferViewAsync(bufferView, byteOffset, byteLength, componentType, onSuccess);
         private _loadAccessorAsync(accessor, onSuccess);
-        private _addPendingData(data);
-        private _removePendingData(data);
+        private _getByteStrideFromType(accessor);
+        addPendingData(data: any): void;
+        removePendingData(data: any): void;
+        addLoaderPendingData(data: any): void;
+        removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
-        private _loadMaterial(index);
-        private _loadCoreMaterial(index);
-        private _loadCommonMaterialProperties(material);
-        private _loadAlphaProperties(material);
-        private _loadTexture(textureInfo);
+        private _loadMaterialMetallicRoughnessProperties(material);
+        loadMaterial(index: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void;
+        createPbrMaterial(material: IGLTFMaterial): void;
+        loadMaterialBaseProperties(material: IGLTFMaterial): void;
+        loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void;
+        loadTexture(textureInfo: IGLTFTextureInfo): Texture;
     }
 }
 
@@ -338,21 +360,9 @@ declare module BABYLON.GLTF2 {
         * @param uri: the uri to decode
         */
         static DecodeBase64(uri: string): ArrayBuffer;
-        /**
-        * Returns the wrap mode of the texture
-        * @param mode: the mode value
-        */
-        static GetWrapMode(mode: number): number;
-        /**
-         * Returns the byte stride giving an accessor
-         * @param accessor: the GLTF accessor objet
-         */
-        static GetByteStrideFromType(accessor: IGLTFAccessor): number;
-        /**
-         * Returns the texture filter mode giving a mode value
-         * @param mode: the filter mode value
-         */
-        static GetTextureFilterMode(mode: number): ETextureMinFilter;
+        static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void;
+        static GetTextureWrapMode(mode: ETextureWrapMode): number;
+        static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number;
         /**
          * Decodes a buffer view into a string
          * @param view: the buffer view
@@ -364,19 +374,29 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
-        private _name;
         enabled: boolean;
-        constructor(name: string);
-        readonly name: string;
-        protected loadMaterial(index: number): Material;
-        static LoadMaterial(index: number): Material;
+        readonly abstract name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
+        static _Extensions: GLTFLoaderExtension[];
+        static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
+        private static _ApplyExtensions(action);
     }
 }
 
 
-declare module BABYLON.GLTF2 {
-    class GLTFMaterialsPbrSpecularGlossinessExtension extends GLTFLoaderExtension {
-        constructor();
-        protected loadMaterial(index: number): Material;
+declare module BABYLON.GLTF2.Extensions {
+    class MSFTLOD extends GLTFLoaderExtension {
+        readonly name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
+        private loadMaterialLOD(loader, material, materialLODs, lod, assign);
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
+        readonly name: string;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
+        private _loadSpecularGlossinessProperties(loader, material, properties);
     }
 }

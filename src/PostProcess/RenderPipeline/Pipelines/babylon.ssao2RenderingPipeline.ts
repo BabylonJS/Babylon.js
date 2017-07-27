@@ -315,8 +315,8 @@
                 effect.setFloat("base", this.base);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
-                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.activeCamera.minZ );
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) );
                 effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
                 effect.setTexture("textureSampler", this._depthTexture);

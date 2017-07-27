@@ -267,11 +267,8 @@ module INSPECTOR {
                     updateFct:() => { return "WebGL v" + this._engine.webGLVersion + " - " + this._glInfo.version + " - "+this._glInfo.renderer}
                 });
             }
-
-
-            // Register the update loop
-            this._scene.registerAfterRender(this._updateLoopHandler);
         }
+        
         private _createStatLabel(content:string, parent: HTMLElement) : HTMLElement {
             let elem = Helpers.CreateDiv('stat-label', parent);
             elem.textContent = content;
@@ -287,6 +284,13 @@ module INSPECTOR {
 
         public dispose() {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+        }
+
+        public active(b: boolean){
+            super.active(b);
+            if(b){
+                this._scene.registerAfterRender(this._updateLoopHandler);
+            }
         }
     }
 }

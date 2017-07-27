@@ -66,6 +66,17 @@ var Test = (function () {
             }
         });
 
+        // Skybox
+        var skybox = BABYLON.Mesh.CreateBox("skyBox", 500.0, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/textures/skybox/TropicalSunnyDay", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
+
         var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
         var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
         var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 10.0, 9.0, scene);
@@ -213,6 +224,112 @@ var Test = (function () {
             cubes.push(b);
         }
 
+        scene.getMeshByName("Box #6").scaling.x = 2;
+
+        //Other meshes, to contrôl mesh hierarchy
+        var box1 = BABYLON.MeshBuilder.CreateBox("box1", {size: 1}, scene);
+
+        var box2 = BABYLON.MeshBuilder.CreateBox("box2", {size: 1}, scene);
+        box2.position.x = 1.5;
+        box2.parent = box1;
+
+        var box3 = BABYLON.MeshBuilder.CreateBox("box3", {size: 1}, scene);
+        box3.position.x = 1.5;
+        box3.parent = box2;
+
+        var box4 = BABYLON.MeshBuilder.CreateBox("box4", {size: 1}, scene);
+        box4.position.x = 1.5;
+        box4.parent = box3;
+
+        window.addEventListener("keydown", function (evt) {
+            sphere1.dispose();
+            var sphere7 = BABYLON.Mesh.CreateSphere("Sphere7", 10.0, 9.0, scene);
+            sphere7.position.x = 40;
+        });
+
+        var sphere_1 = BABYLON.Mesh.CreateSphere("_sphere_1", 16, 2, scene);
+
+        var assets_mesh = new BABYLON.AbstractMesh("assets_mesh", scene);
+        var sphere_2 = BABYLON.Mesh.CreateSphere("_sphere_2", 3, 2, scene);
+        var sphere_3 = BABYLON.Mesh.CreateSphere("_sphere_3", 2, 2, scene);
+        var scene_mesh = new BABYLON.AbstractMesh;
+        scene_mesh.name="scene_mesh";
+    
+        sphere_1.parent = assets_mesh;
+        sphere_2.parent = assets_mesh;
+        sphere_3.parent = assets_mesh;
+
+        for (var i=0; i<10 ; i++){
+            var inst = sphere_1.createInstance("C_" + i + "clone");
+            inst.isVisible = true;
+            inst.setEnabled = true;
+            inst.parent = scene_mesh;
+            inst.position.x = i*2;
+            inst.refreshBoundingInfo();
+            inst.computeWorldMatrix();
+        }
+
+        // to test reflection prob texture handling
+        var probe = new BABYLON.ReflectionProbe("probe", 512, scene);
+        probe.renderList.push(sphere1);
+
+        // gui
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+        var picker = new BABYLON.GUI.ColorPicker();
+        picker.height = "150px";
+        picker.width = "150px";
+        picker.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+        var checkbox = new BABYLON.GUI.Checkbox();
+        checkbox.width = "20px";
+        checkbox.height = "20px";
+
+        var slider = new BABYLON.GUI.Slider();
+        slider.minimum = 0;
+        slider.maximum = 2 * Math.PI;
+        slider.value = 0;
+        slider.height = "20px";
+        slider.width = "200px";
+
+        var line = new BABYLON.GUI.Line();
+        line.x1 = 10;
+        line.y1 = 10;
+        line.x2 = 1000;
+        line.y2 = 500;
+
+        var panel = new BABYLON.GUI.StackPanel();    
+
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but", "Click Me");
+        button.width = 0.2;
+        button.height = "40px";
+        button.color = "white";
+        button.background = "green";
+        panel.addControl(button);     
+
+        var button2 = BABYLON.GUI.Button.CreateSimpleButton("but2", "Click Me also!");
+        button2.width = 0.2;
+        button2.height = "40px";
+        button2.color = "white";
+        button2.background = "green";
+        panel.addControl(button2);     
+
+        var ellipse1 = new BABYLON.GUI.Ellipse();
+        ellipse1.width = "100px"
+        ellipse1.height = "100px";
+        ellipse1.color = "Orange";
+        ellipse1.thickness = 4;
+        ellipse1.background = "green";
+
+
+        advancedTexture.addControl(ellipse1);    
+        advancedTexture.addControl(panel);   
+        advancedTexture.addControl(picker);    
+        advancedTexture.addControl(checkbox);    
+        advancedTexture.addControl(slider);    
+        advancedTexture.addControl(line);    
+        advancedTexture.addControl(checkbox);  
+        
         this.scene = scene;
     };
     return Test;

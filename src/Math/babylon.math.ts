@@ -6,77 +6,6 @@
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
 
-
-    export class MathTools {
-        /**
-         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
-         */
-        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
-        }
-
-        /**
-         * Returns a string : the upper case translation of the number i to hexadecimal.  
-         */
-        public static ToHex(i: number): string {
-            var str = i.toString(16);
-
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-
-            return str.toUpperCase();
-        }
-
-        /**
-         * Returns -1 if value is negative and +1 is value is positive.  
-         * Returns the value itself if it's equal to zero.  
-         */
-        public static Sign(value: number): number {
-            value = +value; // convert to a number
-
-            if (value === 0 || isNaN(value))
-                return value;
-
-            return value > 0 ? 1 : -1;
-        }
-
-        /**
-         * Returns the value itself if it's between min and max.  
-         * Returns min if the value is lower than min.
-         * Returns max if the value is greater than max.  
-         */
-        public static Clamp(value: number, min = 0, max = 1): number {
-            return Math.min(max, Math.max(min, value));
-        }
-    }
-
-
-    export class Scalar {
-        /**
-         * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
-         */
-        public static Lerp(start: number, end: number, amount: number): number {
-            return start + ((end - start) * amount);
-        }
-
-        /**
-         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
-         */
-        public static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
-            var squared = amount * amount;
-            var cubed = amount * squared;
-            var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-            var part2 = (-2.0 * cubed) + (3.0 * squared);
-            var part3 = (cubed - (2.0 * squared)) + amount;
-            var part4 = cubed - squared;
-
-            return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
-        }
-    }
-
-
     export class Color3 {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.  
@@ -278,7 +207,7 @@
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
-            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
+            return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
         }
 
         /**
@@ -371,6 +300,7 @@
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+        public static Teal(): Color3 { return new Color3(0, 1.0, 1.0); }
         public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
     }
 
@@ -378,7 +308,7 @@
         /**
          * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
          */
-        constructor(public r: number, public g: number, public b: number, public a: number) {
+        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 1) {
         }
 
         // Operators
@@ -550,8 +480,50 @@
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
-            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
+            return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB) + Scalar.ToHex(intA);
         }
+
+        /**
+         * Returns a new Color4 converted to linear space.  
+         */
+        public toLinearSpace(): Color4 {
+            var convertedColor = new Color4();
+            this.toLinearSpaceToRef(convertedColor);
+            return convertedColor;
+        }
+
+        /**
+         * Converts the Color4 values to linear space and stores the result in "convertedColor".  
+         * Returns the unmodified Color4.  
+         */
+        public toLinearSpaceToRef(convertedColor: Color4): Color4 {
+            convertedColor.r = Math.pow(this.r, ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, ToLinearSpace);
+            convertedColor.a = this.a;
+            return this;
+        }
+
+        /**
+         * Returns a new Color4 converted to gamma space.  
+         */
+        public toGammaSpace(): Color4 {
+            var convertedColor = new Color4();
+            this.toGammaSpaceToRef(convertedColor);
+            return convertedColor;
+        }
+
+        /**
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor".  
+         * Returns the unmodified Color4.  
+         */
+        public toGammaSpaceToRef(convertedColor: Color4): Color4 {
+            convertedColor.r = Math.pow(this.r, ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, ToGammaSpace);
+            convertedColor.a = this.a;
+            return this;
+        }        
 
         // Statics
         /**
@@ -824,7 +796,7 @@
          * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.  
          */
         public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
-            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
+            return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
@@ -1256,7 +1228,7 @@
          * Boolean : True if the current Vector3 and the passed vector coordinates are distant less than epsilon.
          */
         public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
-            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon) && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon);
+            return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         /**
@@ -1702,7 +1674,6 @@
         }
 
         private static _viewportMatrixCache: Matrix;
-        private static _matrixCache: Matrix;
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
@@ -1717,7 +1688,7 @@
                 0, 0, 0.5, 0,
                 cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
 
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.multiplyToRef(viewportMatrix, matrix);
 
@@ -1725,7 +1696,7 @@
         }
 
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
@@ -1733,7 +1704,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (MathTools.WithinEpsilon(num, 1.0)) {
+            if (Scalar.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1741,7 +1712,7 @@
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
-            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix)
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
@@ -1749,7 +1720,7 @@
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 
-            if (MathTools.WithinEpsilon(num, 1.0)) {
+            if (Scalar.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -2007,10 +1978,10 @@
          */
         public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
             return otherVector
-                && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon)
-                && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon)
-                && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon)
-                && MathTools.WithinEpsilon(this.w, otherVector.w, epsilon);
+                && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && Scalar.WithinEpsilon(this.w, otherVector.w, epsilon);
         }
 
         /**
@@ -2917,11 +2888,14 @@
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
 
-        public updateFlag: number;
+        private _isIdentity = false;
+        private _isIdentityDirty = true;
+        public updateFlag: number;        
         public m: Float32Array = new Float32Array(16);
 
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = true;
         }
 
         public constructor() {
@@ -2932,17 +2906,26 @@
         /**
          * Boolean : True is the matrix is the identity matrix
          */
-        public isIdentity(): boolean {
-            if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
-                return false;
+        public isIdentity(considerAsTextureMatrix = false): boolean {
+            if (this._isIdentityDirty) {
+                this._isIdentityDirty = false;
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                    this._isIdentity = false;
+                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
+                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                    this._isIdentity = false;
+                } else {
+                    this._isIdentity = true;
+                }
 
-            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
-                this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
-                return false;
+                if (!considerAsTextureMatrix && this.m[10] !== 1.0) {
+                    this._isIdentity = false;
+                }
+            }
 
-            return true;
+            return this._isIdentity;
         }
         /**
          * Returns the matrix determinant (float).  
@@ -3283,13 +3266,13 @@
             translation.y = this.m[13];
             translation.z = this.m[14];
 
-            var xs = MathTools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
-            var ys = MathTools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
-            var zs = MathTools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+            scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
+            scale.y = Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
+            scale.z = Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
 
-            scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
-            scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
-            scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
+            if (this.determinant() <= 0) {
+                scale.y *= -1;
+            }
 
             if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
                 rotation.x = 0;
@@ -4403,7 +4386,12 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(renderWidth: number, renderHeight: number): Viewport {
+        public toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport {
+            if ((<Engine>renderWidthOrEngine)._gl) {
+                var engine = (<Engine>renderWidthOrEngine);
+                return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            }
+            let renderWidth = <number>renderWidthOrEngine;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
         /**
@@ -4907,13 +4895,13 @@
 
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!MathTools.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {     // search for a point in the plane
+                if (!Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {     // search for a point in the plane
                     point = new Vector3(0.0, -1.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
+                else if (!Scalar.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(1.0, 0.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
+                else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -5059,87 +5047,6 @@
                 l += (path[i].subtract(path[i - 1])).length();
             }
             return l;
-        }
-    }
-
-    // SphericalHarmonics
-    export class SphericalHarmonics {
-        public L00: Vector3 = Vector3.Zero();
-        public L1_1: Vector3 = Vector3.Zero();
-        public L10: Vector3 = Vector3.Zero();
-        public L11: Vector3 = Vector3.Zero();
-        public L2_2: Vector3 = Vector3.Zero();
-        public L2_1: Vector3 = Vector3.Zero();
-        public L20: Vector3 = Vector3.Zero();
-        public L21: Vector3 = Vector3.Zero();
-        public L22: Vector3 = Vector3.Zero();
-
-        public addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void {
-            var colorVector = new Vector3(color.r, color.g, color.b);
-            var c = colorVector.scale(deltaSolidAngle);
-
-            this.L00 = this.L00.add(c.scale(0.282095));
-
-            this.L1_1 = this.L1_1.add(c.scale(0.488603 * direction.y));
-            this.L10 = this.L10.add(c.scale(0.488603 * direction.z));
-            this.L11 = this.L11.add(c.scale(0.488603 * direction.x));
-
-            this.L2_2 = this.L2_2.add(c.scale(1.092548 * direction.x * direction.y));
-            this.L2_1 = this.L2_1.add(c.scale(1.092548 * direction.y * direction.z));
-            this.L21 = this.L21.add(c.scale(1.092548 * direction.x * direction.z));
-
-            this.L20 = this.L20.add(c.scale(0.315392 * (3.0 * direction.z * direction.z - 1.0)));
-            this.L22 = this.L22.add(c.scale(0.546274 * (direction.x * direction.x - direction.y * direction.y)));
-        }
-
-        public scale(scale: number): void {
-            this.L00 = this.L00.scale(scale);
-            this.L1_1 = this.L1_1.scale(scale);
-            this.L10 = this.L10.scale(scale);
-            this.L11 = this.L11.scale(scale);
-            this.L2_2 = this.L2_2.scale(scale);
-            this.L2_1 = this.L2_1.scale(scale);
-            this.L20 = this.L20.scale(scale);
-            this.L21 = this.L21.scale(scale);
-            this.L22 = this.L22.scale(scale);
-        }
-    }
-
-    // SphericalPolynomial
-    export class SphericalPolynomial {
-        public x: Vector3 = Vector3.Zero();
-        public y: Vector3 = Vector3.Zero();
-        public z: Vector3 = Vector3.Zero();
-        public xx: Vector3 = Vector3.Zero();
-        public yy: Vector3 = Vector3.Zero();
-        public zz: Vector3 = Vector3.Zero();
-        public xy: Vector3 = Vector3.Zero();
-        public yz: Vector3 = Vector3.Zero();
-        public zx: Vector3 = Vector3.Zero();
-
-        public addAmbient(color: Color3): void {
-            var colorVector = new Vector3(color.r, color.g, color.b);
-            this.xx = this.xx.add(colorVector);
-            this.yy = this.yy.add(colorVector);
-            this.zz = this.zz.add(colorVector);
-        }
-
-        public static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
-            var result = new SphericalPolynomial();
-
-            result.x = harmonics.L11.scale(1.02333);
-            result.y = harmonics.L1_1.scale(1.02333);
-            result.z = harmonics.L10.scale(1.02333);
-
-            result.xx = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).add(harmonics.L22.scale(0.429043));
-            result.yy = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).subtract(harmonics.L22.scale(0.429043));
-            result.zz = harmonics.L00.scale(0.886277).add(harmonics.L20.scale(0.495417));
-
-            result.yz = harmonics.L2_1.scale(0.858086);
-            result.zx = harmonics.L21.scale(0.858086);
-            result.xy = harmonics.L2_2.scale(0.858086);
-
-            return result;
         }
     }
 
