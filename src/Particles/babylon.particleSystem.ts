@@ -73,6 +73,7 @@
         }
 
         public updateFunction: (particles: Particle[]) => void;
+        public onAnimationEnd: () => void = null;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
@@ -372,6 +373,9 @@
             if (this._stopped) {
                 if (!this._alive) {
                     this._started = false;
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                     if (this.disposeOnStop) {
                         this._scene._toBeDisposed.push(this);
                     }
