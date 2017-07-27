@@ -198,7 +198,6 @@
         { "Path": "../../../src/Rendering/babylon.edgesRenderer.js" },
         { "Path": "../../../src/Tools/babylon.loadingScreen.js" },
         { "Path": "../../../src/Probes/babylon.reflectionProbe.js" },
-        { "Path": "../../../src/tools/hdr/babylon.tools.pmremGenerator.js" },
         { "Path": "../../../src/tools/hdr/babylon.tools.cubemapToSphericalPolynomial.js" },
         { "Path": "../../../src/tools/hdr/babylon.tools.panoramaToCubemap.js" },
         { "Path": "../../../src/tools/hdr/babylon.tools.hdr.js" },

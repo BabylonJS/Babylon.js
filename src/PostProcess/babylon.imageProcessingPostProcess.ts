@@ -1,82 +1,273 @@
 ﻿module BABYLON {
     export class ImageProcessingPostProcess extends PostProcess {
-		private _colorGradingTexture: BaseTexture;
-		public colorGradingWeight: number = 1.0;
-		public colorCurves = new ColorCurves();
-        private _colorCurvesEnabled = true;
 
-        public cameraFov = 0.5;
+        /**
+         * Default configuration related to image processing available in the PBR Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
-		public vignetteStretch = 0;
-		public vignetteCentreX = 0;
-		public vignetteCentreY = 0;
-		public vignetteWeight = 1.5;
-		public vignetteColor: BABYLON.Color4 = new BABYLON.Color4(0, 0, 0, 0);
-		private _vignetteBlendMode = ImageProcessingPostProcess.VIGNETTEMODE_MULTIPLY;
-        private _vignetteEnabled = true;
-
-		public cameraContrast = 1.0;
-		public cameraExposure = 1.68;
-		private _cameraToneMappingEnabled = true;
-
-        private _fromLinearSpace = false;
-
-        public get colorGradingTexture(): BaseTexture {
-            return this._colorGradingTexture;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+            return this._imageProcessingConfiguration;
         }
 
-        public set colorGradingTexture(value: BaseTexture) {
-            if (this._colorGradingTexture === value) {
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         * 
+         * If sets to null, the scene one is in use.
+         */
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+            this._attachImageProcessingConfiguration(value);
+        }
+
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration 
+         */
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+            if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
 
-            this._colorGradingTexture = value;
-            this._updateParameters();
-        }
-
-        public get vignetteBlendMode(): number {
-            return this._vignetteBlendMode;
-        }
-
-        public set vignetteBlendMode(value: number) {
-            if (this._vignetteBlendMode === value) {
-                return;
+            // Detaches observer.
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
 
-            this._vignetteBlendMode = value;
-            this._updateParameters();
-        }  
+            // Pick the scene configuration if needed.
+            if (!configuration) {
+                var camera = this.getCamera();
+                var scene = camera ? camera.getScene() : BABYLON.Engine.LastCreatedScene;
+                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = configuration;
+            }
 
+            // Attaches observer.
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._updateParameters();
+            });
+
+            // Ensure the effect will be rebuilt.
+            this._updateParameters();
+        }
+
+        /**
+         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        public get colorCurves(): ColorCurves {
+            return this.imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        public set colorCurves(value: ColorCurves) {
+            this.imageProcessingConfiguration.colorCurves = value;
+        }
+
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
         public get colorCurvesEnabled(): boolean {
-            return this._colorCurvesEnabled;
+            return this.imageProcessingConfiguration.colorCurvesEnabled;
         }
-
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
         public set colorCurvesEnabled(value: boolean) {
-            if (this._colorCurvesEnabled === value) {
-                return;
-            }
-
-            this._colorCurvesEnabled = value;
-            this._updateParameters();
-        }           
-
-        public get vignetteEnabled(): boolean {
-            return this._vignetteEnabled;
+            this.imageProcessingConfiguration.colorCurvesEnabled = value;
         }
 
+        /**
+         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        public get colorGradingTexture(): BaseTexture {
+            return this.imageProcessingConfiguration.colorGradingTexture;
+        }
+        /**
+         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        public set colorGradingTexture(value: BaseTexture) {
+            this.imageProcessingConfiguration.colorGradingTexture = value;
+        }
+
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public get colorGradingEnabled(): boolean {
+            return this.imageProcessingConfiguration.colorGradingEnabled;
+        }
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        public set colorGradingEnabled(value: boolean) {
+            this.imageProcessingConfiguration.colorGradingEnabled = value;
+        }
+
+        /**
+         * Gets exposure used in the effect.
+         */
+        public get exposure(): number {
+            return this.imageProcessingConfiguration.exposure;
+        }
+        /**
+         * Sets exposure used in the effect.
+         */
+        public set exposure(value: number) {
+            this.imageProcessingConfiguration.exposure = value;
+        }
+
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        public get toneMappingEnabled(): boolean {
+            return this._imageProcessingConfiguration.toneMappingEnabled;
+        };
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        public set toneMappingEnabled(value: boolean) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        };
+
+        /**
+         * Gets contrast used in the effect.
+         */
+        public get contrast(): number {
+            return this.imageProcessingConfiguration.contrast;
+        }
+        /**
+         * Sets contrast used in the effect.
+         */
+        public set contrast(value: number) {
+            this.imageProcessingConfiguration.contrast = value;
+        }
+
+        /**
+         * Gets Vignette stretch size.
+         */
+        public get vignetteStretch(): number {
+            return this.imageProcessingConfiguration.vignetteStretch;
+        }
+        /**
+         * Sets Vignette stretch size.
+         */
+        public set vignetteStretch(value: number) {
+            this.imageProcessingConfiguration.vignetteStretch = value;
+        }
+
+        /**
+         * Gets Vignette centre X Offset.
+         */
+        public get vignetteCentreX(): number {
+            return this.imageProcessingConfiguration.vignetteCentreX;
+        }
+        /**
+         * Sets Vignette centre X Offset.
+         */
+        public set vignetteCentreX(value: number) {
+            this.imageProcessingConfiguration.vignetteCentreX = value;
+        }
+
+        /**
+         * Gets Vignette centre Y Offset.
+         */
+        public get vignetteCentreY(): number {
+            return this.imageProcessingConfiguration.vignetteCentreY;
+        }
+        /**
+         * Sets Vignette centre Y Offset.
+         */
+        public set vignetteCentreY(value: number) {
+            this.imageProcessingConfiguration.vignetteCentreY = value;
+        }
+
+        /**
+         * Gets Vignette weight or intensity of the vignette effect.
+         */
+        public get vignetteWeight(): number {
+            return this.imageProcessingConfiguration.vignetteWeight;
+        }
+        /**
+         * Sets Vignette weight or intensity of the vignette effect.
+         */
+        public set vignetteWeight(value: number) {
+            this.imageProcessingConfiguration.vignetteWeight = value;
+        }
+
+        /**
+         * Gets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+         * if vignetteEnabled is set to true.
+         */
+        public get vignetteColor(): Color4 {
+            return this.imageProcessingConfiguration.vignetteColor;
+        }
+        /**
+         * Sets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+         * if vignetteEnabled is set to true.
+         */
+        public set vignetteColor(value: Color4) {
+            this.imageProcessingConfiguration.vignetteColor = value;
+        }
+
+        /**
+         * Gets Camera field of view used by the Vignette effect.
+         */
+        public get vignetteCameraFov(): number {
+            return this.imageProcessingConfiguration.vignetteCameraFov;
+        }
+        /**
+         * Sets Camera field of view used by the Vignette effect.
+         */
+        public set vignetteCameraFov(value: number) {
+            this.imageProcessingConfiguration.vignetteCameraFov = value;
+        }
+
+        /**
+         * Gets the vignette blend mode allowing different kind of effect.
+         */
+        public get vignetteBlendMode(): number {
+            return this.imageProcessingConfiguration.vignetteBlendMode;
+        }
+        /**
+         * Sets the vignette blend mode allowing different kind of effect.
+         */
+        public set vignetteBlendMode(value: number) {
+            this.imageProcessingConfiguration.vignetteBlendMode = value;
+        }
+
+        /**
+         * Gets wether the vignette effect is enabled.
+         */
+        public get vignetteEnabled(): boolean {
+            return this.imageProcessingConfiguration.vignetteEnabled;
+        }
+        /**
+         * Sets wether the vignette effect is enabled.
+         */
         public set vignetteEnabled(value: boolean) {
-            if (this._vignetteEnabled === value) {
-                return;
-            }
+            this.imageProcessingConfiguration.vignetteEnabled = value;
+        }
 
-            this._vignetteEnabled = value;
-            this._updateParameters();
-        }      
-
+        @serialize()
+        private _fromLinearSpace = true;
+        /**
+         * Gets wether the input of the processing is in Gamma or Linear Space.
+         */
         public get fromLinearSpace(): boolean {
             return this._fromLinearSpace;
         }
-
+        /**
+         * Sets wether the input of the processing is in Gamma or Linear Space.
+         */
         public set fromLinearSpace(value: boolean) {
             if (this._fromLinearSpace === value) {
                 return;
@@ -84,122 +275,74 @@
 
             this._fromLinearSpace = value;
             this._updateParameters();
-        }              
-
-        public get cameraToneMappingEnabled(): boolean {
-            return this._cameraToneMappingEnabled;
         }
 
-        public set cameraToneMappingEnabled(value: boolean) {
-            if (this._cameraToneMappingEnabled === value) {
-                return;
-            }
-
-            this._cameraToneMappingEnabled = value;
-            this._updateParameters();
-        }               
+        /**
+         * Defines cache preventing GC.
+         */
+        private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
+            IMAGEPROCESSING: false,
+            VIGNETTE: false,
+            VIGNETTEBLENDMODEMULTIPLY: false,
+            VIGNETTEBLENDMODEOPAQUE: false,
+            TONEMAPPING: false,
+            CONTRAST: false,
+            COLORCURVES: false,
+            COLORGRADING: false,
+            FROMLINEARSPACE: false,
+            SAMPLER3DGREENDEPTH: false,
+            SAMPLER3DBGRMAP: false,
+            IMAGEPROCESSINGPOSTPROCESS: false,
+            EXPOSURE: false,
+        }
 
         constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "imageProcessing", [
-                                            'contrast',
-                                            'vignetteSettings1',
-                                            'vignetteSettings2',
-                                            'cameraExposureLinear',
-                                            'vCameraColorCurveNegative',
-                                            'vCameraColorCurveNeutral',
-                                            'vCameraColorCurvePositive',
-                                            'colorTransformSettings'                    
-                                            ], ["txColorTransform"], options, camera, samplingMode, engine, reusable,
+            super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
                                             null, textureType, "postprocess", null, true);
+
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
+
+            this.imageProcessingConfiguration.applyByPostProcess = true;
 
             this._updateParameters();
 
             this.onApply = (effect: Effect) => {
-                let aspectRatio = this.aspectRatio;
-                
-                // Color 
-                if (this._colorCurvesEnabled) {
-                    ColorCurves.Bind(this.colorCurves, effect);
-                }
-
-                if (this._vignetteEnabled) {
-                    // Vignette
-                    let vignetteScaleY = Math.tan(this.cameraFov * 0.5);
-                    let vignetteScaleX = vignetteScaleY * aspectRatio;
-
-                    let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-                    vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-                    vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
-
-                    effect.setFloat4('vignetteSettings1', vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
-
-                    let vignettePower = -2.0 * this.vignetteWeight;
-                    effect.setFloat4('vignetteSettings2', this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
-                }
-
-                // Contrast and exposure
-                effect.setFloat('contrast', this.cameraContrast);
-                effect.setFloat('cameraExposureLinear', Math.pow(2.0, -this.cameraExposure) * Math.PI);
-                
-                // Color transform settings
-                if (this._colorGradingTexture) {
-                    effect.setTexture('txColorTransform', this.colorGradingTexture);
-                    let textureSize = this.colorGradingTexture.getSize().height;
-
-                    effect.setFloat4("colorTransformSettings",
-                        (textureSize - 1) / textureSize, // textureScale
-                        0.5 / textureSize, // textureOffset
-                        textureSize, // textureSize
-                        this.colorGradingWeight // weight
-                    );                
-                }
+                this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
             };
         }
 
+        public getClassName(): string {
+            return "ImageProcessingPostProcess";
+        }           
+
         protected _updateParameters(): void {
+            this._defines.FROMLINEARSPACE = this._fromLinearSpace;
+            this.imageProcessingConfiguration.prepareDefines(this._defines);
             var defines = "";
-            var samplers = ["textureSampler"];
-
-            if (this.colorGradingTexture) {
-                defines = "#define COLORGRADING\r\n";
-                samplers.push("txColorTransform");
-            }
-
-            if (this._vignetteEnabled) {
-                defines += "#define VIGNETTE\r\n";
-
-                if (this.vignetteBlendMode === ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY) {
-                    defines += "#define VIGNETTEBLENDMODEMULTIPLY\r\n";
-                } else {
-                    defines += "#define VIGNETTEBLENDMODEOPAQUE\r\n";
+            for (const define in this._defines) {
+                if (this._defines[define]) {
+                    defines += `#define ${define};\r\n`;
                 }
             }
 
-            if (this.cameraToneMappingEnabled) {
-                defines += "#define TONEMAPPING\r\n";
-            }
+            var samplers = ["textureSampler"];
+            ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
 
-            if (this._colorCurvesEnabled && this.colorCurves) {
-                defines += "#define COLORCURVES\r\n";
-            }
+            var uniforms = ["scale"];
+            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
 
-            if (this._fromLinearSpace) {
-                defines += "#define FROMLINEARSPACE\r\n";
-            }
-
-            this.updateEffect(defines, null, samplers);
+            this.updateEffect(defines, uniforms, samplers);
         }
 
-        // Statics
-        private static _VIGNETTEMODE_MULTIPLY = 0;
-        private static _VIGNETTEMODE_OPAQUE = 1;
+        public dispose(camera?: Camera): void {
+            super.dispose(camera);
 
-        public static get VIGNETTEMODE_MULTIPLY(): number {
-            return ImageProcessingPostProcess._VIGNETTEMODE_MULTIPLY;
-        }
-
-        public static get VIGNETTEMODE_OPAQUE(): number {
-            return ImageProcessingPostProcess._VIGNETTEMODE_OPAQUE;
+            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            }
+            
+            this.imageProcessingConfiguration.applyByPostProcess = false;
         }
     }
 }

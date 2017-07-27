@@ -371,11 +371,12 @@
             for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
                     var particleSystem = scene.particleSystems[particleIndex];
 
-                    if (!particleSystem.isStarted() || !particleSystem.emitter || !particleSystem.emitter.position || !particleSystem.emitter.isEnabled()) {
+                    let emitter: any = particleSystem.emitter;
+                    if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
                         continue;
                     }
 
-                    if (currentRenderList.indexOf(particleSystem.emitter) >= 0) {
+                    if (currentRenderList.indexOf(emitter) >= 0) {
                         this._renderingManager.dispatchParticles(particleSystem);
                     }
                 }

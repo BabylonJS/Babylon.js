@@ -258,6 +258,48 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+
+            if (this._distortionTexture) {
+                activeTextures.push(this._distortionTexture);
+            }
+
+            if (this._opacityTexture) {
+                activeTextures.push(this._opacityTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._diffuseTexture === texture) {
+                return true;
+            }
+
+            if (this._distortionTexture === texture) {
+                return true;
+            }    
+
+            if (this._opacityTexture === texture) {
+                return true;
+            }            
+
+            return false;    
+        }         
+
+        public getClassName(): string {
+            return "FireMaterial";
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();

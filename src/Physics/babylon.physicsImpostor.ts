@@ -44,6 +44,39 @@ module BABYLON {
         //If set, this is this impostor's parent
         private _parent: PhysicsImpostor;
 
+        private _isDisposed = false;
+
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpQuat: Quaternion = Quaternion.Identity();
+
+        get isDisposed():boolean{
+            return this._isDisposed;
+        }
+
+        get mass():number{
+            return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
+        }
+
+        set mass(value:number){
+            this.setMass(value);
+        }
+
+        get friction():number{
+            return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
+        }
+
+        set friction(value:number){
+            this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
+        }
+
+        get restitution():number {
+            return this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this);
+        }
+
+        set restitution(value:number){
+            this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
+        }
+
         //set by the physics engine when adding this impostor to the array.
         public uniqueId: number;
 
@@ -436,6 +469,8 @@ module BABYLON {
                     }
                 })*/
             }
+
+            this._isDisposed = true;
         }
 
         public setDeltaPosition(position: Vector3) {
@@ -448,6 +483,115 @@ module BABYLON {
             }
             this._deltaRotation.copyFrom(rotation);
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
+        }
+
+        public getBoxSizeToRef(result:Vector3){
+            this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
+        }
+
+        public getRadius():number{
+            return this._physicsEngine.getPhysicsPlugin().getRadius(this);
+        }
+
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion){
+
+            var tempVec = PhysicsImpostor._tmpVecs[0];
+            var mesh = <AbstractMesh>this.object;
+
+            if(adjustRotation){
+                var tempQuat = PhysicsImpostor._tmpQuat;
+                mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
+                bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
+            }else{
+                bone.setRotationQuaternion(mesh.rotationQuaternion, Space.WORLD, boneMesh);
+            }
+
+            tempVec.x = 0;
+            tempVec.y = 0;
+            tempVec.z = 0;
+
+            if(jointPivot){
+                tempVec.x = jointPivot.x;
+                tempVec.y = jointPivot.y;
+                tempVec.z = jointPivot.z;
+
+                bone.getDirectionToRef(tempVec, boneMesh, tempVec);
+
+                if(distToJoint === undefined || distToJoint === null){
+                    distToJoint = jointPivot.length();
+                }
+                
+                tempVec.x *= distToJoint;
+                tempVec.y *= distToJoint;
+                tempVec.z *= distToJoint;
+            }
+
+            if(bone.getParent()){
+                tempVec.addInPlace(mesh.getAbsolutePosition());
+                bone.setAbsolutePosition(tempVec, boneMesh);  
+            }else{
+                boneMesh.setAbsolutePosition(mesh.getAbsolutePosition());               
+                boneMesh.position.x -= tempVec.x;
+                boneMesh.position.y -= tempVec.y;
+                boneMesh.position.z -= tempVec.z;
+            }
+
+        }
+
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        public syncImpostorWithBone(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion, boneAxis?:Vector3){
+
+            var mesh = <AbstractMesh>this.object;
+
+            if(adjustRotation){
+                var tempQuat = PhysicsImpostor._tmpQuat;
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
+                tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+            }else{
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
+            }
+
+            var pos = PhysicsImpostor._tmpVecs[0];
+            var boneDir = PhysicsImpostor._tmpVecs[1];
+            
+            if(!boneAxis){
+                boneAxis = PhysicsImpostor._tmpVecs[2];
+                boneAxis.x = 0; 
+                boneAxis.y = 1; 
+                boneAxis.z = 0;
+            }
+
+            bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+            bone.getAbsolutePositionToRef(boneMesh, pos);
+
+            if((distToJoint === undefined || distToJoint === null) && jointPivot){
+                distToJoint = jointPivot.length();
+            }
+
+            if(distToJoint !== undefined && distToJoint !== null){
+                pos.x += boneDir.x * distToJoint;
+                pos.y += boneDir.y * distToJoint;
+                pos.z += boneDir.z * distToJoint;
+            }
+
+            mesh.setAbsolutePosition(pos);
+            
         }
 
         //Impostor types

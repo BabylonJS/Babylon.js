@@ -47,15 +47,6 @@ module INSPECTOR {
             this._consolePanelContent = Helpers.CreateDiv('console-panel-content', consolePanel) as HTMLDivElement;
             this._bjsPanelContent     = Helpers.CreateDiv('console-panel-content', bjsPanel) as HTMLDivElement;
 
-            // save old console.log
-            this._oldConsoleLog       = console.log;
-            this._oldConsoleWarn      = console.warn;
-            this._oldConsoleError     = console.error;
-
-            console.log               = this._addConsoleLog.bind(this);
-            console.warn              = this._addConsoleWarn.bind(this);
-            console.error             = this._addConsoleError.bind(this);
-
             // Bjs logs
             this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = (entry: string) => {
@@ -82,6 +73,20 @@ module INSPECTOR {
             console.warn = this._oldConsoleWarn;
             console.error = this._oldConsoleError;
 
+        }
+        
+        public active(b: boolean){
+            super.active(b);
+            if(b){
+                // save old console.log
+                this._oldConsoleLog       = console.log;
+                this._oldConsoleWarn      = console.warn;
+                this._oldConsoleError     = console.error;
+
+                console.log               = this._addConsoleLog.bind(this);
+                console.warn              = this._addConsoleWarn.bind(this);
+                console.error             = this._addConsoleError.bind(this);
+            }
         }
 
         private _message(type:string, message:any, caller:string) {

@@ -163,7 +163,7 @@
             this._renderingGroups[renderingGroupId].dispatchSprites(spriteManager);
         }
 
-        public dispatchParticles(particleSystem: ParticleSystem) {
+        public dispatchParticles(particleSystem: IParticleSystem) {
             var renderingGroupId = particleSystem.renderingGroupId || 0;
 
             this._prepareRenderingGroup(renderingGroupId);

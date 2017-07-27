@@ -10,7 +10,7 @@ struct lightingInfo
 float computeDistanceLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
 {   
     #ifdef USEPHYSICALLIGHTFALLOFF
-        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.001));
     #else
         float lightDistanceFalloff = max(0., 1.0 - length(lightOffset) / range);
     #endif
@@ -18,12 +18,11 @@ float computeDistanceLightFalloff(vec3 lightOffset, float lightDistanceSquared, 
     return lightDistanceFalloff;
 }
 
-float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightCenterW, float lightAngle, float exponent)
+float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightCenterW, float cosHalfAngle, float exponent)
 {
     float falloff = 0.0;
     
     #ifdef USEPHYSICALLIGHTFALLOFF
-        float cosHalfAngle = cos(lightAngle * 0.5);
         const float kMinusLog2ConeAngleIntensityRatio = 6.64385618977; // -log2(0.01)
 
         // Calculate a Spherical Gaussian (von Mises-Fisher distribution, not angle-based Gaussian) such that the peak is in the light direction,
@@ -48,7 +47,7 @@ float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightC
     return falloff;
 }
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance0, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     vec3 lightDirection;
@@ -77,24 +76,24 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     
     // diffuse
     vec3 H = normalize(viewDirectionW + lightDirection);
-    NdotL = max(0.00000000001, dot(vNormal, lightDirection));
-    float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
+    NdotL = clamp(dot(vNormal, lightDirection), 0.00000000001, 1.0);
+    float VdotH = clamp(dot(viewDirectionW, H), 0.0, 1.0);
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
     result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
     #ifdef SPECULARTERM
         // Specular
-        float NdotH = max(0.00000000001, dot(vNormal, H));
+        float NdotH = clamp(dot(vNormal, H), 0.000000000001, 1.0);
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
-        result.specular = specTerm * attenuation;
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, reflectance0, reflectance90);
+        result.specular = specTerm * diffuseColor * attenuation;
     #endif
 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance0, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     vec3 lightOffset = lightData.xyz - vPositionW;
@@ -114,24 +113,24 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     
     // Diffuse
     vec3 H = normalize(viewDirectionW + directionToLightCenterW);
-    NdotL = max(0.00000000001, dot(vNormal, directionToLightCenterW));
-    float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
+    NdotL = clamp(dot(vNormal, directionToLightCenterW), 0.000000000001, 1.0);
+    float VdotH = clamp(dot(viewDirectionW, H), 0.0, 1.0);
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
     result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
     #ifdef SPECULARTERM
         // Specular
-        float NdotH = max(0.00000000001, dot(vNormal, H));
+        float NdotH = clamp(dot(vNormal, H), 0.000000000001, 1.0);
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
-        result.specular = specTerm  * attenuation;
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, reflectance0, reflectance90);
+        result.specular = specTerm * diffuseColor * attenuation;
     #endif
 
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, vec3 reflectance0, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     // Roughness
@@ -145,12 +144,12 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
         // Specular
         vec3 lightVectorW = normalize(lightData.xyz);
         vec3 H = normalize(viewDirectionW + lightVectorW);
-        float NdotH = max(0.00000000001, dot(vNormal, H));
-        NdotL = max(0.00000000001, NdotL);
-        float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
+        float NdotH = clamp(dot(vNormal, H), 0.000000000001, 1.0);
+        NdotL = clamp(NdotL, 0.000000000001, 1.0);
+        float VdotH = clamp(dot(viewDirectionW, H), 0.0, 1.0);
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
-        result.specular = specTerm;
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, reflectance0, reflectance90);
+        result.specular = specTerm * diffuseColor;
     #endif
 
     return result;

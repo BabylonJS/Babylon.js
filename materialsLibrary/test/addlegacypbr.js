@@ -7,7 +7,7 @@ window.prepareLegacyPBR = function() {
     
     var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
 
-    var colorGradingTexture = new BABYLON.ColorGradingTexture("../assets/textures/ColorGrading.3DL", scene);
+    //var colorGradingTexture = new BABYLON.ColorGradingTexture("../assets/textures/ColorGrading.3DL", scene);
     
     // Uncomment for PMREM Generation
     // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);

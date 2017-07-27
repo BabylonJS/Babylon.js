@@ -64,30 +64,6 @@ void main(void)
 }
 #endif
 
-#if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)
-uniform float blurOffsets[9];
-uniform float blurWeights[9];
-uniform float blurWidth;
-
-void main(void)
-{
-	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
-
-	for (int i = 0; i < 9; i++) {
-#ifdef GAUSSIAN_BLUR_H
-		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
-#else
-		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
-#endif
-	}
-
-	color.a = 1.0;
-	gl_FragColor = color;
-}
-#endif
-
 #if defined(TEXTURE_ADDER)
 uniform sampler2D otherSampler;
 uniform sampler2D lensSampler;
@@ -109,6 +85,81 @@ void main(void)
 	vec4 finalColor = vec4(colour.rgb, 1.0) + texture2D(otherSampler, vUV);
 
 	gl_FragColor = finalColor;
+}
+#endif
+
+#if defined(VLS)
+#define PI 3.1415926535897932384626433832795
+
+uniform mat4 shadowViewProjection;
+uniform mat4 lightWorld;
+
+uniform vec3 cameraPosition;
+uniform vec3 sunDirection;
+uniform vec3 sunColor;
+
+uniform vec2 depthValues;
+
+uniform float scatteringCoefficient;
+uniform float scatteringPower;
+
+uniform sampler2D shadowMapSampler;
+uniform sampler2D positionSampler;
+
+float computeScattering(float lightDotView)
+{
+	float result = 1.0 - scatteringCoefficient * scatteringCoefficient;
+	result /= (4.0 * PI * pow(1.0 + scatteringCoefficient * scatteringCoefficient - (2.0 * scatteringCoefficient) * lightDotView, 1.5));
+	return result;
+}
+
+void main(void)
+{
+	// Compute
+	vec3 worldPos = texture2D(positionSampler, vUV).rgb;
+	vec3 startPosition = cameraPosition;
+
+	vec3 rayVector = worldPos - startPosition;
+
+	float rayLength = length(rayVector);
+	vec3 rayDirection = rayVector / rayLength;
+
+	float stepLength = rayLength / NB_STEPS;
+	vec3 stepL = rayDirection * stepLength;
+	vec3 currentPosition = startPosition;
+	vec3 accumFog = vec3(0.0);
+
+	for (int i = 0; i < int(NB_STEPS); i++)
+	{
+		vec4 worldInShadowCameraSpace = shadowViewProjection * vec4(currentPosition, 1.0);
+		float depthMetric =  (worldInShadowCameraSpace.z + depthValues.x) / (depthValues.y);
+		float shadowPixelDepth = clamp(depthMetric, 0.0, 1.0);
+
+		worldInShadowCameraSpace.xyz /= worldInShadowCameraSpace.w;
+		worldInShadowCameraSpace.xyz = 0.5 * worldInShadowCameraSpace.xyz + vec3(0.5);
+
+		float shadowMapValue = texture2D(shadowMapSampler, worldInShadowCameraSpace.xy).r;
+		
+		if (shadowMapValue > shadowPixelDepth)
+			accumFog += sunColor * computeScattering(dot(rayDirection, sunDirection));
+		
+		currentPosition += stepL;
+	}
+
+	accumFog /= NB_STEPS;
+
+	vec3 color = accumFog * scatteringPower;
+	gl_FragColor = vec4(color * exp(color) , 1.0);
+}
+
+#endif
+
+#if defined(VLSMERGE)
+uniform sampler2D originalSampler;
+
+void main(void)
+{
+	gl_FragColor = texture2D(originalSampler, vUV) + texture2D(textureSampler, vUV);
 }
 #endif
 

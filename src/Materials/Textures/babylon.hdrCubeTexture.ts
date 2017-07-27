@@ -10,10 +10,10 @@ module BABYLON {
 
         private static _facesMapping = [
             "right",
-            "up",
-            "front",
             "left",
+            "up",
             "down",
+            "front",
             "back"
         ];
 
@@ -37,11 +37,6 @@ module BABYLON {
          * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
          */
         public coordinatesMode = Texture.CUBIC_MODE;
-
-        /**
-         * The spherical polynomial data extracted from the texture.
-         */
-        public sphericalPolynomial: SphericalPolynomial = null;
 
         /**
          * Specifies wether the texture has been generated through the PMREMGenerator tool.
@@ -88,6 +83,7 @@ module BABYLON {
             this._textureMatrix = Matrix.Identity();
             this._onLoad = onLoad;
             this._onError = onError;
+            this.gammaSpace = false;
 
             if (size) {
                 this._isBABYLONPreprocessed = false;
@@ -160,16 +156,17 @@ module BABYLON {
                 this.getScene().getEngine().updateTextureSize(this._texture, this._size, this._size);
 
                 // Fill polynomial information.
-                this.sphericalPolynomial = new SphericalPolynomial();
-                this.sphericalPolynomial.x.copyFromFloats(floatArrayView[2], floatArrayView[3], floatArrayView[4]);
-                this.sphericalPolynomial.y.copyFromFloats(floatArrayView[5], floatArrayView[6], floatArrayView[7]);
-                this.sphericalPolynomial.z.copyFromFloats(floatArrayView[8], floatArrayView[9], floatArrayView[10]);
-                this.sphericalPolynomial.xx.copyFromFloats(floatArrayView[11], floatArrayView[12], floatArrayView[13]);
-                this.sphericalPolynomial.yy.copyFromFloats(floatArrayView[14], floatArrayView[15], floatArrayView[16]);
-                this.sphericalPolynomial.zz.copyFromFloats(floatArrayView[17], floatArrayView[18], floatArrayView[19]);
-                this.sphericalPolynomial.xy.copyFromFloats(floatArrayView[20], floatArrayView[21], floatArrayView[22]);
-                this.sphericalPolynomial.yz.copyFromFloats(floatArrayView[23], floatArrayView[24], floatArrayView[25]);
-                this.sphericalPolynomial.zx.copyFromFloats(floatArrayView[26], floatArrayView[27], floatArrayView[28]);
+                var sphericalPolynomial = new SphericalPolynomial();
+                sphericalPolynomial.x.copyFromFloats(floatArrayView[2], floatArrayView[3], floatArrayView[4]);
+                sphericalPolynomial.y.copyFromFloats(floatArrayView[5], floatArrayView[6], floatArrayView[7]);
+                sphericalPolynomial.z.copyFromFloats(floatArrayView[8], floatArrayView[9], floatArrayView[10]);
+                sphericalPolynomial.xx.copyFromFloats(floatArrayView[11], floatArrayView[12], floatArrayView[13]);
+                sphericalPolynomial.yy.copyFromFloats(floatArrayView[14], floatArrayView[15], floatArrayView[16]);
+                sphericalPolynomial.zz.copyFromFloats(floatArrayView[17], floatArrayView[18], floatArrayView[19]);
+                sphericalPolynomial.xy.copyFromFloats(floatArrayView[20], floatArrayView[21], floatArrayView[22]);
+                sphericalPolynomial.yz.copyFromFloats(floatArrayView[23], floatArrayView[24], floatArrayView[25]);
+                sphericalPolynomial.zx.copyFromFloats(floatArrayView[26], floatArrayView[27], floatArrayView[28]);
+                this.sphericalPolynomial = sphericalPolynomial;
 
                 // Fill pixel data.
                 mipLevels = intArrayView[29]; // Number of mip levels.
@@ -188,11 +185,14 @@ module BABYLON {
                 for (var k = 0; k < 6; k++) {
                     var dataFace = null;
 
+                    // To be deprecated.
+                    if (version === 1) {
+                        var j = ([0, 2, 4, 1, 3, 5])[k]; // Transforms +X+Y+Z... to +X-X+Y-Y...
+                        dataFace = data[j];
+                    }
+
                     // If special cases.
                     if (!mipmapGenerator) {
-                        var j = ([0, 2, 4, 1, 3, 5])[k]; // Transforms +X+Y+Z... to +X-X+Y-Y... if no mipmapgenerator...
-                        dataFace = data[j];
-
                         if (!this.getScene().getEngine().getCaps().textureFloat) {
                             // 3 channels of 1 bytes per pixel in bytes.
                             var byteBuffer = new ArrayBuffer(faceSize);
@@ -230,9 +230,6 @@ module BABYLON {
                             }
                         }
                     }
-                    else {
-                        dataFace = data[k];
-                    }
 
                     // Fill the array accordingly.
                     if (byteArray) {
@@ -264,7 +261,8 @@ module BABYLON {
 
                 // Generate harmonics if needed.
                 if (this._generateHarmonics) {
-                    this.sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                    var sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                    this.sphericalPolynomial = sphericalPolynomial;
                 }
 
                 var results = [];
@@ -326,26 +324,28 @@ module BABYLON {
             }
 
             var mipmapGenerator = null;
-            if (!this._noMipmap &&
-                this._usePMREMGenerator) {
-                mipmapGenerator = (data: ArrayBufferView[]) => {
-                    // Custom setup of the generator matching with the PBR shader values.
-                    var generator = new BABYLON.Internals.PMREMGenerator(data,
-                        this._size,
-                        this._size,
-                        0,
-                        3,
-                        this.getScene().getEngine().getCaps().textureFloat,
-                        2048,
-                        0.25,
-                        false,
-                        true);
 
-                    return generator.filterCubeMap();
-                };
-            }
+            // TODO. Implement In code PMREM Generator following the LYS toolset generation.
+            // if (!this._noMipmap &&
+            //     this._usePMREMGenerator) {
+            //     mipmapGenerator = (data: ArrayBufferView[]) => {
+            //         // Custom setup of the generator matching with the PBR shader values.
+            //         var generator = new BABYLON.Internals.PMREMGenerator(data,
+            //             this._size,
+            //             this._size,
+            //             0,
+            //             3,
+            //             this.getScene().getEngine().getCaps().textureFloat,
+            //             2048,
+            //             0.25,
+            //             false,
+            //             true);
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
+            //         return generator.filterCubeMap();
+            //     };
+            // }
+
+            this._texture = this.getScene().getEngine().createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
                 Engine.TEXTUREFORMAT_RGB,
                 this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
@@ -396,6 +396,10 @@ module BABYLON {
 
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
+        }
+
+        public setReflectionTextureMatrix(value: Matrix): void {
+            this._textureMatrix = value;
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture {
@@ -480,92 +484,13 @@ module BABYLON {
             }
 
             // Check Power of two size.
-            if (!Tools.IsExponentOfTwo(size)) {
+            if (!Tools.IsExponentOfTwo(size)) { // Need to check engine.needPOTTextures 
                 return null;
             }
 
-            var getDataCallback = (dataBuffer: ArrayBuffer) => {
-                // Extract the raw linear data.
-                var cubeData = BABYLON.Internals.HDRTools.GetCubeMapTextureData(dataBuffer, size);
-
-                // Generate harmonics if needed.
-                var sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(cubeData);
-
-                // Generate seamless faces
-                var mipGeneratorArray: ArrayBufferView[] = [];
-                // Data are known to be in +X +Y +Z -X -Y -Z
-                // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
-                mipGeneratorArray.push(cubeData.right); // +X
-                mipGeneratorArray.push(cubeData.left); // -X
-                mipGeneratorArray.push(cubeData.up); // +Y
-                mipGeneratorArray.push(cubeData.down); // -Y
-                mipGeneratorArray.push(cubeData.front); // +Z
-                mipGeneratorArray.push(cubeData.back); // -Z
-
-                // Custom setup of the generator matching with the PBR shader values.
-                var generator = new BABYLON.Internals.PMREMGenerator(mipGeneratorArray,
-                    size,
-                    size,
-                    0,
-                    3,
-                    true,
-                    2048,
-                    0.25,
-                    false,
-                    true);
-                var mippedData = generator.filterCubeMap();
-
-                // Compute required byte length.
-                var byteLength = 1 * 4; // Raw Data Version int32.
-                byteLength += 4; // CubeMap max mip face size int32.
-                byteLength += (9 * 3 * 4); // Spherical polynomial byte length 9 Vector 3 of floats.
-                // Add data size.
-                byteLength += 4; // Number of mip levels int32.
-                for (var level = 0; level < mippedData.length; level++) {
-                    var mipSize = size >> level;
-                    byteLength += (6 * mipSize * mipSize * 3 * 4); // 6 faces of size squared rgb float pixels.
-                }
-
-                // Prepare binary structure.
-                var buffer = new ArrayBuffer(byteLength);
-                var intArrayView = new Int32Array(buffer);
-                var floatArrayView = new Float32Array(buffer);
-
-                // Fill header.
-                intArrayView[0] = 1; // Version 1.
-                intArrayView[1] = size; // CubeMap max mip face size.
-
-                // Fill polynomial information.
-                sphericalPolynomial.x.toArray(floatArrayView, 2);
-                sphericalPolynomial.y.toArray(floatArrayView, 5);
-                sphericalPolynomial.z.toArray(floatArrayView, 8);
-                sphericalPolynomial.xx.toArray(floatArrayView, 11);
-                sphericalPolynomial.yy.toArray(floatArrayView, 14);
-                sphericalPolynomial.zz.toArray(floatArrayView, 17);
-                sphericalPolynomial.xy.toArray(floatArrayView, 20);
-                sphericalPolynomial.yz.toArray(floatArrayView, 23);
-                sphericalPolynomial.zx.toArray(floatArrayView, 26);
-
-                // Fill pixel data.
-                intArrayView[29] = mippedData.length; // Number of mip levels.
-                var startIndex = 30;
-                for (var level = 0; level < mippedData.length; level++) {
-                    // Fill each pixel of the mip level.
-                    var faceSize = Math.pow(size >> level, 2) * 3;
-                    for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
-                        floatArrayView.set(<any>mippedData[level][faceIndex], startIndex);
-                        startIndex += faceSize;
-                    }
-                }
-
-                // Callback.
-                callback(buffer);
-            }
-
-            // Download and process.
-            Tools.LoadFile(url, data => {
-                getDataCallback(data);
-            }, null, null, true, onError);
+            // Coming Back in 3.1.
+            Tools.Error("Generation of Babylon HDR is coming back in 3.1.");
+            return null;
         }
     }
 }

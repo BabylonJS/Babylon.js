@@ -270,12 +270,34 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTexture) {
+                activeTextures.push(this._diffuseTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            return this._diffuseTexture === texture;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();
             }
 
             super.dispose(forceDisposeEffect);
+        }
+
+        public getClassName(): string {
+            return "CellMaterial";
         }
 
         public clone(name: string): CellMaterial {

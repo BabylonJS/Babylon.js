@@ -112,6 +112,12 @@
         */
         public onAfterWorldMatrixUpdateObservable = new Observable<AbstractMesh>();
 
+        /**
+        * An event triggered when material is changed
+        * @type {BABYLON.Observable}
+        */
+        public onMaterialChangedObservable = new Observable<AbstractMesh>();
+
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
@@ -127,6 +133,7 @@
         public showBoundingBox = false;
         public showSubMeshesBoundingBox = false;
         public isBlocker = false;
+        public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
         private _material: Material
         public get material(): Material {
@@ -138,6 +145,11 @@
             }
 
             this._material = value;
+
+            if (this.onMaterialChangedObservable.hasObservers) {
+                this.onMaterialChangedObservable.notifyObservers(this);
+            }
+
             if (!this.subMeshes) {
                 return;
             }
@@ -355,6 +367,13 @@
             this.getScene().addMesh(this);
 
             this._resyncLightSources();
+        }
+
+        /**
+         * Boolean : true if the mesh has been disposed.  
+         */
+        public isDisposed(): boolean {
+            return this._isDisposed;
         }
 
         /**
@@ -784,7 +803,35 @@
             }
             return this;
         }
+        
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
+         * The passed axis is also normalized.  
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        public rotateAround(point: Vector3, axis: Vector3, amount: number): AbstractMesh {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+            point.subtractToRef(this.position, Tmp.Vector3[0]);
+            Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
+            Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
+            Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
 
+            Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
+
+            this.position.addInPlace(Tmp.Vector3[1]);
+            this.rotationQuaternion.multiplyInPlace(Tmp.Quaternion[0]);
+
+            return this;
+        }
+        
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.  
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.

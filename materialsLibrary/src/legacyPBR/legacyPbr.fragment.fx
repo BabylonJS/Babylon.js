@@ -29,6 +29,9 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -105,11 +108,11 @@ varying vec3 vDirectionW;
 #endif
 
 #ifdef CAMERACOLORGRADING
-	#include<colorGradingDefinition>
+	#include<legacyColorGradingDefinition>
 #endif
 
 #ifdef CAMERACOLORCURVES
-	#include<colorCurvesDefinition>
+	#include<legacyColorCurvesDefinition>
 #endif
 
 // PBR
@@ -117,17 +120,15 @@ varying vec3 vDirectionW;
 #include<legacyPbrFunctions>
 
 #ifdef CAMERACOLORGRADING
-	#include<colorGrading>
+	#include<legacyColorGrading>
 #endif
 
 #ifdef CAMERACOLORCURVES
-	#include<colorCurves>
+	#include<legacyColorCurves>
 #endif
 
-#include<harmonicsFunctions>
 #include<legacyPbrLightFunctions>
 
-#include<helperFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>

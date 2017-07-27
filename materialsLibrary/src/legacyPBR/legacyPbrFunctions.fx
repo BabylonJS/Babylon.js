@@ -12,11 +12,6 @@ float Square(float value)
     return value * value;
 }
 
-float getLuminance(vec3 color)
-{
-    return clamp(dot(color, vec3(0.2126, 0.7152, 0.0722)), 0., 1.);
-}
-
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
@@ -140,16 +135,6 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
     return microSurface;
 }
 
-vec3 toLinearSpace(vec3 color)
-{
-    return vec3(pow(color.r, 2.2), pow(color.g, 2.2), pow(color.b, 2.2));
-}
-
-vec3 toGammaSpace(vec3 color)
-{
-    return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
-}
-
 #ifdef CAMERATONEMAP
     vec3 toneMaps(vec3 color)
     {
@@ -186,5 +171,37 @@ vec3 toGammaSpace(vec3 color)
         }
 
         return color;
+    }
+#endif
+
+#ifdef USESPHERICALFROMREFLECTIONMAP
+    uniform vec3 vSphericalX;
+    uniform vec3 vSphericalY;
+    uniform vec3 vSphericalZ;
+    uniform vec3 vSphericalXX;
+    uniform vec3 vSphericalYY;
+    uniform vec3 vSphericalZZ;
+    uniform vec3 vSphericalXY;
+    uniform vec3 vSphericalYZ;
+    uniform vec3 vSphericalZX;
+
+    vec3 EnvironmentIrradiance(vec3 normal)
+    {
+        // Note: 'normal' is assumed to be normalised (or near normalised)
+        // This isn't as critical as it is with other calculations (e.g. specular highlight), but the result will be incorrect nonetheless.
+
+        // TODO: switch to optimal implementation
+        vec3 result =
+            vSphericalX * normal.x +
+            vSphericalY * normal.y +
+            vSphericalZ * normal.z +
+            vSphericalXX * normal.x * normal.x +
+            vSphericalYY * normal.y * normal.y +
+            vSphericalZZ * normal.z * normal.z +
+            vSphericalYZ * normal.y * normal.z +
+            vSphericalZX * normal.z * normal.x +
+            vSphericalXY * normal.x * normal.y;
+
+        return result.rgb;
     }
 #endif

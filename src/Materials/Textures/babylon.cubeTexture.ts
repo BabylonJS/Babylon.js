@@ -8,12 +8,17 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _format: number;
+        private _prefiltered: boolean;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
             return new CubeTexture("", scene, null, noMipmap, files);
         }
 
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA) {
+        public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension = null) {
+            return new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension);
+        }
+
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false, forcedExtension = null) {
             super(scene);
 
             this.name = rootUrl;
@@ -21,6 +26,12 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
             this._format = format;
+            this._prefiltered = prefiltered;
+            this.isCube = true;
+            this._textureMatrix = Matrix.Identity();
+            if (prefiltered) {
+                this.gammaSpace = false;
+            }
 
             if (!rootUrl && !files) {
                 return;
@@ -47,7 +58,12 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format);
+                    if (prefiltered) {
+                        this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, this.lodGenerationScale, this.lodGenerationOffset, onLoad, onError, format, forcedExtension);
+                    }
+                    else {
+                        this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension);
+                    }
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -58,10 +74,6 @@
                     this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }
-
-            this.isCube = true;
-
-            this._textureMatrix = Matrix.Identity();
         }
 
         // Methods
@@ -74,12 +86,21 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap, undefined, undefined, this._format);
+                if (this._prefiltered) {
+                    this._texture = this.getScene().getEngine().createPrefilteredCubeTexture(this.url, this.getScene(), this.lodGenerationScale, this.lodGenerationOffset, undefined, undefined, this._format);
+                }
+                else {
+                    this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap, undefined, undefined, this._format);
+                }
             }
         }
 
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
+        }
+
+        public setReflectionTextureMatrix(value: Matrix): void {
+            this._textureMatrix = value;
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
@@ -97,7 +118,7 @@
             }
 
             return texture;
-        }        
+        }
 
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {

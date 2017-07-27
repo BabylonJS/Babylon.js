@@ -27,6 +27,7 @@ uniform Material
 	mat4 lightmapMatrix;
 	mat4 specularMatrix;
 	mat4 bumpMatrix; 
+	vec4 vNormalReoderParams;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
 	vec4 vSpecularColor;

@@ -15431,3 +15431,5 @@ declare module BABYLON.GUI {
         constructor(name?: string);
     }
 }
+
+declare var engine: BABYLON.Engine;

@@ -27,14 +27,24 @@ uniform mat4 view;
 out vec3 vNormalV;
 out vec4 vViewPos;
 
+#ifdef POSITION
+out vec3 vPosition;
+#endif
+
 void main(void)
 {
 #include<instancesVertex>
 
 #include<bonesVertex>
+	vec4 pos = vec4(finalWorld * vec4(position, 1.0));
 
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normal, 0.0)));
-	vViewPos = view * finalWorld * vec4(position, 1.0);
+	vViewPos = view * pos;
+
+	#ifdef POSITION
+	vPosition = pos.xyz / pos.w;
+	#endif
+
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)

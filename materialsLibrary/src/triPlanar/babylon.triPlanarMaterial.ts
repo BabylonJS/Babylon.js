@@ -332,6 +332,67 @@ module BABYLON {
             return results;
         }
 
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this._diffuseTextureX) {
+                activeTextures.push(this._diffuseTextureX);
+            }
+
+            if (this._diffuseTextureY) {
+                activeTextures.push(this._diffuseTextureY);
+            }
+
+            if (this._diffuseTextureZ) {
+                activeTextures.push(this._diffuseTextureZ);
+            }
+
+            if (this._normalTextureX) {
+                activeTextures.push(this._normalTextureX);
+            }
+
+            if (this._normalTextureY) {
+                activeTextures.push(this._normalTextureY);
+            }
+
+            if (this._normalTextureZ) {
+                activeTextures.push(this._normalTextureZ);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._diffuseTextureX === texture) {
+                return true;
+            }    
+
+            if (this._diffuseTextureY === texture) {
+                return true;
+            }         
+
+            if (this._diffuseTextureZ === texture) {
+                return true;
+            }
+
+            if (this._normalTextureX === texture) {
+                return true;
+            }     
+
+            if (this._normalTextureY === texture) {
+                return true;
+            }     
+
+            if (this._normalTextureZ === texture) {
+                return true;
+            }                                 
+            return false;    
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.mixTexture) {
                 this.mixTexture.dispose();
@@ -348,6 +409,10 @@ module BABYLON {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.TriPlanarMaterial";
             return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "TriPlanarMaterial";
         }
 
         // Statics

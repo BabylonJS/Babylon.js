@@ -26,7 +26,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#ifdef REFLECTIVITY 
 uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif
@@ -43,4 +43,18 @@ uniform mat4 bumpMatrix;
 
 #ifdef POINTSIZE
 uniform float pointSize;
+#endif
+
+// Refraction
+#ifdef REFRACTION
+    uniform vec4 vRefractionInfos;
+    uniform mat4 refractionMatrix;
+    uniform vec3 vRefractionMicrosurfaceInfos;
+#endif
+
+// Reflection
+#ifdef REFLECTION
+    uniform vec2 vReflectionInfos;
+    uniform mat4 reflectionMatrix;
+    uniform vec3 vReflectionMicrosurfaceInfos;
 #endif

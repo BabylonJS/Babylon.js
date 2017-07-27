@@ -30,6 +30,7 @@
     }
 
     SceneLoader.RegisterPlugin({
+        name: "babylon.js",
         extensions: ".babylon",
         canDirectLoad: (data: string) => {
             if (data.indexOf("babylon") !== -1) { // We consider that the producer string is filled

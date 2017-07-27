@@ -428,7 +428,7 @@ module BABYLON {
                 var changed = false;
                 for (var i = 0; i < size; i++) {
                     if (this._bufferData[location + i] !== data[i]) {
-                       changed = true;
+                        changed = true;
                         this._bufferData[location + i] = data[i];
                     }
                 }

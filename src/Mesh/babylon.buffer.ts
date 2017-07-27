@@ -6,6 +6,7 @@
         private _updatable: boolean;
         private _strideSize: number;
         private _instanced: boolean;
+        private _instanceDivisor: number;
 
         constructor(engine: any, data: number[] | Float32Array, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced?: boolean) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
@@ -26,6 +27,7 @@
             }
 
             this._instanced = instanced;
+            this._instanceDivisor = instanced ? 1 : 0;
         }
 
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number): VertexBuffer {
@@ -52,6 +54,19 @@
 
         public getIsInstanced(): boolean {
             return this._instanced;
+        }
+
+        public get instanceDivisor(): number {
+            return this._instanceDivisor;
+        }
+
+        public set instanceDivisor(value: number) {
+            this._instanceDivisor = value;
+            if (value == 0) {
+                this._instanced = false;
+            } else {
+                this._instanced = true;
+            }
         }
 
         // Methods

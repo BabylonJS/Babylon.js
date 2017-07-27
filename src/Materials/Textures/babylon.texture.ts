@@ -1,9 +1,24 @@
 ﻿module BABYLON {
     export class Texture extends BaseTexture {
         // Constants
-        public static NEAREST_SAMPLINGMODE = 1;
+        public static NEAREST_SAMPLINGMODE = 1;        
+        public static NEAREST_NEAREST_MIPLINEAR = 1; // nearest is mag = nearest and min = nearest and mip = linear
+        
         public static BILINEAR_SAMPLINGMODE = 2;
+        public static LINEAR_LINEAR_MIPNEAREST = 2; // Bilinear is mag = linear and min = linear and mip = nearest
+        
         public static TRILINEAR_SAMPLINGMODE = 3;
+        public static LINEAR_LINEAR_MIPLINEAR = 3; // Trilinear is mag = linear and min = linear and mip = linear
+
+        public static NEAREST_NEAREST_MIPNEAREST = 4;
+        public static NEAREST_LINEAR_MIPNEAREST = 5;
+        public static NEAREST_LINEAR_MIPLINEAR = 6;
+        public static NEAREST_LINEAR = 7;
+        public static NEAREST_NEAREST = 8;
+        public static LINEAR_NEAREST_MIPNEAREST = 9;
+        public static LINEAR_NEAREST_MIPLINEAR = 10;
+        public static LINEAR_LINEAR = 11;
+        public static LINEAR_NEAREST = 12;
 
         public static EXPLICIT_MODE = 0;
         public static SPHERICAL_MODE = 1;
@@ -72,7 +87,7 @@
         protected _format: number;
         private _delayedOnLoad: () => void;
         private _delayedOnError: () => void;
-        private _onLoadObservarble: Observable<boolean>;
+        private _onLoadObservable: Observable<Texture>;
 
         protected _isBlocking: boolean = true;
         public set isBlocking(value: boolean) {
@@ -81,6 +96,10 @@
         @serialize()
         public get isBlocking(): boolean {
             return this._isBlocking;
+        }
+
+        public get samplingMode(): number {
+            return this._samplingMode;
         }
 
         constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
@@ -98,8 +117,8 @@
             scene = this.getScene();
 
             let load = () => {
-                if (this._onLoadObservarble && this._onLoadObservarble.hasObservers()) {
-                    this.onLoadObservable.notifyObservers(true);
+                if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    this.onLoadObservable.notifyObservers(this);
                 }
                 if (onLoad) {
                     onLoad();
@@ -233,6 +252,10 @@
             this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
 
+            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+
             return this._cachedTextureMatrix;
         }
 
@@ -251,6 +274,10 @@
                 this._projectionModeMatrix = Matrix.Zero();
             }
 
+            this._cachedUOffset = this.uOffset;
+            this._cachedVOffset = this.vOffset;
+            this._cachedUScale = this.uScale;
+            this._cachedVScale = this.vScale;
             this._cachedCoordinatesMode = this.coordinatesMode;
 
             switch (this.coordinatesMode) {
@@ -278,6 +305,11 @@
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
+            
+            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+                return (mat.getActiveTextures().indexOf(this) !== -1);
+            });
+
             return this._cachedTextureMatrix;
         }
 
@@ -287,12 +319,27 @@
             }, this);
         }
 
-        public get onLoadObservable(): Observable<boolean> {
-            if (!this._onLoadObservarble) {
-                this._onLoadObservarble = new Observable<boolean>();
+        public get onLoadObservable(): Observable<Texture> {
+            if (!this._onLoadObservable) {
+                this._onLoadObservable = new Observable<Texture>();
             }
-            return this._onLoadObservarble;
+            return this._onLoadObservable;
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            
+            if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
+                serializationObject.base64String = this._buffer;
+                serializationObject.name = serializationObject.name.replace("data:", "");
+            }
+
+            return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "Texture";
+        }     
 
         // Statics
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {

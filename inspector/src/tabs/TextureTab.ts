@@ -20,7 +20,7 @@ module INSPECTOR {
             // Build the treepanel
             this._treePanel = Helpers.CreateDiv('insp-tree', this._panel);
 
-            this._imagePanel = Helpers.CreateDiv('image-panel', this._panel) as HTMLDivElement;
+            this._imagePanel = Helpers.CreateDiv('insp-details', this._panel) as HTMLDivElement;
 
             Split([this._treePanel, this._imagePanel], {
                 blockDrag: this._inspector.popupMode,
@@ -79,7 +79,14 @@ module INSPECTOR {
             // Get the texture object
             let texture = item.adapter.object;
 
+            let imgs: HTMLImageElement[] = [];
             let img = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
+            imgs.push(img);
+            
+            //Create five other images elements
+            for(let i = 0; i<5; i++){
+                imgs.push(Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement);
+            }
 
             if (texture instanceof BABYLON.MapTexture) {
                 // instance of Map texture
@@ -90,9 +97,37 @@ module INSPECTOR {
             }
             else if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
-                BABYLON.Tools.CreateScreenshotUsingRenderTarget(this._inspector.scene.getEngine(), texture.activeCamera, { precision: 1 }, (data) => img.src = data);
+                let scene = this._inspector.scene;
+                let engine = scene.getEngine();
+                let size = texture.getSize();
+                    
+                // Clone the texture
+                let screenShotTexture = texture.clone();
+                screenShotTexture.activeCamera = texture.activeCamera;
+                screenShotTexture.onBeforeRender = texture.onBeforeRender;
+                screenShotTexture.onAfterRender = texture.onAfterRender;
+                screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
+                
+                // To display the texture after rendering
+                screenShotTexture.onAfterRenderObservable.add((faceIndex: number) => {
+                    BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,  
+                        (data) => imgs[faceIndex].src = data, "image/png");
+                });
 
-            } else if (texture.url) {
+                // Render the texture
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+                screenShotTexture.render();
+                screenShotTexture.dispose();
+            }else if(texture instanceof BABYLON.CubeTexture){
+                // Display all textures of the CubeTexture
+                let i: number = 0;
+                for(let filename of (texture as BABYLON.CubeTexture)['_files']){
+                    imgs[i].src = filename;
+                    i++;
+                }
+            }
+             else if (texture.url) {
                 // If an url is present, the texture is an image
                 img.src = texture.url;
 
@@ -100,9 +135,7 @@ module INSPECTOR {
                 // Dynamic texture
                 let base64Image = texture['_canvas'].toDataURL("image/png");
                 img.src = base64Image;
-
-            }
-
+            } 
 
         }
 

@@ -205,6 +205,11 @@
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
+
+                if (this._options.uniforms.indexOf("mBones") === -1) {
+                    this._options.uniforms.push("mBones");
+                }
+
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }  
@@ -354,6 +359,46 @@
             }
 
             this._afterBind(mesh);
+        }
+
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            for (var name in this._textures) {
+                activeTextures.push(this._textures[name]);
+            }
+
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    activeTextures.push(array[index]);
+                }
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            for (var name in this._textures) {
+                if (this._textures[name] === texture) {
+                    return true;
+                }
+            }       
+
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    if (array[index] === texture) {
+                        return true;
+                    }
+                }
+            }             
+
+            return false;    
         }
 
         public clone(name: string): ShaderMaterial {
