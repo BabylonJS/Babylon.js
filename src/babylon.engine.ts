@@ -4169,7 +4169,7 @@
             }
 
             gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
             return buffer;
         }
