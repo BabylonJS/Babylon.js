@@ -227,6 +227,20 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAlphaFromAlbedoTexture = false;
+
+        /**
+         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceAlphaTest = false;
+
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public alphaCutOff = 0.4;
         
         /**
          * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
