@@ -83,27 +83,7 @@ module BABYLON.GLTF2 {
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
-                var meshes = [];
-                if (this._gltf.nodes) {
-                    for (var i = 0; i < this._gltf.nodes.length; i++) {
-                        var node = this._gltf.nodes[i];
-                        if (node.babylonMesh) {
-                            meshes.push(node.babylonMesh);
-                        }
-                    }
-                }
-
-                var skeletons = [];
-                if (this._gltf.skins) {
-                    for (var i = 0; i < this._gltf.skins.length; i++) {
-                        var skin = this._gltf.skins[i];
-                        if (skin.babylonSkeleton instanceof Skeleton) {
-                            skeletons.push(skin.babylonSkeleton);
-                        }
-                    }
-                }
-
-                onSuccess(meshes, null, skeletons);
+                onSuccess(this._getMeshes(), null, this._getSkeletons());
             }, onProgress, onError);
         }
 
@@ -204,28 +184,55 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _showMeshes(): void {
+        private _getMeshes(): Mesh[] {
+            var meshes = [];
+
             var nodes = this._gltf.nodes;
-            for (var i = 0; i < nodes.length; i++) {
-                var node = nodes[i];
-                if (node.babylonMesh) {
-                    node.babylonMesh.isVisible = true;
-                }
+            if (nodes) {
+                nodes.forEach(node => {
+                    if (node.babylonMesh) {
+                        meshes.push(node.babylonMesh);
+                    }
+                });
             }
+
+            return meshes;
+        }
+
+        private _getSkeletons(): Skeleton[] {
+            var skeletons = [];
+
+            var skins = this._gltf.skins;
+            if (skins) {
+                skins.forEach(skin => {
+                    if (skin.babylonSkeleton instanceof Skeleton) {
+                        skeletons.push(skin.babylonSkeleton);
+                    }
+                });
+            }
+
+            return skeletons;
+        }
+
+        private _getAnimationTargets(): any[] {
+            var targets = [];
+
+            var animations = this._gltf.animations;
+            if (animations) {
+                animations.forEach(animation => {
+                    targets.push(...animation.targets);
+                });
+            }
+
+            return targets;
+        }
+
+        private _showMeshes(): void {
+            this._getMeshes().forEach(mesh => mesh.isVisible = true);
         }
 
         private _startAnimations(): void {
-            var animations = this._gltf.animations;
-            if (!animations) {
-                return;
-            }
-
-            for (var i = 0; i < animations.length; i++) {
-                var animation = animations[i];
-                for (var j = 0; j < animation.targets.length; j++) {
-                    this._babylonScene.beginAnimation(animation.targets[j], 0, Number.MAX_VALUE, true);
-                }
-            }
+            this._getAnimationTargets().forEach(target => this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true));
         }
 
         private _loadScene(nodeNames: any): void {
@@ -237,6 +244,11 @@ module BABYLON.GLTF2 {
                 node.parent = parentNode;
                 return true;
             });
+
+            var materials = this._gltf.materials;
+            if (materials) {
+                materials.forEach((material, index) => material.index = index);
+            }
 
             if (nodeNames) {
                 if (!(nodeNames instanceof Array)) {
@@ -392,19 +404,17 @@ module BABYLON.GLTF2 {
                         babylonMultiMaterial.subMaterials[i] = this._getDefaultMaterial();
                     }
                     else {
-                        this.loadMaterial(primitive.material, (babylonMaterial, isNew) => {
+                        var material = this._gltf.materials[primitive.material];
+                        this.addPendingData(material);
+                        this.loadMaterial(material, (babylonMaterial, isNew) => {
                             if (isNew && this._parent.onMaterialLoaded) {
                                 this._parent.onMaterialLoaded(babylonMaterial);
                             }
 
-                            if (this._renderReady) {
-                                babylonMaterial.forceCompilation(babylonMesh, babylonSubMaterial => {
-                                    babylonMultiMaterial.subMaterials[i] = babylonSubMaterial;
-                                });
-                            }
-                            else {
+                            babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
                                 babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                            }
+                                this.removePendingData(material);
+                            });
                         });
                     }
 
@@ -916,10 +926,7 @@ module BABYLON.GLTF2 {
             this.loadMaterialAlphaProperties(material, properties.baseColorFactor);
         }
 
-        public loadMaterial(index: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
-            var material = this._gltf.materials[index];
-            material.index = index;
-
+        public loadMaterial(material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
             if (material.babylonMaterial) {
                 assign(material.babylonMaterial, false);
                 return;
