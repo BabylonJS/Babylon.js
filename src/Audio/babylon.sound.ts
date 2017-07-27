@@ -124,6 +124,9 @@ module BABYLON {
                                 if (url.indexOf(".wav", url.length - 4) !== -1) {
                                     codecSupportedFound = true;
                                 }
+                                if (url.indexOf("blob:") !== -1) {
+                                    codecSupportedFound = true;
+                                }
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {

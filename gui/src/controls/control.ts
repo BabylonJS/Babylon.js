@@ -43,6 +43,7 @@ module BABYLON.GUI {
         private _dummyVector2 = Vector2.Zero();
         private _downCount = 0;
         private _enterCount = 0;
+        private _doNotRender = false;
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
@@ -286,6 +287,19 @@ module BABYLON.GUI {
             }
         }
 
+        public get notRenderable(): boolean {
+            return this._doNotRender;
+        }
+
+        public set notRenderable(value: boolean) {
+            if (this._doNotRender === value) {
+                return;
+            }
+
+            this._doNotRender = value;
+            this._markAsDirty();
+        }
+
         public get isVisible(): boolean {
             return this._isVisible;
         }
@@ -429,10 +443,10 @@ module BABYLON.GUI {
             this._moveToProjectedPosition(projectedPosition);
 
             if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                this.isVisible = false;
+                this.notRenderable = true;
                 return;
             }
-            this.isVisible = true;
+            this.notRenderable = false;
         }
 
         public linkWithMesh(mesh: AbstractMesh): void {
@@ -736,7 +750,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this.isHitTestVisible || !this.isVisible) {
+            if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                 return false;
             }
 

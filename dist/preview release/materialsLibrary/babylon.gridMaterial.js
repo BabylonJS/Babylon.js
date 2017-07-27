@@ -161,6 +161,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.GridMaterial";
             return serializationObject;
         };
+        GridMaterial.prototype.getClassName = function () {
+            return "GridMaterial";
+        };
         GridMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
         };

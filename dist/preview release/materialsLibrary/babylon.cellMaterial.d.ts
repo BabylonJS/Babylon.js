@@ -23,6 +23,7 @@ declare module BABYLON {
         getActiveTextures(): BaseTexture[];
         hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
+        getClassName(): string;
         clone(name: string): CellMaterial;
         serialize(): any;
         static Parse(source: any, scene: Scene, rootUrl: string): CellMaterial;

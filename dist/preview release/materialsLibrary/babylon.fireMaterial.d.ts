@@ -21,6 +21,7 @@ declare module BABYLON {
         getAnimatables(): IAnimatable[];
         getActiveTextures(): BaseTexture[];
         hasTexture(texture: BaseTexture): boolean;
+        getClassName(): string;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): FireMaterial;
         serialize(): any;

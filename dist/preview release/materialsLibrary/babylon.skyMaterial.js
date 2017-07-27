@@ -179,6 +179,9 @@ var BABYLON;
             serializationObject.customType = "BABYLON.SkyMaterial";
             return serializationObject;
         };
+        SkyMaterial.prototype.getClassName = function () {
+            return "SkyMaterial";
+        };
         // Statics
         SkyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new SkyMaterial(source.name, scene); }, source, scene, rootUrl);

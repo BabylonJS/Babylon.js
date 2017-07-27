@@ -318,7 +318,6 @@ declare module BABYLON.GLTF2 {
         private _createBone(node, skin);
         private _loadMesh(node);
         private _loadMeshData(node, mesh, babylonMesh);
-        private _assignMaterial(multiMaterial, index, subMaterial);
         private _loadVertexDataAsync(primitive, onSuccess);
         private _createMorphTargets(node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsData(mesh, primitive, vertexData, babylonMesh);
@@ -337,7 +336,7 @@ declare module BABYLON.GLTF2 {
         removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
         private _loadMaterialMetallicRoughnessProperties(material);
-        loadMaterial(index: number, assign: (material: Material) => void): void;
+        loadMaterial(index: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void;
         createPbrMaterial(material: IGLTFMaterial): void;
         loadMaterialBaseProperties(material: IGLTFMaterial): void;
         loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void;
@@ -377,9 +376,9 @@ declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
         enabled: boolean;
         readonly abstract name: string;
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         static _Extensions: GLTFLoaderExtension[];
-        static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private static _ApplyExtensions(action);
     }
 }
@@ -388,7 +387,7 @@ declare module BABYLON.GLTF2 {
 declare module BABYLON.GLTF2.Extensions {
     class MSFTLOD extends GLTFLoaderExtension {
         readonly name: string;
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private loadMaterialLOD(loader, material, materialLODs, lod, assign);
     }
 }
@@ -397,7 +396,7 @@ declare module BABYLON.GLTF2.Extensions {
 declare module BABYLON.GLTF2.Extensions {
     class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
         readonly name: string;
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean;
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private _loadSpecularGlossinessProperties(loader, material, properties);
     }
 }

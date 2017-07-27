@@ -201,10 +201,10 @@ var BABYLON;
                         var position = mesh.getBoundingInfo().boundingSphere.center;
                         var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                         if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                            control.isVisible = false;
+                            control.notRenderable = true;
                             continue;
                         }
-                        control.isVisible = true;
+                        control.notRenderable = false;
                         control._moveToProjectedPosition(projectedPosition);
                     }
                 }
@@ -675,6 +675,7 @@ var BABYLON;
                 this._dummyVector2 = BABYLON.Vector2.Zero();
                 this._downCount = 0;
                 this._enterCount = 0;
+                this._doNotRender = false;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
@@ -926,6 +927,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "notRenderable", {
+                get: function () {
+                    return this._doNotRender;
+                },
+                set: function (value) {
+                    if (this._doNotRender === value) {
+                        return;
+                    }
+                    this._doNotRender = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "isVisible", {
                 get: function () {
                     return this._isVisible;
@@ -1082,10 +1097,10 @@ var BABYLON;
                 var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
                 this._moveToProjectedPosition(projectedPosition);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                    this.isVisible = false;
+                    this.notRenderable = true;
                     return;
                 }
-                this.isVisible = true;
+                this.notRenderable = false;
             };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root !== this._host._rootContainer) {
@@ -1334,7 +1349,7 @@ var BABYLON;
                 return true;
             };
             Control.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible || !this.isVisible) {
+                if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
@@ -1666,7 +1681,7 @@ var BABYLON;
                 }
             };
             Container.prototype._draw = function (parentMeasure, context) {
-                if (!this.isVisible) {
+                if (!this.isVisible || this.notRenderable) {
                     return;
                 }
                 context.save();
@@ -1676,7 +1691,7 @@ var BABYLON;
                     this._clipForChildren(context);
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var child = _a[_i];
-                        if (child.isVisible) {
+                        if (child.isVisible && !child.notRenderable) {
                             child._draw(this._measureForChildren, context);
                         }
                     }
@@ -1684,7 +1699,7 @@ var BABYLON;
                 context.restore();
             };
             Container.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible || !this.isVisible) {
+                if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
@@ -3177,7 +3192,7 @@ var BABYLON;
             };
             // While being a container, the button behaves like a control.
             Button.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible || !this.isVisible) {
+                if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {

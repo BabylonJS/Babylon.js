@@ -638,7 +638,7 @@
             return this;
         }
 
-        public _createGlobalSubMesh(): SubMesh {
+        public _createGlobalSubMesh(force: boolean): SubMesh {
             var totalVertices = this.getTotalVertices();
             if (!totalVertices || !this.getIndices()) {
                 return null;
@@ -649,15 +649,19 @@
                 var totalIndices = this.getIndices().length;
                 let needToRecreate = false;
     
-                for (var submesh of this.subMeshes) {
-                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
-                        needToRecreate = true;
-                        break;
-                    }
+                if (force) {
+                    needToRecreate = true;
+                } else {
+                    for (var submesh of this.subMeshes) {
+                        if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                            needToRecreate = true;
+                            break;
+                        }
 
-                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
-                        needToRecreate = true;
-                        break;
+                        if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                            needToRecreate = true;
+                            break;
+                        }
                     }
                 }
 

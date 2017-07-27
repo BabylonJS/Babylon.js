@@ -622,6 +622,10 @@
         private _fps = 60;
         private _deltaTime = 0;
 
+        public get performanceMonitor(): PerformanceMonitor {
+            return this._performanceMonitor;
+        }
+
         // States
         private _depthCullingState = new Internals._DepthCullingState();
         private _stencilState = new Internals._StencilState();
@@ -1716,7 +1720,7 @@
 
         public bindArrayBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
@@ -1737,7 +1741,7 @@
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         }
@@ -1797,7 +1801,7 @@
             var attributes = effect.getAttributesNames();
 
             if (!this._vaoRecordInProgress) {
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
             }
 
             this.unbindAllAttributes();
@@ -1869,7 +1873,7 @@
 
                 let attributesCount = effect.getAttributesCount();
 
-                this._unBindVertexArrayObject();
+                this._unbindVertexArrayObject();
                 this.unbindAllAttributes();
 
                 var offset = 0;
@@ -1893,7 +1897,7 @@
             this._bindIndexBufferWithCache(indexBuffer);
         }
 
-        private _unBindVertexArrayObject(): void {
+        private _unbindVertexArrayObject(): void {
             if (!this._cachedVertexArrayObject) {
                 return;
             }
@@ -2441,6 +2445,7 @@
             }
             this.resetTextureCache();
             this._currentEffect = null;
+            this._currentProgram = null;
 
             // 6/8/2017: deltakosh: Should not be required anymore. 
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
@@ -2454,7 +2459,7 @@
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
-            this._unBindVertexArrayObject();
+            this._unbindVertexArrayObject();
             this.bindIndexBuffer(null);
             this.bindArrayBuffer(null);
         }
@@ -3236,7 +3241,7 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: () => void, onError: () => void = null, format?: number): WebGLTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: () => void, onError: () => void = null, format?: number, forcedExtension = null): WebGLTexture {
             var callback = (loadData) => {
                 if (this._caps.textureLOD || !loadData) {
                     // Do not add extra process if texture lod is supported.
@@ -3261,7 +3266,7 @@
                     let roughness = 1 - smoothness;
 
                     let minLODIndex = offset; // roughness = 0
-                    let maxLODIndex = MathTools.Log2(width) * scale + offset; // roughness = 1
+                    let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
@@ -3306,10 +3311,10 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: () => void = null, format?: number): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: () => void = null, format?: number, forcedExtension = null): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -3322,7 +3327,7 @@
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
-            var extension = rootUrl.substring(lastDot).toLowerCase();
+            var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
             if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
@@ -4164,7 +4169,7 @@
             }
 
             gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
             return buffer;
         }

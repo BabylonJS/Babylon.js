@@ -198,5 +198,9 @@
 
             this._useAmbientInGrayScale = true;
         }
+
+        public getClassName(): string {
+            return "PBRBaseSimpleMaterial";
+        }        
     }
 }

@@ -155,6 +155,7 @@ declare module BABYLON.GUI {
         private _dummyVector2;
         private _downCount;
         private _enterCount;
+        private _doNotRender;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         protected _linkOffsetX: ValueAndUnit;
@@ -204,6 +205,7 @@ declare module BABYLON.GUI {
         fontSize: string | number;
         color: string;
         zIndex: number;
+        notRenderable: boolean;
         isVisible: boolean;
         readonly isDirty: boolean;
         paddingLeft: string | number;

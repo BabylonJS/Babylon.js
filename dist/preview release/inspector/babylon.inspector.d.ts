@@ -113,6 +113,12 @@ declare module INSPECTOR {
         'BaseTexture': {
             type: typeof BABYLON.BaseTexture;
         };
+        'CubeTexture': {
+            type: typeof BABYLON.CubeTexture;
+        };
+        'HDRCubeTexture': {
+            type: typeof BABYLON.HDRCubeTexture;
+        };
         'FontTexture': {
             type: typeof BABYLON.FontTexture;
         };
@@ -969,6 +975,7 @@ declare module INSPECTOR {
         constructor(tabbar: TabBar, insp: Inspector);
         /** Overrides super.dispose */
         dispose(): void;
+        active(b: boolean): void;
         private _message(type, message, caller);
         private _addConsoleLog(...params);
         private _addConsoleWarn(...params);
@@ -993,6 +1000,7 @@ declare module INSPECTOR {
         /** Update each properties of the stats panel */
         private _update();
         dispose(): void;
+        active(b: boolean): void;
     }
 }
 

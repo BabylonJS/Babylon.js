@@ -23,6 +23,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): GradientMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): GradientMaterial;
     }
 }
