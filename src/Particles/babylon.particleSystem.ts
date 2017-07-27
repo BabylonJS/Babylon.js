@@ -373,6 +373,9 @@
             if (this._stopped) {
                 if (!this._alive) {
                     this._started = false;
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                     if (this.disposeOnStop) {
                         this._scene._toBeDisposed.push(this);
                     }
@@ -391,11 +394,6 @@
             }
 
             this._vertexBuffer.update(this._vertexData);
-
-            // Animation End
-            if (this.onAnimationEnd != null) {
-                this.onAnimationEnd();
-            }
         }
 
         public render(): number {
