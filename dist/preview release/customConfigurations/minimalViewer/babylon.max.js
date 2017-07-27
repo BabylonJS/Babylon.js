@@ -24104,6 +24104,24 @@ var BABYLON;
             }
             return result;
         };
+        // Force shader compilation including textures ready check
+        Material.prototype.forceCompilation = function (mesh, onCompiled) {
+            var _this = this;
+            var subMesh = new BABYLON.BaseSubMesh();
+            var scene = this.getScene();
+            var beforeRenderCallback = function () {
+                if (subMesh._materialDefines) {
+                    subMesh._materialDefines._renderId = -1;
+                }
+                if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                    scene.unregisterBeforeRender(beforeRenderCallback);
+                    if (onCompiled) {
+                        onCompiled(_this);
+                    }
+                }
+            };
+            scene.registerBeforeRender(beforeRenderCallback);
+        };
         Material.prototype.markAsDirty = function (flag) {
             if (flag & Material.TextureDirtyFlag) {
                 this._markAllSubMeshesAsTexturesDirty();
