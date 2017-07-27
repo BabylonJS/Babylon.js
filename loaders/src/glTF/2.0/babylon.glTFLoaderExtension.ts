@@ -6,7 +6,7 @@ module BABYLON.GLTF2 {
 
         public abstract get name(): string;
 
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean { return false; }
+        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
 
         //
         // Utilities
@@ -14,7 +14,7 @@ module BABYLON.GLTF2 {
 
         public static _Extensions: GLTFLoaderExtension[] = [];
 
-        public static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (material: Material) => void): boolean {
+        public static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
             return this._ApplyExtensions(extension => extension.loadMaterial(loader, material, assign));
         }
 

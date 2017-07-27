@@ -47,7 +47,6 @@ module INSPECTOR {
             //Check initialTab is defined and between tabs bounds
             if (!initialTab || initialTab < 0 || initialTab >= this._tabs.length) {
                 initialTab = 0;
-                console.warn('');
             }
 
             this._tabs[initialTab].active(true);
