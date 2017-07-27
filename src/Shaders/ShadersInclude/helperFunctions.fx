@@ -20,8 +20,8 @@ mat3 transposeMat3(mat3 inMatrix) {
 
 float computeFallOff(float value, vec2 clipSpace, float frustumEdgeFalloff)
 {
-	float mask = smoothstep(1.0, 1.0 - frustumEdgeFalloff, dot(clipSpace, clipSpace));
-	return mix(1.0, value, mask);
+	float mask = smoothstep(1.0 - frustumEdgeFalloff, 1.0, clamp(dot(clipSpace, clipSpace), 0., 1.));
+	return mix(value, 1.0, mask);
 }
 
 vec3 applyEaseInOut(vec3 x){
