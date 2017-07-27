@@ -42,12 +42,8 @@
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
 
-	#ifdef INVERTNORMALMAPX
-		map.x = 1.0 - map.x;
-	#endif
-	#ifdef INVERTNORMALMAPY
-		map.y = 1.0 - map.y;
-	#endif
+		map.x = vNormalReoderParams.x + vNormalReoderParams.y * map.x;
+		map.y = vNormalReoderParams.z + vNormalReoderParams.w * map.y;
 
 		map = map * 255. / 127. - 128. / 127.;
 		return normalize(cotangentFrame * map);
