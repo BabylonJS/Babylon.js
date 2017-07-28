@@ -519,29 +519,29 @@
         // Force shader compilation including textures ready check
         public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest: boolean }): void {
             var subMesh = new BaseSubMesh();
-            var scene = this.getScene();
-            var engine = scene.getEngine();
+            var engine = this.getScene().getEngine();
 
-            var beforeRenderCallback = () => {
+            var checkReady = () => {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
-                
+
                 var alphaTestState = engine.getAlphaTesting();
                 engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
-                
-                if (this.isReadyForSubMesh(mesh, subMesh)) {
-                    scene.unregisterBeforeRender(beforeRenderCallback);
 
+                if (this.isReadyForSubMesh(mesh, subMesh)) {
                     if (onCompiled) {
                         onCompiled(this);
                     }
+                }
+                else {
+                    setTimeout(checkReady, 16);
                 }
 
                 engine.setAlphaTesting(alphaTestState);
             };
 
-            scene.registerBeforeRender(beforeRenderCallback);
+            checkReady();
         }
        
         public markAsDirty(flag: number): void {
