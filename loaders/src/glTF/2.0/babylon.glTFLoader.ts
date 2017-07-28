@@ -405,12 +405,12 @@ module BABYLON.GLTF2 {
                     }
                     else {
                         var material = this._gltf.materials[primitive.material];
-                        this.addPendingData(material);
                         this.loadMaterial(material, (babylonMaterial, isNew) => {
                             if (isNew && this._parent.onMaterialLoaded) {
                                 this._parent.onMaterialLoaded(babylonMaterial);
                             }
 
+                            this.addPendingData(material);
                             babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
                                 babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                 this.removePendingData(material);
