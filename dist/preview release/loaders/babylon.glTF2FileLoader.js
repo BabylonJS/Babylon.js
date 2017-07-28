@@ -639,11 +639,11 @@ var BABYLON;
                         }
                         else {
                             var material = _this._gltf.materials[primitive.material];
-                            _this.addPendingData(material);
                             _this.loadMaterial(material, function (babylonMaterial, isNew) {
                                 if (isNew && _this._parent.onMaterialLoaded) {
                                     _this._parent.onMaterialLoaded(babylonMaterial);
                                 }
+                                _this.addPendingData(material);
                                 babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
                                     babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                     _this.removePendingData(material);
