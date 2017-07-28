@@ -310,6 +310,9 @@ declare module BABYLON.GLTF2 {
         private _onLoaderComplete();
         private _loadData(data);
         private _addRightHandToLeftHandRootTransform();
+        private _getMeshes();
+        private _getSkeletons();
+        private _getAnimationTargets();
         private _showMeshes();
         private _startAnimations();
         private _loadScene(nodeNames);
@@ -336,7 +339,7 @@ declare module BABYLON.GLTF2 {
         removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
         private _loadMaterialMetallicRoughnessProperties(material);
-        loadMaterial(index: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void;
+        loadMaterial(material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): void;
         createPbrMaterial(material: IGLTFMaterial): void;
         loadMaterialBaseProperties(material: IGLTFMaterial): void;
         loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void;
