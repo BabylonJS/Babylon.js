@@ -7,7 +7,7 @@
         private _floats: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
-        private _colors3Arrays: { [name: string]: Color3[] } = {};
+        private _colors3Arrays: { [name: string]: number[] } = {};
         private _colors4: { [name: string]: Color4 } = {};
         private _vectors2: { [name: string]: Vector2 } = {};
         private _vectors3: { [name: string]: Vector3 } = {};
@@ -95,8 +95,10 @@
         }
         public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
             this._checkUniform(name);
-            this._colors3Arrays[name] = value;
-
+            this._colors3Arrays[name] = value.reduce((arr, color) => {
+                color.toArray(arr, arr.length);
+                return arr;
+            }, [])
             return this;
         }
 
@@ -324,7 +326,7 @@
                 }
 
                 for (name in this._colors3Arrays) {
-                    this._effect.setColor3Arrays(name, this._colors3Arrays[name]);
+                    this._effect.setArray3(name, this._colors3Arrays[name]);
                 }
 
                 // Color4      
@@ -485,10 +487,7 @@
             // Color3 array
             serializationObject.colors3Arrays = {};
             for (name in this._colors3Arrays) {
-                serializationObject.colors3Arrays[name] = this._colors3Arrays[name].reduce((arr, color) => {
-                    color.toArray(arr, arr.length);
-                    return arr;
-                }, []);
+                serializationObject.colors3Arrays[name] = this._colors3Arrays[name];
             }
 
             // Color4  
@@ -580,7 +579,6 @@
 
             // Color3 arrays
             for (name in source.colors3Arrays) {
-
                 const colors: Color3[] = source.colors3Arrays[name].reduce((arr, num, i) => {
                     if (i % 3 === 0) {
                         arr.push([num]);
