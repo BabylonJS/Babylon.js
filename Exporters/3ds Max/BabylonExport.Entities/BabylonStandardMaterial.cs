@@ -68,6 +68,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool linkEmissiveWithDiffuse { get; set; }
 
+        [DataMember]
+        public bool twoSidedLighting { get; set; }
+
         public BabylonStandardMaterial() : base()
         {
             ambient = new[] {1.0f, 1.0f, 1.0f};

@@ -30,7 +30,7 @@ void main(void)
 
 vec4 worldPos = finalWorld * vec4(position, 1.0);
 gl_Position = viewProjection * worldPos;
-vDepthMetric = ((clamp(gl_Position.z / gl_Position.w, -1.0, 1.0) + depthValues.x) / (depthValues.y)) + biasAndScale.x;
+vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
 
 #ifdef ALPHATEST
 	#ifdef UV1
