@@ -10040,7 +10040,7 @@ var BABYLON;
                     var minLODIndex = offset; // roughness = 0
                     var maxLODIndex = BABYLON.Scalar.Log2(width) * scale + offset; // roughness = 1
                     var lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-                    var mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
+                    var mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
                     var glTextureFromLod = gl.createTexture();
                     glTextureFromLod.isCube = true;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
