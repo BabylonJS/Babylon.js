@@ -3270,7 +3270,7 @@
                     let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-                    let mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
+                    let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
                     var glTextureFromLod = gl.createTexture();
                     glTextureFromLod.isCube = true;
