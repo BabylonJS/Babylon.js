@@ -3,6 +3,7 @@ module BABYLON {
     export enum PoseEnabledControllerType {
         VIVE,
         OCULUS,
+        WINDOWS,
         GENERIC
     }
 
@@ -14,11 +15,21 @@ module BABYLON {
 
     export class PoseEnabledControllerHelper {
         public static InitiateController(vrGamepad: any) {
-            // for now, only Oculus and Vive are supported
+            // Oculus Touch
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
                 return new OculusTouchController(vrGamepad);
-            } else {
+            }
+            // Windows Mixed Reality controllers 
+            // else if (vrGamepad.id.indexOf('Spatial Control') === 0) {
+            //     //return new WindowsMixedRealityController(vrGamepad);
+            // }
+            // HTC Vive
+            else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new ViveController(vrGamepad);
+            }
+            // Generic 
+            else {
+                return new GenericController(vrGamepad);
             }
         }
     }
@@ -197,6 +208,13 @@ module BABYLON {
         public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void)
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
+            if (!newState) {
+                newState = {
+                    pressed: false,
+                    touched: false,
+                    value: 0
+                };
+            }  
             if (!currentState) {
                 this._buttons[buttonIndex] = {
                     pressed: newState.pressed,
@@ -440,7 +458,28 @@ module BABYLON {
         }
     }
 
+    export class GenericController extends WebVRController {
+        private _defaultModel: BABYLON.AbstractMesh;
 
+        constructor(vrGamepad) {
+            super(vrGamepad);
+        }
+
+        public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
+            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "genericvrcontroller.babylon", scene, (newMeshes) => {
+                this._defaultModel = newMeshes[1];
+                if (meshLoaded) {
+                    meshLoaded(this._defaultModel);
+                }
+                this.attachToMesh(this._defaultModel);
+            });
+        }
+
+        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+            console.log("Button id: " + buttonIdx + "state: ");
+            console.dir(state);
+        }
+    }
 }
 
 interface ExtendedGamepadButton extends GamepadButton {

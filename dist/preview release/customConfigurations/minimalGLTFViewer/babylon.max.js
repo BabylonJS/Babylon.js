@@ -38103,6 +38103,7 @@ var BABYLON;
             _this._floats = {};
             _this._floatsArrays = {};
             _this._colors3 = {};
+            _this._colors3Arrays = {};
             _this._colors4 = {};
             _this._vectors2 = {};
             _this._vectors3 = {};
@@ -38165,6 +38166,14 @@ var BABYLON;
         ShaderMaterial.prototype.setColor3 = function (name, value) {
             this._checkUniform(name);
             this._colors3[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setColor3Array = function (name, value) {
+            this._checkUniform(name);
+            this._colors3Arrays[name] = value.reduce(function (arr, color) {
+                color.toArray(arr, arr.length);
+                return arr;
+            }, []);
             return this;
         };
         ShaderMaterial.prototype.setColor4 = function (name, value) {
@@ -38341,6 +38350,9 @@ var BABYLON;
                 for (name in this._colors3) {
                     this._effect.setColor3(name, this._colors3[name]);
                 }
+                for (name in this._colors3Arrays) {
+                    this._effect.setArray3(name, this._colors3Arrays[name]);
+                }
                 // Color4      
                 for (name in this._colors4) {
                     var color = this._colors4[name];
@@ -38464,6 +38476,11 @@ var BABYLON;
             for (name in this._colors3) {
                 serializationObject.colors3[name] = this._colors3[name].asArray();
             }
+            // Color3 array
+            serializationObject.colors3Arrays = {};
+            for (name in this._colors3Arrays) {
+                serializationObject.colors3Arrays[name] = this._colors3Arrays[name];
+            }
             // Color4  
             serializationObject.colors4 = {};
             for (name in this._colors4) {
@@ -38533,6 +38550,19 @@ var BABYLON;
             // Color3        
             for (name in source.colors3) {
                 material.setColor3(name, BABYLON.Color3.FromArray(source.colors3[name]));
+            }
+            // Color3 arrays
+            for (name in source.colors3Arrays) {
+                var colors = source.colors3Arrays[name].reduce(function (arr, num, i) {
+                    if (i % 3 === 0) {
+                        arr.push([num]);
+                    }
+                    else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, []).map(function (color) { return BABYLON.Color3.FromArray(color); });
+                material.setColor3Array(name, colors);
             }
             // Color4      
             for (name in source.colors4) {
