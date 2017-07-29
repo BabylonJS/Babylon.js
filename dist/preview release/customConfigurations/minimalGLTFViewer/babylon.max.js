@@ -52115,27 +52115,30 @@ var BABYLON;
                             verticesStart: vertexData.positions.length,
                             verticesCount: subVertexData.positions.length,
                             indicesStart: vertexData.indices.length,
-                            indicesCount: subVertexData.indices.length
+                            indicesCount: subVertexData.indices.length,
+                            loadMaterial: function () {
+                                if (primitive.material === undefined) {
+                                    babylonMultiMaterial.subMaterials[i] = _this._getDefaultMaterial();
+                                }
+                                else {
+                                    var material = _this._gltf.materials[primitive.material];
+                                    _this.loadMaterial(material, function (babylonMaterial, isNew) {
+                                        if (isNew && _this._parent.onMaterialLoaded) {
+                                            _this._parent.onMaterialLoaded(babylonMaterial);
+                                        }
+                                        _this.addPendingData(material);
+                                        babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                            _this.removePendingData(material);
+                                        });
+                                    });
+                                }
+                            }
                         });
                         vertexData.merge(subVertexData);
-                        if (primitive.material === undefined) {
-                            babylonMultiMaterial.subMaterials[i] = _this._getDefaultMaterial();
-                        }
-                        else {
-                            var material = _this._gltf.materials[primitive.material];
-                            _this.loadMaterial(material, function (babylonMaterial, isNew) {
-                                if (isNew && _this._parent.onMaterialLoaded) {
-                                    _this._parent.onMaterialLoaded(babylonMaterial);
-                                }
-                                _this.addPendingData(material);
-                                babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
-                                    babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                    _this.removePendingData(material);
-                                });
-                            });
-                        }
                         if (++loadedPrimitives === totalPrimitives) {
                             geometry.setAllVerticesData(vertexData, false);
+                            subMeshInfos.forEach(function (info) { return info.loadMaterial(); });
                             // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                             // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
                             babylonMesh.subMeshes = [];
