@@ -196,7 +196,7 @@ runTest(index) {
             }
         }
 
-        xmlHttp.open("GET", snippetUrl + "/" + test.playgroundId.replace("#", "/"));
+        xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
         xmlHttp.send();
     } else {
         // Fix references
