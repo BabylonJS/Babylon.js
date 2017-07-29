@@ -374,7 +374,7 @@ module BABYLON.GLTF2 {
             vertexData.positions = [];
             vertexData.indices = [];
 
-            var subMeshInfos: { materialIndex: number, verticesStart: number, verticesCount: number, indicesStart: number, indicesCount: number }[] = [];
+            var subMeshInfos: { materialIndex: number, verticesStart: number, verticesCount: number, indicesStart: number, indicesCount: number, loadMaterial: () => void }[] = [];
 
             var loadedPrimitives = 0;
             var totalPrimitives = mesh.primitives.length;
@@ -395,31 +395,34 @@ module BABYLON.GLTF2 {
                         verticesStart: vertexData.positions.length,
                         verticesCount: subVertexData.positions.length,
                         indicesStart: vertexData.indices.length,
-                        indicesCount: subVertexData.indices.length
+                        indicesCount: subVertexData.indices.length,
+                        loadMaterial: () => {
+                            if (primitive.material === undefined) {
+                                babylonMultiMaterial.subMaterials[i] = this._getDefaultMaterial();
+                            }
+                            else {
+                                var material = this._gltf.materials[primitive.material];
+                                this.loadMaterial(material, (babylonMaterial, isNew) => {
+                                    if (isNew && this._parent.onMaterialLoaded) {
+                                        this._parent.onMaterialLoaded(babylonMaterial);
+                                    }
+
+                                    this.addPendingData(material);
+                                    babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        this.removePendingData(material);
+                                    });
+                                });
+                            }
+                        }
                     });
 
                     vertexData.merge(subVertexData);
 
-                    if (primitive.material === undefined) {
-                        babylonMultiMaterial.subMaterials[i] = this._getDefaultMaterial();
-                    }
-                    else {
-                        var material = this._gltf.materials[primitive.material];
-                        this.loadMaterial(material, (babylonMaterial, isNew) => {
-                            if (isNew && this._parent.onMaterialLoaded) {
-                                this._parent.onMaterialLoaded(babylonMaterial);
-                            }
-
-                            this.addPendingData(material);
-                            babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
-                                babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                this.removePendingData(material);
-                            });
-                        });
-                    }
-
                     if (++loadedPrimitives === totalPrimitives) {
                         geometry.setAllVerticesData(vertexData, false);
+
+                        subMeshInfos.forEach(info => info.loadMaterial());
 
                         // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                         // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
