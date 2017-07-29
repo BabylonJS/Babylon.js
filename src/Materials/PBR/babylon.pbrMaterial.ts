@@ -405,6 +405,14 @@
         public environmentBRDFTexture: BaseTexture = null;
 
         /**
+         * Force normal to face away from face.
+         * (Temporary internal fix to remove before 3.1)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceNormalForward = false;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {
