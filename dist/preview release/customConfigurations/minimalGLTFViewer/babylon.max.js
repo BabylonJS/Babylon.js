@@ -48715,11 +48715,19 @@ var BABYLON;
                     log = "";
                     var fullDetails = BABYLON.SceneLoader.loggingLevel === BABYLON.SceneLoader.DETAILED_LOGGING;
                     // Scene
-                    scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
-                    scene.autoClear = parsedData.autoClear;
-                    scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
-                    scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-                    if (parsedData.gravity) {
+                    if (parsedData.useDelayedTextureLoading !== undefined) {
+                        scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
+                    }
+                    if (parsedData.autoClear !== undefined) {
+                        scene.autoClear = parsedData.autoClear;
+                    }
+                    if (parsedData.clearColor !== undefined) {
+                        scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
+                    }
+                    if (parsedData.ambientColor !== undefined) {
+                        scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
+                    }
+                    if (parsedData.gravity !== undefined) {
                         scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
                     }
                     // Fog
@@ -48762,21 +48770,23 @@ var BABYLON;
                         scene.metadata = parsedData.metadata;
                     }
                     //collisions, if defined. otherwise, default is true
-                    if (parsedData.collisionsEnabled != undefined) {
+                    if (parsedData.collisionsEnabled !== undefined) {
                         scene.collisionsEnabled = parsedData.collisionsEnabled;
                     }
                     scene.workerCollisions = !!parsedData.workerCollisions;
                     var index;
                     var cache;
                     // Lights
-                    for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
-                        var parsedLight = parsedData.lights[index];
-                        var light = BABYLON.Light.Parse(parsedLight, scene);
-                        log += (index === 0 ? "\n\tLights:" : "");
-                        log += "\n\t\t" + light.toString(fullDetails);
+                    if (parsedData.lights !== undefined) {
+                        for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
+                            var parsedLight = parsedData.lights[index];
+                            var light = BABYLON.Light.Parse(parsedLight, scene);
+                            log += (index === 0 ? "\n\tLights:" : "");
+                            log += "\n\t\t" + light.toString(fullDetails);
+                        }
                     }
                     // Animations
-                    if (parsedData.animations) {
+                    if (parsedData.animations !== undefined) {
                         for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
                             var parsedAnimation = parsedData.animations[index];
                             var animation = BABYLON.Animation.Parse(parsedAnimation);
@@ -48789,7 +48799,7 @@ var BABYLON;
                         scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
                     }
                     // Materials
-                    if (parsedData.materials) {
+                    if (parsedData.materials !== undefined) {
                         for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
                             var parsedMaterial = parsedData.materials[index];
                             var mat = BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
@@ -48797,7 +48807,7 @@ var BABYLON;
                             log += "\n\t\t" + mat.toString(fullDetails);
                         }
                     }
-                    if (parsedData.multiMaterials) {
+                    if (parsedData.multiMaterials !== undefined) {
                         for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                             var parsedMultiMaterial = parsedData.multiMaterials[index];
                             var mmat = BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
@@ -48806,14 +48816,14 @@ var BABYLON;
                         }
                     }
                     // Morph targets
-                    if (parsedData.morphTargetManagers) {
+                    if (parsedData.morphTargetManagers !== undefined) {
                         for (var _i = 0, _a = parsedData.morphTargetManagers; _i < _a.length; _i++) {
                             var managerData = _a[_i];
                             var parsedManager = BABYLON.MorphTargetManager.Parse(managerData, scene);
                         }
                     }
                     // Skeletons
-                    if (parsedData.skeletons) {
+                    if (parsedData.skeletons !== undefined) {
                         for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                             var parsedSkeleton = parsedData.skeletons[index];
                             var skeleton = BABYLON.Skeleton.Parse(parsedSkeleton, scene);
@@ -48823,10 +48833,10 @@ var BABYLON;
                     }
                     // Geometries
                     var geometries = parsedData.geometries;
-                    if (geometries) {
+                    if (geometries !== undefined) {
                         // Boxes
                         var boxes = geometries.boxes;
-                        if (boxes) {
+                        if (boxes !== undefined) {
                             for (index = 0, cache = boxes.length; index < cache; index++) {
                                 var parsedBox = boxes[index];
                                 BABYLON.Geometry.Primitives.Box.Parse(parsedBox, scene);
@@ -48834,7 +48844,7 @@ var BABYLON;
                         }
                         // Spheres
                         var spheres = geometries.spheres;
-                        if (spheres) {
+                        if (spheres !== undefined) {
                             for (index = 0, cache = spheres.length; index < cache; index++) {
                                 var parsedSphere = spheres[index];
                                 BABYLON.Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
@@ -48842,7 +48852,7 @@ var BABYLON;
                         }
                         // Cylinders
                         var cylinders = geometries.cylinders;
-                        if (cylinders) {
+                        if (cylinders !== undefined) {
                             for (index = 0, cache = cylinders.length; index < cache; index++) {
                                 var parsedCylinder = cylinders[index];
                                 BABYLON.Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
@@ -48850,7 +48860,7 @@ var BABYLON;
                         }
                         // Toruses
                         var toruses = geometries.toruses;
-                        if (toruses) {
+                        if (toruses !== undefined) {
                             for (index = 0, cache = toruses.length; index < cache; index++) {
                                 var parsedTorus = toruses[index];
                                 BABYLON.Geometry.Primitives.Torus.Parse(parsedTorus, scene);
@@ -48858,7 +48868,7 @@ var BABYLON;
                         }
                         // Grounds
                         var grounds = geometries.grounds;
-                        if (grounds) {
+                        if (grounds !== undefined) {
                             for (index = 0, cache = grounds.length; index < cache; index++) {
                                 var parsedGround = grounds[index];
                                 BABYLON.Geometry.Primitives.Ground.Parse(parsedGround, scene);
@@ -48866,7 +48876,7 @@ var BABYLON;
                         }
                         // Planes
                         var planes = geometries.planes;
-                        if (planes) {
+                        if (planes !== undefined) {
                             for (index = 0, cache = planes.length; index < cache; index++) {
                                 var parsedPlane = planes[index];
                                 BABYLON.Geometry.Primitives.Plane.Parse(parsedPlane, scene);
@@ -48874,7 +48884,7 @@ var BABYLON;
                         }
                         // TorusKnots
                         var torusKnots = geometries.torusKnots;
-                        if (torusKnots) {
+                        if (torusKnots !== undefined) {
                             for (index = 0, cache = torusKnots.length; index < cache; index++) {
                                 var parsedTorusKnot = torusKnots[index];
                                 BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
@@ -48882,7 +48892,7 @@ var BABYLON;
                         }
                         // VertexData
                         var vertexData = geometries.vertexData;
-                        if (vertexData) {
+                        if (vertexData !== undefined) {
                             for (index = 0, cache = vertexData.length; index < cache; index++) {
                                 var parsedVertexData = vertexData[index];
                                 BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
@@ -48890,20 +48900,24 @@ var BABYLON;
                         }
                     }
                     // Meshes
-                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                        var parsedMesh = parsedData.meshes[index];
-                        var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
-                        log += (index === 0 ? "\n\tMeshes:" : "");
-                        log += "\n\t\t" + mesh.toString(fullDetails);
+                    if (parsedData.meshes !== undefined) {
+                        for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                            var parsedMesh = parsedData.meshes[index];
+                            var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
+                            log += (index === 0 ? "\n\tMeshes:" : "");
+                            log += "\n\t\t" + mesh.toString(fullDetails);
+                        }
                     }
                     // Cameras
-                    for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
-                        var parsedCamera = parsedData.cameras[index];
-                        var camera = BABYLON.Camera.Parse(parsedCamera, scene);
-                        log += (index === 0 ? "\n\tCameras:" : "");
-                        log += "\n\t\t" + camera.toString(fullDetails);
+                    if (parsedData.cameras !== undefined) {
+                        for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
+                            var parsedCamera = parsedData.cameras[index];
+                            var camera = BABYLON.Camera.Parse(parsedCamera, scene);
+                            log += (index === 0 ? "\n\tCameras:" : "");
+                            log += "\n\t\t" + camera.toString(fullDetails);
+                        }
                     }
-                    if (parsedData.activeCameraID) {
+                    if (parsedData.activeCameraID !== undefined) {
                         scene.setActiveCameraByID(parsedData.activeCameraID);
                     }
                     // Browsing all the graph to connect the dots
@@ -48924,7 +48938,7 @@ var BABYLON;
                     // Sounds
                     var loadedSounds = [];
                     var loadedSound;
-                    if (BABYLON.AudioEngine && parsedData.sounds) {
+                    if (BABYLON.AudioEngine && parsedData.sounds !== undefined) {
                         for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                             var parsedSound = parsedData.sounds[index];
                             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -48968,21 +48982,21 @@ var BABYLON;
                         }
                     }
                     // Particles Systems
-                    if (parsedData.particleSystems) {
+                    if (parsedData.particleSystems !== undefined) {
                         for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                             var parsedParticleSystem = parsedData.particleSystems[index];
                             BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
                         }
                     }
                     // Lens flares
-                    if (parsedData.lensFlareSystems) {
+                    if (parsedData.lensFlareSystems !== undefined) {
                         for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                             var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
                             BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
                         }
                     }
                     // Shadows
-                    if (parsedData.shadowGenerators) {
+                    if (parsedData.shadowGenerators !== undefined) {
                         for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                             var parsedShadowGenerator = parsedData.shadowGenerators[index];
                             BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
@@ -49013,7 +49027,7 @@ var BABYLON;
                         }
                     }
                     // Actions (scene)
-                    if (parsedData.actions) {
+                    if (parsedData.actions !== undefined) {
                         BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
                     }
                     // Finish
