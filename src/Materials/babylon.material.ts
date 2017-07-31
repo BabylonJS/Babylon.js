@@ -349,7 +349,7 @@
 
         constructor(name: string, scene: Scene, doNotAdd?: boolean) {
             this.name = name;
-            this.id = name;
+            this.id = name || Tools.RandomId();
 
             this._scene = scene || Engine.LastCreatedScene;
 
