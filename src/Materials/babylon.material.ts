@@ -579,7 +579,7 @@
                     }
 
                     if (!subMesh._materialDefines) {
-                        return;
+                        continue;
                     }
 
                     func(subMesh._materialDefines);
