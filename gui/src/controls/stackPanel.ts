@@ -27,27 +27,34 @@ module BABYLON.GUI {
         }              
 
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            var stack = 0;
+            var stackWidth = 0;
+            var stackHeight = 0;
             for (var child of this._children) {
                 this._tempMeasureStore.copyFrom(child._currentMeasure);
                 child._currentMeasure.copyFrom(parentMeasure);
                 child._measure();
                 
                 if (this._isVertical) {
-                    child.top = stack + "px";
+                    child.top = stackHeight + "px";
                     if (!child._top.ignoreAdaptiveScaling) {
                         child._markAsDirty();
                     }
                     child._top.ignoreAdaptiveScaling = true;
-                    stack += child._currentMeasure.height;
+                    stackHeight += child._currentMeasure.height;
+                    if(child._currentMeasure.width > stackWidth) {
+                        stackWidth = child._currentMeasure.width;                        
+                    }
                     child.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 } else {
-                    child.left = stack + "px";
+                    child.left = stackWidth + "px";
                     if (!child._left.ignoreAdaptiveScaling) {
                         child._markAsDirty();
                     }                    
                     child._left.ignoreAdaptiveScaling = true;
-                    stack += child._currentMeasure.width;
+                    stackWidth += child._currentMeasure.width;
+                    if(child._currentMeasure.height > stackHeight) {
+                        stackHeight = child._currentMeasure.height;                        
+                    }
                     child.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 }
 
@@ -57,14 +64,16 @@ module BABYLON.GUI {
             let panelChanged = false;
             if (this._isVertical) {
                 let previousHeight = this.height;
-                this.height = stack + "px";
+                this.height = stackHeight + "px";
+                this.width = stackWidth + "px";
                 
                 panelChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
 
                 this._height.ignoreAdaptiveScaling = true;
             } else {
                 let previousWidth = this.width;
-                this.width = stack + "px";
+                this.width = stackWidth + "px";
+                this.height = stackHeight + "px";
                 panelChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
 
                 this._width.ignoreAdaptiveScaling = true;
