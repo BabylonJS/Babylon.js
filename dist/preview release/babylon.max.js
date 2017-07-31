@@ -24570,7 +24570,7 @@ var BABYLON;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.name = name;
-            this.id = name;
+            this.id = name || BABYLON.Tools.RandomId();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             if (this._scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
