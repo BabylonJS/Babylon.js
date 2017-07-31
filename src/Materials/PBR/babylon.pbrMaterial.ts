@@ -405,6 +405,14 @@
         public environmentBRDFTexture: BaseTexture = null;
 
         /**
+         * Force normal to face away from face.
+         * (Temporary internal fix to remove before 3.1)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceNormalForward = false;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {
@@ -564,8 +572,8 @@
                 activeTextures.push(this._emissiveTexture);
             }
 
-            if (this._reflectionTexture) {
-                activeTextures.push(this._reflectionTexture);
+            if (this._reflectivityTexture) {
+                activeTextures.push(this._reflectivityTexture);
             }
 
             if (this._metallicTexture) {
@@ -611,6 +619,10 @@
             if (this._reflectionTexture === texture) {
                 return true;
             }     
+
+            if (this._reflectivityTexture === texture) {
+                return true;
+            }                
 
             if (this._metallicTexture === texture) {
                 return true;

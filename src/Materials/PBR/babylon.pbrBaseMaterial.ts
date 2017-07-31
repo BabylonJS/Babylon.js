@@ -117,6 +117,8 @@
         public FOG = false;
         public LOGARITHMICDEPTH = false;
 
+        public FORCENORMALFORWARD = false;
+
         constructor() {
             super();
             this.rebuild();
@@ -396,6 +398,12 @@
          * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
          */
         protected _forceIrradianceInFragment = false;
+
+        /**
+         * Force normal to face away from face.
+         * (Temporary internal fix to remove before 3.1)
+         */
+        protected _forceNormalForward = false;
 
         /**
          * Default configuration related to image processing available in the PBR Material.
@@ -800,6 +808,8 @@
 
                 this._imageProcessingConfiguration.prepareDefines(defines);
             }
+
+            defines.FORCENORMALFORWARD = this._forceNormalForward;
 
             // Misc.
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
@@ -1251,7 +1261,12 @@
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position;
+                effect.setFloat4("vEyePosition", 
+                    eyePosition.x,
+                    eyePosition.y,
+                    eyePosition.z,
+                    scene._mirroredCameraPosition ? -1 : 1);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 

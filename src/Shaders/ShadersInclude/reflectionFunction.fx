@@ -15,7 +15,7 @@
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
 
-	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition);
+	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition.xyz);
 	vec3 r = reflect(cameraToVertex, worldNormal);
 	float t = clamp(r.y * -0.5 + 0.5, 0., 1.0);
 	float s = atan(r.z, r.x) * RECIPROCAL_PI2 + 0.5;
@@ -36,14 +36,14 @@
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
-	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 viewDir = worldPos.xyz - vEyePosition.xyz;
 	vec3 coords = normalize(reflect(viewDir, worldNormal));
 
 	return vec3(reflectionMatrix * vec4(coords, 1));
 #endif
 
 #ifdef REFLECTIONMAP_CUBIC
-	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 viewDir = worldPos.xyz - vEyePosition.xyz;
 	vec3 coords = reflect(viewDir, worldNormal);
 #ifdef INVERTCUBICMAP
 	coords.y = 1.0 - coords.y;
