@@ -543,7 +543,7 @@
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
-        public enableOfflineSupport = BABYLON.Database;
+        public enableOfflineSupport = false;
         public scenes = new Array<Scene>();
 
         // Observables
@@ -967,18 +967,20 @@
                 this._currentBufferPointers[i] = new BufferPointer();
             }
 
-            //Load WebVR Devices
+            // Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
 
-            //Detect if we are running on a faulty buggy OS.
+            // Detect if we are running on a faulty buggy OS.
             this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
-            //Detect if we are running on a faulty buggy desktop OS.
+            // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+
+            this.enableOfflineSupport = (BABYLON.Database !== undefined);
         }
 
         public get webGLVersion(): number {
