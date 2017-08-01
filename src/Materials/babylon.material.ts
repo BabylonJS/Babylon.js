@@ -530,9 +530,7 @@
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
 
-                if (options.alphaTest) {
-                    engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
-                }
+                engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
 
                 if (options.clipPlane) {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
@@ -547,9 +545,7 @@
                     setTimeout(checkReady, 16);
                 }
 
-                if (options.alphaTest) {
-                    engine.setAlphaTesting(alphaTestState);
-                }
+                engine.setAlphaTesting(alphaTestState);
 
                 if (options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
