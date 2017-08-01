@@ -130,10 +130,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool twoSidedLighting { get; set; }
 
+        [DataMember]
+        public int maxSimultaneousLights { get; set; }
+
         public BabylonPBRMaterial() : base()
         {
-            customType = "BABYLON.PBRMaterial";
-
+            SetCustomType("BABYLON.PBRMaterial");
             directIntensity = 1.0f;
             emissiveIntensity = 1.0f;
             environmentIntensity = 1.0f;
@@ -142,6 +144,7 @@ namespace BabylonExport.Entities
             cameraContrast = 1.0f;
             indexOfRefraction = 0.66f;
             twoSidedLighting = false;
+            maxSimultaneousLights = 4;
             useRadianceOverAlpha = true;
             useSpecularOverAlpha = true;
             usePhysicalLightFalloff = true;
@@ -165,7 +168,7 @@ namespace BabylonExport.Entities
 
         public void SetCustomType(string type)
         {
-            this.customType = type;
+            customType = type;
         }
     }
 }
