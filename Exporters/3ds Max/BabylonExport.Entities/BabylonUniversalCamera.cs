@@ -6,7 +6,7 @@ namespace BabylonExport.Entities
     {
         public BabylonUniversalCamera()
         {
-            this.type = "UniversalCamera";
+            type = "UniversalCamera";
         }
     }
 }
