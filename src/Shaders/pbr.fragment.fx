@@ -1,4 +1,4 @@
-﻿#if defined(BUMP)|| !defined(NORMAL)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -14,7 +14,7 @@ precision highp float;
 
 #include<__decl__pbrFragment>
 
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec4 vCameraInfos;
 
@@ -218,26 +218,28 @@ void main(void) {
 
 // _______________________________________________________________________________
 // _____________________________ Geometry Information ____________________________
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
-	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW)));
-#endif
-
-#ifdef BUMP
-	vec3 originalNormalW = normalW;
+	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
 #endif
 
 #include<bumpFragment>
 
-#if defined(TWOSIDEDLIGHTING) && defined(NORMAL) 
-	normalW = gl_FrontFacing ? normalW : -normalW;
-
-	#ifdef BUMP
-		originalNormalW = gl_FrontFacing ? originalNormalW : -originalNormalW;;
+#if defined(FORCENORMALFORWARD) && defined(NORMAL)
+	vec3 faceNormal = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
+	#if defined(TWOSIDEDLIGHTING)
+		faceNormal = gl_FrontFacing ? faceNormal : -faceNormal;
 	#endif
+
+	float comp = sign(dot(normalW, faceNormal));
+    normalW *= -comp;
+#endif
+
+#if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
+	normalW = gl_FrontFacing ? normalW : -normalW;
 #endif
 
 // _____________________________ Albedo Information ______________________________

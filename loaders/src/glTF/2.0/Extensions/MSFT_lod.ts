@@ -33,8 +33,9 @@ module BABYLON.GLTF2.Extensions {
             return true;
         }
 
-        private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (material: Material, isNew: boolean) => void): void {
-            loader.loadMaterial(materialLODs[lod], (babylonMaterial, isNew) => {
+        private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
+            var materialLOD = loader.gltf.materials[materialLODs[lod]];
+            loader.loadMaterial(materialLOD, (babylonMaterial, isNew) => {
                 assign(babylonMaterial, isNew);
 
                 // Loading is complete if this is the highest quality LOD.

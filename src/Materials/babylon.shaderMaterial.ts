@@ -7,6 +7,7 @@
         private _floats: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
+        private _colors3Arrays: { [name: string]: number[] } = {};
         private _colors4: { [name: string]: Color4 } = {};
         private _vectors2: { [name: string]: Vector2 } = {};
         private _vectors3: { [name: string]: Vector3 } = {};
@@ -90,6 +91,14 @@
             this._checkUniform(name);
             this._colors3[name] = value;
 
+            return this;
+        }
+        public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._colors3Arrays[name] = value.reduce((arr, color) => {
+                color.toArray(arr, arr.length);
+                return arr;
+            }, [])
             return this;
         }
 
@@ -316,6 +325,10 @@
                     this._effect.setColor3(name, this._colors3[name]);
                 }
 
+                for (name in this._colors3Arrays) {
+                    this._effect.setArray3(name, this._colors3Arrays[name]);
+                }
+
                 // Color4      
                 for (name in this._colors4) {
                     var color = this._colors4[name];
@@ -471,6 +484,12 @@
                 serializationObject.colors3[name] = this._colors3[name].asArray();
             }
 
+            // Color3 array
+            serializationObject.colors3Arrays = {};
+            for (name in this._colors3Arrays) {
+                serializationObject.colors3Arrays[name] = this._colors3Arrays[name];
+            }
+
             // Color4  
             serializationObject.colors4 = {};
             for (name in this._colors4) {
@@ -556,6 +575,19 @@
             // Color3        
             for (name in source.colors3) {
                 material.setColor3(name, Color3.FromArray(source.colors3[name]));
+            }
+
+            // Color3 arrays
+            for (name in source.colors3Arrays) {
+                const colors: Color3[] = source.colors3Arrays[name].reduce((arr, num, i) => {
+                    if (i % 3 === 0) {
+                        arr.push([num]);
+                    } else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, []).map(color => Color3.FromArray(color));
+                material.setColor3Array(name, colors);
             }
 
             // Color4      

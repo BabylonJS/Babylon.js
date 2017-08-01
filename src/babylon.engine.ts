@@ -543,7 +543,7 @@
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
         // To enable/disable IDB support and avoid XHR on .manifest
-        public enableOfflineSupport = BABYLON.Database;
+        public enableOfflineSupport = false;
         public scenes = new Array<Scene>();
 
         // Observables
@@ -967,18 +967,20 @@
                 this._currentBufferPointers[i] = new BufferPointer();
             }
 
-            //Load WebVR Devices
+            // Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
 
-            //Detect if we are running on a faulty buggy OS.
+            // Detect if we are running on a faulty buggy OS.
             this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
-            //Detect if we are running on a faulty buggy desktop OS.
+            // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+
+            this.enableOfflineSupport = (BABYLON.Database !== undefined);
         }
 
         public get webGLVersion(): number {
@@ -2445,11 +2447,12 @@
             }
             this.resetTextureCache();
             this._currentEffect = null;
-            this._currentProgram = null;
 
             // 6/8/2017: deltakosh: Should not be required anymore. 
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
+                this._currentProgram = null;
+
                 this._stencilState.reset();
                 this._depthCullingState.reset();
                 this.setDepthFunctionToLessOrEqual();
@@ -3269,7 +3272,7 @@
                     let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-                    let mipmapIndex = Math.min(Math.max(Math.round(lodIndex), 0), maxLODIndex);
+                    let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
                     var glTextureFromLod = gl.createTexture();
                     glTextureFromLod.isCube = true;
