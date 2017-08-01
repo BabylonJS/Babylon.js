@@ -10,8 +10,7 @@
         return null;
     };
 
-    var isDescendantOf = (mesh, names, hierarchyIds) => {
-        names = (names instanceof Array) ? names : [names];
+    var isDescendantOf = (mesh, names: Array<any>, hierarchyIds) => {
         for (var i in names) {
             if (mesh.name === names[i]) {
                 hierarchyIds.push(mesh.id);
@@ -49,149 +48,156 @@
                 var parsedData = JSON.parse(data);
                 log = "";
                 var fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
+                if (!meshesNames) {
+                    meshesNames = null;
+                } else if (!Array.isArray(meshesNames)) {
+                    meshesNames = [meshesNames];
+                }
+                
+                if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
+                    var loadedSkeletonsIds = [];
+                    var loadedMaterialsIds = [];
+                    var hierarchyIds = [];
+                    var index: number;
+                    var cache: number;
+                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                        var parsedMesh = parsedData.meshes[index];
 
-                var loadedSkeletonsIds = [];
-                var loadedMaterialsIds = [];
-                var hierarchyIds = [];
-                var index: number;
-                var cache: number;
-                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
-
-                    if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
-                        if (meshesNames instanceof Array) {
-                            // Remove found mesh name from list.
-                            delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
-                        }
-    
-                        //Geometry?
-                        if (parsedMesh.geometryId) {
-                            //does the file contain geometries?
-                            if (parsedData.geometries) {
-                                //find the correct geometry and add it to the scene
-                                var found: boolean = false;
-                                ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
-                                    if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
-                                        return;
-                                    } else {
-                                        parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
-                                            if (parsedGeometryData.id === parsedMesh.geometryId) {
-                                                switch (geometryType) {
-                                                    case "boxes":
-                                                        Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "spheres":
-                                                        Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "cylinders":
-                                                        Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "toruses":
-                                                        Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "grounds":
-                                                        Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "planes":
-                                                        Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "torusKnots":
-                                                        Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "vertexData":
-                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl);
-                                                        break;
+                        if (meshesNames === null || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
+                            if (meshesNames !== null) {
+                                // Remove found mesh name from list.
+                                delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
+                            }
+        
+                            //Geometry?
+                            if (parsedMesh.geometryId !== undefined && parsedMesh.geometryId !== null) {
+                                //does the file contain geometries?
+                                if (parsedData.geometries !== undefined && parsedData.geometries !== null) {
+                                    //find the correct geometry and add it to the scene
+                                    var found: boolean = false;
+                                    ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
+                                        if (found === true || !parsedData.geometries[geometryType] || !(Array.isArray(parsedData.geometries[geometryType]))) {
+                                            return;
+                                        } else {
+                                            parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
+                                                if (parsedGeometryData.id === parsedMesh.geometryId) {
+                                                    switch (geometryType) {
+                                                        case "boxes":
+                                                            Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "spheres":
+                                                            Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "cylinders":
+                                                            Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "toruses":
+                                                            Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "grounds":
+                                                            Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "planes":
+                                                            Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "torusKnots":
+                                                            Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "vertexData":
+                                                            Geometry.Parse(parsedGeometryData, scene, rootUrl);
+                                                            break;
+                                                    }
+                                                    found = true;
                                                 }
-                                                found = true;
-                                            }
-                                        });
+                                            });
 
-                                    }
-                                });
-                                if (!found) {
-                                    Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
-                                }
-                            }
-                        }
-    
-                        // Material ?
-                        if (parsedMesh.materialId) {
-                            var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
-                            if (!materialFound && parsedData.multiMaterials) {
-                                for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
-                                    var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
-                                        for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
-                                            var subMatId = parsedMultiMaterial.materials[matIndex];
-                                            loadedMaterialsIds.push(subMatId);
-                                            var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
-                                            log += "\n\tMaterial " + mat.toString(fullDetails);
                                         }
-                                        loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
-                                        materialFound = true;
-                                        log += "\n\tMulti-Material " + mmat.toString(fullDetails);
-                                        break;
+                                    });
+                                    if (found === false) {
+                                        Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+                                    }
+                                }
+                            }
+        
+                            // Material ?
+                            if (parsedMesh.materialId) {
+                                var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
+                                if (materialFound === false && parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
+                                    for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
+                                        var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
+                                        if (parsedMultiMaterial.id === parsedMesh.materialId) {
+                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
+                                                var subMatId = parsedMultiMaterial.materials[matIndex];
+                                                loadedMaterialsIds.push(subMatId);
+                                                var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
+                                                log += "\n\tMaterial " + mat.toString(fullDetails);
+                                            }
+                                            loadedMaterialsIds.push(parsedMultiMaterial.id);
+                                            var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                            materialFound = true;
+                                            log += "\n\tMulti-Material " + mmat.toString(fullDetails);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (materialFound === false) {
+                                    loadedMaterialsIds.push(parsedMesh.materialId);
+                                    var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                    if (!mat) {
+                                        Tools.Warn("Material not found for mesh " + parsedMesh.id);
+                                    } else {
+                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    }
+                                }
+                            }
+        
+                            // Skeleton ?
+                            if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
+                                var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
+                                if (skeletonAlreadyLoaded === false) {
+                                    for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
+                                        var parsedSkeleton = parsedData.skeletons[skeletonIndex];
+                                        if (parsedSkeleton.id === parsedMesh.skeletonId) {
+                                            var skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                                            skeletons.push(skeleton);
+                                            loadedSkeletonsIds.push(parsedSkeleton.id);
+                                            log += "\n\tSkeleton " + skeleton.toString(fullDetails);
+                                        }
                                     }
                                 }
                             }
 
-                            if (!materialFound) {
-                                loadedMaterialsIds.push(parsedMesh.materialId);
-                                var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
-                                if (!mat) {
-                                    Tools.Warn("Material not found for mesh " + parsedMesh.id);
-                                } else {
-                                    log += "\n\tMaterial " + mat.toString(fullDetails);
-                                }
-                            }
+                            var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
+                            meshes.push(mesh);
+                            log += "\n\tMesh " + mesh.toString(fullDetails);
                         }
-    
-                        // Skeleton ?
-                        if (parsedMesh.skeletonId > -1 && scene.skeletons) {
-                            var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
-                            if (!skeletonAlreadyLoaded) {
-                                for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
-                                    var parsedSkeleton = parsedData.skeletons[skeletonIndex];
-                                    if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        var skeleton = Skeleton.Parse(parsedSkeleton, scene);
-                                        skeletons.push(skeleton);
-                                        loadedSkeletonsIds.push(parsedSkeleton.id);
-                                        log += "\n\tSkeleton " + skeleton.toString(fullDetails);
-                                    }
-                                }
-                            }
+                    }
+        
+                    // Connecting parents
+                    var currentMesh: AbstractMesh;
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        currentMesh = scene.meshes[index];
+                        if (currentMesh._waitingParentId) {
+                            currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                            currentMesh._waitingParentId = undefined;
                         }
-
-                        var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
-                        meshes.push(mesh);
-                        log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
-                }
-    
-                // Connecting parents
-                var currentMesh: AbstractMesh;
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingParentId) {
-                        currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
-                        currentMesh._waitingParentId = undefined;
-                    }
-                }
-    
-                // freeze and compute world matrix application
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
-                        currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = undefined;
-                    } else {
-                        currentMesh.computeWorldMatrix(true);
+        
+                    // freeze and compute world matrix application
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        currentMesh = scene.meshes[index];
+                        if (currentMesh._waitingFreezeWorldMatrix) {
+                            currentMesh.freezeWorldMatrix();
+                            currentMesh._waitingFreezeWorldMatrix = undefined;
+                        } else {
+                            currentMesh.computeWorldMatrix(true);
+                        }
                     }
                 }
     
                 // Particles
-                if (parsedData.particleSystems) {
+                if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                     for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
@@ -225,11 +231,19 @@
                 var fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
                 
                 // Scene
-                scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
-                scene.autoClear = parsedData.autoClear;
-                scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
-                scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-                if (parsedData.gravity) {
+                if (parsedData.useDelayedTextureLoading !== undefined && parsedData.useDelayedTextureLoading !== null) {
+                    scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
+                }
+                if (parsedData.autoClear !== undefined && parsedData.autoClear !== null) {
+                    scene.autoClear = parsedData.autoClear;
+                }
+                if (parsedData.clearColor !== undefined && parsedData.clearColor !== null) {
+                    scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
+                }
+                if (parsedData.ambientColor !== undefined && parsedData.ambientColor !== null) {
+                    scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
+                }
+                if (parsedData.gravity !== undefined && parsedData.gravity !== null) {
                     scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
                 }
                 
@@ -264,12 +278,12 @@
                 }
                 
                 // Metadata
-                if (parsedData.metadata !== undefined) {
+                if (parsedData.metadata !== undefined && parsedData.metadata !== null) {
                     scene.metadata = parsedData.metadata;
                 }
                 
                 //collisions, if defined. otherwise, default is true
-                if (parsedData.collisionsEnabled != undefined) {
+                if (parsedData.collisionsEnabled !== undefined && parsedData.collisionsEnabled !== null) {
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
@@ -277,15 +291,17 @@
                 var index: number;
                 var cache: number;
                 // Lights
-                for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
-                    var parsedLight = parsedData.lights[index];
-                    var light = Light.Parse(parsedLight, scene);
-                    log += (index === 0 ? "\n\tLights:" : "");
-                    log += "\n\t\t" + light.toString(fullDetails);
+                if (parsedData.lights !== undefined && parsedData.lights !== null) {
+                    for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
+                        var parsedLight = parsedData.lights[index];
+                        var light = Light.Parse(parsedLight, scene);
+                        log += (index === 0 ? "\n\tLights:" : "");
+                        log += "\n\t\t" + light.toString(fullDetails);
+                    }
                 }
     
                 // Animations
-                if (parsedData.animations) {
+                if (parsedData.animations !== undefined && parsedData.animations !== null) {
                     for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
                         var parsedAnimation = parsedData.animations[index];
                         var animation = Animation.Parse(parsedAnimation);
@@ -300,7 +316,7 @@
                 }
     
                 // Materials
-                if (parsedData.materials) {
+                if (parsedData.materials !== undefined && parsedData.materials !== null) {
                     for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
                         var parsedMaterial = parsedData.materials[index];
                         var mat = Material.Parse(parsedMaterial, scene, rootUrl);
@@ -309,7 +325,7 @@
                     }
                 }
 
-                if (parsedData.multiMaterials) {
+                if (parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
                     for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                         var parsedMultiMaterial = parsedData.multiMaterials[index];
                         var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
@@ -319,14 +335,14 @@
                 }
 
                 // Morph targets
-                if (parsedData.morphTargetManagers) {
+                if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                     for (var managerData of parsedData.morphTargetManagers) {
                         var parsedManager = MorphTargetManager.Parse(managerData, scene);
                     }
                 }
     
                 // Skeletons
-                if (parsedData.skeletons) {
+                if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                     for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                         var parsedSkeleton = parsedData.skeletons[index];
                         var skeleton = Skeleton.Parse(parsedSkeleton, scene);
@@ -337,10 +353,10 @@
     
                 // Geometries
                 var geometries = parsedData.geometries;
-                if (geometries) {
+                if (geometries !== undefined && geometries !== null) {
                     // Boxes
                     var boxes = geometries.boxes;
-                    if (boxes) {
+                    if (boxes !== undefined && boxes !== null) {
                         for (index = 0, cache = boxes.length; index < cache; index++) {
                             var parsedBox = boxes[index];
                             Geometry.Primitives.Box.Parse(parsedBox, scene);
@@ -349,7 +365,7 @@
     
                     // Spheres
                     var spheres = geometries.spheres;
-                    if (spheres) {
+                    if (spheres !== undefined && spheres !== null) {
                         for (index = 0, cache = spheres.length; index < cache; index++) {
                             var parsedSphere = spheres[index];
                             Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
@@ -358,7 +374,7 @@
     
                     // Cylinders
                     var cylinders = geometries.cylinders;
-                    if (cylinders) {
+                    if (cylinders !== undefined && cylinders !== null) {
                         for (index = 0, cache = cylinders.length; index < cache; index++) {
                             var parsedCylinder = cylinders[index];
                             Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
@@ -367,7 +383,7 @@
     
                     // Toruses
                     var toruses = geometries.toruses;
-                    if (toruses) {
+                    if (toruses !== undefined && toruses !== null) {
                         for (index = 0, cache = toruses.length; index < cache; index++) {
                             var parsedTorus = toruses[index];
                             Geometry.Primitives.Torus.Parse(parsedTorus, scene);
@@ -376,7 +392,7 @@
     
                     // Grounds
                     var grounds = geometries.grounds;
-                    if (grounds) {
+                    if (grounds !== undefined && grounds !== null) {
                         for (index = 0, cache = grounds.length; index < cache; index++) {
                             var parsedGround = grounds[index];
                             Geometry.Primitives.Ground.Parse(parsedGround, scene);
@@ -385,7 +401,7 @@
     
                     // Planes
                     var planes = geometries.planes;
-                    if (planes) {
+                    if (planes !== undefined && planes !== null) {
                         for (index = 0, cache = planes.length; index < cache; index++) {
                             var parsedPlane = planes[index];
                             Geometry.Primitives.Plane.Parse(parsedPlane, scene);
@@ -394,7 +410,7 @@
     
                     // TorusKnots
                     var torusKnots = geometries.torusKnots;
-                    if (torusKnots) {
+                    if (torusKnots !== undefined && torusKnots !== null) {
                         for (index = 0, cache = torusKnots.length; index < cache; index++) {
                             var parsedTorusKnot = torusKnots[index];
                             Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
@@ -403,7 +419,7 @@
     
                     // VertexData
                     var vertexData = geometries.vertexData;
-                    if (vertexData) {
+                    if (vertexData !== undefined && vertexData !== null) {
                         for (index = 0, cache = vertexData.length; index < cache; index++) {
                             var parsedVertexData = vertexData[index];
                             Geometry.Parse(parsedVertexData, scene, rootUrl);
@@ -412,21 +428,25 @@
                 }
     
                 // Meshes
-                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
-                    var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
-                    log += (index === 0 ? "\n\tMeshes:" : "");
-                    log += "\n\t\t" + mesh.toString(fullDetails);
+                if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
+                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                        var parsedMesh = parsedData.meshes[index];
+                        var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
+                        log += (index === 0 ? "\n\tMeshes:" : "");
+                        log += "\n\t\t" + mesh.toString(fullDetails);
+                    }
                 }
     
                 // Cameras
-                for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
-                    var parsedCamera = parsedData.cameras[index];
-                    var camera = Camera.Parse(parsedCamera, scene);
-                    log += (index === 0 ? "\n\tCameras:" : "");
-                    log += "\n\t\t" + camera.toString(fullDetails);
+                if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
+                    for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
+                        var parsedCamera = parsedData.cameras[index];
+                        var camera = Camera.Parse(parsedCamera, scene);
+                        log += (index === 0 ? "\n\tCameras:" : "");
+                        log += "\n\t\t" + camera.toString(fullDetails);
+                    }
                 }
-                if (parsedData.activeCameraID) {
+                if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
     
@@ -450,7 +470,7 @@
                 // Sounds
                 var loadedSounds: Sound[] = [];
                 var loadedSound: Sound;
-                if (AudioEngine && parsedData.sounds) {
+                if (AudioEngine && parsedData.sounds !== undefined && parsedData.sounds !== null) {
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (Engine.audioEngine.canUseWebAudio) {
@@ -495,7 +515,7 @@
                 }
     
                 // Particles Systems
-                if (parsedData.particleSystems) {
+                if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                     for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
@@ -503,7 +523,7 @@
                 }
     
                 // Lens flares
-                if (parsedData.lensFlareSystems) {
+                if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
                     for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                         var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
                         LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
@@ -511,7 +531,7 @@
                 }
     
                 // Shadows
-                if (parsedData.shadowGenerators) {
+                if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
                     for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
                         ShadowGenerator.Parse(parsedShadowGenerator, scene);
@@ -549,7 +569,7 @@
                 }
     
                 // Actions (scene)
-                if (parsedData.actions) {
+                if (parsedData.actions !== undefined && parsedData.actions !== null) {
                     ActionManager.Parse(parsedData.actions, null, scene);
                 }
     
