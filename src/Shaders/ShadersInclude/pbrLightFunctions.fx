@@ -38,7 +38,7 @@ float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightC
         falloff = exp2(dot(vec4(directionToLightCenterW, 1.0), lightDirectionSpreadSG));
     #else
         float cosAngle = max(0.000000000000001, dot(-lightDirection, directionToLightCenterW));
-        if (cosAngle >= lightAngle)
+        if (cosAngle >= cosHalfAngle)
         {
             falloff = max(0., pow(cosAngle, exponent));
         }

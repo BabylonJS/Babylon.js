@@ -9,6 +9,9 @@
 
         public setEffect(effect: Effect, defines?: MaterialDefines) {
             if (this._materialEffect === effect) {
+                if (!effect) {
+                    this._materialDefines = undefined;
+                }
                 return;
             }
             this._materialDefines = defines;
@@ -100,9 +103,7 @@
 
                 if (this._currentMaterial !== effectiveMaterial) {
                     this._currentMaterial = effectiveMaterial;
-                    if (this._materialDefines) {
-                        this._materialDefines.markAllAsDirty();
-                    }
+                    this._materialDefines = undefined;
                 }
 
                 return effectiveMaterial;

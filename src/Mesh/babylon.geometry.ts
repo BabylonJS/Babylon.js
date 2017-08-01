@@ -842,7 +842,7 @@
                 }
 
                 if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
-                    var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);
+                    var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);                    
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeightsData, false);
                 }
 
@@ -939,10 +939,12 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
+                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights, parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
-                if (parsedGeometry.matricesWeightsExtra) {
+                if (parsedGeometry.matricesWeightsExtra) {                    
+                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeightsExtra, parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
@@ -971,6 +973,18 @@
             // Octree
             if (scene['_selectionOctree']) {
                 scene['_selectionOctree'].addMesh(mesh);
+            }
+        }
+
+        private static _CleanMatricesWeights(matricesWeights: number[], influencers: number): void {
+            let size = matricesWeights.length;
+            for (var i = 0; i < size; i += influencers) {
+                let weight = 0;
+                for (var j = 0; j < influencers - 1; j++) {
+                    weight += matricesWeights[i + j];
+                }
+
+                matricesWeights[i + (influencers - 1)] = Math.max(0, 1.0 - weight);
             }
         }
 
