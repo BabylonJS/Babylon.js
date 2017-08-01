@@ -130,37 +130,40 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool twoSidedLighting { get; set; }
 
+        [DataMember]
+        public int maxSimultaneousLights { get; set; }
+
         public BabylonPBRMaterial() : base()
         {
-            customType = "BABYLON.PBRMaterial";
-
-            directIntensity = 1.0f;
-            emissiveIntensity = 1.0f;
-            environmentIntensity = 1.0f;
-            specularIntensity = 1.0f;
-            cameraExposure = 1.0f;
-            cameraContrast = 1.0f;
-            indexOfRefraction = 0.66f;
-            twoSidedLighting = false;
-            useRadianceOverAlpha = true;
-            useSpecularOverAlpha = true;
-            usePhysicalLightFalloff = true;
-            useEmissiveAsIllumination = false;
+            this.SetCustomType("BABYLON.PBRMaterial");
+            this.directIntensity = 1.0f;
+            this.emissiveIntensity = 1.0f;
+            this.environmentIntensity = 1.0f;
+            this.specularIntensity = 1.0f;
+            this.cameraExposure = 1.0f;
+            this.cameraContrast = 1.0f;
+            this.indexOfRefraction = 0.66f;
+            this.twoSidedLighting = false;
+            this.maxSimultaneousLights = 4;
+            this.useRadianceOverAlpha = true;
+            this.useSpecularOverAlpha = true;
+            this.usePhysicalLightFalloff = true;
+            this.useEmissiveAsIllumination = false;
 
             // Default Null Metallic Workflow
-            metallic = null;
-            roughness = null;
-            useRoughnessFromMetallicTextureAlpha = true;
-            useRoughnessFromMetallicTextureGreen = false;
+            this.metallic = null;
+            this.roughness = null;
+            this.useRoughnessFromMetallicTextureAlpha = true;
+            this.useRoughnessFromMetallicTextureGreen = false;
 
-            microSurface = 0.9f;
-            useMicroSurfaceFromReflectivityMapAplha = false;
+            this.microSurface = 0.9f;
+            this.useMicroSurfaceFromReflectivityMapAplha = false;
 
-            ambient = new[] { 0f, 0f, 0f };
-            albedo = new[] { 1f, 1f, 1f };
-            reflectivity = new[] { 1f, 1f, 1f };
-            reflection = new[] { 0.5f, 0.5f, 0.5f };
-            emissive = new[] { 0f, 0f, 0f };
+            this.ambient = new[] { 0f, 0f, 0f };
+            this.albedo = new[] { 1f, 1f, 1f };
+            this.reflectivity = new[] { 1f, 1f, 1f };
+            this.reflection = new[] { 0.5f, 0.5f, 0.5f };
+            this.emissive = new[] { 0f, 0f, 0f };
         }
 
         public void SetCustomType(string type)

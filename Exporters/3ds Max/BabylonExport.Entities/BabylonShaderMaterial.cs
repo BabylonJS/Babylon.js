@@ -56,7 +56,7 @@ namespace BabylonExport.Entities
 
         public BabylonShaderMaterial()
         {
-            this.customType = "BABYLON.ShaderMaterial";
+            this.SetCustomType("BABYLON.ShaderMaterial");
             this.shaderPath = null;
             this.options = new BabylonShaderOptions();
             this.textures = new Dictionary<string, object>();
@@ -72,6 +72,11 @@ namespace BabylonExport.Entities
             this.matrices2x2 = new Dictionary<string, object>();
             this.matrices3x3 = new Dictionary<string, object>();
             this.vectors3Arrays = new Dictionary<string, object[]>();
+        }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
         }
     }
 

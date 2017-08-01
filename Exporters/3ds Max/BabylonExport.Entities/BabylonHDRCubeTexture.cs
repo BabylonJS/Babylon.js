@@ -25,13 +25,18 @@ namespace BabylonExport.Entities
 
         public BabylonHDRCubeTexture()
         {
-            this.customType = "BABYLON.HDRCubeTexture";
+            this.SetCustomType("BABYLON.HDRCubeTexture");
             this.size = 0;
             this.isCube = true;
             this.useInGammaSpace = false;
             this.generateHarmonics = true;
             this.usePMREMGenerator = false;
             this.isBABYLONPreprocessed = false;
+        }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
         }
     }
 }

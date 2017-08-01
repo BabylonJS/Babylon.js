@@ -5,6 +5,9 @@ namespace BabylonExport.Entities
     public class BabylonStandardMaterial: BabylonMaterial
     {
         [DataMember]
+        public string customType { get; private set; }
+
+        [DataMember]
         public float[] ambient { get; set; }
 
         [DataMember]
@@ -71,16 +74,26 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool twoSidedLighting { get; set; }
 
+        [DataMember]
+        public int maxSimultaneousLights { get; set; }
+
         public BabylonStandardMaterial() : base()
         {
-            ambient = new[] {1.0f, 1.0f, 1.0f};
-            diffuse = new[] { 1.0f, 1.0f, 1.0f };
-            specular = new[] { 1.0f, 1.0f, 1.0f };
-            emissive = new[] { 0f, 0f, 0f };
-            specularPower = 64;
-            useSpecularOverAlpha = true;
-            useEmissiveAsIllumination = false;
-            linkEmissiveWithDiffuse = false;
+            this.SetCustomType("BABYLON.StandardMaterial");
+            this.ambient = new[] {1.0f, 1.0f, 1.0f};
+            this.diffuse = new[] { 1.0f, 1.0f, 1.0f };
+            this.specular = new[] { 1.0f, 1.0f, 1.0f };
+            this.emissive = new[] { 0f, 0f, 0f };
+            this.specularPower = 64;
+            this.maxSimultaneousLights = 4;
+            this.useSpecularOverAlpha = true;
+            this.useEmissiveAsIllumination = false;
+            this.linkEmissiveWithDiffuse = false;
+        }
+
+        public void SetCustomType(string type)
+        {
+            this.customType = type;
         }
     }
 }
