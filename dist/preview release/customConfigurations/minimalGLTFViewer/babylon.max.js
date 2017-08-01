@@ -40222,9 +40222,8 @@ var BABYLON;
                 EXPOSURE: false,
             };
             // Setup the default processing configuration to the scene.
-            _this._attachImageProcessingConfiguration(null);
+            _this._attachImageProcessingConfiguration(null, true);
             _this.imageProcessingConfiguration.applyByPostProcess = true;
-            _this._updateParameters();
             _this.onApply = function (effect) {
                 _this.imageProcessingConfiguration.bind(effect, _this.aspectRatio);
             };
@@ -40252,8 +40251,9 @@ var BABYLON;
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration
          */
-        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration) {
+        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration, doNotBuild) {
             var _this = this;
+            if (doNotBuild === void 0) { doNotBuild = false; }
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -40275,7 +40275,9 @@ var BABYLON;
                 _this._updateParameters();
             });
             // Ensure the effect will be rebuilt.
-            this._updateParameters();
+            if (!doNotBuild) {
+                this._updateParameters();
+            }
         };
         Object.defineProperty(ImageProcessingPostProcess.prototype, "colorCurves", {
             /**

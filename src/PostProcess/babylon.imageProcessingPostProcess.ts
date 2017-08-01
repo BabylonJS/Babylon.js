@@ -31,7 +31,7 @@
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration, doNotBuild = false): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -57,7 +57,9 @@
             });
 
             // Ensure the effect will be rebuilt.
-            this._updateParameters();
+            if (!doNotBuild) {
+                this._updateParameters();
+            }
         }
 
         /**
@@ -301,11 +303,9 @@
                                             null, textureType, "postprocess", null, true);
 
             // Setup the default processing configuration to the scene.
-            this._attachImageProcessingConfiguration(null);
+            this._attachImageProcessingConfiguration(null, true);
 
             this.imageProcessingConfiguration.applyByPostProcess = true;
-
-            this._updateParameters();
 
             this.onApply = (effect: Effect) => {
                 this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
