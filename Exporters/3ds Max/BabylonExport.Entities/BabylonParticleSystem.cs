@@ -97,10 +97,10 @@ namespace BabylonExport.Entities
 
         public BabylonParticleSystem()
         {
-            this.preventAutoStart = true;
-            this.autoAnimate = false;
-            this.animations = null;
-            this.customShader = null;
+            preventAutoStart = true;
+            autoAnimate = false;
+            animations = null;
+            customShader = null;
         }
     }
 }
