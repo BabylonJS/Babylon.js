@@ -48797,10 +48797,16 @@ var BABYLON;
         MultiMaterial.prototype.getClassName = function () {
             return "MultiMaterial";
         };
-        MultiMaterial.prototype.isReady = function (mesh) {
+        MultiMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
+                    if (this.subMaterials[index].isReadyForSubMesh) {
+                        if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
+                            return false;
+                        }
+                        continue;
+                    }
                     if (!this.subMaterials[index].isReady(mesh)) {
                         return false;
                     }
