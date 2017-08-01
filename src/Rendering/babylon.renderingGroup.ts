@@ -126,12 +126,17 @@
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
-            engine.setStencilBuffer(stencilState);
+
+            // Set back stencil to false in case it changes before the edge renderer.
+            engine.setStencilBuffer(false);
 
             // Edges
             for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
                 this._edgesRenderers.data[edgesRendererIndex].render();
             }
+
+            // Restore Stencil state.
+            engine.setStencilBuffer(stencilState);
         }
 
         /**
