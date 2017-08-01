@@ -24864,13 +24864,20 @@ var BABYLON;
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             var checkReady = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
                 var alphaTestState = engine.getAlphaTesting();
-                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                var clipPlaneState = scene.clipPlane;
+                if (options.alphaTest) {
+                    engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                }
+                if (options.clipPlane) {
+                    scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
+                }
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     if (onCompiled) {
                         onCompiled(_this);
@@ -24879,7 +24886,12 @@ var BABYLON;
                 else {
                     setTimeout(checkReady, 16);
                 }
-                engine.setAlphaTesting(alphaTestState);
+                if (options.alphaTest) {
+                    engine.setAlphaTesting(alphaTestState);
+                }
+                if (options.clipPlane) {
+                    scene.clipPlane = clipPlaneState;
+                }
             };
             checkReady();
         };
@@ -52161,11 +52173,13 @@ var BABYLON;
                                         if (isNew && _this._parent.onMaterialLoaded) {
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
-                                        _this.addPendingData(material);
-                                        babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
-                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                            _this.removePendingData(material);
-                                        });
+                                        // Note: Removing force compilation from loader as this will be delegated to users as they
+                                        // may want to add more options to the material before compiling it
+                                        //this.addPendingData(material);
+                                        //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        //    this.removePendingData(material);
+                                        //});
                                     });
                                 }
                             }

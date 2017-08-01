@@ -407,11 +407,13 @@ module BABYLON.GLTF2 {
                                         this._parent.onMaterialLoaded(babylonMaterial);
                                     }
 
-                                    this.addPendingData(material);
-                                    babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                    // Note: Removing force compilation from loader as this will be delegated to users as they
+                                    // may want to add more options to the material before compiling it
+                                    //this.addPendingData(material);
+                                    //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
                                         babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                        this.removePendingData(material);
-                                    });
+                                    //    this.removePendingData(material);
+                                    //});
                                 });
                             }
                         }

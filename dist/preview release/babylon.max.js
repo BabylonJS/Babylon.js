@@ -24864,13 +24864,20 @@ var BABYLON;
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             var checkReady = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
                 var alphaTestState = engine.getAlphaTesting();
-                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                var clipPlaneState = scene.clipPlane;
+                if (options.alphaTest) {
+                    engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                }
+                if (options.clipPlane) {
+                    scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
+                }
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     if (onCompiled) {
                         onCompiled(_this);
@@ -24879,7 +24886,12 @@ var BABYLON;
                 else {
                     setTimeout(checkReady, 16);
                 }
-                engine.setAlphaTesting(alphaTestState);
+                if (options.alphaTest) {
+                    engine.setAlphaTesting(alphaTestState);
+                }
+                if (options.clipPlane) {
+                    scene.clipPlane = clipPlaneState;
+                }
             };
             checkReady();
         };
