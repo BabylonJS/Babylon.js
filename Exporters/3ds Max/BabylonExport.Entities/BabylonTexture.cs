@@ -76,19 +76,19 @@ namespace BabylonExport.Entities
 
         public BabylonTexture()
         {
-            this.level = 1.0f;
-            this.uOffset = 0;
-            this.vOffset = 0;
-            this.uScale = 1.0f;
-            this.vScale = 1.0f;
-            this.uAng = 0;
-            this.vAng = 0;
-            this.wAng = 0;
-            this.wrapU = 1;
-            this.wrapV = 1;
-            this.hasAlpha = false;
-            this.coordinatesIndex = 0;
-            this.samplingMode = 3;
+            level = 1.0f;
+            uOffset = 0;
+            vOffset = 0;
+            uScale = 1.0f;
+            vScale = 1.0f;
+            uAng = 0;
+            vAng = 0;
+            wAng = 0;
+            wrapU = 1;
+            wrapV = 1;
+            hasAlpha = false;
+            coordinatesIndex = 0;
+            samplingMode = 3;
         }
     }
 }
