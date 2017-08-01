@@ -47,8 +47,8 @@ namespace BabylonExport.Entities
 
         public BabylonAnimation()
         {
-            this.enableBlending = false;
-            this.blendingSpeed = 0.01f;
+            enableBlending = false;
+            blendingSpeed = 0.01f;
         }
     }
 }

@@ -79,21 +79,21 @@ namespace BabylonExport.Entities
 
         public BabylonStandardMaterial() : base()
         {
-            this.SetCustomType("BABYLON.StandardMaterial");
-            this.ambient = new[] {1.0f, 1.0f, 1.0f};
-            this.diffuse = new[] { 1.0f, 1.0f, 1.0f };
-            this.specular = new[] { 1.0f, 1.0f, 1.0f };
-            this.emissive = new[] { 0f, 0f, 0f };
-            this.specularPower = 64;
-            this.maxSimultaneousLights = 4;
-            this.useSpecularOverAlpha = true;
-            this.useEmissiveAsIllumination = false;
-            this.linkEmissiveWithDiffuse = false;
+            SetCustomType("BABYLON.StandardMaterial");
+            ambient = new[] {1.0f, 1.0f, 1.0f};
+            diffuse = new[] { 1.0f, 1.0f, 1.0f };
+            specular = new[] { 1.0f, 1.0f, 1.0f };
+            emissive = new[] { 0f, 0f, 0f };
+            specularPower = 64;
+            maxSimultaneousLights = 4;
+            useSpecularOverAlpha = true;
+            useEmissiveAsIllumination = false;
+            linkEmissiveWithDiffuse = false;
         }
 
         public void SetCustomType(string type)
         {
-            this.customType = type;
+            customType = type;
         }
     }
 }
