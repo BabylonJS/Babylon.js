@@ -2448,188 +2448,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: AudioContext;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isLoaded;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
-        clone(): Sound;
-        getAudioBuffer(): AudioBuffer;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _inputAudioNode;
-        private _trackConvolver;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -2857,6 +2675,188 @@ declare module BABYLON {
         y2: number;
         constructor(x1?: number, y1?: number, x2?: number, y2?: number);
         easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: AudioContext;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isLoaded;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        clone(): Sound;
+        getAudioBuffer(): AudioBuffer;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _inputAudioNode;
+        private _trackConvolver;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
     }
 }
 
@@ -13064,36 +13064,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -13613,6 +13583,36 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -15515,6 +15515,139 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        readonly aspectRatio: number;
+        readonly aspectRatioFov: number;
+        readonly leftHMatrix: Matrix;
+        readonly rightHMatrix: Matrix;
+        readonly leftPreViewMatrix: Matrix;
+        readonly rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+    interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: DevicePose;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose): any;
+    }
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+        controllerMeshes?: boolean;
+        defaultLightningOnControllers?: boolean;
+    }
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        _vrDevice: any;
+        rawPose: DevicePose;
+        private _vrEnabled;
+        private _specsVersion;
+        private _attached;
+        private _oldSize;
+        private _oldHardwareScaleFactor;
+        private _frameData;
+        private _quaternionCache;
+        private _positionOffset;
+        protected _descendants: Array<Node>;
+        devicePosition: Vector3;
+        deviceRotationQuaternion: any;
+        deviceScaleFactor: number;
+        controllers: Array<WebVRController>;
+        nonVRControllers: Array<Gamepad>;
+        private _onControllersAttached;
+        private _onNonVRControllerAttached;
+        rigParenting: boolean;
+        private _lightOnControllers;
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        onControllersAttached: (controllers: Array<WebVRController>) => void;
+        onNonVRControllerAttached: (controller: Gamepad) => void;
+        getControllerByName(name: string): WebVRController;
+        private _leftController;
+        readonly leftController: WebVRController;
+        private _rightController;
+        readonly rightController: WebVRController;
+        getForwardRay(length?: number): Ray;
+        _checkInputs(): void;
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param {HTMLElement} element
+         * @param {boolean} [noPreventDefault]
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getClassName(): string;
+        resetToCurrentRotation(): void;
+        _updateRigCameras(): void;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        protected _getWebVRProjectionMatrix(): Matrix;
+        initControllers(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -15719,139 +15852,6 @@ declare module BABYLON {
         detachControl(element: HTMLElement): void;
         getClassName(): string;
         getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        readonly aspectRatio: number;
-        readonly aspectRatioFov: number;
-        readonly leftHMatrix: Matrix;
-        readonly rightHMatrix: Matrix;
-        readonly leftPreViewMatrix: Matrix;
-        readonly rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose.
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        readonly position?: Float32Array;
-        readonly linearVelocity?: Float32Array;
-        readonly linearAcceleration?: Float32Array;
-        readonly orientation?: Float32Array;
-        readonly angularVelocity?: Float32Array;
-        readonly angularAcceleration?: Float32Array;
-    }
-    interface PoseControlled {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        devicePosition?: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        rawPose: DevicePose;
-        deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose): any;
-    }
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-        controllerMeshes?: boolean;
-        defaultLightningOnControllers?: boolean;
-    }
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        _vrDevice: any;
-        rawPose: DevicePose;
-        private _vrEnabled;
-        private _specsVersion;
-        private _attached;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _frameData;
-        private _quaternionCache;
-        private _positionOffset;
-        protected _descendants: Array<Node>;
-        devicePosition: Vector3;
-        deviceRotationQuaternion: any;
-        deviceScaleFactor: number;
-        controllers: Array<WebVRController>;
-        nonVRControllers: Array<Gamepad>;
-        private _onControllersAttached;
-        private _onNonVRControllerAttached;
-        rigParenting: boolean;
-        private _lightOnControllers;
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        onControllersAttached: (controllers: Array<WebVRController>) => void;
-        onNonVRControllerAttached: (controller: Gamepad) => void;
-        getControllerByName(name: string): WebVRController;
-        private _leftController;
-        readonly leftController: WebVRController;
-        private _rightController;
-        readonly rightController: WebVRController;
-        getForwardRay(length?: number): Ray;
-        _checkInputs(): void;
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param {HTMLElement} element
-         * @param {boolean} [noPreventDefault]
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getClassName(): string;
-        resetToCurrentRotation(): void;
-        _updateRigCameras(): void;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
-        initControllers(): void;
     }
 }
 
@@ -16064,6 +16064,628 @@ declare module BABYLON {
 }
 
 declare module BABYLON.Internals {
+}
+
+declare module BABYLON {
+    class BaseTexture {
+        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
+        name: string;
+        private _hasAlpha;
+        hasAlpha: boolean;
+        getAlphaFromRGB: boolean;
+        level: number;
+        coordinatesIndex: number;
+        private _coordinatesMode;
+        coordinatesMode: number;
+        wrapU: number;
+        wrapV: number;
+        anisotropicFilteringLevel: number;
+        isCube: boolean;
+        gammaSpace: boolean;
+        invertZ: boolean;
+        lodLevelInAlpha: boolean;
+        lodGenerationOffset: number;
+        lodGenerationScale: number;
+        isRenderTarget: boolean;
+        readonly uid: string;
+        toString(): string;
+        getClassName(): string;
+        animations: Animation[];
+        /**
+        * An event triggered when the texture is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<BaseTexture>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        delayLoadState: number;
+        _cachedAnisotropicFilteringLevel: number;
+        private _scene;
+        _texture: WebGLTexture;
+        private _uid;
+        readonly isBlocking: boolean;
+        constructor(scene: Scene);
+        getScene(): Scene;
+        getTextureMatrix(): Matrix;
+        getReflectionTextureMatrix(): Matrix;
+        getInternalTexture(): WebGLTexture;
+        isReadyOrNotBlocking(): boolean;
+        isReady(): boolean;
+        getSize(): ISize;
+        getBaseSize(): ISize;
+        scale(ratio: number): void;
+        readonly canRescale: boolean;
+        _removeFromCache(url: string, noMipmap: boolean): void;
+        _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
+        delayLoad(): void;
+        clone(): BaseTexture;
+        readonly textureType: number;
+        readonly textureFormat: number;
+        readPixels(faceIndex?: number): ArrayBufferView;
+        releaseInternalTexture(): void;
+        sphericalPolynomial: SphericalPolynomial;
+        readonly _lodTextureHigh: BaseTexture;
+        readonly _lodTextureMid: BaseTexture;
+        readonly _lodTextureLow: BaseTexture;
+        dispose(): void;
+        serialize(): any;
+        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
+     * It can help converting any input color in a desired output one. This can then be used to create effects
+     * from sepia, black and white to sixties or futuristic rendering...
+     *
+     * The only supported format is currently 3dl.
+     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
+     */
+    class ColorGradingTexture extends BaseTexture {
+        /**
+         * The current internal texture size.
+         */
+        private _size;
+        /**
+         * The current texture matrix. (will always be identity in color grading texture)
+         */
+        private _textureMatrix;
+        /**
+         * The texture URL.
+         */
+        url: string;
+        /**
+         * Empty line regex stored for GC.
+         */
+        private static _noneEmptyLineRegex;
+        /**
+         * Instantiates a ColorGradingTexture from the following parameters.
+         *
+         * @param url The location of the color gradind data (currently only supporting 3dl)
+         * @param scene The scene the texture will be used in
+         */
+        constructor(url: string, scene: Scene);
+        /**
+         * Returns the texture matrix used in most of the material.
+         * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Occurs when the file being loaded is a .3dl LUT file.
+         */
+        private load3dlTexture();
+        /**
+         * Starts the loading process of the texture.
+         */
+        private loadTexture();
+        /**
+         * Clones the color gradind texture.
+         */
+        clone(): ColorGradingTexture;
+        /**
+         * Called during delayed load for textures.
+         */
+        delayLoad(): void;
+        /**
+         * Parses a color grading texture serialized by Babylon.
+         * @param parsedTexture The texture information being parsedTexture
+         * @param scene The scene to load the texture in
+         * @param rootUrl The root url of the data assets to load
+         * @return A color gradind texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): ColorGradingTexture;
+        /**
+         * Serializes the LUT texture to json format.
+         */
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class CubeTexture extends BaseTexture {
+        url: string;
+        coordinatesMode: number;
+        private _noMipmap;
+        private _files;
+        private _extensions;
+        private _textureMatrix;
+        private _format;
+        private _prefiltered;
+        static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture;
+        static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension?: any): CubeTexture;
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad?: () => void, onError?: () => void, format?: number, prefiltered?: boolean, forcedExtension?: any);
+        delayLoad(): void;
+        getReflectionTextureMatrix(): Matrix;
+        setReflectionTextureMatrix(value: Matrix): void;
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture;
+        clone(): CubeTexture;
+    }
+}
+
+declare module BABYLON {
+    class DynamicTexture extends Texture {
+        private _generateMipMaps;
+        private _canvas;
+        private _context;
+        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        readonly canRescale: boolean;
+        private _recreate(textureSize);
+        scale(ratio: number): void;
+        scaleTo(width: number, height: number): void;
+        getContext(): CanvasRenderingContext2D;
+        clear(): void;
+        update(invertY?: boolean): void;
+        drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
+        clone(): DynamicTexture;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a texture coming from an HDR input.
+     *
+     * The only supported format is currently panorama picture stored in RGBE format.
+     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     */
+    class HDRCubeTexture extends BaseTexture {
+        private static _facesMapping;
+        private _useInGammaSpace;
+        private _generateHarmonics;
+        private _noMipmap;
+        private _extensions;
+        private _textureMatrix;
+        private _size;
+        private _usePMREMGenerator;
+        private _isBABYLONPreprocessed;
+        private _onLoad;
+        private _onError;
+        /**
+         * The texture URL.
+         */
+        url: string;
+        /**
+         * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
+         */
+        coordinatesMode: number;
+        /**
+         * Specifies wether the texture has been generated through the PMREMGenerator tool.
+         * This is usefull at run time to apply the good shader.
+         */
+        isPMREM: boolean;
+        protected _isBlocking: boolean;
+        /**
+         * Gets wether or not the texture is blocking during loading.
+         */
+        /**
+         * Sets wether or not the texture is blocking during loading.
+         */
+        isBlocking: boolean;
+        /**
+         * Instantiates an HDRTexture from the following parameters.
+         *
+         * @param url The location of the HDR raw data (Panorama stored in RGBE format)
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         */
+        constructor(url: string, scene: Scene, size?: number, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean, onLoad?: () => void, onError?: () => void);
+        /**
+         * Occurs when the file is a preprocessed .babylon.hdr file.
+         */
+        private loadBabylonTexture();
+        /**
+         * Occurs when the file is raw .hdr file.
+         */
+        private loadHDRTexture();
+        /**
+         * Starts the loading process of the texture.
+         */
+        private loadTexture();
+        clone(): HDRCubeTexture;
+        delayLoad(): void;
+        getReflectionTextureMatrix(): Matrix;
+        setReflectionTextureMatrix(value: Matrix): void;
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture;
+        serialize(): any;
+        /**
+         * Saves as a file the data contained in the texture in a binary format.
+         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
+         * as the spherical used in the lighting.
+         * @param url The HDR file url.
+         * @param size The size of the texture data to generate (one of the cubemap face desired width).
+         * @param onError Method called if any error happens during download.
+         * @return The packed binary data.
+         */
+        static generateBabylonHDROnDisk(url: string, size: number, onError?: (() => void)): void;
+        /**
+         * Serializes the data contained in the texture in a binary format.
+         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
+         * as the spherical used in the lighting.
+         * @param url The HDR file url.
+         * @param size The size of the texture data to generate (one of the cubemap face desired width).
+         * @param onError Method called if any error happens during download.
+         * @return The packed binary data.
+         */
+        static generateBabylonHDR(url: string, size: number, callback: ((ArrayBuffer: ArrayBuffer) => void), onError?: (() => void)): void;
+    }
+}
+
+declare module BABYLON {
+    class MapTexture extends Texture {
+        private _rectPackingMap;
+        private _size;
+        private _replacedViewport;
+        constructor(name: string, scene: Scene, size: ISize, samplingMode?: number, useMipMap?: boolean, margin?: number);
+        /**
+         * Allocate a rectangle of a given size in the texture map
+         * @param size the size of the rectangle to allocation
+         * @return the PackedRect instance corresponding to the allocated rect or null is there was not enough space to allocate it.
+         */
+        allocateRect(size: Size): PackedRect;
+        /**
+         * Free a given rectangle from the texture map
+         * @param rectInfo the instance corresponding to the rect to free.
+         */
+        freeRect(rectInfo: PackedRect): void;
+        /**
+         * Return the available space in the range of [O;1]. 0 being not space left at all, 1 being an empty texture map.
+         * This is the cumulated space, not the biggest available surface. Due to fragmentation you may not allocate a rect corresponding to this surface.
+         * @returns {}
+         */
+        readonly freeSpace: number;
+        /**
+         * Bind the texture to the rendering engine to render in the zone of a given rectangle.
+         * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
+         * Don't forget to call unbindTexture when you're done rendering
+         * @param rect the zone to render to
+         * @param clear true to clear the portion's color/depth data
+         */
+        bindTextureForRect(rect: PackedRect, clear: boolean): void;
+        /**
+         * Bind the texture to the rendering engine to render in the zone of the given size at the given position.
+         * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
+         * Don't forget to call unbindTexture when you're done rendering
+         * @param pos the position into the texture
+         * @param size the portion to fit the clip space to
+         * @param clear true to clear the portion's color/depth data
+         */
+        bindTextureForPosSize(pos: Vector2, size: Size, clear: boolean): void;
+        /**
+         * Unbind the texture map from the rendering engine.
+         * Call this method when you're done rendering. A previous call to bindTextureForRect has to be made.
+         * @param dumpForDebug if set to true the content of the texture map will be dumped to a picture file that will be sent to the internet browser.
+         */
+        unbindTexture(dumpForDebug?: boolean): void;
+        readonly canRescale: boolean;
+        clone(): MapTexture;
+    }
+}
+
+declare module BABYLON {
+    class MirrorTexture extends RenderTargetTexture {
+        mirrorPlane: Plane;
+        private _transformMatrix;
+        private _mirrorMatrix;
+        private _savedViewMatrix;
+        private _blurX;
+        private _blurY;
+        private _blurKernelX;
+        private _blurKernelY;
+        private _blurRatio;
+        blurRatio: number;
+        blurKernel: number;
+        blurKernelX: number;
+        blurKernelY: number;
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
+        private _preparePostProcesses();
+        clone(): MirrorTexture;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface IMultiRenderTargetOptions {
+        generateMipMaps: boolean;
+        types: number[];
+        samplingModes: number[];
+        generateDepthBuffer: boolean;
+        generateStencilBuffer: boolean;
+        generateDepthTexture: boolean;
+        textureCount: number;
+    }
+    class MultiRenderTarget extends RenderTargetTexture {
+        private _webGLTextures;
+        private _textures;
+        private _count;
+        readonly isSupported: boolean;
+        private _multiRenderTargetOptions;
+        readonly textures: Texture[];
+        readonly depthTexture: Texture;
+        constructor(name: string, size: any, count: number, scene: Scene, options?: any);
+        private _createInternalTextures();
+        samples: number;
+        resize(size: any): void;
+        dispose(): void;
+        releaseInternalTextures(): void;
+    }
+}
+
+declare module BABYLON {
+    class RawTexture extends Texture {
+        format: number;
+        constructor(data: ArrayBufferView, width: number, height: number, format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
+        update(data: ArrayBufferView): void;
+        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+    }
+}
+
+declare module BABYLON {
+    /**
+    * Creates a refraction texture used by refraction channel of the standard material.
+    * @param name the texture name
+    * @param size size of the underlying texture
+    * @param scene root scene
+    */
+    class RefractionTexture extends RenderTargetTexture {
+        refractionPlane: Plane;
+        depth: number;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        clone(): RefractionTexture;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface IRenderTargetOptions {
+        generateMipMaps: boolean;
+        type: number;
+        samplingMode: number;
+        generateDepthBuffer: boolean;
+        generateStencilBuffer: boolean;
+    }
+    class RenderTargetTexture extends Texture {
+        isCube: boolean;
+        static _REFRESHRATE_RENDER_ONCE: number;
+        static _REFRESHRATE_RENDER_ONEVERYFRAME: number;
+        static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number;
+        static readonly REFRESHRATE_RENDER_ONCE: number;
+        static readonly REFRESHRATE_RENDER_ONEVERYFRAME: number;
+        static readonly REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number;
+        /**
+        * Use this predicate to dynamically define the list of mesh you want to render.
+        * If set, the renderList property will be overwritten.
+        */
+        renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
+        /**
+        * Use this list to define the list of mesh you want to render.
+        */
+        renderList: AbstractMesh[];
+        renderParticles: boolean;
+        renderSprites: boolean;
+        coordinatesMode: number;
+        activeCamera: Camera;
+        customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
+        useCameraPostProcesses: boolean;
+        private _postProcessManager;
+        private _postProcesses;
+        /**
+        * An event triggered when the texture is unbind.
+        * @type {BABYLON.Observable}
+        */
+        onAfterUnbindObservable: Observable<RenderTargetTexture>;
+        private _onAfterUnbindObserver;
+        onAfterUnbind: () => void;
+        /**
+        * An event triggered before rendering the texture
+        * @type {BABYLON.Observable}
+        */
+        onBeforeRenderObservable: Observable<number>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: (faceIndex: number) => void;
+        /**
+        * An event triggered after rendering the texture
+        * @type {BABYLON.Observable}
+        */
+        onAfterRenderObservable: Observable<number>;
+        private _onAfterRenderObserver;
+        onAfterRender: (faceIndex: number) => void;
+        /**
+        * An event triggered after the texture clear
+        * @type {BABYLON.Observable}
+        */
+        onClearObservable: Observable<Engine>;
+        private _onClearObserver;
+        onClear: (Engine: Engine) => void;
+        protected _size: number;
+        _generateMipMaps: boolean;
+        protected _renderingManager: RenderingManager;
+        _waitingRenderList: string[];
+        protected _doNotChangeAspectRatio: boolean;
+        protected _currentRefreshId: number;
+        protected _refreshRate: number;
+        protected _textureMatrix: Matrix;
+        protected _samples: number;
+        protected _renderTargetOptions: IRenderTargetOptions;
+        readonly renderTargetOptions: IRenderTargetOptions;
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean);
+        samples: number;
+        resetRefreshCounter(): void;
+        refreshRate: number;
+        addPostProcess(postProcess: PostProcess): void;
+        clearPostProcesses(dispose?: boolean): void;
+        removePostProcess(postProcess: PostProcess): void;
+        _shouldRender(): boolean;
+        isReady(): boolean;
+        getRenderSize(): number;
+        readonly canRescale: boolean;
+        scale(ratio: number): void;
+        getReflectionTextureMatrix(): Matrix;
+        resize(size: any): void;
+        render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
+        private renderToTarget(faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        clone(): RenderTargetTexture;
+        serialize(): any;
+        disposeFramebufferObjects(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Texture extends BaseTexture {
+        static NEAREST_SAMPLINGMODE: number;
+        static NEAREST_NEAREST_MIPLINEAR: number;
+        static BILINEAR_SAMPLINGMODE: number;
+        static LINEAR_LINEAR_MIPNEAREST: number;
+        static TRILINEAR_SAMPLINGMODE: number;
+        static LINEAR_LINEAR_MIPLINEAR: number;
+        static NEAREST_NEAREST_MIPNEAREST: number;
+        static NEAREST_LINEAR_MIPNEAREST: number;
+        static NEAREST_LINEAR_MIPLINEAR: number;
+        static NEAREST_LINEAR: number;
+        static NEAREST_NEAREST: number;
+        static LINEAR_NEAREST_MIPNEAREST: number;
+        static LINEAR_NEAREST_MIPLINEAR: number;
+        static LINEAR_LINEAR: number;
+        static LINEAR_NEAREST: number;
+        static EXPLICIT_MODE: number;
+        static SPHERICAL_MODE: number;
+        static PLANAR_MODE: number;
+        static CUBIC_MODE: number;
+        static PROJECTION_MODE: number;
+        static SKYBOX_MODE: number;
+        static INVCUBIC_MODE: number;
+        static EQUIRECTANGULAR_MODE: number;
+        static FIXED_EQUIRECTANGULAR_MODE: number;
+        static FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        static CLAMP_ADDRESSMODE: number;
+        static WRAP_ADDRESSMODE: number;
+        static MIRROR_ADDRESSMODE: number;
+        url: string;
+        uOffset: number;
+        vOffset: number;
+        uScale: number;
+        vScale: number;
+        uAng: number;
+        vAng: number;
+        wAng: number;
+        readonly noMipmap: boolean;
+        private _noMipmap;
+        _invertY: boolean;
+        private _rowGenerationMatrix;
+        private _cachedTextureMatrix;
+        private _projectionModeMatrix;
+        private _t0;
+        private _t1;
+        private _t2;
+        private _cachedUOffset;
+        private _cachedVOffset;
+        private _cachedUScale;
+        private _cachedVScale;
+        private _cachedUAng;
+        private _cachedVAng;
+        private _cachedWAng;
+        private _cachedCoordinatesMode;
+        _samplingMode: number;
+        private _buffer;
+        private _deleteBuffer;
+        protected _format: number;
+        private _delayedOnLoad;
+        private _delayedOnError;
+        private _onLoadObservable;
+        protected _isBlocking: boolean;
+        isBlocking: boolean;
+        readonly samplingMode: number;
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, deleteBuffer?: boolean, format?: number);
+        updateURL(url: string): void;
+        delayLoad(): void;
+        updateSamplingMode(samplingMode: number): void;
+        private _prepareRowForTextureGeneration(x, y, z, t);
+        getTextureMatrix(): Matrix;
+        getReflectionTextureMatrix(): Matrix;
+        clone(): Texture;
+        readonly onLoadObservable: Observable<Texture>;
+        serialize(): any;
+        getClassName(): string;
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture;
+        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;
+    }
+}
+
+declare module BABYLON {
+    class VideoTexture extends Texture {
+        video: HTMLVideoElement;
+        private _autoLaunch;
+        private _lastUpdate;
+        private _generateMipMaps;
+        private _setTextureReady;
+        /**
+         * Creates a video texture.
+         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
+         * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+         * @param {BABYLON.Scene} scene is obviously the current scene.
+         * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+         * @param {boolean} invertY is false by default but can be used to invert video on Y axis
+         * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+         */
+        constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
+        private __setTextureReady();
+        private _createTexture();
+        update(): boolean;
+        dispose(): void;
+        static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
+            minWidth: number;
+            maxWidth: number;
+            minHeight: number;
+            maxHeight: number;
+            deviceId: string;
+        }): void;
+    }
 }
 
 declare module BABYLON {
@@ -16865,628 +17487,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class BaseTexture {
-        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
-        name: string;
-        private _hasAlpha;
-        hasAlpha: boolean;
-        getAlphaFromRGB: boolean;
-        level: number;
-        coordinatesIndex: number;
-        private _coordinatesMode;
-        coordinatesMode: number;
-        wrapU: number;
-        wrapV: number;
-        anisotropicFilteringLevel: number;
-        isCube: boolean;
-        gammaSpace: boolean;
-        invertZ: boolean;
-        lodLevelInAlpha: boolean;
-        lodGenerationOffset: number;
-        lodGenerationScale: number;
-        isRenderTarget: boolean;
-        readonly uid: string;
-        toString(): string;
-        getClassName(): string;
-        animations: Animation[];
-        /**
-        * An event triggered when the texture is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<BaseTexture>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        delayLoadState: number;
-        _cachedAnisotropicFilteringLevel: number;
-        private _scene;
-        _texture: WebGLTexture;
-        private _uid;
-        readonly isBlocking: boolean;
-        constructor(scene: Scene);
-        getScene(): Scene;
-        getTextureMatrix(): Matrix;
-        getReflectionTextureMatrix(): Matrix;
-        getInternalTexture(): WebGLTexture;
-        isReadyOrNotBlocking(): boolean;
-        isReady(): boolean;
-        getSize(): ISize;
-        getBaseSize(): ISize;
-        scale(ratio: number): void;
-        readonly canRescale: boolean;
-        _removeFromCache(url: string, noMipmap: boolean): void;
-        _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
-        delayLoad(): void;
-        clone(): BaseTexture;
-        readonly textureType: number;
-        readonly textureFormat: number;
-        readPixels(faceIndex?: number): ArrayBufferView;
-        releaseInternalTexture(): void;
-        sphericalPolynomial: SphericalPolynomial;
-        readonly _lodTextureHigh: BaseTexture;
-        readonly _lodTextureMid: BaseTexture;
-        readonly _lodTextureLow: BaseTexture;
-        dispose(): void;
-        serialize(): any;
-        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
-     * It can help converting any input color in a desired output one. This can then be used to create effects
-     * from sepia, black and white to sixties or futuristic rendering...
-     *
-     * The only supported format is currently 3dl.
-     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
-     */
-    class ColorGradingTexture extends BaseTexture {
-        /**
-         * The current internal texture size.
-         */
-        private _size;
-        /**
-         * The current texture matrix. (will always be identity in color grading texture)
-         */
-        private _textureMatrix;
-        /**
-         * The texture URL.
-         */
-        url: string;
-        /**
-         * Empty line regex stored for GC.
-         */
-        private static _noneEmptyLineRegex;
-        /**
-         * Instantiates a ColorGradingTexture from the following parameters.
-         *
-         * @param url The location of the color gradind data (currently only supporting 3dl)
-         * @param scene The scene the texture will be used in
-         */
-        constructor(url: string, scene: Scene);
-        /**
-         * Returns the texture matrix used in most of the material.
-         * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
-         */
-        getTextureMatrix(): Matrix;
-        /**
-         * Occurs when the file being loaded is a .3dl LUT file.
-         */
-        private load3dlTexture();
-        /**
-         * Starts the loading process of the texture.
-         */
-        private loadTexture();
-        /**
-         * Clones the color gradind texture.
-         */
-        clone(): ColorGradingTexture;
-        /**
-         * Called during delayed load for textures.
-         */
-        delayLoad(): void;
-        /**
-         * Parses a color grading texture serialized by Babylon.
-         * @param parsedTexture The texture information being parsedTexture
-         * @param scene The scene to load the texture in
-         * @param rootUrl The root url of the data assets to load
-         * @return A color gradind texture
-         */
-        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): ColorGradingTexture;
-        /**
-         * Serializes the LUT texture to json format.
-         */
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    class CubeTexture extends BaseTexture {
-        url: string;
-        coordinatesMode: number;
-        private _noMipmap;
-        private _files;
-        private _extensions;
-        private _textureMatrix;
-        private _format;
-        private _prefiltered;
-        static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture;
-        static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension?: any): CubeTexture;
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad?: () => void, onError?: () => void, format?: number, prefiltered?: boolean, forcedExtension?: any);
-        delayLoad(): void;
-        getReflectionTextureMatrix(): Matrix;
-        setReflectionTextureMatrix(value: Matrix): void;
-        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture;
-        clone(): CubeTexture;
-    }
-}
-
-declare module BABYLON {
-    class DynamicTexture extends Texture {
-        private _generateMipMaps;
-        private _canvas;
-        private _context;
-        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode?: number, format?: number);
-        readonly canRescale: boolean;
-        private _recreate(textureSize);
-        scale(ratio: number): void;
-        scaleTo(width: number, height: number): void;
-        getContext(): CanvasRenderingContext2D;
-        clear(): void;
-        update(invertY?: boolean): void;
-        drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
-        clone(): DynamicTexture;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a texture coming from an HDR input.
-     *
-     * The only supported format is currently panorama picture stored in RGBE format.
-     * Example of such files can be found on HDRLib: http://hdrlib.com/
-     */
-    class HDRCubeTexture extends BaseTexture {
-        private static _facesMapping;
-        private _useInGammaSpace;
-        private _generateHarmonics;
-        private _noMipmap;
-        private _extensions;
-        private _textureMatrix;
-        private _size;
-        private _usePMREMGenerator;
-        private _isBABYLONPreprocessed;
-        private _onLoad;
-        private _onError;
-        /**
-         * The texture URL.
-         */
-        url: string;
-        /**
-         * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
-         */
-        coordinatesMode: number;
-        /**
-         * Specifies wether the texture has been generated through the PMREMGenerator tool.
-         * This is usefull at run time to apply the good shader.
-         */
-        isPMREM: boolean;
-        protected _isBlocking: boolean;
-        /**
-         * Gets wether or not the texture is blocking during loading.
-         */
-        /**
-         * Sets wether or not the texture is blocking during loading.
-         */
-        isBlocking: boolean;
-        /**
-         * Instantiates an HDRTexture from the following parameters.
-         *
-         * @param url The location of the HDR raw data (Panorama stored in RGBE format)
-         * @param scene The scene the texture will be used in
-         * @param size The cubemap desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
-         * @param noMipmap Forces to not generate the mipmap if true
-         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
-         * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
-         */
-        constructor(url: string, scene: Scene, size?: number, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean, onLoad?: () => void, onError?: () => void);
-        /**
-         * Occurs when the file is a preprocessed .babylon.hdr file.
-         */
-        private loadBabylonTexture();
-        /**
-         * Occurs when the file is raw .hdr file.
-         */
-        private loadHDRTexture();
-        /**
-         * Starts the loading process of the texture.
-         */
-        private loadTexture();
-        clone(): HDRCubeTexture;
-        delayLoad(): void;
-        getReflectionTextureMatrix(): Matrix;
-        setReflectionTextureMatrix(value: Matrix): void;
-        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture;
-        serialize(): any;
-        /**
-         * Saves as a file the data contained in the texture in a binary format.
-         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
-         * as the spherical used in the lighting.
-         * @param url The HDR file url.
-         * @param size The size of the texture data to generate (one of the cubemap face desired width).
-         * @param onError Method called if any error happens during download.
-         * @return The packed binary data.
-         */
-        static generateBabylonHDROnDisk(url: string, size: number, onError?: (() => void)): void;
-        /**
-         * Serializes the data contained in the texture in a binary format.
-         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
-         * as the spherical used in the lighting.
-         * @param url The HDR file url.
-         * @param size The size of the texture data to generate (one of the cubemap face desired width).
-         * @param onError Method called if any error happens during download.
-         * @return The packed binary data.
-         */
-        static generateBabylonHDR(url: string, size: number, callback: ((ArrayBuffer: ArrayBuffer) => void), onError?: (() => void)): void;
-    }
-}
-
-declare module BABYLON {
-    class MapTexture extends Texture {
-        private _rectPackingMap;
-        private _size;
-        private _replacedViewport;
-        constructor(name: string, scene: Scene, size: ISize, samplingMode?: number, useMipMap?: boolean, margin?: number);
-        /**
-         * Allocate a rectangle of a given size in the texture map
-         * @param size the size of the rectangle to allocation
-         * @return the PackedRect instance corresponding to the allocated rect or null is there was not enough space to allocate it.
-         */
-        allocateRect(size: Size): PackedRect;
-        /**
-         * Free a given rectangle from the texture map
-         * @param rectInfo the instance corresponding to the rect to free.
-         */
-        freeRect(rectInfo: PackedRect): void;
-        /**
-         * Return the available space in the range of [O;1]. 0 being not space left at all, 1 being an empty texture map.
-         * This is the cumulated space, not the biggest available surface. Due to fragmentation you may not allocate a rect corresponding to this surface.
-         * @returns {}
-         */
-        readonly freeSpace: number;
-        /**
-         * Bind the texture to the rendering engine to render in the zone of a given rectangle.
-         * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
-         * Don't forget to call unbindTexture when you're done rendering
-         * @param rect the zone to render to
-         * @param clear true to clear the portion's color/depth data
-         */
-        bindTextureForRect(rect: PackedRect, clear: boolean): void;
-        /**
-         * Bind the texture to the rendering engine to render in the zone of the given size at the given position.
-         * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
-         * Don't forget to call unbindTexture when you're done rendering
-         * @param pos the position into the texture
-         * @param size the portion to fit the clip space to
-         * @param clear true to clear the portion's color/depth data
-         */
-        bindTextureForPosSize(pos: Vector2, size: Size, clear: boolean): void;
-        /**
-         * Unbind the texture map from the rendering engine.
-         * Call this method when you're done rendering. A previous call to bindTextureForRect has to be made.
-         * @param dumpForDebug if set to true the content of the texture map will be dumped to a picture file that will be sent to the internet browser.
-         */
-        unbindTexture(dumpForDebug?: boolean): void;
-        readonly canRescale: boolean;
-        clone(): MapTexture;
-    }
-}
-
-declare module BABYLON {
-    class MirrorTexture extends RenderTargetTexture {
-        mirrorPlane: Plane;
-        private _transformMatrix;
-        private _mirrorMatrix;
-        private _savedViewMatrix;
-        private _blurX;
-        private _blurY;
-        private _blurKernelX;
-        private _blurKernelY;
-        private _blurRatio;
-        blurRatio: number;
-        blurKernel: number;
-        blurKernelX: number;
-        blurKernelY: number;
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
-        private _preparePostProcesses();
-        clone(): MirrorTexture;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface IMultiRenderTargetOptions {
-        generateMipMaps: boolean;
-        types: number[];
-        samplingModes: number[];
-        generateDepthBuffer: boolean;
-        generateStencilBuffer: boolean;
-        generateDepthTexture: boolean;
-        textureCount: number;
-    }
-    class MultiRenderTarget extends RenderTargetTexture {
-        private _webGLTextures;
-        private _textures;
-        private _count;
-        readonly isSupported: boolean;
-        private _multiRenderTargetOptions;
-        readonly textures: Texture[];
-        readonly depthTexture: Texture;
-        constructor(name: string, size: any, count: number, scene: Scene, options?: any);
-        private _createInternalTextures();
-        samples: number;
-        resize(size: any): void;
-        dispose(): void;
-        releaseInternalTextures(): void;
-    }
-}
-
-declare module BABYLON {
-    class RawTexture extends Texture {
-        format: number;
-        constructor(data: ArrayBufferView, width: number, height: number, format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
-        update(data: ArrayBufferView): void;
-        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-    }
-}
-
-declare module BABYLON {
-    /**
-    * Creates a refraction texture used by refraction channel of the standard material.
-    * @param name the texture name
-    * @param size size of the underlying texture
-    * @param scene root scene
-    */
-    class RefractionTexture extends RenderTargetTexture {
-        refractionPlane: Plane;
-        depth: number;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        clone(): RefractionTexture;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface IRenderTargetOptions {
-        generateMipMaps: boolean;
-        type: number;
-        samplingMode: number;
-        generateDepthBuffer: boolean;
-        generateStencilBuffer: boolean;
-    }
-    class RenderTargetTexture extends Texture {
-        isCube: boolean;
-        static _REFRESHRATE_RENDER_ONCE: number;
-        static _REFRESHRATE_RENDER_ONEVERYFRAME: number;
-        static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number;
-        static readonly REFRESHRATE_RENDER_ONCE: number;
-        static readonly REFRESHRATE_RENDER_ONEVERYFRAME: number;
-        static readonly REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number;
-        /**
-        * Use this predicate to dynamically define the list of mesh you want to render.
-        * If set, the renderList property will be overwritten.
-        */
-        renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
-        /**
-        * Use this list to define the list of mesh you want to render.
-        */
-        renderList: AbstractMesh[];
-        renderParticles: boolean;
-        renderSprites: boolean;
-        coordinatesMode: number;
-        activeCamera: Camera;
-        customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
-        useCameraPostProcesses: boolean;
-        private _postProcessManager;
-        private _postProcesses;
-        /**
-        * An event triggered when the texture is unbind.
-        * @type {BABYLON.Observable}
-        */
-        onAfterUnbindObservable: Observable<RenderTargetTexture>;
-        private _onAfterUnbindObserver;
-        onAfterUnbind: () => void;
-        /**
-        * An event triggered before rendering the texture
-        * @type {BABYLON.Observable}
-        */
-        onBeforeRenderObservable: Observable<number>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: (faceIndex: number) => void;
-        /**
-        * An event triggered after rendering the texture
-        * @type {BABYLON.Observable}
-        */
-        onAfterRenderObservable: Observable<number>;
-        private _onAfterRenderObserver;
-        onAfterRender: (faceIndex: number) => void;
-        /**
-        * An event triggered after the texture clear
-        * @type {BABYLON.Observable}
-        */
-        onClearObservable: Observable<Engine>;
-        private _onClearObserver;
-        onClear: (Engine: Engine) => void;
-        protected _size: number;
-        _generateMipMaps: boolean;
-        protected _renderingManager: RenderingManager;
-        _waitingRenderList: string[];
-        protected _doNotChangeAspectRatio: boolean;
-        protected _currentRefreshId: number;
-        protected _refreshRate: number;
-        protected _textureMatrix: Matrix;
-        protected _samples: number;
-        protected _renderTargetOptions: IRenderTargetOptions;
-        readonly renderTargetOptions: IRenderTargetOptions;
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean);
-        samples: number;
-        resetRefreshCounter(): void;
-        refreshRate: number;
-        addPostProcess(postProcess: PostProcess): void;
-        clearPostProcesses(dispose?: boolean): void;
-        removePostProcess(postProcess: PostProcess): void;
-        _shouldRender(): boolean;
-        isReady(): boolean;
-        getRenderSize(): number;
-        readonly canRescale: boolean;
-        scale(ratio: number): void;
-        getReflectionTextureMatrix(): Matrix;
-        resize(size: any): void;
-        render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
-        private renderToTarget(faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        clone(): RenderTargetTexture;
-        serialize(): any;
-        disposeFramebufferObjects(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Texture extends BaseTexture {
-        static NEAREST_SAMPLINGMODE: number;
-        static NEAREST_NEAREST_MIPLINEAR: number;
-        static BILINEAR_SAMPLINGMODE: number;
-        static LINEAR_LINEAR_MIPNEAREST: number;
-        static TRILINEAR_SAMPLINGMODE: number;
-        static LINEAR_LINEAR_MIPLINEAR: number;
-        static NEAREST_NEAREST_MIPNEAREST: number;
-        static NEAREST_LINEAR_MIPNEAREST: number;
-        static NEAREST_LINEAR_MIPLINEAR: number;
-        static NEAREST_LINEAR: number;
-        static NEAREST_NEAREST: number;
-        static LINEAR_NEAREST_MIPNEAREST: number;
-        static LINEAR_NEAREST_MIPLINEAR: number;
-        static LINEAR_LINEAR: number;
-        static LINEAR_NEAREST: number;
-        static EXPLICIT_MODE: number;
-        static SPHERICAL_MODE: number;
-        static PLANAR_MODE: number;
-        static CUBIC_MODE: number;
-        static PROJECTION_MODE: number;
-        static SKYBOX_MODE: number;
-        static INVCUBIC_MODE: number;
-        static EQUIRECTANGULAR_MODE: number;
-        static FIXED_EQUIRECTANGULAR_MODE: number;
-        static FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
-        static CLAMP_ADDRESSMODE: number;
-        static WRAP_ADDRESSMODE: number;
-        static MIRROR_ADDRESSMODE: number;
-        url: string;
-        uOffset: number;
-        vOffset: number;
-        uScale: number;
-        vScale: number;
-        uAng: number;
-        vAng: number;
-        wAng: number;
-        readonly noMipmap: boolean;
-        private _noMipmap;
-        _invertY: boolean;
-        private _rowGenerationMatrix;
-        private _cachedTextureMatrix;
-        private _projectionModeMatrix;
-        private _t0;
-        private _t1;
-        private _t2;
-        private _cachedUOffset;
-        private _cachedVOffset;
-        private _cachedUScale;
-        private _cachedVScale;
-        private _cachedUAng;
-        private _cachedVAng;
-        private _cachedWAng;
-        private _cachedCoordinatesMode;
-        _samplingMode: number;
-        private _buffer;
-        private _deleteBuffer;
-        protected _format: number;
-        private _delayedOnLoad;
-        private _delayedOnError;
-        private _onLoadObservable;
-        protected _isBlocking: boolean;
-        isBlocking: boolean;
-        readonly samplingMode: number;
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, deleteBuffer?: boolean, format?: number);
-        updateURL(url: string): void;
-        delayLoad(): void;
-        updateSamplingMode(samplingMode: number): void;
-        private _prepareRowForTextureGeneration(x, y, z, t);
-        getTextureMatrix(): Matrix;
-        getReflectionTextureMatrix(): Matrix;
-        clone(): Texture;
-        readonly onLoadObservable: Observable<Texture>;
-        serialize(): any;
-        getClassName(): string;
-        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;
-        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture;
-        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, format?: number): Texture;
-    }
-}
-
-declare module BABYLON {
-    class VideoTexture extends Texture {
-        video: HTMLVideoElement;
-        private _autoLaunch;
-        private _lastUpdate;
-        private _generateMipMaps;
-        private _setTextureReady;
-        /**
-         * Creates a video texture.
-         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
-         * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
-         * @param {BABYLON.Scene} scene is obviously the current scene.
-         * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
-         * @param {boolean} invertY is false by default but can be used to invert video on Y axis
-         * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
-         */
-        constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
-        private __setTextureReady();
-        private _createTexture();
-        update(): boolean;
-        dispose(): void;
-        static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
-            minWidth: number;
-            maxWidth: number;
-            minHeight: number;
-            maxHeight: number;
-            deviceId: string;
-        }): void;
-    }
-}
-
-declare module BABYLON {
     class CannonJSPlugin implements IPhysicsEnginePlugin {
         private _useDeltaForWorldStep;
         world: any;
@@ -17951,6 +17951,7 @@ declare module BABYLON {
         private _imageProcessingEnabled;
         private _defaultPipelineTextureType;
         private _bloomScale;
+        private _buildAllowed;
         /**
          * Specifies the size of the bloom blur kernel, relative to the final output size
          */
@@ -17971,8 +17972,13 @@ declare module BABYLON {
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
          * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline
          */
-        constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[]);
+        constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[], automaticBuild?: boolean);
+        /**
+         * Force the compilation of the entire pipeline.
+         */
+        prepare(): void;
         private _buildPipeline();
         private _disposePostProcesses();
         dispose(): void;
