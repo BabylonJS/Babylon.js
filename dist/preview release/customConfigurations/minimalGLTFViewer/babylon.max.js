@@ -24905,13 +24905,25 @@ var BABYLON;
                 if (options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
-                if (_this.isReadyForSubMesh(mesh, subMesh)) {
-                    if (onCompiled) {
-                        onCompiled(_this);
+                if (_this.storeEffectOnSubMeshes) {
+                    if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (_this.isReady(mesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
                 engine.setAlphaTesting(alphaTestState);
                 if (options.clipPlane) {
@@ -32162,6 +32174,11 @@ var BABYLON;
             * An event triggered when the texture is unbind.
             * @type {BABYLON.Observable}
             */
+            _this.onBeforeBindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the texture is unbind.
+            * @type {BABYLON.Observable}
+            */
             _this.onAfterUnbindObservable = new BABYLON.Observable();
             /**
             * An event triggered before rendering the texture
@@ -32418,6 +32435,7 @@ var BABYLON;
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+            this.onBeforeBindObservable.notifyObservers(this);
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
             var camera;
@@ -35866,7 +35884,7 @@ var BABYLON;
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }
