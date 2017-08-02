@@ -1496,7 +1496,8 @@
                     "../../inspector/sass/**/*.scss"
                 ],
                 "output": "babylon.inspector.js",
-                "webpack": "../../inspector/webpack.config.js"
+                "webpack": "../../inspector/webpack.config.js",
+                "bundle":"true"
             }
         ],
         "build": {
