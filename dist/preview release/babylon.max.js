@@ -24864,13 +24864,18 @@ var BABYLON;
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             var checkReady = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
                 var alphaTestState = engine.getAlphaTesting();
+                var clipPlaneState = scene.clipPlane;
                 engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                if (options.clipPlane) {
+                    scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
+                }
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     if (onCompiled) {
                         onCompiled(_this);
@@ -24880,6 +24885,9 @@ var BABYLON;
                     setTimeout(checkReady, 16);
                 }
                 engine.setAlphaTesting(alphaTestState);
+                if (options.clipPlane) {
+                    scene.clipPlane = clipPlaneState;
+                }
             };
             checkReady();
         };
@@ -48797,10 +48805,16 @@ var BABYLON;
         MultiMaterial.prototype.getClassName = function () {
             return "MultiMaterial";
         };
-        MultiMaterial.prototype.isReady = function (mesh) {
+        MultiMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
+                    if (this.subMaterials[index].isReadyForSubMesh) {
+                        if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
+                            return false;
+                        }
+                        continue;
+                    }
                     if (!this.subMaterials[index].isReady(mesh)) {
                         return false;
                     }
@@ -52957,8 +52971,10 @@ var BABYLON;
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
          * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline
          */
-        function DefaultRenderingPipeline(name, hdr, scene, cameras) {
+        function DefaultRenderingPipeline(name, hdr, scene, cameras, automaticBuild) {
+            if (automaticBuild === void 0) { automaticBuild = true; }
             var _this = _super.call(this, scene.getEngine(), name) || this;
             _this.PassPostProcessId = "PassPostProcessEffect";
             _this.HighLightsPostProcessId = "HighLightsPostProcessEffect";
@@ -52975,6 +52991,7 @@ var BABYLON;
             _this._fxaaEnabled = false;
             _this._imageProcessingEnabled = true;
             _this._bloomScale = 0.6;
+            _this._buildAllowed = true;
             /**
              * Specifies the size of the bloom blur kernel, relative to the final output size
              */
@@ -52984,6 +53001,7 @@ var BABYLON;
              */
             _this._bloomWeight = 0.15;
             _this._cameras = cameras || [];
+            _this._buildAllowed = automaticBuild;
             // Initialize
             _this._scene = scene;
             var caps = _this._scene.getEngine().getCaps();
@@ -53077,8 +53095,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Force the compilation of the entire pipeline.
+         */
+        DefaultRenderingPipeline.prototype.prepare = function () {
+            var previousState = this._buildAllowed;
+            this._buildAllowed = true;
+            this._buildPipeline();
+            this._buildAllowed = previousState;
+        };
         DefaultRenderingPipeline.prototype._buildPipeline = function () {
             var _this = this;
+            if (!this._buildAllowed) {
+                return;
+            }
             var engine = this._scene.getEngine();
             this._disposePostProcesses();
             this._reset();
@@ -54039,9 +54069,8 @@ var BABYLON;
                 EXPOSURE: false,
             };
             // Setup the default processing configuration to the scene.
-            _this._attachImageProcessingConfiguration(null);
+            _this._attachImageProcessingConfiguration(null, true);
             _this.imageProcessingConfiguration.applyByPostProcess = true;
-            _this._updateParameters();
             _this.onApply = function (effect) {
                 _this.imageProcessingConfiguration.bind(effect, _this.aspectRatio);
             };
@@ -54069,8 +54098,9 @@ var BABYLON;
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration
          */
-        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration) {
+        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration, doNotBuild) {
             var _this = this;
+            if (doNotBuild === void 0) { doNotBuild = false; }
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -54092,7 +54122,9 @@ var BABYLON;
                 _this._updateParameters();
             });
             // Ensure the effect will be rebuilt.
-            this._updateParameters();
+            if (!doNotBuild) {
+                this._updateParameters();
+            }
         };
         Object.defineProperty(ImageProcessingPostProcess.prototype, "colorCurves", {
             /**
