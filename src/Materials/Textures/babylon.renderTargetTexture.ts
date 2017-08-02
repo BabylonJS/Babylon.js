@@ -50,6 +50,12 @@
         * An event triggered when the texture is unbind.
         * @type {BABYLON.Observable}
         */
+        public onBeforeBindObservable = new Observable<RenderTargetTexture>();        
+
+        /**
+        * An event triggered when the texture is unbind.
+        * @type {BABYLON.Observable}
+        */
         public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 
         private _onAfterUnbindObserver: Observer<RenderTargetTexture>;
@@ -313,6 +319,8 @@
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+
+            this.onBeforeBindObservable.notifyObservers(this);            
 
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.

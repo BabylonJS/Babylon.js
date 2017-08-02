@@ -292,16 +292,28 @@ var buildExternalLibrary = function (library, settings, watch) {
         return merge2([shader, includeShader, dev, css]);
     }
     else {
-        var code = merge2([tsProcess.js, shader, includeShader])
-            .pipe(concat(library.output))
-            .pipe(gulp.dest(outputDirectory))
-            .pipe(cleants())
-            .pipe(replace(extendsSearchRegex, ""))
-            .pipe(replace(decorateSearchRegex, ""))
-            .pipe(rename({ extname: ".min.js" }))
-            .pipe(uglify())
-            .pipe(optimisejs())
-            .pipe(gulp.dest(outputDirectory));
+        if (library.bundle) {
+            // Don't remove extends and decorate functions
+            var code = merge2([tsProcess.js, shader, includeShader])
+                .pipe(concat(library.output))
+                .pipe(gulp.dest(outputDirectory))
+                .pipe(cleants())
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(outputDirectory));
+        } else {
+            var code = merge2([tsProcess.js, shader, includeShader])
+                .pipe(concat(library.output))
+                .pipe(gulp.dest(outputDirectory))
+                .pipe(cleants())
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(outputDirectory));
+        }
 
         var dts = tsProcess.dts
             .pipe(concat(library.output))
@@ -426,7 +438,7 @@ gulp.task('webserver', function () {
     gulp.src('../../.').pipe(webserver({
         port: 1338,
         livereload: false
-        }));
+    }));
 });
 
 /**

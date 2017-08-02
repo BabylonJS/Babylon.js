@@ -536,13 +536,24 @@
                     scene.clipPlane = new Plane(0, 0, 0, 1);
                 }
 
-                if (this.isReadyForSubMesh(mesh, subMesh)) {
-                    if (onCompiled) {
-                        onCompiled(this);
+                if (this.storeEffectOnSubMeshes) {
+                    if (this.isReadyForSubMesh(mesh, subMesh)) {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
                     }
-                }
-                else {
-                    setTimeout(checkReady, 16);
+                    else {
+                        setTimeout(checkReady, 16);
+                    }
+                } else {
+                    if (this.isReady(mesh)) {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
+                    }                    
                 }
 
                 engine.setAlphaTesting(alphaTestState);
