@@ -16,6 +16,8 @@
             scene.multiMaterials.push(this);
 
             this.subMaterials = new Array<Material>();
+
+            this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
         }
 
         private _hookArray(array: Material[]): void {
