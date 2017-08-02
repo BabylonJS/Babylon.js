@@ -15,10 +15,10 @@
         public get doubleClick(): boolean {
             return this._doubleClick;
         }
-        public get hasSwiped(): boolean{
+        public get hasSwiped(): boolean {
             return this._hasSwiped;
         }
-        public get ignore(): boolean{
+        public get ignore(): boolean {
             return this._ignore;
         }
 
@@ -64,7 +64,7 @@
         public static get POINTERPICK(): number {
             return PointerEventTypes._POINTERPICK;
         }
-        
+
         public static get POINTERTAP(): number {
             return PointerEventTypes._POINTERTAP;
         }
@@ -168,18 +168,22 @@
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
 
+        /** The fog is deactivated */
         public static get FOGMODE_NONE(): number {
             return Scene._FOGMODE_NONE;
         }
 
+        /** The fog density is following an exponential function */
         public static get FOGMODE_EXP(): number {
             return Scene._FOGMODE_EXP;
         }
 
+        /** The fog density is following an exponential function faster than FOGMODE_EXP */
         public static get FOGMODE_EXP2(): number {
             return Scene._FOGMODE_EXP2;
         }
 
+        /** The fog density is following a linear function. */
         public static get FOGMODE_LINEAR(): number {
             return Scene._FOGMODE_LINEAR;
         }
@@ -226,7 +230,7 @@
 
         public forceWireframe = false;
         private _forcePointsCloud = false;
-        public set forcePointsCloud(value : boolean) {
+        public set forcePointsCloud(value: boolean) {
             if (this._forcePointsCloud === value) {
                 return;
             }
@@ -235,7 +239,7 @@
         }
         public get forcePointsCloud(): boolean {
             return this._forcePointsCloud;
-        }   
+        }
 
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
@@ -257,6 +261,7 @@
         public onDisposeObservable = new Observable<Scene>();
 
         private _onDisposeObserver: Observer<Scene>;
+        /** A function to be executed when this scene is disposed. */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -271,6 +276,7 @@
         public onBeforeRenderObservable = new Observable<Scene>();
 
         private _onBeforeRenderObserver: Observer<Scene>;
+        /** A function to be executed before rendering this scene */
         public set beforeRender(callback: () => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -285,6 +291,7 @@
         public onAfterRenderObservable = new Observable<Scene>();
 
         private _onAfterRenderObserver: Observer<Scene>;
+        /** A function to be executed after rendering this scene */
         public set afterRender(callback: () => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -393,9 +400,13 @@
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
 
+        /** Deprecated. Use onPointerObservable instead */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
@@ -413,10 +424,14 @@
             return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
         }
 
+        /** The distance in pixel that you have to move to prevent some events */
         public static DragMovementThreshold = 10; // in pixels
+        /** Time in milliseconds to wait to raise long press events if button is still pressed */
         public static LongPressDelay = 500; // in milliseconds
+        /** Time in milliseconds with two consecutive clicks will be considered as a double click */
         public static DoubleClickDelay = 300; // in milliseconds
-        public static ExclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
+        /** If you need to check double click without raising a single click at first click, enable this flag */
+        public static ExclusiveDoubleClickMode = false;
 
         private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
         private _initActionManager: (act: ActionManager, clickInfo: ClickInfo) => ActionManager;
@@ -432,7 +447,8 @@
         private _isButtonPressed = false;
         private _doubleClickOccured = false;
 
-        public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+        /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
+        public cameraToUseForPointers: Camera = null;
         private _pointerX: number;
         private _pointerY: number;
         private _unTranslatedPointerX: number;
@@ -441,7 +457,7 @@
         private _previousStartingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         private _previousStartingPointerTime = 0;
-        
+
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -467,12 +483,12 @@
         }
 
         // Fog
+
+        private _fogEnabled = true;
         /**
         * is fog enabled on this scene.
-        * @type {boolean}
         */
-        private _fogEnabled = true;
-        public set fogEnabled(value : boolean) {
+        public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
                 return;
             }
@@ -481,10 +497,10 @@
         }
         public get fogEnabled(): boolean {
             return this._fogEnabled;
-        }   
+        }
 
         private _fogMode = Scene.FOGMODE_NONE;
-        public set fogMode(value : number) {
+        public set fogMode(value: number) {
             if (this._fogMode === value) {
                 return;
             }
@@ -493,7 +509,7 @@
         }
         public get fogMode(): number {
             return this._fogMode;
-        }  
+        }
 
         public fogColor = new Color3(0.2, 0.2, 0.3);
         public fogDensity = 0.1;
@@ -506,7 +522,7 @@
         * @type {boolean}
         */
         private _shadowsEnabled = true;
-        public set shadowsEnabled(value : boolean) {
+        public set shadowsEnabled(value: boolean) {
             if (this._shadowsEnabled === value) {
                 return;
             }
@@ -515,14 +531,14 @@
         }
         public get shadowsEnabled(): boolean {
             return this._shadowsEnabled;
-        }       
+        }
 
         /**
         * is light enabled on this scene.
         * @type {boolean}
         */
         private _lightsEnabled = true;
-        public set lightsEnabled(value : boolean) {
+        public set lightsEnabled(value: boolean) {
             if (this._lightsEnabled === value) {
                 return;
             }
@@ -542,13 +558,11 @@
         public lights = new Array<Light>();
 
         // Cameras
-        /**
-        * All of the cameras added to this scene.
-        * @see BABYLON.Camera
-        * @type {BABYLON.Camera[]}
-        */
+        /** All of the cameras added to this scene. */
         public cameras = new Array<Camera>();
+        /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
+        /** The current active camera */
         public activeCamera: Camera;
 
         // Meshes
@@ -566,6 +580,7 @@
         public multiMaterials = new Array<MultiMaterial>();
         private _defaultMaterial: Material;
 
+        /** The default material used on meshes when no material is affected */
         public get defaultMaterial(): Material {
             if (!this._defaultMaterial) {
                 this._defaultMaterial = new StandardMaterial("default material", this);
@@ -574,13 +589,14 @@
             return this._defaultMaterial;
         }
 
+        /** The default material used on meshes when no material is affected */
         public set defaultMaterial(value: Material) {
             this._defaultMaterial = value;
         }
 
         // Textures
         private _texturesEnabled = true;
-        public set texturesEnabled(value : boolean) {
+        public set texturesEnabled(value: boolean) {
             if (this._texturesEnabled === value) {
                 return;
             }
@@ -590,7 +606,7 @@
 
         public get texturesEnabled(): boolean {
             return this._texturesEnabled;
-        }     
+        }
 
         public textures = new Array<BaseTexture>();
 
@@ -608,7 +624,7 @@
 
         // Skeletons
         private _skeletonsEnabled = true;
-        public set skeletonsEnabled(value : boolean) {
+        public set skeletonsEnabled(value: boolean) {
             if (this._skeletonsEnabled === value) {
                 return;
             }
@@ -618,7 +634,7 @@
 
         public get skeletonsEnabled(): boolean {
             return this._skeletonsEnabled;
-        }       
+        }
 
         public skeletons = new Array<Skeleton>();
 
@@ -633,6 +649,7 @@
         public collisionsEnabled = true;
         private _workerCollisions;
         public collisionCoordinator: ICollisionCoordinator;
+        /** Defines the gravity applied to this scene */
         public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
@@ -742,13 +759,13 @@
         private _sceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-        
+
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
-        
+
         private _frustumPlanes: Plane[];
         public get frustumPlanes(): Plane[] {
             return this._frustumPlanes;
@@ -1040,7 +1057,7 @@
             this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
                 if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
-                btn !== this._previousButtonPressed ) {
+                    btn !== this._previousButtonPressed) {
                     this._doubleClickOccured = false;
                     clickInfo.singleClick = true;
                     clickInfo.ignore = false;
@@ -1049,99 +1066,79 @@
             }
 
             this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void): void => {
-                    let clickInfo = new ClickInfo();
-                    this._currentPickResult = null;
-                    let act;
+                let clickInfo = new ClickInfo();
+                this._currentPickResult = null;
+                let act;
 
-                    let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
-                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
-                                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                    if (!checkPicking && BABYLON.ActionManager && ActionManager.HasPickTriggers) {
-                        act = this._initActionManager(act, clickInfo);
-                        if (act)
-                            checkPicking = act.hasPickTriggers;
-                    }
-                    if (checkPicking) {
-                        let btn = evt.button;
-                        clickInfo.hasSwiped = Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-                                              Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+                let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
+                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
+                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                if (!checkPicking && BABYLON.ActionManager && ActionManager.HasPickTriggers) {
+                    act = this._initActionManager(act, clickInfo);
+                    if (act)
+                        checkPicking = act.hasPickTriggers;
+                }
+                if (checkPicking) {
+                    let btn = evt.button;
+                    clickInfo.hasSwiped = Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
+                        Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
 
-                        if (!clickInfo.hasSwiped) {
-                            let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
+                    if (!clickInfo.hasSwiped) {
+                        let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
 
-                            if (!checkSingleClickImmediately) {
-                                checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
-                                                              !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                        if (!checkSingleClickImmediately) {
+                            checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
+                                !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
 
-                                if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
-                                    act = this._initActionManager(act, clickInfo);
-                                    if (act)
-                                        checkSingleClickImmediately = !act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
-                                }
-                            }
-
-                            if (checkSingleClickImmediately) {
-                                // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
-                                if (new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
-                                    btn !== this._previousButtonPressed ) {
-                                        clickInfo.singleClick = true;
-                                        cb(clickInfo, this._currentPickResult);
-                                }
-                            }
-                            // at least one double click is required to be check and exclusive double click is enabled
-                            else {
-                                // wait that no double click has been raised during the double click delay
-                                this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                                this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), Scene.DoubleClickDelay);
-                            }
-
-                            let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
-                                                   obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                            if (!checkDoubleClick && ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)){
+                            if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                                 act = this._initActionManager(act, clickInfo);
                                 if (act)
-                                    checkDoubleClick = act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                                    checkSingleClickImmediately = !act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
                             }
-                            if (checkDoubleClick) {
-                                // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
-                                if (btn === this._previousButtonPressed &&
-                                    new Date().getTime() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
-                                    !this._doubleClickOccured
-                                ) {
-                                    // pointer has not moved for 2 clicks, it's a double click
-                                    if (!clickInfo.hasSwiped &&
-                                        Math.abs(this._previousStartingPointerPosition.x - this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
-                                        Math.abs(this._previousStartingPointerPosition.y - this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
-                                        this._previousStartingPointerTime = 0;
-                                        this._doubleClickOccured = true;
-                                        clickInfo.doubleClick = true;
-                                        clickInfo.ignore = false;
-                                        if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
-                                            this._previousDelayedSimpleClickTimeout.clearTimeout();
-                                        this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                                        cb(clickInfo, this._currentPickResult);
-                                    }
-                                    // if the two successive clicks are too far, it's just two simple clicks
-                                    else {
-                                        this._doubleClickOccured = false;
-                                        this._previousStartingPointerTime = this._startingPointerTime;
-                                        this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
-                                        this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
-                                        this._previousButtonPressed = btn;
-                                        this._previousHasSwiped = clickInfo.hasSwiped;
-                                        if (Scene.ExclusiveDoubleClickMode){
-                                            if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
-                                                this._previousDelayedSimpleClickTimeout.clearTimeout();
-                                            }
-                                            this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                                            cb(clickInfo, this._previousPickResult);
-                                        }
-                                        else {
-                                            cb(clickInfo, this._currentPickResult);
-                                        }
-                                    }
+                        }
+
+                        if (checkSingleClickImmediately) {
+                            // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
+                            if (new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                                btn !== this._previousButtonPressed) {
+                                clickInfo.singleClick = true;
+                                cb(clickInfo, this._currentPickResult);
+                            }
+                        }
+                        // at least one double click is required to be check and exclusive double click is enabled
+                        else {
+                            // wait that no double click has been raised during the double click delay
+                            this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                            this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), Scene.DoubleClickDelay);
+                        }
+
+                        let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
+                            obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                        if (!checkDoubleClick && ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                            act = this._initActionManager(act, clickInfo);
+                            if (act)
+                                checkDoubleClick = act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                        }
+                        if (checkDoubleClick) {
+                            // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
+                            if (btn === this._previousButtonPressed &&
+                                new Date().getTime() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                                !this._doubleClickOccured
+                            ) {
+                                // pointer has not moved for 2 clicks, it's a double click
+                                if (!clickInfo.hasSwiped &&
+                                    Math.abs(this._previousStartingPointerPosition.x - this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
+                                    Math.abs(this._previousStartingPointerPosition.y - this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
+                                    this._previousStartingPointerTime = 0;
+                                    this._doubleClickOccured = true;
+                                    clickInfo.doubleClick = true;
+                                    clickInfo.ignore = false;
+                                    if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
+                                        this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                    this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                                    cb(clickInfo, this._currentPickResult);
                                 }
-                                // just the first click of the double has been raised
+                                // if the two successive clicks are too far, it's just two simple clicks
                                 else {
                                     this._doubleClickOccured = false;
                                     this._previousStartingPointerTime = this._startingPointerTime;
@@ -1149,12 +1146,32 @@
                                     this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                     this._previousButtonPressed = btn;
                                     this._previousHasSwiped = clickInfo.hasSwiped;
+                                    if (Scene.ExclusiveDoubleClickMode) {
+                                        if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
+                                            this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        }
+                                        this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+                                        cb(clickInfo, this._previousPickResult);
+                                    }
+                                    else {
+                                        cb(clickInfo, this._currentPickResult);
+                                    }
                                 }
+                            }
+                            // just the first click of the double has been raised
+                            else {
+                                this._doubleClickOccured = false;
+                                this._previousStartingPointerTime = this._startingPointerTime;
+                                this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
+                                this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
+                                this._previousButtonPressed = btn;
+                                this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }
-                    clickInfo.ignore = true;
-                    cb(clickInfo, this._currentPickResult);
+                }
+                clickInfo.ignore = true;
+                cb(clickInfo, this._currentPickResult);
             };
 
             var spritePredicate = (sprite: Sprite): boolean => {
@@ -1296,9 +1313,9 @@
                                     if (this._isButtonPressed &&
                                         ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                         (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
-                                            this._startingPointerTime = 0;
-                                            actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                            Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                        this._startingPointerTime = 0;
+                                        actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     }
                                 }
                             }).bind(this), Scene.LongPressDelay);
@@ -1350,7 +1367,7 @@
 
                 this._updatePointerPosition(evt);
 
-                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable,  evt, (function(clickInfo, pickResult){
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (function (clickInfo, pickResult) {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -1426,7 +1443,7 @@
                         }
                     }
                     if (this._pickedDownMesh &&
-                        this._pickedDownMesh.actionManager && 
+                        this._pickedDownMesh.actionManager &&
                         this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
                         this._pickedDownMesh !== this._pickedUpMesh) {
                         this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
@@ -1653,13 +1670,12 @@
          * @param {number} [speedRatio] - the speed in which to run the animation
          * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
          * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * @return {BABYLON.Animatable} the animatable object created for this animation
-         * @see BABYLON.Animatable
-         * @see http://doc.babylonjs.com/page.php?p=22081
+         * Returns {BABYLON.Animatable} the animatable object created for this animation
+         * See BABYLON.Animatable
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
 
-            if(from > to && speedRatio > 0){
+            if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
@@ -1889,7 +1905,7 @@
         }
 
         public sortLightsByPriority(): void {
-            if(this.requireLightSorting) {
+            if (this.requireLightSorting) {
                 this.lights.sort(Light.compareLightsPriority);
             }
         }
@@ -2914,9 +2930,9 @@
 
             // Physics
             if (this._physicsEngine) {
-               Tools.StartPerformanceCounter("Physics");
-               this._physicsEngine._step(deltaTime / 1000.0);
-               Tools.EndPerformanceCounter("Physics");
+                Tools.StartPerformanceCounter("Physics");
+                this._physicsEngine._step(deltaTime / 1000.0);
+                Tools.EndPerformanceCounter("Physics");
             }
 
             // Before render
@@ -3489,7 +3505,7 @@
         private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean): PickingInfo[] {
             if (!BABYLON.PickingInfo) {
                 return null;
-            }            
+            }
             var pickingInfos = new Array<PickingInfo>();
 
             for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -3552,26 +3568,33 @@
             return pickingInfo || new PickingInfo();
         }
 
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /** Launch a ray to try to pick a mesh in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             return this._internalPick(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
         }
 
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
-        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /** Launch a ray to try to pick a sprite in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         }
 
+        /** Use the given ray to pick a mesh in the scene
+         * @param ray The ray to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         */
         public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo {
             return this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
@@ -3582,18 +3605,22 @@
             }, predicate, fastCheck);
         }
 
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param x X position on screen
+         * @param y Y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): PickingInfo[] {
             return this._internalMultiPick(world => this.createPickingRay(x, y, world, camera), predicate);
         }
 
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="ray">Ray to use</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param ray Ray to use
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         */
         public multiPickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean): PickingInfo[] {
             return this._internalMultiPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
