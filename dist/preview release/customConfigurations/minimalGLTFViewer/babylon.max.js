@@ -7448,7 +7448,7 @@ var BABYLON;
             this.renderEvenInBackground = true;
             this.preventCacheWipeBetweenFrames = false;
             // To enable/disable IDB support and avoid XHR on .manifest
-            this.enableOfflineSupport = BABYLON.Database;
+            this.enableOfflineSupport = false;
             this.scenes = new Array();
             // Observables
             /**
@@ -7740,15 +7740,16 @@ var BABYLON;
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this._currentBufferPointers[i] = new BufferPointer();
             }
-            //Load WebVR Devices
+            // Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
-            //Detect if we are running on a faulty buggy OS.
+            // Detect if we are running on a faulty buggy OS.
             this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
-            //Detect if we are running on a faulty buggy desktop OS.
+            // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+            this.enableOfflineSupport = (BABYLON.Database !== undefined);
         }
         Object.defineProperty(Engine, "LastCreatedEngine", {
             get: function () {
@@ -15436,11 +15437,14 @@ var BABYLON;
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
-            engine.setStencilBuffer(stencilState);
+            // Set back stencil to false in case it changes before the edge renderer.
+            engine.setStencilBuffer(false);
             // Edges
             for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
                 this._edgesRenderers.data[edgesRendererIndex].render();
             }
+            // Restore Stencil state.
+            engine.setStencilBuffer(stencilState);
         };
         /**
          * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
@@ -22928,6 +22932,9 @@ var BABYLON;
         });
         BaseSubMesh.prototype.setEffect = function (effect, defines) {
             if (this._materialEffect === effect) {
+                if (!effect) {
+                    this._materialDefines = undefined;
+                }
                 return;
             }
             this._materialDefines = defines;
@@ -23004,9 +23011,7 @@ var BABYLON;
                 var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
                 if (this._currentMaterial !== effectiveMaterial) {
                     this._currentMaterial = effectiveMaterial;
-                    if (this._materialDefines) {
-                        this._materialDefines.markAllAsDirty();
-                    }
+                    this._materialDefines = undefined;
                 }
                 return effectiveMaterial;
             }
@@ -24570,7 +24575,7 @@ var BABYLON;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.name = name;
-            this.id = name;
+            this.id = name || BABYLON.Tools.RandomId();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             if (this._scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
@@ -24859,13 +24864,18 @@ var BABYLON;
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             var checkReady = function () {
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
                 var alphaTestState = engine.getAlphaTesting();
+                var clipPlaneState = scene.clipPlane;
                 engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
+                if (options.clipPlane) {
+                    scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
+                }
                 if (_this.isReadyForSubMesh(mesh, subMesh)) {
                     if (onCompiled) {
                         onCompiled(_this);
@@ -24875,6 +24885,9 @@ var BABYLON;
                     setTimeout(checkReady, 16);
                 }
                 engine.setAlphaTesting(alphaTestState);
+                if (options.clipPlane) {
+                    scene.clipPlane = clipPlaneState;
+                }
             };
             checkReady();
         };
@@ -24908,7 +24921,7 @@ var BABYLON;
                         continue;
                     }
                     if (!subMesh._materialDefines) {
-                        return;
+                        continue;
                     }
                     func(subMesh._materialDefines);
                 }
@@ -35820,10 +35833,16 @@ var BABYLON;
         MultiMaterial.prototype.getClassName = function () {
             return "MultiMaterial";
         };
-        MultiMaterial.prototype.isReady = function (mesh) {
+        MultiMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
+                    if (this.subMaterials[index].isReadyForSubMesh) {
+                        if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
+                            return false;
+                        }
+                        continue;
+                    }
                     if (!this.subMaterials[index].isReady(mesh)) {
                         return false;
                     }
@@ -40203,9 +40222,8 @@ var BABYLON;
                 EXPOSURE: false,
             };
             // Setup the default processing configuration to the scene.
-            _this._attachImageProcessingConfiguration(null);
+            _this._attachImageProcessingConfiguration(null, true);
             _this.imageProcessingConfiguration.applyByPostProcess = true;
-            _this._updateParameters();
             _this.onApply = function (effect) {
                 _this.imageProcessingConfiguration.bind(effect, _this.aspectRatio);
             };
@@ -40233,8 +40251,9 @@ var BABYLON;
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration
          */
-        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration) {
+        ImageProcessingPostProcess.prototype._attachImageProcessingConfiguration = function (configuration, doNotBuild) {
             var _this = this;
+            if (doNotBuild === void 0) { doNotBuild = false; }
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -40256,7 +40275,9 @@ var BABYLON;
                 _this._updateParameters();
             });
             // Ensure the effect will be rebuilt.
-            this._updateParameters();
+            if (!doNotBuild) {
+                this._updateParameters();
+            }
         };
         Object.defineProperty(ImageProcessingPostProcess.prototype, "colorCurves", {
             /**
@@ -41724,8 +41745,10 @@ var BABYLON;
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
          * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline
          */
-        function DefaultRenderingPipeline(name, hdr, scene, cameras) {
+        function DefaultRenderingPipeline(name, hdr, scene, cameras, automaticBuild) {
+            if (automaticBuild === void 0) { automaticBuild = true; }
             var _this = _super.call(this, scene.getEngine(), name) || this;
             _this.PassPostProcessId = "PassPostProcessEffect";
             _this.HighLightsPostProcessId = "HighLightsPostProcessEffect";
@@ -41742,6 +41765,7 @@ var BABYLON;
             _this._fxaaEnabled = false;
             _this._imageProcessingEnabled = true;
             _this._bloomScale = 0.6;
+            _this._buildAllowed = true;
             /**
              * Specifies the size of the bloom blur kernel, relative to the final output size
              */
@@ -41751,6 +41775,7 @@ var BABYLON;
              */
             _this._bloomWeight = 0.15;
             _this._cameras = cameras || [];
+            _this._buildAllowed = automaticBuild;
             // Initialize
             _this._scene = scene;
             var caps = _this._scene.getEngine().getCaps();
@@ -41844,8 +41869,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Force the compilation of the entire pipeline.
+         */
+        DefaultRenderingPipeline.prototype.prepare = function () {
+            var previousState = this._buildAllowed;
+            this._buildAllowed = true;
+            this._buildPipeline();
+            this._buildAllowed = previousState;
+        };
         DefaultRenderingPipeline.prototype._buildPipeline = function () {
             var _this = this;
+            if (!this._buildAllowed) {
+                return;
+            }
             var engine = this._scene.getEngine();
             this._disposePostProcesses();
             this._reset();
@@ -52150,11 +52187,13 @@ var BABYLON;
                                         if (isNew && _this._parent.onMaterialLoaded) {
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
-                                        _this.addPendingData(material);
-                                        babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
-                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                            _this.removePendingData(material);
-                                        });
+                                        // Note: Removing force compilation from loader as this will be delegated to users as they
+                                        // may want to add more options to the material before compiling it
+                                        //this.addPendingData(material);
+                                        //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        //    this.removePendingData(material);
+                                        //});
                                     });
                                 }
                             }

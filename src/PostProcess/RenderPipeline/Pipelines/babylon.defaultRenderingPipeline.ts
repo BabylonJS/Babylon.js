@@ -31,6 +31,8 @@
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
 
+        private _buildAllowed = true;
+
         /**
 		 * Specifies the size of the bloom blur kernel, relative to the final output size
 		 */
@@ -124,10 +126,13 @@
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
          * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline
          */
-        constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[]) {
+        constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras || [];
+
+            this._buildAllowed = automaticBuild;
 
             // Initialize
             this._scene = scene;
@@ -152,7 +157,21 @@
             this._buildPipeline();
         }
 
+        /**
+         * Force the compilation of the entire pipeline.
+         */
+        public prepare(): void {
+            let previousState = this._buildAllowed;
+            this._buildAllowed = true;
+            this._buildPipeline();
+            this._buildAllowed = previousState;
+        }
+
         private _buildPipeline() {
+            if (!this._buildAllowed) {
+                return;
+            }
+
             var engine = this._scene.getEngine();
 
             this._disposePostProcesses();

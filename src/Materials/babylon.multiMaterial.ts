@@ -56,10 +56,17 @@
             return "MultiMaterial";
         }
 
-        public isReady(mesh?: AbstractMesh): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
+                    if (this.subMaterials[index].isReadyForSubMesh) {
+                        if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
+                            return false;
+                        }
+                        continue;
+                    }
+
                     if (!this.subMaterials[index].isReady(mesh)) {
                         return false;
                     }
