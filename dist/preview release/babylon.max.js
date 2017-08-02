@@ -48804,6 +48804,7 @@ var BABYLON;
             var _this = _super.call(this, name, scene, true) || this;
             scene.multiMaterials.push(_this);
             _this.subMaterials = new Array();
+            _this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
             return _this;
         }
         Object.defineProperty(MultiMaterial.prototype, "subMaterials", {
