@@ -10555,9 +10555,13 @@ var BABYLON;
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {

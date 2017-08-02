@@ -289,6 +289,8 @@ declare module BABYLON.GLTF2 {
         private _renderReady;
         private _disposed;
         private _objectURLs;
+        private _blockPendingTracking;
+        private _nonBlockingData;
         private _renderReadyObservable;
         private _renderPendingCount;
         private _loaderPendingCount;
@@ -333,6 +335,7 @@ declare module BABYLON.GLTF2 {
         private _loadBufferViewAsync(bufferView, byteOffset, byteLength, componentType, onSuccess);
         private _loadAccessorAsync(accessor, onSuccess);
         private _getByteStrideFromType(accessor);
+        blockPendingTracking: boolean;
         addPendingData(data: any): void;
         removePendingData(data: any): void;
         addLoaderPendingData(data: any): void;

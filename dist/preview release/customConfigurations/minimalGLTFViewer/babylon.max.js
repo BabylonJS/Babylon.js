@@ -10555,9 +10555,13 @@ var BABYLON;
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
@@ -51911,6 +51915,8 @@ var BABYLON;
                 this._renderReady = false;
                 this._disposed = false;
                 this._objectURLs = new Array();
+                this._blockPendingTracking = false;
+                this._nonBlockingData = new Array();
                 // Observable with boolean indicating success or error.
                 this._renderReadyObservable = new BABYLON.Observable();
                 // Count of pending work that needs to complete before the asset is rendered.
@@ -52020,7 +52026,6 @@ var BABYLON;
                 this._renderReadyObservable.notifyObservers(this);
             };
             GLTFLoader.prototype._onLoaderComplete = function () {
-                this.dispose();
                 if (this._parent.onComplete) {
                     this._parent.onComplete();
                 }
@@ -52653,6 +52658,13 @@ var BABYLON;
                         return 0;
                 }
             };
+            Object.defineProperty(GLTFLoader.prototype, "blockPendingTracking", {
+                set: function (value) {
+                    this._blockPendingTracking = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             GLTFLoader.prototype.addPendingData = function (data) {
                 if (!this._renderReady) {
                     this._renderPendingCount++;
@@ -52669,11 +52681,22 @@ var BABYLON;
                 this.removeLoaderPendingData(data);
             };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
+                if (this._blockPendingTracking) {
+                    this._nonBlockingData.push(data);
+                    return;
+                }
                 this._loaderPendingCount++;
             };
             GLTFLoader.prototype.removeLoaderPendingData = function (data) {
-                if (--this._loaderPendingCount === 0) {
+                var indexInPending = this._nonBlockingData.indexOf(data);
+                if (indexInPending !== -1) {
+                    this._nonBlockingData.splice(indexInPending, 1);
+                }
+                else if (--this._loaderPendingCount === 0) {
                     this._onLoaderComplete();
+                }
+                if (this._nonBlockingData.length === 0 && this._loaderPendingCount === 0) {
+                    this.dispose();
                 }
             };
             GLTFLoader.prototype._getDefaultMaterial = function () {
@@ -53040,11 +53063,17 @@ var BABYLON;
                 MSFTLOD.prototype.loadMaterialLOD = function (loader, material, materialLODs, lod, assign) {
                     var _this = this;
                     var materialLOD = loader.gltf.materials[materialLODs[lod]];
+                    if (lod !== materialLODs.length - 1) {
+                        loader.blockPendingTracking = true;
+                    }
                     loader.loadMaterial(materialLOD, function (babylonMaterial, isNew) {
                         assign(babylonMaterial, isNew);
-                        // Loading is complete if this is the highest quality LOD.
-                        if (lod === 0) {
+                        // Loading is considered complete if this is the lowest quality LOD.
+                        if (lod === materialLODs.length - 1) {
                             loader.removeLoaderPendingData(material);
+                        }
+                        if (lod === 0) {
+                            loader.blockPendingTracking = false;
                             return;
                         }
                         // Load the next LOD when the loader is ready to render and
