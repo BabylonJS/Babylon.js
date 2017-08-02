@@ -60,7 +60,7 @@
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }
