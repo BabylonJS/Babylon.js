@@ -7421,6 +7421,9 @@ var BABYLON;
         return InstancingAttributeInfo;
     }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
+    /**
+     * Regroup several parameters relative to the browser in use
+     */
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
@@ -8220,6 +8223,7 @@ var BABYLON;
             return this._caps;
         };
         Object.defineProperty(Engine.prototype, "drawCalls", {
+            /** The number of draw calls submitted last frame */
             get: function () {
                 return this._drawCalls.current;
             },
@@ -9062,6 +9066,10 @@ var BABYLON;
                 }
             }
         };
+        /**
+         * @param baseName The base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+         * @param samplers An array of string used to represent textures
+         */
         Engine.prototype.createEffect = function (baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, defines, fallbacks, onCompiled, onError, indexParameters) {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
@@ -15937,7 +15945,8 @@ var BABYLON;
             this._previousPickResult = null;
             this._isButtonPressed = false;
             this._doubleClickOccured = false;
-            this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+            /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
+            this.cameraToUseForPointers = null;
             this._startingPointerPosition = new BABYLON.Vector2(0, 0);
             this._previousStartingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
@@ -15949,10 +15958,6 @@ var BABYLON;
             */
             this._useRightHandedSystem = false;
             // Fog
-            /**
-            * is fog enabled on this scene.
-            * @type {boolean}
-            */
             this._fogEnabled = true;
             this._fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -15977,12 +15982,9 @@ var BABYLON;
             */
             this.lights = new Array();
             // Cameras
-            /**
-            * All of the cameras added to this scene.
-            * @see BABYLON.Camera
-            * @type {BABYLON.Camera[]}
-            */
+            /** All of the cameras added to this scene. */
             this.cameras = new Array();
+            /** All of the active cameras added to this scene. */
             this.activeCameras = new Array();
             // Meshes
             /**
@@ -16017,6 +16019,7 @@ var BABYLON;
             this.lensFlareSystems = new Array();
             // Collisions
             this.collisionsEnabled = true;
+            /** Defines the gravity applied to this scene */
             this.gravity = new BABYLON.Vector3(0, -9.807, 0);
             // Postprocesses
             this.postProcessesEnabled = true;
@@ -16095,6 +16098,7 @@ var BABYLON;
             this._imageProcessingConfiguration = new BABYLON.ImageProcessingConfiguration();
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
+            /** The fog is deactivated */
             get: function () {
                 return Scene._FOGMODE_NONE;
             },
@@ -16102,6 +16106,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene, "FOGMODE_EXP", {
+            /** The fog density is following an exponential function */
             get: function () {
                 return Scene._FOGMODE_EXP;
             },
@@ -16109,6 +16114,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene, "FOGMODE_EXP2", {
+            /** The fog density is following an exponential function faster than FOGMODE_EXP */
             get: function () {
                 return Scene._FOGMODE_EXP2;
             },
@@ -16116,6 +16122,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene, "FOGMODE_LINEAR", {
+            /** The fog density is following a linear function. */
             get: function () {
                 return Scene._FOGMODE_LINEAR;
             },
@@ -16173,6 +16180,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "onDispose", {
+            /** A function to be executed when this scene is disposed. */
             set: function (callback) {
                 if (this._onDisposeObserver) {
                     this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -16183,6 +16191,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "beforeRender", {
+            /** A function to be executed before rendering this scene */
             set: function (callback) {
                 if (this._onBeforeRenderObserver) {
                     this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -16193,6 +16202,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "afterRender", {
+            /** A function to be executed after rendering this scene */
             set: function (callback) {
                 if (this._onAfterRenderObserver) {
                     this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -16247,6 +16257,9 @@ var BABYLON;
             get: function () {
                 return this._fogEnabled;
             },
+            /**
+            * is fog enabled on this scene.
+            */
             set: function (value) {
                 if (this._fogEnabled === value) {
                     return;
@@ -16300,12 +16313,14 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "defaultMaterial", {
+            /** The default material used on meshes when no material is affected */
             get: function () {
                 if (!this._defaultMaterial) {
                     this._defaultMaterial = new BABYLON.StandardMaterial("default material", this);
                 }
                 return this._defaultMaterial;
             },
+            /** The default material used on meshes when no material is affected */
             set: function (value) {
                 this._defaultMaterial = value;
             },
@@ -17132,9 +17147,8 @@ var BABYLON;
          * @param {number} [speedRatio] - the speed in which to run the animation
          * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
          * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * @return {BABYLON.Animatable} the animatable object created for this animation
-         * @see BABYLON.Animatable
-         * @see http://doc.babylonjs.com/page.php?p=22081
+         * Returns {BABYLON.Animatable} the animatable object created for this animation
+         * See BABYLON.Animatable
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === void 0) { speedRatio = 1.0; }
@@ -18707,25 +18721,32 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /** Launch a ray to try to pick a mesh in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
             return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
         };
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
-        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /** Launch a ray to try to pick a sprite in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
             return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         };
+        /** Use the given ray to pick a mesh in the scene
+         * @param ray The ray to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         */
         Scene.prototype.pickWithRay = function (ray, predicate, fastCheck) {
             var _this = this;
             return this._internalPick(function (world) {
@@ -18736,18 +18757,22 @@ var BABYLON;
                 return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
         };
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="x">X position on screen</param>
-        /// <param name="y">Y position on screen</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param x X position on screen
+         * @param y Y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         Scene.prototype.multiPick = function (x, y, predicate, camera) {
             var _this = this;
             return this._internalMultiPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate);
         };
-        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-        /// <param name="ray">Ray to use</param>
-        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param ray Ray to use
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         */
         Scene.prototype.multiPickWithRay = function (ray, predicate) {
             var _this = this;
             return this._internalMultiPick(function (world) {
@@ -18988,10 +19013,14 @@ var BABYLON;
     Scene._FOGMODE_LINEAR = 3;
     Scene.MinDeltaTime = 1.0;
     Scene.MaxDeltaTime = 1000.0;
+    /** The distance in pixel that you have to move to prevent some events */
     Scene.DragMovementThreshold = 10; // in pixels
+    /** Time in milliseconds to wait to raise long press events if button is still pressed */
     Scene.LongPressDelay = 500; // in milliseconds
+    /** Time in milliseconds with two consecutive clicks will be considered as a double click */
     Scene.DoubleClickDelay = 300; // in milliseconds
-    Scene.ExclusiveDoubleClickMode = false; // If you need to check double click without raising a single click at first click, enable this flag
+    /** If you need to check double click without raising a single click at first click, enable this flag */
+    Scene.ExclusiveDoubleClickMode = false;
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
 
@@ -24876,13 +24905,25 @@ var BABYLON;
                 if (options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
-                if (_this.isReadyForSubMesh(mesh, subMesh)) {
-                    if (onCompiled) {
-                        onCompiled(_this);
+                if (_this.storeEffectOnSubMeshes) {
+                    if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (_this.isReady(mesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
                 engine.setAlphaTesting(alphaTestState);
                 if (options.clipPlane) {
@@ -32133,6 +32174,11 @@ var BABYLON;
             * An event triggered when the texture is unbind.
             * @type {BABYLON.Observable}
             */
+            _this.onBeforeBindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the texture is unbind.
+            * @type {BABYLON.Observable}
+            */
             _this.onAfterUnbindObservable = new BABYLON.Observable();
             /**
             * An event triggered before rendering the texture
@@ -32389,6 +32435,7 @@ var BABYLON;
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+            this.onBeforeBindObservable.notifyObservers(this);
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
             var camera;
@@ -35786,6 +35833,7 @@ var BABYLON;
             var _this = _super.call(this, name, scene, true) || this;
             scene.multiMaterials.push(_this);
             _this.subMaterials = new Array();
+            _this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
             return _this;
         }
         Object.defineProperty(MultiMaterial.prototype, "subMaterials", {
@@ -35837,7 +35885,7 @@ var BABYLON;
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }
@@ -45360,7 +45408,6 @@ var BABYLON;
      */
     var ActionEvent = (function () {
         /**
-         * @constructor
          * @param source The mesh or sprite that triggered the action.
          * @param pointerX The X mouse cursor position at the time of the event
          * @param pointerY The Y mouse cursor position at the time of the event

@@ -5,7 +5,6 @@
      */
     export class ActionEvent {
         /**
-         * @constructor
          * @param source The mesh or sprite that triggered the action.
          * @param pointerX The X mouse cursor position at the time of the event
          * @param pointerY The Y mouse cursor position at the time of the event
@@ -306,11 +305,11 @@
 
             this.actions.push(action);
 
-          if(ActionManager.Triggers[action.trigger]) {
-              ActionManager.Triggers[action.trigger]++;
+            if (ActionManager.Triggers[action.trigger]) {
+                ActionManager.Triggers[action.trigger]++;
             }
-            else{
-              ActionManager.Triggers[action.trigger] = 1;
+            else {
+                ActionManager.Triggers[action.trigger] = 1;
             }
 
             action._actionManager = this;
@@ -369,7 +368,7 @@
 
             return properties[properties.length - 1];
         }
-        
+
         public serialize(name: string): any {
             var root = {
                 children: [],
@@ -377,15 +376,15 @@
                 type: 3, // Root node
                 properties: [] // Empty for root but required
             };
-            
+
             for (var i = 0; i < this.actions.length; i++) {
-                var triggerObject = { 
+                var triggerObject = {
                     type: 0, // Trigger
                     children: [],
                     name: ActionManager.GetTriggerName(this.actions[i].trigger),
                     properties: []
                 };
-                
+
                 var triggerOptions = this.actions[i].triggerOptions;
 
                 if (triggerOptions && typeof triggerOptions !== "number") {
@@ -403,14 +402,14 @@
                         triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
                     }
                 }
-                
+
                 // Serialize child action, recursively
                 this.actions[i].serialize(triggerObject);
-                
+
                 // Add serialized trigger
                 root.children.push(triggerObject);
             }
-            
+
             return root;
         }
 
@@ -600,16 +599,16 @@
 
         public static GetTriggerName(trigger: number): string {
             switch (trigger) {
-                case 0:  return "NothingTrigger";
-                case 1:  return "OnPickTrigger";
-                case 2:  return "OnLeftPickTrigger";
-                case 3:  return "OnRightPickTrigger";
-                case 4:  return "OnCenterPickTrigger";
-                case 5:  return "OnPickDownTrigger";
-                case 6:  return "OnPickUpTrigger";
-                case 7:  return "OnLongPressTrigger";
-                case 8:  return "OnPointerOverTrigger";
-                case 9:  return "OnPointerOutTrigger";
+                case 0: return "NothingTrigger";
+                case 1: return "OnPickTrigger";
+                case 2: return "OnLeftPickTrigger";
+                case 3: return "OnRightPickTrigger";
+                case 4: return "OnCenterPickTrigger";
+                case 5: return "OnPickDownTrigger";
+                case 6: return "OnPickUpTrigger";
+                case 7: return "OnLongPressTrigger";
+                case 8: return "OnPointerOverTrigger";
+                case 9: return "OnPointerOutTrigger";
                 case 10: return "OnEveryFrameTrigger";
                 case 11: return "OnIntersectionEnterTrigger";
                 case 12: return "OnIntersectionExitTrigger";

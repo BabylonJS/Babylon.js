@@ -26,9 +26,14 @@ declare module BABYLON {
          */
         attributeName: string;
     }
+    /**
+     * Regroup several parameters relative to the browser in use
+     */
     class EngineCapabilities {
+        /** The maximum textures image */
         maxTexturesImageUnits: number;
         maxVertexTextureImageUnits: number;
+        /** The maximum texture size */
         maxTextureSize: number;
         maxCubemapTextureSize: number;
         maxRenderTextureSize: number;
@@ -284,6 +289,7 @@ declare module BABYLON {
         getHardwareScalingLevel(): number;
         getLoadedTexturesCache(): WebGLTexture[];
         getCaps(): EngineCapabilities;
+        /** The number of draw calls submitted last frame */
         readonly drawCalls: number;
         readonly drawCallsPerfCounter: PerfCounter;
         getDepthFunction(): number;
@@ -413,6 +419,10 @@ declare module BABYLON {
         drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void;
         drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void;
         _releaseEffect(effect: Effect): void;
+        /**
+         * @param baseName The base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+         * @param samplers An array of string used to represent textures
+         */
         createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect;
         createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
         createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
@@ -1360,9 +1370,13 @@ declare module BABYLON {
         private static _FOGMODE_LINEAR;
         static MinDeltaTime: number;
         static MaxDeltaTime: number;
+        /** The fog is deactivated */
         static readonly FOGMODE_NONE: number;
+        /** The fog density is following an exponential function */
         static readonly FOGMODE_EXP: number;
+        /** The fog density is following an exponential function faster than FOGMODE_EXP */
         static readonly FOGMODE_EXP2: number;
+        /** The fog density is following a linear function. */
         static readonly FOGMODE_LINEAR: number;
         autoClear: boolean;
         autoClearDepthAndStencil: boolean;
@@ -1407,6 +1421,7 @@ declare module BABYLON {
         */
         onDisposeObservable: Observable<Scene>;
         private _onDisposeObserver;
+        /** A function to be executed when this scene is disposed. */
         onDispose: () => void;
         /**
         * An event triggered before rendering the scene
@@ -1414,6 +1429,7 @@ declare module BABYLON {
         */
         onBeforeRenderObservable: Observable<Scene>;
         private _onBeforeRenderObserver;
+        /** A function to be executed before rendering this scene */
         beforeRender: () => void;
         /**
         * An event triggered after rendering the scene
@@ -1421,6 +1437,7 @@ declare module BABYLON {
         */
         onAfterRenderObservable: Observable<Scene>;
         private _onAfterRenderObserver;
+        /** A function to be executed after rendering this scene */
         afterRender: () => void;
         /**
         * An event triggered when the scene is ready
@@ -1494,9 +1511,13 @@ declare module BABYLON {
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
+        /** Deprecated. Use onPointerObservable instead */
         onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /** Deprecated. Use onPointerObservable instead */
         onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         /**
          * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
@@ -1508,9 +1529,13 @@ declare module BABYLON {
          */
         onPointerObservable: Observable<PointerInfo>;
         readonly unTranslatedPointer: Vector2;
+        /** The distance in pixel that you have to move to prevent some events */
         static DragMovementThreshold: number;
+        /** Time in milliseconds to wait to raise long press events if button is still pressed */
         static LongPressDelay: number;
+        /** Time in milliseconds with two consecutive clicks will be considered as a double click */
         static DoubleClickDelay: number;
+        /** If you need to check double click without raising a single click at first click, enable this flag */
         static ExclusiveDoubleClickMode: boolean;
         private _initClickEvent;
         private _initActionManager;
@@ -1524,6 +1549,7 @@ declare module BABYLON {
         private _previousPickResult;
         private _isButtonPressed;
         private _doubleClickOccured;
+        /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
         cameraToUseForPointers: Camera;
         private _pointerX;
         private _pointerY;
@@ -1542,11 +1568,10 @@ declare module BABYLON {
         */
         private _useRightHandedSystem;
         useRightHandedSystem: boolean;
+        private _fogEnabled;
         /**
         * is fog enabled on this scene.
-        * @type {boolean}
         */
-        private _fogEnabled;
         fogEnabled: boolean;
         private _fogMode;
         fogMode: number;
@@ -1572,13 +1597,11 @@ declare module BABYLON {
         * @type {BABYLON.Light[]}
         */
         lights: Light[];
-        /**
-        * All of the cameras added to this scene.
-        * @see BABYLON.Camera
-        * @type {BABYLON.Camera[]}
-        */
+        /** All of the cameras added to this scene. */
         cameras: Camera[];
+        /** All of the active cameras added to this scene. */
         activeCameras: Camera[];
+        /** The current active camera */
         activeCamera: Camera;
         /**
         * All of the (abstract) meshes added to this scene.
@@ -1590,6 +1613,8 @@ declare module BABYLON {
         materials: Material[];
         multiMaterials: MultiMaterial[];
         private _defaultMaterial;
+        /** The default material used on meshes when no material is affected */
+        /** The default material used on meshes when no material is affected */
         defaultMaterial: Material;
         private _texturesEnabled;
         texturesEnabled: boolean;
@@ -1609,6 +1634,7 @@ declare module BABYLON {
         collisionsEnabled: boolean;
         private _workerCollisions;
         collisionCoordinator: ICollisionCoordinator;
+        /** Defines the gravity applied to this scene */
         gravity: Vector3;
         postProcessesEnabled: boolean;
         postProcessManager: PostProcessManager;
@@ -1783,9 +1809,8 @@ declare module BABYLON {
          * @param {number} [speedRatio] - the speed in which to run the animation
          * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
          * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * @return {BABYLON.Animatable} the animatable object created for this animation
-         * @see BABYLON.Animatable
-         * @see http://doc.babylonjs.com/page.php?p=22081
+         * Returns {BABYLON.Animatable} the animatable object created for this animation
+         * See BABYLON.Animatable
          */
         beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable;
         beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable;
@@ -2019,10 +2044,41 @@ declare module BABYLON {
         private _internalPick(rayFunction, predicate, fastCheck?);
         private _internalMultiPick(rayFunction, predicate);
         private _internalPickSprites(ray, predicate?, fastCheck?, camera?);
+        /** Launch a ray to try to pick a mesh in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo;
+        /** Launch a ray to try to pick a sprite in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo;
+        /** Use the given ray to pick a mesh in the scene
+         * @param ray The ray to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         */
         pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo;
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param x X position on screen
+         * @param y Y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         */
         multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): PickingInfo[];
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param ray Ray to use
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         */
         multiPickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean): PickingInfo[];
         setPointerOverMesh(mesh: AbstractMesh): void;
         getPointerOverMesh(): AbstractMesh;
@@ -2150,7 +2206,6 @@ declare module BABYLON {
         sourceEvent: any;
         additionalData: any;
         /**
-         * @constructor
          * @param source The mesh or sprite that triggered the action.
          * @param pointerX The X mouse cursor position at the time of the event
          * @param pointerY The Y mouse cursor position at the time of the event
@@ -3808,6 +3863,120 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        private _rayHelper;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        intersectsPlane(plane: Plane): number;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -4050,120 +4219,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        private _rayHelper;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        intersectsPlane(plane: Plane): number;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
 declare module BABYLON.Debug {
     class AxesViewer {
         private _xline;
@@ -4289,6 +4344,51 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength(bones, meshMat);
         update(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -4545,51 +4645,6 @@ declare module BABYLON {
         constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
         render(): void;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -13064,36 +13119,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -13613,6 +13638,36 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -17294,6 +17349,11 @@ declare module BABYLON {
         useCameraPostProcesses: boolean;
         private _postProcessManager;
         private _postProcesses;
+        /**
+        * An event triggered when the texture is unbind.
+        * @type {BABYLON.Observable}
+        */
+        onBeforeBindObservable: Observable<RenderTargetTexture>;
         /**
         * An event triggered when the texture is unbind.
         * @type {BABYLON.Observable}

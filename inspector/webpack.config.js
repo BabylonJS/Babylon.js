@@ -13,7 +13,7 @@ module.exports = {
             split: '../split.js'
         }
     },
-    module: {        
+    module: {
         loaders: [
             { test: /\.css$/, loader: "style!css" },
             { test: /babylon.inspector.min.js$/, loader: "imports?Split=split!exports?INSPECTOR" }
