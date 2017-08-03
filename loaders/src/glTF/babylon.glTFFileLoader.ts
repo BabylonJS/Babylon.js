@@ -35,7 +35,14 @@ module BABYLON {
         public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
         public onTextureLoaded: (texture: BaseTexture) => void;
         public onMaterialLoaded: (material: Material) => void;
+        /**
+         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         */
         public onComplete: () => void;
+        /**
+         * Raised when first LOD complete (or if there is no LOD and model is complete)
+         */
+        public onFirstLODComplete: () => void;
 
         public name = "gltf";
 

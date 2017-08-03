@@ -320,7 +320,6 @@ var BABYLON;
                 this._disposed = false;
                 this._objectURLs = new Array();
                 this._blockPendingTracking = false;
-                this._nonBlockingData = new Array();
                 // Observable with boolean indicating success or error.
                 this._renderReadyObservable = new BABYLON.Observable();
                 // Count of pending work that needs to complete before the asset is rendered.
@@ -432,6 +431,11 @@ var BABYLON;
             GLTFLoader.prototype._onLoaderComplete = function () {
                 if (this._parent.onComplete) {
                     this._parent.onComplete();
+                }
+            };
+            GLTFLoader.prototype._onLoaderFirstLODComplete = function () {
+                if (this._parent.onFirstLODComplete) {
+                    this._parent.onFirstLODComplete();
                 }
             };
             GLTFLoader.prototype._loadData = function (data) {
@@ -1086,20 +1090,24 @@ var BABYLON;
             };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
                 if (this._blockPendingTracking) {
+                    if (!this._nonBlockingData) {
+                        this._nonBlockingData = new Array();
+                    }
                     this._nonBlockingData.push(data);
                     return;
                 }
                 this._loaderPendingCount++;
             };
             GLTFLoader.prototype.removeLoaderPendingData = function (data) {
-                var indexInPending = this._nonBlockingData.indexOf(data);
+                var indexInPending = this._nonBlockingData ? this._nonBlockingData.indexOf(data) : -1;
                 if (indexInPending !== -1) {
                     this._nonBlockingData.splice(indexInPending, 1);
                 }
                 else if (--this._loaderPendingCount === 0) {
-                    this._onLoaderComplete();
+                    this._onLoaderFirstLODComplete();
                 }
-                if (this._nonBlockingData.length === 0 && this._loaderPendingCount === 0) {
+                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
+                    this._onLoaderComplete();
                     this.dispose();
                 }
             };

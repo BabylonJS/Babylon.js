@@ -14,7 +14,7 @@ module BABYLON.GLTF2 {
         private _disposed: boolean = false;
         private _objectURLs: string[] = new Array<string>();
         private _blockPendingTracking: boolean = false;
-        private _nonBlockingData = new Array<any>();
+        private _nonBlockingData: Array<any>;
 
         // Observable with boolean indicating success or error.
         private _renderReadyObservable = new Observable<GLTFLoader>();
@@ -144,6 +144,12 @@ module BABYLON.GLTF2 {
         private _onLoaderComplete(): void {
             if (this._parent.onComplete) {
                 this._parent.onComplete();
+            }
+        }
+
+        private _onLoaderFirstLODComplete(): void {
+            if (this._parent.onFirstLODComplete) {
+                this._parent.onFirstLODComplete();
             }
         }
 
@@ -880,6 +886,9 @@ module BABYLON.GLTF2 {
 
         public addLoaderPendingData(data: any) {
             if (this._blockPendingTracking) {
+                if (!this._nonBlockingData) {
+                    this._nonBlockingData = new Array<any>();
+                }
                 this._nonBlockingData.push(data);
                 return;
             }            
@@ -887,14 +896,15 @@ module BABYLON.GLTF2 {
         }
 
         public removeLoaderPendingData(data: any) {
-            var indexInPending = this._nonBlockingData.indexOf(data);
+            var indexInPending = this._nonBlockingData ? this._nonBlockingData.indexOf(data) : -1;
             if (indexInPending !== -1) {
                 this._nonBlockingData.splice(indexInPending, 1);
             } else if (--this._loaderPendingCount === 0) {
-                this._onLoaderComplete();
+                this._onLoaderFirstLODComplete();
             }
 
-            if (this._nonBlockingData.length === 0 && this._loaderPendingCount === 0) {
+            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
+                this._onLoaderComplete();
                 this.dispose();
             }
         }
