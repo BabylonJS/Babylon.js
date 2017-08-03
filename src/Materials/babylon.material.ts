@@ -516,7 +516,9 @@
             return result;
         }
 
-        // Force shader compilation including textures ready check
+        /**
+         * Force shader compilation including textures ready check
+         */
         public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest: boolean, clipPlane: boolean }): void {
             var subMesh = new BaseSubMesh();
             var scene = this.getScene();

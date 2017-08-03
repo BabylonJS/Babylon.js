@@ -46476,6 +46476,36 @@ var BABYLON;
             }
         };
         /**
+         * Force shader compilation including textures ready check
+         */
+        ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
+            var _this = this;
+            var scene = this._scene;
+            var engine = scene.getEngine();
+            var subMeshes = new Array();
+            var currentIndex = 0;
+            for (var _i = 0, _a = this.getShadowMap().renderList; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                subMeshes.push.apply(subMeshes, mesh.subMeshes);
+            }
+            var checkReady = function () {
+                var subMesh = subMeshes[currentIndex];
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+            if (subMeshes.length > 0) {
+                checkReady();
+            }
+        };
+        /**
          * Boolean : true when the ShadowGenerator is finally computed.
          */
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
