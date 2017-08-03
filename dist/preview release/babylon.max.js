@@ -10555,9 +10555,13 @@ var BABYLON;
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
@@ -24889,7 +24893,9 @@ var BABYLON;
             }
             return result;
         };
-        // Force shader compilation including textures ready check
+        /**
+         * Force shader compilation including textures ready check
+         */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
@@ -24905,13 +24911,25 @@ var BABYLON;
                 if (options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
-                if (_this.isReadyForSubMesh(mesh, subMesh)) {
-                    if (onCompiled) {
-                        onCompiled(_this);
+                if (_this.storeEffectOnSubMeshes) {
+                    if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (_this.isReady(mesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
                 engine.setAlphaTesting(alphaTestState);
                 if (options.clipPlane) {
@@ -44818,14 +44836,14 @@ var BABYLON;
             var camera;
             if (this.activeCamera) {
                 camera = this.activeCamera;
-                engine.setViewport(this.activeCamera.viewport);
+                engine.setViewport(this.activeCamera.viewport, this._size, this._size);
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
             }
             else {
                 camera = scene.activeCamera;
-                engine.setViewport(scene.activeCamera.viewport);
+                engine.setViewport(scene.activeCamera.viewport, this._size, this._size);
             }
             // Prepare renderingManager
             this._renderingManager.reset();
@@ -46457,6 +46475,36 @@ var BABYLON;
             }
             else {
                 this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            }
+        };
+        /**
+         * Force shader compilation including textures ready check
+         */
+        ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
+            var _this = this;
+            var scene = this._scene;
+            var engine = scene.getEngine();
+            var subMeshes = new Array();
+            var currentIndex = 0;
+            for (var _i = 0, _a = this.getShadowMap().renderList; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                subMeshes.push.apply(subMeshes, mesh.subMeshes);
+            }
+            var checkReady = function () {
+                var subMesh = subMeshes[currentIndex];
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+            if (subMeshes.length > 0) {
+                checkReady();
             }
         };
         /**
@@ -48792,6 +48840,7 @@ var BABYLON;
             var _this = _super.call(this, name, scene, true) || this;
             scene.multiMaterials.push(_this);
             _this.subMaterials = new Array();
+            _this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
             return _this;
         }
         Object.defineProperty(MultiMaterial.prototype, "subMaterials", {
@@ -48843,7 +48892,7 @@ var BABYLON;
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }

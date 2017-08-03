@@ -10555,9 +10555,13 @@ var BABYLON;
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
@@ -24889,7 +24893,9 @@ var BABYLON;
             }
             return result;
         };
-        // Force shader compilation including textures ready check
+        /**
+         * Force shader compilation including textures ready check
+         */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
@@ -24905,13 +24911,25 @@ var BABYLON;
                 if (options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
-                if (_this.isReadyForSubMesh(mesh, subMesh)) {
-                    if (onCompiled) {
-                        onCompiled(_this);
+                if (_this.storeEffectOnSubMeshes) {
+                    if (_this.isReadyForSubMesh(mesh, subMesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (_this.isReady(mesh)) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                    }
+                    else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
                 engine.setAlphaTesting(alphaTestState);
                 if (options.clipPlane) {
@@ -32162,6 +32180,11 @@ var BABYLON;
             * An event triggered when the texture is unbind.
             * @type {BABYLON.Observable}
             */
+            _this.onBeforeBindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the texture is unbind.
+            * @type {BABYLON.Observable}
+            */
             _this.onAfterUnbindObservable = new BABYLON.Observable();
             /**
             * An event triggered before rendering the texture
@@ -32418,19 +32441,20 @@ var BABYLON;
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+            this.onBeforeBindObservable.notifyObservers(this);
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
             var camera;
             if (this.activeCamera) {
                 camera = this.activeCamera;
-                engine.setViewport(this.activeCamera.viewport);
+                engine.setViewport(this.activeCamera.viewport, this._size, this._size);
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
             }
             else {
                 camera = scene.activeCamera;
-                engine.setViewport(scene.activeCamera.viewport);
+                engine.setViewport(scene.activeCamera.viewport, this._size, this._size);
             }
             // Prepare renderingManager
             this._renderingManager.reset();
@@ -34889,6 +34913,36 @@ var BABYLON;
             }
         };
         /**
+         * Force shader compilation including textures ready check
+         */
+        ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
+            var _this = this;
+            var scene = this._scene;
+            var engine = scene.getEngine();
+            var subMeshes = new Array();
+            var currentIndex = 0;
+            for (var _i = 0, _a = this.getShadowMap().renderList; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                subMeshes.push.apply(subMeshes, mesh.subMeshes);
+            }
+            var checkReady = function () {
+                var subMesh = subMeshes[currentIndex];
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+            if (subMeshes.length > 0) {
+                checkReady();
+            }
+        };
+        /**
          * Boolean : true when the ShadowGenerator is finally computed.
          */
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
@@ -35815,6 +35869,7 @@ var BABYLON;
             var _this = _super.call(this, name, scene, true) || this;
             scene.multiMaterials.push(_this);
             _this.subMaterials = new Array();
+            _this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
             return _this;
         }
         Object.defineProperty(MultiMaterial.prototype, "subMaterials", {
@@ -35866,7 +35921,7 @@ var BABYLON;
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }
@@ -51892,6 +51947,7 @@ var BABYLON;
                 this._renderReady = false;
                 this._disposed = false;
                 this._objectURLs = new Array();
+                this._blockPendingTracking = false;
                 // Observable with boolean indicating success or error.
                 this._renderReadyObservable = new BABYLON.Observable();
                 // Count of pending work that needs to complete before the asset is rendered.
@@ -52001,9 +52057,13 @@ var BABYLON;
                 this._renderReadyObservable.notifyObservers(this);
             };
             GLTFLoader.prototype._onLoaderComplete = function () {
-                this.dispose();
                 if (this._parent.onComplete) {
                     this._parent.onComplete();
+                }
+            };
+            GLTFLoader.prototype._onLoaderFirstLODComplete = function () {
+                if (this._parent.onFirstLODComplete) {
+                    this._parent.onFirstLODComplete();
                 }
             };
             GLTFLoader.prototype._loadData = function (data) {
@@ -52634,6 +52694,13 @@ var BABYLON;
                         return 0;
                 }
             };
+            Object.defineProperty(GLTFLoader.prototype, "blockPendingTracking", {
+                set: function (value) {
+                    this._blockPendingTracking = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             GLTFLoader.prototype.addPendingData = function (data) {
                 if (!this._renderReady) {
                     this._renderPendingCount++;
@@ -52650,11 +52717,26 @@ var BABYLON;
                 this.removeLoaderPendingData(data);
             };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
+                if (this._blockPendingTracking) {
+                    if (!this._nonBlockingData) {
+                        this._nonBlockingData = new Array();
+                    }
+                    this._nonBlockingData.push(data);
+                    return;
+                }
                 this._loaderPendingCount++;
             };
             GLTFLoader.prototype.removeLoaderPendingData = function (data) {
-                if (--this._loaderPendingCount === 0) {
+                var indexInPending = this._nonBlockingData ? this._nonBlockingData.indexOf(data) : -1;
+                if (indexInPending !== -1) {
+                    this._nonBlockingData.splice(indexInPending, 1);
+                }
+                else if (--this._loaderPendingCount === 0) {
+                    this._onLoaderFirstLODComplete();
+                }
+                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
                     this._onLoaderComplete();
+                    this.dispose();
                 }
             };
             GLTFLoader.prototype._getDefaultMaterial = function () {
@@ -53021,11 +53103,17 @@ var BABYLON;
                 MSFTLOD.prototype.loadMaterialLOD = function (loader, material, materialLODs, lod, assign) {
                     var _this = this;
                     var materialLOD = loader.gltf.materials[materialLODs[lod]];
+                    if (lod !== materialLODs.length - 1) {
+                        loader.blockPendingTracking = true;
+                    }
                     loader.loadMaterial(materialLOD, function (babylonMaterial, isNew) {
                         assign(babylonMaterial, isNew);
-                        // Loading is complete if this is the highest quality LOD.
-                        if (lod === 0) {
+                        // Loading is considered complete if this is the lowest quality LOD.
+                        if (lod === materialLODs.length - 1) {
                             loader.removeLoaderPendingData(material);
+                        }
+                        if (lod === 0) {
+                            loader.blockPendingTracking = false;
                             return;
                         }
                         // Load the next LOD when the loader is ready to render and

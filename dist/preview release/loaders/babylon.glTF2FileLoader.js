@@ -319,6 +319,7 @@ var BABYLON;
                 this._renderReady = false;
                 this._disposed = false;
                 this._objectURLs = new Array();
+                this._blockPendingTracking = false;
                 // Observable with boolean indicating success or error.
                 this._renderReadyObservable = new BABYLON.Observable();
                 // Count of pending work that needs to complete before the asset is rendered.
@@ -428,9 +429,13 @@ var BABYLON;
                 this._renderReadyObservable.notifyObservers(this);
             };
             GLTFLoader.prototype._onLoaderComplete = function () {
-                this.dispose();
                 if (this._parent.onComplete) {
                     this._parent.onComplete();
+                }
+            };
+            GLTFLoader.prototype._onLoaderFirstLODComplete = function () {
+                if (this._parent.onFirstLODComplete) {
+                    this._parent.onFirstLODComplete();
                 }
             };
             GLTFLoader.prototype._loadData = function (data) {
@@ -1061,6 +1066,13 @@ var BABYLON;
                         return 0;
                 }
             };
+            Object.defineProperty(GLTFLoader.prototype, "blockPendingTracking", {
+                set: function (value) {
+                    this._blockPendingTracking = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             GLTFLoader.prototype.addPendingData = function (data) {
                 if (!this._renderReady) {
                     this._renderPendingCount++;
@@ -1077,11 +1089,26 @@ var BABYLON;
                 this.removeLoaderPendingData(data);
             };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
+                if (this._blockPendingTracking) {
+                    if (!this._nonBlockingData) {
+                        this._nonBlockingData = new Array();
+                    }
+                    this._nonBlockingData.push(data);
+                    return;
+                }
                 this._loaderPendingCount++;
             };
             GLTFLoader.prototype.removeLoaderPendingData = function (data) {
-                if (--this._loaderPendingCount === 0) {
+                var indexInPending = this._nonBlockingData ? this._nonBlockingData.indexOf(data) : -1;
+                if (indexInPending !== -1) {
+                    this._nonBlockingData.splice(indexInPending, 1);
+                }
+                else if (--this._loaderPendingCount === 0) {
+                    this._onLoaderFirstLODComplete();
+                }
+                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
                     this._onLoaderComplete();
+                    this.dispose();
                 }
             };
             GLTFLoader.prototype._getDefaultMaterial = function () {
@@ -1457,11 +1484,17 @@ var BABYLON;
                 MSFTLOD.prototype.loadMaterialLOD = function (loader, material, materialLODs, lod, assign) {
                     var _this = this;
                     var materialLOD = loader.gltf.materials[materialLODs[lod]];
+                    if (lod !== materialLODs.length - 1) {
+                        loader.blockPendingTracking = true;
+                    }
                     loader.loadMaterial(materialLOD, function (babylonMaterial, isNew) {
                         assign(babylonMaterial, isNew);
-                        // Loading is complete if this is the highest quality LOD.
-                        if (lod === 0) {
+                        // Loading is considered complete if this is the lowest quality LOD.
+                        if (lod === materialLODs.length - 1) {
                             loader.removeLoaderPendingData(material);
+                        }
+                        if (lod === 0) {
+                            loader.blockPendingTracking = false;
                             return;
                         }
                         // Load the next LOD when the loader is ready to render and

@@ -3897,10 +3897,17 @@
         }
 
         public _setAnisotropicLevel(key: number, texture: BaseTexture) {
+            var internalTexture = texture.getInternalTexture();
+
+            if (!internalTexture) {
+                return;
+            }
+
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
+            
 
-            if (texture.getInternalTexture().samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
 

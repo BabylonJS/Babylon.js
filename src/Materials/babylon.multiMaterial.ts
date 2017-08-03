@@ -16,6 +16,8 @@
             scene.multiMaterials.push(this);
 
             this.subMaterials = new Array<Material>();
+
+            this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
         }
 
         private _hookArray(array: Material[]): void {
@@ -60,7 +62,7 @@
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].isReadyForSubMesh) {
+                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
                         if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }

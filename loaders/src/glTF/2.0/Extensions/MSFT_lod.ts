@@ -35,12 +35,21 @@ module BABYLON.GLTF2.Extensions {
 
         private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
             var materialLOD = loader.gltf.materials[materialLODs[lod]];
+
+            if (lod !== materialLODs.length - 1) {
+                loader.blockPendingTracking = true;
+            }
+            
             loader.loadMaterial(materialLOD, (babylonMaterial, isNew) => {
                 assign(babylonMaterial, isNew);
 
-                // Loading is complete if this is the highest quality LOD.
-                if (lod === 0) {
+                // Loading is considered complete if this is the lowest quality LOD.
+                if (lod === materialLODs.length - 1) {
                     loader.removeLoaderPendingData(material);
+                }
+
+                if (lod === 0) {
+                    loader.blockPendingTracking = false;
                     return;
                 }
 
