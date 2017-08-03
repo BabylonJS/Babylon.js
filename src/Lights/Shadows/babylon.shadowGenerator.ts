@@ -510,6 +510,40 @@
         }
 
         /**
+         * Force shader compilation including textures ready check
+         */
+        public forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void {
+            var scene = this._scene;
+            var engine = scene.getEngine();
+            var subMeshes = new Array<SubMesh>();
+            var currentIndex = 0;
+
+
+            for(var mesh of this.getShadowMap().renderList) {
+                subMeshes.push(...mesh.subMeshes);
+            }
+
+            var checkReady = () => {
+                let subMesh = subMeshes[currentIndex];
+
+                if (this.isReady(subMesh, options ? options.useInstances : false)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+
+            if (subMeshes.length > 0) {
+                checkReady();            
+            }
+        }
+
+        /**
          * Boolean : true when the ShadowGenerator is finally computed.  
          */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
