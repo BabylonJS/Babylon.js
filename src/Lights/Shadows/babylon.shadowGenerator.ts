@@ -14,6 +14,8 @@
 
         recreateShadowMap(): void;
 
+        forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void;
+
         serialize(): any;
         dispose(): void;
     }
