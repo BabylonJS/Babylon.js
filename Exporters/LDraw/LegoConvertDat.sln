@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegoConvertDat", "LegoConvertDat\LegoConvertDat.csproj", "{84AA17E6-335B-42F9-B7AB-14877612D6AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonExport.Entities", "..\3ds Max\BabylonExport.Entities\BabylonExport.Entities.csproj", "{6150965A-658C-4263-89AD-4F980EB0675D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84AA17E6-335B-42F9-B7AB-14877612D6AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84AA17E6-335B-42F9-B7AB-14877612D6AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84AA17E6-335B-42F9-B7AB-14877612D6AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84AA17E6-335B-42F9-B7AB-14877612D6AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6150965A-658C-4263-89AD-4F980EB0675D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6150965A-658C-4263-89AD-4F980EB0675D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6150965A-658C-4263-89AD-4F980EB0675D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6150965A-658C-4263-89AD-4F980EB0675D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
