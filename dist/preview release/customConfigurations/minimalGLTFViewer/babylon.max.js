@@ -49231,7 +49231,47 @@ var BABYLON;
             eventDrop.preventDefault();
             this.loadFiles(eventDrop);
         };
+        FilesInput.prototype._handleFolderDrop = function (entry, files, callback) {
+            var reader = entry.createReader(), relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+            reader.readEntries(function (fileEntries) {
+                var remaining = fileEntries.length;
+                for (var _i = 0, fileEntries_1 = fileEntries; _i < fileEntries_1.length; _i++) {
+                    var fileEntry = fileEntries_1[_i];
+                    if (fileEntry.isFile) {
+                        fileEntry.file(function (file) {
+                            file.correctName = relativePath + file.name;
+                            files.push(file);
+                            remaining--;
+                            if (remaining === 0) {
+                                callback();
+                            }
+                        });
+                    }
+                    else {
+                        remaining--;
+                        if (remaining === 0) {
+                            callback();
+                        }
+                    }
+                }
+            });
+        };
+        FilesInput.prototype._processFiles = function (files) {
+            for (var i = 0; i < files.length; i++) {
+                var name = files[i].correctName.toLowerCase();
+                var extension = name.split('.').pop();
+                if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
+                    && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+                    this._sceneFileToLoad = files[i];
+                }
+                else {
+                    FilesInput.FilesToLoad[name] = files[i];
+                }
+            }
+            this.reload();
+        };
         FilesInput.prototype.loadFiles = function (event) {
+            var _this = this;
             if (this._startingProcessingFilesCallback)
                 this._startingProcessingFilesCallback();
             // Handling data transfer via drag'n'drop
@@ -49243,19 +49283,51 @@ var BABYLON;
                 this._filesToLoad = event.target.files;
             }
             if (this._filesToLoad && this._filesToLoad.length > 0) {
+                var files_1 = [];
+                var folders = [];
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    var name_1 = this._filesToLoad[i].name.toLowerCase();
-                    var extension = name_1.split('.').pop();
-                    var type = this._filesToLoad[i].type;
-                    if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
-                        && name_1.indexOf(".binary.babylon") === -1 && name_1.indexOf(".incremental.babylon") === -1) {
-                        this._sceneFileToLoad = this._filesToLoad[i];
+                    var fileToLoad = this._filesToLoad[i];
+                    var name_1 = fileToLoad.name.toLowerCase();
+                    var type = fileToLoad.type;
+                    var entry = void 0;
+                    fileToLoad.correctName = name_1;
+                    if (event.dataTransfer.items) {
+                        var item = event.dataTransfer.items[i];
+                        if (item.getAsEntry) {
+                            entry = item.getAsEntry();
+                        }
+                        else if (item.webkitGetAsEntry) {
+                            entry = item.webkitGetAsEntry();
+                        }
+                    }
+                    if (!entry) {
+                        files_1.push(fileToLoad);
                     }
                     else {
-                        FilesInput.FilesToLoad[name_1] = this._filesToLoad[i];
+                        if (entry.isDirectory) {
+                            folders.push(entry);
+                        }
+                        else {
+                            files_1.push(fileToLoad);
+                        }
                     }
                 }
-                this.reload();
+                if (folders.length === 0) {
+                    this._processFiles(files_1);
+                }
+                else {
+                    var remaining = folders.length;
+                    // Extract folder content
+                    for (var _i = 0, folders_1 = folders; _i < folders_1.length; _i++) {
+                        var folder = folders_1[_i];
+                        this._handleFolderDrop(folder, files_1, function () {
+                            remaining--;
+                            if (remaining === 0) {
+                                _this._processFiles(files_1);
+                            }
+                        });
+                    }
+                }
             }
         };
         FilesInput.prototype.reload = function () {
