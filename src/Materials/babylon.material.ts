@@ -534,7 +534,7 @@
 
                 engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
 
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
                 }
 
@@ -560,7 +560,7 @@
 
                 engine.setAlphaTesting(alphaTestState);
 
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };

@@ -24908,7 +24908,7 @@ var BABYLON;
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
                 engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
                 if (_this.storeEffectOnSubMeshes) {
@@ -24932,7 +24932,7 @@ var BABYLON;
                     }
                 }
                 engine.setAlphaTesting(alphaTestState);
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };
@@ -27822,6 +27822,7 @@ var BABYLON;
             //Init vertex buffer cache
             this._vertexBuffers = {};
             this._indices = [];
+            this._updatable = updatable;
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -28333,6 +28334,7 @@ var BABYLON;
         Geometry.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.id = this.id;
+            serializationObject.updatable = this._updatable;
             if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
                 serializationObject.tags = BABYLON.Tags.GetTags(this);
             }
@@ -28610,7 +28612,7 @@ var BABYLON;
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
-            var geometry = new Geometry(parsedVertexData.id, scene);
+            var geometry = new Geometry(parsedVertexData.id, scene, null, parsedVertexData.updatable);
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
             }
@@ -48425,6 +48427,7 @@ var BABYLON;
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
+            SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
             var dataCallback = function (data) {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
@@ -48616,6 +48619,7 @@ var BABYLON;
     SceneLoader._ShowLoadingScreen = true;
     SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
     // Members
+    SceneLoader.OnPluginActivatedObservable = new BABYLON.Observable();
     SceneLoader._registeredPlugins = {};
     BABYLON.SceneLoader = SceneLoader;
     ;
@@ -52275,13 +52279,14 @@ var BABYLON;
                                         if (isNew && _this._parent.onMaterialLoaded) {
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
-                                        // Note: Removing force compilation from loader as this will be delegated to users as they
-                                        // may want to add more options to the material before compiling it
-                                        //this.addPendingData(material);
-                                        //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
-                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                        //    this.removePendingData(material);
-                                        //});
+                                        if (_this._parent.onBeforeMaterialReadyAsync) {
+                                            _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, function () {
+                                                babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                            });
+                                        }
+                                        else {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        }
                                     });
                                 }
                             }
@@ -52716,12 +52721,15 @@ var BABYLON;
                 }
                 this.removeLoaderPendingData(data);
             };
+            GLTFLoader.prototype.addLoaderNonBlockingPendingData = function (data) {
+                if (!this._nonBlockingData) {
+                    this._nonBlockingData = new Array();
+                }
+                this._nonBlockingData.push(data);
+            };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
                 if (this._blockPendingTracking) {
-                    if (!this._nonBlockingData) {
-                        this._nonBlockingData = new Array();
-                    }
-                    this._nonBlockingData.push(data);
+                    this.addLoaderNonBlockingPendingData(data);
                     return;
                 }
                 this._loaderPendingCount++;
@@ -53094,9 +53102,12 @@ var BABYLON;
                     // Clear out the extension so that it won't get loaded again.
                     material.extensions[this.name] = undefined;
                     // Tell the loader not to clear its state until the highest LOD is loaded.
-                    loader.addLoaderPendingData(material);
-                    // Start with the lowest quality LOD.
                     var materialLODs = [material.index].concat(properties.ids);
+                    loader.addLoaderPendingData(material);
+                    for (var index = 0; index < materialLODs.length; index++) {
+                        loader.addLoaderNonBlockingPendingData(index);
+                    }
+                    // Start with the lowest quality LOD.
                     this.loadMaterialLOD(loader, material, materialLODs, materialLODs.length - 1, assign);
                     return true;
                 };
@@ -53108,6 +53119,7 @@ var BABYLON;
                     }
                     loader.loadMaterial(materialLOD, function (babylonMaterial, isNew) {
                         assign(babylonMaterial, isNew);
+                        loader.removeLoaderPendingData(lod);
                         // Loading is considered complete if this is the lowest quality LOD.
                         if (lod === materialLODs.length - 1) {
                             loader.removeLoaderPendingData(material);
@@ -53120,13 +53132,19 @@ var BABYLON;
                         // all active material textures of the current LOD are loaded.
                         loader.executeWhenRenderReady(function () {
                             BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
-                                _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                                setTimeout(function () {
+                                    _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                                }, MSFTLOD.MinimalLODDelay);
                             });
                         });
                     });
                 };
                 return MSFTLOD;
             }(GLTF2.GLTFLoaderExtension));
+            /**
+             * Specify the minimal delay between LODs in ms (default = 250)
+             */
+            MSFTLOD.MinimalLODDelay = 250;
             Extensions.MSFTLOD = MSFTLOD;
             GLTF2.GLTFLoader.RegisterExtension(new MSFTLOD());
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
