@@ -412,14 +412,20 @@ module BABYLON.GLTF2 {
                                     if (isNew && this._parent.onMaterialLoaded) {
                                         this._parent.onMaterialLoaded(babylonMaterial);
                                     }
+                                    
+                                    let needToCompile = false;
+                                    if (this._parent.onMaterialReady) {
+                                        needToCompile = this._parent.onMaterialReady(babylonMaterial, babylonMultiMaterial.subMaterials[i] != null);
+                                    }
 
-                                    // Note: Removing force compilation from loader as this will be delegated to users as they
-                                    // may want to add more options to the material before compiling it
-                                    //this.addPendingData(material);
-                                    //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                    if (!needToCompile) {
                                         babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                    //    this.removePendingData(material);
-                                    //});
+                                    } else {
+                                        // Let's compile first to avoid jittering
+                                        babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        });
+                                    }
                                 });
                             }
                         }
@@ -884,12 +890,16 @@ module BABYLON.GLTF2 {
             this.removeLoaderPendingData(data);
         }
 
+        public addLoaderNonBlockingPendingData(data: any): void {
+            if (!this._nonBlockingData) {
+                this._nonBlockingData = new Array<any>();
+            }
+            this._nonBlockingData.push(data);
+        }
+
         public addLoaderPendingData(data: any) {
             if (this._blockPendingTracking) {
-                if (!this._nonBlockingData) {
-                    this._nonBlockingData = new Array<any>();
-                }
-                this._nonBlockingData.push(data);
+                this.addLoaderNonBlockingPendingData(data);
                 return;
             }            
             this._loaderPendingCount++;
@@ -903,7 +913,7 @@ module BABYLON.GLTF2 {
                 this._onLoaderFirstLODComplete();
             }
 
-            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
+            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount <= 0) {
                 this._onLoaderComplete();
                 this.dispose();
             }

@@ -24908,7 +24908,7 @@ var BABYLON;
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
                 engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
                 if (_this.storeEffectOnSubMeshes) {
@@ -24932,7 +24932,7 @@ var BABYLON;
                     }
                 }
                 engine.setAlphaTesting(alphaTestState);
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };
@@ -27822,6 +27822,7 @@ var BABYLON;
             //Init vertex buffer cache
             this._vertexBuffers = {};
             this._indices = [];
+            this._updatable = updatable;
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -28333,6 +28334,7 @@ var BABYLON;
         Geometry.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.id = this.id;
+            serializationObject.updatable = this._updatable;
             if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
                 serializationObject.tags = BABYLON.Tags.GetTags(this);
             }
@@ -28610,7 +28612,7 @@ var BABYLON;
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
-            var geometry = new Geometry(parsedVertexData.id, scene);
+            var geometry = new Geometry(parsedVertexData.id, scene, null, parsedVertexData.updatable);
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
             }
@@ -47017,6 +47019,7 @@ var BABYLON;
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
+            SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
             var dataCallback = function (data) {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
@@ -47208,6 +47211,7 @@ var BABYLON;
     SceneLoader._ShowLoadingScreen = true;
     SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
     // Members
+    SceneLoader.OnPluginActivatedObservable = new BABYLON.Observable();
     SceneLoader._registeredPlugins = {};
     BABYLON.SceneLoader = SceneLoader;
     ;

@@ -22,6 +22,10 @@ declare module BABYLON {
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
         /**
+         * Let the user decides if he needs to precompile a material before affecting it to meshes
+         */
+        onMaterialReady: (material: Material, isLOD: boolean) => boolean;
+        /**
          * Raised when all LODs are complete (or if there is no LOD and model is complete)
          */
         onComplete: () => void;

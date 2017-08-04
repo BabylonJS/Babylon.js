@@ -22,6 +22,16 @@
 
     if (!currentHelpCounter) currentHelpCounter = 0;
 
+    // Setting up some GLTF values
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+        if (plugin.name !== "gltf") {
+            return;
+        }
+        plugin.onMaterialReady = function(material, isLOD) {
+            return isLOD; // We want precompilation for LOD levels
+        }
+    });
+
     // Resize
     window.addEventListener("resize", function () {
         engine.resize();

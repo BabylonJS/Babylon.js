@@ -2805,13 +2805,19 @@ var BABYLON;
                                         if (isNew && _this._parent.onMaterialLoaded) {
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
-                                        // Note: Removing force compilation from loader as this will be delegated to users as they
-                                        // may want to add more options to the material before compiling it
-                                        //this.addPendingData(material);
-                                        //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
-                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                        //    this.removePendingData(material);
-                                        //});
+                                        var needToCompile = false;
+                                        if (_this._parent.onMaterialReady) {
+                                            needToCompile = _this._parent.onMaterialReady(babylonMaterial, babylonMultiMaterial.subMaterials[i] != null);
+                                        }
+                                        if (!needToCompile) {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        }
+                                        else {
+                                            // Let's compile first to avoid jittering
+                                            babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
+                                                babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                            });
+                                        }
                                     });
                                 }
                             }
@@ -3246,12 +3252,15 @@ var BABYLON;
                 }
                 this.removeLoaderPendingData(data);
             };
+            GLTFLoader.prototype.addLoaderNonBlockingPendingData = function (data) {
+                if (!this._nonBlockingData) {
+                    this._nonBlockingData = new Array();
+                }
+                this._nonBlockingData.push(data);
+            };
             GLTFLoader.prototype.addLoaderPendingData = function (data) {
                 if (this._blockPendingTracking) {
-                    if (!this._nonBlockingData) {
-                        this._nonBlockingData = new Array();
-                    }
-                    this._nonBlockingData.push(data);
+                    this.addLoaderNonBlockingPendingData(data);
                     return;
                 }
                 this._loaderPendingCount++;
@@ -3264,7 +3273,7 @@ var BABYLON;
                 else if (--this._loaderPendingCount === 0) {
                     this._onLoaderFirstLODComplete();
                 }
-                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
+                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount <= 0) {
                     this._onLoaderComplete();
                     this.dispose();
                 }
@@ -3633,9 +3642,12 @@ var BABYLON;
                     // Clear out the extension so that it won't get loaded again.
                     material.extensions[this.name] = undefined;
                     // Tell the loader not to clear its state until the highest LOD is loaded.
-                    loader.addLoaderPendingData(material);
-                    // Start with the lowest quality LOD.
                     var materialLODs = [material.index].concat(properties.ids);
+                    loader.addLoaderPendingData(material);
+                    for (var index = 0; index < materialLODs.length - 1; index++) {
+                        loader.addLoaderNonBlockingPendingData(index);
+                    }
+                    // Start with the lowest quality LOD.
                     this.loadMaterialLOD(loader, material, materialLODs, materialLODs.length - 1, assign);
                     return true;
                 };
@@ -3647,6 +3659,7 @@ var BABYLON;
                     }
                     loader.loadMaterial(materialLOD, function (babylonMaterial, isNew) {
                         assign(babylonMaterial, isNew);
+                        loader.removeLoaderPendingData(lod);
                         // Loading is considered complete if this is the lowest quality LOD.
                         if (lod === materialLODs.length - 1) {
                             loader.removeLoaderPendingData(material);
@@ -3659,13 +3672,19 @@ var BABYLON;
                         // all active material textures of the current LOD are loaded.
                         loader.executeWhenRenderReady(function () {
                             BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
-                                _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                                setTimeout(function () {
+                                    _this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
+                                }, MSFTLOD.MinimalLODDelay);
                             });
                         });
                     });
                 };
                 return MSFTLOD;
             }(GLTF2.GLTFLoaderExtension));
+            /**
+             * Specify the minimal delay between LODs in ms (default = 250)
+             */
+            MSFTLOD.MinimalLODDelay = 250;
             Extensions.MSFTLOD = MSFTLOD;
             GLTF2.GLTFLoader.RegisterExtension(new MSFTLOD());
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
