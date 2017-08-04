@@ -52279,18 +52279,13 @@ var BABYLON;
                                         if (isNew && _this._parent.onMaterialLoaded) {
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
-                                        var needToCompile = false;
-                                        if (_this._parent.onMaterialReady) {
-                                            needToCompile = _this._parent.onMaterialReady(babylonMaterial, babylonMultiMaterial.subMaterials[i] != null);
-                                        }
-                                        if (!needToCompile) {
-                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                        }
-                                        else {
-                                            // Let's compile first to avoid jittering
-                                            babylonMaterial.forceCompilation(babylonMesh, function (babylonMaterial) {
+                                        if (_this._parent.onBeforeMaterialReadyAsync) {
+                                            _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, function () {
                                                 babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                             });
+                                        }
+                                        else {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                         }
                                     });
                                 }
@@ -52747,7 +52742,7 @@ var BABYLON;
                 else if (--this._loaderPendingCount === 0) {
                     this._onLoaderFirstLODComplete();
                 }
-                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount <= 0) {
+                if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
                     this._onLoaderComplete();
                     this.dispose();
                 }
@@ -53109,7 +53104,7 @@ var BABYLON;
                     // Tell the loader not to clear its state until the highest LOD is loaded.
                     var materialLODs = [material.index].concat(properties.ids);
                     loader.addLoaderPendingData(material);
-                    for (var index = 0; index < materialLODs.length - 1; index++) {
+                    for (var index = 0; index < materialLODs.length; index++) {
                         loader.addLoaderNonBlockingPendingData(index);
                     }
                     // Start with the lowest quality LOD.

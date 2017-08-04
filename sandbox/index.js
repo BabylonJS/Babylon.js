@@ -27,8 +27,12 @@
         if (plugin.name !== "gltf") {
             return;
         }
-        plugin.onMaterialReady = function(material, isLOD) {
-            return isLOD; // We want precompilation for LOD levels
+        plugin.onBeforeMaterialReadyAsync = function(material, mesh, isLOD, callback) {
+            if (!isLOD) {
+                callback();
+                return;
+            }
+            material.forceCompilation(mesh, callback);
         }
     });
 

@@ -413,18 +413,12 @@ module BABYLON.GLTF2 {
                                         this._parent.onMaterialLoaded(babylonMaterial);
                                     }
                                     
-                                    let needToCompile = false;
-                                    if (this._parent.onMaterialReady) {
-                                        needToCompile = this._parent.onMaterialReady(babylonMaterial, babylonMultiMaterial.subMaterials[i] != null);
-                                    }
-
-                                    if (!needToCompile) {
-                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                    } else {
-                                        // Let's compile first to avoid jittering
-                                        babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                    if (this._parent.onBeforeMaterialReadyAsync) {
+                                        this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
                                             babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                         });
+                                    } else {
+                                        babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                     }
                                 });
                             }
