@@ -913,7 +913,7 @@ module BABYLON.GLTF2 {
                 this._onLoaderFirstLODComplete();
             }
 
-            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount <= 0) {
+            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
                 this._onLoaderComplete();
                 this.dispose();
             }

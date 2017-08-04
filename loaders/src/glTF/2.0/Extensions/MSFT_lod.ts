@@ -32,7 +32,7 @@ module BABYLON.GLTF2.Extensions {
             var materialLODs = [material.index, ...properties.ids];
 
             loader.addLoaderPendingData(material);
-            for (var index = 0; index < materialLODs.length - 1; index++) {
+            for (var index = 0; index < materialLODs.length; index++) {
                 loader.addLoaderNonBlockingPendingData(index);
             }
 
