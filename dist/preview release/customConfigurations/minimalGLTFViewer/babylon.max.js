@@ -34929,7 +34929,7 @@ var BABYLON;
             }
             var checkReady = function () {
                 var subMesh = subMeshes[currentIndex];
-                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                if (_this._scene && _this._scene.getEngine() && _this.isReady(subMesh, options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
@@ -49291,7 +49291,7 @@ var BABYLON;
                     var type = fileToLoad.type;
                     var entry = void 0;
                     fileToLoad.correctName = name_1;
-                    if (event.dataTransfer.items) {
+                    if (event.dataTransfer && event.dataTransfer.items) {
                         var item = event.dataTransfer.items[i];
                         if (item.getAsEntry) {
                             entry = item.getAsEntry();
