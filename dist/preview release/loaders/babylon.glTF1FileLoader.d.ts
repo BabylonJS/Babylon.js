@@ -21,7 +21,18 @@ declare module BABYLON {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
+        /**
+         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
+         */
+        onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
+        /**
+         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         */
         onComplete: () => void;
+        /**
+         * Raised when first LOD complete (or if there is no LOD and model is complete)
+         */
+        onFirstLODComplete: () => void;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;

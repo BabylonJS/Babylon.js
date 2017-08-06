@@ -35,7 +35,18 @@ module BABYLON {
         public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
         public onTextureLoaded: (texture: BaseTexture) => void;
         public onMaterialLoaded: (material: Material) => void;
+        /**
+         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
+         */
+        public onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
+        /**
+         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         */
         public onComplete: () => void;
+        /**
+         * Raised when first LOD complete (or if there is no LOD and model is complete)
+         */
+        public onFirstLODComplete: () => void;
 
         public name = "gltf";
 

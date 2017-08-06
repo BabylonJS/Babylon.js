@@ -21,7 +21,18 @@ declare module BABYLON {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
+        /**
+         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
+         */
+        onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
+        /**
+         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         */
         onComplete: () => void;
+        /**
+         * Raised when first LOD complete (or if there is no LOD and model is complete)
+         */
+        onFirstLODComplete: () => void;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
@@ -784,6 +795,8 @@ declare module BABYLON.GLTF2 {
         private _renderReady;
         private _disposed;
         private _objectURLs;
+        private _blockPendingTracking;
+        private _nonBlockingData;
         private _renderReadyObservable;
         private _renderPendingCount;
         private _loaderPendingCount;
@@ -803,6 +816,7 @@ declare module BABYLON.GLTF2 {
         private _onProgress(event);
         private _onRenderReady();
         private _onLoaderComplete();
+        private _onLoaderFirstLODComplete();
         private _loadData(data);
         private _addRightHandToLeftHandRootTransform();
         private _getMeshes();
@@ -828,8 +842,10 @@ declare module BABYLON.GLTF2 {
         private _loadBufferViewAsync(bufferView, byteOffset, byteLength, componentType, onSuccess);
         private _loadAccessorAsync(accessor, onSuccess);
         private _getByteStrideFromType(accessor);
+        blockPendingTracking: boolean;
         addPendingData(data: any): void;
         removePendingData(data: any): void;
+        addLoaderNonBlockingPendingData(data: any): void;
         addLoaderPendingData(data: any): void;
         removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
@@ -884,6 +900,10 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2.Extensions {
     class MSFTLOD extends GLTFLoaderExtension {
+        /**
+         * Specify the minimal delay between LODs in ms (default = 250)
+         */
+        static MinimalLODDelay: number;
         readonly name: string;
         protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private loadMaterialLOD(loader, material, materialLODs, lod, assign);

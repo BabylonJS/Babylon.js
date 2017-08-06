@@ -10555,9 +10555,13 @@ var BABYLON;
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
@@ -24889,7 +24893,9 @@ var BABYLON;
             }
             return result;
         };
-        // Force shader compilation including textures ready check
+        /**
+         * Force shader compilation including textures ready check
+         */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
             var subMesh = new BABYLON.BaseSubMesh();
@@ -24902,7 +24908,7 @@ var BABYLON;
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
                 engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
                 if (_this.storeEffectOnSubMeshes) {
@@ -24926,7 +24932,7 @@ var BABYLON;
                     }
                 }
                 engine.setAlphaTesting(alphaTestState);
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };
@@ -27816,6 +27822,7 @@ var BABYLON;
             //Init vertex buffer cache
             this._vertexBuffers = {};
             this._indices = [];
+            this._updatable = updatable;
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -28327,6 +28334,7 @@ var BABYLON;
         Geometry.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.id = this.id;
+            serializationObject.updatable = this._updatable;
             if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
                 serializationObject.tags = BABYLON.Tags.GetTags(this);
             }
@@ -28604,7 +28612,7 @@ var BABYLON;
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
-            var geometry = new Geometry(parsedVertexData.id, scene);
+            var geometry = new Geometry(parsedVertexData.id, scene, null, parsedVertexData.updatable);
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
             }
@@ -44830,14 +44838,14 @@ var BABYLON;
             var camera;
             if (this.activeCamera) {
                 camera = this.activeCamera;
-                engine.setViewport(this.activeCamera.viewport);
+                engine.setViewport(this.activeCamera.viewport, this._size, this._size);
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
             }
             else {
                 camera = scene.activeCamera;
-                engine.setViewport(scene.activeCamera.viewport);
+                engine.setViewport(scene.activeCamera.viewport, this._size, this._size);
             }
             // Prepare renderingManager
             this._renderingManager.reset();
@@ -46472,6 +46480,36 @@ var BABYLON;
             }
         };
         /**
+         * Force shader compilation including textures ready check
+         */
+        ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
+            var _this = this;
+            var scene = this._scene;
+            var engine = scene.getEngine();
+            var subMeshes = new Array();
+            var currentIndex = 0;
+            for (var _i = 0, _a = this.getShadowMap().renderList; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                subMeshes.push.apply(subMeshes, mesh.subMeshes);
+            }
+            var checkReady = function () {
+                var subMesh = subMeshes[currentIndex];
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(_this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+            if (subMeshes.length > 0) {
+                checkReady();
+            }
+        };
+        /**
          * Boolean : true when the ShadowGenerator is finally computed.
          */
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
@@ -46981,6 +47019,7 @@ var BABYLON;
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
+            SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
             var dataCallback = function (data) {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
@@ -47172,6 +47211,7 @@ var BABYLON;
     SceneLoader._ShowLoadingScreen = true;
     SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
     // Members
+    SceneLoader.OnPluginActivatedObservable = new BABYLON.Observable();
     SceneLoader._registeredPlugins = {};
     BABYLON.SceneLoader = SceneLoader;
     ;
@@ -47783,7 +47823,47 @@ var BABYLON;
             eventDrop.preventDefault();
             this.loadFiles(eventDrop);
         };
+        FilesInput.prototype._handleFolderDrop = function (entry, files, callback) {
+            var reader = entry.createReader(), relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+            reader.readEntries(function (fileEntries) {
+                var remaining = fileEntries.length;
+                for (var _i = 0, fileEntries_1 = fileEntries; _i < fileEntries_1.length; _i++) {
+                    var fileEntry = fileEntries_1[_i];
+                    if (fileEntry.isFile) {
+                        fileEntry.file(function (file) {
+                            file.correctName = relativePath + file.name;
+                            files.push(file);
+                            remaining--;
+                            if (remaining === 0) {
+                                callback();
+                            }
+                        });
+                    }
+                    else {
+                        remaining--;
+                        if (remaining === 0) {
+                            callback();
+                        }
+                    }
+                }
+            });
+        };
+        FilesInput.prototype._processFiles = function (files) {
+            for (var i = 0; i < files.length; i++) {
+                var name = files[i].correctName.toLowerCase();
+                var extension = name.split('.').pop();
+                if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
+                    && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+                    this._sceneFileToLoad = files[i];
+                }
+                else {
+                    FilesInput.FilesToLoad[name] = files[i];
+                }
+            }
+            this.reload();
+        };
         FilesInput.prototype.loadFiles = function (event) {
+            var _this = this;
             if (this._startingProcessingFilesCallback)
                 this._startingProcessingFilesCallback();
             // Handling data transfer via drag'n'drop
@@ -47795,19 +47875,51 @@ var BABYLON;
                 this._filesToLoad = event.target.files;
             }
             if (this._filesToLoad && this._filesToLoad.length > 0) {
+                var files_1 = [];
+                var folders = [];
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    var name_1 = this._filesToLoad[i].name.toLowerCase();
-                    var extension = name_1.split('.').pop();
-                    var type = this._filesToLoad[i].type;
-                    if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
-                        && name_1.indexOf(".binary.babylon") === -1 && name_1.indexOf(".incremental.babylon") === -1) {
-                        this._sceneFileToLoad = this._filesToLoad[i];
+                    var fileToLoad = this._filesToLoad[i];
+                    var name_1 = fileToLoad.name.toLowerCase();
+                    var type = fileToLoad.type;
+                    var entry = void 0;
+                    fileToLoad.correctName = name_1;
+                    if (event.dataTransfer.items) {
+                        var item = event.dataTransfer.items[i];
+                        if (item.getAsEntry) {
+                            entry = item.getAsEntry();
+                        }
+                        else if (item.webkitGetAsEntry) {
+                            entry = item.webkitGetAsEntry();
+                        }
+                    }
+                    if (!entry) {
+                        files_1.push(fileToLoad);
                     }
                     else {
-                        FilesInput.FilesToLoad[name_1] = this._filesToLoad[i];
+                        if (entry.isDirectory) {
+                            folders.push(entry);
+                        }
+                        else {
+                            files_1.push(fileToLoad);
+                        }
                     }
                 }
-                this.reload();
+                if (folders.length === 0) {
+                    this._processFiles(files_1);
+                }
+                else {
+                    var remaining = folders.length;
+                    // Extract folder content
+                    for (var _i = 0, folders_1 = folders; _i < folders_1.length; _i++) {
+                        var folder = folders_1[_i];
+                        this._handleFolderDrop(folder, files_1, function () {
+                            remaining--;
+                            if (remaining === 0) {
+                                _this._processFiles(files_1);
+                            }
+                        });
+                    }
+                }
             }
         };
         FilesInput.prototype.reload = function () {
