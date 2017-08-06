@@ -516,7 +516,9 @@
             return result;
         }
 
-        // Force shader compilation including textures ready check
+        /**
+         * Force shader compilation including textures ready check
+         */
         public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest: boolean, clipPlane: boolean }): void {
             var subMesh = new BaseSubMesh();
             var scene = this.getScene();
@@ -532,7 +534,7 @@
 
                 engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
 
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
                 }
 
@@ -558,7 +560,7 @@
 
                 engine.setAlphaTesting(alphaTestState);
 
-                if (options.clipPlane) {
+                if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };

@@ -66,6 +66,51 @@
             this.loadFiles(eventDrop);
         }
 
+        private _handleFolderDrop(entry: any, files: Array<any>, callback: () => void): void {
+            var reader = entry.createReader(),
+ 			relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+ 			reader.readEntries((fileEntries) => {
+                var remaining = fileEntries.length;
+                for (let fileEntry of fileEntries) {
+                    if (fileEntry.isFile) { // We only support one level
+                        fileEntry.file(function(file) {
+                            file.correctName = relativePath + file.name;
+                            files.push(file);
+            
+                            remaining--;
+
+                            if (remaining === 0) {
+                                callback();
+                            }
+                        });
+                    } else {
+                        remaining--;
+
+                        if (remaining === 0) {
+                            callback();
+                        }
+                    }
+                }
+            });
+        }
+
+        private _processFiles(files: Array<any>): void {
+            for (var i = 0; i < files.length; i++) {
+                var name = files[i].correctName.toLowerCase();
+                var extension = name.split('.').pop();
+                
+                if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb") 
+                    && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+                    this._sceneFileToLoad = files[i];
+                }
+                else {
+                    FilesInput.FilesToLoad[name] = files[i];
+                }
+            }
+
+            this.reload();
+        }
+
         public loadFiles(event): void {
             if (this._startingProcessingFilesCallback) this._startingProcessingFilesCallback();
 
@@ -80,21 +125,53 @@
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
+        
+                let files = [];
+                let folders = [];
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    let name = this._filesToLoad[i].name.toLowerCase();
-                    let extension = name.split('.').pop();
-                    let type = this._filesToLoad[i].type;
+                    let fileToLoad:any =  this._filesToLoad[i];
+                    let name = fileToLoad.name.toLowerCase();
+                    let type = fileToLoad.type;
+                    let entry;
+
+                    fileToLoad.correctName = name;
                     
-                    if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb") 
-                        && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
-                        this._sceneFileToLoad = this._filesToLoad[i];
+                    if (event.dataTransfer && event.dataTransfer.items) {
+                        let item = event.dataTransfer.items[i];
+                        if (item.getAsEntry) {
+                            entry = item.getAsEntry();
+                        } else if (item.webkitGetAsEntry) {
+                            entry = item.webkitGetAsEntry();
+                        }                     
                     }
-                    else {
-                        FilesInput.FilesToLoad[name] = this._filesToLoad[i];
+
+                    if (!entry) {    
+                        files.push(fileToLoad);
+                    } else {
+                        if (entry.isDirectory) {
+                            folders.push(entry);
+                        } else {
+                            files.push(fileToLoad);
+                        }
                     }
                 }
 
-                this.reload();
+                if (folders.length === 0) {
+                    this._processFiles(files);
+                } else {
+                    var remaining = folders.length;
+
+                    // Extract folder content
+                    for (var folder of folders) {
+                        this._handleFolderDrop(folder, files, () => {
+                            remaining--;
+
+                            if (remaining === 0) {
+                                this._processFiles(files);
+                            }
+                        });
+                    }
+                }
             }
         }
 
