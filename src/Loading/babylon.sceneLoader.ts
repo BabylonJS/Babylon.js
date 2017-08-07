@@ -74,6 +74,8 @@
         }
 
         // Members
+        public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
+
         private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
         private static _getDefaultPlugin(): IRegisteredPlugin {
@@ -133,6 +135,8 @@
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database: Database;
+
+            SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
 
             var dataCallback = data => {
                 if (scene.isDisposed) {

@@ -22,6 +22,20 @@
 
     if (!currentHelpCounter) currentHelpCounter = 0;
 
+    // Setting up some GLTF values
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+        if (plugin.name !== "gltf") {
+            return;
+        }
+        plugin.onBeforeMaterialReadyAsync = function(material, mesh, isLOD, callback) {
+            if (!isLOD) {
+                callback();
+                return;
+            }
+            material.forceCompilation(mesh, callback);
+        }
+    });
+
     // Resize
     window.addEventListener("resize", function () {
         engine.resize();
