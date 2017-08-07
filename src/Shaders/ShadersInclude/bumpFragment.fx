@@ -2,7 +2,6 @@
 
 #if defined(BUMP) || defined(PARALLAX)
 	#ifdef NORMALXYSCALE
-		normalW = normalize(normalW * vec3(vBumpInfos.y, vBumpInfos.y, 1.0));
 		float normalScale = 1.0;
 	#else		
 		float normalScale = vBumpInfos.y;
