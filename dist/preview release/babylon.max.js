@@ -14373,6 +14373,9 @@ var BABYLON;
             _this._rigCameras = new Array();
             _this._webvrViewMatrix = BABYLON.Matrix.Identity();
             _this.customRenderTargets = new Array();
+            // Observables
+            _this.onViewMatrixChangedObservable = new BABYLON.Observable();
+            _this.onProjectionMatrixChangedObservable = new BABYLON.Observable();
             // Cache
             _this._computedViewMatrix = BABYLON.Matrix.Identity();
             _this._projectionMatrix = new BABYLON.Matrix();
@@ -14677,10 +14680,11 @@ var BABYLON;
             return BABYLON.Matrix.Identity();
         };
         Camera.prototype.getViewMatrix = function (force) {
-            this._computedViewMatrix = this._computeViewMatrix(force);
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this._computedViewMatrix = this._getViewMatrix();
+            this._currentRenderId = this.getScene().getRenderId();
             this._refreshFrustumPlanes = true;
             if (!this.parent || !this.parent.getWorldMatrix) {
                 this._globalPosition.copyFrom(this.position);
@@ -14698,15 +14702,7 @@ var BABYLON;
             if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
                 this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
             }
-            this._currentRenderId = this.getScene().getRenderId();
-            return this._computedViewMatrix;
-        };
-        Camera.prototype._computeViewMatrix = function (force) {
-            if (!force && this._isSynchronizedViewMatrix()) {
-                return this._computedViewMatrix;
-            }
-            this._computedViewMatrix = this._getViewMatrix();
-            this._currentRenderId = this.getScene().getRenderId();
+            this.onViewMatrixChangedObservable.notifyObservers(this);
             return this._computedViewMatrix;
         };
         Camera.prototype.freezeProjectionMatrix = function (projection) {
@@ -14737,16 +14733,18 @@ var BABYLON;
                 else {
                     BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
                 }
-                return this._projectionMatrix;
-            }
-            var halfWidth = engine.getRenderWidth() / 2.0;
-            var halfHeight = engine.getRenderHeight() / 2.0;
-            if (scene.useRightHandedSystem) {
-                BABYLON.Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             }
             else {
-                BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
+                var halfWidth = engine.getRenderWidth() / 2.0;
+                var halfHeight = engine.getRenderHeight() / 2.0;
+                if (scene.useRightHandedSystem) {
+                    BABYLON.Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
+                }
+                else {
+                    BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
+                }
             }
+            this.onProjectionMatrixChangedObservable.notifyObservers(this);
             return this._projectionMatrix;
         };
         Camera.prototype.getTranformationMatrix = function () {
@@ -14788,6 +14786,9 @@ var BABYLON;
             return new BABYLON.Ray(origin, direction, length);
         };
         Camera.prototype.dispose = function () {
+            // Observables
+            this.onViewMatrixChangedObservable.clear();
+            this.onProjectionMatrixChangedObservable.clear();
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
