@@ -31713,9 +31713,9 @@ var BABYLON;
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < this.speed * BABYLON.Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < this.speed * BABYLON.Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < BABYLON.Epsilon)
                     this.inertialBetaOffset = 0;
                 if (Math.abs(this.inertialRadiusOffset) < this.speed * BABYLON.Epsilon)
                     this.inertialRadiusOffset = 0;
@@ -32804,7 +32804,7 @@ var BABYLON;
                 scene.setTransformMatrix(_this._transformMatrix, scene.getProjectionMatrix());
                 scene.clipPlane = _this.mirrorPlane;
                 scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = BABYLON.Vector3.TransformCoordinates(scene.activeCamera.position, _this._mirrorMatrix);
+                scene._mirroredCameraPosition = BABYLON.Vector3.TransformCoordinates(scene.activeCamera.globalPosition, _this._mirrorMatrix);
             });
             _this.onAfterRenderObservable.add(function () {
                 scene.setTransformMatrix(_this._savedViewMatrix, scene.getProjectionMatrix());
@@ -36974,7 +36974,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position;
+                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
                 effect.setFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, scene._mirroredCameraPosition ? -1 : 1);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
@@ -44104,7 +44104,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
