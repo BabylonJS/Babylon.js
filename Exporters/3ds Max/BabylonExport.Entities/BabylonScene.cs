@@ -171,10 +171,10 @@ namespace BabylonExport.Entities
                 LightsList.Add(light);
             }
 
-            cameras = CamerasList.ToArray();
-            lights = LightsList.ToArray();
+            cameras = (CamerasList.Count > 0) ? CamerasList.ToArray() : null;
+            lights = (LightsList.Count > 0) ? LightsList.ToArray() : null;
 
-            if (activeCameraID == null)
+            if (activeCameraID == null && CamerasList.Count > 0)
             {
                 activeCameraID = CamerasList[0].id;
             }

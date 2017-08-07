@@ -22,6 +22,7 @@
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
+        private _updatable: boolean;
 
         // Cache
         public _positions: Vector3[];
@@ -52,6 +53,7 @@
             //Init vertex buffer cache
             this._vertexBuffers = {};
             this._indices = [];
+            this._updatable = updatable;
 
             // vertexData
             if (vertexData) {
@@ -654,6 +656,7 @@
             var serializationObject: any = {};
 
             serializationObject.id = this.id;
+            serializationObject.updatable = this._updatable;
 
             if (Tags && Tags.HasTags(this)) {
                 serializationObject.tags = Tags.GetTags(this);
@@ -993,7 +996,7 @@
                 return null; // null since geometry could be something else than a box...
             }
 
-            var geometry = new Geometry(parsedVertexData.id, scene);
+            var geometry = new Geometry(parsedVertexData.id, scene, null, parsedVertexData.updatable);
 
             if (Tags) {
                 Tags.AddTagsTo(geometry, parsedVertexData.tags);

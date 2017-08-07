@@ -528,7 +528,7 @@
             var checkReady = () => {
                 let subMesh = subMeshes[currentIndex];
 
-                if (this.isReady(subMesh, options ? options.useInstances : false)) {
+                if (this._scene && this._scene.getEngine() && this.isReady(subMesh, options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {

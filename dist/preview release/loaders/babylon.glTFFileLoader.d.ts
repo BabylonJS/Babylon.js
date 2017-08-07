@@ -22,6 +22,10 @@ declare module BABYLON {
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
         /**
+         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
+         */
+        onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
+        /**
          * Raised when all LODs are complete (or if there is no LOD and model is complete)
          */
         onComplete: () => void;
@@ -841,6 +845,7 @@ declare module BABYLON.GLTF2 {
         blockPendingTracking: boolean;
         addPendingData(data: any): void;
         removePendingData(data: any): void;
+        addLoaderNonBlockingPendingData(data: any): void;
         addLoaderPendingData(data: any): void;
         removeLoaderPendingData(data: any): void;
         private _getDefaultMaterial();
@@ -895,6 +900,10 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2.Extensions {
     class MSFTLOD extends GLTFLoaderExtension {
+        /**
+         * Specify the minimal delay between LODs in ms (default = 250)
+         */
+        static MinimalLODDelay: number;
         readonly name: string;
         protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private loadMaterialLOD(loader, material, materialLODs, lod, assign);

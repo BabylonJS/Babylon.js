@@ -412,14 +412,14 @@ module BABYLON.GLTF2 {
                                     if (isNew && this._parent.onMaterialLoaded) {
                                         this._parent.onMaterialLoaded(babylonMaterial);
                                     }
-
-                                    // Note: Removing force compilation from loader as this will be delegated to users as they
-                                    // may want to add more options to the material before compiling it
-                                    //this.addPendingData(material);
-                                    //babylonMaterial.forceCompilation(babylonMesh, babylonMaterial => {
+                                    
+                                    if (this._parent.onBeforeMaterialReadyAsync) {
+                                        this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
+                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                        });
+                                    } else {
                                         babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                    //    this.removePendingData(material);
-                                    //});
+                                    }
                                 });
                             }
                         }
@@ -884,12 +884,16 @@ module BABYLON.GLTF2 {
             this.removeLoaderPendingData(data);
         }
 
+        public addLoaderNonBlockingPendingData(data: any): void {
+            if (!this._nonBlockingData) {
+                this._nonBlockingData = new Array<any>();
+            }
+            this._nonBlockingData.push(data);
+        }
+
         public addLoaderPendingData(data: any) {
             if (this._blockPendingTracking) {
-                if (!this._nonBlockingData) {
-                    this._nonBlockingData = new Array<any>();
-                }
-                this._nonBlockingData.push(data);
+                this.addLoaderNonBlockingPendingData(data);
                 return;
             }            
             this._loaderPendingCount++;
