@@ -324,9 +324,9 @@ module BABYLON {
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < this.speed * Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < this.speed * Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < Epsilon)
                     this.inertialBetaOffset = 0;
                 if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon)
                     this.inertialRadiusOffset = 0;
