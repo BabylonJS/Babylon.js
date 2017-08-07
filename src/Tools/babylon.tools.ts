@@ -849,7 +849,7 @@
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
-            texture.renderList = scene.meshes;
+            texture.renderList = null;
             texture.samples = samples;
 
             texture.onAfterRenderObservable.add(() => {
