@@ -987,7 +987,7 @@
                     weight += matricesWeights[i + j];
                 }
 
-                matricesWeights[i + (influencers - 1)] = Math.max(0, 1.0 - weight);
+                matricesWeights[i + (influencers - 1)] += Math.max(0, 1.0 - weight);
             }
         }
 

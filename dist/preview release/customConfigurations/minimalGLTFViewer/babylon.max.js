@@ -6116,7 +6116,7 @@ var BABYLON;
             }
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
-            texture.renderList = scene.meshes;
+            texture.renderList = null;
             texture.samples = samples;
             texture.onAfterRenderObservable.add(function () {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
@@ -28605,7 +28605,7 @@ var BABYLON;
                 for (var j = 0; j < influencers - 1; j++) {
                     weight += matricesWeights[i + j];
                 }
-                matricesWeights[i + (influencers - 1)] = Math.max(0, 1.0 - weight);
+                matricesWeights[i + (influencers - 1)] += Math.max(0, 1.0 - weight);
             }
         };
         Geometry.Parse = function (parsedVertexData, scene, rootUrl) {
