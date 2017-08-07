@@ -3,10 +3,20 @@
 module BABYLON.GUI {
     export class StackPanel extends Container {
         private _isVertical = true;
+        private _manualWidth = false;
+        private _manualHeight = false;
         private _tempMeasureStore = Measure.Empty();
 
         public get isVertical(): boolean {
             return this._isVertical;
+        }
+
+        public get manualWidth(): boolean {
+            return this._manualWidth;
+        }
+
+        public get manualHeight(): boolean {
+            return this._manualHeight;
         }
 
         public set isVertical(value: boolean) {
@@ -16,7 +26,25 @@ module BABYLON.GUI {
 
             this._isVertical = value;
             this._markAsDirty();
-        }           
+        }
+
+        public set manualWidth(value: boolean) {
+            if (this._manualWidth === value) {
+                return;
+            }
+
+            this._manualWidth = value;
+            this._markAsDirty();
+        }  
+
+        public set manualHeight(value: boolean) {
+            if (this._manualHeight === value) {
+                return;
+            }
+
+            this._manualHeight = value;
+            this._markAsDirty();
+        }        
     
         constructor(public name?: string) {
             super(name);
@@ -60,20 +88,25 @@ module BABYLON.GUI {
 
                 child._currentMeasure.copyFrom(this._tempMeasureStore);
             }
+            // Let stack panel width and height default to stackHeight and stackWidth if dimensions are not specified.
+            // User can now define their own height and width for stack panel.
+            if(!this._manualHeight) {
+                // do not specify height if strictly defined by user
+                this.height = stackHeight + "px";
+            }
+            if(!this._manualWidth) {
+                // do not specify width if strictly defined by user
+                this.width = stackWidth + "px";
+            }
 
             let panelChanged = false;
             if (this._isVertical) {
                 let previousHeight = this.height;
-                this.height = stackHeight + "px";
-                this.width = stackWidth + "px";
-                
                 panelChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
 
                 this._height.ignoreAdaptiveScaling = true;
             } else {
                 let previousWidth = this.width;
-                this.width = stackWidth + "px";
-                this.height = stackHeight + "px";
                 panelChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
 
                 this._width.ignoreAdaptiveScaling = true;
