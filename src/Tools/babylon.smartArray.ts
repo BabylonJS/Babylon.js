@@ -50,7 +50,11 @@
 
         public dispose(): void {
             this.reset();
-            this.data.length = 0;
+
+            if (this.data) {
+                this.data.length = 0;
+                this.data = null;
+            }
         }
 
         public concat(array: any): void {

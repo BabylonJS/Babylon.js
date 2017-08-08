@@ -3277,6 +3277,8 @@
             this._activeParticleSystems.dispose();
             this._activeSkeletons.dispose();
             this._softwareSkinnedMeshes.dispose();
+            this._renderTargets.dispose();
+
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();
             }
@@ -3325,6 +3327,12 @@
             }
 
             // Release materials
+            if (this.defaultMaterial) {
+                this.defaultMaterial.dispose()
+            }
+            while (this.multiMaterials.length) {
+                this.multiMaterials[0].dispose();
+            }
             while (this.materials.length) {
                 this.materials[0].dispose();
             }
@@ -3372,6 +3380,10 @@
 
             this._engine.wipeCaches();
             this._engine = null;
+
+            this.defaultMaterial = null;
+            this.multiMaterials = null;
+            this.materials = null;
         }
 
         public get isDisposed(): boolean {
