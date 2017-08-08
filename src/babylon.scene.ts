@@ -3260,6 +3260,8 @@
 
             this.importedMeshesFiles = new Array<string>();
 
+            this.resetCachedMaterial();
+
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
