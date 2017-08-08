@@ -2,6 +2,43 @@
     var __decoratorInitialStore = {};
     var __mergedStore = {};
 
+    var _copySource = function<T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+        var destination = creationFunction();
+
+        // Tags
+        if (Tags) {
+            Tags.AddTagsTo(destination, (<any>source).tags);
+        }
+
+        var classStore = getMergedStore(destination);
+
+        // Properties
+        for (var property in classStore) {
+            var propertyDescriptor = classStore[property];
+            var sourceProperty = source[property];
+            var propertyType = propertyDescriptor.type;
+
+            if (sourceProperty !== undefined && sourceProperty !== null) {
+                switch (propertyType) {
+                    case 0:     // Value
+                    case 6:     // Mesh reference
+                        destination[property] = sourceProperty;
+                        break;
+                    case 1:     // Texture
+                    case 2:     // Color3
+                    case 3:     // FresnelParameters
+                    case 4:     // Vector2
+                    case 5:     // Vector3
+                    case 7:     // Color Curves
+                        destination[property] = instanciate?sourceProperty:sourceProperty.clone();
+                        break;
+                }
+            }
+        }
+
+        return destination;
+    };
+
     function getDirectStore(target: any): any {
         var classKey = target.getClassName();
 
@@ -255,40 +292,11 @@
         }
 
         public static Clone<T>(creationFunction: () => T, source: T): T {
-            var destination = creationFunction();
+            return _copySource(creationFunction, source, false);
+        }
 
-            // Tags
-            if (Tags) {
-                Tags.AddTagsTo(destination, (<any>source).tags);
-            }
-            
-            var classStore = getMergedStore(destination);
-
-            // Properties
-            for (var property in classStore) {
-                var propertyDescriptor = classStore[property];
-                var sourceProperty = source[property];
-                var propertyType = propertyDescriptor.type;
-
-                if (sourceProperty !== undefined && sourceProperty !== null) {
-                    switch (propertyType) {
-                        case 0:     // Value
-                        case 6:     // Mesh reference
-                            destination[property] = sourceProperty;
-                            break;
-                        case 1:     // Texture
-                        case 2:     // Color3
-                        case 3:     // FresnelParameters
-                        case 4:     // Vector2
-                        case 5:     // Vector3
-                        case 7:     // Color Curves
-                            destination[property] = sourceProperty.clone();
-                            break;
-                    }
-                }
-            }
-
-            return destination;
+        public static Instanciate<T>(creationFunction: () => T, source: T): T {
+            return _copySource(creationFunction, source, true);
         }
     }
 }

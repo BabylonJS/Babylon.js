@@ -1422,7 +1422,9 @@
                     "../../gui/src/controls/colorPicker.ts",
                     "../../gui/src/controls/inputText.ts"
                 ],
-                "output": "babylon.gui.js"
+                "output": "babylon.gui.js",
+                "buildAsModule": "true",
+                "moduleDeclaration": "BABYLON.GUI"
             }
         ],
         "build": {

@@ -2806,8 +2806,10 @@ var BABYLON;
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
                                         if (_this._parent.onBeforeMaterialReadyAsync) {
+                                            _this.addLoaderPendingData(material);
                                             _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, function () {
                                                 babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                                _this.removeLoaderPendingData(material);
                                             });
                                         }
                                         else {
