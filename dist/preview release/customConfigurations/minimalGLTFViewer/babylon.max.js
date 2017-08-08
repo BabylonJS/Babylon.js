@@ -28603,10 +28603,16 @@ var BABYLON;
             var size = matricesWeights.length;
             for (var i = 0; i < size; i += influencers) {
                 var weight = 0;
+                var biggerIndex = 0;
+                var biggerWeight = 0;
                 for (var j = 0; j < influencers - 1; j++) {
                     weight += matricesWeights[i + j];
+                    if (matricesWeights[i + j] > biggerWeight) {
+                        biggerWeight = matricesWeights[i + j];
+                        biggerIndex = i + j;
+                    }
                 }
-                matricesWeights[i + (influencers - 1)] += Math.max(0, 1.0 - weight);
+                matricesWeights[biggerIndex] += Math.max(0, 1.0 - weight);
             }
         };
         Geometry.Parse = function (parsedVertexData, scene, rootUrl) {
