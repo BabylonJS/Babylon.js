@@ -321,7 +321,18 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(rename({ extname: ".d.ts" }))
             .pipe(gulp.dest(outputDirectory));
 
-        var waitAll = merge2([dev, code, css, dts]);
+        var waitAll;
+
+        if (library.buildAsModule) {
+            var dts2 = tsProcess.dts
+            .pipe(concat(library.output))
+            .pipe(addDtsExport(library.moduleDeclaration))
+            .pipe(rename({ extname: ".module.d.ts" }))
+            .pipe(gulp.dest(outputDirectory));
+            waitAll = merge2([dev, code, css, dts, dts2]);
+        } else {
+            waitAll = merge2([dev, code, css, dts]);
+        }
 
         if (library.webpack) {
             return waitAll.on('end', function () {

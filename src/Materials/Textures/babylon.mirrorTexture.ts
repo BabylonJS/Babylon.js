@@ -73,7 +73,7 @@ module BABYLON {
 
                 scene.getEngine().cullBackFaces = false;
 
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, this._mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.globalPosition, this._mirrorMatrix);
             });
 
             this.onAfterRenderObservable.add(() => {

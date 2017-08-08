@@ -5,6 +5,8 @@
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
+- Added `camera.onViewMatrixChangedObservable` and `camera.onProjectionMatrixChangedObservable` ([deltakosh](https://github.com/deltakosh))
+- Added support for folders when drag'n'dropping into the sandbox ([deltakosh](https://github.com/deltakosh))
 - Better serialization support ([deltakosh](https://github.com/deltakosh))
 - Introduced `performanceMonitor` class to get better FPS analysis ([deltakosh](https://github.com/deltakosh))
 - GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))

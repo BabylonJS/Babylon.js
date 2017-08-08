@@ -41,11 +41,15 @@
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
-
 		map.x = vNormalReoderParams.x + vNormalReoderParams.y * map.x;
 		map.y = vNormalReoderParams.z + vNormalReoderParams.w * map.y;
 
 		map = map * 255. / 127. - 128. / 127.;
+
+		#ifdef NORMALXYSCALE
+			map = normalize(map * vec3(vBumpInfos.y, vBumpInfos.y, 1.0));
+		#endif
+
 		return normalize(cotangentFrame * map);
 	}
 

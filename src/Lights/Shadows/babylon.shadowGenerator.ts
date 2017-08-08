@@ -520,12 +520,15 @@
             var subMeshes = new Array<SubMesh>();
             var currentIndex = 0;
 
-
             for(var mesh of this.getShadowMap().renderList) {
                 subMeshes.push(...mesh.subMeshes);
             }
 
             var checkReady = () => {
+                if (!this._scene || !this._scene.getEngine()) {
+                    return;
+                }
+
                 let subMesh = subMeshes[currentIndex];
 
                 if (this.isReady(subMesh, options ? options.useInstances : false)) {
@@ -541,7 +544,7 @@
             };
 
             if (subMeshes.length > 0) {
-                checkReady();            
+                checkReady();
             }
         }
 
