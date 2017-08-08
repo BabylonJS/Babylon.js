@@ -5747,7 +5747,7 @@ var BABYLON;
                     noIndexedDB();
                 }
                 else {
-                    var textureName = url.substring(5).toLowerCase();
+                    var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (BABYLON.FilesInput.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
@@ -5806,7 +5806,7 @@ var BABYLON;
                 database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
             };
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5).toLowerCase();
+                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (BABYLON.FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }
