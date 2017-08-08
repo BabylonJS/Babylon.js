@@ -560,6 +560,8 @@
 
             this.clearPostProcesses(true);
 
+            this.renderList = null;
+
             // Remove from custom render targets
             var scene = this.getScene();
             var index = scene.customRenderTargets.indexOf(this);

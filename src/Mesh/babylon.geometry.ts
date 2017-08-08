@@ -980,6 +980,9 @@
         }
 
         private static _CleanMatricesWeights(matricesWeights: number[], influencers: number): void {
+            if (!SceneLoader.CleanBoneMatrixWeights) {
+                return;
+            }
             let size = matricesWeights.length;
             for (var i = 0; i < size; i += influencers) {
                 let weight = 0;
