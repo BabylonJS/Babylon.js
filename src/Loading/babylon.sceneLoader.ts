@@ -30,6 +30,7 @@
         // Flags
         private static _ForceFullSceneLoadingForIncremental = false;
         private static _ShowLoadingScreen = true;
+        private static _CleanBoneMatrixWeights = false;
 
         public static get NO_LOGGING(): number {
             return 0;
@@ -57,7 +58,7 @@
             SceneLoader._ForceFullSceneLoadingForIncremental = value;
         }
 
-        public static get ShowLoadingScreen() {
+        public static get ShowLoadingScreen(): boolean {
             return SceneLoader._ShowLoadingScreen;
         }
 
@@ -65,13 +66,21 @@
             SceneLoader._ShowLoadingScreen = value;
         }
 
-        public static get loggingLevel() {
+        public static get loggingLevel(): number {
             return SceneLoader._loggingLevel;
         }
 
         public static set loggingLevel(value: number) {
             SceneLoader._loggingLevel = value;
         }
+
+        public static get CleanBoneMatrixWeights(): boolean {
+            return SceneLoader._CleanBoneMatrixWeights;
+        }
+
+        public static set CleanBoneMatrixWeights(value: boolean) {
+            SceneLoader._CleanBoneMatrixWeights = value;
+        }        
 
         // Members
         public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
