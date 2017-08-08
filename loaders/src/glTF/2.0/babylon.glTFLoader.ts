@@ -414,8 +414,10 @@ module BABYLON.GLTF2 {
                                     }
                                     
                                     if (this._parent.onBeforeMaterialReadyAsync) {
+                                        this.addLoaderPendingData(material);
                                         this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
                                             babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                            this.removeLoaderPendingData(material);
                                         });
                                     } else {
                                         babylonMultiMaterial.subMaterials[i] = babylonMaterial;

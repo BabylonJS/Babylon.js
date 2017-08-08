@@ -24903,6 +24903,9 @@ var BABYLON;
             var scene = this.getScene();
             var engine = scene.getEngine();
             var checkReady = function () {
+                if (!_this._scene || !_this._scene.getEngine()) {
+                    return;
+                }
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
@@ -34935,8 +34938,11 @@ var BABYLON;
                 subMeshes.push.apply(subMeshes, mesh.subMeshes);
             }
             var checkReady = function () {
+                if (!_this._scene || !_this._scene.getEngine()) {
+                    return;
+                }
                 var subMesh = subMeshes[currentIndex];
-                if (_this._scene && _this._scene.getEngine() && _this.isReady(subMesh, options ? options.useInstances : false)) {
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
@@ -52359,8 +52365,10 @@ var BABYLON;
                                             _this._parent.onMaterialLoaded(babylonMaterial);
                                         }
                                         if (_this._parent.onBeforeMaterialReadyAsync) {
+                                            _this.addLoaderPendingData(material);
                                             _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, function () {
                                                 babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                                _this.removeLoaderPendingData(material);
                                             });
                                         }
                                         else {
