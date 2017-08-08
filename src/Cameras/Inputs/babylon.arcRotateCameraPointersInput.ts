@@ -229,6 +229,8 @@ module BABYLON {
             Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
+
+            this.camera = null;
         }
 
         getClassName(): string {

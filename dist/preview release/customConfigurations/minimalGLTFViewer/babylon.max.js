@@ -5344,7 +5344,10 @@ var BABYLON;
         };
         SmartArray.prototype.dispose = function () {
             this.reset();
-            this.data.length = 0;
+            if (this.data) {
+                this.data.length = 0;
+                this.data = null;
+            }
         };
         SmartArray.prototype.concat = function (array) {
             if (array.length === 0) {
@@ -10716,6 +10719,14 @@ var BABYLON;
             if (index >= 0) {
                 Engine.Instances.splice(index, 1);
             }
+            this._workingCanvas = null;
+            this._workingContext = null;
+            this._currentBufferPointers = null;
+            this._renderingCanvas = null;
+            this._currentProgram = null;
+            this.onResizeObservable.clear();
+            this.onCanvasBlurObservable.clear();
+            BABYLON.Effect.ResetCache();
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
@@ -14807,6 +14818,14 @@ var BABYLON;
             while (--i >= 0) {
                 this._postProcesses[i].dispose(this);
             }
+            // Render targets
+            var i = this.customRenderTargets.length;
+            while (--i >= 0) {
+                this.customRenderTargets[i].dispose();
+            }
+            this.customRenderTargets = [];
+            // Active Meshes
+            this._activeMeshes.dispose();
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(Camera.prototype, "leftCamera", {
@@ -18502,6 +18521,7 @@ var BABYLON;
             this._activeParticleSystems.dispose();
             this._activeSkeletons.dispose();
             this._softwareSkinnedMeshes.dispose();
+            this._renderTargets.dispose();
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();
             }
@@ -18540,6 +18560,12 @@ var BABYLON;
                 this.cameras[0].dispose();
             }
             // Release materials
+            if (this.defaultMaterial) {
+                this.defaultMaterial.dispose();
+            }
+            while (this.multiMaterials.length) {
+                this.multiMaterials[0].dispose();
+            }
             while (this.materials.length) {
                 this.materials[0].dispose();
             }
@@ -18577,6 +18603,9 @@ var BABYLON;
             }
             this._engine.wipeCaches();
             this._engine = null;
+            this.defaultMaterial = null;
+            this.multiMaterials = null;
+            this.materials = null;
         };
         Object.defineProperty(Scene.prototype, "isDisposed", {
             get: function () {
@@ -20029,6 +20058,15 @@ var BABYLON;
         };
         Texture.prototype.getClassName = function () {
             return "Texture";
+        };
+        Texture.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            if (this.onLoadObservable) {
+                this.onLoadObservable.clear();
+                this._onLoadObservable = null;
+            }
+            this._delayedOnLoad = null;
+            this._delayedOnError = null;
         };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError, format) {
@@ -24076,6 +24114,9 @@ var BABYLON;
             }
             // Recombine
             return this._recombineShader(root);
+        };
+        Effect.ResetCache = function () {
+            Effect._baseCache = {};
         };
         return Effect;
     }());
@@ -31392,6 +31433,7 @@ var BABYLON;
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
+            this.camera = null;
         };
         ArcRotateCameraPointersInput.prototype.getClassName = function () {
             return "ArcRotateCameraPointersInput";
@@ -35990,6 +36032,17 @@ var BABYLON;
                 }
             }
             return serializationObject;
+        };
+        MultiMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+            var index = scene.multiMaterials.indexOf(this);
+            if (index >= 0) {
+                scene.multiMaterials.splice(index, 1);
+            }
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         return MultiMaterial;
     }(BABYLON.Material));

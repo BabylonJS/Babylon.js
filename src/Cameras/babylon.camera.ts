@@ -564,6 +564,16 @@
                 this._postProcesses[i].dispose(this);
             }
 
+            // Render targets
+            var i = this.customRenderTargets.length;
+            while (--i >= 0) {
+                this.customRenderTargets[i].dispose();
+            }
+            this.customRenderTargets = [];
+
+            // Active Meshes
+            this._activeMeshes.dispose();
+
             super.dispose();
         }
 
