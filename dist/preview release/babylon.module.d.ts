@@ -4106,134 +4106,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class PhysicsViewer {
-        protected _impostors: Array<PhysicsImpostor>;
-        protected _meshes: Array<AbstractMesh>;
-        protected _scene: Scene;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: PhysicsImpostor): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Ray;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
-}
-
 declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
@@ -4604,6 +4476,134 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class PhysicsViewer {
+        protected _impostors: Array<PhysicsImpostor>;
+        protected _meshes: Array<AbstractMesh>;
+        protected _scene: Scene;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: PhysicsImpostor): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Ray;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
 declare module BABYLON {
     class LensFlare {
         size: number;
@@ -4646,103 +4646,6 @@ declare module BABYLON {
         dispose(): void;
         static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
         serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPlugin {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError: (message: string) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError: (message: string) => void) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
     }
 }
 
@@ -5276,6 +5179,105 @@ declare module BABYLON {
          * Return the SpotLight.
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError: (message: string) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError: (message: string) => void) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
     }
 }
 
@@ -12171,6 +12173,468 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Float32Array | number[]): void;
+        getPositions(): Float32Array;
+        setNormals(data: Float32Array | number[]): void;
+        getNormals(): Float32Array;
+        setTangents(data: Float32Array | number[]): void;
+        getTangents(): Float32Array;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Scene);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _onInfluenceChanged(needUpdate);
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
+        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): any;
+        setTimeStep(timeStep: number): any;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        generatePhysicsBody(impostor: PhysicsImpostor): any;
+        removePhysicsBody(impostor: PhysicsImpostor): any;
+        generateJoint(joint: PhysicsImpostorJoint): any;
+        removeJoint(joint: PhysicsImpostorJoint): any;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
+        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
+        getBodyMass(impostor: PhysicsImpostor): any;
+        getBodyFriction(impostor: PhysicsImpostor): any;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): any;
+        getBodyRestitution(impostor: PhysicsImpostor): any;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): any;
+        sleepBody(impostor: PhysicsImpostor): any;
+        wakeUpBody(impostor: PhysicsImpostor): any;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): any;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): any;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): any;
+        dispose(): any;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo?(): BoundingInfo;
+        computeWorldMatrix?(force: boolean): void;
+        getWorldMatrix?(): Matrix;
+        getChildMeshes?(): Array<AbstractMesh>;
+        getVerticesData?(kind: string): Array<number> | Float32Array;
+        getIndices?(): IndicesArray;
+        getScene?(): Scene;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        static IDENTITY_QUATERNION: Quaternion;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        private _isDisposed;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        readonly isDisposed: boolean;
+        mass: number;
+        friction: number;
+        restitution: number;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: PhysicsImpostor;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Vector3;
+        setLinearVelocity(velocity: Vector3): void;
+        getAngularVelocity(): Vector3;
+        setAngularVelocity(velocity: Vector3): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpPositionWithDelta;
+        private _tmpRotationWithDelta;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        /**
+         * Legacy collision detection event support
+         */
+        onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): void;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): void;
+        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        getBoxSizeToRef(result: Vector3): void;
+        getRadius(): number;
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+    }
+}
+
+declare module BABYLON {
     class GPUParticleSystem implements IDisposable, IParticleSystem {
         name: string;
         id: string;
@@ -12663,468 +13127,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Float32Array | number[]): void;
-        getPositions(): Float32Array;
-        setNormals(data: Float32Array | number[]): void;
-        getNormals(): Float32Array;
-        setTangents(data: Float32Array | number[]): void;
-        getTangents(): Float32Array;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Scene);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _onInfluenceChanged(needUpdate);
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
-        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): any;
-        setTimeStep(timeStep: number): any;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        generatePhysicsBody(impostor: PhysicsImpostor): any;
-        removePhysicsBody(impostor: PhysicsImpostor): any;
-        generateJoint(joint: PhysicsImpostorJoint): any;
-        removeJoint(joint: PhysicsImpostorJoint): any;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
-        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
-        getBodyMass(impostor: PhysicsImpostor): any;
-        getBodyFriction(impostor: PhysicsImpostor): any;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): any;
-        getBodyRestitution(impostor: PhysicsImpostor): any;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): any;
-        sleepBody(impostor: PhysicsImpostor): any;
-        wakeUpBody(impostor: PhysicsImpostor): any;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): any;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): any;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): any;
-        dispose(): any;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo?(): BoundingInfo;
-        computeWorldMatrix?(force: boolean): void;
-        getWorldMatrix?(): Matrix;
-        getChildMeshes?(): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): IndicesArray;
-        getScene?(): Scene;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        static IDENTITY_QUATERNION: Quaternion;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        private _isDisposed;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        readonly isDisposed: boolean;
-        mass: number;
-        friction: number;
-        restitution: number;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: PhysicsImpostor;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Vector3;
-        setLinearVelocity(velocity: Vector3): void;
-        getAngularVelocity(): Vector3;
-        setAngularVelocity(velocity: Vector3): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpPositionWithDelta;
-        private _tmpRotationWithDelta;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        /**
-         * Legacy collision detection event support
-         */
-        onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): void;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): void;
-        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        getBoxSizeToRef(result: Vector3): void;
-        getRadius(): number;
-        /**
-         * Sync a bone with this impostor
-         * @param bone The bone to sync to the impostor.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         */
-        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
-        /**
-         * Sync impostor to a bone
-         * @param bone The bone that the impostor will be synced to.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param boneAxis Optional vector3 axis the bone is aligned with
-         */
-        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
-    }
-}
-
-declare module BABYLON {
     class ReflectionProbe {
         name: string;
         private _scene;
@@ -13151,6 +13153,274 @@ declare module BABYLON {
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBoxRenderer {
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _scene;
+        private _colorShader;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(scene: Scene);
+        private _prepareRessources();
+        reset(): void;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        constructor(scene: Scene, type?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getDepthMap(): RenderTargetTexture;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        private _source;
+        private _linesPositions;
+        private _linesNormals;
+        private _linesIndices;
+        private _epsilon;
+        private _indicesCount;
+        private _lineShader;
+        private _ib;
+        private _buffers;
+        private _checkVerticesInsteadOfIndices;
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        private _prepareRessources();
+        dispose(): void;
+        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
+        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
+        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    class GeometryBufferRenderer {
+        private _scene;
+        private _multiRenderTarget;
+        private _effect;
+        private _ratio;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        private _enablePosition;
+        renderList: Mesh[];
+        readonly isSupported: boolean;
+        enablePosition: boolean;
+        constructor(scene: Scene, ratio?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getGBuffer(): MultiRenderTarget;
+        dispose(): void;
+        private _createRenderTargets();
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        zOffset: number;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _particleSystems;
+        private _spriteManagers;
+        private _activeVertices;
+        private _opaqueSortCompareFn;
+        private _alphaTestSortCompareFn;
+        private _transparentSortCompareFn;
+        private _renderOpaque;
+        private _renderAlphaTest;
+        private _renderTransparent;
+        private _edgesRenderers;
+        onBeforeTransparentRendering: () => void;
+        /**
+         * Set the opaque sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Set the alpha test sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Set the transparent sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Creates a new rendering group.
+         * @param index The rendering group index
+         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
+         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
+         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
+         */
+        constructor(index: number, scene: Scene, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number);
+        /**
+         * Render all the sub meshes contained in the group.
+         * @param customRenderFunction Used to override the default render behaviour of the group.
+         * @returns true if rendered some submeshes.
+         */
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void;
+        /**
+         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderOpaqueSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderAlphaTestSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderTransparentSorted(subMeshes);
+        /**
+         * Renders the submeshes in a specified order.
+         * @param subMeshes The submeshes to sort before render
+         * @param sortCompareFn The comparison function use to sort
+         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
+         */
+        private static renderSorted(subMeshes, sortCompareFn, cameraPosition, transparent);
+        /**
+         * Renders the submeshes in the order they were dispatched (no sort applied).
+         * @param subMeshes The submeshes to render
+         */
+        private static renderUnsorted(subMeshes);
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front if in the same alpha index.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered front to back (prevent overdraw).
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Resets the different lists of submeshes to prepare a new frame.
+         */
+        prepare(): void;
+        dispose(): void;
+        /**
+         * Inserts the submesh in its correct queue depending on its material.
+         * @param subMesh The submesh to dispatch
+         */
+        dispatch(subMesh: SubMesh): void;
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        private _renderParticles(activeMeshes);
+        private _renderSprites();
+    }
+}
+
+declare module BABYLON {
+    class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
+        static MAX_RENDERINGGROUPS: number;
+        /**
+         * The min id used for rendering groups (included)
+         */
+        static MIN_RENDERINGGROUPS: number;
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        static AUTOCLEAR: boolean;
+        private _scene;
+        private _renderingGroups;
+        private _depthStencilBufferAlreadyCleaned;
+        private _currentIndex;
+        private _autoClearDepthStencil;
+        private _customOpaqueSortCompareFn;
+        private _customAlphaTestSortCompareFn;
+        private _customTransparentSortCompareFn;
+        private _renderinGroupInfo;
+        constructor(scene: Scene);
+        private _clearDepthStencilBuffer(depth?, stencil?);
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispose(): void;
+        private _prepareRenderingGroup(renderingGroupId);
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        dispatch(subMesh: SubMesh): void;
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
     }
 }
 
@@ -13674,274 +13944,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class BoundingBoxRenderer {
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _scene;
-        private _colorShader;
-        private _vertexBuffers;
-        private _indexBuffer;
-        constructor(scene: Scene);
-        private _prepareRessources();
-        reset(): void;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        constructor(scene: Scene, type?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getDepthMap(): RenderTargetTexture;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        private _source;
-        private _linesPositions;
-        private _linesNormals;
-        private _linesIndices;
-        private _epsilon;
-        private _indicesCount;
-        private _lineShader;
-        private _ib;
-        private _buffers;
-        private _checkVerticesInsteadOfIndices;
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        private _prepareRessources();
-        dispose(): void;
-        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
-        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
-        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
-        _generateEdgesLines(): void;
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    class GeometryBufferRenderer {
-        private _scene;
-        private _multiRenderTarget;
-        private _effect;
-        private _ratio;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        private _enablePosition;
-        renderList: Mesh[];
-        readonly isSupported: boolean;
-        enablePosition: boolean;
-        constructor(scene: Scene, ratio?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getGBuffer(): MultiRenderTarget;
-        dispose(): void;
-        private _createRenderTargets();
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        zOffset: number;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _particleSystems;
-        private _spriteManagers;
-        private _activeVertices;
-        private _opaqueSortCompareFn;
-        private _alphaTestSortCompareFn;
-        private _transparentSortCompareFn;
-        private _renderOpaque;
-        private _renderAlphaTest;
-        private _renderTransparent;
-        private _edgesRenderers;
-        onBeforeTransparentRendering: () => void;
-        /**
-         * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Creates a new rendering group.
-         * @param index The rendering group index
-         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
-         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
-         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
-         */
-        constructor(index: number, scene: Scene, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number);
-        /**
-         * Render all the sub meshes contained in the group.
-         * @param customRenderFunction Used to override the default render behaviour of the group.
-         * @returns true if rendered some submeshes.
-         */
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void;
-        /**
-         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderOpaqueSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderAlphaTestSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderTransparentSorted(subMeshes);
-        /**
-         * Renders the submeshes in a specified order.
-         * @param subMeshes The submeshes to sort before render
-         * @param sortCompareFn The comparison function use to sort
-         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-         * @param transparent Specifies to activate blending if true
-         */
-        private static renderSorted(subMeshes, sortCompareFn, cameraPosition, transparent);
-        /**
-         * Renders the submeshes in the order they were dispatched (no sort applied).
-         * @param subMeshes The submeshes to render
-         */
-        private static renderUnsorted(subMeshes);
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front if in the same alpha index.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered front to back (prevent overdraw).
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Resets the different lists of submeshes to prepare a new frame.
-         */
-        prepare(): void;
-        dispose(): void;
-        /**
-         * Inserts the submesh in its correct queue depending on its material.
-         * @param subMesh The submesh to dispatch
-         */
-        dispatch(subMesh: SubMesh): void;
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        private _renderParticles(activeMeshes);
-        private _renderSprites();
-    }
-}
-
-declare module BABYLON {
-    class RenderingManager {
-        /**
-         * The max id used for rendering groups (not included)
-         */
-        static MAX_RENDERINGGROUPS: number;
-        /**
-         * The min id used for rendering groups (included)
-         */
-        static MIN_RENDERINGGROUPS: number;
-        /**
-         * Used to globally prevent autoclearing scenes.
-         */
-        static AUTOCLEAR: boolean;
-        private _scene;
-        private _renderingGroups;
-        private _depthStencilBufferAlreadyCleaned;
-        private _currentIndex;
-        private _autoClearDepthStencil;
-        private _customOpaqueSortCompareFn;
-        private _customAlphaTestSortCompareFn;
-        private _customTransparentSortCompareFn;
-        private _renderinGroupInfo;
-        constructor(scene: Scene);
-        private _clearDepthStencilBuffer(depth?, stencil?);
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispose(): void;
-        private _prepareRenderingGroup(renderingGroupId);
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        dispatch(subMesh: SubMesh): void;
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         * @param depth Automatically clears depth between groups if true and autoClear is true.
-         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
     }
 }
 
@@ -15966,9 +15968,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
-}
-
 declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
@@ -16137,6 +16136,9 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

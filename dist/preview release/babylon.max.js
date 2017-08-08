@@ -18487,6 +18487,7 @@ var BABYLON;
             this.skeletons = [];
             this.morphTargetManagers = [];
             this.importedMeshesFiles = new Array();
+            this.resetCachedMaterial();
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
@@ -28609,6 +28610,9 @@ var BABYLON;
             }
         };
         Geometry._CleanMatricesWeights = function (matricesWeights, influencers) {
+            if (!BABYLON.SceneLoader.CleanBoneMatrixWeights) {
+                return;
+            }
             var size = matricesWeights.length;
             for (var i = 0; i < size; i += influencers) {
                 var weight = 0;
@@ -45035,6 +45039,7 @@ var BABYLON;
                 this._postProcessManager = null;
             }
             this.clearPostProcesses(true);
+            this.renderList = null;
             // Remove from custom render targets
             var scene = this.getScene();
             var index = scene.customRenderTargets.indexOf(this);
@@ -46994,6 +46999,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SceneLoader, "CleanBoneMatrixWeights", {
+            get: function () {
+                return SceneLoader._CleanBoneMatrixWeights;
+            },
+            set: function (value) {
+                SceneLoader._CleanBoneMatrixWeights = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         SceneLoader._getDefaultPlugin = function () {
             return SceneLoader._registeredPlugins[".babylon"];
         };
@@ -47228,6 +47243,7 @@ var BABYLON;
     // Flags
     SceneLoader._ForceFullSceneLoadingForIncremental = false;
     SceneLoader._ShowLoadingScreen = true;
+    SceneLoader._CleanBoneMatrixWeights = false;
     SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
     // Members
     SceneLoader.OnPluginActivatedObservable = new BABYLON.Observable();
