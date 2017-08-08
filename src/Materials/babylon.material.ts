@@ -525,6 +525,10 @@
             var engine = scene.getEngine();
 
             var checkReady = () => {
+                if (!this._scene || !this._scene.getEngine()) {
+                    return;
+                }
+
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
@@ -555,7 +559,7 @@
                     }
                     else {
                         setTimeout(checkReady, 16);
-                    }                    
+                    }
                 }
 
                 engine.setAlphaTesting(alphaTestState);
