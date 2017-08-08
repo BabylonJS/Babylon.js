@@ -5,6 +5,7 @@
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
+- Added `SceneLoader.CleanBoneMatrixWeights` to force the loader to normalize matrix weights when loading bones (off by default) ([deltakosh](https://github.com/deltakosh)) 
 - Added `camera.onViewMatrixChangedObservable` and `camera.onProjectionMatrixChangedObservable` ([deltakosh](https://github.com/deltakosh))
 - Added support for folders when drag'n'dropping into the sandbox ([deltakosh](https://github.com/deltakosh))
 - Better serialization support ([deltakosh](https://github.com/deltakosh))
